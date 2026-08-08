@@ -22,6 +22,17 @@ public sealed class OverlayThemePresetCatalogTests
         var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
         Assert.True(defaults.All(entry =>
             OverlayThemePresetCatalog.Default.Colors[entry.Key] == entry.Value));
+        Assert.Equal(Color.Parse("#FF6F00"), defaults["bio.confirmed"]);
+        Assert.Equal(Color.Parse("#9C4F05"), defaults["bio.confirmedDim"]);
+        Assert.Equal(Color.Parse("#5F3003"), defaults["bio.potential"]);
+        Assert.Equal(Color.Parse("#FFC400"), defaults["bio.prediction"]);
+        Assert.Equal(
+            Color.Parse("#8A6A00"),
+            defaults["bio.predictionPotential"]);
+        Assert.Equal(Color.Parse("#FFFF00"), defaults["bio.gold"]);
+        Assert.Equal(Color.Parse("#B0B0B0"), defaults["bio.unknownGlyph"]);
+        Assert.Equal((byte)190, defaults["bio.hatch"].A);
+        Assert.Equal((byte)48, defaults["bio.empty"].A);
     }
 
     [Theory]
@@ -48,6 +59,18 @@ public sealed class OverlayThemePresetCatalogTests
         Assert.Equal(Color.Parse(values), preset.Colors["yellow"]);
         Assert.Equal(Color.Parse(primary), preset.Colors["guardian.primary"]);
         Assert.Equal(Color.Parse(values), preset.Colors["colonise.highlight"]);
+        Assert.Equal(Color.Parse(primary), preset.Colors["bio.confirmed"]);
+        Assert.Equal(Color.Parse(values), preset.Colors["bio.gold"]);
+        Assert.Equal(Color.Parse(text), preset.Colors["bio.unknownGlyph"]);
+        Assert.Equal(Color.Parse(text), preset.Colors["bio.white"]);
+        Assert.NotEqual(
+            preset.Colors["bio.confirmed"],
+            preset.Colors["bio.prediction"]);
+        Assert.NotEqual(
+            preset.Colors["bio.prediction"],
+            preset.Colors["bio.predictionPotential"]);
+        Assert.Equal((byte)190, preset.Colors["bio.hatch"].A);
+        Assert.Equal((byte)48, preset.Colors["bio.empty"].A);
         Assert.Equal(required["red"], preset.Colors["red"]);
         Assert.Equal(required["green"], preset.Colors["green"]);
     }

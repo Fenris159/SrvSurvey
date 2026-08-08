@@ -23,16 +23,19 @@ public sealed class OverlayPresentationContractTests
             "src/SrvSurvey.Desktop/BiologyStatusOverlayWindow.axaml",
             "src/SrvSurvey.Desktop/BiologyStatusOverlayPresentation.axaml",
         ], [
-            "ProgressText", "TrackedCompletionPercent", "ActiveSample", "Signals", "Warning", "Footer",
+            "ProgressText", "CompletionPercent", "MinWidth=\"0\"", "ClipToBounds=\"True\"", "ActiveSample", "Signals", "Warning", "Footer",
             "BiologyStatusOverlayPresentation",
         ]),
         Contract("PlotBioSystem", [
             "src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml",
             "src/SrvSurvey.Desktop/BiologySurveyOverlayPresentation.axaml",
         ], [
-            "Bodies", "RewardBands", "HasCanonnSignals", "CanonnLogoControl", "Organisms", "RewardSummary", "FirstFootfallRewardSummary",
+            "Bodies", "BodyIconAssetPath", "BundledAssetImageConverter", "RewardBands", "HasCanonnSignals", "CanonnLogoControl", "OrganismGroups", "Species", "VariantName", "PredictionMarkerToolTip", "RewardSummary", "FirstFootfallRewardSummary",
             "GeologicalSignals", "RadicoidaUnicaCountText",
-            "BiologySurveyOverlayPresentation",
+            "BiologySurveyOverlayPresentation", "RavenBioConfirmedBrush",
+            "RavenBioConfirmedDimBrush", "RavenBioPotentialBrush",
+            "RavenBioPredictionBrush", "RavenBioPredictionPotentialBrush",
+            "RavenBioUnknownGlyphBrush", "RavenBioEmptyBrush",
         ]),
         Contract("PlotBodyInfo", [
             "src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml",
@@ -51,6 +54,8 @@ public sealed class OverlayPresentationContractTests
         Contract("PlotFSS", ["src/SrvSurvey.Desktop/LastFssBodyOverlayWindow.axaml", "src/SrvSurvey.Desktop/LastFssBodyOverlayPresentation.axaml"], [
             "LastFssBodyName", "LastFssBodyDistance", "LastFssScanValue", "LastFssMappedValue",
             "LastFssSignalsText", "LastFssBiologyRewardBands", "LastFssBiologyRewardText", "FssTuningIndicator",
+            "RavenBioConfirmedBrush", "RavenBioPredictionBrush",
+            "RavenBioUnknownGlyphBrush", "RavenBioEmptyBrush",
         ]),
         Contract("PlotFSSInfo", ["src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml", "src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml"], [
             "SystemTitle", "ScanSummary", "FssFilterDescription", "FssBodies", "ScanValue", "DssValue",
@@ -157,6 +162,65 @@ public sealed class OverlayPresentationContractTests
                 Assert.Contains(token, production, StringComparison.Ordinal);
             }
         }
+    }
+
+    [Fact]
+    public void DirectionalTrackersUseSharedVectorChevronsInsteadOfFontGlyphs()
+    {
+        var root = FindRepositoryRoot();
+        var miniTrack = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "MiniTrackOverlayPresentation.axaml"));
+        var surfaceSurvey = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "SurfaceSurveyOverlayPresentation.axaml"));
+        var priorScans = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "PriorScansOverlayPresentation.axaml"));
+
+        Assert.Contains("DirectionalChevronControl", miniTrack);
+        Assert.Contains("IsFar=\"{Binding IsFarTarget}\"", miniTrack);
+        Assert.DoesNotContain("&#x25B2;", miniTrack);
+
+        Assert.Equal(
+            2,
+            surfaceSurvey.Split(
+                "DirectionalChevronControl",
+                StringSplitOptions.None).Length - 1);
+        Assert.Contains("IsFar=\"{Binding IsFarTarget}\"", surfaceSurvey);
+        Assert.DoesNotContain("&#x25B2;", surfaceSurvey);
+
+        Assert.Contains("DirectionalChevronControl", priorScans);
+        Assert.Contains("IsFar=\"{Binding IsFar}\"", priorScans);
+        Assert.DoesNotContain("&#x25B2;", priorScans);
+    }
+
+    [Fact]
+    public void GroundTargetUsesTheSharedRingedPointerDrawing()
+    {
+        var root = FindRepositoryRoot();
+        var guidance = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Controls",
+            "GroundTargetGuidanceControl.cs"));
+        var guidePreview = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Controls",
+            "GuideIconPreviewControl.cs"));
+
+        Assert.Contains("RingedPointerDrawing.Draw", guidance);
+        Assert.DoesNotContain("DrawVehicle", guidance);
+        Assert.Contains("RingedPointerDrawing.Draw", guidePreview);
     }
 
     [Fact]
@@ -358,6 +422,31 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("Border.badge.overlay-state-pill", ravenStyles);
         Assert.Contains("Property=\"Width\" Value=\"66\"", ravenStyles);
         Assert.Contains("Property=\"Padding\" Value=\"8,3\"", ravenStyles);
+    }
+
+    [Fact]
+    public void SystemBiologyUsesAnAnalyzedPillWithoutMutingVariantColors()
+    {
+        var root = FindRepositoryRoot();
+        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        var biologySurvey = File.ReadAllText(Path.Combine(
+            desktop,
+            "BiologySurveyOverlayPresentation.axaml"));
+        var ravenStyles = File.ReadAllText(Path.Combine(
+            desktop,
+            "Styles",
+            "RavenStyles.axaml"));
+
+        Assert.Contains(
+            "Classes=\"badge overlay-state-pill overlay-state-pill-compact\"",
+            biologySurvey);
+        Assert.Contains("IsVisible=\"{Binding IsAnalyzed}\"", biologySurvey);
+        Assert.Contains("HorizontalAlignment=\"Left\"", biologySurvey);
+        Assert.DoesNotContain("Opacity=\"{Binding RowOpacity}\"", biologySurvey);
+        Assert.Contains(
+            "Border.badge.overlay-state-pill.overlay-state-pill-compact",
+            ravenStyles);
+        Assert.Contains("Property=\"Width\" Value=\"42\"", ravenStyles);
     }
 
     [Fact]

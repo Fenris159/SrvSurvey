@@ -34,6 +34,31 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     }
 
     [Fact]
+    public void ExobiologyEditorsNameEveryRewardPipStatePrecisely()
+    {
+        var category = CreateViewModel().Categories.Single(
+            candidate => candidate.Name == "Exobiology");
+
+        Assert.Equal(
+            [
+                ("bio.confirmed", "Confirmed reward PIP"),
+                ("bio.confirmedDim", "Analyzed reward PIP"),
+                ("bio.potential", "Possible reward segment"),
+                ("bio.prediction", "Predicted reward PIP"),
+                ("bio.predictionPotential", "Predicted possible segment"),
+                ("bio.gold", "First-discovery candidate PIP"),
+                ("bio.goldDark", "First-discovery candidate (analyzed)"),
+                ("bio.unknown", "Unknown reward frame"),
+                ("bio.unknownGlyph", "Unknown reward question mark"),
+                ("bio.hatch", "Prediction hatch lines"),
+                ("bio.empty", "Empty reward segment"),
+                ("bio.white", "Biology labels and values"),
+            ],
+            category.Colors.Select(color =>
+                (color.Key, color.DisplayName)));
+    }
+
+    [Fact]
     public void LoadDefaultsRestoresEveryColorAndReselectsDefault()
     {
         var viewModel = CreateViewModel();

@@ -145,13 +145,13 @@
                                 BorderThickness="1"
                                 CornerRadius="6">
                           <StackPanel Orientation="Horizontal" Spacing="5">
-                            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                                       FontSize="12"
-                                       Text="&#x25B2;">
-                              <TextBlock.RenderTransform>
-                                <RotateTransform Angle="{Binding RelativeBearingDegrees}" />
-                              </TextBlock.RenderTransform>
-                            </TextBlock>
+                            <controls:DirectionalChevronControl
+                                Width="16"
+                                Height="16"
+                                BearingDegrees="{Binding RelativeBearingDegrees}"
+                                IsFar="{Binding IsFar}"
+                                Stroke="{DynamicResource RavenAccentBrush}"
+                                StrokeThickness="1.8" />
                             <TextBlock Classes="monospace"
                                        FontSize="10"
                                        Text="{Binding BearingText}" />

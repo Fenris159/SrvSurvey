@@ -61,6 +61,10 @@
     <Setter Property="HorizontalAlignment" Value="Center" />
     <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
+  <Style Selector="Border.badge.overlay-state-pill.overlay-state-pill-compact">
+    <Setter Property="Width" Value="42" />
+    <Setter Property="Padding" Value="4,1" />
+  </Style>
 
   <!-- Divider rules consume the width selected by their parent. They have no
        intrinsic width and therefore cannot make a content-sized overlay grow. -->

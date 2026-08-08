@@ -19,19 +19,29 @@ internal sealed class GuardianOverlayPreviewState
         Scanned: false,
         ["Casket", TotemArtifact]);
 
-    private GuardianOverlayPreviewState()
-    {
-        var template = GuardianSiteTemplateCatalog.LoadEmbedded().Find("Beta")
-            ?? throw new InvalidOperationException(
-                "The embedded Beta Guardian site template is missing.");
-        ActiveMapProjection = new GuardianSiteMapProjector().Project(
-            template,
+    private static readonly GuardianSiteTemplate SampleTemplate =
+        GuardianSiteTemplateCatalog.LoadEmbedded().Find("Beta")
+        ?? throw new InvalidOperationException(
+            "The embedded Beta Guardian site template is missing.");
+
+    private static readonly GuardianSiteMapProjection SampleMapProjection =
+        new GuardianSiteMapProjector().Project(
+            SampleTemplate,
             activeObelisks: [SampleObelisk],
             obeliskGroups: new HashSet<char> { 'A', 'B' },
             neededRamTahLogCodes: new HashSet<string>(
-                ["H12"],
+                [SampleLogCode],
                 StringComparer.OrdinalIgnoreCase));
-        var nearest = template.PointsOfInterest.First(point =>
+
+    private readonly GuardianStatusPreviewState statusState;
+
+    private GuardianOverlayPreviewState(
+        GuardianStatusPreviewState statusState =
+            GuardianStatusPreviewState.ObeliskTarget)
+    {
+        this.statusState = statusState;
+        ActiveMapProjection = SampleMapProjection;
+        var nearest = SampleTemplate.PointsOfInterest.First(point =>
             string.Equals(point.Name, SampleObeliskName, StringComparison.Ordinal));
         Proximity = new GuardianSiteProximitySnapshot(
             DistanceFromSite: 42.6,
@@ -106,6 +116,9 @@ internal sealed class GuardianOverlayPreviewState
 
     public static GuardianOverlayPreviewState Instance { get; } = new();
 
+    public static GuardianOverlayPreviewState Create(
+        GuardianStatusPreviewState statusState) => new(statusState);
+
     // Never raises: preview state is immutable after construction.
     public event PropertyChangedEventHandler? PropertyChanged = delegate { };
 
@@ -152,7 +165,8 @@ internal sealed class GuardianOverlayPreviewState
 
     public string TargetObeliskText => "TARGET A01";
 
-    public bool IsGlideApproach => false;
+    public bool IsGlideApproach =>
+        statusState == GuardianStatusPreviewState.GlideApproach;
 
     public string GlideApproachTitle => "APPROACHING GUARDIAN RUINS";
 
@@ -160,29 +174,58 @@ internal sealed class GuardianOverlayPreviewState
 
     public string GlideApproachFooter => "Maintain glide toward the site.";
 
-    public bool IsLocalGuardianStatus => true;
+    public bool IsLocalGuardianStatus => !IsGlideApproach;
 
-    public bool IsGuardianSiteTypeChoiceVisible => false;
+    public bool IsGuardianSiteTypeChoiceVisible =>
+        statusState == GuardianStatusPreviewState.SiteTypeChoice;
 
-    public bool IsGuardianHeadingChoiceVisible => false;
+    public bool IsGuardianHeadingChoiceVisible =>
+        statusState == GuardianStatusPreviewState.HeadingChoice;
 
-    public bool IsGuardianOriginVisible => false;
+    public bool IsGuardianOriginVisible =>
+        statusState == GuardianStatusPreviewState.SiteOrigin;
 
-    public bool IsGuardianOnFootRelicVisible => false;
+    public bool IsGuardianOnFootRelicVisible =>
+        statusState == GuardianStatusPreviewState.OnFootRelic;
 
-    public bool IsGuardianObeliskVisible => true;
+    public bool IsGuardianObeliskVisible =>
+        statusState == GuardianStatusPreviewState.ObeliskTarget;
 
-    public bool IsGuardianPoiChoiceVisible => false;
+    public bool IsGuardianPoiChoiceVisible =>
+        statusState == GuardianStatusPreviewState.PoiChoice;
 
-    public bool IsGuardianNoPointVisible => false;
+    public bool IsGuardianNoPointVisible =>
+        statusState == GuardianStatusPreviewState.NoNearbyPoint;
 
-    public string GuardianStatusTitle => "GUARDIAN SITE STATUS";
+    public string GuardianStatusTitle => statusState switch
+    {
+        GuardianStatusPreviewState.SiteTypeChoice => "CHOOSE GUARDIAN SITE TYPE",
+        GuardianStatusPreviewState.HeadingChoice => "CONFIRM SITE HEADING",
+        GuardianStatusPreviewState.SiteOrigin => "ALIGN GUARDIAN SITE ORIGIN",
+        GuardianStatusPreviewState.OnFootRelic => "RELIC TOWER GUIDANCE",
+        GuardianStatusPreviewState.PoiChoice => "IDENTIFY SURVEY POINT",
+        GuardianStatusPreviewState.NoNearbyPoint => "GUARDIAN SITE STATUS",
+        _ => "GUARDIAN SITE STATUS",
+    };
 
-    public string GuardianStatusDetail => "Surveying Beta ruins #1";
+    public string GuardianStatusDetail => statusState switch
+    {
+        GuardianStatusPreviewState.HeadingChoice =>
+            "Face the main structure and confirm the recorded heading.",
+        GuardianStatusPreviewState.SiteOrigin =>
+            "Move to the site centre and align the map origin.",
+        GuardianStatusPreviewState.OnFootRelic =>
+            "Approach the nearest relic tower on foot.",
+        GuardianStatusPreviewState.NoNearbyPoint =>
+            "No mapped survey point is within the current range.",
+        _ => "Surveying Beta ruins #1",
+    };
 
-    public string GuardianOriginFooter => string.Empty;
+    public string GuardianOriginFooter =>
+        "Blink when the origin marker is centred.";
 
-    public string GuardianOnFootFooter => string.Empty;
+    public string GuardianOnFootFooter =>
+        "Nearest relic tower A02 · 38.4 m";
 
     public string GuardianStatusObeliskTitle => "A01 - History #12";
 
@@ -210,11 +253,20 @@ internal sealed class GuardianOverlayPreviewState
 
     public string GuardianMaterialCapacityWarning => string.Empty;
 
-    public string GuardianChoiceOneText => "Alpha";
+    public string GuardianChoiceOneText =>
+        statusState == GuardianStatusPreviewState.PoiChoice
+            ? "Present"
+            : "Alpha";
 
-    public string GuardianChoiceTwoText => "Beta";
+    public string GuardianChoiceTwoText =>
+        statusState == GuardianStatusPreviewState.PoiChoice
+            ? "Absent"
+            : "Beta";
 
-    public string GuardianChoiceThreeText => "Gamma";
+    public string GuardianChoiceThreeText =>
+        statusState == GuardianStatusPreviewState.PoiChoice
+            ? "Empty"
+            : "Gamma";
 
     public bool IsGuardianChoiceThreeVisible => true;
 
@@ -288,4 +340,16 @@ internal sealed class GuardianOverlayPreviewState
 
     private static DateTimeOffset ParseDateTimeOffset(string value) =>
         DateTimeOffset.Parse(value, CultureInfo.InvariantCulture);
+}
+
+internal enum GuardianStatusPreviewState
+{
+    ObeliskTarget,
+    SiteTypeChoice,
+    HeadingChoice,
+    SiteOrigin,
+    OnFootRelic,
+    PoiChoice,
+    NoNearbyPoint,
+    GlideApproach,
 }

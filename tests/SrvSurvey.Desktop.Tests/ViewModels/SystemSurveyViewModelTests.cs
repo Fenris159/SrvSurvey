@@ -646,6 +646,11 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Equal("1 of 2 biological signals analyzed", biology.ProgressText);
         var body = Assert.Single(biology.Bodies);
         Assert.True(body.IsDestination);
+        Assert.Equal("High metal content body", body.BodySubtype);
+        Assert.EndsWith(
+            "/Assets/Bodies/high-metal-content.png",
+            body.BodyIconAssetPath,
+            StringComparison.Ordinal);
         Assert.Equal(7_252_500, body.KnownReward);
         Assert.True(body.HasUnknownReward);
         Assert.Equal(body.SignalCount, body.RewardBands.Count);
@@ -877,12 +882,18 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Equal("Test 1 biology", biology.Heading);
         var organism = Assert.Single(biology.Organisms);
         Assert.Equal("Aleoida Arcus - Green", organism.DisplayName);
+        Assert.Equal("Arcus", organism.SpeciesName);
+        Assert.Equal("Green", organism.VariantName);
         Assert.Equal("7.25 M CR", organism.RewardText);
         Assert.True(organism.IsGlobalRegionalFirst);
         Assert.False(organism.IsRegionalFirst);
         Assert.True(organism.IsHighlightedFirst);
         Assert.True(organism.IsCurrentSample);
         Assert.False(organism.ShouldDim);
+        var organismGroup = Assert.Single(biology.OrganismGroups);
+        Assert.Equal("Aleoida:", organismGroup.GenusLabel);
+        Assert.True(organismGroup.IsGlobalRegionalFirst);
+        Assert.Equal("Arcus", Assert.Single(organismGroup.Species).SpeciesName);
         Assert.Equal(
             "First-footfall value: 36.26 M CR",
             biology.FirstFootfallRewardSummary);
@@ -1262,6 +1273,8 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         var prediction = Assert.Single(bodySurvey.Organisms);
         Assert.Equal("Aleoida Coronamus - Lime", prediction.DisplayName);
         Assert.Equal("Aleoida", prediction.GenusName);
+        Assert.Equal("Coronamus", prediction.SpeciesName);
+        Assert.Equal("Lime", prediction.VariantName);
         Assert.True(prediction.IsPrediction);
         Assert.False(prediction.IsGenusIdentified);
         Assert.True(prediction.HasReward);

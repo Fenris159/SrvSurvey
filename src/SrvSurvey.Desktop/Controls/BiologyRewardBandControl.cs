@@ -61,6 +61,9 @@ public sealed class BiologyRewardBandControl : Control
     public static readonly StyledProperty<IBrush?> PredictionBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(PredictionBrush));
+    public static readonly StyledProperty<IBrush?> UnknownGlyphBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(UnknownGlyphBrush));
     public static readonly StyledProperty<IBrush?> UnknownBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(UnknownBrush));
@@ -77,7 +80,7 @@ public sealed class BiologyRewardBandControl : Control
     // Immutable brush is free-threaded; a static SolidColorBrush would pin to the
     // first UI thread that touches it and break parallel Avalonia rendering tests.
     private static readonly IBrush DefaultEmptyBrush =
-        new ImmutableSolidColorBrush(Color.FromArgb(40, 255, 255, 255));
+        new ImmutableSolidColorBrush(Color.FromArgb(48, 255, 111, 0));
 
     static BiologyRewardBandControl()
     {
@@ -98,6 +101,7 @@ public sealed class BiologyRewardBandControl : Control
             DimmedHighlightBrushProperty,
             EdgeBrushProperty,
             PredictionBrushProperty,
+            UnknownGlyphBrushProperty,
             UnknownBrushProperty,
             HatchBrushProperty,
             EmptyBrushProperty,
@@ -207,6 +211,12 @@ public sealed class BiologyRewardBandControl : Control
         set => SetValue(PredictionBrushProperty, value);
     }
 
+    public IBrush? UnknownGlyphBrush
+    {
+        get => GetValue(UnknownGlyphBrushProperty);
+        set => SetValue(UnknownGlyphBrushProperty, value);
+    }
+
     public IBrush? UnknownBrush
     {
         get => GetValue(UnknownBrushProperty);
@@ -255,7 +265,7 @@ public sealed class BiologyRewardBandControl : Control
 
         if (state.IsUnknown)
         {
-            DrawUnknownMarker(context, brushes.Prediction);
+            DrawUnknownMarker(context, brushes.UnknownGlyph);
             return;
         }
 
@@ -270,7 +280,7 @@ public sealed class BiologyRewardBandControl : Control
         IBrush Unknown,
         IBrush Filled,
         IBrush Potential,
-        IBrush Prediction,
+        IBrush UnknownGlyph,
         IBrush Hatch);
 
     private BandBrushes ResolveBandBrushes()
@@ -279,7 +289,9 @@ public sealed class BiologyRewardBandControl : Control
             UnknownBrush ?? Brushes.Gray,
             ResolveFilledBrush(),
             ResolvePotentialBrush(),
-            PredictionBrush ?? Brushes.LightGray,
+            // PredictionBrush previously controlled the unknown question mark.
+            // Keep it as a compatibility fallback for existing direct callers.
+            UnknownGlyphBrush ?? PredictionBrush ?? Brushes.LightGray,
             HatchBrush ?? PredictionBrush ?? Brushes.LightGray);
     }
 
@@ -314,7 +326,7 @@ public sealed class BiologyRewardBandControl : Control
             : PotentialBrush ?? Brushes.DarkOrange;
     }
 
-    private void DrawUnknownMarker(DrawingContext context, IBrush prediction)
+    private void DrawUnknownMarker(DrawingContext context, IBrush glyph)
     {
         var text = new FormattedText(
             "?",
@@ -322,7 +334,7 @@ public sealed class BiologyRewardBandControl : Control
             FlowDirection.LeftToRight,
             Typeface.Default,
             Math.Max(9, Bounds.Height * 0.48),
-            prediction);
+            glyph);
         context.DrawText(
             text,
             new Point(

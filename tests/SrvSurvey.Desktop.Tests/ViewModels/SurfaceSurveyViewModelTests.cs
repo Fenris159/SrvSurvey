@@ -14,6 +14,31 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Path.GetTempPath(),
         $"SrvSurvey-surface-survey-vm-tests-{Guid.NewGuid():N}");
 
+    [Theory]
+    [InlineData(499, 500, 500, false)]
+    [InlineData(500, 500, 500, true)]
+    [InlineData(999, 0, 1_000, false)]
+    [InlineData(1_000, 0, 1_000, true)]
+    [InlineData(1_200, -1, 1_000, true)]
+    [InlineData(1_200, double.NaN, 1_000, true)]
+    [InlineData(1_200, double.PositiveInfinity, 1_000, true)]
+    public void MarkerFarStateUsesDefinedRadiusOrOneKilometerFallback(
+        double distanceMeters,
+        double radiusMeters,
+        double expectedFarDistanceMeters,
+        bool expectedIsFar)
+    {
+        var marker = new SurfaceRadarMarkerViewModel
+        {
+            DistanceMeters = distanceMeters,
+            RadiusMeters = radiusMeters,
+            Location = new SurfaceCoordinate(0, 0),
+        };
+
+        Assert.Equal(expectedFarDistanceMeters, marker.FarDistanceMeters);
+        Assert.Equal(expectedIsFar, marker.IsFarTarget);
+    }
+
     [Fact]
     public async Task ClearAllTrackersRemovesBodyBookmarks()
     {

@@ -46,6 +46,16 @@ internal static class OverlayRuntimePresentationFactory
     public static bool TryCreate(
         string plotterName,
         out Control? presentation,
+        out object? dataContext) => TryCreate(
+            plotterName,
+            previewStateIndex: 0,
+            out presentation,
+            out dataContext);
+
+    public static bool TryCreate(
+        string plotterName,
+        int previewStateIndex,
+        out Control? presentation,
         out object? dataContext)
     {
         if (!IsSupported(plotterName))
@@ -55,7 +65,7 @@ internal static class OverlayRuntimePresentationFactory
             return false;
         }
 
-        dataContext = CreateEditorDataContext(plotterName);
+        dataContext = CreateEditorDataContext(plotterName, previewStateIndex);
         presentation = CreatePresentation(plotterName);
         if (presentation is null)
         {
@@ -73,6 +83,13 @@ internal static class OverlayRuntimePresentationFactory
     /// </summary>
     public static object CreateEditorDataContextOnly(string plotterName)
     {
+        return CreateEditorDataContextOnly(plotterName, previewStateIndex: 0);
+    }
+
+    public static object CreateEditorDataContextOnly(
+        string plotterName,
+        int previewStateIndex)
+    {
         if (!IsSupported(plotterName))
         {
             throw new ArgumentOutOfRangeException(
@@ -81,7 +98,7 @@ internal static class OverlayRuntimePresentationFactory
                 "No shared presentation is registered for this plotter.");
         }
 
-        return CreateEditorDataContext(plotterName);
+        return CreateEditorDataContext(plotterName, previewStateIndex);
     }
 
     public static Control? CreatePresentation(string plotterName) =>
@@ -119,8 +136,14 @@ internal static class OverlayRuntimePresentationFactory
             _ => null,
         };
 
-    public static object CreateEditorDataContext(string plotterName) =>
-        OverlayEditorPreviewCatalog.Create(plotterName);
+    public static IReadOnlyList<OverlayEditorPreviewStateDefinition>
+        GetEditorPreviewStates(string plotterName) =>
+        OverlayEditorPreviewCatalog.GetStates(plotterName);
+
+    public static object CreateEditorDataContext(
+        string plotterName,
+        int previewStateIndex = 0) =>
+        OverlayEditorPreviewCatalog.Create(plotterName, previewStateIndex);
 
     /// <summary>
     /// Guardian plotters already used dedicated transparent host chrome.

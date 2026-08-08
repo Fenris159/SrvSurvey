@@ -14,13 +14,89 @@ namespace SrvSurvey.Desktop.ViewModels;
 /// </summary>
 internal static class OverlayEditorPreviewCatalog
 {
+    private const string TussockGenus = "Tussock";
+    private const string YellowVariant = "Yellow";
+
+    private static readonly OverlayEditorPreviewStateDefinition DefaultState =
+        new("default", "Default");
+
+    private static readonly Dictionary<
+        string,
+        OverlayEditorPreviewStateDefinition[]> PreviewStates =
+        new Dictionary<
+            string,
+            OverlayEditorPreviewStateDefinition[]>(
+            StringComparer.Ordinal)
+        {
+            ["PlotBioSystem"] = CreatePreviewStates(
+                ("system-overview", "System overview"),
+                ("body-predictions", "Body predictions"),
+                ("body-identified", "Body identified")),
+            ["PlotBioStatus"] = CreatePreviewStates(
+                ("active-sample", "Active sample"),
+                ("signal-summary", "Signal summary"),
+                ("dss-required", "DSS required"),
+                ("stale-sample", "Stale sample")),
+            ["PlotGuardianStatus"] = CreatePreviewStates(
+                ("obelisk", "Obelisk target"),
+                ("site-type", "Site type choice"),
+                ("heading", "Heading choice"),
+                ("origin", "Site origin"),
+                ("on-foot", "On-foot relic"),
+                ("poi-choice", "POI choice"),
+                ("no-point", "No nearby point"),
+                ("glide", "Glide approach")),
+            ["PlotFleetCarrierRoute"] = CreatePreviewStates(
+                ("cooldown", "Jump cooldown"),
+                ("scheduled", "Jump scheduled"),
+                ("route-only", "Route only")),
+            ["PlotPulse"] = CreatePreviewStates(
+                ("cooling", "SCO cooling"),
+                ("active", "SCO active"),
+                ("ready", "SCO ready"),
+                ("journal", "Journal pulse")),
+        };
+
     private static readonly OverlayPreviewSimulationState State =
         OverlayPreviewSimulationState.Default;
 
     private static readonly BiologyRewardThresholds Thresholds =
         BiologyRewardThresholds.Default;
 
-    public static object Create(string plotterName) => plotterName switch
+    private static OverlayEditorPreviewStateDefinition[]
+        CreatePreviewStates(
+            params (string Key, string DisplayName)[] states) =>
+        states.Select(state => new OverlayEditorPreviewStateDefinition(
+            state.Key,
+            state.DisplayName)).ToArray();
+
+    public static IReadOnlyList<OverlayEditorPreviewStateDefinition> GetStates(
+        string plotterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        return PreviewStates.TryGetValue(plotterName, out var states)
+            ? states
+            : [DefaultState];
+    }
+
+    public static object Create(string plotterName) => Create(plotterName, 0);
+
+    public static object Create(string plotterName, int stateIndex)
+    {
+        var states = GetStates(plotterName);
+        if (stateIndex < 0 || stateIndex >= states.Count)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(stateIndex),
+                stateIndex,
+                $"Preview state index must be from 0 to {states.Count - 1}.");
+        }
+
+        return Create(plotterName, states[stateIndex].Key);
+    }
+
+    private static object Create(string plotterName, string previewState) =>
+        plotterName switch
     {
         "PlotBioStatus"
             or "PlotBioSystem"
@@ -28,11 +104,13 @@ internal static class OverlayEditorPreviewCatalog
             or "PlotFlightWarning"
             or "PlotFSS"
             or "PlotFSSInfo"
-            or "PlotSysStatus" => CreateSystemSurveyPreview(plotterName),
+            or "PlotSysStatus" =>
+                CreateSystemSurveyPreview(plotterName, previewState),
         "PlotGuardians"
-            or "PlotGuardianStatus"
             or "PlotGuardianSystem"
             or "PlotRamTah" => GuardianOverlayViewModel.CreateEditorPreview(),
+        "PlotGuardianStatus" => GuardianOverlayViewModel.CreateEditorPreview(
+            ParseGuardianStatusState(previewState)),
         "PlotRouteBio" => CreateRouteBioPreview(),
         "PlotBuildCommodities" => CreateColonizationPreview(),
         "PlotFloatie" => CreateNotificationPreview(),
@@ -41,10 +119,11 @@ internal static class OverlayEditorPreviewCatalog
         "PlotGrounded" or "PlotMiniTrack" => CreateSurfaceSurveyPreview(),
         "PlotHumanSite" => CreateHumanSitePreview(),
         "PlotJumpInfo" => CreateJumpInfoPreview(),
-        "PlotFleetCarrierRoute" => CreateFleetCarrierRoutePreview(),
+        "PlotFleetCarrierRoute" => CreateFleetCarrierRoutePreview(
+            ParseFleetCarrierRouteState(previewState)),
         "PlotMultiGameCommander" => CreateMultiCommanderPreview(),
         "PlotPriorScans" => CreatePriorScansPreview(),
-        "PlotPulse" => CreatePulsePreview(),
+        "PlotPulse" => CreatePulsePreview(ParsePulseState(previewState)),
         "PlotQuestMini" => CreateQuestPreview(),
         "PlotSphericalSearch" => CreateSphericalSearchPreview(),
         "PlotStationInfo" => CreateStationInfoPreview(),
@@ -54,7 +133,8 @@ internal static class OverlayEditorPreviewCatalog
     };
 
     private static SystemSurveyOverlayViewModel CreateSystemSurveyPreview(
-        string plotterName)
+        string plotterName,
+        string previewState)
     {
         var settingsPath = Path.Combine(
             Path.GetTempPath(),
@@ -62,20 +142,30 @@ internal static class OverlayEditorPreviewCatalog
             "ui-settings.json");
         var survey = new SystemSurveyViewModel(
             new SystemSurveySettingsStore(settingsPath));
-        survey.InstallEditorPreview(BuildSystemSurveyEditorState(plotterName));
+        survey.InstallEditorPreview(BuildSystemSurveyEditorState(
+            plotterName,
+            previewState));
         return new SystemSurveyOverlayViewModel(
             survey,
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
     }
 
     private static SystemSurveyEditorPreviewState BuildSystemSurveyEditorState(
-        string plotterName)
+        string plotterName,
+        string previewState)
     {
         var thresholds = Thresholds;
         var bioSystem = plotterName == "PlotBioSystem"
-            ? CreateBiologySystemOverview()
+            ? previewState switch
+            {
+                "body-predictions" => CreateBiologyBodyPredictions(),
+                "body-identified" => CreateBiologyBodyIdentified(),
+                _ => CreateBiologySystemOverview(),
+            }
             : CreateBiologyBodyDetail();
-        var bioStatus = CreateBiologyStatus();
+        var bioStatus = plotterName == "PlotBioStatus"
+            ? CreateBiologyStatus(previewState)
+            : CreateBiologyStatus("active-sample");
         var bodyInfo = CreateBodyInformation();
         return new SystemSurveyEditorPreviewState(
             Snapshot: CreatePreviewSnapshot(),
@@ -201,6 +291,7 @@ internal static class OverlayEditorPreviewCatalog
                 {
                     BodyId = 4,
                     Name = "A4",
+                    BodySubtype = "Rocky body",
                     AnalyzedSignalCount = 1,
                     SignalCount = 4,
                     KnownReward = 0,
@@ -225,6 +316,7 @@ internal static class OverlayEditorPreviewCatalog
                 {
                     BodyId = 5,
                     Name = "A5",
+                    BodySubtype = "Earth-like world",
                     AnalyzedSignalCount = 0,
                     SignalCount = 4,
                     MinimumReward = 9_470_000,
@@ -249,6 +341,7 @@ internal static class OverlayEditorPreviewCatalog
                 {
                     BodyId = 8,
                     Name = "BC3",
+                    BodySubtype = "High metal content world",
                     AnalyzedSignalCount = 2,
                     SignalCount = 2,
                     KnownReward = 20_700_000,
@@ -269,6 +362,7 @@ internal static class OverlayEditorPreviewCatalog
                 {
                     BodyId = 9,
                     Name = "BC4",
+                    BodySubtype = "Rocky ice body",
                     AnalyzedSignalCount = 1,
                     SignalCount = 2,
                     MinimumReward = 1_690_000,
@@ -294,44 +388,164 @@ internal static class OverlayEditorPreviewCatalog
     }
 
     private static BiologySurveyViewModel CreateBiologyBodyDetail() =>
+        CreateBiologyBodyPredictions();
+
+    private static BiologySurveyViewModel CreateBiologyBodyPredictions() =>
         new()
         {
             Mode = BiologySurveyMode.Body,
             SelectedBodyId = 3,
             Heading = $"{State.CurrentBody} biology",
-            ProgressText = "2 biological signals",
+            ProgressText = "4 biological signals",
             Bodies = [],
-            Organisms =
-            [
-                new BiologyOrganismRowViewModel
-                {
-                    DisplayName = "Bacterium Bullaris - Cobalt",
-                    GenusName = "Bacterium",
-                    Reward = 1_150_000,
-                    HasReward = true,
-                    IsPrediction = true,
-                    IsHighlightedFirst = true,
-                    RewardBucketOneMillions = Thresholds.BucketOneMillions,
-                    RewardBucketTwoMillions = Thresholds.BucketTwoMillions,
-                    RewardBucketThreeMillions = Thresholds.BucketThreeMillions,
-                },
-                new BiologyOrganismRowViewModel
-                {
-                    DisplayName = "Fonticulua Digitos - Emerald",
-                    GenusName = "Fonticulua",
-                    Reward = 1_800_000,
-                    HasReward = true,
-                    IsPrediction = true,
-                    RewardBucketOneMillions = Thresholds.BucketOneMillions,
-                    RewardBucketTwoMillions = Thresholds.BucketTwoMillions,
-                    RewardBucketThreeMillions = Thresholds.BucketThreeMillions,
-                },
-            ],
-            RewardSummary = "Estimated reward: 2.96 M CR",
+            Organisms = CreateBiologyOrganismPreviews(
+                new("Stratum", "Limaxus", "Emerald", 1_360_000,
+                    BiologyOrganismPreviewTraits.Prediction
+                        | BiologyOrganismPreviewTraits.CommanderFirst
+                        | BiologyOrganismPreviewTraits.HighlightedFirst),
+                new("Stratum", "Paleas", "Emerald", 1_360_000,
+                    BiologyOrganismPreviewTraits.Prediction),
+                new("Bacterium", "Aurasus", "Lime", 1_000_000,
+                    BiologyOrganismPreviewTraits.Prediction),
+                new("Tubus", "Cavas", "Grey", 7_770_000,
+                    BiologyOrganismPreviewTraits.Prediction
+                        | BiologyOrganismPreviewTraits.RegionalFirst),
+                new("Tubus", "Compagibus", "Grey", 11_870_000,
+                    BiologyOrganismPreviewTraits.Prediction),
+                new(TussockGenus, "Ignis", YellowVariant, 1_000_000,
+                    BiologyOrganismPreviewTraits.Prediction
+                        | BiologyOrganismPreviewTraits.GlobalRegionalFirst
+                        | BiologyOrganismPreviewTraits.HighlightedFirst),
+                new(TussockGenus, "Propagito", YellowVariant, 1_850_000,
+                    BiologyOrganismPreviewTraits.Prediction
+                        | BiologyOrganismPreviewTraits.CommanderFirst
+                        | BiologyOrganismPreviewTraits.HighlightedFirst),
+                new(TussockGenus, "Capillum", YellowVariant, 19_010_000,
+                    BiologyOrganismPreviewTraits.Prediction)),
+            RewardSummary = "Estimated reward: 11.13 M – 33.24 M CR",
             RequiresDss = true,
         };
 
-    private static BiologyStatusViewModel CreateBiologyStatus() =>
+    private static BiologySurveyViewModel CreateBiologyBodyIdentified() =>
+        new()
+        {
+            Mode = BiologySurveyMode.Body,
+            SelectedBodyId = 3,
+            Heading = $"{State.CurrentBody} biology",
+            ProgressText = "3 biological signals",
+            Bodies = [],
+            Organisms = CreateBiologyOrganismPreviews(
+                new("Bacterium", "Acies", "Cobalt", 7_620_000,
+                    BiologyOrganismPreviewTraits.CurrentSample
+                        | BiologyOrganismPreviewTraits.CommanderFirst
+                        | BiologyOrganismPreviewTraits.HighlightedFirst),
+                new(TussockGenus, "Capillum", YellowVariant, 19_010_000,
+                    BiologyOrganismPreviewTraits.Analyzed
+                        | BiologyOrganismPreviewTraits.Dimmed),
+                new("Stratum", "Tectonicas", "Emerald", 95_190_000,
+                    BiologyOrganismPreviewTraits.GlobalRegionalFirst
+                        | BiologyOrganismPreviewTraits.HighlightedFirst)),
+            RewardSummary = "Known reward: 121.82 M CR",
+            FirstFootfallRewardSummary = "First-footfall total: 609.10 M CR",
+            RequiresDss = false,
+            PredictionStatus = "DSS scan complete; exact organisms identified.",
+            GeologicalSignalCount = 2,
+            GeologicalSignals = ["Fumarole", "Lava spout"],
+        };
+
+    private static BiologyOrganismRowViewModel[] CreateBiologyOrganismPreviews(
+        params BiologyOrganismPreviewSpec[] previews) =>
+        previews.Select(CreateBiologyOrganismPreview).ToArray();
+
+    private static BiologyOrganismRowViewModel CreateBiologyOrganismPreview(
+        BiologyOrganismPreviewSpec preview)
+    {
+        var isPrediction = preview.Traits.HasFlag(
+            BiologyOrganismPreviewTraits.Prediction);
+        return new BiologyOrganismRowViewModel
+        {
+            DisplayName = isPrediction
+                ? $"{preview.Genus} {preview.Species} - {preview.Variant}"
+                : $"{preview.Genus} {preview.Species}",
+            GenusName = preview.Genus,
+            SpeciesName = preview.Species,
+            VariantName = preview.Variant,
+            Reward = preview.Reward,
+            HasReward = true,
+            IsPrediction = isPrediction,
+            IsCommanderFirst = preview.Traits.HasFlag(
+                BiologyOrganismPreviewTraits.CommanderFirst),
+            IsRegionalFirst = preview.Traits.HasFlag(
+                BiologyOrganismPreviewTraits.RegionalFirst),
+            IsGlobalRegionalFirst = preview.Traits.HasFlag(
+                BiologyOrganismPreviewTraits.GlobalRegionalFirst),
+            IsHighlightedFirst = preview.Traits.HasFlag(
+                BiologyOrganismPreviewTraits.HighlightedFirst),
+            IsCurrentSample = preview.Traits.HasFlag(
+                BiologyOrganismPreviewTraits.CurrentSample),
+            IsAnalyzed = preview.Traits.HasFlag(
+                BiologyOrganismPreviewTraits.Analyzed),
+            ShouldDim = preview.Traits.HasFlag(
+                BiologyOrganismPreviewTraits.Dimmed),
+            RewardBucketOneMillions = Thresholds.BucketOneMillions,
+            RewardBucketTwoMillions = Thresholds.BucketTwoMillions,
+            RewardBucketThreeMillions = Thresholds.BucketThreeMillions,
+        };
+    }
+
+    private readonly record struct BiologyOrganismPreviewSpec(
+        string Genus,
+        string Species,
+        string Variant,
+        long Reward,
+        BiologyOrganismPreviewTraits Traits);
+
+    [Flags]
+    private enum BiologyOrganismPreviewTraits
+    {
+        None = 0,
+        Prediction = 1 << 0,
+        CommanderFirst = 1 << 1,
+        RegionalFirst = 1 << 2,
+        GlobalRegionalFirst = 1 << 3,
+        HighlightedFirst = 1 << 4,
+        CurrentSample = 1 << 5,
+        Analyzed = 1 << 6,
+        Dimmed = 1 << 7,
+    }
+
+    private static BiologyStatusViewModel CreateBiologyStatus(
+        string previewState)
+    {
+        var active = CreateActiveBiologyStatus();
+        return previewState switch
+        {
+            "signal-summary" => active with
+            {
+                ActiveSample = null,
+                Footer = "Select an organism to begin sampling.",
+            },
+            "dss-required" => active with
+            {
+                AnalyzedSignalCount = 0,
+                Signals = [],
+                ActiveSample = null,
+                RequiresDss = true,
+                Footer = "Map this body to resolve biological signals.",
+                HasCodexImageIndicator = false,
+            },
+            "stale-sample" => active with
+            {
+                ActiveSample = null,
+                Warning = "Active sample belongs to another body",
+                Footer = string.Empty,
+                IsStaleActiveSample = true,
+            },
+            _ => active,
+        };
+    }
+
+    private static BiologyStatusViewModel CreateActiveBiologyStatus() =>
         new(
             BodyId: 3,
             BodyName: State.CurrentBody,
@@ -495,8 +709,9 @@ internal static class OverlayEditorPreviewCatalog
     private static JumpInfoOverlayViewModel CreateJumpInfoPreview() =>
         OverlayEditorPreviewFactories.CreateJumpInfo();
 
-    private static FleetCarrierRouteOverlayViewModel CreateFleetCarrierRoutePreview() =>
-        OverlayEditorPreviewFactories.CreateFleetCarrierRoute();
+    private static FleetCarrierRouteOverlayViewModel CreateFleetCarrierRoutePreview(
+        FleetCarrierRouteEditorPreviewState state) =>
+        OverlayEditorPreviewFactories.CreateFleetCarrierRoute(state);
 
     private static CommanderInstancesViewModel CreateMultiCommanderPreview() =>
         OverlayEditorPreviewFactories.CreateMultiCommander();
@@ -504,8 +719,9 @@ internal static class OverlayEditorPreviewCatalog
     private static PriorScansOverlayViewModel CreatePriorScansPreview() =>
         OverlayEditorPreviewFactories.CreatePriorScans();
 
-    private static PulseOverlayViewModel CreatePulsePreview() =>
-        OverlayEditorPreviewFactories.CreatePulse();
+    private static PulseOverlayViewModel CreatePulsePreview(
+        PulseEditorPreviewState state) =>
+        OverlayEditorPreviewFactories.CreatePulse(state);
 
     private static QuestIndicatorViewModel CreateQuestPreview() =>
         OverlayEditorPreviewFactories.CreateQuest();
@@ -518,4 +734,38 @@ internal static class OverlayEditorPreviewCatalog
 
     private static GroundTargetOverlayViewModel CreateGroundTargetPreview() =>
         OverlayEditorPreviewFactories.CreateGroundTarget();
+
+    private static GuardianStatusPreviewState ParseGuardianStatusState(
+        string state) => state switch
+        {
+            "site-type" => GuardianStatusPreviewState.SiteTypeChoice,
+            "heading" => GuardianStatusPreviewState.HeadingChoice,
+            "origin" => GuardianStatusPreviewState.SiteOrigin,
+            "on-foot" => GuardianStatusPreviewState.OnFootRelic,
+            "poi-choice" => GuardianStatusPreviewState.PoiChoice,
+            "no-point" => GuardianStatusPreviewState.NoNearbyPoint,
+            "glide" => GuardianStatusPreviewState.GlideApproach,
+            _ => GuardianStatusPreviewState.ObeliskTarget,
+        };
+
+    private static FleetCarrierRouteEditorPreviewState
+        ParseFleetCarrierRouteState(string state) => state switch
+        {
+            "scheduled" => FleetCarrierRouteEditorPreviewState.Scheduled,
+            "route-only" => FleetCarrierRouteEditorPreviewState.RouteOnly,
+            _ => FleetCarrierRouteEditorPreviewState.Cooldown,
+        };
+
+    private static PulseEditorPreviewState ParsePulseState(string state) =>
+        state switch
+        {
+            "active" => PulseEditorPreviewState.ScoActive,
+            "ready" => PulseEditorPreviewState.ScoReady,
+            "journal" => PulseEditorPreviewState.JournalPulse,
+            _ => PulseEditorPreviewState.ScoCooling,
+        };
 }
+
+internal sealed record OverlayEditorPreviewStateDefinition(
+    string Key,
+    string DisplayName);

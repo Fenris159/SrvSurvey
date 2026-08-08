@@ -1251,9 +1251,10 @@
                                                   BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
                                                   BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
-                                                  FilledBrush="#E67E22"
-                                                  PotentialBrush="#A85A14"
-                                                  EdgeBrush="#E67E22" />
+                                                  FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                  PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
+                                                  EdgeBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                  EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
               </Border>
               <TextBlock VerticalAlignment="Center" FontSize="16" Text="&lt;" />
               <NumericUpDown Width="100"
@@ -1278,9 +1279,10 @@
                                                   BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
                                                   BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
-                                                  FilledBrush="#E67E22"
-                                                  PotentialBrush="#A85A14"
-                                                  EdgeBrush="#E67E22" />
+                                                  FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                  PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
+                                                  EdgeBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                  EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
               </Border>
               <TextBlock VerticalAlignment="Center" FontSize="16" Text="&lt;" />
               <NumericUpDown Width="100"
@@ -1305,9 +1307,10 @@
                                                   BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
                                                   BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
-                                                  FilledBrush="#E67E22"
-                                                  PotentialBrush="#A85A14"
-                                                  EdgeBrush="#E67E22" />
+                                                  FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                  PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
+                                                  EdgeBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                  EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
               </Border>
               <TextBlock VerticalAlignment="Center" FontSize="16" Text="&lt;" />
               <NumericUpDown Width="100"
@@ -1333,9 +1336,10 @@
                                                   BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
                                                   BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
-                                                  FilledBrush="#E67E22"
-                                                  PotentialBrush="#A85A14"
-                                                  EdgeBrush="#E67E22" />
+                                                  FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                  PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
+                                                  EdgeBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                  EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
               </Border>
             </StackPanel>
           </WrapPanel>

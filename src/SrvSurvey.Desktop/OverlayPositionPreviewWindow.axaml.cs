@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -16,12 +17,17 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private double scaleRenderScaling = 1d;
     private double scaleFactor = 1d;
     private readonly bool usesRuntimePresentation;
+    private readonly IReadOnlyList<OverlayEditorPreviewStateDefinition>
+        previewStates;
     private Control? runtimePresentation;
+    private int previewStateIndex;
 
     public OverlayPositionPreviewWindow()
     {
         InitializeComponent();
         Definition = OverlayLayoutCatalog.Supported[0];
+        previewStates = OverlayRuntimePresentationFactory
+            .GetEditorPreviewStates(Definition.Name);
         Preview = OverlayPositionPreviewViewModel.Create(Definition);
         DataContext = Preview;
         EnsureEditorFolderTab(Definition.DisplayName);
@@ -33,6 +39,8 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         InitializeComponent();
+        previewStates = OverlayRuntimePresentationFactory
+            .GetEditorPreviewStates(Definition.Name);
         Preview = OverlayPositionPreviewViewModel.Create(definition);
         DataContext = Preview;
         EnsureEditorFolderTab(definition.DisplayName);
@@ -53,6 +61,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         EditorFolderTab.IsVisible = true;
         EditorFolderTabLabel.Text = label;
         ToolTip.SetTip(EditorFolderTab, label);
+        UpdateEditorPreviewStateButton();
     }
 
     public OverlayLayoutDefinition Definition { get; }
@@ -66,6 +75,19 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
     /// <summary>Editor-only folder tab label (tests / diagnostics).</summary>
     internal TextBlock EditorFolderTabLabelControl => EditorFolderTabLabel;
+
+    /// <summary>Editor-only simulated state cycle button.</summary>
+    internal Button EditorFolderTabStateButtonControl =>
+        EditorFolderTabStateButton;
+
+    /// <summary>Editor-only simulated state label.</summary>
+    internal TextBlock EditorFolderTabStateLabelControl =>
+        EditorFolderTabStateLabel;
+
+    internal int EditorPreviewStateCount => previewStates.Count;
+
+    internal string CurrentEditorPreviewStateName =>
+        previewStates[previewStateIndex].DisplayName;
 
     /// <summary>Editor-only bordered preview body (tests / diagnostics).</summary>
     internal Border PreviewBodyControl => PreviewBody;
@@ -243,6 +265,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     {
         if (!OverlayRuntimePresentationFactory.TryCreate(
                 Definition.Name,
+                previewStateIndex,
                 out var presentation,
                 out _)
             || presentation is null)
@@ -257,6 +280,55 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         PreviewBody.Padding = new Thickness(0);
         PreviewBody.Background = Avalonia.Media.Brushes.Transparent;
         return true;
+    }
+
+    internal bool CycleEditorPreviewState()
+    {
+        if (previewStates.Count <= 1 || runtimePresentation is null)
+        {
+            return false;
+        }
+
+        previewStateIndex = (previewStateIndex + 1) % previewStates.Count;
+        var previousDataContext = runtimePresentation.DataContext;
+        runtimePresentation.DataContext = OverlayRuntimePresentationFactory
+            .CreateEditorDataContextOnly(
+                Definition.Name,
+                previewStateIndex);
+        DisposeEditorDataContext(previousDataContext);
+        UpdateEditorPreviewStateButton();
+        runtimePresentation.InvalidateMeasure();
+        PreviewSurface.InvalidateMeasure();
+        InvalidateMeasure();
+        return true;
+    }
+
+    private void UpdateEditorPreviewStateButton()
+    {
+        var hasMultipleStates = previewStates.Count > 1;
+        EditorFolderTabStateButton.IsVisible = hasMultipleStates;
+        if (!hasMultipleStates)
+        {
+            EditorFolderTabStateLabel.Text = string.Empty;
+            ToolTip.SetTip(EditorFolderTabStateButton, null);
+            return;
+        }
+
+        var state = previewStates[previewStateIndex];
+        var next = previewStates[(previewStateIndex + 1) % previewStates.Count];
+        EditorFolderTabStateLabel.Text =
+            $"{state.DisplayName} {previewStateIndex + 1}/{previewStates.Count}";
+        ToolTip.SetTip(
+            EditorFolderTabStateButton,
+            $"Preview state: {state.DisplayName}. Click to show {next.DisplayName}.");
+    }
+
+    private void OnEditorFolderTabStateButtonClick(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        _ = CycleEditorPreviewState();
+        eventArgs.Handled = true;
     }
 
     private void ApplyConfiguredScale()
@@ -293,6 +365,24 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             throw new ArgumentOutOfRangeException(
                 parameterName,
                 "Overlay opacity must be from 0 to 1.");
+        }
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        DisposeEditorDataContext(runtimePresentation?.DataContext);
+        if (runtimePresentation is not null)
+        {
+            runtimePresentation.DataContext = null;
+        }
+        base.OnClosed(e);
+    }
+
+    private static void DisposeEditorDataContext(object? dataContext)
+    {
+        if (dataContext is IDisposable disposable)
+        {
+            disposable.Dispose();
         }
     }
 }

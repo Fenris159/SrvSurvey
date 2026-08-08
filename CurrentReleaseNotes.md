@@ -1,39 +1,36 @@
-# SrvSurvey-XP 2.1.3.0-rc.5
+# SrvSurvey-XP 2.1.3.0-rc.6
 
-This fifth release candidate is a targeted updater repair. The changes below
-are the delta from `2.1.3.0-rc.4`.
+This release candidate focuses on accurate, compact overlay previews and
+exobiology presentation. The changes below are the delta from
+`2.1.3.0-rc.5`.
 
-## What's new since 2.1.3.0-rc.4
+## What's new since 2.1.3.0-rc.5
 
-- Fixes guarded updates for Windows installations under protected locations
-  such as `Program Files (x86)`. When the normal process cannot create the
-  same-volume rollback candidate, SrvSurvey now requests administrator approval
-  and completes that preparation in the external update helper.
-- Keeps the privilege transition narrow: the helper revalidates the staged
-  package, binds the request to the running installed SrvSurvey process, and
-  signals readiness before the application closes.
-- Preserves the existing whole-directory backup, startup health confirmation,
-  and automatic rollback behavior. Cancelling the Windows approval prompt
-  leaves the active installation and player profile unchanged.
-- Leaves user-writable Windows installs and Linux update behavior on their
-  existing non-elevated path.
-
-## Upgrading from RC4 or earlier on Windows
-
-The elevation repair runs from RC5, so an older build installed under
-`Program Files` cannot use it until RC5 is installed. For this one upgrade,
-either start the existing SrvSurvey build as administrator before using the
-built-in updater, or install the RC5 Windows package manually. Future built-in
-updates from RC5 will request administrator approval only when the installation
-location requires it.
+- Adds state controls to supported overlay-editor folder tabs so game-driven
+  presentations can be previewed without waiting for the corresponding journal
+  event. Editor previews continue to use the same shared presentations as live
+  overlays.
+- Restores System Biology prediction and discovery markers, groups any number
+  of organism variants into compact rows, colors variant names by their
+  biological color, and shows analyzed status without muting that color.
+- Uses the Route Workspace body-type artwork in the System Biology overview and
+  keeps confirmed-body previews limited to organisms that actually exist.
+- Makes Biology Sample Status progress accurate and bounded, centers the stale
+  sample warning, and clarifies the idle sampling state.
+- Replaces directional font glyphs with theme-aware vector chevrons that switch
+  between near and far forms. Ground Target now uses a ringed pointer, and
+  markers without a specific far threshold use a 1 km fallback.
+- Adds explicit theme colors for confirmed, predicted, possible, highlighted,
+  analyzed, and unknown biology reward PIPs across the default and preset
+  themes, with expanded descriptions in the overlay icon glossary.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.5`
-- Tag: `xp-v2.1.3.0-rc.5`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.5-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.5-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.5-x86_64.AppImage`
+- Version: `2.1.3.0-rc.6`
+- Tag: `xp-v2.1.3.0-rc.6`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.6-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.6-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.6-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
@@ -48,11 +45,3 @@ manually; the application links directly to the selected XP release.
 Native overlay behavior should still be exercised with Elite Dangerous on
 clean Windows, X11, and XWayland systems. Pure native Wayland is not yet a
 full-functionality overlay target.
-
-## For testers
-
-Install the complete platform package rather than separating the executable
-from its companion files. See the
-[`Windows installation guide`](https://github.com/Fenris159/SrvSurvey/blob/SrvSurvey-Avalonia/docs/INSTALL_WINDOWS.md) or
-[`Linux installation guide`](https://github.com/Fenris159/SrvSurvey/blob/SrvSurvey-Avalonia/docs/INSTALL_LINUX.md), and report defects or suggestions through the
-[`Fenris159/SrvSurvey` issue tracker](https://github.com/Fenris159/SrvSurvey/issues).

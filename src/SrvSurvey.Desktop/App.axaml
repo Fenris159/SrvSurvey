@@ -41,12 +41,18 @@
     <SolidColorBrush x:Key="RavenOverlayDangerDimBrush" Color="#8B0000" />
     <SolidColorBrush x:Key="RavenOverlaySuccessDimBrush" Color="#008B00" />
     <SolidColorBrush x:Key="RavenOverlayMenuGoldBrush" Color="#EBEB9100" />
-    <SolidColorBrush x:Key="RavenOverlayBioGoldBrush" Color="#FFD700" />
-    <SolidColorBrush x:Key="RavenOverlayBioGoldDimBrush" Color="#785F00" />
+    <SolidColorBrush x:Key="RavenOverlayBioConfirmedBrush" Color="#FF6F00" />
+    <SolidColorBrush x:Key="RavenOverlayBioConfirmedDimBrush" Color="#9C4F05" />
+    <SolidColorBrush x:Key="RavenOverlayBioPotentialBrush" Color="#5F3003" />
+    <SolidColorBrush x:Key="RavenOverlayBioPredictionBrush" Color="#FFC400" />
+    <SolidColorBrush x:Key="RavenOverlayBioPredictionPotentialBrush" Color="#8A6A00" />
+    <SolidColorBrush x:Key="RavenOverlayBioGoldBrush" Color="#FFFF00" />
+    <SolidColorBrush x:Key="RavenOverlayBioGoldDimBrush" Color="#786F00" />
     <SolidColorBrush x:Key="RavenOverlayBioUnknownBrush" Color="#696969" />
-    <SolidColorBrush x:Key="RavenOverlayBioHatchBrush" Color="#F2404040" />
+    <SolidColorBrush x:Key="RavenOverlayBioUnknownGlyphBrush" Color="#B0B0B0" />
+    <SolidColorBrush x:Key="RavenOverlayBioHatchBrush" Color="#BE402000" />
+    <SolidColorBrush x:Key="RavenOverlayBioEmptyBrush" Color="#30FF6F00" />
     <SolidColorBrush x:Key="RavenOverlayBioWhiteBrush" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="RavenOverlayBioPredictionBrush" Color="#2F4F4F" />
     <SolidColorBrush x:Key="RavenOverlayColoniseSurplusBrush" Color="#00FF00" />
     <SolidColorBrush x:Key="RavenOverlayColoniseSurplusDimBrush" Color="#008B00" />
     <SolidColorBrush x:Key="RavenOverlayColoniseDeficitBrush" Color="#FF0000" />

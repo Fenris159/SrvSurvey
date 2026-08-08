@@ -73,7 +73,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.Equal("1", status.BodyName);
         Assert.Equal("0 of 2 analyzed", status.ProgressText);
         Assert.Equal(0, status.CompletionPercent);
-        Assert.Equal(50, status.TrackedCompletionPercent);
+        Assert.Equal(0, status.TrackedCompletionPercent);
         Assert.False(status.RequiresDss);
         Assert.Equal(4, status.Signals.Count);
         Assert.True(Assert.Single(
