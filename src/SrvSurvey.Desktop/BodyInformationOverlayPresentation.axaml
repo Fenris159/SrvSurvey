@@ -1,0 +1,269 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.BodyInformationOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:SystemSurveyOverlayViewModel"
+             mc:Ignorable="d"
+             ClipToBounds="True">
+  <Border Margin="0"
+          Padding="6,5"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0"
+          CornerRadius="5">
+    <StackPanel IsVisible="{Binding Survey.HasBodyInformation}"
+                Spacing="5">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="BODY INFORMATION" />
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="15"
+                     FontWeight="SemiBold"
+                     Text="{Binding Survey.BodyInformation.Name}"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <StackPanel Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    Spacing="4">
+          <Border Classes="badge" HorizontalAlignment="Right">
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="9"
+                       FontWeight="SemiBold"
+                       Text="{Binding InputMode}" />
+          </Border>
+          <TextBlock Classes="monospace"
+                     FontSize="10"
+                     HorizontalAlignment="Right"
+                     Text="{Binding Survey.BodyInformation.Distance}" />
+        </StackPanel>
+      </Grid>
+
+      <TextBlock Classes="muted"
+                 FontSize="11"
+                 Text="{Binding Survey.BodyInformation.BodyClass}"
+                 TextTrimming="CharacterEllipsis" />
+
+      <Border Padding="11"
+              Background="{DynamicResource RavenAccentMutedBrush}"
+              CornerRadius="8"
+              IsVisible="{Binding Survey.BodyInformation.IsScanRequired}">
+        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                   FontWeight="SemiBold"
+                   Text="Detailed scan required" />
+      </Border>
+
+      <StackPanel IsVisible="{Binding !Survey.BodyInformation.IsScanRequired}"
+                  Spacing="5">
+        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                   FontSize="9"
+                   FontWeight="SemiBold"
+                   IsVisible="{Binding Survey.BodyInformation.HasMarkers}"
+                   Text="{Binding Survey.BodyInformation.Markers}" />
+
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="5">
+          <Border Padding="10,8"
+                  Background="{DynamicResource RavenSurfaceBrush}"
+                  CornerRadius="8">
+            <StackPanel Spacing="2">
+              <TextBlock Classes="eyebrow" FontSize="8" Text="SCAN VALUE" />
+              <TextBlock Classes="monospace"
+                         FontSize="13"
+                         FontWeight="SemiBold"
+                         IsVisible="{Binding !Survey.BodyInformation.IsHighValue}"
+                         Text="{Binding Survey.BodyInformation.ScanValue}" />
+              <TextBlock Classes="monospace"
+                         Foreground="{DynamicResource RavenAccentBrush}"
+                         FontSize="13"
+                         FontWeight="SemiBold"
+                         IsVisible="{Binding Survey.BodyInformation.IsHighValue}"
+                         Text="{Binding Survey.BodyInformation.ScanValue}" />
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="1"
+                  Padding="10,8"
+                  Background="{DynamicResource RavenAccentMutedBrush}"
+                  CornerRadius="8"
+                  IsVisible="{Binding Survey.BodyInformation.HasMappedValue}">
+            <StackPanel Spacing="2">
+              <TextBlock Classes="eyebrow" FontSize="8" Text="WITH SURFACE SCAN" />
+              <TextBlock Classes="monospace"
+                         Foreground="{DynamicResource RavenAccentBrush}"
+                         FontSize="13"
+                         FontWeight="SemiBold"
+                         Text="{Binding Survey.BodyInformation.MappedValue}" />
+            </StackPanel>
+          </Border>
+        </Grid>
+
+        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+          <StackPanel Spacing="2">
+            <TextBlock Classes="eyebrow" FontSize="8" Text="TEMPERATURE" />
+            <TextBlock Classes="monospace"
+                       FontSize="11"
+                       Text="{Binding Survey.BodyInformation.Temperature}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1"
+                      IsVisible="{Binding Survey.BodyInformation.IsPlanet}"
+                      Spacing="2">
+            <TextBlock Classes="eyebrow" FontSize="8" Text="GRAVITY" />
+            <TextBlock Classes="monospace"
+                       FontSize="11"
+                       IsVisible="{Binding !Survey.BodyInformation.IsHighGravity}"
+                       Text="{Binding Survey.BodyInformation.Gravity}" />
+            <TextBlock Classes="monospace"
+                       Foreground="{DynamicResource RavenDangerBrush}"
+                       FontSize="11"
+                       FontWeight="Bold"
+                       IsVisible="{Binding Survey.BodyInformation.IsHighGravity}"
+                       Text="{Binding Survey.BodyInformation.Gravity}" />
+          </StackPanel>
+          <StackPanel Grid.Column="2"
+                      IsVisible="{Binding Survey.BodyInformation.IsPlanet}"
+                      Spacing="2">
+            <TextBlock Classes="eyebrow" FontSize="8" Text="PRESSURE" />
+            <TextBlock Classes="monospace"
+                       FontSize="11"
+                       Text="{Binding Survey.BodyInformation.Pressure}" />
+          </StackPanel>
+        </Grid>
+
+        <WrapPanel Orientation="Horizontal">
+          <StackPanel Margin="0,0,14,0"
+                      IsVisible="{Binding Survey.BodyInformation.HasBiologicalSignals}"
+                      Spacing="2">
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="10"
+                       FontWeight="SemiBold"
+                       Text="{Binding Survey.BodyInformation.BiologicalSignals}" />
+            <TextBlock Classes="monospace"
+                       FontSize="9"
+                       IsVisible="{Binding Survey.BodyInformation.HasBiologicalReward}"
+                       Text="{Binding Survey.BodyInformation.BiologicalReward}" />
+          </StackPanel>
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontSize="10"
+                     FontWeight="SemiBold"
+                     IsVisible="{Binding Survey.BodyInformation.HasGeologicalSignals}"
+                     Text="{Binding Survey.BodyInformation.GeologicalSignals}" />
+        </WrapPanel>
+
+        <Grid RowDefinitions="Auto,Auto"
+              ColumnDefinitions="90,*"
+              RowSpacing="4">
+          <TextBlock Classes="muted"
+                     FontSize="10"
+                     IsVisible="{Binding Survey.BodyInformation.HasVolcanism}"
+                     Text="VOLCANISM" />
+          <TextBlock Grid.Column="1"
+                     FontSize="10"
+                     IsVisible="{Binding Survey.BodyInformation.HasVolcanism}"
+                     Text="{Binding Survey.BodyInformation.Volcanism}" />
+          <TextBlock Grid.Row="1"
+                     Classes="muted"
+                     FontSize="10"
+                     IsVisible="{Binding Survey.BodyInformation.IsPlanet}"
+                     Text="ATMOSPHERE" />
+          <TextBlock Grid.Row="1"
+                     Grid.Column="1"
+                     FontSize="10"
+                     IsVisible="{Binding Survey.BodyInformation.IsPlanet}"
+                     Text="{Binding Survey.BodyInformation.Atmosphere}" />
+        </Grid>
+
+        <StackPanel IsVisible="{Binding Survey.BodyInformation.HasAtmosphereComposition}"
+                    Spacing="5">
+          <TextBlock Classes="eyebrow"
+                     FontSize="8"
+                     Text="ATMOSPHERE COMPOSITION" />
+          <ItemsControl ItemsSource="{Binding Survey.BodyInformation.AtmosphereComposition}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:BodyCompositionRowViewModel">
+                <Grid Width="162"
+                      Margin="0,0,7,3"
+                      ColumnDefinitions="*,Auto"
+                      ColumnSpacing="6">
+                  <TextBlock Classes="muted"
+                             FontSize="9"
+                             Text="{Binding Name}"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="1"
+                             Classes="monospace"
+                             FontSize="9"
+                             Text="{Binding Value}" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <StackPanel IsVisible="{Binding Survey.BodyInformation.HasMaterials}"
+                    Spacing="5">
+          <TextBlock Classes="eyebrow" FontSize="8" Text="MATERIALS" />
+          <ItemsControl ItemsSource="{Binding Survey.BodyInformation.Materials}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:BodyCompositionRowViewModel">
+                <Border Width="162"
+                        Margin="0,0,7,4"
+                        Padding="7,4"
+                        Background="{DynamicResource RavenSurfaceBrush}"
+                        CornerRadius="6">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                    <TextBlock Classes="muted"
+                               FontSize="9"
+                               IsVisible="{Binding !IsRare}"
+                               Text="{Binding Name}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                               FontSize="9"
+                               FontWeight="SemiBold"
+                               IsVisible="{Binding IsRare}"
+                               Text="{Binding Name}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="1"
+                               Classes="monospace"
+                               FontSize="9"
+                               FontWeight="SemiBold"
+                               Text="{Binding Value}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <StackPanel IsVisible="{Binding Survey.BodyInformation.HasRings}"
+                    Spacing="5">
+          <TextBlock Classes="eyebrow" FontSize="8" Text="RINGS" />
+          <ItemsControl ItemsSource="{Binding Survey.BodyInformation.Rings}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:BodyRingRowViewModel">
+                <Border Margin="0,0,7,3"
+                        Padding="7,3"
+                        Background="{DynamicResource RavenAccentMutedBrush}"
+                        CornerRadius="999">
+                  <TextBlock FontSize="9" Text="{Binding DisplayText}" />
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</UserControl>

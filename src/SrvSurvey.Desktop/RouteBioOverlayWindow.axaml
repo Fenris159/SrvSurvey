@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SrvSurvey.Desktop"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="using:SrvSurvey.Desktop.Controls"
@@ -22,45 +23,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey route bodies overlay">
-  <Border Margin="0"
-          Padding="5"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderThickness="0"
-          CornerRadius="5">
-    <Grid Margin="3"
-          RowDefinitions="Auto,Auto,Auto,Auto"
-          RowSpacing="3">
-      <StackPanel>
-        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                   FontSize="12"
-                   FontWeight="SemiBold"
-                   Text="Route bodies" />
-        <TextBlock Foreground="{DynamicResource RavenTextBrush}"
-                   FontSize="10"
-                   FontWeight="SemiBold"
-                   Text="{Binding SystemName}"
-                   TextTrimming="CharacterEllipsis" />
-        <TextBlock Classes="muted"
-                   FontSize="9"
-                   Text="Route body destinations" />
-      </StackPanel>
-
-      <Border Grid.Row="1"
-              Height="1"
-              Background="{DynamicResource RavenWarningBrush}"
-              Opacity="0.65" />
-
-      <controls:RouteBioTargetList Grid.Row="2"
-                                   ItemsSource="{Binding Targets}"
-                                   IsInteractive="True"
-                                   CompletionRequested="RouteBioTargetRow_CompletionRequested" />
-
-      <TextBlock Grid.Row="3"
-                 HorizontalAlignment="Center"
-                 Foreground="{DynamicResource RavenMutedTextBrush}"
-                 FontSize="9"
-                 Text="{Binding Progress}"
-                 TextTrimming="CharacterEllipsis" />
-    </Grid>
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:RouteBioOverlayPresentation />
   </Border>
 </Window>

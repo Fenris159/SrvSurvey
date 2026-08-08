@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SrvSurvey.Desktop"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
@@ -21,59 +22,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey quick tracker overlay">
-  <Border Padding="10,8"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderBrush="{DynamicResource RavenBorderBrush}"
-          BorderThickness="1"
-          CornerRadius="10"
-          Opacity="0.97">
-    <ItemsControl ItemsSource="{Binding SurfaceSurvey.QuickTrackerGroups}">
-      <ItemsControl.ItemsPanel>
-        <ItemsPanelTemplate>
-          <WrapPanel Orientation="Horizontal" />
-        </ItemsPanelTemplate>
-      </ItemsControl.ItemsPanel>
-      <ItemsControl.ItemTemplate>
-        <DataTemplate x:DataType="vm:SurfaceTrackerGroupViewModel">
-          <ItemsControl Margin="2"
-                        ItemsSource="{Binding Targets}">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <WrapPanel Orientation="Horizontal" />
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:SurfaceRadarMarkerViewModel">
-                <Border Margin="2"
-                        Padding="7,5"
-                        MinWidth="48"
-                        Background="{DynamicResource RavenSurfaceBrush}"
-                        CornerRadius="7">
-                  <StackPanel HorizontalAlignment="Center" Spacing="2">
-                    <TextBlock HorizontalAlignment="Center"
-                               Foreground="{DynamicResource RavenAccentBrush}"
-                               FontSize="10"
-                               FontWeight="Bold"
-                               Text="{Binding Name}" />
-                    <TextBlock HorizontalAlignment="Center"
-                               Foreground="{DynamicResource RavenAccentBrush}"
-                               FontSize="15"
-                               Text="▲">
-                      <TextBlock.RenderTransform>
-                        <RotateTransform Angle="{Binding RelativeBearingDegrees}" />
-                      </TextBlock.RenderTransform>
-                    </TextBlock>
-                    <TextBlock HorizontalAlignment="Center"
-                               Classes="monospace"
-                               FontSize="9"
-                               Text="{Binding DistanceText}" />
-                  </StackPanel>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </DataTemplate>
-      </ItemsControl.ItemTemplate>
-    </ItemsControl>
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:MiniTrackOverlayPresentation />
   </Border>
 </Window>

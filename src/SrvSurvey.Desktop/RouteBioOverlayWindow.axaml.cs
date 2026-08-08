@@ -56,13 +56,4 @@ public sealed partial class RouteBioOverlayWindow : Window
             return Task.FromResult<IReadOnlyList<FollowRouteHop>>([]);
         }
     }
-
-    private async void RouteBioTargetRow_CompletionRequested(
-        object? sender,
-        RouteBioCompletionRequestedEventArgs eventArgs)
-    {
-        await viewModel.SetCompletedAsync(
-            eventArgs.Target,
-            eventArgs.IsCompleted);
-    }
 }

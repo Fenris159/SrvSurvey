@@ -70,6 +70,17 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private int threatLevel = -1;
     private string statusMessage = "Waiting to approach a human settlement.";
     private string settingsStatus = string.Empty;
+    private string? editorSiteName;
+    private string? editorTemplateText;
+    private string? editorGeometryStatus;
+    private string? editorFactionText;
+    private string? editorDockingStatusText;
+    private string? editorDistanceText;
+    private string? editorApproachDistanceText;
+    private string? editorCommanderPositionText;
+    private string? editorThreatLevelText;
+    private bool editorIsQuestTagged;
+    private bool editorForceVisible;
 
     public HumanSiteViewModel(HumanSiteViewModelOptions? options = null)
     {
@@ -148,17 +159,20 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     public bool HasKnownGeometry => ActiveSite is
     { Template: not null, Heading: not null };
 
-    public string SiteName => ActiveSite?.LocalizedName
+    public string SiteName => editorSiteName
+        ?? ActiveSite?.LocalizedName
         ?? ActiveSite?.Name
         ?? "Human settlement";
 
-    public bool IsQuestTagged => quests.Any(quest => quest.Tags.Contains(
-        SiteName,
-        StringComparer.OrdinalIgnoreCase));
+    public bool IsQuestTagged => editorIsQuestTagged
+        || quests.Any(quest => quest.Tags.Contains(
+            SiteName,
+            StringComparer.OrdinalIgnoreCase));
 
-    public string TemplateText => ActiveSite is { } site
-        ? GetTemplateText(site)
-        : "Settlement type unavailable";
+    public string TemplateText => editorTemplateText
+        ?? (ActiveSite is { } site
+            ? GetTemplateText(site)
+            : "Settlement type unavailable");
 
     private static string GetTemplateText(HumanSiteLiveSnapshot site)
     {
@@ -170,23 +184,25 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         return $"{site.Economy} · type not identified";
     }
 
-    public string GeometryStatus => ActiveSite switch
-    {
-        null => "No active settlement",
-        { SubType: 0, Heading: null } => "Settlement type and heading unknown",
-        { Heading: null } => "Settlement heading unknown",
-        { Template: null } => "Settlement template unavailable",
-        _ => "Settlement map aligned",
-    };
+    public string GeometryStatus => editorGeometryStatus
+        ?? ActiveSite switch
+        {
+            null => "No active settlement",
+            { SubType: 0, Heading: null } => "Settlement type and heading unknown",
+            { Heading: null } => "Settlement heading unknown",
+            { Template: null } => "Settlement template unavailable",
+            _ => "Settlement map aligned",
+        };
 
-    public string FactionText => ActiveSite is { } site
-        && !string.IsNullOrWhiteSpace(site.FactionName)
-            ? (string.IsNullOrWhiteSpace(site.FactionState)) switch
-            {
-                true => site.FactionName,
-                false => $"{site.FactionName} · {site.FactionState}"
-            }
-            : "Controlling faction unavailable";
+    public string FactionText => editorFactionText
+        ?? (ActiveSite is { } site
+            && !string.IsNullOrWhiteSpace(site.FactionName)
+                ? (string.IsNullOrWhiteSpace(site.FactionState)) switch
+                {
+                    true => site.FactionName,
+                    false => $"{site.FactionName} · {site.FactionState}"
+                }
+                : "Controlling faction unavailable");
 
     public string GovernmentText => ActiveSite is { } site
         && !string.IsNullOrWhiteSpace(site.GovernmentLocalized)
@@ -202,18 +218,19 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     public HumanSiteDockingStatus DockingStatus =>
         ActiveSite?.Docking ?? HumanSiteDockingStatus.None;
 
-    public string DockingStatusText => ActiveSite?.Docking switch
-    {
-        HumanSiteDockingStatus.Requested => "Docking requested",
-        HumanSiteDockingStatus.Granted =>
-            $"Docking granted · pad {ActiveSite.GrantedPad}",
-        HumanSiteDockingStatus.Denied => string.IsNullOrWhiteSpace(
-            ActiveSite.DockingDeniedReason)
-                ? "Docking denied"
-                : $"Docking denied · {ActiveSite.DockingDeniedReason}",
-        HumanSiteDockingStatus.Docked => "Docked",
-        _ => string.Empty,
-    };
+    public string DockingStatusText => editorDockingStatusText
+        ?? ActiveSite?.Docking switch
+        {
+            HumanSiteDockingStatus.Requested => "Docking requested",
+            HumanSiteDockingStatus.Granted =>
+                $"Docking granted · pad {ActiveSite.GrantedPad}",
+            HumanSiteDockingStatus.Denied => string.IsNullOrWhiteSpace(
+                ActiveSite.DockingDeniedReason)
+                    ? "Docking denied"
+                    : $"Docking denied · {ActiveSite.DockingDeniedReason}",
+            HumanSiteDockingStatus.Docked => "Docked",
+            _ => string.Empty,
+        };
 
     public bool HasDockingStatus => !string.IsNullOrWhiteSpace(DockingStatusText);
 
@@ -252,14 +269,15 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     public bool HasThreatLevel => ThreatLevel >= 0;
 
-    public string ThreatLevelText => ThreatLevel switch
-    {
-        0 => "Threat level 0 · empty shield",
-        1 => "Threat level 1 · half shield",
-        2 => "Threat level 2 · full shield",
-        >= 0 => $"Threat level {ThreatLevel}",
-        _ => string.Empty,
-    };
+    public string ThreatLevelText => editorThreatLevelText
+        ?? ThreatLevel switch
+        {
+            0 => "Threat level 0 · empty shield",
+            1 => "Threat level 1 · half shield",
+            2 => "Threat level 2 · full shield",
+            >= 0 => $"Threat level {ThreatLevel}",
+            _ => string.Empty,
+        };
 
     public HumanSiteMapPoint? ShipOffset { get; private set; }
 
@@ -287,26 +305,73 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     public double RelativeHeading { get; private set; }
 
-    public string DistanceText => ActiveSite is null
-        ? string.Empty
-        : $"{DistanceToOriginMeters:N0} m from origin";
+    public string DistanceText => editorDistanceText
+        ?? (ActiveSite is null
+            ? string.Empty
+            : $"{DistanceToOriginMeters:N0} m from origin");
 
-    public string ApproachDistanceText => ActiveSite is null
-        ? string.Empty
-        : $"{ApproachDistanceMeters:N0} m approach distance";
+    public string ApproachDistanceText => editorApproachDistanceText
+        ?? (ActiveSite is null
+            ? string.Empty
+            : $"{ApproachDistanceMeters:N0} m approach distance");
 
-    public string CommanderPositionText => CommanderOffset is { } offset
-        ? $"x {offset.X:N1} m · y {offset.Y:N1} m · {RelativeHeading:N0}°"
-        : "Settlement-relative position unavailable";
+    public string CommanderPositionText => editorCommanderPositionText
+        ?? (CommanderOffset is { } offset
+            ? $"x {offset.X:N1} m · y {offset.Y:N1} m · {RelativeHeading:N0}°"
+            : "Settlement-relative position unavailable");
 
     public bool ShowOriginWarning => HasKnownGeometry
         && DistanceToOriginMeters > OriginWarningDistanceMeters;
 
-    public bool ShouldShow => AutoShow
-        && ActiveSite is not null
-        && status?.HasLatitudeLongitude == true
-        && IsStatusEligible(status)
-        && !(SuppressForActiveBuildProjects && activeBuildProjects);
+    public bool ShouldShow => editorForceVisible
+        || (AutoShow
+            && ActiveSite is not null
+            && status?.HasLatitudeLongitude == true
+            && IsStatusEligible(status)
+            && !(SuppressForActiveBuildProjects && activeBuildProjects));
+
+    /// <summary>
+    /// Installs representative settlement text for the position editor.
+    /// Map geometry still requires a live template projection.
+    /// </summary>
+    internal void InstallEditorPreview(
+        string siteName,
+        string templateText,
+        string geometryStatus,
+        string factionText,
+        string dockingStatusText,
+        string distanceText,
+        string approachDistanceText,
+        string commanderPositionText,
+        string threatLevelText,
+        bool isQuestTagged = true)
+    {
+        editorForceVisible = true;
+        editorSiteName = siteName;
+        editorTemplateText = templateText;
+        editorGeometryStatus = geometryStatus;
+        editorFactionText = factionText;
+        editorDockingStatusText = dockingStatusText;
+        editorDistanceText = distanceText;
+        editorApproachDistanceText = approachDistanceText;
+        editorCommanderPositionText = commanderPositionText;
+        editorThreatLevelText = threatLevelText;
+        editorIsQuestTagged = isQuestTagged;
+        threatLevel = 2;
+        OnPropertyChanged(nameof(SiteName));
+        OnPropertyChanged(nameof(TemplateText));
+        OnPropertyChanged(nameof(GeometryStatus));
+        OnPropertyChanged(nameof(FactionText));
+        OnPropertyChanged(nameof(DockingStatusText));
+        OnPropertyChanged(nameof(HasDockingStatus));
+        OnPropertyChanged(nameof(DistanceText));
+        OnPropertyChanged(nameof(ApproachDistanceText));
+        OnPropertyChanged(nameof(CommanderPositionText));
+        OnPropertyChanged(nameof(ThreatLevelText));
+        OnPropertyChanged(nameof(HasThreatLevel));
+        OnPropertyChanged(nameof(IsQuestTagged));
+        OnPropertyChanged(nameof(ShouldShow));
+    }
 
     public bool AutoShow
     {

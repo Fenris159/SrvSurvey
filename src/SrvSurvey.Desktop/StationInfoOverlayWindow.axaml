@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SrvSurvey.Desktop"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
@@ -21,118 +22,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey station information overlay">
-  <Border Padding="14,12"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderBrush="{DynamicResource RavenBorderBrush}"
-          BorderThickness="1"
-          CornerRadius="12"
-          Opacity="0.97">
-    <StackPanel Spacing="11">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-        <StackPanel Spacing="2">
-          <TextBlock Classes="eyebrow" Text="STATION INFORMATION" />
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <Border Classes="badge"
-                    IsVisible="{Binding StationInfo.IsQuestTagged}">
-              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                         FontSize="9"
-                         FontWeight="Bold"
-                         Text="Q" />
-            </Border>
-            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                       FontSize="17"
-                       FontWeight="SemiBold"
-                       Text="{Binding StationInfo.StationName}"
-                       TextTrimming="CharacterEllipsis" />
-          </StackPanel>
-          <TextBlock Classes="muted"
-                     FontSize="10"
-                     Text="{Binding StationInfo.StationType}" />
-        </StackPanel>
-        <Border Grid.Column="1" Classes="badge" VerticalAlignment="Top">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="8"
-                     FontWeight="Bold"
-                     Text="{Binding InputMode}" />
-        </Border>
-      </Grid>
-
-      <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-        <Border Padding="9,7"
-                Background="{DynamicResource RavenSurfaceBrush}"
-                CornerRadius="7">
-          <TextBlock FontSize="10"
-                     Text="{Binding StationInfo.LargestPadText}"
-                     TextWrapping="Wrap" />
-        </Border>
-        <Border Grid.Column="1"
-                Padding="9,7"
-                Background="{DynamicResource RavenSurfaceBrush}"
-                CornerRadius="7">
-          <TextBlock FontSize="10"
-                     Text="{Binding StationInfo.PrimaryEconomyText}"
-                     TextWrapping="Wrap" />
-        </Border>
-      </Grid>
-
-      <StackPanel Spacing="4">
-        <TextBlock Classes="eyebrow" Text="ECONOMIES" />
-        <ItemsControl ItemsSource="{Binding StationInfo.EconomyLines}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:StationInfoLineViewModel">
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                <TextBlock FontSize="10" Text="{Binding Label}" />
-                <TextBlock Grid.Column="1"
-                           Classes="monospace"
-                           Foreground="{DynamicResource RavenAccentBrush}"
-                           FontSize="10"
-                           Text="{Binding Value}" />
-              </Grid>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-
-      <StackPanel Spacing="3">
-        <TextBlock Classes="eyebrow" Text="CONTROLLING FACTION" />
-        <TextBlock FontSize="10"
-                   Text="{Binding StationInfo.FactionText}"
-                   TextWrapping="Wrap" />
-      </StackPanel>
-
-      <StackPanel Spacing="4"
-                  IsVisible="{Binding StationInfo.HasRelevantServices}">
-        <TextBlock Classes="eyebrow" Text="RELEVANT SERVICES" />
-        <ItemsControl ItemsSource="{Binding StationInfo.RelevantServices}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <TextBlock Margin="2,1"
-                         Foreground="{DynamicResource RavenAccentBrush}"
-                         FontSize="10"
-                         Text="{Binding}" />
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-
-      <StackPanel Spacing="4"
-                  IsVisible="{Binding StationInfo.HasProhibitedCommodities}">
-        <TextBlock Classes="eyebrow" Text="PROHIBITED" />
-        <ItemsControl ItemsSource="{Binding StationInfo.ProhibitedCommodities}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <TextBlock Margin="2,1"
-                         Foreground="{DynamicResource RavenWarningBrush}"
-                         FontSize="10"
-                         Text="{Binding}" />
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-
-      <TextBlock Classes="muted"
-                 FontSize="9"
-                 Text="{Binding StationInfo.UpdatedText}" />
-    </StackPanel>
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:StationInfoOverlayPresentation />
   </Border>
 </Window>

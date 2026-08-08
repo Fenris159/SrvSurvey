@@ -38,6 +38,9 @@ public sealed class LegacyOverlayThemeStore
             ["colonise.highlight"] = Color.FromArgb(255, 255, 255, 0),
             ["colonise.item"] = Color.FromArgb(255, 255, 111, 0),
             ["colonise.itemDark"] = Color.FromArgb(255, 95, 48, 3),
+            // Row zebra fill: RGB is colour, A is opacity (edit with #RRGGBBAA
+            // or the colour picker's alpha slider for separate control).
+            ["colonise.rowHighlight"] = Color.FromArgb(72, 56, 56, 56),
             ["fcz.checkpoint"] = Color.FromArgb(255, 255, 255, 0),
             ["fcz.checkpointLocal"] = Color.FromArgb(255, 0, 255, 0),
             ["fcz.powerPost"] = Color.FromArgb(255, 218, 165, 32),

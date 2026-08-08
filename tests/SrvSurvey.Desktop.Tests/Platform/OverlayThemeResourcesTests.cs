@@ -249,10 +249,9 @@ public sealed class OverlayThemeResourcesTests
         Assert.IsType<ScaleTransform>(scaleContainer.LayoutTransform);
         Assert.Equal(0.42, window.Opacity);
         Assert.Equal(definition.PreviewSize.Width * 1.2, window.Width, 5);
-        var presentation = Assert.IsType<StackPanel>(surface.Child);
-        Assert.Equal(definition.DisplayName,
-            Assert.IsType<TextBlock>(presentation.Children[0]).Text);
-        Assert.Same(originalContent, presentation.Children[2]);
+        // Shared *Presentation hosts own their title/chrome; legacy header
+        // injection is skipped so the original surface content stays intact.
+        Assert.Same(originalContent, surface.Child);
 
         Assert.True(layout.SetPlacement(
             definition.Name,
@@ -452,7 +451,7 @@ public sealed class OverlayThemeResourcesTests
         var expected = new Dictionary<string, double>(StringComparer.Ordinal)
         {
             ["PlotBioSystem"] = 240,
-            ["PlotBuildCommodities"] = 440,
+            ["PlotBuildCommodities"] = 270,
             ["PlotMassacre"] = 240,
             ["PlotQuestMini"] = 240,
             ["PlotStationInfo"] = 240,

@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SrvSurvey.Desktop"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
@@ -21,80 +22,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey quest indicator overlay">
-  <Border Margin="8"
-          Padding="13,11"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderBrush="{DynamicResource RavenBorderBrush}"
-          BorderThickness="1"
-          CornerRadius="12"
-          Opacity="0.97">
-    <StackPanel Spacing="8">
-      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="9">
-        <Border Width="22"
-                Height="22"
-                Background="{DynamicResource RavenAccentBrush}"
-                CornerRadius="5">
-          <TextBlock HorizontalAlignment="Center"
-                     VerticalAlignment="Center"
-                     Foreground="{DynamicResource RavenAccentForegroundBrush}"
-                     FontSize="11"
-                     FontWeight="Bold"
-                     Text="Q" />
-        </Border>
-        <TextBlock Grid.Column="1"
-                   VerticalAlignment="Center"
-                   FontWeight="SemiBold"
-                   TextTrimming="CharacterEllipsis"
-                   Text="{Binding QuestTitle}" />
-        <TextBlock Grid.Column="2"
-                   IsVisible="{Binding HasUnreadMessages}"
-                   VerticalAlignment="Center"
-                   Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="11"
-                   FontWeight="Bold"
-                   Text="{Binding UnreadMessageText}" />
-      </Grid>
-
-      <ItemsControl ItemsSource="{Binding Objectives}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:QuestObjectiveRowViewModel">
-            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,2">
-              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                         FontWeight="Bold"
-                         Text="›" />
-              <TextBlock Grid.Column="1"
-                         FontSize="12"
-                         TextWrapping="Wrap"
-                         Text="{Binding Label}" />
-              <TextBlock Grid.Column="2"
-                         Classes="monospace"
-                         FontSize="11"
-                         Text="{Binding Progress}" />
-            </Grid>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-
-      <ItemsControl ItemsSource="{Binding Locations}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:QuestIndicatorLocationViewModel">
-            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,2">
-              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                         FontWeight="Bold"
-                         Text="{Binding StateGlyph}" />
-              <StackPanel Grid.Column="1" Spacing="1">
-                <TextBlock FontSize="12" FontWeight="SemiBold" Text="{Binding Label}" />
-                <TextBlock Classes="muted" FontSize="10" Text="{Binding Bearing}" />
-              </StackPanel>
-              <TextBlock Grid.Column="2"
-                         Classes="monospace"
-                         VerticalAlignment="Center"
-                         FontSize="11"
-                         Text="{Binding Distance}" />
-            </Grid>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </StackPanel>
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:QuestIndicatorOverlayPresentation />
   </Border>
 </Window>

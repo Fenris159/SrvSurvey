@@ -57,6 +57,8 @@ public static class OverlayThemeResources
             ["RavenColoniseHighlightBrush"] = "RavenOverlayColoniseHighlightBrush",
             ["RavenColoniseItemBrush"] = "RavenOverlayColoniseItemBrush",
             ["RavenColoniseItemDimBrush"] = "RavenOverlayColoniseItemDimBrush",
+            ["RavenColoniseRowHighlightBrush"] =
+                "RavenOverlayColoniseRowHighlightBrush",
             ["RavenFczCheckpointBrush"] = "RavenOverlayFczCheckpointBrush",
             ["RavenFczCheckpointLocalBrush"] = "RavenOverlayFczCheckpointLocalBrush",
             ["RavenFczPowerPostBrush"] = "RavenOverlayFczPowerPostBrush",
@@ -243,7 +245,8 @@ public static class OverlayThemeResources
             candidate => new LegacyPresentationRegistration(
                 candidate,
                 definition));
-        if (GuardianOverlayPresentationFactory.IsSupported(plotterName))
+        if (OverlayRuntimePresentationFactory.UsesDedicatedHostChrome(plotterName)
+            || GuardianOverlayPresentationFactory.IsSupported(plotterName))
         {
             ApplyDedicatedPresentationChrome(window);
         }
@@ -566,7 +569,10 @@ public static class OverlayThemeResources
                 return;
             }
 
-            if (GuardianOverlayPresentationFactory.IsSupported(
+            // Shared presentation templates own their full visual grammar.
+            // Do not inject headers or normalize spacing into them.
+            if (OverlayRuntimePresentationFactory.IsSupported(definition.Name)
+                || GuardianOverlayPresentationFactory.IsSupported(
                     definition.Name))
             {
                 return;

@@ -17,37 +17,49 @@ public sealed class OverlayPresentationContractTests
             "CombinedWindow",
             "SetInteractiveRegions",
         ]),
-        Contract("PlotBioStatus", ["src/SrvSurvey.Desktop/BiologyStatusOverlayWindow.axaml"], [
+        Contract("PlotBioStatus", [
+            "src/SrvSurvey.Desktop/BiologyStatusOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/BiologyStatusOverlayPresentation.axaml",
+        ], [
             "ProgressText", "TrackedCompletionPercent", "ActiveSample", "Signals", "Warning", "Footer",
+            "BiologyStatusOverlayPresentation",
         ]),
-        Contract("PlotBioSystem", ["src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml"], [
+        Contract("PlotBioSystem", [
+            "src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/BiologySurveyOverlayPresentation.axaml",
+        ], [
             "Bodies", "RewardBands", "HasCanonnSignals", "CanonnLogoControl", "Organisms", "RewardSummary", "FirstFootfallRewardSummary",
             "GeologicalSignals", "RadicoidaUnicaCountText",
+            "BiologySurveyOverlayPresentation",
         ]),
-        Contract("PlotBodyInfo", ["src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml"], [
+        Contract("PlotBodyInfo", [
+            "src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/BodyInformationOverlayPresentation.axaml",
+        ], [
             "BodyClass", "Distance", "ScanValue", "MappedValue", "Temperature", "Gravity", "Pressure",
             "BiologicalSignals", "GeologicalSignals", "Volcanism", "AtmosphereComposition", "Materials", "Rings",
+            "BodyInformationOverlayPresentation",
         ]),
-        Contract("PlotFlightWarning", ["src/SrvSurvey.Desktop/FlightWarningOverlayWindow.axaml"], [
+        Contract("PlotFlightWarning", ["src/SrvSurvey.Desktop/FlightWarningOverlayWindow.axaml", "src/SrvSurvey.Desktop/FlightWarningOverlayPresentation.axaml"], [
             "FlightWarningText",
         ]),
-        Contract("PlotFootCombat", ["src/SrvSurvey.Desktop/FootCombatOverlayWindow.axaml"], [
+        Contract("PlotFootCombat", ["src/SrvSurvey.Desktop/FootCombatOverlayWindow.axaml", "src/SrvSurvey.Desktop/FootCombatOverlayPresentation.axaml"], [
             "SettlementName", "FootCombatKills",
         ]),
-        Contract("PlotFSS", ["src/SrvSurvey.Desktop/LastFssBodyOverlayWindow.axaml"], [
+        Contract("PlotFSS", ["src/SrvSurvey.Desktop/LastFssBodyOverlayWindow.axaml", "src/SrvSurvey.Desktop/LastFssBodyOverlayPresentation.axaml"], [
             "LastFssBodyName", "LastFssBodyDistance", "LastFssScanValue", "LastFssMappedValue",
             "LastFssSignalsText", "LastFssBiologyRewardBands", "LastFssBiologyRewardText", "FssTuningIndicator",
         ]),
-        Contract("PlotFSSInfo", ["src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml"], [
+        Contract("PlotFSSInfo", ["src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml", "src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml"], [
             "SystemTitle", "ScanSummary", "FssFilterDescription", "FssBodies", "ScanValue", "DssValue",
             "BiologicalSignalsText", "GeologicalSignalsText", "TextDecorations=\"Strikethrough\"",
         ]),
-        Contract("PlotGalMap", ["src/SrvSurvey.Desktop/GalaxyMapOverlayWindow.axaml"], [
+        Contract("PlotGalMap", ["src/SrvSurvey.Desktop/GalaxyMapOverlayWindow.axaml", "src/SrvSurvey.Desktop/GalaxyMapOverlayPresentation.axaml"], [
             "PrimarySystemDisplay.DiscoveryText", "PrimarySystemDisplay.DiscoveredByText",
             "SecondarySystemDisplay.DiscoveryText", "SecondarySystemDisplay.DiscoveredByText",
             "RouteFooter", "Factions", "IsQuestTagged",
         ]),
-        Contract("PlotGrounded", ["src/SrvSurvey.Desktop/SurfaceSurveyOverlayWindow.axaml"], [
+        Contract("PlotGrounded", ["src/SrvSurvey.Desktop/SurfaceSurveyOverlayWindow.axaml", "src/SrvSurvey.Desktop/SurfaceSurveyOverlayPresentation.axaml"], [
             "BodyName", "HistoryText", "HeadingText", "RadarScaleText", "NavigationMarkers", "TrackerGroups",
         ]),
         Contract("PlotGuardians", ["src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianSiteOverlayPresentation.axaml"], [
@@ -64,18 +76,18 @@ public sealed class OverlayPresentationContractTests
             "CurrentSystemGuardianTitle", "CurrentSystemSites", "LegacyDisplayText", "LegacySurveyLine",
             "LegacyBlueprintLine", "LegacyExtraLine", "guardian-panel", "RavenGuardian",
         ]),
-        Contract("PlotHumanSite", ["src/SrvSurvey.Desktop/HumanSiteOverlayWindow.axaml"], [
+        Contract("PlotHumanSite", ["src/SrvSurvey.Desktop/HumanSiteOverlayWindow.axaml", "src/SrvSurvey.Desktop/HumanSiteOverlayPresentation.axaml"], [
             "SiteName", "TemplateText", "FactionText", "DockingStatusText", "ApproachDistanceText",
             "CommanderPositionText", "MapProjection", "QuestMarkers", "QuestRoutes", "IsQuestTagged",
         ]),
-        Contract("PlotJumpInfo", ["src/SrvSurvey.Desktop/JumpInfoOverlayWindow.axaml"], [
+        Contract("PlotJumpInfo", ["src/SrvSurvey.Desktop/JumpInfoOverlayWindow.axaml", "src/SrvSurvey.Desktop/JumpInfoOverlayPresentation.axaml"], [
             "TargetName", "StarClass", "JumpProgress", "RouteLegs", "TotalDistance", "DiscoveryText",
             "TrafficText", "PointsOfInterestText", "DetailLines", "IsQuestTagged",
             "HasRouteGuidanceBadges", "HasRefuelGuidance", "HasNeutronGuidance",
             "Assets/Routes/refuel-star.png",
             "Assets/Routes/neutron-star.png",
         ]),
-        Contract("PlotFleetCarrierRoute", ["src/SrvSurvey.Desktop/FleetCarrierRouteOverlayWindow.axaml"], [
+        Contract("PlotFleetCarrierRoute", ["src/SrvSurvey.Desktop/FleetCarrierRouteOverlayWindow.axaml", "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayPresentation.axaml"], [
             "HopProgress", "SystemName", "JumpSummary", "JumpsLeft",
             "FuelLeft", "TritiumInMarket", "JumpFuel", "IcyRingLabel",
             "HasRestockWarning", "RestockAmount", "CountdownTitle",
@@ -83,6 +95,7 @@ public sealed class OverlayPresentationContractTests
         ]),
         Contract("PlotRouteBio", [
             "src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/RouteBioOverlayPresentation.axaml",
             "src/SrvSurvey.Desktop/Controls/RouteBioTargetRow.axaml",
             "src/SrvSurvey.Desktop/Controls/RouteBioTargetList.axaml",
             "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs",
@@ -92,10 +105,10 @@ public sealed class OverlayPresentationContractTests
             "EstimatedBiologyValue", "IsTerraformable", "BodyIconAssetPath",
             "CompactDetailSegments", "InlineSegments", "BundledAssetImageConverter",
         ]),
-        Contract("PlotMassacre", ["src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml"], [
+        Contract("PlotMassacre", ["src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml", "src/SrvSurvey.Desktop/MassacreMissionsOverlayPresentation.axaml"], [
             "TargetFaction", "MissionGiver", "RemainingText", "TextDecorations=\"Strikethrough\"",
         ]),
-        Contract("PlotPriorScans", ["src/SrvSurvey.Desktop/PriorScansOverlayWindow.axaml"], [
+        Contract("PlotPriorScans", ["src/SrvSurvey.Desktop/PriorScansOverlayWindow.axaml", "src/SrvSurvey.Desktop/PriorScansOverlayPresentation.axaml"], [
             "DisplayName", "RewardText", "BearingText", "DistanceText", "ApproachText", "Targets", "ShowRadar",
         ]),
         Contract("PlotRamTah", ["src/SrvSurvey.Desktop/RamTahOverlayWindow.axaml", "src/SrvSurvey.Desktop/RamTahOverlayPresentation.axaml"], [
@@ -103,18 +116,24 @@ public sealed class OverlayPresentationContractTests
             "ObeliskNamesText", "Target obelisk A01: type .to A01 in chat",
             "guardian-panel", "RavenGuardian",
         ]),
-        Contract("PlotSphericalSearch", ["src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"], [
+        Contract("PlotSphericalSearch", ["src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml", "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"], [
             "SphereCenterSystemName", "SphereDestinationSystemName", "DestinationDistance", "DestinationResult",
             "CurrentBoxelName", "SystemProgress", "BoxelNextSystem", "RouteNextHopName", "NextHopGuidance",
         ]),
-        Contract("PlotSysStatus", ["src/SrvSurvey.Desktop/SystemStatusOverlayWindow.axaml"], [
+        Contract("PlotSysStatus", [
+            "src/SrvSurvey.Desktop/SystemStatusOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/SystemStatusOverlayPresentation.axaml",
+        ], [
             "SystemStatusText", "DssHeading", "DssBodies", "BiologicalHeading", "BiologicalBodies", "NonBodySignalsText",
+            "SystemStatusOverlayPresentation",
         ]),
         Contract("PlotTrackers", [
             "src/SrvSurvey.Desktop/SurfaceSurveyOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/SurfaceSurveyOverlayPresentation.axaml",
             "src/SrvSurvey.Desktop/MiniTrackOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/MiniTrackOverlayPresentation.axaml",
         ], ["TrackerGroups", "QuickTrackerGroups", "BearingText", "DistanceText", "Targets"]),
-        Contract("PlotTrackTarget", ["src/SrvSurvey.Desktop/GroundTargetOverlayWindow.axaml"], [
+        Contract("PlotTrackTarget", ["src/SrvSurvey.Desktop/GroundTargetOverlayWindow.axaml", "src/SrvSurvey.Desktop/GroundTargetOverlayPresentation.axaml"], [
             "TargetCoordinates", "TargetBearing", "RelativeHeading", "DistanceToTarget", "DescentAngle", "ApproachStatus",
         ]),
     ];

@@ -42,6 +42,10 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         new(CategoryColonisation, "colonise.highlight", "Highlight"),
         new(CategoryColonisation, "colonise.item", "Item"),
         new(CategoryColonisation, "colonise.itemDark", "Item (dim)"),
+        new(
+            CategoryColonisation,
+            "colonise.rowHighlight",
+            "Commodity row fill (colour + alpha)"),
         new(CategoryHumanSettlements, "fcz.checkpoint", "Checkpoint"),
         new(CategoryHumanSettlements, "fcz.checkpointLocal", "Local checkpoint"),
         new(CategoryHumanSettlements, "fcz.powerPost", "Power post"),
@@ -516,6 +520,7 @@ public sealed class OverlayThemeColorEditorViewModel : INotifyPropertyChanged
 
             OnPropertyChanged();
             OnPropertyChanged(nameof(Color));
+            OnPropertyChanged(nameof(OpacityPercent));
             OnPropertyChanged(nameof(ValidationMessage));
             OnPropertyChanged(nameof(HasValidationError));
             OnPropertyChanged(nameof(IsDirty));
@@ -542,10 +547,31 @@ public sealed class OverlayThemeColorEditorViewModel : INotifyPropertyChanged
 
             OnPropertyChanged();
             OnPropertyChanged(nameof(HexValue));
+            OnPropertyChanged(nameof(OpacityPercent));
             OnPropertyChanged(nameof(ValidationMessage));
             OnPropertyChanged(nameof(HasValidationError));
             OnPropertyChanged(nameof(IsDirty));
             changed();
+        }
+    }
+
+    /// <summary>
+    /// Separate 0–100 opacity control that only mutates the alpha channel,
+    /// leaving RGB from the colour picker / hex field intact.
+    /// </summary>
+    public int OpacityPercent
+    {
+        get => (int)Math.Round(color.A * 100d / 255d);
+        set
+        {
+            var clamped = Math.Clamp(value, 0, 100);
+            var alpha = (byte)Math.Round(clamped * 255d / 100d);
+            if (color.A == alpha)
+            {
+                return;
+            }
+
+            Color = Color.FromArgb(alpha, color.R, color.G, color.B);
         }
     }
 

@@ -241,6 +241,24 @@
                               <StackPanel Grid.Column="1" Spacing="1">
                                 <TextBlock FontWeight="SemiBold" Text="{Binding DisplayName}" />
                                 <TextBlock Classes="muted" FontSize="10" Text="{Binding Key}" />
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6" Margin="0,2,0,0">
+                                  <TextBlock Classes="muted"
+                                             FontSize="10"
+                                             VerticalAlignment="Center"
+                                             Text="Opacity" />
+                                  <Slider Grid.Column="1"
+                                          Minimum="0"
+                                          Maximum="100"
+                                          TickFrequency="1"
+                                          IsSnapToTickEnabled="True"
+                                          Value="{Binding OpacityPercent, Mode=TwoWay}" />
+                                  <TextBlock Grid.Column="2"
+                                             Classes="monospace"
+                                             FontSize="10"
+                                             VerticalAlignment="Center"
+                                             Width="36"
+                                             Text="{Binding OpacityPercent, StringFormat={}{0}%}" />
+                                </Grid>
                               </StackPanel>
                               <StackPanel Grid.Column="2" Spacing="2">
                                 <TextBox Text="{Binding HexValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />

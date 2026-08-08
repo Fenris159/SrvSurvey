@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.FootCombatOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:CombatOverlayViewModel"
+             mc:Ignorable="d"
+             ClipToBounds="True">
+  <Border Margin="0"
+          Padding="6,5"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0"
+          CornerRadius="5">
+    <StackPanel Spacing="4">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                   FontSize="12"
+                   FontWeight="SemiBold"
+                   Text="{Binding Combat.SettlementName}"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="1"
+                   Foreground="{DynamicResource RavenAccentBrush}"
+                   FontSize="8"
+                   FontWeight="SemiBold"
+                   Text="{Binding InputMode}" />
+      </Grid>
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+        <StackPanel Spacing="0">
+          <TextBlock Classes="muted" FontSize="8" Text="KILLS" />
+          <TextBlock Classes="monospace"
+                     Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="16"
+                     FontWeight="Bold"
+                     Text="{Binding Combat.FootCombatKills}" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="0">
+          <TextBlock Classes="muted" FontSize="8" Text="BONDS" />
+          <TextBlock Classes="monospace"
+                     FontSize="12"
+                     FontWeight="SemiBold"
+                     Text="{Binding Combat.FootCombatBonds}"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+      </Grid>
+    </StackPanel>
+  </Border>
+</UserControl>

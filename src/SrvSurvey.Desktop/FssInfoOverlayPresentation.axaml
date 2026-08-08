@@ -1,0 +1,144 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.FssInfoOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:SystemSurveyOverlayViewModel"
+             mc:Ignorable="d"
+             ClipToBounds="True">
+  <Border Margin="0"
+          Padding="6,5"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0"
+          CornerRadius="5">
+    <StackPanel Spacing="5">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="FSS SURVEY" />
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="15"
+                     FontWeight="SemiBold"
+                     Text="{Binding Survey.SystemTitle}"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <Border Grid.Column="1" Classes="badge" VerticalAlignment="Top">
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="10"
+                     FontWeight="SemiBold"
+                     Text="{Binding InputMode}" />
+        </Border>
+      </Grid>
+
+      <StackPanel Spacing="3">
+        <TextBlock Classes="monospace"
+                   FontSize="11"
+                   FontWeight="SemiBold"
+                   Text="{Binding Survey.ScanSummary}" />
+        <TextBlock Classes="muted"
+                   FontSize="10"
+                   Text="{Binding Survey.FssFilterDescription}"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+
+      <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+
+      <TextBlock Classes="muted"
+                 IsVisible="{Binding !Survey.HasFssBodies}"
+                 Text="{Binding Survey.FssEmptyText}"
+                 TextWrapping="Wrap" />
+
+      <ScrollViewer MaxHeight="520"
+                    IsVisible="{Binding Survey.HasFssBodies}"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Survey.FssBodies}">
+          <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:FssBodyRowViewModel">
+            <Border Margin="0,0,0,6"
+                    Padding="10"
+                    Background="{DynamicResource RavenSurfaceBrush}"
+                    BorderBrush="{DynamicResource RavenBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8">
+              <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
+                  <StackPanel Spacing="2">
+                    <TextBlock IsVisible="{Binding !IsHighlighted}"
+                               FontWeight="SemiBold"
+                               Text="{Binding Name}" />
+                    <TextBlock IsVisible="{Binding IsHighlighted}"
+                               Foreground="{DynamicResource RavenAccentBrush}"
+                               FontWeight="SemiBold"
+                               Text="{Binding Name}" />
+                    <TextBlock Classes="muted"
+                               FontSize="10"
+                               Text="{Binding BodyClass}" />
+                    <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                               FontSize="9"
+                               FontWeight="SemiBold"
+                               IsVisible="{Binding HasMarkers}"
+                               Text="{Binding Markers}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1"
+                              HorizontalAlignment="Right"
+                              Spacing="2">
+                    <TextBlock Classes="monospace"
+                               FontSize="11"
+                               HorizontalAlignment="Right"
+                               Text="{Binding ScanValue}" />
+                    <TextBlock Classes="monospace"
+                               Foreground="{DynamicResource RavenAccentBrush}"
+                               FontSize="10"
+                               HorizontalAlignment="Right"
+                               IsVisible="{Binding HasDssValue}"
+                               Text="{Binding DssValue, StringFormat=DSS {0}}" />
+                  </StackPanel>
+                </Grid>
+                <StackPanel Grid.Row="1"
+                            Orientation="Horizontal"
+                            Spacing="5">
+                  <Grid IsVisible="{Binding HasBiologicalSignals}">
+                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               IsVisible="{Binding !AreBiologicalSignalsComplete}"
+                               Text="{Binding BiologicalSignalsText}" />
+                    <TextBlock Classes="muted"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               IsVisible="{Binding AreBiologicalSignalsComplete}"
+                               Text="{Binding BiologicalSignalsText}"
+                               TextDecorations="Strikethrough" />
+                  </Grid>
+                  <Grid IsVisible="{Binding HasGeologicalSignals}">
+                    <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                               FontSize="10"
+                               IsVisible="{Binding !AreGeologicalSignalsComplete}"
+                               Text="{Binding GeologicalSignalsText}" />
+                    <TextBlock Classes="muted"
+                               FontSize="10"
+                               IsVisible="{Binding AreGeologicalSignalsComplete}"
+                               Text="{Binding GeologicalSignalsText}"
+                               TextDecorations="Strikethrough" />
+                  </Grid>
+                </StackPanel>
+              </Grid>
+            </Border>
+          </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+        <TextBlock Classes="muted"
+                   FontSize="9"
+                   Text="SCAN VALUE &#x00B7; DSS VALUE" />
+        <TextBlock Grid.Column="1"
+                   Classes="muted"
+                   FontSize="9"
+                   Text="0% UNDISCOVERED" />
+      </Grid>
+    </StackPanel>
+  </Border>
+</UserControl>

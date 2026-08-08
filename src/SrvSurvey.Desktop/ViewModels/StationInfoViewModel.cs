@@ -44,6 +44,16 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     private IReadOnlyList<string> relevantServices = [];
     private string statusMessage = "Waiting for a current system.";
     private string settingsStatus = string.Empty;
+    private string? editorStationName;
+    private string? editorStationType;
+    private string? editorLargestPadText;
+    private string? editorPrimaryEconomyText;
+    private string? editorFactionText;
+    private string? editorUpdatedText;
+    private bool editorIsQuestTagged;
+    private IReadOnlyList<StationInfoLineViewModel>? editorEconomyLines;
+    private IReadOnlyList<string>? editorRelevantServices;
+    private IReadOnlyList<string>? editorProhibited;
     private bool disposed;
 
     public StationInfoViewModel(
@@ -121,57 +131,111 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    public bool HasSelectedStation => SelectedStation is not null;
+    public bool HasSelectedStation =>
+        editorStationName is not null || SelectedStation is not null;
 
     public bool IsForced => forceShow;
 
-    public bool ShouldShow => AutoShow
-        && HasSelectedStation
-        && (forceShow
-            || OverlayGameModeResolver.Resolve(
-                    status,
-                    musicTrack: musicTrack)
-                    == OverlayGameMode.ExternalPanel
-                && !manuallyHidden);
+    public bool ShouldShow => editorStationName is not null
+        || (AutoShow
+            && HasSelectedStation
+            && (forceShow
+                || OverlayGameModeResolver.Resolve(
+                        status,
+                        musicTrack: musicTrack)
+                        == OverlayGameMode.ExternalPanel
+                    && !manuallyHidden));
 
-    public string StationName => SelectedStation?.Name ?? "No station selected";
+    public string StationName => editorStationName
+        ?? SelectedStation?.Name
+        ?? "No station selected";
 
-    public bool IsQuestTagged => SelectedStation is { } station
-        && questTags.Contains(station.Name);
+    public bool IsQuestTagged => editorIsQuestTagged
+        || (SelectedStation is { } station
+            && questTags.Contains(station.Name));
 
-    public string StationType => SelectedStation?.Type ?? "Station information";
+    public string StationType => editorStationType
+        ?? SelectedStation?.Type
+        ?? "Station information";
 
-    public string LargestPadText => SelectedStation?.LandingPads?.Largest is { } pad
-        ? $"Largest pad: {pad}"
-        : "Landing-pad data unavailable";
+    public string LargestPadText => editorLargestPadText
+        ?? (SelectedStation?.LandingPads?.Largest is { } pad
+            ? $"Largest pad: {pad}"
+            : "Landing-pad data unavailable");
 
-    public string PrimaryEconomyText => SelectedStation?.PrimaryEconomy is { } economy
-        ? $"Primary economy: {economy}"
-        : "Primary economy unavailable";
+    public string PrimaryEconomyText => editorPrimaryEconomyText
+        ?? (SelectedStation?.PrimaryEconomy is { } economy
+            ? $"Primary economy: {economy}"
+            : "Primary economy unavailable");
 
-    public string FactionText => SelectedStation is { } station
-        && !string.IsNullOrWhiteSpace(station.ControllingFaction)
-            ? (string.IsNullOrWhiteSpace(station.Government)) switch
-            {
-                true => station.ControllingFaction,
-                false => $"{station.ControllingFaction} · {station.Government}"
-            }
-            : "Controlling faction unavailable";
+    public string FactionText => editorFactionText
+        ?? (SelectedStation is { } station
+            && !string.IsNullOrWhiteSpace(station.ControllingFaction)
+                ? (string.IsNullOrWhiteSpace(station.Government)) switch
+                {
+                    true => station.ControllingFaction,
+                    false => $"{station.ControllingFaction} · {station.Government}"
+                }
+                : "Controlling faction unavailable");
 
-    public IReadOnlyList<StationInfoLineViewModel> EconomyLines => economyLines;
+    public IReadOnlyList<StationInfoLineViewModel> EconomyLines =>
+        editorEconomyLines ?? economyLines;
 
-    public IReadOnlyList<string> RelevantServices => relevantServices;
+    public IReadOnlyList<string> RelevantServices =>
+        editorRelevantServices ?? relevantServices;
 
     public bool HasRelevantServices => RelevantServices.Count > 0;
 
     public IReadOnlyList<string> ProhibitedCommodities =>
-        SelectedStation?.ProhibitedCommodities ?? [];
+        editorProhibited ?? SelectedStation?.ProhibitedCommodities ?? [];
 
     public bool HasProhibitedCommodities => ProhibitedCommodities.Count > 0;
 
-    public string UpdatedText => SelectedStation?.UpdatedAt is { } updated
-        ? $"Spansh data updated {updated.ToLocalTime():d}"
-        : "Spansh update time unavailable";
+    public string UpdatedText => editorUpdatedText
+        ?? (SelectedStation?.UpdatedAt is { } updated
+            ? $"Spansh data updated {updated.ToLocalTime():d}"
+            : "Spansh update time unavailable");
+
+    /// <summary>
+    /// Installs representative station content for the position editor.
+    /// </summary>
+    internal void InstallEditorPreview(
+        string stationName,
+        string stationType,
+        string largestPad,
+        string primaryEconomy,
+        string faction,
+        string updated,
+        bool isQuestTagged,
+        IReadOnlyList<StationInfoLineViewModel> economies,
+        IReadOnlyList<string> services,
+        IReadOnlyList<string> prohibited)
+    {
+        editorStationName = stationName;
+        editorStationType = stationType;
+        editorLargestPadText = largestPad;
+        editorPrimaryEconomyText = primaryEconomy;
+        editorFactionText = faction;
+        editorUpdatedText = updated;
+        editorIsQuestTagged = isQuestTagged;
+        editorEconomyLines = economies;
+        editorRelevantServices = services;
+        editorProhibited = prohibited;
+        OnPropertyChanged(nameof(StationName));
+        OnPropertyChanged(nameof(StationType));
+        OnPropertyChanged(nameof(LargestPadText));
+        OnPropertyChanged(nameof(PrimaryEconomyText));
+        OnPropertyChanged(nameof(FactionText));
+        OnPropertyChanged(nameof(UpdatedText));
+        OnPropertyChanged(nameof(IsQuestTagged));
+        OnPropertyChanged(nameof(EconomyLines));
+        OnPropertyChanged(nameof(RelevantServices));
+        OnPropertyChanged(nameof(HasRelevantServices));
+        OnPropertyChanged(nameof(ProhibitedCommodities));
+        OnPropertyChanged(nameof(HasProhibitedCommodities));
+        OnPropertyChanged(nameof(HasSelectedStation));
+        OnPropertyChanged(nameof(ShouldShow));
+    }
 
     public Task UpdateCurrentSystemAsync(
         string? currentSystemName,

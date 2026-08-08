@@ -175,6 +175,46 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         UpdateDisplay();
     }
 
+    /// <summary>
+    /// Installs representative ground-target guidance for the position editor.
+    /// </summary>
+    internal void InstallEditorPreview(
+        string coordinates,
+        string distance,
+        string bearing,
+        string relativeHeadingText,
+        string descent,
+        string approachStatusText,
+        double relativeBearing,
+        double attackAngle,
+        GroundTargetApproach approachKind)
+    {
+        targetCoordinates = coordinates;
+        distanceToTarget = distance;
+        targetBearing = bearing;
+        relativeHeading = relativeHeadingText;
+        descentAngle = descent;
+        approachStatus = approachStatusText;
+        relativeBearingDegrees = relativeBearing;
+        attackAngleDegrees = attackAngle;
+        approach = approachKind;
+        isStatusEligible = true;
+        OnPropertyChanged(nameof(TargetCoordinates));
+        OnPropertyChanged(nameof(DistanceToTarget));
+        OnPropertyChanged(nameof(TargetBearing));
+        OnPropertyChanged(nameof(RelativeHeading));
+        OnPropertyChanged(nameof(DescentAngle));
+        OnPropertyChanged(nameof(ApproachStatus));
+        OnPropertyChanged(nameof(RelativeBearingDegrees));
+        OnPropertyChanged(nameof(AttackAngleDegrees));
+        OnPropertyChanged(nameof(HasLevelApproach));
+        OnPropertyChanged(nameof(HasShallowApproach));
+        OnPropertyChanged(nameof(HasIdealApproach));
+        OnPropertyChanged(nameof(HasSteepApproach));
+        OnPropertyChanged(nameof(HasTooSteepApproach));
+        OnPropertyChanged(nameof(ShouldShow));
+    }
+
     public void UpdateMusicTrack(string? value)
     {
         if (string.Equals(musicTrack, value, StringComparison.Ordinal))

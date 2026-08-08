@@ -158,6 +158,47 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         NotifyOverlayState();
     }
 
+    /// <summary>
+    /// Installs representative combat overlay content for the position editor.
+    /// </summary>
+    internal void InstallEditorPreview()
+    {
+        LoadProfile(
+            "FDEV-RAVEN",
+            "Raven",
+            profileIsOdyssey: true,
+            new CombatSnapshot(
+            [
+                new MassacreMissionSnapshot(
+                    MissionId: 1001,
+                    MissionGiver: "Raven Colonial",
+                    TargetFaction: "Blue Fortune Corp",
+                    Expires: null,
+                    KillCount: 20,
+                    Remaining: 8),
+                new MassacreMissionSnapshot(
+                    MissionId: 1002,
+                    MissionGiver: "Allied Co-op",
+                    TargetFaction: "Silver Legal Group",
+                    Expires: null,
+                    KillCount: 15,
+                    Remaining: 7),
+                new MassacreMissionSnapshot(
+                    MissionId: 1003,
+                    MissionGiver: "System Authority",
+                    TargetFaction: "Crimson Raiders",
+                    Expires: null,
+                    KillCount: 10,
+                    Remaining: 0),
+            ]));
+        state.InstallEditorSession(
+            settlementName: "Mitchell's Claim",
+            factionState: "War",
+            kills: 22,
+            bonds: 6_420_000);
+        NotifyAllState();
+    }
+
     public async Task ApplyUpdateAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? currentStatus,

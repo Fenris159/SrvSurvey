@@ -201,4 +201,21 @@ public sealed class OverlayPositionPreviewViewModelTests
         Assert.False(preview.ShowFooter);
         Assert.Equal(new PixelSize(32, 32), definition.PreviewSize);
     }
+
+    [Fact]
+    public void SystemStatusPreviewShowsDssAndBiologicalContentNotJustCompactStub()
+    {
+        var definition = OverlayLayoutCatalog.Supported.Single(item =>
+            item.Name == "PlotSysStatus");
+
+        var preview = OverlayPositionPreviewViewModel.Create(definition);
+
+        Assert.Equal("System status", preview.Title);
+        Assert.False(preview.IsCompact);
+        Assert.True(definition.PreviewSize.Height >= 50);
+        Assert.Contains(preview.Rows, row => row.Label.Contains("DSS"));
+        Assert.Contains(preview.Rows, row => row.Label.Contains("Biological"));
+        Assert.Contains(preview.Rows, row => row.Value.Contains("DSS"));
+        Assert.True(preview.ShowFooter);
+    }
 }

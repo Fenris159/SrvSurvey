@@ -8,6 +8,8 @@ public sealed class RouteBioOverlayViewModel : INotifyPropertyChanged, IDisposab
 {
     private string platformStatus;
     private string inputMode;
+    private string? editorSystemName;
+    private IReadOnlyList<RouteBioTargetItemViewModel>? editorTargets;
 
     public RouteBioOverlayViewModel(
         RouteWorkspaceViewModel route,
@@ -26,14 +28,32 @@ public sealed class RouteBioOverlayViewModel : INotifyPropertyChanged, IDisposab
 
     public RouteWorkspaceViewModel Route { get; }
 
-    public string SystemName => Route.CurrentBioSystemName;
+    public string SystemName => editorSystemName
+        ?? Route.CurrentBioSystemName;
 
     public IReadOnlyList<RouteBioTargetItemViewModel> Targets =>
-        Route.CurrentBioTargets;
+        editorTargets ?? Route.CurrentBioTargets;
 
     public int CompletedCount => Targets.Count(target => target.IsCompleted);
 
     public string Progress => $"{CompletedCount:N0} / {Targets.Count:N0} BODIES COMPLETE";
+
+    /// <summary>
+    /// Installs representative route-bio targets for the position editor.
+    /// </summary>
+    internal void InstallEditorPreview(
+        string systemName,
+        IReadOnlyList<RouteBioTargetItemViewModel> targets)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
+        ArgumentNullException.ThrowIfNull(targets);
+        editorSystemName = systemName;
+        editorTargets = targets;
+        Raise(nameof(SystemName));
+        Raise(nameof(Targets));
+        Raise(nameof(CompletedCount));
+        Raise(nameof(Progress));
+    }
 
     public string PlatformStatus
     {

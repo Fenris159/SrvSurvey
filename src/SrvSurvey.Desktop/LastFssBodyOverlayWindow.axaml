@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SrvSurvey.Desktop"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="using:SrvSurvey.Desktop.Controls"
@@ -22,140 +23,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey last FSS body overlay">
-  <Border Margin="8"
-          Padding="15"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderBrush="{DynamicResource RavenBorderBrush}"
-          BorderThickness="1"
-          CornerRadius="12"
-          Opacity="0.97">
-    <StackPanel Spacing="10">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-        <StackPanel Spacing="3">
-          <TextBlock Classes="eyebrow" Text="LAST FSS SCAN" />
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="21"
-                     FontWeight="SemiBold"
-                     Text="{Binding Survey.LastFssBodyName}"
-                     TextTrimming="CharacterEllipsis" />
-        </StackPanel>
-        <StackPanel Grid.Column="1"
-                    HorizontalAlignment="Right"
-                    Spacing="4">
-          <TextBlock HorizontalAlignment="Right"
-                     FontSize="18"
-                     IsVisible="{Binding Survey.HasFssTuningIndicator}"
-                     Text="{Binding Survey.FssTuningIndicator}"
-                     ToolTip.Tip="FSS tuning detector status" />
-          <Border Classes="badge" HorizontalAlignment="Right">
-            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                       FontSize="9"
-                       FontWeight="SemiBold"
-                       Text="{Binding InputMode}" />
-          </Border>
-          <TextBlock Classes="monospace"
-                     FontSize="10"
-                     HorizontalAlignment="Right"
-                     Text="{Binding Survey.LastFssBodyDistance}" />
-        </StackPanel>
-      </Grid>
-
-      <TextBlock Classes="muted"
-                 FontSize="11"
-                 Text="{Binding Survey.LastFssBodyClass}"
-                 TextTrimming="CharacterEllipsis" />
-
-      <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                 FontSize="9"
-                 FontWeight="SemiBold"
-                 IsVisible="{Binding Survey.HasLastFssMarkers}"
-                 Text="{Binding Survey.LastFssMarkers}" />
-
-      <Grid IsVisible="{Binding Survey.HasLastFssBody}"
-            ColumnDefinitions="*,*"
-            ColumnSpacing="10">
-        <Border Padding="10,8"
-                Background="{DynamicResource RavenSurfaceBrush}"
-                CornerRadius="8">
-          <StackPanel Spacing="2">
-            <TextBlock Classes="eyebrow" FontSize="8" Text="SCAN VALUE" />
-            <TextBlock Classes="monospace"
-                       FontSize="14"
-                       FontWeight="SemiBold"
-                       Text="{Binding Survey.LastFssScanValue}" />
-          </StackPanel>
-        </Border>
-        <Border Grid.Column="1"
-                Padding="10,8"
-                Background="{DynamicResource RavenAccentMutedBrush}"
-                CornerRadius="8">
-          <StackPanel Spacing="2">
-            <TextBlock Classes="eyebrow" FontSize="8" Text="WITH SURFACE SCAN" />
-            <TextBlock Classes="monospace"
-                       Foreground="{DynamicResource RavenAccentBrush}"
-                       FontSize="14"
-                       FontWeight="SemiBold"
-                       Text="{Binding Survey.LastFssMappedValue}" />
-          </StackPanel>
-        </Border>
-      </Grid>
-
-      <Grid IsVisible="{Binding Survey.HasLastFssSignals}"
-            ColumnDefinitions="Auto,*,Auto"
-            ColumnSpacing="8">
-        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="10"
-                   FontWeight="SemiBold"
-                   VerticalAlignment="Center"
-                   Text="{Binding Survey.LastFssSignalsText}" />
-        <Border Grid.Column="1"
-                Padding="4,3"
-                HorizontalAlignment="Left"
-                BorderBrush="{DynamicResource RavenBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="3">
-          <ItemsControl ItemsSource="{Binding Survey.LastFssBiologyRewardBands}">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <StackPanel Orientation="Horizontal" Spacing="3" />
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:BiologySignalRewardBandViewModel">
-                <controls:BiologyRewardBandControl Width="10"
-                                                    Height="24"
-                                                    MinimumReward="{Binding MinimumReward}"
-                                                    MaximumReward="{Binding MaximumReward}"
-                                                    BucketOneMillions="{Binding RewardBucketOneMillions}"
-                                                    BucketTwoMillions="{Binding RewardBucketTwoMillions}"
-                                                    BucketThreeMillions="{Binding RewardBucketThreeMillions}"
-                                                    IsPrediction="{Binding IsPrediction}"
-                                                    IsHighlighted="{Binding IsHighlighted}"
-                                                    IsDimmed="{Binding ShouldDim}"
-                                                    FilledBrush="{DynamicResource RavenPrimaryBrush}"
-                                                    DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                    PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                    PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
-                                                    PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
-                                                    HighlightBrush="{DynamicResource RavenBioGoldBrush}"
-                                                    DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
-                                                    UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
-                                                    HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                    PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </Border>
-        <TextBlock Grid.Column="2"
-                   Classes="monospace"
-                   Foreground="{DynamicResource RavenBioWhiteBrush}"
-                   FontSize="9"
-                   FontWeight="SemiBold"
-                   HorizontalAlignment="Right"
-                   VerticalAlignment="Center"
-                   IsVisible="{Binding Survey.HasLastFssBiologyRewards}"
-                   Text="{Binding Survey.LastFssBiologyRewardText}" />
-      </Grid>
-    </StackPanel>
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:LastFssBodyOverlayPresentation />
   </Border>
 </Window>

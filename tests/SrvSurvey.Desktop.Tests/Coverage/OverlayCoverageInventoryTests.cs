@@ -56,13 +56,22 @@ public sealed partial class OverlayCoverageInventoryTests
             "tests/SrvSurvey.Desktop.Tests/Platform/OverlayWindowPlacementTests.cs",
             "tests/SrvSurvey.Desktop.Tests/Platform/X11OverlayWindowManagerPolicyTests.cs",
         ]),
-        Map("PlotBioStatus", ["src/SrvSurvey.Desktop/BiologyStatusOverlayWindow.axaml"], [
+        Map("PlotBioStatus", [
+            "src/SrvSurvey.Desktop/BiologyStatusOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/BiologyStatusOverlayPresentation.axaml",
+        ], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/BiologyStatusViewModelTests.cs",
         ]),
-        Map("PlotBioSystem", ["src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml"], [
+        Map("PlotBioSystem", [
+            "src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/BiologySurveyOverlayPresentation.axaml",
+        ], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/SystemSurveyViewModelTests.cs",
         ]),
-        Map("PlotBodyInfo", ["src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml"], [
+        Map("PlotBodyInfo", [
+            "src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/BodyInformationOverlayPresentation.axaml",
+        ], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/SystemSurveyViewModelTests.cs",
         ]),
         Map("PlotBuildCommodities", ["src/SrvSurvey.Desktop/ColonizationCommodityOverlayWindow.axaml"], [
@@ -268,7 +277,7 @@ public sealed partial class OverlayCoverageInventoryTests
             PreviewProductionWindows["PlotBuildCommodities"]));
 
         Assert.Contains("Height=\"1\"", markup);
-        Assert.Contains("MaxHeight=\"700\"", markup);
+        Assert.Contains("MaxHeight=\"480\"", markup);
         Assert.Contains("SizeToContent=\"Height\"", markup);
     }
 
@@ -327,11 +336,11 @@ public sealed partial class OverlayCoverageInventoryTests
     }
 
     [Theory]
-    [InlineData("src/SrvSurvey.Desktop/BiologyStatusOverlayWindow.axaml", "IsAnalyzed")]
-    [InlineData("src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml", "IsComplete")]
-    [InlineData("src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml", "AreBiologicalSignalsComplete")]
-    [InlineData("src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml", "AreGeologicalSignalsComplete")]
-    [InlineData("src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml", "IsComplete")]
+    [InlineData("src/SrvSurvey.Desktop/BiologyStatusOverlayPresentation.axaml", "IsAnalyzed")]
+    [InlineData("src/SrvSurvey.Desktop/BiologySurveyOverlayPresentation.axaml", "IsComplete")]
+    [InlineData("src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml", "AreBiologicalSignalsComplete")]
+    [InlineData("src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml", "AreGeologicalSignalsComplete")]
+    [InlineData("src/SrvSurvey.Desktop/MassacreMissionsOverlayPresentation.axaml", "IsComplete")]
     public void CompletionStatesRemainVisiblyStruckThrough(
         string relativePath,
         string stateBinding)
@@ -349,7 +358,7 @@ public sealed partial class OverlayCoverageInventoryTests
         var root = FindRepositoryRoot();
         var xaml = File.ReadAllText(Path.Combine(
             root,
-            Native("src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml")));
+            Native("src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml")));
         var viewModel = File.ReadAllText(Path.Combine(
             root,
             Native("src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs")));
@@ -411,11 +420,24 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("Text=\"{Binding CompactText}\"", preview);
         Assert.Contains("Text=\"{Binding Footer}\"", preview);
         Assert.Contains("SizeToContent=\"Height\"", preview);
-        Assert.Contains("ItemsSource=\"{Binding RewardBands}\"", preview);
-        Assert.Contains("BiologyRewardBandControl", preview);
-        Assert.Contains("RouteBioTargetList", preview);
+        // Shared runtime presentations host the real overlay templates; the
+        // generic preview surface remains only as a chrome/fallback host.
         Assert.Contains("SIMULATED GAME STATE", preview);
         Assert.Contains("BorderThickness=\"2\"", preview);
+        var runtimeFactory = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/Platform/Overlay/OverlayRuntimePresentationFactory.cs")));
+        Assert.Contains("CreatePresentation", runtimeFactory);
+        Assert.Contains("CreateEditorDataContext", runtimeFactory);
+        Assert.Contains("BiologySurveyOverlayPresentation", runtimeFactory);
+        Assert.Contains("RouteBioOverlayPresentation", runtimeFactory);
+        var routePresentation = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/RouteBioOverlayPresentation.axaml")));
+        Assert.Contains("RouteBioTargetList", routePresentation);
+        Assert.Contains("BiologyRewardBandControl", File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/BiologySurveyOverlayPresentation.axaml"))));
         Assert.DoesNotContain("Save all", preview);
         Assert.DoesNotContain("OnSaveRequested", preview);
         Assert.DoesNotContain("OnCancelRequested", preview);
@@ -483,23 +505,31 @@ public sealed partial class OverlayCoverageInventoryTests
         var routeOverlay = File.ReadAllText(Path.Combine(
             root,
             Native("src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml")));
-        Assert.Contains("RouteBioTargetList", routeOverlay);
+        var routeOverlayPresentation = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/RouteBioOverlayPresentation.axaml")));
+        Assert.Contains("RouteBioOverlayPresentation", routeOverlay);
+        Assert.Contains("RouteBioTargetList", routeOverlayPresentation);
         Assert.Contains("Width=\"220\"", routeOverlay);
         Assert.DoesNotContain(
             "BorderBrush=\"{DynamicResource RavenWarningBrush}\"",
-            routeOverlay);
+            routeOverlayPresentation);
 
         var biologyOverlay = File.ReadAllText(Path.Combine(
             root,
             Native("src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml")));
+        var biologyPresentation = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/BiologySurveyOverlayPresentation.axaml")));
         Assert.Contains("Width=\"240\"", biologyOverlay);
-        Assert.Contains("Text=\"System biology\"", biologyOverlay);
-        Assert.Contains("Padding=\"5\"", biologyOverlay);
-        Assert.Contains("BorderThickness=\"0\"", biologyOverlay);
-        Assert.Contains("CornerRadius=\"5\"", biologyOverlay);
-        Assert.DoesNotContain("EXOBIOLOGY SURVEY", biologyOverlay);
-        Assert.DoesNotContain("RavenSurfaceBrush", biologyOverlay);
-        Assert.DoesNotContain("Classes=\"badge\"", biologyOverlay);
+        Assert.Contains("BiologySurveyOverlayPresentation", biologyOverlay);
+        Assert.Contains("Text=\"System biology\"", biologyPresentation);
+        Assert.Contains("Padding=\"5\"", biologyPresentation);
+        Assert.Contains("BorderThickness=\"0\"", biologyPresentation);
+        Assert.Contains("CornerRadius=\"5\"", biologyPresentation);
+        Assert.DoesNotContain("EXOBIOLOGY SURVEY", biologyPresentation);
+        Assert.DoesNotContain("RavenSurfaceBrush", biologyPresentation);
+        Assert.DoesNotContain("Classes=\"badge\"", biologyPresentation);
 
         var routeTargetList = File.ReadAllText(Path.Combine(
             root,

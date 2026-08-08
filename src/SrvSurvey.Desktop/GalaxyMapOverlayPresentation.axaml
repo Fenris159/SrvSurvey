@@ -1,0 +1,149 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.GalaxyMapOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:GalaxyMapOverlayViewModel"
+             mc:Ignorable="d"
+             ClipToBounds="True">
+  <Border Margin="0"
+          Padding="6,5"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0"
+          CornerRadius="5">
+    <StackPanel Spacing="6">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="GALAXY MAP" />
+          <TextBlock Classes="muted"
+                     FontSize="11"
+                     Text="Selected system and route intelligence" />
+        </StackPanel>
+        <TextBlock Grid.Column="1"
+                   IsVisible="{Binding IsLoading}"
+                   Classes="muted"
+                   FontSize="11"
+                   Text="Loading&#x2026;" />
+      </Grid>
+
+      <Border IsVisible="{Binding HasPrimarySystem}"
+              Padding="12"
+              Background="{DynamicResource RavenSurfaceBrush}"
+              BorderBrush="{DynamicResource RavenBorderBrush}"
+              BorderThickness="1"
+              CornerRadius="8">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="eyebrow"
+                     Text="{Binding PrimarySystemDisplay.Label}" />
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <Border Classes="badge"
+                    IsVisible="{Binding PrimarySystemDisplay.IsQuestTagged}">
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         FontSize="9"
+                         FontWeight="Bold"
+                         Text="Q" />
+            </Border>
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="15"
+                       FontWeight="SemiBold"
+                       Text="{Binding PrimarySystemDisplay.Name}"
+                       TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+          <TextBlock Text="{Binding PrimarySystemDisplay.DiscoveryText}"
+                     TextWrapping="Wrap" />
+          <TextBlock IsVisible="{Binding PrimarySystemDisplay.HasDiscoveredBy}"
+                     Classes="muted"
+                     FontSize="11"
+                     Text="{Binding PrimarySystemDisplay.DiscoveredByText}"
+                     TextWrapping="Wrap" />
+          <TextBlock IsVisible="{Binding PrimarySystemDisplay.HasUpdated}"
+                     Classes="muted"
+                     FontSize="11"
+                     Text="{Binding PrimarySystemDisplay.UpdatedText}"
+                     TextWrapping="Wrap" />
+          <TextBlock IsVisible="{Binding PrimarySystemDisplay.HasDetails}"
+                     Foreground="{DynamicResource RavenSuccessBrush}"
+                     FontWeight="SemiBold"
+                     Text="{Binding PrimarySystemDisplay.DetailsText}" />
+        </StackPanel>
+      </Border>
+
+      <Border IsVisible="{Binding HasSecondarySystem}"
+              Padding="12"
+              Background="{DynamicResource RavenSurfaceBrush}"
+              BorderBrush="{DynamicResource RavenBorderBrush}"
+              BorderThickness="1"
+              CornerRadius="8">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="eyebrow"
+                     Text="{Binding SecondarySystemDisplay.Label}" />
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <Border Classes="badge"
+                    IsVisible="{Binding SecondarySystemDisplay.IsQuestTagged}">
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         FontSize="9"
+                         FontWeight="Bold"
+                         Text="Q" />
+            </Border>
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Text="{Binding SecondarySystemDisplay.Name}" />
+          </StackPanel>
+          <TextBlock Text="{Binding SecondarySystemDisplay.DiscoveryText}"
+                     TextWrapping="Wrap" />
+          <TextBlock IsVisible="{Binding SecondarySystemDisplay.HasDiscoveredBy}"
+                     Classes="muted"
+                     FontSize="11"
+                     Text="{Binding SecondarySystemDisplay.DiscoveredByText}"
+                     TextWrapping="Wrap" />
+          <TextBlock IsVisible="{Binding SecondarySystemDisplay.HasUpdated}"
+                     Classes="muted"
+                     FontSize="11"
+                     Text="{Binding SecondarySystemDisplay.UpdatedText}"
+                     TextWrapping="Wrap" />
+          <TextBlock IsVisible="{Binding SecondarySystemDisplay.HasDetails}"
+                     Foreground="{DynamicResource RavenSuccessBrush}"
+                     FontSize="11"
+                     Text="{Binding SecondarySystemDisplay.DetailsText}" />
+        </StackPanel>
+      </Border>
+
+      <TextBlock IsVisible="{Binding HasRouteFooter}"
+                 Classes="monospace"
+                 Foreground="{DynamicResource RavenWarningBrush}"
+                 FontWeight="SemiBold"
+                 Text="{Binding RouteFooter}" />
+
+      <StackPanel IsVisible="{Binding HasFactions}" Spacing="6">
+        <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+        <TextBlock Classes="eyebrow" Text="FACTIONS" />
+        <ItemsControl ItemsSource="{Binding Factions}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:GalaxyMapFactionViewModel">
+              <Grid Margin="0,2" ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                  <TextBlock Text="{Binding Name}" />
+                  <TextBlock IsVisible="{Binding HasState}"
+                             Classes="muted"
+                             FontSize="11"
+                             Text="{Binding State}" />
+                </StackPanel>
+                <TextBlock Grid.Column="1"
+                           Classes="monospace"
+                           Foreground="{DynamicResource RavenAccentBrush}"
+                           Text="{Binding Influence}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+
+      <TextBlock Classes="muted"
+                 FontSize="10"
+                 Text="{Binding DataStatus}"
+                 TextWrapping="Wrap" />
+    </StackPanel>
+  </Border>
+</UserControl>

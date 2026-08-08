@@ -171,17 +171,21 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
     private bool TryUseRuntimePresentation()
     {
-        if (!GuardianOverlayPresentationFactory.TryCreate(
+        if (!OverlayRuntimePresentationFactory.TryCreate(
                 Definition.Name,
-                out var presentation)
+                out var presentation,
+                out _)
             || presentation is null)
         {
             return false;
         }
 
-        presentation.DataContext = GuardianOverlayViewModel.CreateEditorPreview();
         runtimePresentation = presentation;
+        // Host the real shared template; outer PreviewSurface keeps the
+        // editor-only yellow drag border around it.
         PreviewSurface.Child = presentation;
+        PreviewSurface.Padding = new Thickness(0);
+        PreviewSurface.Background = Avalonia.Media.Brushes.Transparent;
         return true;
     }
 

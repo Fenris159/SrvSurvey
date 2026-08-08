@@ -32,6 +32,10 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     private string statusText = "Waiting for surface navigation context.";
     private string inputMode;
     private bool isLoading;
+    private string? editorBodyName;
+    private string? editorHeadingText;
+    private string? editorFilterText;
+    private bool editorForceVisible;
     private bool disposed;
 
     public PriorScansOverlayViewModel(
@@ -97,7 +101,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
     public bool HasRadarTargets => RadarTargets.Count > 0;
 
-    public bool ShowRadar => survey.ShowCanonnSignalsOnRadar;
+    public bool ShowRadar => editorForceVisible || survey.ShowCanonnSignalsOnRadar;
 
     public bool UseSmallRadarCircles => survey.UseSmallCanonnRadarCircles;
 
@@ -105,16 +109,19 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         ? "1 known species"
         : $"{Species.Count:N0} known species";
 
-    public string BodyName => survey.CurrentStatus?.BodyName
+    public string BodyName => editorBodyName
+        ?? survey.CurrentStatus?.BodyName
         ?? "Current body";
 
-    public string HeadingText => survey.CurrentStatus is { } status
-        ? $"HEADING {status.NormalizedHeading:000}°"
-        : "HEADING —";
+    public string HeadingText => editorHeadingText
+        ?? (survey.CurrentStatus is { } status
+            ? $"HEADING {status.NormalizedHeading:000}°"
+            : "HEADING —");
 
-    public string FilterText => survey.SkipPriorScansLowValue
-        ? $"Signals below {FormatCredits(survey.PriorScanMinimumValue)} hidden"
-        : "All known signal values";
+    public string FilterText => editorFilterText
+        ?? (survey.SkipPriorScansLowValue
+            ? $"Signals below {FormatCredits(survey.PriorScanMinimumValue)} hidden"
+            : "All known signal values");
 
     public string StatusText
     {
@@ -140,7 +147,35 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         }
     }
 
-    public bool ShouldShow => survey.ShouldLoadPriorScans && HasSpecies;
+    public bool ShouldShow => editorForceVisible
+        || (survey.ShouldLoadPriorScans && HasSpecies);
+
+    /// <summary>
+    /// Installs representative Canonn prior-scan content for the position editor.
+    /// </summary>
+    internal void InstallEditorPreview(
+        string bodyName,
+        string headingText,
+        IReadOnlyList<PriorScanSpeciesViewModel> speciesRows,
+        IReadOnlyList<PriorScanRadarTargetViewModel> radarRows)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(bodyName);
+        ArgumentNullException.ThrowIfNull(speciesRows);
+        ArgumentNullException.ThrowIfNull(radarRows);
+        editorForceVisible = true;
+        editorBodyName = bodyName;
+        editorHeadingText = headingText;
+        editorFilterText = "All known signal values";
+        Species = speciesRows.ToArray();
+        RadarTargets = radarRows.ToArray();
+        StatusText = "Canonn prior scans · last sync 2 m ago";
+        IsLoading = false;
+        OnPropertyChanged(nameof(BodyName));
+        OnPropertyChanged(nameof(HeadingText));
+        OnPropertyChanged(nameof(FilterText));
+        OnPropertyChanged(nameof(ShowRadar));
+        OnPropertyChanged(nameof(ShouldShow));
+    }
 
     public async Task RefreshAsync()
     {
