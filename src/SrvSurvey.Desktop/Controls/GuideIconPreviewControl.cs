@@ -40,6 +40,36 @@ public sealed class GuideIconPreviewControl : Control
     public static readonly StyledProperty<IBrush?> GoldBrushProperty =
         AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
             nameof(GoldBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipConfirmedBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedDimBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipConfirmedDimBrush));
+    public static readonly StyledProperty<IBrush?> PipPotentialBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipPotentialBrush));
+    public static readonly StyledProperty<IBrush?> PipPredictionBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipPredictionBrush));
+    public static readonly StyledProperty<IBrush?> PipPredictionPotentialBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipPredictionPotentialBrush));
+    public static readonly StyledProperty<IBrush?> PipHighlightBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipHighlightBrush));
+    public static readonly StyledProperty<IBrush?> PipUnknownBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipUnknownBrush));
+    public static readonly StyledProperty<IBrush?> PipUnknownGlyphBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipUnknownGlyphBrush));
+    public static readonly StyledProperty<IBrush?> PipHatchBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipHatchBrush));
+    public static readonly StyledProperty<IBrush?> PipEmptyBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipEmptyBrush));
 
     static GuideIconPreviewControl()
     {
@@ -53,7 +83,17 @@ public sealed class GuideIconPreviewControl : Control
             SuccessBrushProperty,
             WarningBrushProperty,
             DangerBrushProperty,
-            GoldBrushProperty);
+            GoldBrushProperty,
+            PipConfirmedBrushProperty,
+            PipConfirmedDimBrushProperty,
+            PipPotentialBrushProperty,
+            PipPredictionBrushProperty,
+            PipPredictionPotentialBrushProperty,
+            PipHighlightBrushProperty,
+            PipUnknownBrushProperty,
+            PipUnknownGlyphBrushProperty,
+            PipHatchBrushProperty,
+            PipEmptyBrushProperty);
     }
 
     public GuideIconKind Kind
@@ -116,6 +156,66 @@ public sealed class GuideIconPreviewControl : Control
         set => SetValue(GoldBrushProperty, value);
     }
 
+    public IBrush? PipConfirmedBrush
+    {
+        get => GetValue(PipConfirmedBrushProperty);
+        set => SetValue(PipConfirmedBrushProperty, value);
+    }
+
+    public IBrush? PipConfirmedDimBrush
+    {
+        get => GetValue(PipConfirmedDimBrushProperty);
+        set => SetValue(PipConfirmedDimBrushProperty, value);
+    }
+
+    public IBrush? PipPotentialBrush
+    {
+        get => GetValue(PipPotentialBrushProperty);
+        set => SetValue(PipPotentialBrushProperty, value);
+    }
+
+    public IBrush? PipPredictionBrush
+    {
+        get => GetValue(PipPredictionBrushProperty);
+        set => SetValue(PipPredictionBrushProperty, value);
+    }
+
+    public IBrush? PipPredictionPotentialBrush
+    {
+        get => GetValue(PipPredictionPotentialBrushProperty);
+        set => SetValue(PipPredictionPotentialBrushProperty, value);
+    }
+
+    public IBrush? PipHighlightBrush
+    {
+        get => GetValue(PipHighlightBrushProperty);
+        set => SetValue(PipHighlightBrushProperty, value);
+    }
+
+    public IBrush? PipUnknownBrush
+    {
+        get => GetValue(PipUnknownBrushProperty);
+        set => SetValue(PipUnknownBrushProperty, value);
+    }
+
+    public IBrush? PipUnknownGlyphBrush
+    {
+        get => GetValue(PipUnknownGlyphBrushProperty);
+        set => SetValue(PipUnknownGlyphBrushProperty, value);
+    }
+
+    public IBrush? PipHatchBrush
+    {
+        get => GetValue(PipHatchBrushProperty);
+        set => SetValue(PipHatchBrushProperty, value);
+    }
+
+    public IBrush? PipEmptyBrush
+    {
+        get => GetValue(PipEmptyBrushProperty);
+        set => SetValue(PipEmptyBrushProperty, value);
+    }
+
     public override void Render(DrawingContext context)
     {
         base.Render(context);
@@ -132,6 +232,17 @@ public sealed class GuideIconPreviewControl : Control
         var warning = WarningBrush ?? Brushes.Gold;
         var danger = DangerBrush ?? Brushes.Red;
         var gold = GoldBrush ?? Brushes.Goldenrod;
+        var pipConfirmed = PipConfirmedBrush ?? primary;
+        var pipConfirmedDim = PipConfirmedDimBrush ?? muted;
+        var pipPotential = PipPotentialBrush ?? muted;
+        var pipPrediction = PipPredictionBrush ?? secondary;
+        var pipPredictionPotential =
+            PipPredictionPotentialBrush ?? muted;
+        var pipHighlight = PipHighlightBrush ?? gold;
+        var pipUnknown = PipUnknownBrush ?? muted;
+        var pipUnknownGlyph = PipUnknownGlyphBrush ?? Brushes.LightGray;
+        var pipHatch = PipHatchBrush ?? muted;
+        var pipEmpty = PipEmptyBrush ?? Brushes.Transparent;
         var bounds = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
         context.DrawRectangle(background, new Pen(muted, 1), bounds, 8, 8);
         var center = bounds.Center;
@@ -158,13 +269,51 @@ public sealed class GuideIconPreviewControl : Control
                         }));
                 break;
             case GuideIconKind.BiologyRewardKnown:
-                DrawRewardPips(context, center, primary, muted, isPrediction: false);
+                DrawRewardPips(
+                    context,
+                    center,
+                    pipConfirmed,
+                    pipPotential,
+                    pipEmpty,
+                    pipHatch,
+                    isPrediction: false);
                 break;
             case GuideIconKind.BiologyRewardPredicted:
-                DrawRewardPips(context, center, secondary, muted, isPrediction: true);
+                DrawRewardPips(
+                    context,
+                    center,
+                    pipPrediction,
+                    pipPredictionPotential,
+                    pipEmpty,
+                    pipHatch,
+                    isPrediction: true);
+                break;
+            case GuideIconKind.BiologyRewardHighlighted:
+                DrawRewardPips(
+                    context,
+                    center,
+                    pipHighlight,
+                    pipHighlight,
+                    pipEmpty,
+                    pipHatch,
+                    isPrediction: false);
+                break;
+            case GuideIconKind.BiologyRewardDimmed:
+                DrawRewardPips(
+                    context,
+                    center,
+                    pipConfirmedDim,
+                    pipPotential,
+                    pipEmpty,
+                    pipHatch,
+                    isPrediction: false);
                 break;
             case GuideIconKind.BiologyRewardUnknown:
-                DrawUnknownPip(context, center, muted);
+                DrawUnknownPip(
+                    context,
+                    center,
+                    pipUnknown,
+                    pipUnknownGlyph);
                 break;
             case GuideIconKind.CanonnSignals:
                 CanonnLogoControl.Draw(
@@ -174,6 +323,24 @@ public sealed class GuideIconPreviewControl : Control
                         center.Y - CanonnLogoControl.NativeSize / 2,
                         CanonnLogoControl.NativeSize,
                         CanonnLogoControl.NativeSize));
+                break;
+            case GuideIconKind.DirectionalChevron:
+                DirectionalChevronDrawing.Draw(
+                    context,
+                    new Point(center.X - 15, center.Y),
+                    25,
+                    -20,
+                    isFar: false,
+                    secondary,
+                    2.5);
+                DirectionalChevronDrawing.Draw(
+                    context,
+                    new Point(center.X + 15, center.Y),
+                    25,
+                    20,
+                    isFar: true,
+                    secondary,
+                    2.5);
                 break;
             case GuideIconKind.RadarCommander:
                 DrawRadarCommander(context, center, secondary);
@@ -372,7 +539,7 @@ public sealed class GuideIconPreviewControl : Control
             "?" => palette.Muted,
             "⚑" or "⚐" or "☀" or "◆" => palette.Gold,
             "◇" => palette.Warning,
-            "▲" or "+" => palette.Secondary,
+            "+" => palette.Secondary,
             "!" => palette.Danger,
             "■" or "►" => palette.Primary,
             _ => palette.Secondary,
@@ -383,7 +550,9 @@ public sealed class GuideIconPreviewControl : Control
         DrawingContext context,
         Point center,
         IBrush filled,
-        IBrush muted,
+        IBrush potential,
+        IBrush empty,
+        IBrush hatch,
         bool isPrediction)
     {
         var frame = new Rect(center.X - 12, center.Y - 25, 24, 50);
@@ -395,7 +564,12 @@ public sealed class GuideIconPreviewControl : Control
                 frame.Bottom - 5 - (index + 1) * 10,
                 frame.Width - 8,
                 8);
-            context.DrawRectangle(index < 3 ? filled : muted, null, segment, 1, 1);
+            var segmentBrush = index < (isPrediction ? 2 : 3)
+                ? filled
+                : isPrediction && index == 2
+                    ? potential
+                    : empty;
+            context.DrawRectangle(segmentBrush, null, segment, 1, 1);
         }
 
         if (!isPrediction)
@@ -403,7 +577,7 @@ public sealed class GuideIconPreviewControl : Control
             return;
         }
 
-        var hatchPen = new Pen(muted, 1);
+        var hatchPen = new Pen(hatch, 1);
         for (var x = frame.Left - frame.Height; x < frame.Right; x += 6)
         {
             var startX = Math.Max(x, frame.Left);
@@ -423,17 +597,18 @@ public sealed class GuideIconPreviewControl : Control
     private static void DrawUnknownPip(
         DrawingContext context,
         Point center,
-        IBrush muted)
+        IBrush frameBrush,
+        IBrush glyphBrush)
     {
         var frame = new Rect(center.X - 12, center.Y - 25, 24, 50);
-        context.DrawRectangle(null, new Pen(muted, 1.5), frame, 3, 3);
+        context.DrawRectangle(null, new Pen(frameBrush, 1.5), frame, 3, 3);
         var text = new FormattedText(
             "?",
             CultureInfo.CurrentCulture,
             FlowDirection.LeftToRight,
             Typeface.Default,
             24,
-            muted);
+            glyphBrush);
         context.DrawText(
             text,
             new Point(center.X - text.Width / 2, center.Y - text.Height / 2));
@@ -457,7 +632,13 @@ public sealed class GuideIconPreviewControl : Control
     {
         var radarCenter = new Point(center.X, center.Y - 7);
         context.DrawEllipse(null, new Pen(muted, 1), radarCenter, 22, 22);
-        DrawTriangle(context, radarCenter, 6, accent, fill: true);
+        RingedPointerDrawing.Draw(
+            context,
+            radarCenter,
+            15,
+            bearingDegrees: 0,
+            accent,
+            strokeThickness: 1.25);
         var target = new Point(radarCenter.X + 16, radarCenter.Y - 11);
         context.DrawLine(new Pen(accent, 2), radarCenter, target);
         context.DrawEllipse(accent, null, target, 3, 3);

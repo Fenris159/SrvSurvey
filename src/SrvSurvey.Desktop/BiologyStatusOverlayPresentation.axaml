@@ -18,28 +18,32 @@
     <Grid IsVisible="{Binding Survey.HasBiologyStatus}"
           RowDefinitions="Auto,*,Auto"
           MinHeight="68">
-      <StackPanel Orientation="Horizontal"
-                  HorizontalAlignment="Left"
-                  Spacing="7">
+      <Grid ColumnDefinitions="Auto,Auto,*"
+            ColumnSpacing="7"
+            ClipToBounds="True">
         <TextBlock Classes="eyebrow"
                    Foreground="{DynamicResource RavenWarningBrush}"
                    FontSize="11"
                    FontWeight="SemiBold"
                    Text="{Binding Survey.BiologyStatus.ProgressText}"
                    TextTrimming="CharacterEllipsis" />
-        <TextBlock Classes="muted"
+        <TextBlock Grid.Column="1"
+                   Classes="muted"
                    VerticalAlignment="Center"
                    Foreground="{DynamicResource RavenAccentBrush}"
                    FontSize="11"
                    FontWeight="SemiBold"
                    Text="{Binding Survey.BiologyStatus.CompletionPercentText}" />
-        <ProgressBar Width="64"
+        <ProgressBar Grid.Column="2"
+                     MinWidth="0"
                      Height="8"
+                     Margin="0,0,1,0"
+                     HorizontalAlignment="Stretch"
                      VerticalAlignment="Center"
                      Minimum="0"
                      Maximum="100"
-                     Value="{Binding Survey.BiologyStatus.TrackedCompletionPercent}" />
-      </StackPanel>
+                     Value="{Binding Survey.BiologyStatus.CompletionPercent}" />
+      </Grid>
 
       <Grid Grid.Row="1"
             Margin="0,6,0,4"
@@ -140,26 +144,35 @@
       </Grid>
 
       <Grid Grid.Row="2" MinHeight="18">
-        <StackPanel Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    Spacing="6"
-                    IsVisible="{Binding Survey.BiologyStatus.IsStaleActiveSample}">
-          <Border Width="48"
+        <Grid ColumnDefinitions="*,4*,*"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Center"
+              IsVisible="{Binding Survey.BiologyStatus.IsStaleActiveSample}">
+          <Border Grid.Column="0"
                   Height="10"
+                  Margin="0,0,6,0"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Center"
                   Background="{DynamicResource RavenDangerBrush}"
                   Opacity="0.9" />
-          <TextBlock Classes="muted"
+          <TextBlock Grid.Column="1"
+                     Classes="muted"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Center"
                      Foreground="{DynamicResource RavenDangerBrush}"
                      FontSize="10"
                      FontWeight="SemiBold"
                      Text="{Binding Survey.BiologyStatus.Warning}"
                      TextWrapping="Wrap"
                      TextAlignment="Center" />
-          <Border Width="48"
+          <Border Grid.Column="2"
                   Height="10"
+                  Margin="6,0,0,0"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Center"
                   Background="{DynamicResource RavenDangerBrush}"
                   Opacity="0.9" />
-        </StackPanel>
+        </Grid>
 
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Center"

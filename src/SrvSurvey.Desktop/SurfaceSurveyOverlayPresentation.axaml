@@ -105,13 +105,13 @@
                                   Background="{DynamicResource RavenRaisedSurfaceBrush}"
                                   CornerRadius="5">
                             <StackPanel Orientation="Horizontal" Spacing="3">
-                              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                                         FontSize="9"
-                                         Text="&#x25B2;">
-                                <TextBlock.RenderTransform>
-                                  <RotateTransform Angle="{Binding RelativeBearingDegrees}" />
-                                </TextBlock.RenderTransform>
-                              </TextBlock>
+                              <controls:DirectionalChevronControl
+                                  Width="12"
+                                  Height="12"
+                                  BearingDegrees="{Binding RelativeBearingDegrees}"
+                                  IsFar="{Binding IsFarTarget}"
+                                  Stroke="{DynamicResource RavenAccentBrush}"
+                                  StrokeThickness="1.5" />
                               <TextBlock Classes="monospace"
                                          FontSize="8"
                                          Text="{Binding DistanceText}" />
@@ -149,13 +149,13 @@
                              FontSize="10"
                              FontWeight="SemiBold"
                              Text="{Binding Name}" />
-                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                             FontSize="10"
-                             Text="&#x25B2;">
-                    <TextBlock.RenderTransform>
-                      <RotateTransform Angle="{Binding RelativeBearingDegrees}" />
-                    </TextBlock.RenderTransform>
-                  </TextBlock>
+                  <controls:DirectionalChevronControl
+                      Width="14"
+                      Height="14"
+                      BearingDegrees="{Binding RelativeBearingDegrees}"
+                      IsFar="{Binding IsFarTarget}"
+                      Stroke="{DynamicResource RavenAccentBrush}"
+                      StrokeThickness="1.6" />
                   <TextBlock Classes="monospace"
                              FontSize="8"
                              Text="{Binding BearingText}" />

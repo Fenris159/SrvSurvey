@@ -55,17 +55,7 @@ public sealed record BiologyStatusViewModel(
             0,
             100);
 
-    public double TrackedCompletionPercent => SignalCount <= 0
-        ? 0
-        : Math.Clamp(
-            (AnalyzedSignalCount + ((HasActiveSample) switch
-            {
-                true => 1,
-                false => 0
-            }))
-                * 100d / SignalCount,
-            0,
-            100);
+    public double TrackedCompletionPercent => CompletionPercent;
 
     public static BiologyStatusViewModel? Create(
         SystemScanSnapshot snapshot,

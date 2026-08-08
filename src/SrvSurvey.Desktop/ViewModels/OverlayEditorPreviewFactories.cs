@@ -175,7 +175,7 @@ internal static class OverlayEditorPreviewFactories
             412,
             91,
             17,
-            0);
+            ExobiologyReferenceCatalog.GetSampleDistanceMeters("Tussock"));
         var ship = Marker(
             "Ship",
             SurfaceRadarMarkerKind.Ship,
@@ -286,7 +286,9 @@ internal static class OverlayEditorPreviewFactories
         return new JumpInfoOverlayViewModel(jump, Caps());
     }
 
-    public static FleetCarrierRouteOverlayViewModel CreateFleetCarrierRoute()
+    public static FleetCarrierRouteOverlayViewModel CreateFleetCarrierRoute(
+        FleetCarrierRouteEditorPreviewState state =
+            FleetCarrierRouteEditorPreviewState.Cooldown)
     {
         var temporaryDirectory = SettingsDir("fc-route");
         var vm = new FleetCarrierRouteOverlayViewModel(
@@ -298,7 +300,7 @@ internal static class OverlayEditorPreviewFactories
                 new EmptySpanshRouteClient(),
                 FollowRouteKind.FleetCarrier),
             Caps());
-        vm.InstallEditorPreview(new FleetCarrierRouteEditorPreview(
+        var preview = new FleetCarrierRouteEditorPreview(
             HopProgress: "HOP 2 / 46",
             SystemName: "Col 359 Sector EE-X b16-1",
             JumpSummary: "499.76 LY JUMP  •  21,502.09 LY REMAINING",
@@ -310,12 +312,22 @@ internal static class OverlayEditorPreviewFactories
             IcyRingLabel: "PRISTINE ICY RING",
             HasRestockWarning: true,
             RestockAmount: "3,892 t",
-            HasCountdown: true,
-            CountdownTitle: "JUMP COOLDOWN",
-            Countdown: "4:32",
-            CountdownPhase: "LOCKING",
-            CountdownPhaseTime: "0:18",
-            HasCountdownPhaseTime: true));
+            HasCountdown: state is not FleetCarrierRouteEditorPreviewState.RouteOnly,
+            CountdownTitle: state == FleetCarrierRouteEditorPreviewState.Scheduled
+                ? "JUMP DEPARTURE"
+                : "JUMP COOLDOWN",
+            Countdown: state == FleetCarrierRouteEditorPreviewState.Scheduled
+                ? "12:45"
+                : "4:32",
+            CountdownPhase: state == FleetCarrierRouteEditorPreviewState.Scheduled
+                ? "LOCKED"
+                : "LOCKING",
+            CountdownPhaseTime: state == FleetCarrierRouteEditorPreviewState.Scheduled
+                ? "0:45"
+                : "0:18",
+            HasCountdownPhaseTime:
+                state is not FleetCarrierRouteEditorPreviewState.RouteOnly);
+        vm.InstallEditorPreview(preview);
         return vm;
     }
 
@@ -408,13 +420,14 @@ internal static class OverlayEditorPreviewFactories
         return vm;
     }
 
-    public static PulseOverlayViewModel CreatePulse()
+    public static PulseOverlayViewModel CreatePulse(
+        PulseEditorPreviewState state = PulseEditorPreviewState.ScoCooling)
     {
         var vm = new PulseOverlayViewModel(
             new PulseOverlaySettingsStore(
                 Path.Combine(SettingsDir("pulse"), UiSettingsFileName)));
         vm.Enabled = true;
-        vm.InstallEditorPreview();
+        vm.InstallEditorPreview(state);
         return vm;
     }
 

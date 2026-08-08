@@ -18,6 +18,20 @@ public sealed class BiologyRewardBandScaleTests
     }
 
     [Fact]
+    public void UnknownGlyphHasASeparateBrushFromPredictionFill()
+    {
+        var control = new BiologyRewardBandControl();
+        var prediction = Brushes.Gold;
+        var unknownGlyph = Brushes.LightGray;
+
+        control.PredictionFilledBrush = prediction;
+        control.UnknownGlyphBrush = unknownGlyph;
+
+        Assert.Same(prediction, control.PredictionFilledBrush);
+        Assert.Same(unknownGlyph, control.UnknownGlyphBrush);
+    }
+
+    [Fact]
     public void PredictionPipsClipHatchToTheControlBounds()
     {
         var control = new BiologyRewardBandControl

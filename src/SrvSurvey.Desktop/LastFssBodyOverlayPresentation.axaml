@@ -116,16 +116,17 @@
                                                     IsPrediction="{Binding IsPrediction}"
                                                     IsHighlighted="{Binding IsHighlighted}"
                                                     IsDimmed="{Binding ShouldDim}"
-                                                    FilledBrush="{DynamicResource RavenPrimaryBrush}"
-                                                    DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                    PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                    PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
-                                                    PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
+                                                    FilledBrush="{DynamicResource RavenBioConfirmedBrush}"
+                                                    DimmedFilledBrush="{DynamicResource RavenBioConfirmedDimBrush}"
+                                                    PotentialBrush="{DynamicResource RavenBioPotentialBrush}"
+                                                    PredictionFilledBrush="{DynamicResource RavenBioPredictionBrush}"
+                                                    PredictionPotentialBrush="{DynamicResource RavenBioPredictionPotentialBrush}"
                                                     HighlightBrush="{DynamicResource RavenBioGoldBrush}"
                                                     DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
                                                     UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
+                                                    UnknownGlyphBrush="{DynamicResource RavenBioUnknownGlyphBrush}"
                                                     HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                    PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
+                                                    EmptyBrush="{DynamicResource RavenBioEmptyBrush}" />
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>

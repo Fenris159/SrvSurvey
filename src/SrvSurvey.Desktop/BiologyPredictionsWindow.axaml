@@ -328,7 +328,7 @@
                                                                   PotentialBrush="{DynamicResource RavenAccentMutedBrush}"
                                                                   HighlightBrush="{DynamicResource RavenWarningBrush}"
                                                                   EdgeBrush="{DynamicResource RavenBorderBrush}"
-                                                                  PredictionBrush="{DynamicResource RavenMutedTextBrush}" />
+                                                                  UnknownGlyphBrush="{DynamicResource RavenMutedTextBrush}" />
                                 <TextBlock Classes="monospace"
                                            Foreground="{DynamicResource RavenAccentBrush}"
                                            FontSize="11"

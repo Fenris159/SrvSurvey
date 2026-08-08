@@ -65,6 +65,49 @@ public sealed class GuidesViewModelTests
     }
 
     [Fact]
+    public void GlossaryDocumentsEveryBiologyRewardPipStateAndModifier()
+    {
+        var icons = GuideCatalog.Create()
+            .SelectMany(category => category.Icons)
+            .ToArray();
+        GuideIconViewModel Icon(GuideIconKind kind) =>
+            icons.Single(icon => icon.Kind == kind);
+
+        Assert.Contains(
+            "confirmed",
+            Icon(GuideIconKind.BiologyRewardKnown).Meaning,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "hatching",
+            Icon(GuideIconKind.BiologyRewardPredicted).Meaning,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "first-discovery",
+            Icon(GuideIconKind.BiologyRewardHighlighted).Meaning,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "already been analyzed",
+            Icon(GuideIconKind.BiologyRewardDimmed).Meaning,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "question mark",
+            Icon(GuideIconKind.BiologyRewardUnknown).Meaning,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void GlossaryDocumentsDynamicNearAndFarBearingChevrons()
+    {
+        var icon = GuideCatalog.Create()
+            .SelectMany(category => category.Icons)
+            .Single(icon => icon.Kind == GuideIconKind.DirectionalChevron);
+
+        Assert.Contains("open chevron", icon.Meaning, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("double chevron", icon.Meaning, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("1 km", icon.Meaning, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void GlossaryDocumentsLegacyGuardianRendererStates()
     {
         var icons = GuideCatalog.Create()
@@ -100,7 +143,7 @@ public sealed class GuidesViewModelTests
     [InlineData("marketID repair", "Completed build-site repair")]
     [InlineData("primary port order", "Primary port order safety")]
     [InlineData("power post", "Conflict-zone power post")]
-    [InlineData("hatched reward", "Hatched reward PIPs")]
+    [InlineData("hatched reward", "Predicted reward PIPs")]
     [InlineData("rocky body route", "Rocky body")]
     [InlineData("fuel scoop", "Fuel-scoop stop")]
     [InlineData("checksum manifest", "Import an original SrvSurvey profile")]

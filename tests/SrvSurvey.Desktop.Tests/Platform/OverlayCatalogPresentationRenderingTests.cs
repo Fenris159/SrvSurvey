@@ -1,5 +1,6 @@
 using System.Globalization;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media.Imaging;
@@ -97,6 +98,71 @@ public sealed class OverlayCatalogPresentationRenderingTests
         }
 
         Assert.Empty(emptyFrames);
+    }
+
+    [AvaloniaFact]
+    public void EveryStatefulEditorPreviewStateRendersThroughItsSharedTemplate()
+    {
+        var statefulPlotters = new[]
+        {
+            "PlotBioSystem",
+            "PlotBioStatus",
+            "PlotGuardianStatus",
+            "PlotFleetCarrierRoute",
+            "PlotPulse",
+        };
+        var outputDirectory = Environment.GetEnvironmentVariable(
+            "SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+        if (!string.IsNullOrWhiteSpace(outputDirectory))
+        {
+            Directory.CreateDirectory(outputDirectory);
+        }
+
+        foreach (var plotterName in statefulPlotters)
+        {
+            var preview = new OverlayPositionPreviewWindow(
+                OverlayLayoutCatalog.GetRequired(plotterName));
+            try
+            {
+                OverlayThemeResources.Apply(preview);
+                preview.ApplyRuntimePresentationTheme();
+                preview.Show();
+
+                var presentation = Assert.IsType<Control>(
+                    preview.RuntimePresentation,
+                    exactMatch: false);
+                for (var index = 0; index < preview.EditorPreviewStateCount; index++)
+                {
+                    Assert.Same(presentation, preview.RuntimePresentation);
+                    Assert.NotNull(presentation.DataContext);
+                    var frame = preview.CaptureRenderedFrame();
+                    Assert.NotNull(frame);
+                    Assert.True(
+                        frame.PixelSize.Width >= 8,
+                        $"{plotterName} state {index + 1} rendered too narrowly.");
+                    Assert.True(
+                        frame.PixelSize.Height >= 8,
+                        $"{plotterName} state {index + 1} rendered too short.");
+
+                    if (!string.IsNullOrWhiteSpace(outputDirectory))
+                    {
+                        using var stream = File.Create(Path.Combine(
+                            outputDirectory,
+                            $"{plotterName}-state-{index + 1}.png"));
+                        frame.Save(stream, PngBitmapEncoderOptions.Default);
+                    }
+
+                    if (index + 1 < preview.EditorPreviewStateCount)
+                    {
+                        Assert.True(preview.CycleEditorPreviewState());
+                    }
+                }
+            }
+            finally
+            {
+                preview.Close();
+            }
+        }
     }
 
     [AvaloniaFact]

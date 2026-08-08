@@ -44,12 +44,21 @@ public static class OverlayThemeResources
             ["RavenDangerDimBrush"] = "RavenOverlayDangerDimBrush",
             ["RavenSuccessDimBrush"] = "RavenOverlaySuccessDimBrush",
             ["RavenMenuGoldBrush"] = "RavenOverlayMenuGoldBrush",
+            ["RavenBioConfirmedBrush"] = "RavenOverlayBioConfirmedBrush",
+            ["RavenBioConfirmedDimBrush"] =
+                "RavenOverlayBioConfirmedDimBrush",
+            ["RavenBioPotentialBrush"] = "RavenOverlayBioPotentialBrush",
+            ["RavenBioPredictionBrush"] = "RavenOverlayBioPredictionBrush",
+            ["RavenBioPredictionPotentialBrush"] =
+                "RavenOverlayBioPredictionPotentialBrush",
             ["RavenBioGoldBrush"] = "RavenOverlayBioGoldBrush",
             ["RavenBioGoldDimBrush"] = "RavenOverlayBioGoldDimBrush",
             ["RavenBioUnknownBrush"] = "RavenOverlayBioUnknownBrush",
+            ["RavenBioUnknownGlyphBrush"] =
+                "RavenOverlayBioUnknownGlyphBrush",
             ["RavenBioHatchBrush"] = "RavenOverlayBioHatchBrush",
+            ["RavenBioEmptyBrush"] = "RavenOverlayBioEmptyBrush",
             ["RavenBioWhiteBrush"] = "RavenOverlayBioWhiteBrush",
-            ["RavenBioPredictionBrush"] = "RavenOverlayBioPredictionBrush",
             ["RavenColoniseSurplusBrush"] = "RavenOverlayColoniseSurplusBrush",
             ["RavenColoniseSurplusDimBrush"] = "RavenOverlayColoniseSurplusDimBrush",
             ["RavenColoniseDeficitBrush"] = "RavenOverlayColoniseDeficitBrush",

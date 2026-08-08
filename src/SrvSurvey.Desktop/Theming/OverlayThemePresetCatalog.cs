@@ -113,12 +113,19 @@ public static class OverlayThemePresetCatalog
         Dictionary<string, Color> colors,
         ExpandedPalette palette)
     {
+        var prediction = Blend(palette.Primary, palette.Secondary, 0.65);
+        colors["bio.confirmed"] = palette.Primary;
+        colors["bio.confirmedDim"] = palette.PrimaryDark;
+        colors["bio.potential"] = Scale(palette.Primary, 0.30);
+        colors["bio.prediction"] = prediction;
+        colors["bio.predictionPotential"] = Scale(prediction, 0.45);
         colors["bio.gold"] = palette.Value;
         colors["bio.goldDark"] = Scale(palette.Value, 0.42);
         colors["bio.unknown"] = palette.Muted;
-        colors["bio.hatch"] = WithAlpha(palette.Surface, 242);
+        colors["bio.unknownGlyph"] = palette.Text;
+        colors["bio.hatch"] = WithAlpha(Scale(prediction, 0.28), 190);
+        colors["bio.empty"] = WithAlpha(palette.Primary, 48);
         colors["bio.white"] = palette.Text;
-        colors["bio.prediction"] = Scale(palette.Secondary, 0.32);
     }
 
     private static void ApplyColonisation(
@@ -166,6 +173,16 @@ public static class OverlayThemePresetCatalog
     private static Color WithAlpha(Color color, byte alpha)
     {
         return Color.FromArgb(alpha, color.R, color.G, color.B);
+    }
+
+    private static Color Blend(Color first, Color second, double secondWeight)
+    {
+        var firstWeight = 1 - secondWeight;
+        return Color.FromArgb(
+            255,
+            (byte)Math.Round(first.R * firstWeight + second.R * secondWeight),
+            (byte)Math.Round(first.G * firstWeight + second.G * secondWeight),
+            (byte)Math.Round(first.B * firstWeight + second.B * secondWeight));
     }
 
     private sealed record ExpandedPalette(

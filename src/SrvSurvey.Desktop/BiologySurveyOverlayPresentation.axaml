@@ -4,10 +4,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:presentation="using:SrvSurvey.Desktop.Presentation"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:SystemSurveyOverlayViewModel"
              mc:Ignorable="d"
              ClipToBounds="True">
+  <UserControl.Resources>
+    <presentation:BiologyVariantColorConverter x:Key="BiologyVariantColorConverter" />
+  </UserControl.Resources>
   <Border Margin="0"
           Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
@@ -42,18 +46,22 @@
                         ItemsSource="{Binding Survey.BiologySurveyDisplay.Bodies}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:BiologyBodyRowViewModel">
-                <!-- Match OverlayPositionPreviewWindow bio-row grammar:
-                     glyph | label | reward bands | value (flex right). -->
+                <!-- Match Route Bodies visual grammar:
+                     body icon | label | reward bands | value (flex right). -->
                 <Grid Margin="0,1"
                       ColumnDefinitions="Auto,Auto,Auto,*"
                       ColumnSpacing="5">
-                  <Grid Width="14"
-                        MinHeight="18">
-                    <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
-                               FontSize="11"
-                               FontWeight="Bold"
-                               Text="&#x2600;" />
-                  </Grid>
+                  <Border Width="14"
+                          Height="18"
+                          Background="Transparent"
+                          ToolTip.Tip="{Binding BodyIconAccessibleName}">
+                    <Image Width="14"
+                           Height="14"
+                           HorizontalAlignment="Center"
+                           Source="{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}"
+                           Stretch="Uniform"
+                           VerticalAlignment="Center" />
+                  </Border>
                   <Grid Grid.Column="1">
                     <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
                                FontSize="10"
@@ -88,16 +96,17 @@
                                                              IsPrediction="{Binding IsPrediction}"
                                                              IsHighlighted="{Binding IsHighlighted}"
                                                              IsDimmed="{Binding ShouldDim}"
-                                                             FilledBrush="{DynamicResource RavenPrimaryBrush}"
-                                                             PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                             DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                             PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
-                                                             PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
+                                                             FilledBrush="{DynamicResource RavenBioConfirmedBrush}"
+                                                             PotentialBrush="{DynamicResource RavenBioPotentialBrush}"
+                                                             DimmedFilledBrush="{DynamicResource RavenBioConfirmedDimBrush}"
+                                                             PredictionFilledBrush="{DynamicResource RavenBioPredictionBrush}"
+                                                             PredictionPotentialBrush="{DynamicResource RavenBioPredictionPotentialBrush}"
                                                              HighlightBrush="{DynamicResource RavenBioGoldBrush}"
                                                              DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
                                                              UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
+                                                             UnknownGlyphBrush="{DynamicResource RavenBioUnknownGlyphBrush}"
                                                              HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                             PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
+                                                             EmptyBrush="{DynamicResource RavenBioEmptyBrush}" />
                         </DataTemplate>
                       </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -143,62 +152,158 @@
                      Text="{Binding Survey.BiologySurveyDisplay.PredictionStatus}"
                      TextWrapping="Wrap" />
 
-          <ItemsControl IsVisible="{Binding Survey.BiologySurveyDisplay.IsBodyDetail}"
-                        ItemsSource="{Binding Survey.BiologySurveyDisplay.Organisms}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:BiologyOrganismRowViewModel">
-                <!-- Same spacing/margins as editor bio rows; name column flexes
-                     so long species labels still ellipsize at 240px width. -->
-                <Grid Margin="0,1"
-                      ColumnDefinitions="*,Auto,Auto"
-                      ColumnSpacing="5"
-                      Opacity="{Binding RowOpacity}">
-                  <StackPanel Spacing="0">
-                    <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
-                               FontSize="10"
-                               FontWeight="SemiBold"
-                               Text="{Binding DisplayName}"
-                               TextTrimming="CharacterEllipsis" />
-                    <TextBlock Foreground="{DynamicResource RavenMutedTextBrush}"
-                               FontSize="8"
-                               Text="{Binding GenusName}"
-                               TextTrimming="CharacterEllipsis" />
+          <StackPanel IsVisible="{Binding Survey.BiologySurveyDisplay.IsBodyDetail}"
+                      Grid.IsSharedSizeScope="True">
+            <ItemsControl ItemsSource="{Binding Survey.BiologySurveyDisplay.OrganismGroups}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:BiologyOrganismGroupViewModel">
+                  <StackPanel>
+                    <Grid Margin="0,2"
+                          ColumnSpacing="5">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="BodyBiologyPip" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="BodyBiologyGenus" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="BodyBiologySpecies" />
+                      </Grid.ColumnDefinitions>
+
+                      <!-- The reward PIP remains a fixed two-line-high marker even
+                           when a genus has a longer list of possible species. -->
+                      <controls:BiologyRewardBandControl Width="13"
+                                                         Height="28"
+                                                         VerticalAlignment="Top"
+                                                         MinimumReward="{Binding MinimumReward}"
+                                                         MaximumReward="{Binding MaximumReward}"
+                                                         BucketOneMillions="{Binding RewardBucketOneMillions}"
+                                                         BucketTwoMillions="{Binding RewardBucketTwoMillions}"
+                                                         BucketThreeMillions="{Binding RewardBucketThreeMillions}"
+                                                         IsPrediction="{Binding IsPrediction}"
+                                                         IsHighlighted="{Binding IsHighlightedFirst}"
+                                                         IsDimmed="{Binding ShouldDim}"
+                                                         FilledBrush="{DynamicResource RavenBioConfirmedBrush}"
+                                                         PotentialBrush="{DynamicResource RavenBioPotentialBrush}"
+                                                         DimmedFilledBrush="{DynamicResource RavenBioConfirmedDimBrush}"
+                                                         PredictionFilledBrush="{DynamicResource RavenBioPredictionBrush}"
+                                                         PredictionPotentialBrush="{DynamicResource RavenBioPredictionPotentialBrush}"
+                                                         HighlightBrush="{DynamicResource RavenBioGoldBrush}"
+                                                         DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
+                                                         UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
+                                                         UnknownGlyphBrush="{DynamicResource RavenBioUnknownGlyphBrush}"
+                                                         HatchBrush="{DynamicResource RavenBioHatchBrush}"
+                                                         EmptyBrush="{DynamicResource RavenBioEmptyBrush}" />
+
+                      <Grid Grid.Column="1"
+                            RowDefinitions="Auto,Auto"
+                            HorizontalAlignment="Stretch">
+                        <StackPanel HorizontalAlignment="Right"
+                                    Orientation="Horizontal"
+                                    Spacing="2">
+                          <TextBlock Foreground="{DynamicResource RavenBioWhiteBrush}"
+                                     FontSize="9"
+                                     FontWeight="Bold"
+                                     IsVisible="{Binding IsGlobalRegionalFirst}"
+                                     Text="&#x2600;"
+                                     ToolTip.Tip="First discovery for this Galactic region" />
+                          <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
+                                     FontSize="9"
+                                     FontWeight="Bold"
+                                     IsVisible="{Binding IsCommanderFirst}"
+                                     Text="&#x2691;"
+                                     ToolTip.Tip="First discovery for this Commander" />
+                          <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
+                                     FontSize="9"
+                                     FontWeight="Bold"
+                                     IsVisible="{Binding IsHighlightedRegionalFirst}"
+                                     Text="&#x2690;"
+                                     ToolTip.Tip="First regional discovery for this Commander" />
+                          <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
+                                     FontSize="9"
+                                     IsVisible="{Binding IsStandardRegionalFirst}"
+                                     Text="&#x2690;"
+                                     ToolTip.Tip="First regional discovery for this Commander" />
+                          <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
+                                     FontSize="9"
+                                     FontWeight="SemiBold"
+                                     Text="{Binding GenusLabel}" />
+                        </StackPanel>
+                        <TextBlock Grid.Row="1"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource RavenMutedTextBrush}"
+                                   FontSize="8"
+                                   Text="{Binding RewardText}" />
+                      </Grid>
+
+                      <StackPanel Grid.Column="2">
+                        <ItemsControl ItemsSource="{Binding Species}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:BiologyOrganismVariantRowViewModel">
+                              <StackPanel MinHeight="13"
+                                          Orientation="Horizontal"
+                                          Spacing="2">
+                                <Grid>
+                                  <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
+                                             FontSize="9"
+                                             IsVisible="{Binding !HasVariantColor}"
+                                             Text="{Binding SpeciesName}" />
+                                  <TextBlock Foreground="{Binding VariantName, Converter={StaticResource BiologyVariantColorConverter}}"
+                                             FontSize="9"
+                                             IsVisible="{Binding HasVariantColor}"
+                                             Text="{Binding SpeciesName}"
+                                             ToolTip.Tip="{Binding VariantName}" />
+                                </Grid>
+                                <TextBlock Foreground="{DynamicResource RavenBioWhiteBrush}"
+                                           FontSize="9"
+                                           FontWeight="Bold"
+                                           IsVisible="{Binding IsGlobalRegionalFirst}"
+                                           Text="&#x2600;"
+                                           ToolTip.Tip="First discovery for this Galactic region" />
+                                <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
+                                           FontSize="9"
+                                           FontWeight="Bold"
+                                           IsVisible="{Binding IsCommanderFirst}"
+                                           Text="&#x2691;"
+                                           ToolTip.Tip="First discovery for this Commander" />
+                                <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
+                                           FontSize="9"
+                                           FontWeight="Bold"
+                                           IsVisible="{Binding IsHighlightedRegionalFirst}"
+                                           Text="&#x2690;"
+                                           ToolTip.Tip="First regional discovery for this Commander" />
+                                <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
+                                           FontSize="9"
+                                           IsVisible="{Binding IsStandardRegionalFirst}"
+                                           Text="&#x2690;"
+                                           ToolTip.Tip="First regional discovery for this Commander" />
+                                <TextBlock Foreground="{DynamicResource RavenBioUnknownGlyphBrush}"
+                                           FontSize="9"
+                                           IsVisible="{Binding HasPredictionMarkers}"
+                                           Text="?"
+                                           ToolTip.Tip="{Binding PredictionMarkerToolTip}" />
+                              </StackPanel>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Border Classes="badge overlay-state-pill overlay-state-pill-compact"
+                                HorizontalAlignment="Left"
+                                IsVisible="{Binding IsAnalyzed}">
+                          <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
+                                     FontSize="6"
+                                     FontWeight="Bold"
+                                     Text="ANALYZED" />
+                        </Border>
+                      </StackPanel>
+                    </Grid>
+
+                    <Border Classes="overlay-divider"
+                            Margin="0,2,0,1"
+                            Background="{DynamicResource RavenPrimaryDimBrush}"
+                            IsVisible="{Binding ShowDivider}"
+                            Opacity="0.55" />
                   </StackPanel>
-                  <controls:BiologyRewardBandControl Grid.Column="1"
-                                                       Width="13"
-                                                       Height="28"
-                                                       Margin="1,0,3,0"
-                                                       VerticalAlignment="Center"
-                                                       MinimumReward="{Binding Reward}"
-                                                       MaximumReward="{Binding Reward}"
-                                                       BucketOneMillions="{Binding RewardBucketOneMillions}"
-                                                       BucketTwoMillions="{Binding RewardBucketTwoMillions}"
-                                                       BucketThreeMillions="{Binding RewardBucketThreeMillions}"
-                                                       IsPrediction="{Binding IsPrediction}"
-                                                       IsHighlighted="{Binding IsHighlightedFirst}"
-                                                       IsDimmed="{Binding ShouldDim}"
-                                                       FilledBrush="{DynamicResource RavenPrimaryBrush}"
-                                                       PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                       DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                       PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
-                                                       PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
-                                                       HighlightBrush="{DynamicResource RavenBioGoldBrush}"
-                                                       DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
-                                                       UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
-                                                       HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                       PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
-                  <TextBlock Grid.Column="2"
-                             MaxWidth="62"
-                             HorizontalAlignment="Right"
-                             VerticalAlignment="Center"
-                             Foreground="{DynamicResource RavenPrimaryBrush}"
-                             FontSize="10"
-                             Text="{Binding RewardText}"
-                             TextTrimming="CharacterEllipsis" />
-                </Grid>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
 
           <TextBlock Foreground="{DynamicResource RavenMutedTextBrush}"
                      FontSize="9"

@@ -129,14 +129,23 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
     public bool HasSettingsStatus => !string.IsNullOrWhiteSpace(SettingsStatus);
 
     /// <summary>
-    /// Installs a mid-pulse SCO cooling sample for the position editor.
+    /// Installs a representative journal/SCO state for the position editor.
     /// </summary>
-    internal void InstallEditorPreview()
+    internal void InstallEditorPreview(
+        PulseEditorPreviewState state = PulseEditorPreviewState.ScoCooling)
     {
         var now = timeProvider.GetUtcNow();
         pulseExpiresAtUtc = now + TimeSpan.FromSeconds(6);
-        scoStoppedAtUtc = now - TimeSpan.FromSeconds(4);
-        supercruiseOverdrive = false;
+        (bool isActive, DateTimeOffset? stoppedAtUtc) = state switch
+        {
+            PulseEditorPreviewState.ScoActive => (true, (DateTimeOffset?)null),
+            PulseEditorPreviewState.ScoReady =>
+                (false, now - TimeSpan.FromSeconds(9.5)),
+            PulseEditorPreviewState.JournalPulse => (false, (DateTimeOffset?)null),
+            _ => (false, now - TimeSpan.FromSeconds(4)),
+        };
+        supercruiseOverdrive = isActive;
+        scoStoppedAtUtc = stoppedAtUtc;
         OnPropertyChanged(nameof(PulseHeight));
         OnPropertyChanged(nameof(IsScoActive));
         OnPropertyChanged(nameof(IsScoCoolingDown));
@@ -249,4 +258,12 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+}
+
+internal enum PulseEditorPreviewState
+{
+    ScoCooling,
+    ScoActive,
+    ScoReady,
+    JournalPulse,
 }

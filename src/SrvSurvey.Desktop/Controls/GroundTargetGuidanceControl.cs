@@ -122,7 +122,13 @@ public sealed class GroundTargetGuidanceControl : Control
             center.Y - Math.Cos(bearingRadians) * (radius - 9));
         context.DrawLine(new Pen(accent, 2.2), center, target);
         context.DrawEllipse(accent, null, target, 4, 4);
-        DrawVehicle(context, center, accent);
+        RingedPointerDrawing.Draw(
+            context,
+            center,
+            20,
+            bearingDegrees: 0,
+            accent,
+            strokeThickness: 1.5);
 
         var baselineY = Math.Max(94, Bounds.Height - 12);
         var origin = new Point(10, baselineY);
@@ -147,23 +153,4 @@ public sealed class GroundTargetGuidanceControl : Control
         context.DrawEllipse(attackBrush, null, attackEnd, 3, 3);
     }
 
-    private static void DrawVehicle(
-        DrawingContext context,
-        Point center,
-        IBrush brush)
-    {
-        var geometry = new StreamGeometry();
-        using (var geometryContext = geometry.Open())
-        {
-            geometryContext.BeginFigure(
-                new Point(center.X, center.Y - 7),
-                isFilled: true);
-            geometryContext.LineTo(new Point(center.X + 5, center.Y + 6));
-            geometryContext.LineTo(new Point(center.X, center.Y + 3));
-            geometryContext.LineTo(new Point(center.X - 5, center.Y + 6));
-            geometryContext.EndFigure(isClosed: true);
-        }
-
-        context.DrawGeometry(brush, new Pen(brush, 1), geometry);
-    }
 }

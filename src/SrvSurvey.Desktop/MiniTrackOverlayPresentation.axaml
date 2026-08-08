@@ -3,6 +3,7 @@
              x:Class="SrvSurvey.Desktop.MiniTrackOverlayPresentation"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:SurfaceSurveyOverlayViewModel"
              mc:Ignorable="d"
@@ -42,14 +43,14 @@
                                FontSize="10"
                                FontWeight="Bold"
                                Text="{Binding Name}" />
-                    <TextBlock HorizontalAlignment="Center"
-                               Foreground="{DynamicResource RavenAccentBrush}"
-                               FontSize="15"
-                               Text="&#x25B2;">
-                      <TextBlock.RenderTransform>
-                        <RotateTransform Angle="{Binding RelativeBearingDegrees}" />
-                      </TextBlock.RenderTransform>
-                    </TextBlock>
+                    <controls:DirectionalChevronControl
+                        Width="18"
+                        Height="18"
+                        HorizontalAlignment="Center"
+                        BearingDegrees="{Binding RelativeBearingDegrees}"
+                        IsFar="{Binding IsFarTarget}"
+                        Stroke="{DynamicResource RavenAccentBrush}"
+                        StrokeThickness="2" />
                     <TextBlock HorizontalAlignment="Center"
                                Classes="monospace"
                                FontSize="9"

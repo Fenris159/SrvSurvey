@@ -22,10 +22,14 @@ public sealed class GuardianOverlayViewModel : INotifyPropertyChanged
 
     public IGuardianOverlayPresentationState Guardian { get; }
 
-    internal static GuardianOverlayViewModel CreateEditorPreview()
+    internal static GuardianOverlayViewModel CreateEditorPreview(
+        GuardianStatusPreviewState statusState =
+            GuardianStatusPreviewState.ObeliskTarget)
     {
         var viewModel = new GuardianOverlayViewModel(
-            GuardianOverlayPreviewState.Instance,
+            statusState == GuardianStatusPreviewState.ObeliskTarget
+                ? GuardianOverlayPreviewState.Instance
+                : GuardianOverlayPreviewState.Create(statusState),
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
         viewModel.ApplyPreparation(new OverlayPreparationResult(
             IsPrepared: true,

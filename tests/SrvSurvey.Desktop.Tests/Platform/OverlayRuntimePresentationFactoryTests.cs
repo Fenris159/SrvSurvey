@@ -8,6 +8,70 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class OverlayRuntimePresentationFactoryTests
 {
     [Fact]
+    public void StatefulPlottersExposeNamedEditorPreviewStates()
+    {
+        var expected = new Dictionary<string, string[]>
+        {
+            ["PlotBioSystem"] =
+                ["System overview", "Body predictions", "Body identified"],
+            ["PlotBioStatus"] =
+                ["Active sample", "Signal summary", "DSS required", "Stale sample"],
+            ["PlotGuardianStatus"] =
+            [
+                "Obelisk target",
+                "Site type choice",
+                "Heading choice",
+                "Site origin",
+                "On-foot relic",
+                "POI choice",
+                "No nearby point",
+                "Glide approach",
+            ],
+            ["PlotFleetCarrierRoute"] =
+                ["Jump cooldown", "Jump scheduled", "Route only"],
+            ["PlotPulse"] =
+                ["SCO cooling", "SCO active", "SCO ready", "Journal pulse"],
+        };
+
+        foreach (var (plotterName, stateNames) in expected)
+        {
+            Assert.Equal(
+                stateNames,
+                OverlayRuntimePresentationFactory
+                    .GetEditorPreviewStates(plotterName)
+                    .Select(state => state.DisplayName));
+        }
+
+        Assert.Equal(
+            ["Default"],
+            OverlayRuntimePresentationFactory
+                .GetEditorPreviewStates("PlotFSSInfo")
+                .Select(state => state.DisplayName));
+    }
+
+    [Fact]
+    public void EveryRegisteredEditorPreviewStateBuildsSharedData()
+    {
+        foreach (var definition in OverlayLayoutCatalog.Supported)
+        {
+            var states = OverlayRuntimePresentationFactory
+                .GetEditorPreviewStates(definition.Name);
+            for (var index = 0; index < states.Count; index++)
+            {
+                var dataContext = OverlayRuntimePresentationFactory
+                    .CreateEditorDataContextOnly(definition.Name, index);
+                Assert.NotNull(dataContext);
+                (dataContext as IDisposable)?.Dispose();
+            }
+
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
+                    definition.Name,
+                    states.Count));
+        }
+    }
+
+    [Fact]
     public void EveryCatalogPlotterIsRegisteredForSharedPresentation()
     {
         foreach (var definition in OverlayLayoutCatalog.Supported)
@@ -122,6 +186,92 @@ public sealed class OverlayRuntimePresentationFactoryTests
         Assert.True(pulse.IsScoCoolingDown || pulse.IsScoReady);
     }
 
+    [Fact]
+    public void BiologyStatusStatesRepresentDistinctGameConditions()
+    {
+        var active = CreateSystemSurveyState("PlotBioStatus", 0);
+        Assert.True(active.Survey.BiologyStatus!.HasActiveSample);
+        Assert.Equal(
+            active.Survey.BiologyStatus.CompletionPercent,
+            active.Survey.BiologyStatus.TrackedCompletionPercent);
+        Assert.Equal(100d / 3d, active.Survey.BiologyStatus.CompletionPercent, 6);
+
+        var summary = CreateSystemSurveyState("PlotBioStatus", 1);
+        Assert.True(summary.Survey.BiologyStatus!.ShowSignalSummary);
+
+        var dss = CreateSystemSurveyState("PlotBioStatus", 2);
+        Assert.True(dss.Survey.BiologyStatus!.RequiresDss);
+        Assert.Equal(0, dss.Survey.BiologyStatus.CompletionPercent);
+        Assert.Equal(0, dss.Survey.BiologyStatus.TrackedCompletionPercent);
+
+        var stale = CreateSystemSurveyState("PlotBioStatus", 3);
+        Assert.True(stale.Survey.BiologyStatus!.IsStaleActiveSample);
+    }
+
+    [Fact]
+    public void FleetCarrierAndPulseStatesRepresentDistinctTimingConditions()
+    {
+        using var cooldown = Assert.IsType<FleetCarrierRouteOverlayViewModel>(
+            OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
+                "PlotFleetCarrierRoute",
+                0));
+        Assert.True(cooldown.HasCountdown);
+        Assert.Equal("JUMP COOLDOWN", cooldown.CountdownTitle);
+
+        using var scheduled = Assert.IsType<FleetCarrierRouteOverlayViewModel>(
+            OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
+                "PlotFleetCarrierRoute",
+                1));
+        Assert.True(scheduled.HasCountdown);
+        Assert.Equal("JUMP DEPARTURE", scheduled.CountdownTitle);
+
+        using var routeOnly = Assert.IsType<FleetCarrierRouteOverlayViewModel>(
+            OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
+                "PlotFleetCarrierRoute",
+                2));
+        Assert.False(routeOnly.HasCountdown);
+
+        var cooling = CreatePulseState(0);
+        Assert.True(cooling.IsScoCoolingDown);
+        var active = CreatePulseState(1);
+        Assert.True(active.IsScoActive);
+        var ready = CreatePulseState(2);
+        Assert.True(ready.IsScoReady);
+        var journal = CreatePulseState(3);
+        Assert.False(journal.IsScoActive);
+        Assert.False(journal.IsScoCoolingDown);
+        Assert.False(journal.IsScoReady);
+        Assert.True(journal.ShouldShow);
+    }
+
+    [Fact]
+    public void GuardianStatusStatesExposeEveryConditionalBranch()
+    {
+        var visibleBranches = new Func<IGuardianOverlayPresentationState, bool>[]
+        {
+            state => state.IsGuardianObeliskVisible,
+            state => state.IsGuardianSiteTypeChoiceVisible,
+            state => state.IsGuardianHeadingChoiceVisible,
+            state => state.IsGuardianOriginVisible,
+            state => state.IsGuardianOnFootRelicVisible,
+            state => state.IsGuardianPoiChoiceVisible,
+            state => state.IsGuardianNoPointVisible,
+            state => state.IsGlideApproach,
+        };
+
+        for (var index = 0; index < visibleBranches.Length; index++)
+        {
+            var viewModel = Assert.IsType<GuardianOverlayViewModel>(
+                OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
+                    "PlotGuardianStatus",
+                    index));
+            Assert.True(visibleBranches[index](viewModel.Guardian));
+            Assert.Equal(
+                1,
+                visibleBranches.Count(branch => branch(viewModel.Guardian)));
+        }
+    }
+
     [AvaloniaFact]
     public void SystemBiologyPresentationHostsSharedTemplateWithData()
     {
@@ -155,4 +305,17 @@ public sealed class OverlayRuntimePresentationFactoryTests
         Assert.True(overlay.Survey.HasBiologicalBodies);
         Assert.False(string.IsNullOrWhiteSpace(overlay.Survey.SystemStatusText));
     }
+
+    private static SystemSurveyOverlayViewModel CreateSystemSurveyState(
+        string plotterName,
+        int stateIndex) => Assert.IsType<SystemSurveyOverlayViewModel>(
+            OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
+                plotterName,
+                stateIndex));
+
+    private static PulseOverlayViewModel CreatePulseState(int stateIndex) =>
+        Assert.IsType<PulseOverlayViewModel>(
+            OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
+                "PlotPulse",
+                stateIndex));
 }

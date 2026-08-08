@@ -45,7 +45,9 @@ public sealed class RavenThemeServiceTests : IDisposable
         var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
         colors["orange"] = Color.FromArgb(255, 12, 34, 56);
         colors["orangeDark"] = Color.FromArgb(255, 65, 43, 21);
+        colors["bio.confirmed"] = Color.FromArgb(255, 23, 45, 67);
         colors["bio.gold"] = Color.FromArgb(255, 78, 90, 12);
+        colors["bio.unknownGlyph"] = Color.FromArgb(255, 98, 76, 54);
         colors["guardian.primary"] = Color.FromArgb(255, 21, 42, 63);
         var service = new RavenThemeService(
             application,
@@ -75,6 +77,14 @@ public sealed class RavenThemeServiceTests : IDisposable
             Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenOverlayBioGoldBrush"]).Color);
         Assert.Equal(
+            Color.FromArgb(255, 23, 45, 67),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenOverlayBioConfirmedBrush"]).Color);
+        Assert.Equal(
+            Color.FromArgb(255, 98, 76, 54),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenOverlayBioUnknownGlyphBrush"]).Color);
+        Assert.Equal(
             Color.FromArgb(255, 21, 42, 63),
             Assert.IsType<SolidColorBrush>(
                 application.Resources["LegacyTheme.guardian.primary"]).Color);
@@ -91,9 +101,15 @@ public sealed class RavenThemeServiceTests : IDisposable
                      "RavenOverlayDangerDimBrush",
                      "RavenOverlaySuccessDimBrush",
                      "RavenOverlayMenuGoldBrush",
+                     "RavenOverlayBioConfirmedBrush",
+                     "RavenOverlayBioConfirmedDimBrush",
+                     "RavenOverlayBioPotentialBrush",
+                     "RavenOverlayBioPredictionPotentialBrush",
                      "RavenOverlayBioGoldDimBrush",
                      "RavenOverlayBioUnknownBrush",
+                     "RavenOverlayBioUnknownGlyphBrush",
                      "RavenOverlayBioHatchBrush",
+                     "RavenOverlayBioEmptyBrush",
                      "RavenOverlayBioWhiteBrush",
                      "RavenOverlayBioPredictionBrush",
                      "RavenOverlayColoniseSurplusBrush",

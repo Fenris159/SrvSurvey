@@ -44,14 +44,42 @@
               CornerRadius="7,7,0,0"
               BoxShadow="0 0 0 0 #00000000"
               ToolTip.Tip="{Binding Title}">
-        <TextBlock x:Name="EditorFolderTabLabel"
-                   MaxWidth="280"
-                   VerticalAlignment="Center"
-                   Foreground="#1A1208"
-                   FontSize="11"
-                   FontWeight="Bold"
-                   Text="{Binding Title}"
-                   TextTrimming="CharacterEllipsis" />
+        <Grid ColumnDefinitions="Auto,Auto"
+              ColumnSpacing="6">
+          <TextBlock x:Name="EditorFolderTabLabel"
+                     MaxWidth="280"
+                     VerticalAlignment="Center"
+                     Foreground="#1A1208"
+                     FontSize="11"
+                     FontWeight="Bold"
+                     Text="{Binding Title}"
+                     TextTrimming="CharacterEllipsis" />
+          <Button x:Name="EditorFolderTabStateButton"
+                  Grid.Column="1"
+                  MinWidth="46"
+                  Height="20"
+                  MinHeight="20"
+                  MaxHeight="20"
+                  MaxWidth="150"
+                  Padding="6,0"
+                  VerticalAlignment="Center"
+                  HorizontalContentAlignment="Center"
+                  VerticalContentAlignment="Center"
+                  Background="#261A1208"
+                  BorderBrush="#991A1208"
+                  BorderThickness="1"
+                  CornerRadius="4"
+                  Foreground="#1A1208"
+                  IsVisible="False"
+                  Click="OnEditorFolderTabStateButtonClick">
+            <TextBlock x:Name="EditorFolderTabStateLabel"
+                       VerticalAlignment="Center"
+                       Foreground="#5C130D"
+                       FontSize="9"
+                       FontWeight="Bold"
+                       TextTrimming="CharacterEllipsis" />
+          </Button>
+        </Grid>
       </Border>
 
       <!-- Body sits under the tab; top corners open so the tab reads as
@@ -192,16 +220,17 @@
                                                                IsPrediction="{Binding IsPrediction}"
                                                                IsHighlighted="{Binding IsHighlighted}"
                                                                IsDimmed="{Binding ShouldDim}"
-                                                               FilledBrush="{DynamicResource RavenPrimaryBrush}"
-                                                               PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                               DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                               PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
-                                                               PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
+                                                               FilledBrush="{DynamicResource RavenBioConfirmedBrush}"
+                                                               PotentialBrush="{DynamicResource RavenBioPotentialBrush}"
+                                                               DimmedFilledBrush="{DynamicResource RavenBioConfirmedDimBrush}"
+                                                               PredictionFilledBrush="{DynamicResource RavenBioPredictionBrush}"
+                                                               PredictionPotentialBrush="{DynamicResource RavenBioPredictionPotentialBrush}"
                                                                HighlightBrush="{DynamicResource RavenBioGoldBrush}"
                                                                DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
                                                                UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
+                                                               UnknownGlyphBrush="{DynamicResource RavenBioUnknownGlyphBrush}"
                                                                HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                               PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
+                                                               EmptyBrush="{DynamicResource RavenBioEmptyBrush}" />
                           </DataTemplate>
                         </ItemsControl.ItemTemplate>
                       </ItemsControl>

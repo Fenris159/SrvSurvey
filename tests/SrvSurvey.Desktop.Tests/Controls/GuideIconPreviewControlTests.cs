@@ -64,6 +64,16 @@ public sealed class GuideIconPreviewControlTests
             WarningBrush = Brushes.Gold,
             DangerBrush = Brushes.Red,
             GoldBrush = Brushes.Goldenrod,
+            PipConfirmedBrush = Brushes.Orange,
+            PipConfirmedDimBrush = Brushes.DarkOrange,
+            PipPotentialBrush = Brushes.SaddleBrown,
+            PipPredictionBrush = Brushes.Gold,
+            PipPredictionPotentialBrush = Brushes.DarkGoldenrod,
+            PipHighlightBrush = Brushes.Yellow,
+            PipUnknownBrush = Brushes.Gray,
+            PipUnknownGlyphBrush = Brushes.LightGray,
+            PipHatchBrush = Brushes.Black,
+            PipEmptyBrush = Brushes.DarkSlateGray,
         };
     }
 

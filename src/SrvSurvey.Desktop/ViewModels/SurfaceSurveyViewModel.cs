@@ -1077,6 +1077,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
 
 public sealed class SurfaceRadarMarkerViewModel
 {
+    private const double FallbackFarDistanceMeters = 1_000;
+
     public string Name { get; init; } = string.Empty;
 
     public SurfaceRadarMarkerKind Kind { get; init; }
@@ -1092,6 +1094,13 @@ public sealed class SurfaceRadarMarkerViewModel
     public double RadiusMeters { get; init; }
 
     public bool IsInsideRadius { get; init; }
+
+    public double FarDistanceMeters => double.IsFinite(RadiusMeters)
+        && RadiusMeters > 0
+        ? RadiusMeters
+        : FallbackFarDistanceMeters;
+
+    public bool IsFarTarget => DistanceMeters >= FarDistanceMeters;
 
     public required SurfaceCoordinate Location { get; init; }
 

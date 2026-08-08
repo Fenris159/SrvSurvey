@@ -204,3 +204,10 @@ internal sealed record FleetCarrierRouteEditorPreview(
     string CountdownPhase,
     string CountdownPhaseTime,
     bool HasCountdownPhaseTime);
+
+internal enum FleetCarrierRouteEditorPreviewState
+{
+    Cooldown,
+    Scheduled,
+    RouteOnly,
+}
