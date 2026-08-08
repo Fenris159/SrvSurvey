@@ -20,75 +20,11 @@
           BorderBrush="{DynamicResource RavenAccentBrush}"
           BorderThickness="1"
           CornerRadius="10">
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto,Auto,Auto"
-          ColumnSpacing="8" RowSpacing="5">
-      <TextBlock VerticalAlignment="Center"
-                 FontWeight="SemiBold"
-                 Text="Overlay category" />
-      <ComboBox Grid.Column="1"
-                MinWidth="310"
-                Height="38"
-                ItemsSource="{Binding Categories}"
-                SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" />
-      <Button Grid.Column="2"
-              Width="40"
-              Height="38"
-              Padding="0"
-              Command="{Binding SnapToCenterCommand}"
-              FontSize="26"
-              HorizontalContentAlignment="Center"
-              VerticalContentAlignment="Center"
-              ToolTip.Tip="Snap every overlay in this category to the center"
-              Content="&#x25CE;" />
-      <Button Grid.Column="3"
-              Width="40"
-              Height="38"
-              Padding="0"
-              Classes="primary"
-              Command="{Binding SaveCommand}"
-              FontSize="28"
-              HorizontalContentAlignment="Center"
-              VerticalContentAlignment="Center"
-              ToolTip.Tip="Save overlay positions, opacity, and scale"
-              Content="&#x2713;" />
-      <Button Grid.Column="4"
-              Width="40"
-              Height="38"
-              Padding="0"
-              Command="{Binding CancelCommand}"
-              FontSize="30"
-              HorizontalContentAlignment="Center"
-              VerticalContentAlignment="Center"
-              ToolTip.Tip="Cancel overlay position, opacity, and scale changes"
-              Content="&#x00D7;" />
-      <TextBlock Grid.Row="1"
-                 VerticalAlignment="Center"
-                 FontSize="11"
-                 FontWeight="SemiBold"
-                 Text="Global overlay opacity" />
-      <Grid Grid.Row="1"
-            Grid.Column="1"
-            ColumnDefinitions="*,Auto"
-            ColumnSpacing="8">
-        <Slider Minimum="0"
-                Maximum="100"
-                TickFrequency="1"
-                Value="{Binding GlobalOpacityPercent, Mode=TwoWay}" />
-        <TextBlock Grid.Column="1"
-                   MinWidth="38"
-                   VerticalAlignment="Center"
-                   FontWeight="SemiBold"
-                   Text="{Binding GlobalOpacityLabel}" />
-      </Grid>
-      <TextBlock Grid.Row="2"
-                 Grid.ColumnSpan="5"
-                 Classes="muted"
-                 FontSize="11"
-                 Text="{Binding StatusMessage}"
-                 TextTrimming="CharacterEllipsis" />
-      <Border Grid.Row="3"
-              Grid.ColumnSpan="5"
-              Margin="0,4,0,0"
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+          RowSpacing="5">
+      <Border x:Name="OverlaySettingsPanel"
+              Grid.Row="0"
+              Margin="0,0,0,4"
               Padding="9"
               Background="{DynamicResource RavenWindowBrush}"
               BorderBrush="{DynamicResource RavenAccentBrush}"
@@ -101,7 +37,7 @@
                      Text="{Binding SelectedOverlaySettingsTitle}" />
           <TextBlock Classes="muted"
                      FontSize="10"
-                     Text="Right-click another preview to edit that pane. The top checkmark saves every change and closes the editor."
+                     Text="Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor."
                      TextWrapping="Wrap" />
           <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
             <StackPanel Spacing="4">
@@ -143,6 +79,76 @@
           </Grid>
         </StackPanel>
       </Border>
+      <Grid x:Name="EditorToolbarPanel"
+            Grid.Row="1"
+            ColumnDefinitions="Auto,*,Auto,Auto,Auto"
+            ColumnSpacing="8">
+        <TextBlock VerticalAlignment="Center"
+                   FontWeight="SemiBold"
+                   Text="Overlay category" />
+        <ComboBox Grid.Column="1"
+                  MinWidth="310"
+                  Height="38"
+                  ItemsSource="{Binding Categories}"
+                  SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" />
+        <Button Grid.Column="2"
+                Width="40"
+                Height="38"
+                Padding="0"
+                Command="{Binding SnapToCenterCommand}"
+                FontSize="26"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                ToolTip.Tip="Snap every overlay in this category to the center"
+                Content="&#x25CE;" />
+        <Button Grid.Column="3"
+                Width="40"
+                Height="38"
+                Padding="0"
+                Classes="primary"
+                Command="{Binding SaveCommand}"
+                FontSize="28"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                ToolTip.Tip="Save overlay positions, opacity, and scale"
+                Content="&#x2713;" />
+        <Button Grid.Column="4"
+                Width="40"
+                Height="38"
+                Padding="0"
+                Command="{Binding CancelCommand}"
+                FontSize="30"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                ToolTip.Tip="Cancel overlay position, opacity, and scale changes"
+                Content="&#x00D7;" />
+      </Grid>
+      <Grid Grid.Row="2"
+            ColumnDefinitions="Auto,*"
+            ColumnSpacing="8">
+        <TextBlock VerticalAlignment="Center"
+                   FontSize="11"
+                   FontWeight="SemiBold"
+                   Text="Global overlay opacity" />
+        <Grid Grid.Column="1"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="8">
+          <Slider Minimum="0"
+                  Maximum="100"
+                  TickFrequency="1"
+                  Value="{Binding GlobalOpacityPercent, Mode=TwoWay}" />
+          <TextBlock Grid.Column="1"
+                     MinWidth="38"
+                     VerticalAlignment="Center"
+                     FontWeight="SemiBold"
+                     Text="{Binding GlobalOpacityLabel}" />
+        </Grid>
+      </Grid>
+      <TextBlock Grid.Row="3"
+                 Classes="muted"
+                 FontSize="11"
+                 Text="{Binding StatusMessage}"
+                 TextTrimming="CharacterEllipsis" />
     </Grid>
   </Border>
 </Window>

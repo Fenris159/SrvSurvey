@@ -15,6 +15,25 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         $"SrvSurvey-overlay-editor-host-tests-{Guid.NewGuid():N}");
 
     [AvaloniaFact]
+    public void PerOverlaySettingsAreLaidOutAboveTheToolbar()
+    {
+        var window = new OverlayPositionEditorWindow();
+        try
+        {
+            var settings = window.FindControl<Border>("OverlaySettingsPanel");
+            var toolbar = window.FindControl<Grid>("EditorToolbarPanel");
+
+            Assert.NotNull(settings);
+            Assert.NotNull(toolbar);
+            Assert.True(Grid.GetRow(settings) < Grid.GetRow(toolbar));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void EditorOpensPreviewsSuppressesRuntimeWindowsAndRestoresThem()
     {
         Directory.CreateDirectory(temporaryDirectory);

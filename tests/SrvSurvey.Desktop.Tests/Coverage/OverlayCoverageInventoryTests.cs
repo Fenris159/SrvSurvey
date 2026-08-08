@@ -467,7 +467,9 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.DoesNotContain("VisiblePreviewOverlays", editor);
         Assert.DoesNotContain("SelectedPreviewOverlay", editor);
         Assert.DoesNotContain("Text=\"Overlay panel\"", editor);
-        Assert.Contains("editor?.Activate()", editorHost);
+        Assert.Contains("toolbar.Activate()", editorHost);
+        Assert.Contains("OverlayWindowPlacement.BottomCenter", editorHost);
+        Assert.Contains("screen.WorkingArea", editorHost);
         Assert.DoesNotContain("BringPreviewToFront", editorHost);
         Assert.DoesNotContain("ClampToHost", editorHost);
         Assert.True(

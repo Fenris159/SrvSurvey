@@ -6,6 +6,40 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class OverlayWindowPlacementTests
 {
     [Fact]
+    public void UsesIntersectionOfHostAndOperatingSystemWorkingArea()
+    {
+        var usableBounds = OverlayWindowPlacement.GetUsableBounds(
+            new PixelRect(0, 0, 1920, 1080),
+            new PixelRect(0, 0, 1920, 1040));
+
+        Assert.Equal(new PixelRect(0, 0, 1920, 1040), usableBounds);
+    }
+
+    [Fact]
+    public void UsesWorkingAreaWhenHostDoesNotOverlapIt()
+    {
+        var usableBounds = OverlayWindowPlacement.GetUsableBounds(
+            new PixelRect(3000, 0, 1280, 720),
+            new PixelRect(0, 0, 1920, 1040));
+
+        Assert.Equal(new PixelRect(0, 0, 1920, 1040), usableBounds);
+    }
+
+    [Fact]
+    public void BottomCenterStaysAboveTaskbarWithinGameClient()
+    {
+        var usableBounds = OverlayWindowPlacement.GetUsableBounds(
+            new PixelRect(0, 0, 1920, 1080),
+            new PixelRect(0, 0, 1920, 1040));
+        var position = OverlayWindowPlacement.BottomCenter(
+            usableBounds,
+            new PixelSize(620, 116),
+            margin: 12);
+
+        Assert.Equal(new PixelPoint(650, 912), position);
+    }
+
+    [Fact]
     public void PlacesOverlayInsideTopCenterOfGameClient()
     {
         var position = OverlayWindowPlacement.TopCenter(
