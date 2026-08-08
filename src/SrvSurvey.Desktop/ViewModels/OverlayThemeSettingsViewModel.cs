@@ -91,8 +91,12 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         applyCommand = new DelegateCommand(Apply, () => CanApply);
         previewCommand = new DelegateCommand(Preview, () => CanPreview);
         saveStateCommand = new DelegateCommand(SaveState, () => CanSaveState);
-        loadStateCommand = new DelegateCommand(LoadState, () => SelectedSavedState is not null);
-        deleteStateCommand = new DelegateCommand(DeleteState, () => SelectedSavedState is not null);
+        loadStateCommand = new DelegateCommand(
+            LoadState,
+            () => SelectedSavedState is not null);
+        deleteStateCommand = new DelegateCommand(
+            DeleteState,
+            () => CanDeleteSelectedState);
         ApplyCommand = applyCommand;
         PreviewCommand = previewCommand;
         SaveStateCommand = saveStateCommand;
@@ -103,7 +107,8 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
         var theme = initialTheme ?? themeService?.CurrentOverlayTheme ?? activeStore.Load();
         ReplaceEditors(theme.Colors, acceptChanges: true);
-        RefreshSavedStates();
+        RefreshSavedStates(
+            OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name);
         StatusMessage = theme.Error
             ?? "Overlay colours are independent from the application theme."
                 + " Imported theme.json colours are active until you apply changes here.";
@@ -137,18 +142,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     public string? SelectedSavedState
     {
         get => selectedSavedState;
-        set
-        {
-            if (string.Equals(selectedSavedState, value, StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            selectedSavedState = value;
-            OnPropertyChanged();
-            loadStateCommand.RaiseCanExecuteChanged();
-            deleteStateCommand.RaiseCanExecuteChanged();
-        }
+        set => SetSelectedSavedState(value, loadBuiltInPreset: true);
     }
 
     public string StateName
@@ -199,7 +193,11 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
     public bool CanSaveState => !string.IsNullOrWhiteSpace(StateName)
         && StateName.Trim().Length <= 80
+        && !OverlayThemePresetCatalog.TryGet(StateName.Trim(), out _)
         && !HasValidationErrors;
+
+    public bool CanDeleteSelectedState => SelectedSavedState is not null
+        && !OverlayThemePresetCatalog.TryGet(SelectedSavedState, out _);
 
     public ICommand ApplyCommand { get; }
 
@@ -263,6 +261,13 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
     private void SaveState()
     {
+        if (OverlayThemePresetCatalog.TryGet(StateName.Trim(), out _))
+        {
+            StatusMessage = $"'{StateName.Trim()}' is a built-in overlay theme name."
+                + " Choose another name for a saved state.";
+            return;
+        }
+
         try
         {
             var result = stateStore.SaveState(StateName, CreateDraftTheme().Colors);
@@ -291,6 +296,13 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
             return;
         }
 
+        if (OverlayThemePresetCatalog.TryGet(selected, out var preset))
+        {
+            LoadBuiltInPreset(preset, updateSelection: true);
+            Preview();
+            return;
+        }
+
         var collection = stateStore.Load();
         var state = collection.States.SingleOrDefault(candidate => string.Equals(
             candidate.Name,
@@ -306,7 +318,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
         ReplaceEditors(state.Colors, acceptChanges: false);
         StateName = state.Name;
-        StatusMessage = $"Loaded '{state.Name}' into the editor. Choose Apply to use it in-game.";
+        Preview();
     }
 
     private void DeleteState()
@@ -339,17 +351,18 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
     private void RestoreDefaults()
     {
-        ReplaceEditors(
-            LegacyOverlayThemeStore.CreateDefault().Colors,
-            acceptChanges: false);
-        StatusMessage = "Loaded the original overlay defaults into the editor."
-            + " Choose Apply to use them in-game.";
+        LoadBuiltInPreset(
+            OverlayThemePresetCatalog.Default,
+            updateSelection: true);
     }
 
     private void ReloadActive()
     {
         var theme = activeStore.Load();
         ReplaceEditors(theme.Colors, acceptChanges: true);
+        SetSelectedSavedState(
+            OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name,
+            loadBuiltInPreset: false);
         themeService?.ApplyOverlayTheme(theme);
         StatusMessage = theme.Error
             ?? "Reloaded the active theme.json colours, discarded editor changes, and refreshed open overlays.";
@@ -417,17 +430,65 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     private void RefreshSavedStates(string? select = null)
     {
         var collection = stateStore.Load();
-        SavedStates = collection.States.Select(state => state.Name).ToArray();
-        var firstSavedState = SavedStates.Count > 0
-            ? SavedStates[0]
-            : null;
-        SelectedSavedState = select is not null && SavedStates.Contains(select)
-            ? select
-            : firstSavedState;
+        SavedStates = OverlayThemePresetCatalog.Presets
+            .Select(preset => preset.Name)
+            .Concat(collection.States
+                .Select(state => state.Name)
+                .Where(name => !OverlayThemePresetCatalog.TryGet(name, out _)))
+            .ToArray();
+        var requested = select ?? SelectedSavedState;
+        SetSelectedSavedState(
+            requested is not null && SavedStates.Contains(requested)
+                ? requested
+                : null,
+            loadBuiltInPreset: false);
         if (collection.Error is not null)
         {
             StatusMessage = collection.Error;
         }
+    }
+
+    private void SetSelectedSavedState(
+        string? value,
+        bool loadBuiltInPreset)
+    {
+        if (string.Equals(selectedSavedState, value, StringComparison.Ordinal))
+        {
+            if (loadBuiltInPreset
+                && OverlayThemePresetCatalog.TryGet(value, out var currentPreset))
+            {
+                LoadBuiltInPreset(currentPreset, updateSelection: false);
+            }
+
+            return;
+        }
+
+        selectedSavedState = value;
+        OnPropertyChanged(nameof(SelectedSavedState));
+        OnPropertyChanged(nameof(CanDeleteSelectedState));
+        loadStateCommand.RaiseCanExecuteChanged();
+        deleteStateCommand.RaiseCanExecuteChanged();
+        if (loadBuiltInPreset
+            && OverlayThemePresetCatalog.TryGet(value, out var preset))
+        {
+            LoadBuiltInPreset(preset, updateSelection: false);
+        }
+    }
+
+    private void LoadBuiltInPreset(
+        OverlayThemePreset preset,
+        bool updateSelection)
+    {
+        ArgumentNullException.ThrowIfNull(preset);
+        if (updateSelection)
+        {
+            SetSelectedSavedState(preset.Name, loadBuiltInPreset: false);
+        }
+
+        ReplaceEditors(preset.Colors, acceptChanges: false);
+        StateName = string.Empty;
+        StatusMessage = $"Loaded the built-in '{preset.Name}' overlay theme."
+            + " Choose Apply to use it in-game.";
     }
 
     private void OnEditorsChanged()

@@ -346,7 +346,11 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        platform.BeginMoveDrag(preview, eventArgs);
+        // Native window-manager dragging keeps the top edge/title area on
+        // screen. Editor previews are intentionally allowed to cross any
+        // screen edge, so track the pointer and assign pixel positions
+        // directly instead.
+        ManagedOverlayWindowDragSession.Begin(preview, eventArgs);
         eventArgs.Handled = true;
     }
 

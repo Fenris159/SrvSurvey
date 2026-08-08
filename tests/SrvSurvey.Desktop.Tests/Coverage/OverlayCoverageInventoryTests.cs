@@ -470,6 +470,12 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("toolbar.Activate()", editorHost);
         Assert.Contains("OverlayWindowPlacement.BottomCenter", editorHost);
         Assert.Contains("screen.WorkingArea", editorHost);
+        Assert.Contains(
+            "ManagedOverlayWindowDragSession.Begin(preview, eventArgs)",
+            editorHost);
+        Assert.Contains(
+            "Right Click Panels to edit individual Opacity/Scale",
+            editor);
         Assert.DoesNotContain("BringPreviewToFront", editorHost);
         Assert.DoesNotContain("ClampToHost", editorHost);
         Assert.True(
@@ -508,6 +514,16 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains(
             "Command=\"{Binding OverlayTheme.PreviewCommand}\"",
             settingsShell);
+        Assert.Contains(
+            "Text=\"Overlay theme presets and saved states\"",
+            settingsShell);
+        Assert.Contains(
+            "ColumnDefinitions=\"64,128,*,118\"",
+            settingsShell);
+        Assert.Contains(
+            "Slider.overlay-theme-opacity /template/ Thumb#thumb",
+            settingsShell);
+        Assert.Contains("Content=\"Load Defaults\"", settingsShell);
         Assert.Contains("Overlay Opacity Override", overlaySettings);
         Assert.Contains("OverlayLayout.SelectedOverlay", overlaySettings);
         Assert.Contains("OverlayLayout.SaveCommand", overlaySettings);

@@ -20,7 +20,7 @@
           BorderBrush="{DynamicResource RavenAccentBrush}"
           BorderThickness="1"
           CornerRadius="10">
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
           RowSpacing="5">
       <Border x:Name="OverlaySettingsPanel"
               Grid.Row="0"
@@ -145,6 +145,11 @@
         </Grid>
       </Grid>
       <TextBlock Grid.Row="3"
+                 HorizontalAlignment="Center"
+                 Classes="muted"
+                 FontSize="11"
+                 Text="Right Click Panels to edit individual Opacity/Scale" />
+      <TextBlock Grid.Row="4"
                  Classes="muted"
                  FontSize="11"
                  Text="{Binding StatusMessage}"
