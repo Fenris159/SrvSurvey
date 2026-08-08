@@ -1,0 +1,202 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.PriorScansOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:PriorScansOverlayViewModel"
+             mc:Ignorable="d"
+             ClipToBounds="True">
+  <Border Margin="0"
+          Padding="4"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0"
+          CornerRadius="5">
+    <StackPanel Spacing="5">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="CANONN PRIOR SCANS" />
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="14"
+                     FontWeight="SemiBold"
+                     Text="{Binding BodyName}"
+                     TextTrimming="CharacterEllipsis" />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="monospace"
+                       FontSize="10"
+                       Text="{Binding HeadingText}" />
+            <TextBlock Classes="muted"
+                       FontSize="10"
+                       Text="{Binding SpeciesCountText}" />
+          </StackPanel>
+        </StackPanel>
+          <Border Grid.Column="1"
+                 Classes="badge overlay-state-pill"
+                 VerticalAlignment="Top">
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="9"
+                     FontWeight="SemiBold"
+                     Text="{Binding InputMode}" />
+        </Border>
+      </Grid>
+
+      <Border Classes="overlay-divider"
+              Background="{DynamicResource RavenBorderBrush}" />
+
+      <Border ClipToBounds="True"
+              CornerRadius="4"
+              IsVisible="{Binding ShowRadar}">
+        <controls:PriorScanRadarControl
+            Height="180"
+            ClipToBounds="True"
+            Targets="{Binding RadarTargets}"
+            UseSmallCircles="{Binding UseSmallRadarCircles}"
+            BackgroundBrush="{DynamicResource RavenRaisedSurfaceBrush}"
+            GridBrush="{DynamicResource RavenBorderBrush}"
+            AccentBrush="{DynamicResource RavenAccentBrush}"
+            MutedBrush="{DynamicResource RavenMutedTextBrush}"
+            CloseBrush="{DynamicResource RavenSuccessBrush}" />
+      </Border>
+
+      <ScrollViewer MaxHeight="200"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Species}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:PriorScanSpeciesViewModel">
+              <Border Margin="0,0,0,7"
+                      Padding="10"
+                      Background="{DynamicResource RavenSurfaceBrush}"
+                      BorderBrush="{DynamicResource RavenBorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      Opacity="{Binding RowOpacity}">
+                <StackPanel Spacing="7">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                      <TextBlock FontWeight="SemiBold"
+                                 Text="{Binding DisplayName}"
+                                 TextTrimming="CharacterEllipsis" />
+                       <Border Classes="badge overlay-state-pill"
+                               IsVisible="{Binding IsActive}">
+                        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                   FontSize="8"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   Text="ACTIVE" />
+                      </Border>
+                       <Border Classes="badge overlay-state-pill"
+                               IsVisible="{Binding IsAnalyzed}">
+                        <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
+                                   FontSize="8"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   Text="ANALYZED" />
+                      </Border>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1"
+                                HorizontalAlignment="Right"
+                                Spacing="2">
+                      <TextBlock Classes="monospace"
+                                 Foreground="{DynamicResource RavenAccentBrush}"
+                                 FontSize="10"
+                                 FontWeight="SemiBold"
+                                 Text="{Binding RewardText}" />
+                      <TextBlock Classes="monospace"
+                                 Foreground="{DynamicResource RavenWarningBrush}"
+                                 FontSize="9"
+                                 HorizontalAlignment="Right"
+                                 IsVisible="{Binding HasShallowApproach}"
+                                 Text="{Binding ApproachText}" />
+                      <TextBlock Classes="monospace"
+                                 Foreground="{DynamicResource RavenAccentBrush}"
+                                 FontSize="9"
+                                 HorizontalAlignment="Right"
+                                 IsVisible="{Binding HasIdealApproach}"
+                                 Text="{Binding ApproachText}" />
+                      <TextBlock Classes="monospace"
+                                 Foreground="{DynamicResource RavenDangerBrush}"
+                                 FontSize="9"
+                                 HorizontalAlignment="Right"
+                                 IsVisible="{Binding HasSteepApproach}"
+                                 Text="{Binding ApproachText}" />
+                      <TextBlock Classes="monospace"
+                                 Foreground="{DynamicResource RavenMutedTextBrush}"
+                                 FontSize="9"
+                                 HorizontalAlignment="Right"
+                                 IsVisible="{Binding HasTooSteepApproach}"
+                                 Text="{Binding ApproachText}" />
+                    </StackPanel>
+                  </Grid>
+
+                  <ItemsControl ItemsSource="{Binding Targets}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:PriorScanTargetViewModel">
+                        <Border Margin="0,0,6,5"
+                                Padding="7,4"
+                                Background="{DynamicResource RavenRaisedSurfaceBrush}"
+                                BorderBrush="{DynamicResource RavenBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                          <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                       FontSize="12"
+                                       Text="&#x25B2;">
+                              <TextBlock.RenderTransform>
+                                <RotateTransform Angle="{Binding RelativeBearingDegrees}" />
+                              </TextBlock.RenderTransform>
+                            </TextBlock>
+                            <TextBlock Classes="monospace"
+                                       FontSize="10"
+                                       Text="{Binding BearingText}" />
+                            <TextBlock Classes="monospace"
+                                       FontSize="10"
+                                       Text="{Binding DistanceText}" />
+                            <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
+                                       FontSize="8"
+                                       FontWeight="Bold"
+                                       IsVisible="{Binding IsClose}"
+                                       Text="NEAR" />
+                            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                       FontSize="8"
+                                       FontWeight="Bold"
+                                       IsVisible="{Binding IsFar}"
+                                       Text="DISTANT" />
+                          </StackPanel>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="muted"
+                     FontSize="9"
+                     Text="{Binding FilterText}" />
+          <TextBlock Classes="muted"
+                     FontSize="9"
+                     Text="{Binding StatusText}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+        <TextBlock Grid.Column="1"
+                   Classes="monospace"
+                   Foreground="{DynamicResource RavenAccentBrush}"
+                   FontSize="9"
+                   IsVisible="{Binding IsLoading}"
+                   Text="SYNC" />
+      </Grid>
+    </StackPanel>
+  </Border>
+</UserControl>

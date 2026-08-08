@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.PulseOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:PulseOverlayViewModel"
+             mc:Ignorable="d"
+             ClipToBounds="True">
+  <Border Width="32"
+          Height="32"
+          Padding="4"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="5">
+    <Grid ColumnDefinitions="10,*" ColumnSpacing="3">
+      <Border Width="10"
+              Height="20"
+              VerticalAlignment="Center"
+              Background="{DynamicResource RavenSurfaceBrush}"
+              BorderBrush="{DynamicResource RavenBorderBrush}"
+              BorderThickness="1"
+              CornerRadius="2">
+        <Border Width="8"
+                Height="{Binding PulseHeight}"
+                VerticalAlignment="Bottom"
+                Background="{DynamicResource RavenAccentBrush}"
+                CornerRadius="1" />
+      </Border>
+      <Canvas Grid.Column="1" Width="8" Height="28" VerticalAlignment="Center">
+        <Ellipse Width="8"
+                 Height="8"
+                 Canvas.Top="0"
+                 IsVisible="{Binding IsScoActive}"
+                 Fill="{DynamicResource RavenDangerBrush}" />
+        <Ellipse Width="8"
+                 Height="8"
+                 Canvas.Top="{Binding ScoIndicatorTop}"
+                 IsVisible="{Binding IsScoCoolingDown}"
+                 Fill="{DynamicResource RavenWarningBrush}" />
+        <Ellipse Width="8"
+                 Height="8"
+                 Canvas.Top="20"
+                 IsVisible="{Binding IsScoReady}"
+                 Fill="{DynamicResource RavenSuccessBrush}" />
+      </Canvas>
+    </Grid>
+  </Border>
+</UserControl>

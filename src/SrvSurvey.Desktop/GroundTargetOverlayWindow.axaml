@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SrvSurvey.Desktop"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="using:SrvSurvey.Desktop.Controls"
@@ -9,9 +10,9 @@
         mc:Ignorable="d"
         d:DesignWidth="128"
         d:DesignHeight="250"
-        Width="128"
+        MinWidth="128"
         MinHeight="220"
-        SizeToContent="Height"
+        SizeToContent="WidthAndHeight"
         CanResize="False"
         ShowActivated="False"
         ShowInTaskbar="False"
@@ -21,125 +22,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey ground-target overlay">
-  <Border Margin="8"
-          Padding="14"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderBrush="{DynamicResource RavenBorderBrush}"
-          BorderThickness="1"
-          CornerRadius="12"
-          Opacity="0.97">
-    <StackPanel Spacing="10">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-        <StackPanel Spacing="3">
-          <TextBlock Classes="eyebrow" Text="SURFACE TARGET" />
-          <TextBlock Classes="muted"
-                     FontSize="10"
-                     Text="Live bearing and descent guidance" />
-        </StackPanel>
-        <Border Grid.Column="1"
-                Classes="badge"
-                VerticalAlignment="Top">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="9"
-                     FontWeight="SemiBold"
-                     Text="{Binding InputMode}" />
-        </Border>
-      </Grid>
-
-      <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
-
-      <Grid ColumnDefinitions="104,*" ColumnSpacing="14">
-        <controls:GroundTargetGuidanceControl
-            Width="104"
-            Height="116"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            RelativeBearingDegrees="{Binding GroundTarget.RelativeBearingDegrees}"
-            AttackAngleDegrees="{Binding GroundTarget.AttackAngleDegrees}"
-            GridBrush="{DynamicResource RavenBorderBrush}"
-            AccentBrush="{DynamicResource RavenAccentBrush}"
-            WarningBrush="{DynamicResource RavenWarningBrush}"
-            DangerBrush="{DynamicResource RavenDangerBrush}"
-            MutedBrush="{DynamicResource RavenMutedTextBrush}" />
-
-        <StackPanel Grid.Column="1" Spacing="8">
-          <StackPanel Spacing="1">
-            <TextBlock Classes="muted"
-                       FontSize="9"
-                       Text="DISTANCE" />
-            <TextBlock Classes="monospace"
-                       Foreground="{DynamicResource RavenAccentBrush}"
-                       FontSize="25"
-                       FontWeight="SemiBold"
-                       Text="{Binding GroundTarget.DistanceToTarget}" />
-          </StackPanel>
-
-          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-            <StackPanel Spacing="1">
-              <TextBlock Classes="muted"
-                         FontSize="9"
-                         Text="BEARING" />
-              <TextBlock Classes="monospace"
-                         FontSize="12"
-                         FontWeight="SemiBold"
-                         Text="{Binding GroundTarget.TargetBearing}" />
-              <TextBlock Classes="muted"
-                         FontSize="9"
-                         Text="{Binding GroundTarget.RelativeHeading}" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Spacing="1">
-              <TextBlock Classes="muted"
-                         FontSize="9"
-                         Text="DESCENT" />
-              <TextBlock Classes="monospace"
-                         Foreground="{DynamicResource RavenMutedTextBrush}"
-                         FontSize="12"
-                         FontWeight="SemiBold"
-                         IsVisible="{Binding GroundTarget.HasLevelApproach}"
-                         Text="{Binding GroundTarget.DescentAngle}" />
-              <TextBlock Classes="monospace"
-                         Foreground="{DynamicResource RavenWarningBrush}"
-                         FontSize="12"
-                         FontWeight="SemiBold"
-                         IsVisible="{Binding GroundTarget.HasShallowApproach}"
-                         Text="{Binding GroundTarget.DescentAngle}" />
-              <TextBlock Classes="monospace"
-                         Foreground="{DynamicResource RavenAccentBrush}"
-                         FontSize="12"
-                         FontWeight="SemiBold"
-                         IsVisible="{Binding GroundTarget.HasIdealApproach}"
-                         Text="{Binding GroundTarget.DescentAngle}" />
-              <TextBlock Classes="monospace"
-                         Foreground="{DynamicResource RavenDangerBrush}"
-                         FontSize="12"
-                         FontWeight="SemiBold"
-                         IsVisible="{Binding GroundTarget.HasSteepApproach}"
-                         Text="{Binding GroundTarget.DescentAngle}" />
-              <TextBlock Classes="monospace"
-                         Foreground="{DynamicResource RavenDangerBrush}"
-                         FontSize="12"
-                         FontWeight="SemiBold"
-                         IsVisible="{Binding GroundTarget.HasTooSteepApproach}"
-                         Text="{Binding GroundTarget.DescentAngle}" />
-              <TextBlock Classes="muted"
-                         FontSize="9"
-                         Text="{Binding GroundTarget.ApproachStatus}" />
-            </StackPanel>
-          </Grid>
-        </StackPanel>
-      </Grid>
-
-      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-        <TextBlock Classes="muted"
-                   FontSize="9"
-                   Text="TARGET" />
-        <TextBlock Grid.Column="1"
-                   Classes="monospace"
-                   Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="9"
-                   Text="{Binding GroundTarget.TargetCoordinates}"
-                   TextTrimming="CharacterEllipsis" />
-      </Grid>
-    </StackPanel>
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:GroundTargetOverlayPresentation />
   </Border>
 </Window>

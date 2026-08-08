@@ -54,6 +54,7 @@
     <SolidColorBrush x:Key="RavenOverlayColoniseHighlightBrush" Color="#FFFF00" />
     <SolidColorBrush x:Key="RavenOverlayColoniseItemBrush" Color="#FF6F00" />
     <SolidColorBrush x:Key="RavenOverlayColoniseItemDimBrush" Color="#5F3003" />
+    <SolidColorBrush x:Key="RavenOverlayColoniseRowHighlightBrush" Color="#48383838" />
     <SolidColorBrush x:Key="RavenOverlayFczCheckpointBrush" Color="#FFFF00" />
     <SolidColorBrush x:Key="RavenOverlayFczCheckpointLocalBrush" Color="#00FF00" />
     <SolidColorBrush x:Key="RavenOverlayFczPowerPostBrush" Color="#DAA520" />

@@ -108,13 +108,9 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         hostBounds = preferred ?? screen.Bounds;
         hostScaling = screen.Scaling;
         keepRuntimeOverlaysVisible = viewModel.IsLiveInteractionEnabled;
-        var toolbarSize = new PixelSize(
-            Math.Max(1, (int)Math.Ceiling(toolbar.Width * screen.Scaling)),
-            Math.Max(1, (int)Math.Ceiling(toolbar.Height * screen.Scaling)));
-        toolbar.Position = OverlayWindowPlacement.TopCenter(
-            hostBounds,
-            toolbarSize,
-            margin: 12);
+        toolbar.SizeChanged += OnEditorSizeChanged;
+        toolbar.Screens.Changed += OnScreensChanged;
+        PositionEditorToolbar(toolbar);
 
         (platform as IOverlayPresentationControl)
             ?.SetRuntimeOverlaysSuppressed(!keepRuntimeOverlaysVisible);
@@ -312,6 +308,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         {
             toolbar.Opened -= OnEditorOpened;
             toolbar.Closed -= OnEditorClosed;
+            toolbar.SizeChanged -= OnEditorSizeChanged;
+            toolbar.Screens.Changed -= OnScreensChanged;
             toolbar.Close();
         }
 
@@ -338,7 +336,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         Close(restoreRuntimeWindows: false);
     }
 
-    private void OnPreviewPointerPressed(
+    private static void OnPreviewPointerPressed(
         object? sender,
         PointerPressedEventArgs eventArgs)
     {
@@ -348,7 +346,11 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        platform.BeginMoveDrag(preview, eventArgs);
+        // Native window-manager dragging keeps the top edge/title area on
+        // screen. Editor previews are intentionally allowed to cross any
+        // screen edge, so track the pointer and assign pixel positions
+        // directly instead.
+        ManagedOverlayWindowDragSession.Begin(preview, eventArgs);
         eventArgs.Handled = true;
     }
 
@@ -380,7 +382,17 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         OverlayPreviewSettingsRequestedEventArgs eventArgs)
     {
         viewModel?.OpenOverlaySettings(eventArgs.PlotterName);
-        editor?.Activate();
+        if (editor is { } toolbar)
+        {
+            toolbar.Activate();
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (ReferenceEquals(editor, toolbar))
+                {
+                    PositionEditorToolbar(toolbar);
+                }
+            });
+        }
     }
 
     private void OnPreviewOpened(object? sender, EventArgs eventArgs)
@@ -417,6 +429,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         if (sender is Window toolbar)
         {
             toolbar.Opened -= OnEditorOpened;
+            toolbar.SizeChanged -= OnEditorSizeChanged;
+            toolbar.Screens.Changed -= OnScreensChanged;
         }
 
         editor = null;
@@ -435,7 +449,56 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         if (sender is Window toolbar)
         {
             _ = platform.PrepareInteractiveWindow(toolbar);
+            PositionEditorToolbar(toolbar);
         }
+    }
+
+    private void OnEditorSizeChanged(object? sender, SizeChangedEventArgs eventArgs)
+    {
+        if (sender is Window toolbar)
+        {
+            PositionEditorToolbar(toolbar);
+        }
+    }
+
+    private void OnScreensChanged(object? sender, EventArgs eventArgs)
+    {
+        if (editor is { } toolbar)
+        {
+            PositionEditorToolbar(toolbar);
+        }
+    }
+
+    private void PositionEditorToolbar(Window toolbar)
+    {
+        if (hostBounds.Width <= 0 || hostBounds.Height <= 0)
+        {
+            return;
+        }
+
+        var screen = toolbar.Screens.ScreenFromBounds(hostBounds)
+            ?? toolbar.Screens.Primary;
+        if (screen is null)
+        {
+            return;
+        }
+
+        var usableBounds = OverlayWindowPlacement.GetUsableBounds(
+            hostBounds,
+            screen.WorkingArea);
+        var logicalWidth = toolbar.Bounds.Width > 0
+            ? toolbar.Bounds.Width
+            : toolbar.Width;
+        var logicalHeight = toolbar.Bounds.Height > 0
+            ? toolbar.Bounds.Height
+            : toolbar.MinHeight;
+        var toolbarSize = new PixelSize(
+            Math.Max(1, (int)Math.Ceiling(logicalWidth * screen.Scaling)),
+            Math.Max(1, (int)Math.Ceiling(logicalHeight * screen.Scaling)));
+        toolbar.Position = OverlayWindowPlacement.BottomCenter(
+            usableBounds,
+            toolbarSize,
+            margin: 12);
     }
 
     private void OnRegistryChanged(object? sender, EventArgs eventArgs)

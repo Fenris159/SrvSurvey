@@ -41,6 +41,7 @@ public sealed class RavenThemeService
             ["RavenOverlayColoniseHighlightBrush"] = "colonise.highlight",
             ["RavenOverlayColoniseItemBrush"] = "colonise.item",
             ["RavenOverlayColoniseItemDimBrush"] = "colonise.itemDark",
+            ["RavenOverlayColoniseRowHighlightBrush"] = "colonise.rowHighlight",
             ["RavenOverlayFczCheckpointBrush"] = "fcz.checkpoint",
             ["RavenOverlayFczCheckpointLocalBrush"] = "fcz.checkpointLocal",
             ["RavenOverlayFczPowerPostBrush"] = "fcz.powerPost",

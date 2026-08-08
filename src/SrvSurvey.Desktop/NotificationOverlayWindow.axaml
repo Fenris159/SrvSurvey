@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SrvSurvey.Desktop"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
@@ -8,10 +9,11 @@
         mc:Ignorable="d"
         d:DesignWidth="200"
         d:DesignHeight="160"
-        Width="200"
-        MinHeight="56"
+        MinWidth="160"
+        MinHeight="1"
+        MaxWidth="360"
         MaxHeight="420"
-        SizeToContent="Height"
+        SizeToContent="WidthAndHeight"
         CanResize="False"
         ShowActivated="False"
         ShowInTaskbar="False"
@@ -21,36 +23,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey notifications">
-  <Border Margin="8"
-          Padding="14,11,14,9"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderBrush="{DynamicResource RavenBorderBrush}"
-          BorderThickness="1"
-          CornerRadius="12"
-          Opacity="0.97">
-    <Grid RowDefinitions="*,Auto" RowSpacing="8">
-      <ItemsControl ItemsSource="{Binding Messages}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:NotificationMessageViewModel">
-            <Grid Margin="0,3" ColumnDefinitions="Auto,*" ColumnSpacing="9">
-              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                         FontWeight="Bold"
-                         Text="›" />
-              <TextBlock Grid.Column="1"
-                         FontSize="13"
-                         FontWeight="SemiBold"
-                         TextWrapping="Wrap"
-                         Text="{Binding Text}" />
-            </Grid>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-      <ProgressBar Grid.Row="1"
-                   Height="2"
-                   Minimum="0"
-                   Maximum="100"
-                   IsHitTestVisible="False"
-                   Value="{Binding ProgressPercent}" />
-    </Grid>
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:NotificationOverlayPresentation />
   </Border>
 </Window>

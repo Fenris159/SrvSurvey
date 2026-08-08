@@ -24,6 +24,10 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     private PriorScanSurfaceMarkerViewModel[] priorScanSurfaceMarkers = [];
     private string statusText = "Waiting for surface survey context.";
     private double? customRadarScale;
+    private string? editorBodyName;
+    private string? editorHeadingText;
+    private string? editorHistoryText;
+    private bool editorForceVisible;
     private bool disposed;
 
     public SurfaceSurveyViewModel(
@@ -93,18 +97,25 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         private set => SetField(ref statusText, value);
     }
 
-    public string BodyName => surface?.BodyName
+    public string BodyName => editorBodyName
+        ?? surface?.BodyName
         ?? survey.CurrentStatus?.BodyName
         ?? "Current body";
 
-    public string HeadingText => survey.CurrentStatus is { } status
-        ? $"HEADING {status.NormalizedHeading:000}°"
-        : "HEADING —";
+    public string HeadingText => editorHeadingText
+        ?? (survey.CurrentStatus is { } status
+            ? $"HEADING {status.NormalizedHeading:000}°"
+            : "HEADING —");
 
     public string HistoryText
     {
         get
         {
+            if (!string.IsNullOrWhiteSpace(editorHistoryText))
+            {
+                return editorHistoryText;
+            }
+
             var scans = surface?.BioScans.Count ?? 0;
             var trackers = surface?.Bookmarks.Values.Sum(group => group.Count) ?? 0;
             return $"{scans:N0} scan circles · {trackers:N0} trackers";
@@ -128,17 +139,19 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         ? $"ZOOM {scale:N2}×"
         : "ZOOM AUTO";
 
-    public bool ShouldShowRadar => IsEligibleStatus()
-        && HasRadarContent();
+    public bool ShouldShowRadar => editorForceVisible
+        || (IsEligibleStatus() && HasRadarContent());
 
-    public bool ShouldShow => IsEligibleStatus()
-        && (HasRadarContent() || HasTrackerTargets());
+    public bool ShouldShow => editorForceVisible
+        || (IsEligibleStatus()
+            && (HasRadarContent() || HasTrackerTargets()));
 
     public bool IsTrackerOnly => ShouldShow && !ShouldShowRadar;
 
-    public bool ShouldShowMiniTrack => survey.AutoShowMiniTrack
-        && HasQuickTrackers
-        && IsMiniTrackStatusEligible();
+    public bool ShouldShowMiniTrack => editorForceVisible
+        || (survey.AutoShowMiniTrack
+            && HasQuickTrackers
+            && IsMiniTrackStatusEligible());
 
     public SystemSurfaceBodySnapshot? CurrentSurface => surface;
 
@@ -188,6 +201,37 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
 
         priorScanSurfaceMarkers = next;
         Recalculate();
+    }
+
+    /// <summary>
+    /// Installs representative surface-radar content for the position editor.
+    /// </summary>
+    internal void InstallEditorPreview(
+        string bodyName,
+        string headingText,
+        string historyText,
+        IReadOnlyList<SurfaceRadarMarkerViewModel> radarMarkers,
+        IReadOnlyList<SurfaceTrackerGroupViewModel> trackerGroups)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(bodyName);
+        ArgumentNullException.ThrowIfNull(radarMarkers);
+        ArgumentNullException.ThrowIfNull(trackerGroups);
+        editorForceVisible = true;
+        editorBodyName = bodyName;
+        editorHeadingText = headingText;
+        editorHistoryText = historyText;
+        StatusText = "Surface survey active";
+        customRadarScale = 1;
+        RadarMarkers = radarMarkers.ToArray();
+        TrackerGroups = trackerGroups.ToArray();
+        OnPropertyChanged(nameof(BodyName));
+        OnPropertyChanged(nameof(HeadingText));
+        OnPropertyChanged(nameof(HistoryText));
+        OnPropertyChanged(nameof(RadarScale));
+        OnPropertyChanged(nameof(RadarScaleText));
+        OnPropertyChanged(nameof(ShouldShowRadar));
+        OnPropertyChanged(nameof(ShouldShow));
+        OnPropertyChanged(nameof(ShouldShowMiniTrack));
     }
 
     public async Task<bool> ClearAllTrackersAsync(

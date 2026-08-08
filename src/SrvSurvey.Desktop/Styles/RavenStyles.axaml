@@ -53,6 +53,21 @@
     <Setter Property="CornerRadius" Value="999" />
     <Setter Property="Padding" Value="10,4" />
   </Style>
+  <Style Selector="Border.badge.overlay-state-pill">
+    <Setter Property="Width" Value="66" />
+    <Setter Property="Padding" Value="8,3" />
+  </Style>
+  <Style Selector="Border.badge.overlay-state-pill TextBlock">
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <!-- Divider rules consume the width selected by their parent. They have no
+       intrinsic width and therefore cannot make a content-sized overlay grow. -->
+  <Style Selector="Border.overlay-divider">
+    <Setter Property="Height" Value="1" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+  </Style>
 
   <Style Selector="Button">
     <Setter Property="CornerRadius" Value="8" />

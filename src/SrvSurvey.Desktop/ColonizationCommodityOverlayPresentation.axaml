@@ -1,0 +1,223 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.ColonizationCommodityOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:ColonizationCommodityOverlayViewModel"
+             mc:Ignorable="d"
+             ClipToBounds="True">
+  <UserControl.Styles>
+    <Style Selector="Border.commodity-row">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.commodity-row.alternate">
+      <Setter Property="Background" Value="{DynamicResource RavenColoniseRowHighlightBrush}" />
+    </Style>
+  </UserControl.Styles>
+  <!-- Slim shopping list: compact chrome, no word-wrap, ~15 visible rows. -->
+  <Border Margin="0"
+          Padding="4"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0"
+          CornerRadius="5">
+    <Grid RowDefinitions="Auto,Auto,*,Auto"
+          RowSpacing="3"
+          MinWidth="200">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+        <StackPanel Spacing="0">
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontSize="11"
+                     FontWeight="SemiBold"
+                     Text="{Binding Title}"
+                     TextTrimming="CharacterEllipsis" />
+          <ItemsControl IsVisible="{Binding HasMultipleProjects}"
+                        ItemsSource="{Binding ProjectNames}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Classes="muted"
+                           FontSize="9"
+                           Text="{Binding StringFormat='&#x203A; {0}'}"
+                           TextTrimming="CharacterEllipsis" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+        <TextBlock Grid.Column="1"
+                   VerticalAlignment="Top"
+                   Foreground="{DynamicResource RavenAccentBrush}"
+                   FontSize="8"
+                   FontWeight="SemiBold"
+                   Text="{Binding InputMode}" />
+      </Grid>
+
+      <StackPanel Grid.Row="1" Spacing="3">
+        <Border Background="{DynamicResource RavenRaisedSurfaceBrush}"
+                CornerRadius="3"
+                IsVisible="{Binding HasWarning}"
+                Padding="6,3">
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontSize="9"
+                     FontWeight="SemiBold"
+                     Text="{Binding WarningText}"
+                     TextTrimming="CharacterEllipsis" />
+        </Border>
+        <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
+                   FontSize="11"
+                   FontWeight="Bold"
+                   IsVisible="{Binding IsConstructionComplete}"
+                   Text="Construction complete" />
+        <Grid ColumnDefinitions="*,40,34,34,12"
+              ColumnSpacing="3"
+              Margin="0,1,0,0">
+          <TextBlock Classes="muted" FontSize="8" Text="COMMODITY" />
+          <TextBlock Grid.Column="1"
+                     Classes="muted"
+                     FontSize="8"
+                     HorizontalAlignment="Right"
+                     Text="NEED" />
+          <TextBlock Grid.Column="2"
+                     Classes="muted"
+                     FontSize="8"
+                     HorizontalAlignment="Right"
+                     Text="{Binding FleetCarrierColumnHeader}" />
+          <TextBlock Grid.Column="3"
+                     Classes="muted"
+                     FontSize="8"
+                     HorizontalAlignment="Right"
+                     Text="{Binding ShipColumnHeader}" />
+        </Grid>
+      </StackPanel>
+
+      <!-- ~15 commodity rows at ~18px before scroll; alternating fill, no dividers -->
+      <ScrollViewer Grid.Row="2"
+                    MaxHeight="300"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Groups}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ColonizationCommodityGroupViewModel">
+              <StackPanel Margin="0,0,0,3" Spacing="0">
+                <TextBlock Foreground="{DynamicResource RavenColoniseItemBrush}"
+                           FontSize="9"
+                           FontWeight="Bold"
+                           Text="{Binding Name}"
+                           TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="muted"
+                           FontSize="8"
+                           IsVisible="{Binding IsCollapsed}"
+                           Text="{Binding CollapsedSummary}"
+                           TextTrimming="CharacterEllipsis" />
+                <ItemsControl ItemsSource="{Binding Rows}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ColonizationCommodityOverlayRowViewModel">
+                      <!-- Alternate rows use colonise.rowHighlight; no divider lines. -->
+                      <Border Classes="commodity-row"
+                              Classes.alternate="{Binding IsAlternateRow}"
+                              Margin="0,0,0,1"
+                              Padding="3,2"
+                              CornerRadius="1"
+                              Opacity="{Binding RowOpacity}">
+                        <Grid ColumnDefinitions="*,40,34,34,12"
+                              ColumnSpacing="3">
+                          <StackPanel Orientation="Horizontal" Spacing="3">
+                            <TextBlock VerticalAlignment="Center"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource RavenColoniseItemBrush}"
+                                       IsVisible="{Binding IsActiveItem}"
+                                       Text="{Binding DisplayName}"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock VerticalAlignment="Center"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource RavenColoniseItemDimBrush}"
+                                       IsVisible="{Binding IsDimmedItem}"
+                                       Text="{Binding DisplayName}"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Foreground="{DynamicResource RavenColoniseHighlightBrush}"
+                                       FontSize="8"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       IsVisible="{Binding HasAssignment}"
+                                       Text="{Binding AssignmentText}" />
+                            <TextBlock Foreground="{DynamicResource RavenColoniseHighlightBrush}"
+                                       FontSize="8"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       IsVisible="{Binding HasMarketBadge}"
+                                       Text="{Binding MarketBadgeText}" />
+                          </StackPanel>
+                          <TextBlock Grid.Column="1"
+                                     FontSize="10"
+                                     HorizontalAlignment="Right"
+                                     Foreground="{DynamicResource RavenColoniseDeficitBrush}"
+                                     IsVisible="{Binding IsActiveDeficit}"
+                                     Text="{Binding NeededText}" />
+                          <TextBlock Grid.Column="1"
+                                     FontSize="10"
+                                     HorizontalAlignment="Right"
+                                     Foreground="{DynamicResource RavenColoniseDeficitDimBrush}"
+                                     IsVisible="{Binding IsDimmedDeficit}"
+                                     Text="{Binding NeededText}" />
+                          <TextBlock Grid.Column="1"
+                                     FontSize="10"
+                                     HorizontalAlignment="Right"
+                                     Foreground="{DynamicResource RavenColoniseSurplusBrush}"
+                                     IsVisible="{Binding IsActiveSurplus}"
+                                     Text="{Binding NeededText}" />
+                          <TextBlock Grid.Column="1"
+                                     FontSize="10"
+                                     HorizontalAlignment="Right"
+                                     Foreground="{DynamicResource RavenColoniseSurplusDimBrush}"
+                                     IsVisible="{Binding IsDimmedSurplus}"
+                                     Text="{Binding NeededText}" />
+                          <TextBlock Grid.Column="2"
+                                     FontSize="10"
+                                     HorizontalAlignment="Right"
+                                     Foreground="{DynamicResource RavenColoniseItemBrush}"
+                                     IsVisible="{Binding IsFleetCarrierValueNormal}"
+                                     Text="{Binding OnFleetCarriersText}" />
+                          <TextBlock Grid.Column="2"
+                                     FontSize="10"
+                                     FontWeight="Bold"
+                                     HorizontalAlignment="Right"
+                                     Foreground="{DynamicResource RavenColoniseHighlightBrush}"
+                                     IsVisible="{Binding IsFleetCarrierLoadHighlighted}"
+                                     Text="{Binding OnFleetCarriersText}" />
+                          <TextBlock Grid.Column="3"
+                                     FontSize="10"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Right"
+                                     Foreground="{DynamicResource RavenColoniseSurplusBrush}"
+                                     Text="{Binding InShipText}" />
+                          <TextBlock Grid.Column="4"
+                                     FontSize="10"
+                                     FontWeight="Bold"
+                                     HorizontalAlignment="Center"
+                                     Foreground="{DynamicResource RavenColoniseSurplusBrush}"
+                                     IsVisible="{Binding IsSatisfied}"
+                                     Text="&#x2713;" />
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+
+      <StackPanel Grid.Row="3" Spacing="2">
+        <TextBlock FontSize="10"
+                   FontWeight="SemiBold"
+                   Text="{Binding RemainingSummary}"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock Classes="muted"
+                   FontSize="8"
+                   IsVisible="{Binding HasFleetCarriers}"
+                   Text="{Binding FleetCarrierSummary}"
+                   TextTrimming="CharacterEllipsis" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</UserControl>

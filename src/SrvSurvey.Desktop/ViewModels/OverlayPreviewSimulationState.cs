@@ -306,12 +306,26 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Faction", "Raven Colonial Initiative"),
                 Row("Services", "Shipyard | Outfitting | Vista", glyph: "✓", glyphTone: OverlayPreviewGlyphTone.Success),
                 Row("Prohibited", "Narcotics | Slaves", glyph: "!", glyphTone: OverlayPreviewGlyphTone.Danger)),
+            // Matches live SystemStatusOverlayWindow: FSS/DSS progress text,
+            // remaining DSS body chips, remaining biological bodies, optional
+            // non-body signals. CompactText kept for any height < 50 fallback.
             "PlotSysStatus" => Content(
                 state.CurrentSystem,
-                "System survey status",
+                "FSS 75% · DSS survey",
                 "FSS 18 / 24 | DSS 7 / 9 | BIO 6",
                 "18/24 | BIO 6",
-                Row("Survey", "FSS 18/24 | DSS 7/9", 75)),
+                Row("Survey", "FSS 18/24 | DSS 7/9", 75),
+                Row(
+                    "DSS remaining",
+                    "B 1 · B 2 a · C 3",
+                    glyph: "◆",
+                    glyphTone: OverlayPreviewGlyphTone.Information),
+                Row(
+                    "Biological remaining",
+                    "A4 · A5 · BC3",
+                    glyph: "☀",
+                    glyphTone: OverlayPreviewGlyphTone.Gold),
+                Row("Non-body signals", "2")),
             "PlotTrackTarget" => Content(
                 "Ground target",
                 "Biological sample location",

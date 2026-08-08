@@ -140,11 +140,11 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     }
 
     [Fact]
-    public void SampleScaleBarMatchesLegacyQuarterRangeClamp()
+    public void SampleScaleBarMatchesCompactQuarterRangeClamp()
     {
         Assert.Equal(12, BiologyStatusViewModel.GetSampleScaleBarWidth(10), 3);
         Assert.Equal(37.5, BiologyStatusViewModel.GetSampleScaleBarWidth(150), 3);
-        Assert.Equal(220, BiologyStatusViewModel.GetSampleScaleBarWidth(5_000), 3);
+        Assert.Equal(120, BiologyStatusViewModel.GetSampleScaleBarWidth(5_000), 3);
         Assert.Equal(0, BiologyStatusViewModel.GetSampleScaleBarWidth(0));
         Assert.Equal(0, BiologyStatusViewModel.GetSampleScaleBarWidth(double.NaN));
     }

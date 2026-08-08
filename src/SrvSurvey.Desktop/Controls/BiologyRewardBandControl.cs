@@ -104,6 +104,13 @@ public sealed class BiologyRewardBandControl : Control
             IsDimmedProperty);
     }
 
+    public BiologyRewardBandControl()
+    {
+        // Keep stroke anti-alias and hatch diagonals from painting outside
+        // the pip rectangle; prediction hatch is also push-clipped below.
+        ClipToBounds = true;
+    }
+
     public long MinimumReward
     {
         get => GetValue(MinimumRewardProperty);
@@ -372,13 +379,29 @@ public sealed class BiologyRewardBandControl : Control
 
     private void DrawPredictionHatch(DrawingContext context, IBrush hatch)
     {
-        var hatchPen = new Pen(hatch, 0.75);
-        for (var x = -Bounds.Height; x < Bounds.Width; x += 4)
+        // Clip strictly inside the border so diagonals never spill past the
+        // pip frame (visible when IsPrediction paints the hatch overlay).
+        var inset = 1.5;
+        var clip = new Rect(
+            inset,
+            inset,
+            Math.Max(0, Bounds.Width - inset * 2),
+            Math.Max(0, Bounds.Height - inset * 2));
+        if (clip.Width <= 0 || clip.Height <= 0)
         {
-            context.DrawLine(
-                hatchPen,
-                new Point(x, Bounds.Height - 1),
-                new Point(x + Bounds.Height, 1));
+            return;
+        }
+
+        using (context.PushClip(clip))
+        {
+            var hatchPen = new Pen(hatch, 0.75);
+            for (var x = -Bounds.Height; x < Bounds.Width; x += 4)
+            {
+                context.DrawLine(
+                    hatchPen,
+                    new Point(x, Bounds.Height - 1),
+                    new Point(x + Bounds.Height, 1));
+            }
         }
     }
 }

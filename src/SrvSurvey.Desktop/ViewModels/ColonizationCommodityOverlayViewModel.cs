@@ -260,7 +260,7 @@ public sealed class ColonizationCommodityOverlayViewModel
             .GroupBy(row => row.Category)
             .Select(group =>
             {
-                var rows = group.Select(row =>
+                var rows = group.Select((row, rowIndex) =>
                         new ColonizationCommodityOverlayRowViewModel(
                             row,
                             preferences.ShowFleetCarrierCargo,
@@ -268,7 +268,8 @@ public sealed class ColonizationCommodityOverlayViewModel
                             preferences.InlineFleetCarrierCargo,
                             preferences
                                 .HighlightAlmostCoveredFleetCarrierLoads,
-                            pendingCommodities.Contains(row.Commodity)))
+                            pendingCommodities.Contains(row.Commodity),
+                            rowIndex % 2 == 0))
                     .ToArray();
                 var canCollapse = !Plan.IsAtConstructionSite
                     && preferences.ShowFleetCarrierCargo
@@ -379,7 +380,8 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
         bool showFleetCarrierDelta,
         bool inlineFleetCarrierCargo,
         bool highlightAlmostCoveredFleetCarrierLoads,
-        bool isPending)
+        bool isPending,
+        bool isAlternateRow)
         : this(
             row.Commodity,
             row.DisplayName,
@@ -400,6 +402,7 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
         IsAvailableAtCurrentMarket = row.IsAvailableAtCurrentMarket;
         IsUnavailableAtCurrentMarket = row.IsUnavailableAtCurrentMarket;
         CanCompleteFleetCarrierLoad = row.CanCompleteFleetCarrierLoad;
+        IsAlternateRow = isAlternateRow;
     }
 
     public bool IsAvailableAtCurrentMarket { get; }
@@ -407,6 +410,8 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
     public bool IsUnavailableAtCurrentMarket { get; }
 
     public bool CanCompleteFleetCarrierLoad { get; }
+
+    public bool IsAlternateRow { get; }
 
     public int FleetCarrierDeficit => Math.Max(0, Needed - OnFleetCarriers);
 

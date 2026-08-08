@@ -1,0 +1,118 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.FleetCarrierRouteOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:FleetCarrierRouteOverlayViewModel"
+             mc:Ignorable="d"
+             MaxWidth="260"
+             HorizontalAlignment="Left"
+             ClipToBounds="True">
+  <Border Margin="0"
+          Padding="4"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0"
+          CornerRadius="5">
+    <StackPanel Spacing="5">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+        <TextBlock Classes="eyebrow"
+                   Text="FLEET CARRIER ROUTE" />
+        <TextBlock Grid.Column="1"
+                   Classes="eyebrow"
+                   Text="{Binding HopProgress}" />
+      </Grid>
+
+      <TextBlock Classes="overlay-title"
+                 Foreground="{DynamicResource RavenAccentBrush}"
+                 Text="{Binding SystemName}"
+                 TextWrapping="Wrap" />
+      <TextBlock Classes="overlay-value"
+                 Text="{Binding JumpSummary}"
+                 TextWrapping="Wrap" />
+      <TextBlock Classes="muted overlay-detail"
+                 Text="{Binding JumpsLeft}" />
+
+      <Border Classes="overlay-divider"
+              Background="{DynamicResource RavenBorderBrush}" />
+
+      <TextBlock Classes="eyebrow" Text="TRITIUM" />
+      <Grid ColumnDefinitions="Auto,Auto"
+            ColumnSpacing="24"
+            HorizontalAlignment="Left"
+            RowDefinitions="Auto,Auto,Auto">
+        <TextBlock Classes="muted overlay-detail" Text="Fuel left" />
+        <TextBlock Grid.Column="1"
+                   Classes="overlay-body"
+                   Text="{Binding FuelLeft}" />
+        <TextBlock Grid.Row="1"
+                   Classes="muted overlay-detail"
+                   Text="In market" />
+        <TextBlock Grid.Row="1"
+                   Grid.Column="1"
+                   Classes="overlay-body"
+                   Text="{Binding TritiumInMarket}" />
+        <TextBlock Grid.Row="2"
+                   Classes="muted overlay-detail"
+                   Text="Jump fuel" />
+        <TextBlock Grid.Row="2"
+                   Grid.Column="1"
+                   Classes="overlay-body"
+                   Text="{Binding JumpFuel}" />
+      </Grid>
+
+      <Border Classes="badge"
+              HorizontalAlignment="Left"
+              IsVisible="{Binding HasIcyRing}">
+        <TextBlock Classes="overlay-detail"
+                   Foreground="{DynamicResource RavenAccentBrush}"
+                   FontWeight="SemiBold"
+                   Text="{Binding IcyRingLabel, StringFormat='[ {0} ]'}" />
+      </Border>
+
+      <Grid ColumnDefinitions="Auto,Auto"
+            ColumnSpacing="24"
+            HorizontalAlignment="Left"
+            IsVisible="{Binding HasRestockWarning}">
+        <TextBlock Foreground="#FFFFB347"
+                   Classes="overlay-body"
+                   FontWeight="Bold"
+                   Text="&#x26A0; RESTOCK REQUIRED" />
+        <TextBlock Grid.Column="1"
+                   Foreground="#FFFFB347"
+                   Classes="overlay-body"
+                   FontWeight="Bold"
+                   Text="{Binding RestockAmount}" />
+      </Grid>
+
+      <StackPanel Spacing="7" IsVisible="{Binding HasCountdown}">
+        <Border Classes="overlay-divider"
+                Background="{DynamicResource RavenBorderBrush}" />
+        <Grid ColumnDefinitions="Auto,Auto"
+              ColumnSpacing="12"
+              HorizontalAlignment="Left">
+          <TextBlock Classes="eyebrow"
+                     Text="{Binding CountdownTitle}"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Grid.Column="1"
+                     Classes="overlay-value"
+                     Foreground="{DynamicResource RavenAccentBrush}"
+                     FontWeight="Bold"
+                     Text="{Binding Countdown}" />
+        </Grid>
+        <Grid ColumnDefinitions="Auto,Auto"
+              ColumnSpacing="12"
+              HorizontalAlignment="Left">
+          <TextBlock Classes="muted overlay-detail"
+                     FontWeight="SemiBold"
+                     Text="{Binding CountdownPhase}" />
+          <TextBlock Grid.Column="1"
+                     Classes="muted overlay-detail"
+                     FontWeight="SemiBold"
+                     IsVisible="{Binding HasCountdownPhaseTime}"
+                     Text="{Binding CountdownPhaseTime}" />
+        </Grid>
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</UserControl>

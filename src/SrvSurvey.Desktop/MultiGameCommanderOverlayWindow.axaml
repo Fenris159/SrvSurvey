@@ -1,15 +1,16 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SrvSurvey.Desktop"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         x:Class="SrvSurvey.Desktop.MultiGameCommanderOverlayWindow"
         x:DataType="vm:CommanderInstancesViewModel"
         mc:Ignorable="d"
-        d:DesignWidth="340"
+        d:DesignWidth="190"
         d:DesignHeight="36"
         MinWidth="100"
-        MaxWidth="600"
+        MaxWidth="400"
         SizeToContent="WidthAndHeight"
         CanResize="False"
         ShowActivated="False"
@@ -20,22 +21,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey active Commander">
-  <Border Padding="20,5"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderBrush="{DynamicResource RavenAccentBrush}"
-          BorderThickness="1"
-          CornerRadius="8"
-          Opacity="0.94">
-    <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="16">
-      <TextBlock FontSize="12"
-                 FontWeight="Bold"
-                 Foreground="{DynamicResource RavenTextBrush}"
-                 Text="{Binding MultiGameOverlayLabel}" />
-      <TextBlock Grid.Column="1"
-                 VerticalAlignment="Center"
-                 FontSize="9"
-                 Foreground="{DynamicResource RavenMutedTextBrush}"
-                 Text="CTRL+ALT+W: NEXT" />
-    </Grid>
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:MultiGameCommanderOverlayPresentation />
   </Border>
 </Window>

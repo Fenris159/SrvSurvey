@@ -54,6 +54,11 @@ public sealed class SurfaceSurveyRadarControl : Control
             ScaleMultiplierProperty);
     }
 
+    public SurfaceSurveyRadarControl()
+    {
+        ClipToBounds = true;
+    }
+
     public IReadOnlyList<SurfaceRadarMarkerViewModel>? Markers
     {
         get => GetValue(MarkersProperty);
@@ -127,13 +132,18 @@ public sealed class SurfaceSurveyRadarControl : Control
         }
 
         var center = bounds.Center;
-        DrawGrid(context, bounds, center, grid);
-        foreach (var marker in Markers ?? [])
+        // Keep rings/markers inside the radar frame so out-of-range contacts
+        // disappear at the border instead of painting over neighbouring UI.
+        using (context.PushClip(bounds))
         {
-            DrawMarker(context, bounds, center, marker);
-        }
+            DrawGrid(context, bounds, center, grid);
+            foreach (var marker in Markers ?? [])
+            {
+                DrawMarker(context, bounds, center, marker);
+            }
 
-        DrawCommander(context, center, accent);
+            DrawCommander(context, center, accent);
+        }
     }
 
     private static void DrawGrid(

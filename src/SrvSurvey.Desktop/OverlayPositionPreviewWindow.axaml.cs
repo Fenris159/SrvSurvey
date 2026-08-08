@@ -24,6 +24,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         Definition = OverlayLayoutCatalog.Supported[0];
         Preview = OverlayPositionPreviewViewModel.Create(Definition);
         DataContext = Preview;
+        EnsureEditorFolderTab(Definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
     }
@@ -34,9 +35,24 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         InitializeComponent();
         Preview = OverlayPositionPreviewViewModel.Create(definition);
         DataContext = Preview;
+        EnsureEditorFolderTab(definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
         Title = $"{definition.DisplayName} position preview";
+    }
+
+    /// <summary>
+    /// Forces the editor-only folder tab text/visibility from the catalog
+    /// display name so identification never depends solely on bindings.
+    /// </summary>
+    private void EnsureEditorFolderTab(string displayName)
+    {
+        var label = string.IsNullOrWhiteSpace(displayName)
+            ? Definition.Name
+            : displayName.Trim();
+        EditorFolderTab.IsVisible = true;
+        EditorFolderTabLabel.Text = label;
+        ToolTip.SetTip(EditorFolderTab, label);
     }
 
     public OverlayLayoutDefinition Definition { get; }
@@ -44,6 +60,15 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     public OverlayPositionPreviewViewModel Preview { get; }
 
     internal Control? RuntimePresentation => runtimePresentation;
+
+    /// <summary>Editor-only folder tab chrome (tests / diagnostics).</summary>
+    internal Border EditorFolderTabControl => EditorFolderTab;
+
+    /// <summary>Editor-only folder tab label (tests / diagnostics).</summary>
+    internal TextBlock EditorFolderTabLabelControl => EditorFolderTabLabel;
+
+    /// <summary>Editor-only bordered preview body (tests / diagnostics).</summary>
+    internal Border PreviewBodyControl => PreviewBody;
 
     public event EventHandler<OverlayPreviewSettingsRequestedEventArgs>?
         SettingsRequested;
@@ -80,15 +105,14 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         }
 
         var effectiveScale = safeScaling * scaleFactor;
+        var measured = MeasureRuntimePresentationSize();
         return new PixelSize(
             Math.Max(
                 1,
-                (int)Math.Ceiling(
-                    Definition.PreviewSize.Width * effectiveScale)),
+                (int)Math.Ceiling(measured.Width * effectiveScale)),
             Math.Max(
                 1,
-                (int)Math.Ceiling(
-                    Definition.PreviewSize.Height * effectiveScale)));
+                (int)Math.Ceiling(measured.Height * effectiveScale)));
     }
 
     public PixelSize GetCurrentPixelSize(double scaling)
@@ -132,17 +156,36 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
         globalOpacity = global;
         opacityOverride = overlayOverride;
-        PreviewSurface.Opacity = opacityOverride ?? globalOpacity;
+        var opacity = opacityOverride ?? globalOpacity;
+        // Dim the body with the preview opacity; keep the editor folder tab
+        // fully readable for panel identification.
+        PreviewBody.Opacity = opacity;
+        PreviewSurface.Opacity = 1d;
     }
 
     private void ApplyContentSize()
     {
-        Width = usesRuntimePresentation
-            ? Definition.PreviewSize.Width
-            : Preview.PreferredWidth;
+        if (usesRuntimePresentation)
+        {
+            // Match live hosts: the shared presentation (or the editor-only
+            // folder tab when it is wider) owns the measured width. Keeping
+            // the catalog width as a window floor leaves a transparent span
+            // behind compact content that looks like a second panel when the
+            // preview opacity is reduced.
+            MinWidth = 1;
+            MaxWidth = double.PositiveInfinity;
+            MinHeight = 1;
+            MaxHeight = double.PositiveInfinity;
+            Width = double.NaN;
+            Height = double.NaN;
+            SizeToContent = SizeToContent.WidthAndHeight;
+            return;
+        }
+
+        Width = Preview.PreferredWidth;
         MinWidth = Width;
         MaxWidth = Width;
-        if (usesRuntimePresentation || Preview.IsCompact)
+        if (Preview.IsCompact)
         {
             Height = Definition.PreviewSize.Height;
             MinHeight = Height;
@@ -159,6 +202,33 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         return Math.Max(1d, PreviewSurface.DesiredSize.Height);
     }
 
+    private Size MeasureRuntimePresentationSize()
+    {
+        var available = new Size(
+            double.PositiveInfinity,
+            double.PositiveInfinity);
+        PreviewSurface.Measure(available);
+        var desired = PreviewSurface.DesiredSize;
+        // Prefer live measured content; catalog width is only a soft floor when
+        // the presentation actually wants that space (MinWidth on the host).
+        var width = Math.Max(
+            1d,
+            double.IsFinite(desired.Width) && desired.Width > 0
+                ? desired.Width
+                : Definition.PreviewSize.Width);
+        if (double.IsFinite(MinWidth) && MinWidth > 0)
+        {
+            width = Math.Max(width, MinWidth);
+        }
+
+        var height = Math.Max(
+            1d,
+            double.IsFinite(desired.Height) && desired.Height > 0
+                ? desired.Height
+                : Definition.PreviewSize.Height);
+        return new Size(width, height);
+    }
+
     internal void ApplyRuntimePresentationTheme()
     {
         if (usesRuntimePresentation)
@@ -171,17 +241,21 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
     private bool TryUseRuntimePresentation()
     {
-        if (!GuardianOverlayPresentationFactory.TryCreate(
+        if (!OverlayRuntimePresentationFactory.TryCreate(
                 Definition.Name,
-                out var presentation)
+                out var presentation,
+                out _)
             || presentation is null)
         {
             return false;
         }
 
-        presentation.DataContext = GuardianOverlayViewModel.CreateEditorPreview();
         runtimePresentation = presentation;
-        PreviewSurface.Child = presentation;
+        // Host the real shared template inside the yellow body; the folder
+        // tab above remains editor-only chrome for identification.
+        PreviewBody.Child = presentation;
+        PreviewBody.Padding = new Thickness(0);
+        PreviewBody.Background = Avalonia.Media.Brushes.Transparent;
         return true;
     }
 

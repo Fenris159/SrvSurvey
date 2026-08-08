@@ -57,6 +57,8 @@ public static class OverlayThemeResources
             ["RavenColoniseHighlightBrush"] = "RavenOverlayColoniseHighlightBrush",
             ["RavenColoniseItemBrush"] = "RavenOverlayColoniseItemBrush",
             ["RavenColoniseItemDimBrush"] = "RavenOverlayColoniseItemDimBrush",
+            ["RavenColoniseRowHighlightBrush"] =
+                "RavenOverlayColoniseRowHighlightBrush",
             ["RavenFczCheckpointBrush"] = "RavenOverlayFczCheckpointBrush",
             ["RavenFczCheckpointLocalBrush"] = "RavenOverlayFczCheckpointLocalBrush",
             ["RavenFczPowerPostBrush"] = "RavenOverlayFczPowerPostBrush",
@@ -148,6 +150,12 @@ public static class OverlayThemeResources
 
     private static void ApplySurfaceChrome(Window window)
     {
+        // Editor previews own yellow folder-tab + body chrome in XAML.
+        if (window is OverlayPositionPreviewWindow)
+        {
+            return;
+        }
+
         var surface = window.Content switch
         {
             Border border => border,
@@ -163,7 +171,7 @@ public static class OverlayThemeResources
         _ = window.TryFindResource(RavenWarningBrushResource, out var warningBrush);
         ApplySurfaceChrome(
             surface,
-            window is OverlayPositionPreviewWindow,
+            isEditorPreview: false,
             windowBrush as IBrush,
             warningBrush as IBrush);
     }
@@ -176,7 +184,7 @@ public static class OverlayThemeResources
     {
         ArgumentNullException.ThrowIfNull(surface);
         surface.Margin = new Thickness(isEditorPreview ? 1 : 0);
-        surface.Padding = new Thickness(5);
+        surface.Padding = new Thickness(4);
         surface.Background = windowBrush ?? surface.Background;
         surface.BorderBrush = isEditorPreview ? warningBrush : null;
         surface.BorderThickness = new Thickness(isEditorPreview ? 2 : 0);
@@ -238,21 +246,34 @@ public static class OverlayThemeResources
             return;
         }
 
+        // Shared presentation templates own their complete visual grammar.
+        // Do not register the legacy LayoutUpdated normalizer: it would later
+        // walk the editor preview shell and strip the folder tab's padding,
+        // background, border, and corner radius after the window opens.
+        if (OverlayRuntimePresentationFactory.UsesDedicatedHostChrome(plotterName)
+            || GuardianOverlayPresentationFactory.IsSupported(plotterName))
+        {
+            ApplyDedicatedPresentationChrome(window);
+            return;
+        }
+
         var registration = LegacyPresentationRegistrations.GetValue(
             window,
             candidate => new LegacyPresentationRegistration(
                 candidate,
                 definition));
-        if (GuardianOverlayPresentationFactory.IsSupported(plotterName))
-        {
-            ApplyDedicatedPresentationChrome(window);
-        }
-
         registration.ApplyPresentation();
     }
 
     private static void ApplyDedicatedPresentationChrome(Window window)
     {
+        // Editor previews keep their XAML folder-tab chrome; only live hosts
+        // need the transparent dedicated presentation shell.
+        if (window is OverlayPositionPreviewWindow)
+        {
+            return;
+        }
+
         var surface = window.Content switch
         {
             Border border => border,
@@ -264,15 +285,11 @@ public static class OverlayThemeResources
             return;
         }
 
-        var isEditorPreview = window is OverlayPositionPreviewWindow;
-        _ = window.TryFindResource(
-            RavenWarningBrushResource,
-            out var warningBrush);
-        surface.Margin = new Thickness(isEditorPreview ? 1 : 0);
+        surface.Margin = new Thickness(0);
         surface.Padding = new Thickness(0);
         surface.Background = Brushes.Transparent;
-        surface.BorderBrush = isEditorPreview ? warningBrush as IBrush : null;
-        surface.BorderThickness = new Thickness(isEditorPreview ? 2 : 0);
+        surface.BorderBrush = null;
+        surface.BorderThickness = new Thickness(0);
         surface.CornerRadius = new CornerRadius(0);
         surface.Opacity = 1d;
     }
@@ -372,9 +389,24 @@ public static class OverlayThemeResources
             return;
         }
 
-        if (window.MinWidth > width.Value)
+        // Catalog width is a preferred floor, not a hard clip edge. Content-
+        // driven hosts (WidthAndHeight) may grow so text is not truncated.
+        if (double.IsNaN(window.MinWidth) || window.MinWidth <= 0)
         {
             window.MinWidth = width.Value;
+        }
+
+        if (window.SizeToContent is SizeToContent.WidthAndHeight
+            or SizeToContent.Width)
+        {
+            if (!double.IsNaN(window.MaxWidth)
+                && window.MaxWidth > 0
+                && window.MaxWidth < width.Value)
+            {
+                window.MaxWidth = double.PositiveInfinity;
+            }
+
+            return;
         }
 
         if (window.MaxWidth < width.Value)
@@ -467,8 +499,21 @@ public static class OverlayThemeResources
         window.MinHeight = Scale(registration.BaseMinHeight, factor);
         window.MaxWidth = Scale(registration.BaseMaxWidth, factor);
         window.MaxHeight = Scale(registration.BaseMaxHeight, factor);
-        window.Width = Scale(registration.BaseWidth, factor);
-        window.Height = Scale(registration.BaseHeight, factor);
+
+        // Respect content-driven hosts: only force the axes the window is not
+        // already measuring from its presentation tree.
+        if (window.SizeToContent is SizeToContent.Manual
+            or SizeToContent.Height)
+        {
+            window.Width = Scale(registration.BaseWidth, factor);
+        }
+
+        if (window.SizeToContent is SizeToContent.Manual
+            or SizeToContent.Width)
+        {
+            window.Height = Scale(registration.BaseHeight, factor);
+        }
+
         registration.AppliedFactor = factor;
     }
 
@@ -566,7 +611,10 @@ public static class OverlayThemeResources
                 return;
             }
 
-            if (GuardianOverlayPresentationFactory.IsSupported(
+            // Shared presentation templates own their full visual grammar.
+            // Do not inject headers or normalize spacing into them.
+            if (OverlayRuntimePresentationFactory.IsSupported(definition.Name)
+                || GuardianOverlayPresentationFactory.IsSupported(
                     definition.Name))
             {
                 return;

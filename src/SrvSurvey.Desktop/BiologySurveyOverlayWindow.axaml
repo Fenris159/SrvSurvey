@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SrvSurvey.Desktop"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="using:SrvSurvey.Desktop.Controls"
@@ -9,9 +10,9 @@
         mc:Ignorable="d"
         d:DesignWidth="240"
         d:DesignHeight="240"
-        Width="240"
+        MinWidth="240"
         MaxHeight="720"
-        SizeToContent="Height"
+        SizeToContent="WidthAndHeight"
         CanResize="False"
         ShowActivated="False"
         ShowInTaskbar="False"
@@ -21,223 +22,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey biology survey overlay">
-  <Border Margin="0"
-          Padding="5"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderThickness="0"
-          CornerRadius="5">
-    <StackPanel IsVisible="{Binding Survey.HasBiologySurvey}"
-                Spacing="3">
-      <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                 FontSize="12"
-                 FontWeight="SemiBold"
-                 Text="System biology" />
-      <TextBlock Foreground="{DynamicResource RavenTextBrush}"
-                 FontSize="10"
-                 FontWeight="SemiBold"
-                 Text="{Binding Survey.BiologySurveyDisplay.Heading}"
-                 TextTrimming="CharacterEllipsis" />
-      <TextBlock Foreground="{DynamicResource RavenMutedTextBrush}"
-                 FontSize="9"
-                 Text="{Binding Survey.BiologySurveyDisplay.ProgressText}"
-                 TextTrimming="CharacterEllipsis" />
-
-      <Border Height="1"
-              Margin="0,1"
-              Background="{DynamicResource RavenWarningBrush}"
-              Opacity="0.65" />
-
-      <ScrollViewer MaxHeight="620"
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
-        <StackPanel Spacing="3">
-          <ItemsControl IsVisible="{Binding Survey.BiologySurveyDisplay.IsSystemOverview}"
-                        ItemsSource="{Binding Survey.BiologySurveyDisplay.Bodies}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:BiologyBodyRowViewModel">
-                <Grid Margin="0,1"
-                      ColumnDefinitions="12,Auto,*,Auto"
-                      ColumnSpacing="3">
-                  <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                             FontSize="10"
-                             FontWeight="Bold"
-                             Text="&#x2600;" />
-                  <Grid Grid.Column="1">
-                    <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
-                               FontSize="10"
-                               IsVisible="{Binding !IsComplete}"
-                               Text="{Binding Name}" />
-                    <TextBlock Foreground="{DynamicResource RavenPrimaryDimBrush}"
-                               FontSize="10"
-                               IsVisible="{Binding IsComplete}"
-                               Text="{Binding Name}"
-                               TextDecorations="Strikethrough" />
-                  </Grid>
-                  <StackPanel Grid.Column="2"
-                              Margin="1,0,2,0"
-                              HorizontalAlignment="Left"
-                              VerticalAlignment="Center"
-                              Orientation="Horizontal"
-                              Spacing="4">
-                    <ItemsControl ItemsSource="{Binding RewardBands}">
-                      <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                          <StackPanel Orientation="Horizontal" Spacing="2" />
-                        </ItemsPanelTemplate>
-                      </ItemsControl.ItemsPanel>
-                      <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:BiologySignalRewardBandViewModel">
-                          <controls:BiologyRewardBandControl Width="13"
-                                                             Height="28"
-                                                             MinimumReward="{Binding MinimumReward}"
-                                                             MaximumReward="{Binding MaximumReward}"
-                                                             BucketOneMillions="{Binding RewardBucketOneMillions}"
-                                                             BucketTwoMillions="{Binding RewardBucketTwoMillions}"
-                                                             BucketThreeMillions="{Binding RewardBucketThreeMillions}"
-                                                             IsPrediction="{Binding IsPrediction}"
-                                                             IsHighlighted="{Binding IsHighlighted}"
-                                                             IsDimmed="{Binding ShouldDim}"
-                                                             FilledBrush="{DynamicResource RavenPrimaryBrush}"
-                                                             PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                             DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                             PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
-                                                             PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
-                                                             HighlightBrush="{DynamicResource RavenBioGoldBrush}"
-                                                             DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
-                                                             UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
-                                                             HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                             PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
-                        </DataTemplate>
-                      </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <controls:CanonnLogoControl Width="16"
-                                                Height="16"
-                                                VerticalAlignment="Center"
-                                                IsVisible="{Binding HasCanonnSignals}"
-                                                ToolTip.Tip="Canonn has known biological signals for this body" />
-                  </StackPanel>
-                  <TextBlock Grid.Column="3"
-                             MaxWidth="76"
-                             HorizontalAlignment="Right"
-                             VerticalAlignment="Center"
-                             Foreground="{DynamicResource RavenPrimaryBrush}"
-                             FontSize="10"
-                             Text="{Binding RewardText}"
-                             TextTrimming="CharacterEllipsis" />
-                </Grid>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="9"
-                     IsVisible="{Binding Survey.BiologySurveyDisplay.RequiresDss}"
-                     Text="DSS scan required"
-                     TextWrapping="Wrap" />
-          <StackPanel IsVisible="{Binding Survey.HasCanonnBiologyHint}"
-                      Orientation="Horizontal"
-                      Spacing="4">
-            <controls:CanonnLogoControl Width="16"
-                                        Height="16"
-                                        VerticalAlignment="Center" />
-            <TextBlock VerticalAlignment="Center"
-                       Foreground="{DynamicResource RavenAccentBrush}"
-                       FontSize="9"
-                       Text="{Binding Survey.CanonnBiologyHint}"
-                       TextWrapping="Wrap" />
-          </StackPanel>
-          <TextBlock Foreground="{DynamicResource RavenMutedTextBrush}"
-                     FontSize="9"
-                     IsVisible="{Binding Survey.BiologySurveyDisplay.HasPredictionStatus}"
-                     Text="{Binding Survey.BiologySurveyDisplay.PredictionStatus}"
-                     TextWrapping="Wrap" />
-
-          <ItemsControl IsVisible="{Binding Survey.BiologySurveyDisplay.IsBodyDetail}"
-                        ItemsSource="{Binding Survey.BiologySurveyDisplay.Organisms}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:BiologyOrganismRowViewModel">
-                <Grid Margin="0,1"
-                      ColumnDefinitions="*,Auto,Auto"
-                      ColumnSpacing="4"
-                      Opacity="{Binding RowOpacity}">
-                  <StackPanel Spacing="0">
-                    <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
-                               FontSize="10"
-                               FontWeight="SemiBold"
-                               Text="{Binding DisplayName}"
-                               TextTrimming="CharacterEllipsis" />
-                    <TextBlock Foreground="{DynamicResource RavenMutedTextBrush}"
-                               FontSize="8"
-                               Text="{Binding GenusName}"
-                               TextTrimming="CharacterEllipsis" />
-                  </StackPanel>
-                  <controls:BiologyRewardBandControl Grid.Column="1"
-                                                       Width="13"
-                                                       Height="28"
-                                                       MinimumReward="{Binding Reward}"
-                                                       MaximumReward="{Binding Reward}"
-                                                       BucketOneMillions="{Binding RewardBucketOneMillions}"
-                                                       BucketTwoMillions="{Binding RewardBucketTwoMillions}"
-                                                       BucketThreeMillions="{Binding RewardBucketThreeMillions}"
-                                                       IsPrediction="{Binding IsPrediction}"
-                                                       IsHighlighted="{Binding IsHighlightedFirst}"
-                                                       IsDimmed="{Binding ShouldDim}"
-                                                       FilledBrush="{DynamicResource RavenPrimaryBrush}"
-                                                       PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                       DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                       PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
-                                                       PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
-                                                       HighlightBrush="{DynamicResource RavenBioGoldBrush}"
-                                                       DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
-                                                       UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
-                                                       HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                       PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
-                  <TextBlock Grid.Column="2"
-                             MaxWidth="62"
-                             HorizontalAlignment="Right"
-                             VerticalAlignment="Center"
-                             Foreground="{DynamicResource RavenPrimaryBrush}"
-                             FontSize="9"
-                             Text="{Binding RewardText}"
-                             TextTrimming="CharacterEllipsis" />
-                </Grid>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-
-          <TextBlock Foreground="{DynamicResource RavenMutedTextBrush}"
-                     FontSize="9"
-                     IsVisible="{Binding Survey.BiologySurveyDisplay.HasGeologicalSignals}"
-                     Text="{Binding Survey.BiologySurveyDisplay.GeologicalSignalCount, StringFormat={}{0} geological signals}" />
-          <ItemsControl IsVisible="{Binding Survey.BiologySurveyDisplay.HasGeologicalSignals}"
-                        ItemsSource="{Binding Survey.BiologySurveyDisplay.GeologicalSignals}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
-                           FontSize="9"
-                           Text="{Binding}" />
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-          <TextBlock Foreground="{DynamicResource RavenMutedTextBrush}"
-                     FontSize="9"
-                     IsVisible="{Binding Survey.BiologySurveyDisplay.HasRadicoidaUnicaCount}"
-                     Text="{Binding Survey.BiologySurveyDisplay.RadicoidaUnicaCountText}" />
-        </StackPanel>
-      </ScrollViewer>
-
-      <TextBlock HorizontalAlignment="Center"
-                 Foreground="{DynamicResource RavenMutedTextBrush}"
-                 FontSize="9"
-                 IsVisible="{Binding Survey.BiologySurveyDisplay.HasRewardSummary}"
-                 Text="{Binding Survey.BiologySurveyDisplay.RewardSummary}"
-                 TextTrimming="CharacterEllipsis" />
-      <TextBlock HorizontalAlignment="Center"
-                 Foreground="{DynamicResource RavenAccentBrush}"
-                 FontSize="9"
-                 IsVisible="{Binding Survey.BiologySurveyDisplay.HasFirstFootfallRewardSummary}"
-                 Text="{Binding Survey.BiologySurveyDisplay.FirstFootfallRewardSummary}"
-                 TextTrimming="CharacterEllipsis" />
-    </StackPanel>
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:BiologySurveyOverlayPresentation />
   </Border>
 </Window>

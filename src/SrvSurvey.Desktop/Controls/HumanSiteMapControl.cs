@@ -279,6 +279,11 @@ public sealed class HumanSiteMapControl : Control
         set => SetValue(QuestBrushProperty, value);
     }
 
+    public HumanSiteMapControl()
+    {
+        ClipToBounds = true;
+    }
+
     public override void Render(DrawingContext context)
     {
         base.Render(context);
@@ -303,6 +308,30 @@ public sealed class HumanSiteMapControl : Control
         var scale = double.IsFinite(ScaleMultiplier)
             ? Math.Clamp(ScaleMultiplier, 0.1, 15)
             : 1;
+        // Keep settlement geometry inside the map frame so out-of-range
+        // markers disappear at the border instead of painting over UI.
+        using (context.PushClip(bounds))
+        {
+            DrawSiteContents(
+                context,
+                projection,
+                bounds,
+                center,
+                commander,
+                scale,
+                grid);
+        }
+    }
+
+    private void DrawSiteContents(
+        DrawingContext context,
+        HumanSiteMapProjection projection,
+        Rect bounds,
+        Point center,
+        HumanSiteMapPoint commander,
+        double scale,
+        IBrush grid)
+    {
         DrawSiteGrid(context, bounds, center, commander, scale, grid);
         DrawBuildings(context, projection, center, commander, scale);
         DrawOuterLimit(context, center, commander, scale);

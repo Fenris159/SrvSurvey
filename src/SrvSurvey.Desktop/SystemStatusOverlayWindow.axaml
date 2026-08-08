@@ -1,17 +1,19 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SrvSurvey.Desktop"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         x:Class="SrvSurvey.Desktop.SystemStatusOverlayWindow"
         x:DataType="vm:SystemSurveyOverlayViewModel"
         mc:Ignorable="d"
-        d:DesignWidth="170"
-        d:DesignHeight="210"
-        Width="170"
-        MinHeight="104"
+        d:DesignWidth="140"
+        d:DesignHeight="140"
+        MinWidth="120"
+        MinHeight="1"
+        MaxWidth="220"
         MaxHeight="320"
-        SizeToContent="Height"
+        SizeToContent="WidthAndHeight"
         CanResize="False"
         ShowActivated="False"
         ShowInTaskbar="False"
@@ -21,92 +23,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey system status overlay">
-  <Border Margin="8"
-          Padding="14"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderBrush="{DynamicResource RavenBorderBrush}"
-          BorderThickness="1"
-          CornerRadius="12"
-          Opacity="0.97">
-    <StackPanel Spacing="9">
-      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
-        <TextBlock Classes="eyebrow"
-                   VerticalAlignment="Center"
-                   Text="SYSTEM SURVEY" />
-        <TextBlock Grid.Column="1"
-                   FontSize="15"
-                   FontWeight="SemiBold"
-                   VerticalAlignment="Center"
-                   Text="{Binding Survey.SystemStatusText}" />
-        <Border Grid.Column="2" Classes="badge">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="9"
-                     FontWeight="SemiBold"
-                     Text="{Binding InputMode}" />
-        </Border>
-      </Grid>
-
-      <StackPanel IsVisible="{Binding Survey.HasDssBodies}" Spacing="4">
-        <TextBlock Classes="muted"
-                   FontSize="10"
-                   Text="{Binding Survey.DssHeading}" />
-        <ItemsControl ItemsSource="{Binding Survey.DssBodies}">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <WrapPanel Orientation="Horizontal" />
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:SurveyBodyReferenceViewModel">
-              <Border Margin="0,0,6,4"
-                      Padding="7,3"
-                      Background="{DynamicResource RavenAccentMutedBrush}"
-                      CornerRadius="999">
-                <StackPanel Orientation="Horizontal" Spacing="3">
-                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                             FontSize="10"
-                             FontWeight="SemiBold"
-                             IsVisible="{Binding !IsDestination}"
-                             Text="{Binding Name}" />
-                  <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                             FontSize="10"
-                             FontWeight="Bold"
-                             IsVisible="{Binding IsDestination}"
-                             Text="{Binding Name}" />
-                </StackPanel>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-
-      <StackPanel IsVisible="{Binding Survey.HasBiologicalBodies}" Spacing="4">
-        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="10"
-                   FontWeight="SemiBold"
-                   Text="{Binding Survey.BiologicalHeading}" />
-        <ItemsControl ItemsSource="{Binding Survey.BiologicalBodies}">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <WrapPanel Orientation="Horizontal" />
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:SurveyBodyReferenceViewModel">
-              <TextBlock Margin="0,0,10,2"
-                         Foreground="{DynamicResource RavenAccentBrush}"
-                         FontSize="10"
-                         FontWeight="SemiBold"
-                         Text="{Binding Name}" />
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-
-      <TextBlock Classes="muted"
-                 FontSize="10"
-                 IsVisible="{Binding Survey.HasNonBodySignals}"
-                 Text="{Binding Survey.NonBodySignalsText}" />
-    </StackPanel>
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:SystemStatusOverlayPresentation />
   </Border>
 </Window>

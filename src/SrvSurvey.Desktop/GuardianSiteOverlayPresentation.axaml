@@ -4,6 +4,8 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.GuardianSiteOverlayPresentation"
              x:DataType="vm:GuardianOverlayViewModel"
+             Width="{Binding Guardian.PreferredOverlayWidth}"
+             Height="{Binding Guardian.PreferredOverlayHeight}"
              ClipToBounds="True">
   <Border Classes="guardian-panel">
     <Grid>

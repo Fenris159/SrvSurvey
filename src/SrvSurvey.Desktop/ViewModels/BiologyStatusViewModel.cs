@@ -332,8 +332,8 @@ public sealed record BiologyStatusViewModel(
             body.IsFirstFootfall);
     }
 
-    // Legacy PlotBioStatus draws the sample-range bar at 0.25 of the
-    // organism range, clamped for the 480px overlay width.
+    // Keep the legacy quarter-range cue, but clamp it to the compact shared
+    // presentation so the panel ends immediately after the distance label.
     public static double GetSampleScaleBarWidth(double requiredDistanceMeters)
     {
         if (!double.IsFinite(requiredDistanceMeters) || requiredDistanceMeters <= 0)
@@ -341,7 +341,7 @@ public sealed record BiologyStatusViewModel(
             return 0;
         }
 
-        return Math.Clamp(requiredDistanceMeters * 0.25d, 12, 220);
+        return Math.Clamp(requiredDistanceMeters * 0.25d, 12, 120);
     }
 
     private static double? CalculateNearestDistance(

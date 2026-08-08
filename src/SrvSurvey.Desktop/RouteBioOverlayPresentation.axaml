@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.RouteBioOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:RouteBioOverlayViewModel"
+             mc:Ignorable="d"
+             Width="260"
+             ClipToBounds="True">
+  <Border Margin="0"
+          Padding="4"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0"
+          CornerRadius="5">
+    <Grid Margin="3"
+          RowDefinitions="Auto,Auto,Auto,Auto"
+          RowSpacing="3">
+      <StackPanel>
+        <TextBlock Classes="overlay-value"
+                   Foreground="{DynamicResource RavenWarningBrush}"
+                   Text="Route bodies" />
+        <TextBlock Foreground="{DynamicResource RavenTextBrush}"
+                   Classes="overlay-body"
+                   FontWeight="SemiBold"
+                   Text="{Binding SystemName}"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock Classes="muted overlay-caption"
+                   Text="Route body destinations" />
+      </StackPanel>
+
+      <Border Grid.Row="1"
+              Classes="overlay-divider"
+              Background="{DynamicResource RavenWarningBrush}"
+              Opacity="0.65" />
+
+      <controls:RouteBioTargetList x:Name="TargetList"
+                                   Grid.Row="2"
+                                   ItemsSource="{Binding Targets}"
+                                   IsInteractive="True" />
+
+      <TextBlock Grid.Row="3"
+                 HorizontalAlignment="Center"
+                 Classes="overlay-caption"
+                 Foreground="{DynamicResource RavenMutedTextBrush}"
+                 Text="{Binding Progress}"
+                 TextTrimming="CharacterEllipsis" />
+    </Grid>
+  </Border>
+</UserControl>

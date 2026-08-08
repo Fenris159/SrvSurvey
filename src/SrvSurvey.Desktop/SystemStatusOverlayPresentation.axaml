@@ -1,0 +1,93 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.SystemStatusOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:SystemSurveyOverlayViewModel"
+             mc:Ignorable="d"
+             MinWidth="120"
+             MaxWidth="220"
+             HorizontalAlignment="Left"
+             ClipToBounds="True">
+  <!-- Content-sized live/editor presentation; the editor folder tab is host
+       chrome and does not alter this panel's runtime dimensions. -->
+  <Border Margin="0"
+          Padding="4"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0"
+          CornerRadius="5">
+    <StackPanel Spacing="3">
+      <TextBlock Foreground="{DynamicResource RavenTextBrush}"
+                 FontSize="10"
+                 FontWeight="SemiBold"
+                 Text="{Binding Survey.SystemStatusText}"
+                 TextWrapping="Wrap" />
+
+      <StackPanel IsVisible="{Binding Survey.HasDssBodies}" Spacing="2">
+        <TextBlock Classes="muted"
+                   FontSize="9"
+                   Text="{Binding Survey.DssHeading}"
+                   TextWrapping="Wrap" />
+        <ItemsControl ItemsSource="{Binding Survey.DssBodies}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:SurveyBodyReferenceViewModel">
+              <Border Margin="0,0,4,2"
+                      Padding="5,2"
+                      Background="{DynamicResource RavenAccentMutedBrush}"
+                      CornerRadius="3">
+                <Grid>
+                  <TextBlock FontSize="9"
+                             FontWeight="SemiBold"
+                             Foreground="{DynamicResource RavenSecondaryBrush}"
+                             IsVisible="{Binding !IsDestination}"
+                             Text="{Binding Name}" />
+                  <TextBlock FontSize="9"
+                             FontWeight="Bold"
+                             Foreground="{DynamicResource RavenWarningBrush}"
+                             IsVisible="{Binding IsDestination}"
+                             Text="{Binding Name}" />
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+
+      <StackPanel IsVisible="{Binding Survey.HasBiologicalBodies}" Spacing="2">
+        <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
+                   FontSize="9"
+                   FontWeight="SemiBold"
+                   Text="{Binding Survey.BiologicalHeading}"
+                   TextWrapping="Wrap" />
+        <ItemsControl ItemsSource="{Binding Survey.BiologicalBodies}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:SurveyBodyReferenceViewModel">
+              <TextBlock Margin="0,0,8,2"
+                         Foreground="{DynamicResource RavenPrimaryBrush}"
+                         FontSize="9"
+                         FontWeight="SemiBold"
+                         Text="{Binding Name}" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+
+      <TextBlock Classes="muted"
+                 FontSize="9"
+                 IsVisible="{Binding Survey.HasNonBodySignals}"
+                 Text="{Binding Survey.NonBodySignalsText}"
+                 TextWrapping="Wrap" />
+    </StackPanel>
+  </Border>
+</UserControl>

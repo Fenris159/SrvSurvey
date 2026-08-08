@@ -9,6 +9,10 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
     private readonly SystemNicknameViewModel? systemNicknames;
     private string platformStatus;
     private string inputMode;
+    private string? editorSphereCenter;
+    private string? editorSphereDestination;
+    private string? editorBoxelNext;
+    private string? editorRouteNext;
 
     public SphericalSearchOverlayViewModel(
         SphereLimitViewModel sphere,
@@ -44,14 +48,35 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
     public RouteWorkspaceViewModel Route { get; }
 
     public string SphereCenterSystemName =>
-        Resolve(Sphere.CenterSystemName);
+        editorSphereCenter ?? Resolve(Sphere.CenterSystemName);
 
     public string SphereDestinationSystemName =>
-        Resolve(Sphere.DestinationSystemName);
+        editorSphereDestination ?? Resolve(Sphere.DestinationSystemName);
 
-    public string BoxelNextSystem => Resolve(Boxel.NextSystem);
+    public string BoxelNextSystem =>
+        editorBoxelNext ?? Resolve(Boxel.NextSystem);
 
-    public string RouteNextHopName => Resolve(Route.NextHopName);
+    public string RouteNextHopName =>
+        editorRouteNext ?? Resolve(Route.NextHopName);
+
+    /// <summary>
+    /// Installs representative search guidance names for the position editor.
+    /// </summary>
+    internal void InstallEditorPreview(
+        string sphereCenter,
+        string sphereDestination,
+        string boxelNext,
+        string routeNext)
+    {
+        editorSphereCenter = sphereCenter;
+        editorSphereDestination = sphereDestination;
+        editorBoxelNext = boxelNext;
+        editorRouteNext = routeNext;
+        RaiseNameChanged(nameof(SphereCenterSystemName));
+        RaiseNameChanged(nameof(SphereDestinationSystemName));
+        RaiseNameChanged(nameof(BoxelNextSystem));
+        RaiseNameChanged(nameof(RouteNextHopName));
+    }
 
     public string PlatformStatus
     {

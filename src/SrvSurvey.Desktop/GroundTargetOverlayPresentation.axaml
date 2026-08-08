@@ -1,0 +1,131 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.GroundTargetOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:GroundTargetOverlayViewModel"
+             mc:Ignorable="d"
+             ClipToBounds="True">
+  <Border Margin="0"
+          Padding="4"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0"
+          CornerRadius="5">
+    <StackPanel Spacing="5">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="SURFACE TARGET" />
+          <TextBlock Classes="muted"
+                     FontSize="10"
+                     Text="Live bearing and descent guidance" />
+        </StackPanel>
+        <Border Grid.Column="1"
+                Classes="badge"
+                VerticalAlignment="Top">
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="9"
+                     FontWeight="SemiBold"
+                     Text="{Binding InputMode}" />
+        </Border>
+      </Grid>
+
+      <Border Classes="overlay-divider"
+              Background="{DynamicResource RavenBorderBrush}" />
+
+      <Grid ColumnDefinitions="104,*" ColumnSpacing="8">
+        <controls:GroundTargetGuidanceControl
+            Width="104"
+            Height="116"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            RelativeBearingDegrees="{Binding GroundTarget.RelativeBearingDegrees}"
+            AttackAngleDegrees="{Binding GroundTarget.AttackAngleDegrees}"
+            GridBrush="{DynamicResource RavenBorderBrush}"
+            AccentBrush="{DynamicResource RavenAccentBrush}"
+            WarningBrush="{DynamicResource RavenWarningBrush}"
+            DangerBrush="{DynamicResource RavenDangerBrush}"
+            MutedBrush="{DynamicResource RavenMutedTextBrush}" />
+
+        <StackPanel Grid.Column="1" Spacing="8">
+          <StackPanel Spacing="1">
+            <TextBlock Classes="muted"
+                       FontSize="9"
+                       Text="DISTANCE" />
+            <TextBlock Classes="monospace"
+                       Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Text="{Binding GroundTarget.DistanceToTarget}" />
+          </StackPanel>
+
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+            <StackPanel Spacing="1">
+              <TextBlock Classes="muted"
+                         FontSize="9"
+                         Text="BEARING" />
+              <TextBlock Classes="monospace"
+                         FontSize="12"
+                         FontWeight="SemiBold"
+                         Text="{Binding GroundTarget.TargetBearing}" />
+              <TextBlock Classes="muted"
+                         FontSize="9"
+                         Text="{Binding GroundTarget.RelativeHeading}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="1">
+              <TextBlock Classes="muted"
+                         FontSize="9"
+                         Text="DESCENT" />
+              <TextBlock Classes="monospace"
+                         Foreground="{DynamicResource RavenMutedTextBrush}"
+                         FontSize="12"
+                         FontWeight="SemiBold"
+                         IsVisible="{Binding GroundTarget.HasLevelApproach}"
+                         Text="{Binding GroundTarget.DescentAngle}" />
+              <TextBlock Classes="monospace"
+                         Foreground="{DynamicResource RavenWarningBrush}"
+                         FontSize="12"
+                         FontWeight="SemiBold"
+                         IsVisible="{Binding GroundTarget.HasShallowApproach}"
+                         Text="{Binding GroundTarget.DescentAngle}" />
+              <TextBlock Classes="monospace"
+                         Foreground="{DynamicResource RavenAccentBrush}"
+                         FontSize="12"
+                         FontWeight="SemiBold"
+                         IsVisible="{Binding GroundTarget.HasIdealApproach}"
+                         Text="{Binding GroundTarget.DescentAngle}" />
+              <TextBlock Classes="monospace"
+                         Foreground="{DynamicResource RavenDangerBrush}"
+                         FontSize="12"
+                         FontWeight="SemiBold"
+                         IsVisible="{Binding GroundTarget.HasSteepApproach}"
+                         Text="{Binding GroundTarget.DescentAngle}" />
+              <TextBlock Classes="monospace"
+                         Foreground="{DynamicResource RavenDangerBrush}"
+                         FontSize="12"
+                         FontWeight="SemiBold"
+                         IsVisible="{Binding GroundTarget.HasTooSteepApproach}"
+                         Text="{Binding GroundTarget.DescentAngle}" />
+              <TextBlock Classes="muted"
+                         FontSize="9"
+                         Text="{Binding GroundTarget.ApproachStatus}" />
+            </StackPanel>
+          </Grid>
+        </StackPanel>
+      </Grid>
+
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+        <TextBlock Classes="muted"
+                   FontSize="9"
+                   Text="TARGET" />
+        <TextBlock Grid.Column="1"
+                   Classes="monospace"
+                   Foreground="{DynamicResource RavenAccentBrush}"
+                   FontSize="9"
+                   Text="{Binding GroundTarget.TargetCoordinates}"
+                   TextTrimming="CharacterEllipsis" />
+      </Grid>
+    </StackPanel>
+  </Border>
+</UserControl>

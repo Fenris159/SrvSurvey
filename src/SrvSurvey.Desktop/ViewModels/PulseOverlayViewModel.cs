@@ -128,6 +128,23 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
 
     public bool HasSettingsStatus => !string.IsNullOrWhiteSpace(SettingsStatus);
 
+    /// <summary>
+    /// Installs a mid-pulse SCO cooling sample for the position editor.
+    /// </summary>
+    internal void InstallEditorPreview()
+    {
+        var now = timeProvider.GetUtcNow();
+        pulseExpiresAtUtc = now + TimeSpan.FromSeconds(6);
+        scoStoppedAtUtc = now - TimeSpan.FromSeconds(4);
+        supercruiseOverdrive = false;
+        OnPropertyChanged(nameof(PulseHeight));
+        OnPropertyChanged(nameof(IsScoActive));
+        OnPropertyChanged(nameof(IsScoCoolingDown));
+        OnPropertyChanged(nameof(IsScoReady));
+        OnPropertyChanged(nameof(ScoIndicatorTop));
+        OnPropertyChanged(nameof(ShouldShow));
+    }
+
     public void ApplyUpdate(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? status,

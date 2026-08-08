@@ -18,6 +18,21 @@ public sealed class BiologyRewardBandScaleTests
     }
 
     [Fact]
+    public void PredictionPipsClipHatchToTheControlBounds()
+    {
+        var control = new BiologyRewardBandControl
+        {
+            Width = 13,
+            Height = 28,
+            MinimumReward = 1_000_000,
+            MaximumReward = 9_000_000,
+            IsPrediction = true,
+        };
+
+        Assert.True(control.ClipToBounds);
+    }
+
+    [Fact]
     public void UnknownRewardUsesQuestionStateEvenWithMaximum()
     {
         var state = BiologyRewardBandScale.Calculate(

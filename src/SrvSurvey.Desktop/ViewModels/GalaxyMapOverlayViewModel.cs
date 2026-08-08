@@ -179,6 +179,49 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
 
     public Task PendingLoad { get; private set; } = Task.CompletedTask;
 
+    /// <summary>
+    /// Installs representative Galaxy Map overlay content for the position editor.
+    /// </summary>
+    internal void InstallEditorPreview(OverlayPreviewSimulationState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        PrimarySystem = new GalaxyMapSystemViewModel(
+            Label: "DESTINATION",
+            Name: state.DestinationSystem,
+            DiscoveryText: "First discovered by CMDR Raven",
+            DiscoveredByText: "Discovered by CMDR Raven · 2 m ago",
+            DetailsText: "Population 18.2 M · Medium security · Industrial | Refinery",
+            UpdatedText: "Data updated 2 m ago",
+            IsQuestTagged: true);
+        SecondarySystem = new GalaxyMapSystemViewModel(
+            Label: "CURRENT",
+            Name: state.CurrentSystem,
+            DiscoveryText: "Previously discovered",
+            DiscoveredByText: "Discovered by CMDR Corvus",
+            DetailsText: "42.6 ly from destination",
+            UpdatedText: "Data updated 8 m ago");
+        Factions =
+        [
+            new GalaxyMapFactionViewModel(
+                "Raven Colonial Initiative",
+                "42.8%",
+                "Expansion"),
+            new GalaxyMapFactionViewModel(
+                "Blue Fortune Corp",
+                "31.2%",
+                "War"),
+            new GalaxyMapFactionViewModel(
+                "System Authority",
+                "18.4%",
+                "Election"),
+        ];
+        RouteFooter = "ROUTE 4 / 9 · 138.7 LY REMAINING · QUEST DESTINATION";
+        OnPropertyChanged(nameof(RouteFooter));
+        OnPropertyChanged(nameof(HasRouteFooter));
+        DataStatus = "Galaxy Map data ready";
+        IsLoading = false;
+    }
+
     public void UpdateQuestTags(IEnumerable<string> tags)
     {
         ArgumentNullException.ThrowIfNull(tags);

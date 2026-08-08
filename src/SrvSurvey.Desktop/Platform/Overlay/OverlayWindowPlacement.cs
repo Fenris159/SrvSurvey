@@ -4,6 +4,22 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public static class OverlayWindowPlacement
 {
+    public static PixelRect GetUsableBounds(
+        PixelRect hostBounds,
+        PixelRect workingArea)
+    {
+        ValidateBounds(hostBounds, nameof(hostBounds));
+        ValidateBounds(workingArea, nameof(workingArea));
+
+        var left = Math.Max(hostBounds.X, workingArea.X);
+        var top = Math.Max(hostBounds.Y, workingArea.Y);
+        var right = Math.Min(hostBounds.Right, workingArea.Right);
+        var bottom = Math.Min(hostBounds.Bottom, workingArea.Bottom);
+        return right > left && bottom > top
+            ? new PixelRect(left, top, right - left, bottom - top)
+            : workingArea;
+    }
+
     public static PixelPoint TopCenter(
         PixelRect gameClientBounds,
         PixelSize overlaySize,
@@ -121,12 +137,7 @@ public static class OverlayWindowPlacement
         PixelSize overlaySize,
         int margin)
     {
-        if (hostBounds.Width <= 0 || hostBounds.Height <= 0)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(hostBounds),
-                "Host bounds must have a positive size.");
-        }
+        ValidateBounds(hostBounds, nameof(hostBounds));
 
         if (overlaySize.Width <= 0 || overlaySize.Height <= 0)
         {
@@ -136,5 +147,15 @@ public static class OverlayWindowPlacement
         }
 
         ArgumentOutOfRangeException.ThrowIfNegative(margin);
+    }
+
+    private static void ValidateBounds(PixelRect bounds, string parameterName)
+    {
+        if (bounds.Width <= 0 || bounds.Height <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                parameterName,
+                "Bounds must have a positive size.");
+        }
     }
 }

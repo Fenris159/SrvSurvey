@@ -46,6 +46,11 @@ public sealed class PriorScanRadarControl : Control
             CloseBrushProperty);
     }
 
+    public PriorScanRadarControl()
+    {
+        ClipToBounds = true;
+    }
+
     public IReadOnlyList<PriorScanRadarTargetViewModel>? Targets
     {
         get => GetValue(TargetsProperty);
@@ -109,40 +114,43 @@ public sealed class PriorScanRadarControl : Control
         }
 
         var center = bounds.Center;
-        context.DrawLine(
-            new Pen(grid, 1),
-            new Point(center.X, bounds.Top + 8),
-            new Point(center.X, bounds.Bottom - 8));
-        context.DrawLine(
-            new Pen(grid, 1),
-            new Point(bounds.Left + 8, center.Y),
-            new Point(bounds.Right - 8, center.Y));
-        context.DrawEllipse(
-            null,
-            new Pen(grid, 1),
-            center,
-            50,
-            50);
-        context.DrawEllipse(
-            null,
-            new Pen(grid, 1),
-            center,
-            100,
-            100);
-
-        foreach (var target in Targets ?? [])
+        using (context.PushClip(bounds))
         {
-            DrawTarget(
-                context,
-                target,
+            context.DrawLine(
+                new Pen(grid, 1),
+                new Point(center.X, bounds.Top + 8),
+                new Point(center.X, bounds.Bottom - 8));
+            context.DrawLine(
+                new Pen(grid, 1),
+                new Point(bounds.Left + 8, center.Y),
+                new Point(bounds.Right - 8, center.Y));
+            context.DrawEllipse(
+                null,
+                new Pen(grid, 1),
                 center,
-                bounds,
-                accent,
-                muted,
-                close);
-        }
+                50,
+                50);
+            context.DrawEllipse(
+                null,
+                new Pen(grid, 1),
+                center,
+                100,
+                100);
 
-        DrawCommander(context, center, accent);
+            foreach (var target in Targets ?? [])
+            {
+                DrawTarget(
+                    context,
+                    target,
+                    center,
+                    bounds,
+                    accent,
+                    muted,
+                    close);
+            }
+
+            DrawCommander(context, center, accent);
+        }
     }
 
     private void DrawTarget(

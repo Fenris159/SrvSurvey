@@ -7,6 +7,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
 {
     private readonly RouteWorkspaceViewModel route;
+    private FleetCarrierRouteEditorPreview? editorPreview;
 
     public FleetCarrierRouteOverlayViewModel(
         RouteWorkspaceViewModel route,
@@ -19,16 +20,22 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public string HopProgress => route.RouteCount == 0
-        ? "NO ROUTE"
-        : $"HOP {Math.Min(route.ReachedCount + 1, route.RouteCount):N0} / {route.RouteCount:N0}";
+    public string HopProgress => editorPreview?.HopProgress
+        ?? (route.RouteCount == 0
+            ? "NO ROUTE"
+            : $"HOP {Math.Min(route.ReachedCount + 1, route.RouteCount):N0} / {route.RouteCount:N0}");
 
-    public string SystemName => route.NextHopName;
+    public string SystemName => editorPreview?.SystemName ?? route.NextHopName;
 
     public string JumpSummary
     {
         get
         {
+            if (editorPreview is not null)
+            {
+                return editorPreview.JumpSummary;
+            }
+
             var carrier = route.NextHop?.Carrier;
             return $"{FormatNumber(carrier?.DistanceLy, 2)} LY JUMP  \u2022  "
                 + $"{FormatNumber(carrier?.RemainingLy, 2)} LY REMAINING";
@@ -39,6 +46,11 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
     {
         get
         {
+            if (editorPreview is not null)
+            {
+                return editorPreview.JumpsLeft;
+            }
+
             var count = Math.Max(
                 0,
                 route.RouteCount - route.ReachedCount - 1);
@@ -46,42 +58,61 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
         }
     }
 
-    public string FuelLeft => FormatTonnes(
-        route.NextHop?.Carrier?.FuelRemainingTonnes);
+    public string FuelLeft => editorPreview?.FuelLeft
+        ?? FormatTonnes(route.NextHop?.Carrier?.FuelRemainingTonnes);
 
-    public string TritiumInMarket => FormatTonnes(
-        route.NextHop?.Carrier?.TritiumInMarketTonnes);
+    public string TritiumInMarket => editorPreview?.TritiumInMarket
+        ?? FormatTonnes(route.NextHop?.Carrier?.TritiumInMarketTonnes);
 
-    public string JumpFuel => FormatTonnes(
-        route.NextHop?.Carrier?.FuelUsedTonnes);
+    public string JumpFuel => editorPreview?.JumpFuel
+        ?? FormatTonnes(route.NextHop?.Carrier?.FuelUsedTonnes);
 
-    public bool HasIcyRing => route.NextHop?.Carrier?.HasIcyRing == true;
+    public bool HasIcyRing => editorPreview?.HasIcyRing
+        ?? route.NextHop?.Carrier?.HasIcyRing == true;
 
-    public string IcyRingLabel => route.NextHop?.Carrier is
-        {
-            HasIcyRing: true,
-            IsSystemPristine: true,
-        }
-            ? "PRISTINE ICY RING"
-            : "ICY RING";
+    public string IcyRingLabel => editorPreview?.IcyRingLabel
+        ?? (route.NextHop?.Carrier is
+            {
+                HasIcyRing: true,
+                IsSystemPristine: true,
+            }
+                ? "PRISTINE ICY RING"
+                : "ICY RING");
 
-    public bool HasRestockWarning =>
-        route.NextHop?.Carrier?.MustRestock == true;
+    public bool HasRestockWarning => editorPreview?.HasRestockWarning
+        ?? route.NextHop?.Carrier?.MustRestock == true;
 
-    public string RestockAmount => FormatTonnes(
-        route.NextHop?.Carrier?.RestockAmountTonnes);
+    public string RestockAmount => editorPreview?.RestockAmount
+        ?? FormatTonnes(route.NextHop?.Carrier?.RestockAmountTonnes);
 
-    public bool HasCountdown => route.HasCarrierJumpCountdown;
+    public bool HasCountdown => editorPreview?.HasCountdown
+        ?? route.HasCarrierJumpCountdown;
 
-    public string CountdownTitle => route.CarrierJumpCountdownTitle;
+    public string CountdownTitle => editorPreview?.CountdownTitle
+        ?? route.CarrierJumpCountdownTitle;
 
-    public string Countdown => route.CarrierJumpCountdownValue;
+    public string Countdown => editorPreview?.Countdown
+        ?? route.CarrierJumpCountdownValue;
 
-    public string CountdownPhase => route.CarrierJumpPhaseLabel;
+    public string CountdownPhase => editorPreview?.CountdownPhase
+        ?? route.CarrierJumpPhaseLabel;
 
-    public string CountdownPhaseTime => route.CarrierJumpPhaseCountdown;
+    public string CountdownPhaseTime => editorPreview?.CountdownPhaseTime
+        ?? route.CarrierJumpPhaseCountdown;
 
-    public bool HasCountdownPhaseTime => route.HasCarrierJumpPhaseCountdown;
+    public bool HasCountdownPhaseTime => editorPreview?.HasCountdownPhaseTime
+        ?? route.HasCarrierJumpPhaseCountdown;
+
+    /// <summary>
+    /// Installs representative fleet-carrier route content for the position editor.
+    /// </summary>
+    internal void InstallEditorPreview(FleetCarrierRouteEditorPreview preview)
+    {
+        ArgumentNullException.ThrowIfNull(preview);
+        editorPreview = preview;
+        RaiseRouteProperties();
+        RaiseCountdownProperties();
+    }
 
     public void Dispose()
     {
@@ -154,3 +185,22 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
             : value.Value.ToString($"N{decimals}");
     }
 }
+
+internal sealed record FleetCarrierRouteEditorPreview(
+    string HopProgress,
+    string SystemName,
+    string JumpSummary,
+    string JumpsLeft,
+    string FuelLeft,
+    string TritiumInMarket,
+    string JumpFuel,
+    bool HasIcyRing,
+    string IcyRingLabel,
+    bool HasRestockWarning,
+    string RestockAmount,
+    bool HasCountdown,
+    string CountdownTitle,
+    string Countdown,
+    string CountdownPhase,
+    string CountdownPhaseTime,
+    bool HasCountdownPhaseTime);

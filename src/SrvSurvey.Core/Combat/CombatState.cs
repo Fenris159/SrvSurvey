@@ -99,6 +99,22 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
         return new CombatSnapshot(massacreMissions.ToArray());
     }
 
+    /// <summary>
+    /// Editor-only sample foot-combat session for shared overlay previews.
+    /// </summary>
+    public void InstallEditorSession(
+        string settlementName,
+        string factionState,
+        int kills,
+        long bonds)
+    {
+        SettlementName = settlementName;
+        SettlementFactionState = factionState;
+        FootCombatKills = kills;
+        FootCombatBonds = bonds;
+        Version++;
+    }
+
     private CombatApplyResult ApplySettlement(JsonElement root)
     {
         var name = GetString(root, "Name_Localised")

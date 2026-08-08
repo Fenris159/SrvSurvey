@@ -1,0 +1,166 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.HumanSiteOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:HumanSiteOverlayViewModel"
+             mc:Ignorable="d"
+             MaxWidth="260"
+             HorizontalAlignment="Left"
+             ClipToBounds="True">
+  <Border Margin="0"
+          Padding="4"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0"
+          CornerRadius="5">
+    <Grid RowDefinitions="Auto,Auto,Auto"
+          RowSpacing="6">
+      <Grid ColumnDefinitions="*,Auto"
+            RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+            ColumnSpacing="6"
+            RowSpacing="2">
+        <TextBlock Classes="eyebrow" Text="HUMAN SETTLEMENT" />
+        <StackPanel Grid.Row="1"
+                    Grid.ColumnSpan="2"
+                    Orientation="Horizontal"
+                    Spacing="7">
+            <Border Classes="badge"
+                    IsVisible="{Binding HumanSite.IsQuestTagged}">
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         FontSize="9"
+                         FontWeight="Bold"
+                         Text="Q" />
+            </Border>
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Text="{Binding HumanSite.SiteName}"
+                       TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <StackPanel Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    Spacing="2">
+          <Border Classes="badge" HorizontalAlignment="Right">
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="8"
+                       FontWeight="Bold"
+                       Text="{Binding InputMode}" />
+          </Border>
+        </StackPanel>
+        <TextBlock Grid.Row="2"
+                   Grid.ColumnSpan="2"
+                   Classes="muted"
+                   FontSize="10"
+                   Text="{Binding HumanSite.TemplateText}"
+                   TextWrapping="Wrap" />
+        <TextBlock Grid.Row="3"
+                   Grid.ColumnSpan="2"
+                   Foreground="{DynamicResource RavenWarningBrush}"
+                   FontSize="10"
+                   FontWeight="SemiBold"
+                   IsVisible="{Binding HumanSite.HasThreatLevel}"
+                   Text="{Binding HumanSite.ThreatLevelText}" />
+        <TextBlock Grid.Row="4"
+                   Grid.ColumnSpan="2"
+                   Classes="monospace"
+                   FontSize="10"
+                   Text="{Binding HumanSite.ZoomText}" />
+      </Grid>
+
+      <Grid Grid.Row="1">
+        <controls:HumanSiteMapControl
+            MinHeight="180"
+            IsVisible="{Binding HumanSite.HasKnownGeometry}"
+            ClipToBounds="True"
+            Projection="{Binding HumanSite.MapProjection}"
+            CommanderOffset="{Binding HumanSite.CommanderOffset}"
+            ShipOffset="{Binding HumanSite.ShipOffset}"
+            SrvOffset="{Binding HumanSite.SrvOffset}"
+            HasShipDeparted="{Binding HumanSite.HasShipDeparted}"
+            ShowShipDismissalBoundary="{Binding HumanSite.ShowShipDismissalBoundary}"
+            ProcessedTerminalOffsets="{Binding HumanSite.ProcessedTerminalOffsets}"
+            CollectedMaterials="{Binding HumanSite.CollectedMaterials}"
+            QuestMarkers="{Binding HumanSite.QuestMarkers}"
+            QuestRoutes="{Binding HumanSite.QuestRoutes}"
+            CommanderHeading="{Binding HumanSite.RelativeHeading}"
+            ScaleMultiplier="{Binding HumanSite.Zoom}"
+            ShowOriginWarning="{Binding HumanSite.ShowOriginWarning}"
+            MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
+            GridBrush="{DynamicResource RavenBorderBrush}"
+            AccentBrush="{DynamicResource RavenAccentBrush}"
+            MutedBrush="{DynamicResource RavenMutedTextBrush}"
+            SurfaceBrush="{DynamicResource RavenSurfaceBrush}"
+            SuccessBrush="{DynamicResource RavenSuccessBrush}"
+            WarningBrush="{DynamicResource RavenWarningBrush}"
+            DangerBrush="{DynamicResource RavenDangerBrush}"
+            TextBrush="{DynamicResource RavenTextBrush}"
+            CheckpointBrush="{DynamicResource RavenFczCheckpointBrush}"
+            LocalCheckpointBrush="{DynamicResource RavenFczCheckpointLocalBrush}"
+            PowerPostBrush="{DynamicResource RavenFczPowerPostBrush}"
+            ProcessedBrush="{DynamicResource RavenSuccessDimBrush}"
+            QuestBrush="{DynamicResource RavenMenuGoldBrush}" />
+
+        <Border Margin="8"
+                Padding="8,5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Background="{DynamicResource RavenWindowBrush}"
+                BorderBrush="{DynamicResource RavenDangerBrush}"
+                BorderThickness="2"
+                CornerRadius="8"
+                IsVisible="{Binding HumanSite.ShowShipDismissalWarning}">
+          <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                     FontSize="11"
+                     FontWeight="Bold"
+                     Text="{Binding HumanSite.ShipDismissalWarningText}" />
+        </Border>
+
+        <StackPanel Spacing="4"
+                    IsVisible="{Binding !HumanSite.HasKnownGeometry}">
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="12"
+                     FontWeight="SemiBold"
+                     Text="{Binding HumanSite.GeometryStatus}"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Classes="muted"
+                     FontSize="9"
+                     Text="Land near pad centre to align the settlement map."
+                     TextWrapping="Wrap" />
+          <TextBlock Classes="monospace"
+                     FontSize="10"
+                     Text="{Binding HumanSite.ApproachDistanceText}"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock FontSize="9"
+                     Text="{Binding HumanSite.FactionText}"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontSize="10"
+                     FontWeight="SemiBold"
+                     IsVisible="{Binding HumanSite.HasDockingStatus}"
+                     Text="{Binding HumanSite.DockingStatusText}"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+      </Grid>
+
+      <StackPanel Grid.Row="2" Spacing="2">
+        <WrapPanel Orientation="Horizontal">
+          <TextBlock Classes="monospace"
+                     Margin="0,0,10,0"
+                     FontSize="9"
+                     Text="{Binding HumanSite.CommanderPositionText}" />
+          <TextBlock Classes="monospace"
+                     FontSize="9"
+                     Text="{Binding HumanSite.DistanceText}" />
+        </WrapPanel>
+        <StackPanel Spacing="2">
+          <TextBlock Classes="muted"
+                     FontSize="8"
+                     Text="{Binding PlatformStatus}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </StackPanel>
+    </Grid>
+  </Border>
+</UserControl>

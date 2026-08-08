@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
@@ -13,6 +14,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 {
     private const string OrganicCodexCategory =
         "$Codex_SubCategory_Organic_Structures;";
+    private static readonly StringComparer FssBodyNameComparer =
+        StringComparer.Create(
+            CultureInfo.InvariantCulture,
+            CompareOptions.IgnoreCase | CompareOptions.NumericOrdering);
     private static readonly GalacticCoordinate Sol = new(0, 0, 0);
 
     private readonly SystemSurveySettingsStore settingsStore;
@@ -109,6 +114,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private DateTimeOffset lastFssTuningScanAt;
     private long fssTuningRevision;
     private string fssTuningDetectorStatus = string.Empty;
+    private IReadOnlyList<BiologySignalRewardBandViewModel>?
+        editorLastFssRewardBands;
+    private string? editorLastFssRewardText;
+    private string? editorFlightWarningText;
 
     public SystemSurveyViewModel(
         SystemSurveySettingsStore settingsStore,
@@ -1018,7 +1027,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         LastFssSignalsText);
 
     public IReadOnlyList<BiologySignalRewardBandViewModel>
-        LastFssBiologyRewardBands => LastFssBody is { } body
+        LastFssBiologyRewardBands =>
+        editorLastFssRewardBands
+        ?? (LastFssBody is { } body
             ? BiologySurveyViewModel.CreateRewardBandsForBody(
                 snapshot,
                 body,
@@ -1028,10 +1039,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     HighlightRegionalFirsts = HighlightRegionalFirsts,
                     DiscoveryContext = biologyDiscoveryContext,
                 })
-            : [];
+            : []);
 
-    public string LastFssBiologyRewardText => LastFssBody is { } body
-        && body.BiologicalSignalCount > 0
+    public string LastFssBiologyRewardText =>
+        editorLastFssRewardText
+        ?? (LastFssBody is { } body
+            && body.BiologicalSignalCount > 0
             ? BiologySurveyViewModel.CreateBodyDetail(
                     snapshot,
                     body.BodyId,
@@ -1048,7 +1061,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                         ReferenceCatalog = biologyCatalog,
                     })
                 ?.RewardSummary ?? string.Empty
-            : string.Empty;
+            : string.Empty);
 
     public bool HasLastFssBiologyRewards =>
         LastFssBiologyRewardBands.Count > 0;
@@ -1247,11 +1260,69 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get
         {
+            if (!string.IsNullOrWhiteSpace(editorFlightWarningText))
+            {
+                return editorFlightWarningText;
+            }
+
             var body = ResolveRetainedLocalBody();
             return body is null
                 ? "HIGH-GRAVITY BODY"
                 : $"WARNING: SURFACE GRAVITY {body.SurfaceGravity / 10d:N2} g";
         }
+    }
+
+    /// <summary>
+    /// Installs representative display state for the overlay position editor
+    /// so shared presentation templates render without live journal data.
+    /// </summary>
+    internal void InstallEditorPreview(SystemSurveyEditorPreviewState preview)
+    {
+        ArgumentNullException.ThrowIfNull(preview);
+        snapshot = preview.Snapshot;
+        showNonBodySignals = preview.ShowNonBodySignals;
+        BiologySurvey = preview.BiologySurvey;
+        BiologyStatus = preview.BiologyStatus;
+        BodyInformation = preview.BodyInformation;
+        FssBodies = preview.FssBodies
+            .OrderBy(body => body.IsSurfaceScanned)
+            .ThenBy(
+                body => body.Name,
+                FssBodyNameComparer)
+            .ToArray();
+        DssBodies = preview.DssBodies;
+        BiologicalBodies = preview.BiologicalBodies;
+        editorLastFssRewardBands = preview.LastFssRewardBands;
+        editorLastFssRewardText = preview.LastFssRewardText;
+        editorFlightWarningText = preview.FlightWarningGravity > 0
+            ? $"WARNING: SURFACE GRAVITY {preview.FlightWarningGravity:N2} g"
+            : $"HIGH-GRAVITY BODY · {preview.FlightWarningBodyName}";
+
+        OnPropertyChanged(nameof(Snapshot));
+        OnPropertyChanged(nameof(SystemTitle));
+        OnPropertyChanged(nameof(ScanSummary));
+        OnPropertyChanged(nameof(FssFilterDescription));
+        OnPropertyChanged(nameof(LastFssBody));
+        OnPropertyChanged(nameof(HasLastFssBody));
+        OnPropertyChanged(nameof(LastFssBodyName));
+        OnPropertyChanged(nameof(LastFssBodyClass));
+        OnPropertyChanged(nameof(LastFssBodyDistance));
+        OnPropertyChanged(nameof(LastFssScanValue));
+        OnPropertyChanged(nameof(LastFssMappedValue));
+        OnPropertyChanged(nameof(LastFssMarkers));
+        OnPropertyChanged(nameof(HasLastFssMarkers));
+        OnPropertyChanged(nameof(LastFssSignalsText));
+        OnPropertyChanged(nameof(HasLastFssSignals));
+        OnPropertyChanged(nameof(LastFssBiologyRewardBands));
+        OnPropertyChanged(nameof(LastFssBiologyRewardText));
+        OnPropertyChanged(nameof(HasLastFssBiologyRewards));
+        OnPropertyChanged(nameof(SystemStatusText));
+        OnPropertyChanged(nameof(BiologicalHeading));
+        OnPropertyChanged(nameof(HasNonBodySignals));
+        OnPropertyChanged(nameof(NonBodySignalsText));
+        OnPropertyChanged(nameof(FlightWarningText));
+        OnPropertyChanged(nameof(ShouldShowFlightWarning));
+        OnPropertyChanged(nameof(HasCanonnBiologyHint));
     }
 
     public bool ShouldShowBioSystem
@@ -1766,7 +1837,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         BodyInformation = CreateBodyInformation(ResolveBodyInfoTarget());
         FssBodies = snapshot.Bodies
             .Where(IsInterestingFssBody)
-            .OrderByDescending(body => body.ScanSequence)
+            .OrderBy(body => body.IsDssComplete)
+            .ThenBy(
+                body => body.ShortName,
+                FssBodyNameComparer)
             .ThenBy(body => body.BodyId)
             .Select(CreateFssBodyRow)
             .ToArray();
@@ -2411,7 +2485,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             HideGeoCount ? 0 : body.GeologicalSignalCount,
             HideGeoCount ? 0 : body.AnalyzedGeologicalSignalCount,
             dssWorthy || body.BiologicalSignalCount > 0,
-            dssWorthy);
+            dssWorthy,
+            body.IsDssComplete);
     }
 
     private IEnumerable<string> CreateDssCandidates()
@@ -2936,7 +3011,8 @@ public sealed record FssBodyRowViewModel(
     int GeologicalSignalCount,
     int AnalyzedGeologicalSignalCount,
     bool IsHighlighted,
-    bool IsDssCandidate)
+    bool IsDssCandidate,
+    bool IsSurfaceScanned)
 {
     public bool HasMarkers => !string.IsNullOrWhiteSpace(Markers);
 

@@ -9,11 +9,39 @@
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
   </Style>
 
-  <!-- Compact labels retain the legacy size, weight, and color grammar while
-       using the condensed overlay family instead of a generic UI/mono font. -->
+  <!-- Overlay typography uses role-based sizing. Oxanium carries titles,
+       body copy, and values; Rajdhani compresses labels and longer detail. -->
+  <Style Selector="Window.srv-overlay TextBlock.overlay-title">
+    <Setter Property="FontFamily"
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Window.srv-overlay TextBlock.overlay-value">
+    <Setter Property="FontFamily"
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Window.srv-overlay TextBlock.overlay-body">
+    <Setter Property="FontFamily"
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
+    <Setter Property="FontSize" Value="11" />
+  </Style>
+  <Style Selector="Window.srv-overlay TextBlock.overlay-detail">
+    <Setter Property="FontFamily"
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
+    <Setter Property="FontSize" Value="10" />
+  </Style>
+  <Style Selector="Window.srv-overlay TextBlock.overlay-caption">
+    <Setter Property="FontFamily"
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
+    <Setter Property="FontSize" Value="9" />
+  </Style>
   <Style Selector="Window.srv-overlay TextBlock.eyebrow">
     <Setter Property="FontFamily"
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
+    <Setter Property="FontSize" Value="10" />
   </Style>
   <Style Selector="Window.srv-overlay TextBlock.muted">
     <Setter Property="FontFamily"
@@ -21,23 +49,7 @@
   </Style>
   <Style Selector="Window.srv-overlay TextBlock.monospace">
     <Setter Property="FontFamily"
-            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
-  </Style>
-  <Style Selector="Window.srv-overlay TextBlock[FontSize=8]">
-    <Setter Property="FontFamily"
-            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
-  </Style>
-  <Style Selector="Window.srv-overlay TextBlock[FontSize=9]">
-    <Setter Property="FontFamily"
-            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
-  </Style>
-  <Style Selector="Window.srv-overlay TextBlock[FontSize=10]">
-    <Setter Property="FontFamily"
-            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
-  </Style>
-  <Style Selector="Window.srv-overlay TextBlock[FontSize=11]">
-    <Setter Property="FontFamily"
-            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
   </Style>
   <Style Selector="Window.srv-overlay TextBlock.guardian-title">
     <Setter Property="FontFamily"

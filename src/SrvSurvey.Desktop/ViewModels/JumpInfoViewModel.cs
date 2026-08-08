@@ -242,6 +242,44 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     public Task PendingSummaryLoad { get; private set; } = Task.CompletedTask;
 
+    /// <summary>
+    /// Installs representative next-jump content for the position editor.
+    /// </summary>
+    internal void InstallEditorPreview(
+        JumpInfoRoutePlan plan,
+        SystemSummary systemSummary,
+        IReadOnlyList<JumpInfoDetailLineViewModel> lines,
+        string dataStatusText = "Jump target data ready")
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+        ArgumentNullException.ThrowIfNull(systemSummary);
+        ArgumentNullException.ThrowIfNull(lines);
+        routePlan = plan;
+        summary = systemSummary;
+        DetailLines = lines.ToArray();
+        DataStatus = dataStatusText;
+        IsLoading = false;
+        OnPropertyChanged(nameof(TargetName));
+        OnPropertyChanged(nameof(StarClass));
+        OnPropertyChanged(nameof(JumpProgress));
+        OnPropertyChanged(nameof(TotalDistance));
+        OnPropertyChanged(nameof(RouteLegs));
+        OnPropertyChanged(nameof(TargetLegIndex));
+        OnPropertyChanged(nameof(DiscoveryText));
+        OnPropertyChanged(nameof(HasDiscoveryText));
+        OnPropertyChanged(nameof(TrafficText));
+        OnPropertyChanged(nameof(HasTraffic));
+        OnPropertyChanged(nameof(PointsOfInterestText));
+        OnPropertyChanged(nameof(HasPointsOfInterest));
+        OnPropertyChanged(nameof(HasDetailLines));
+        OnPropertyChanged(nameof(HasRefuelGuidance));
+        OnPropertyChanged(nameof(HasNeutronGuidance));
+        OnPropertyChanged(nameof(HasRouteGuidanceBadges));
+        OnPropertyChanged(nameof(HasDiscoveryOrRouteGuidance));
+        OnPropertyChanged(nameof(IsQuestTagged));
+        OnPropertyChanged(nameof(ShowDetails));
+    }
+
     public void UpdateQuestTags(IEnumerable<string> tags)
     {
         ArgumentNullException.ThrowIfNull(tags);

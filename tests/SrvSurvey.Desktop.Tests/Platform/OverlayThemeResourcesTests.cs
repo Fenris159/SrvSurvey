@@ -71,7 +71,7 @@ public sealed class OverlayThemeResourcesTests
             Brushes.Yellow);
 
         Assert.Equal(new Thickness(0), surface.Margin);
-        Assert.Equal(new Thickness(5), surface.Padding);
+        Assert.Equal(new Thickness(4), surface.Padding);
         Assert.Same(Brushes.Black, surface.Background);
         Assert.Null(surface.BorderBrush);
         Assert.Equal(new Thickness(0), surface.BorderThickness);
@@ -100,20 +100,38 @@ public sealed class OverlayThemeResourcesTests
             OverlayThemeResources.OverlayTypographyClass,
             window.Classes);
         Assert.Equal(new Thickness(0), surface.Margin);
-        Assert.Equal(new Thickness(5), surface.Padding);
+        Assert.Equal(new Thickness(4), surface.Padding);
         Assert.Null(surface.BorderBrush);
         Assert.Equal(new Thickness(0), surface.BorderThickness);
         Assert.Equal(1d, surface.Opacity);
     }
 
     [AvaloniaFact]
-    public void EveryOverlayUsesBundledPrimaryAndCompactTypography()
+    public void EveryOverlayUsesBundledRoleBasedTypography()
     {
         var primary = new TextBlock { Text = "Primary" };
         var eyebrow = new TextBlock { Text = "Eyebrow", Classes = { "eyebrow" } };
         var muted = new TextBlock { Text = "Muted", Classes = { "muted" } };
-        var compact = new TextBlock { Text = "Compact", Classes = { "monospace" } };
-        var compactBySize = new TextBlock { Text = "Compact by size", FontSize = 9 };
+        var value = new TextBlock
+        {
+            Text = "Value",
+            Classes = { "monospace", "overlay-value" },
+        };
+        var compactBySize = new TextBlock
+        {
+            Text = "Size alone remains primary",
+            FontSize = 9,
+        };
+        var detail = new TextBlock
+        {
+            Text = "Longer detail",
+            Classes = { "overlay-detail" },
+        };
+        var caption = new TextBlock
+        {
+            Text = "Caption",
+            Classes = { "overlay-caption" },
+        };
         var guardianPrimary = new TextBlock
         {
             Text = "Guardian primary",
@@ -133,8 +151,10 @@ public sealed class OverlayThemeResourcesTests
                     primary,
                     eyebrow,
                     muted,
-                    compact,
+                    value,
                     compactBySize,
+                    detail,
+                    caption,
                     guardianPrimary,
                     guardianCompact,
                 },
@@ -149,8 +169,13 @@ public sealed class OverlayThemeResourcesTests
         Assert.Contains("Oxanium", guardianPrimary.FontFamily.Name);
         Assert.Contains("Rajdhani", eyebrow.FontFamily.Name);
         Assert.Contains("Rajdhani", muted.FontFamily.Name);
-        Assert.Contains("Rajdhani", compact.FontFamily.Name);
-        Assert.Contains("Rajdhani", compactBySize.FontFamily.Name);
+        Assert.Contains("Oxanium", value.FontFamily.Name);
+        Assert.Contains("Oxanium", compactBySize.FontFamily.Name);
+        Assert.Contains("Rajdhani", detail.FontFamily.Name);
+        Assert.Contains("Rajdhani", caption.FontFamily.Name);
+        Assert.Equal(12, value.FontSize);
+        Assert.Equal(10, detail.FontSize);
+        Assert.Equal(9, caption.FontSize);
         Assert.Contains("Rajdhani", guardianCompact.FontFamily.Name);
 
         window.Close();
@@ -249,10 +274,9 @@ public sealed class OverlayThemeResourcesTests
         Assert.IsType<ScaleTransform>(scaleContainer.LayoutTransform);
         Assert.Equal(0.42, window.Opacity);
         Assert.Equal(definition.PreviewSize.Width * 1.2, window.Width, 5);
-        var presentation = Assert.IsType<StackPanel>(surface.Child);
-        Assert.Equal(definition.DisplayName,
-            Assert.IsType<TextBlock>(presentation.Children[0]).Text);
-        Assert.Same(originalContent, presentation.Children[2]);
+        // Shared *Presentation hosts own their title/chrome; legacy header
+        // injection is skipped so the original surface content stays intact.
+        Assert.Same(originalContent, surface.Child);
 
         Assert.True(layout.SetPlacement(
             definition.Name,
@@ -317,7 +341,7 @@ public sealed class OverlayThemeResourcesTests
             Brushes.Yellow);
 
         Assert.Equal(new Thickness(1), surface.Margin);
-        Assert.Equal(new Thickness(5), surface.Padding);
+        Assert.Equal(new Thickness(4), surface.Padding);
         Assert.Same(Brushes.Black, surface.Background);
         Assert.Same(Brushes.Yellow, surface.BorderBrush);
         Assert.Equal(new Thickness(2), surface.BorderThickness);
@@ -377,9 +401,9 @@ public sealed class OverlayThemeResourcesTests
         var expected = new Dictionary<string, PixelSize>(StringComparer.Ordinal)
         {
             ["PlotGuardians"] = new PixelSize(300, 400),
-            ["PlotGuardianStatus"] = new PixelSize(380, 108),
-            ["PlotGuardianSystem"] = new PixelSize(220, 96),
-            ["PlotRamTah"] = new PixelSize(240, 224),
+            ["PlotGuardianStatus"] = new PixelSize(260, 108),
+            ["PlotGuardianSystem"] = new PixelSize(190, 96),
+            ["PlotRamTah"] = new PixelSize(190, 224),
         };
 
         Assert.All(expected, pair => Assert.Equal(
@@ -452,10 +476,10 @@ public sealed class OverlayThemeResourcesTests
         var expected = new Dictionary<string, double>(StringComparer.Ordinal)
         {
             ["PlotBioSystem"] = 240,
-            ["PlotBuildCommodities"] = 440,
-            ["PlotMassacre"] = 240,
-            ["PlotQuestMini"] = 240,
-            ["PlotStationInfo"] = 240,
+            ["PlotBuildCommodities"] = 270,
+            ["PlotMassacre"] = 190,
+            ["PlotQuestMini"] = 220,
+            ["PlotStationInfo"] = 220,
         };
 
         Assert.All(expected, pair => Assert.Equal(

@@ -68,22 +68,18 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:RouteBioDetailSegmentViewModel">
             <StackPanel Margin="0,0,4,1" Orientation="Horizontal">
-              <TextBlock MaxWidth="128"
+              <TextBlock Classes="overlay-detail"
                          Foreground="{DynamicResource RavenPrimaryBrush}"
-                         FontSize="10"
                          FontWeight="SemiBold"
                          IsVisible="{Binding IsBodyName}"
-                         Text="{Binding Text}"
-                         TextWrapping="Wrap" />
-              <TextBlock MaxWidth="128"
+                         Text="{Binding Text}" />
+              <TextBlock Classes="overlay-detail"
                          Foreground="{DynamicResource RavenPrimaryBrush}"
-                         FontSize="10"
                          IsVisible="{Binding IsDetail}"
-                         Text="{Binding Text}"
-                         TextWrapping="Wrap" />
+                         Text="{Binding Text}" />
               <TextBlock Margin="3,0,0,0"
+                         Classes="overlay-detail"
                          Foreground="{DynamicResource RavenPrimaryBrush}"
-                         FontSize="10"
                          IsVisible="{Binding HasSeparator}"
                          Text="|" />
             </StackPanel>
@@ -97,8 +93,8 @@
                   ItemsSource="{Binding Species}">
       <ItemsControl.ItemTemplate>
         <DataTemplate>
-          <TextBlock Foreground="{DynamicResource RavenPrimaryDimBrush}"
-                     FontSize="9"
+          <TextBlock Classes="overlay-caption"
+                     Foreground="{DynamicResource RavenPrimaryDimBrush}"
                      Text="{Binding StringFormat=• {0}}"
                      TextWrapping="Wrap" />
         </DataTemplate>
@@ -106,8 +102,8 @@
     </ItemsControl>
 
     <TextBlock Margin="58,0,0,0"
+               Classes="overlay-caption"
                Foreground="{DynamicResource RavenPrimaryDimBrush}"
-               FontSize="9"
                FontStyle="Italic"
                IsVisible="{Binding NeedsScan}"
                Text="Biological targets not listed by route"

@@ -3,6 +3,8 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.GuardianSystemOverlayPresentation"
              x:DataType="vm:GuardianOverlayViewModel"
+             MaxWidth="190"
+             HorizontalAlignment="Left"
              ClipToBounds="True">
   <UserControl.Styles>
     <Style Selector="TextBlock.guardian-system-line.destination">

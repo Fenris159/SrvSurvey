@@ -1,0 +1,151 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.SphericalSearchOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:SphericalSearchOverlayViewModel"
+             mc:Ignorable="d"
+             ClipToBounds="True">
+  <Border Margin="0"
+          Padding="4"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0"
+          CornerRadius="5">
+    <StackPanel Spacing="6">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+        <TextBlock FontSize="12"
+                   FontWeight="SemiBold"
+                   Text="Search guidance" />
+        <TextBlock Grid.Column="1"
+                   Foreground="{DynamicResource RavenAccentBrush}"
+                   FontSize="8"
+                   FontWeight="SemiBold"
+                   Text="{Binding InputMode}" />
+      </Grid>
+
+      <Border Padding="7,6"
+              Background="{DynamicResource RavenSurfaceBrush}"
+              CornerRadius="5"
+              IsVisible="{Binding Sphere.ShouldShowGalaxyMapOverlay}">
+        <StackPanel Spacing="4">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
+            <TextBlock Classes="eyebrow" Text="SPHERICAL LIMIT" />
+            <Border Grid.Column="1" Classes="badge">
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         FontSize="8"
+                         Text="{Binding Sphere.LimitSummary}" />
+            </Border>
+          </Grid>
+          <Grid ColumnDefinitions="78,*" RowDefinitions="Auto,Auto,Auto"
+                ColumnSpacing="5" RowSpacing="5">
+            <TextBlock Classes="muted" Text="FROM" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding SphereCenterSystemName}"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Row="1" Classes="muted" Text="TO" />
+            <TextBlock Grid.Row="1" Grid.Column="1"
+                       Foreground="{DynamicResource RavenAccentBrush}"
+                       FontWeight="SemiBold"
+                       Text="{Binding SphereDestinationSystemName}"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Row="2" Classes="muted" Text="DISTANCE" />
+            <StackPanel Grid.Row="2" Grid.Column="1"
+                        Orientation="Horizontal" Spacing="8">
+              <TextBlock Classes="monospace"
+                         Text="{Binding Sphere.DestinationDistance}" />
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         FontSize="10"
+                         FontWeight="SemiBold"
+                         Text="{Binding Sphere.DestinationResult}" />
+            </StackPanel>
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <Border Padding="7,6"
+              Background="{DynamicResource RavenSurfaceBrush}"
+              CornerRadius="5"
+              IsVisible="{Binding Boxel.ShouldShowGalaxyMapOverlay}">
+        <StackPanel Spacing="4">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
+            <TextBlock Classes="eyebrow" Text="BOXEL SEARCH" />
+            <TextBlock Grid.Column="1"
+                       Classes="monospace"
+                       Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="9"
+                       Text="{Binding Boxel.BoxelProgress}" />
+          </Grid>
+          <Grid ColumnDefinitions="78,*" RowDefinitions="Auto,Auto,Auto"
+                ColumnSpacing="5" RowSpacing="5">
+            <TextBlock Classes="muted" Text="BOXEL" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding Boxel.CurrentBoxelName}"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Row="1" Classes="muted" Text="VISITED" />
+            <TextBlock Grid.Row="1" Grid.Column="1"
+                       Classes="monospace"
+                       Text="{Binding Boxel.SystemProgress}" />
+            <TextBlock Grid.Row="2" Classes="muted" Text="NEXT" />
+            <TextBlock Grid.Row="2" Grid.Column="1"
+                       Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       Text="{Binding BoxelNextSystem}"
+                       TextTrimming="CharacterEllipsis" />
+          </Grid>
+          <Border Padding="9,6"
+                  Background="{DynamicResource RavenAccentMutedBrush}"
+                  CornerRadius="7">
+            <TextBlock FontSize="10"
+                       FontWeight="SemiBold"
+                       Text="{Binding Boxel.DestinationStatus}"
+                       TextWrapping="Wrap" />
+          </Border>
+          <TextBlock HorizontalAlignment="Right"
+                     Foreground="{DynamicResource RavenSuccessBrush}"
+                     FontSize="9"
+                     FontWeight="Bold"
+                     Text="{Binding Boxel.NextSystemClipboardStatus}" />
+        </StackPanel>
+      </Border>
+
+      <Border Padding="7,6"
+              Background="{DynamicResource RavenSurfaceBrush}"
+              CornerRadius="5"
+              IsVisible="{Binding Route.ShouldShowGalaxyMapOverlay}">
+        <StackPanel Spacing="4">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
+            <TextBlock Classes="eyebrow" Text="FOLLOWED ROUTE" />
+            <TextBlock Grid.Column="1"
+                       Classes="monospace"
+                       FontSize="9"
+                       Text="{Binding Route.ProgressSummary}" />
+          </Grid>
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="13"
+                     FontWeight="SemiBold"
+                     Text="{Binding RouteNextHopName}"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Classes="monospace"
+                     FontSize="10"
+                     Text="{Binding Route.NextHopDistance}" />
+          <TextBlock IsVisible="{Binding Route.HasNextHopGuidance}"
+                     Text="{Binding Route.NextHopGuidance}"
+                     TextWrapping="Wrap" />
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="9"
+                       FontWeight="Bold"
+                       Text="{Binding Route.NextHopDestinationStatus}" />
+            <TextBlock Grid.Column="1"
+                       Foreground="{DynamicResource RavenSuccessBrush}"
+                       FontSize="9"
+                       FontWeight="Bold"
+                       Text="{Binding Route.NextHopClipboardStatus}" />
+          </Grid>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </Border>
+</UserControl>

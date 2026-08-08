@@ -76,4 +76,15 @@ public sealed class X11OverlayWindowManagerPolicyTests
 
         Assert.Equal(new PixelPoint(140, 185), position);
     }
+
+    [Fact]
+    public void ManagedDragAllowsWindowToCrossTheTopScreenEdge()
+    {
+        var position = ManagedOverlayWindowDragSession.CalculatePosition(
+            initialWindowPosition: new PixelPoint(100, 5),
+            initialPointerPosition: new PixelPoint(125, 40),
+            currentPointerPosition: new PixelPoint(165, -20));
+
+        Assert.Equal(new PixelPoint(140, -55), position);
+    }
 }

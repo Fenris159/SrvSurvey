@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.MultiGameCommanderOverlayPresentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:DataType="vm:CommanderInstancesViewModel"
+             mc:Ignorable="d"
+             HorizontalAlignment="Left"
+             ClipToBounds="True">
+  <Border Padding="4"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenAccentBrush}"
+          BorderThickness="1"
+          CornerRadius="5">
+    <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="10">
+      <TextBlock FontSize="12"
+                 FontWeight="Bold"
+                 Foreground="{DynamicResource RavenTextBrush}"
+                 Text="{Binding MultiGameOverlayLabel}" />
+      <TextBlock Grid.Column="1"
+                 VerticalAlignment="Center"
+                 FontSize="9"
+                 Foreground="{DynamicResource RavenMutedTextBrush}"
+                 Text="CTRL+ALT+W: NEXT" />
+    </Grid>
+  </Border>
+</UserControl>
