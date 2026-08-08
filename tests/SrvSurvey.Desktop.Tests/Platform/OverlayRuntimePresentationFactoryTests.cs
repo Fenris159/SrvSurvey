@@ -4,6 +4,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayRuntimePresentationFactoryTests
 {
     [Fact]
