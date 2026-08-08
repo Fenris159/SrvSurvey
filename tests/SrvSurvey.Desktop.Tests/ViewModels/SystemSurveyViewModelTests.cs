@@ -341,6 +341,30 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void FssBodiesPutUnmappedBodiesFirstAndSortEachGroupNaturally()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test B 10","BodyID":10,"PlanetClass":"Water world","MassEM":1,"WasDiscovered":true,"WasMapped":false}"""),
+                Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test A 10","BodyID":11,"PlanetClass":"Water world","MassEM":1,"WasDiscovered":true,"WasMapped":false}"""),
+                Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test A 2","BodyID":2,"PlanetClass":"Water world","MassEM":1,"WasDiscovered":true,"WasMapped":false}"""),
+                Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test B 2","BodyID":3,"PlanetClass":"Water world","MassEM":1,"WasDiscovered":true,"WasMapped":false}"""),
+                Parse("""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test A 10","BodyID":11}"""),
+                Parse("""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test B 2","BodyID":3}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.Fss });
+
+        Assert.Equal(
+            ["A2", "B10", "A10", "B2"],
+            viewModel.FssBodies.Select(body => body.Name));
+        Assert.Equal(
+            [false, false, true, true],
+            viewModel.FssBodies.Select(body => body.IsSurfaceScanned));
+    }
+
+    [Fact]
     public void LastFssBodyVisibilityHonorsModeAndPreference()
     {
         var viewModel = CreateViewModel();

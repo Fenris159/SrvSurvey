@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
@@ -13,6 +14,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 {
     private const string OrganicCodexCategory =
         "$Codex_SubCategory_Organic_Structures;";
+    private static readonly StringComparer FssBodyNameComparer =
+        StringComparer.Create(
+            CultureInfo.InvariantCulture,
+            CompareOptions.IgnoreCase | CompareOptions.NumericOrdering);
     private static readonly GalacticCoordinate Sol = new(0, 0, 0);
 
     private readonly SystemSurveySettingsStore settingsStore;
@@ -1279,7 +1284,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         BiologySurvey = preview.BiologySurvey;
         BiologyStatus = preview.BiologyStatus;
         BodyInformation = preview.BodyInformation;
-        FssBodies = preview.FssBodies;
+        FssBodies = preview.FssBodies
+            .OrderBy(body => body.IsSurfaceScanned)
+            .ThenBy(
+                body => body.Name,
+                FssBodyNameComparer)
+            .ToArray();
         DssBodies = preview.DssBodies;
         BiologicalBodies = preview.BiologicalBodies;
         editorLastFssRewardBands = preview.LastFssRewardBands;
@@ -1827,7 +1837,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         BodyInformation = CreateBodyInformation(ResolveBodyInfoTarget());
         FssBodies = snapshot.Bodies
             .Where(IsInterestingFssBody)
-            .OrderByDescending(body => body.ScanSequence)
+            .OrderBy(body => body.IsDssComplete)
+            .ThenBy(
+                body => body.ShortName,
+                FssBodyNameComparer)
             .ThenBy(body => body.BodyId)
             .Select(CreateFssBodyRow)
             .ToArray();
@@ -2472,7 +2485,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             HideGeoCount ? 0 : body.GeologicalSignalCount,
             HideGeoCount ? 0 : body.AnalyzedGeologicalSignalCount,
             dssWorthy || body.BiologicalSignalCount > 0,
-            dssWorthy);
+            dssWorthy,
+            body.IsDssComplete);
     }
 
     private IEnumerable<string> CreateDssCandidates()
@@ -2997,7 +3011,8 @@ public sealed record FssBodyRowViewModel(
     int GeologicalSignalCount,
     int AnalyzedGeologicalSignalCount,
     bool IsHighlighted,
-    bool IsDssCandidate)
+    bool IsDssCandidate,
+    bool IsSurfaceScanned)
 {
     public bool HasMarkers => !string.IsNullOrWhiteSpace(Markers);
 
