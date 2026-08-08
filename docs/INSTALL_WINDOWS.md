@@ -1,6 +1,6 @@
 # Install SrvSurvey on Windows
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.4**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.5**.
 
 These instructions apply to the portable cross-platform package named
 `SrvSurvey-XP-<version>-win-x64.zip`. It is self-contained and does not

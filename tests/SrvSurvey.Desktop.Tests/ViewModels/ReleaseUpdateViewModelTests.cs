@@ -413,12 +413,14 @@ public sealed class ReleaseUpdateViewModelTests
                 version,
                 runtimeIdentifier,
                 installationDirectory,
+                readyDirectory,
                 Path.Combine(parent, $".install-update-{requestId:N}"),
                 Path.Combine(parent, $".install-backup-{requestId:N}"),
                 Path.Combine(parent, $".install-failed-{requestId:N}"),
                 "SrvSurvey.Desktop.exe",
                 manifestSha256,
                 new string('d', 64),
+                false,
                 startupArguments));
         }
     }
@@ -436,6 +438,7 @@ public sealed class ReleaseUpdateViewModelTests
             var planDirectory = Path.Combine(dataDirectory, "plan");
             return Task.FromResult(new ReleaseInstallationHandoffPlan(
                 Path.Combine(planDirectory, "plan.json"),
+                Path.Combine(planDirectory, "helper-ready.json"),
                 Path.Combine(planDirectory, "health.json"),
                 Path.Combine(planDirectory, "outcome.json"),
                 DateTimeOffset.UtcNow,

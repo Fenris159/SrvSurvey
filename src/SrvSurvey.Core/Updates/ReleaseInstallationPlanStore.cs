@@ -5,6 +5,7 @@ namespace SrvSurvey.Core.Updates;
 
 public sealed record ReleaseInstallationHandoffPlan(
     string PlanPath,
+    string HelperReadyMarkerPath,
     string HealthMarkerPath,
     string OutcomePath,
     DateTimeOffset CreatedAtUtc,
@@ -31,7 +32,7 @@ public sealed record ReleaseInstallationOutcome(
 
 public sealed class ReleaseInstallationPlanStore
 {
-    private const int SchemaVersion = 1;
+    private const int SchemaVersion = 2;
     private const int MaximumPlanBytes = 256 * 1024;
     private const int MaximumArgumentCount = 128;
     private const int MaximumArgumentLength = 4_096;
@@ -88,12 +89,14 @@ public sealed class ReleaseInstallationPlanStore
                 version = preparation.Version.ToString(),
                 preparation.RuntimeIdentifier,
                 preparation.InstallationDirectory,
+                preparation.ReadyDirectory,
                 preparation.CandidateDirectory,
                 preparation.BackupDirectory,
                 preparation.FailedDirectory,
                 preparation.EntryPoint,
                 preparation.ManifestSha256,
                 preparation.InstallationFingerprint,
+                preparation.RequiresElevation,
                 startupArguments = preparation.StartupArguments,
             },
         };
@@ -114,6 +117,7 @@ public sealed class ReleaseInstallationPlanStore
 
         return new ReleaseInstallationHandoffPlan(
             paths.PlanPath,
+            paths.HelperReadyMarkerPath,
             paths.HealthMarkerPath,
             paths.OutcomePath,
             createdAt,
@@ -199,15 +203,18 @@ public sealed class ReleaseInstallationPlanStore
                 version,
                 ReadString(preparationElement, "RuntimeIdentifier"),
                 ReadString(preparationElement, "InstallationDirectory"),
+                ReadString(preparationElement, "ReadyDirectory"),
                 ReadString(preparationElement, "CandidateDirectory"),
                 ReadString(preparationElement, "BackupDirectory"),
                 ReadString(preparationElement, "FailedDirectory"),
                 ReadString(preparationElement, "EntryPoint"),
                 ReadHex(preparationElement, "ManifestSha256"),
                 ReadHex(preparationElement, "InstallationFingerprint"),
+                ReadBoolean(preparationElement, "RequiresElevation"),
                 arguments);
             return new ReleaseInstallationHandoffPlan(
                 paths.PlanPath,
+                paths.HelperReadyMarkerPath,
                 paths.HealthMarkerPath,
                 paths.OutcomePath,
                 createdAt,
@@ -244,6 +251,41 @@ public sealed class ReleaseInstallationPlanStore
             .ConfigureAwait(false);
     }
 
+    public async Task WriteHelperReadyMarkerAsync(
+        ReleaseInstallationHandoffPlan plan,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+        await WriteJsonAtomicallyAsync(
+                plan.HelperReadyMarkerPath,
+                new
+                {
+                    schemaVersion = SchemaVersion,
+                    requestId = plan.Preparation.RequestId,
+                    healthToken = plan.HealthToken,
+                },
+                overwrite: false,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "The instance API represents one installation-plan store contract.")]
+    [SuppressMessage(
+        "Maintainability",
+        "S2325:Make methods and properties static",
+        Justification = "The instance API represents one installation-plan store contract.")]
+    public Task<bool> IsHelperReadyAsync(
+        ReleaseInstallationHandoffPlan plan,
+        CancellationToken cancellationToken = default) =>
+        IsMatchingMarkerAsync(
+            plan.HelperReadyMarkerPath,
+            plan,
+            requireVersion: false,
+            cancellationToken);
+
     [SuppressMessage(
         "Performance",
         "CA1822:Mark members as static",
@@ -254,10 +296,22 @@ public sealed class ReleaseInstallationPlanStore
         Justification = "The instance API represents one installation-plan store contract.")]
     public async Task<bool> IsHealthConfirmedAsync(
         ReleaseInstallationHandoffPlan plan,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        await IsMatchingMarkerAsync(
+                plan.HealthMarkerPath,
+                plan,
+                requireVersion: true,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+    private static async Task<bool> IsMatchingMarkerAsync(
+        string markerPath,
+        ReleaseInstallationHandoffPlan plan,
+        bool requireVersion,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(plan);
-        var info = new FileInfo(plan.HealthMarkerPath);
+        var info = new FileInfo(markerPath);
         if (!info.Exists || info.Length is <= 0 or > MaximumPlanBytes)
         {
             return false;
@@ -265,19 +319,17 @@ public sealed class ReleaseInstallationPlanStore
 
         try
         {
-            var bytes = await File.ReadAllBytesAsync(
-                    plan.HealthMarkerPath,
-                    cancellationToken)
+            var bytes = await File.ReadAllBytesAsync(markerPath, cancellationToken)
                 .ConfigureAwait(false);
             using var document = JsonDocument.Parse(bytes);
             var root = document.RootElement;
             return root.ValueKind == JsonValueKind.Object
                 && ReadInt32(root, "schemaVersion") == SchemaVersion
                 && ReadGuid(root, "requestId") == plan.Preparation.RequestId
-                && string.Equals(
+                && (!requireVersion || string.Equals(
                     ReadString(root, "version"),
                     plan.Preparation.Version.ToString(),
-                    StringComparison.Ordinal)
+                    StringComparison.Ordinal))
                 && string.Equals(
                     ReadHex(root, "healthToken"),
                     plan.HealthToken,
@@ -481,6 +533,7 @@ public sealed class ReleaseInstallationPlanStore
         return new PlanPaths(
             planDirectory,
             Path.Combine(planDirectory, "plan.json"),
+            Path.Combine(planDirectory, "helper-ready.json"),
             Path.Combine(planDirectory, "health.json"),
             Path.Combine(planDirectory, "outcome.json"));
     }
@@ -591,6 +644,18 @@ public sealed class ReleaseInstallationPlanStore
         return value;
     }
 
+    private static bool ReadBoolean(JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var property)
+            || property.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
+        {
+            throw new InvalidDataException(
+                $"The update handoff '{propertyName}' value is invalid.");
+        }
+
+        return property.GetBoolean();
+    }
+
     private static Guid ReadGuid(JsonElement element, string propertyName)
     {
         if (!element.TryGetProperty(propertyName, out var property)
@@ -638,6 +703,7 @@ public sealed class ReleaseInstallationPlanStore
     private sealed record PlanPaths(
         string PlanDirectory,
         string PlanPath,
+        string HelperReadyMarkerPath,
         string HealthMarkerPath,
         string OutcomePath);
 }

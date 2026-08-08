@@ -170,6 +170,47 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
             path => Path.GetFileName(path).Contains("-update-", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task ProtectedWindowsInstallDefersCandidateCopyToHelper()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var fixture = await CreateFixtureAsync();
+        var preparer = new ReleaseInstallationPreparer(
+            stagingService: null,
+            (_, _, _) => throw new UnauthorizedAccessException(
+                "protected installation parent"));
+
+        var preparation = await preparer.PrepareAsync(
+            Version,
+            "win-x64",
+            fixture.ReadyDirectory,
+            fixture.ManifestSha256,
+            fixture.InstallationDirectory,
+            []);
+
+        Assert.True(preparation.RequiresElevation);
+        Assert.Equal(
+            Path.GetFullPath(fixture.ReadyDirectory),
+            preparation.ReadyDirectory);
+        Assert.False(Directory.Exists(preparation.CandidateDirectory));
+
+        var result = await new ReleaseInstallationTransaction().ApplyAsync(
+            preparation,
+            (_, _, _) => Task.FromResult(true));
+
+        Assert.Equal(ReleaseInstallationStatus.Installed, result.Status);
+        Assert.Equal(
+            fixture.NewEntryPoint,
+            await File.ReadAllBytesAsync(Path.Combine(
+                fixture.InstallationDirectory,
+                "SrvSurvey.Desktop.exe")));
+        Assert.False(Directory.Exists(preparation.CandidateDirectory));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

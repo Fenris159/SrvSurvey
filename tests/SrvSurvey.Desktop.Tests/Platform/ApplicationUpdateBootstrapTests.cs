@@ -107,6 +107,48 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     }
 
     [Fact]
+    public void ProtectedWindowsHelperUsesRunAsVerb()
+    {
+        var helper = ApplicationUpdateHandoffService.CreateHelperStartInfo(
+            Path.Combine(temporaryDirectory, "staged", "SrvSurvey.Desktop.exe"),
+            Path.Combine(temporaryDirectory, "plans", "plan.json"),
+            requiresElevation: true);
+
+        Assert.Equal(OperatingSystem.IsWindows(), helper.UseShellExecute);
+        Assert.Equal(OperatingSystem.IsWindows() ? "runas" : string.Empty, helper.Verb);
+        Assert.Equal(
+            [ApplicationUpdateBootstrap.ApplyArgument, Path.GetFullPath(
+                Path.Combine(temporaryDirectory, "plans", "plan.json"))],
+            helper.ArgumentList);
+    }
+
+    [Fact]
+    public void ElevatedHelperValidatesInstalledParentProcess()
+    {
+        var plan = CreatePlan();
+        var expectedPath = Path.Combine(
+            plan.Preparation.InstallationDirectory,
+            plan.Preparation.EntryPoint);
+        ApplicationUpdateBootstrap.ValidateElevatedParentProcess(
+            plan,
+            plan.ParentProcessStartTimeUtcTicks,
+            expectedPath);
+
+        var tampered = plan with
+        {
+            Preparation = plan.Preparation with
+            {
+                InstallationDirectory = Path.Combine(temporaryDirectory, "wrong"),
+            },
+        };
+        Assert.Throws<InvalidDataException>(() =>
+            ApplicationUpdateBootstrap.ValidateElevatedParentProcess(
+                tampered,
+                tampered.ParentProcessStartTimeUtcTicks,
+                expectedPath));
+    }
+
+    [Fact]
     public void HealthConfirmationRequiresInstalledProcessAndBaseDirectory()
     {
         var plan = CreatePlan();
@@ -166,6 +208,47 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
         Assert.Equal(preparation.RequestId, loaded.Preparation.RequestId);
     }
 
+    [Fact]
+    public async Task ElevatedHandoffWaitsForHelperReadyMarker()
+    {
+        var stagedEntryPoint = Path.Combine(
+            temporaryDirectory,
+            "staged-elevated",
+            "SrvSurvey.Desktop.exe");
+        Directory.CreateDirectory(Path.GetDirectoryName(stagedEntryPoint)!);
+        await File.WriteAllTextAsync(stagedEntryPoint, "helper");
+        var store = new ReleaseInstallationPlanStore();
+        ProcessStartInfo? captured = null;
+        var service = new ApplicationUpdateHandoffService(
+            store,
+            startInfo =>
+            {
+                captured = startInfo;
+                var planPath = startInfo.ArgumentList[1];
+                _ = Task.Run(async () =>
+                {
+                    var loaded = await store.LoadAsync(
+                        temporaryDirectory,
+                        planPath);
+                    await store.WriteHelperReadyMarkerAsync(loaded);
+                });
+                return Process.GetCurrentProcess();
+            });
+        var preparation = CreatePlan().Preparation with
+        {
+            RequiresElevation = true,
+        };
+
+        var plan = await service.StartHelperAsync(
+            temporaryDirectory,
+            preparation,
+            stagedEntryPoint);
+
+        Assert.NotNull(captured);
+        Assert.Equal(OperatingSystem.IsWindows(), captured.UseShellExecute);
+        Assert.True(await store.IsHelperReadyAsync(plan));
+    }
+
     public void Dispose()
     {
         ApplicationUpdateBootstrap.SetPendingConfirmation(null);
@@ -191,15 +274,18 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
             new Version(2, 0, 95, 23),
             "win-x64",
             installation,
+            Path.Combine(temporaryDirectory, "ready"),
             Path.Combine(parent, $".SrvSurvey-update-{requestId:N}"),
             Path.Combine(parent, $".SrvSurvey-backup-{requestId:N}"),
             Path.Combine(parent, $".SrvSurvey-failed-{requestId:N}"),
             "SrvSurvey.Desktop.exe",
             new string('a', 64),
             new string('b', 64),
+            false,
             []);
         return new ReleaseInstallationHandoffPlan(
             Path.Combine(planDirectory, "plan.json"),
+            Path.Combine(planDirectory, "helper-ready.json"),
             Path.Combine(planDirectory, "health.json"),
             Path.Combine(planDirectory, "outcome.json"),
             DateTimeOffset.UtcNow,

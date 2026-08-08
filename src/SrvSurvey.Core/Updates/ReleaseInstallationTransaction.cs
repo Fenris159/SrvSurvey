@@ -9,12 +9,14 @@ public sealed record ReleaseInstallationPreparation(
     ReleaseVersion Version,
     string RuntimeIdentifier,
     string InstallationDirectory,
+    string ReadyDirectory,
     string CandidateDirectory,
     string BackupDirectory,
     string FailedDirectory,
     string EntryPoint,
     string ManifestSha256,
     string InstallationFingerprint,
+    bool RequiresElevation,
     IReadOnlyList<string> StartupArguments);
 
 public enum ReleaseInstallationStatus
@@ -54,11 +56,21 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
     private const int MaximumInstallationFileCount = 16_384;
     private const long MaximumInstallationBytes = 4L * 1024 * 1024 * 1024;
     private readonly ReleasePackageStagingService stagingService;
+    private readonly Func<string, string, CancellationToken, Task> copyDirectory;
 
     public ReleaseInstallationPreparer(
         ReleasePackageStagingService? stagingService = null)
+        : this(stagingService, CopyDirectoryAsync)
+    {
+    }
+
+    internal ReleaseInstallationPreparer(
+        ReleasePackageStagingService? stagingService,
+        Func<string, string, CancellationToken, Task> copyDirectory)
     {
         this.stagingService = stagingService ?? new ReleasePackageStagingService();
+        this.copyDirectory = copyDirectory
+            ?? throw new ArgumentNullException(nameof(copyDirectory));
     }
 
     public async Task<ReleaseInstallationPreparation> PrepareAsync(
@@ -127,9 +139,10 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             parent,
             $".{installationName}-failed-{requestId:N}");
         EnsureMissing(candidateDirectory, backupDirectory, failedDirectory);
+        var requiresElevation = false;
         try
         {
-            await CopyDirectoryAsync(
+            await copyDirectory(
                     readyRoot,
                     candidateDirectory,
                     cancellationToken)
@@ -141,6 +154,26 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
                     manifestSha256,
                     cancellationToken)
                 .ConfigureAwait(false);
+        }
+        catch (UnauthorizedAccessException) when (OperatingSystem.IsWindows())
+        {
+            TryDeleteDirectory(candidateDirectory);
+            if (Directory.Exists(candidateDirectory)
+                || File.Exists(candidateDirectory))
+            {
+                throw;
+            }
+
+            requiresElevation = true;
+        }
+        catch
+        {
+            TryDeleteDirectory(candidateDirectory);
+            throw;
+        }
+
+        try
+        {
             var fingerprint = await ComputeDirectoryFingerprintAsync(
                     installationRoot,
                     cancellationToken)
@@ -150,12 +183,14 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
                 version,
                 runtimeIdentifier,
                 installationRoot,
+                readyRoot,
                 candidateDirectory,
                 backupDirectory,
                 failedDirectory,
                 entryPoint,
                 manifestSha256.ToLowerInvariant(),
                 fingerprint,
+                requiresElevation,
                 startupArguments.ToArray());
         }
         catch
@@ -216,7 +251,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
         return Convert.ToHexString(fingerprint.GetHashAndReset()).ToLowerInvariant();
     }
 
-    private static async Task CopyDirectoryAsync(
+    internal static async Task CopyDirectoryAsync(
         string source,
         string destination,
         CancellationToken cancellationToken)
@@ -296,7 +331,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             .ToArray();
     }
 
-    private static void ValidateDistinctRoots(string installation, string ready)
+    internal static void ValidateDistinctRoots(string installation, string ready)
     {
         var comparison = OperatingSystem.IsWindows()
             ? StringComparison.OrdinalIgnoreCase
@@ -368,7 +403,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
         hash.AppendData(bytes);
     }
 
-    private static void TryDeleteDirectory(string path)
+    internal static void TryDeleteDirectory(string path)
     {
         try
         {
@@ -434,12 +469,7 @@ public sealed class ReleaseInstallationTransaction
         ArgumentNullException.ThrowIfNull(preparation);
         ArgumentNullException.ThrowIfNull(launchAndConfirm);
         ValidatePreparationPaths(preparation);
-        await stagingService.VerifyReadyAsync(
-                preparation.Version,
-                preparation.RuntimeIdentifier,
-                preparation.CandidateDirectory,
-                preparation.ManifestSha256,
-                cancellationToken)
+        await EnsureCandidateReadyAsync(preparation, cancellationToken)
             .ConfigureAwait(false);
         var fingerprint = await ReleaseInstallationPreparer
             .ComputeDirectoryFingerprintAsync(
@@ -515,6 +545,44 @@ public sealed class ReleaseInstallationTransaction
             launchError ?? "The replacement process did not confirm healthy startup.");
     }
 
+    private async Task EnsureCandidateReadyAsync(
+        ReleaseInstallationPreparation preparation,
+        CancellationToken cancellationToken)
+    {
+        if (preparation.RequiresElevation)
+        {
+            await stagingService.VerifyReadyAsync(
+                    preparation.Version,
+                    preparation.RuntimeIdentifier,
+                    preparation.ReadyDirectory,
+                    preparation.ManifestSha256,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            try
+            {
+                await ReleaseInstallationPreparer.CopyDirectoryAsync(
+                        preparation.ReadyDirectory,
+                        preparation.CandidateDirectory,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch
+            {
+                ReleaseInstallationPreparer.TryDeleteDirectory(
+                    preparation.CandidateDirectory);
+                throw;
+            }
+        }
+
+        await stagingService.VerifyReadyAsync(
+                preparation.Version,
+                preparation.RuntimeIdentifier,
+                preparation.CandidateDirectory,
+                preparation.ManifestSha256,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     private static void RestoreBackup(
         ReleaseInstallationPreparation preparation,
         bool candidateActivated)
@@ -551,6 +619,8 @@ public sealed class ReleaseInstallationTransaction
         if (preparation.RequestId == Guid.Empty
             || preparation.Version.Build < 0
             || preparation.RuntimeIdentifier is not ("win-x64" or "linux-x64")
+            || (preparation.RequiresElevation
+                && preparation.RuntimeIdentifier != "win-x64")
             || preparation.ManifestSha256.Length != 64
             || preparation.ManifestSha256.Any(character => !Uri.IsHexDigit(character))
             || preparation.InstallationFingerprint.Length != 64
@@ -567,6 +637,9 @@ public sealed class ReleaseInstallationTransaction
 
         var installation = Path.TrimEndingDirectorySeparator(
             Path.GetFullPath(preparation.InstallationDirectory));
+        var ready = Path.TrimEndingDirectorySeparator(
+            Path.GetFullPath(preparation.ReadyDirectory));
+        ReleaseInstallationPreparer.ValidateDistinctRoots(installation, ready);
         var parent = Directory.GetParent(installation)?.FullName
             ?? throw new InvalidDataException(
                 "The installation cannot be a file-system root.");
@@ -590,6 +663,11 @@ public sealed class ReleaseInstallationTransaction
                 Path.GetFullPath(preparation.FailedDirectory),
                 expectedFailed,
                 comparison)
+            || (preparation.RequiresElevation
+                && (Directory.Exists(expectedCandidate)
+                    || File.Exists(expectedCandidate)))
+            || (!preparation.RequiresElevation
+                && !Directory.Exists(expectedCandidate))
             || Directory.Exists(expectedBackup)
             || File.Exists(expectedBackup)
             || Directory.Exists(expectedFailed)
