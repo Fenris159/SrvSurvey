@@ -251,7 +251,7 @@ public sealed class ReleaseInstallationPlanStore
             .ConfigureAwait(false);
     }
 
-    public async Task WriteHelperReadyMarkerAsync(
+    public static async Task WriteHelperReadyMarkerAsync(
         ReleaseInstallationHandoffPlan plan,
         CancellationToken cancellationToken = default)
     {

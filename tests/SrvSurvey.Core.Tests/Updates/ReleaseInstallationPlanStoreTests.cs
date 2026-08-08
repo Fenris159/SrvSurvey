@@ -135,7 +135,7 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
             Now.AddMinutes(-1));
 
         Assert.False(await store.IsHelperReadyAsync(plan));
-        await store.WriteHelperReadyMarkerAsync(plan);
+        await ReleaseInstallationPlanStore.WriteHelperReadyMarkerAsync(plan);
         Assert.True(await store.IsHelperReadyAsync(plan));
     }
 

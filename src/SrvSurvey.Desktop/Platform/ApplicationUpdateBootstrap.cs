@@ -375,25 +375,38 @@ internal static class ApplicationUpdateBootstrap
         return plan;
     }
 
-    public static async Task<int> RunHelperAsync(
+    public static Task<int> RunHelperAsync(
         string planPath,
         CancellationToken cancellationToken = default)
     {
         var paths = AppDataPaths.ResolveCurrent();
+        return RunHelperAsync(
+            paths.DataDirectory,
+            planPath,
+            cancellationToken);
+    }
+
+    internal static async Task<int> RunHelperAsync(
+        string dataDirectory,
+        string planPath,
+        CancellationToken cancellationToken = default)
+    {
         var store = new ReleaseInstallationPlanStore();
         ReleaseInstallationHandoffPlan? plan = null;
         Process? validatedParent = null;
         try
         {
             plan = await store.LoadAsync(
-                    paths.DataDirectory,
+                    dataDirectory,
                     planPath,
                     cancellationToken)
                 .ConfigureAwait(false);
             if (plan.Preparation.RequiresElevation)
             {
                 validatedParent = OpenValidatedParentProcess(plan);
-                await store.WriteHelperReadyMarkerAsync(plan, cancellationToken)
+                await ReleaseInstallationPlanStore.WriteHelperReadyMarkerAsync(
+                        plan,
+                        cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -597,7 +610,7 @@ internal static class ApplicationUpdateBootstrap
         }
     }
 
-    private static async Task WaitForParentExitAsync(
+    internal static async Task WaitForParentExitAsync(
         ReleaseInstallationHandoffPlan plan,
         Process? validatedParent,
         CancellationToken cancellationToken)
@@ -645,7 +658,7 @@ internal static class ApplicationUpdateBootstrap
         }
     }
 
-    private static bool IsParentStillRunning(
+    internal static bool IsParentStillRunning(
         ReleaseInstallationHandoffPlan plan)
     {
         try
