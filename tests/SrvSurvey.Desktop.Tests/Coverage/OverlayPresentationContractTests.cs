@@ -366,6 +366,20 @@ public sealed class OverlayPresentationContractTests
     }
 
     [Fact]
+    public void BodyInformationBindingsUseTheNonNullDisplayProjection()
+    {
+        var root = FindRepositoryRoot();
+        var bodyInfo = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "BodyInformationOverlayPresentation.axaml"));
+
+        Assert.Contains("Survey.BodyInformationDisplay.", bodyInfo);
+        Assert.DoesNotContain("Survey.BodyInformation.", bodyInfo);
+    }
+
+    [Fact]
     public void RequestedCompactRowsDoNotUsePanelFillingValueColumns()
     {
         var root = FindRepositoryRoot();

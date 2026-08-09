@@ -211,8 +211,16 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     public string SaveAsError
     {
         get => saveAsError;
-        private set => SetField(ref saveAsError, value);
+        private set
+        {
+            if (SetField(ref saveAsError, value))
+            {
+                OnPropertyChanged(nameof(HasSaveAsError));
+            }
+        }
     }
+
+    public bool HasSaveAsError => !string.IsNullOrWhiteSpace(SaveAsError);
 
     public string NotesDraft
     {

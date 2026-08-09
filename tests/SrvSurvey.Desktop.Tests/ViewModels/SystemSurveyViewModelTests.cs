@@ -25,6 +25,18 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void EmptyBodyInformationProvidesAStableNonNullBindingTarget()
+    {
+        var viewModel = CreateViewModel();
+
+        Assert.False(viewModel.HasBodyInformation);
+        Assert.Null(viewModel.BodyInformation);
+        Assert.Same(
+            BodyInformationViewModel.Empty,
+            viewModel.BodyInformationDisplay);
+    }
+
+    [Fact]
     public void UseBioSignalRadiusInvertsSmallCanonnRadarCircles()
     {
         var viewModel = CreateViewModel();
@@ -432,6 +444,9 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     public void BodyInformationUsesMapDestinationAndFormatsDetailedScan()
     {
         var viewModel = CreateViewModel();
+        var notifications = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            notifications.Add(eventArgs.PropertyName);
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[500,0,0]}"""),
@@ -452,6 +467,10 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(viewModel.ShouldShowBodyInfo);
         var body = Assert.IsType<BodyInformationViewModel>(
             viewModel.BodyInformation);
+        Assert.Same(body, viewModel.BodyInformationDisplay);
+        Assert.Contains(
+            nameof(SystemSurveyViewModel.BodyInformationDisplay),
+            notifications);
         Assert.Equal("⚑ Test 1", body.Name);
         Assert.Equal("High metal content body", body.BodyClass);
         Assert.Equal("123 LS", body.Distance);

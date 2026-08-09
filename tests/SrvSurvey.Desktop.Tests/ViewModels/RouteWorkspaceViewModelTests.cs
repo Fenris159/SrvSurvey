@@ -509,6 +509,32 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveAsErrorVisibilityTracksValidationAndNameChanges()
+    {
+        var viewModel = CreateViewModel();
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+        await viewModel.ImportNamesAsync(["Sol", "Achenar"]);
+        viewModel.SaveAsCommand.Execute(null);
+        var notifications = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            notifications.Add(eventArgs.PropertyName);
+
+        viewModel.SaveAsName = " ";
+        await viewModel.ConfirmSaveAsAsync();
+
+        Assert.True(viewModel.HasSaveAsError);
+        Assert.False(string.IsNullOrWhiteSpace(viewModel.SaveAsError));
+        Assert.Contains(nameof(RouteWorkspaceViewModel.HasSaveAsError), notifications);
+
+        notifications.Clear();
+        viewModel.SaveAsName = "Bubble Tour";
+
+        Assert.False(viewModel.HasSaveAsError);
+        Assert.Equal(string.Empty, viewModel.SaveAsError);
+        Assert.Contains(nameof(RouteWorkspaceViewModel.HasSaveAsError), notifications);
+    }
+
+    [Fact]
     public async Task NotesSaveImmediatelyButResetWaitsForSaveChanges()
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
