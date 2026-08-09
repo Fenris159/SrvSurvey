@@ -870,6 +870,116 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void DssCompletionShowsTargetBodyDetailDuringGraceWindowInSupercruise()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "supercruise-dss-transition-ui-settings.json")),
+            utcNow: () => now);
+        var supercruiseStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 1,
+                Name = "Test 1",
+            },
+        };
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+            ],
+            supercruiseStatus);
+
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+
+        viewModel.ApplyUpdate(
+            [Parse("""{"timestamp":"2026-07-25T12:00:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}""")],
+            supercruiseStatus);
+
+        Assert.True(viewModel.IsWithinPostDssBiologyWindow);
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.Equal("Test 1 biology", viewModel.BiologySurvey.Heading);
+        Assert.NotNull(viewModel.BiologyStatus);
+
+        now = now.AddSeconds(121);
+
+        Assert.True(viewModel.RefreshTransientState());
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.Null(viewModel.BiologyStatus);
+    }
+
+    [Fact]
+    public void PostDssSettingsImmediatelyRebuildBiologyPanels()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "live-dss-settings-ui-settings.json")),
+            utcNow: () => now);
+        var supercruiseStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 1,
+                Name = "Test 1",
+            },
+        };
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+                Parse("""{"timestamp":"2026-07-25T12:00:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""),
+            ],
+            supercruiseStatus);
+
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+
+        viewModel.KeepBioPlottersVisibleAfterDss = false;
+
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.Null(viewModel.BiologyStatus);
+
+        var notifiedVisible = false;
+        viewModel.PropertyChanged += (_, eventArgs) =>
+        {
+            if (eventArgs.PropertyName == nameof(
+                    SystemSurveyViewModel.ShouldShowBioStatus)
+                && viewModel.ShouldShowBioStatus)
+            {
+                notifiedVisible = true;
+            }
+        };
+
+        viewModel.KeepBioPlottersVisibleAfterDss = true;
+
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.NotNull(viewModel.BiologyStatus);
+        Assert.True(notifiedVisible);
+
+        viewModel.BioPlotterDssDurationSeconds = 0;
+
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.Null(viewModel.BiologyStatus);
+
+        notifiedVisible = false;
+        viewModel.BioPlotterDssDurationSeconds = 120;
+
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.NotNull(viewModel.BiologyStatus);
+        Assert.True(notifiedVisible);
+    }
+
+    [Fact]
     public void BiologySurveyShowsBodySamplesRewardsFootfallAndGeology()
     {
         var viewModel = CreateViewModel();
@@ -1250,11 +1360,23 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
         Assert.False(viewModel.ShouldShowBioSystem);
 
+        var notifiedVisible = false;
+        viewModel.PropertyChanged += (_, eventArgs) =>
+        {
+            if (eventArgs.PropertyName == nameof(
+                    SystemSurveyViewModel.ShouldShowBioSystem)
+                && viewModel.ShouldShowBioSystem)
+            {
+                notifiedVisible = true;
+            }
+        };
+
         viewModel.DrawBodyBiosOnlyWhenNear = false;
 
         Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
         Assert.Equal("Test 2 biology", viewModel.BiologySurvey.Heading);
         Assert.True(viewModel.ShouldShowBioSystem);
+        Assert.True(notifiedVisible);
     }
 
     [Fact]
@@ -1437,6 +1559,49 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.False(genus.IsPrediction);
         Assert.True(genus.IsGenusIdentified);
         Assert.Equal("Reward pending identification", viewModel.BiologySurvey.RewardSummary);
+    }
+
+    [Fact]
+    public void BiologySystemKeepsAlternativePredictionPipsBeyondSignalCount()
+    {
+        var criteria = new BiologyCriteriaCatalog(
+        [
+            new BiologyCriteriaNode(
+                "Aleoida",
+                "Arcus",
+                "Yellow",
+                [],
+                [],
+                false,
+                null),
+            new BiologyCriteriaNode(
+                "Bacterium",
+                "Acies",
+                "Lime",
+                [],
+                [],
+                false,
+                null),
+        ]);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "alternative-prediction-pips-ui-settings.json")),
+            biologyCriteria: criteria);
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""),
+                Parse(PredictableAleoidaScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.SystemMap });
+
+        var body = Assert.Single(viewModel.BiologySurvey!.Bodies);
+
+        Assert.Equal(1, body.SignalCount);
+        Assert.Equal(2, body.RewardBands.Count);
+        Assert.All(body.RewardBands, band => Assert.True(band.IsPrediction));
     }
 
     [Fact]

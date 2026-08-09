@@ -842,7 +842,10 @@ public sealed class BiologySurveyViewModel
             body.BiologicalSignalCount);
 
         // Preserve the legacy sequence: known/DSS-resolved genera first,
-        // remaining predictions second, and unidentified signals last.
+        // every remaining predicted genus second, and unidentified signal
+        // slots last. Legacy deliberately rendered predictions beyond the
+        // reported signal count as alternative candidates outside its signal
+        // frame, so do not truncate those additional PIPs here.
         foreach (var organism in body.Organisms)
         {
             var genus = organism.GenusLocalized
@@ -884,8 +887,7 @@ public sealed class BiologySurveyViewModel
 
         foreach (var prediction in predictionsByGenus)
         {
-            if (bands.Count >= body.BiologicalSignalCount
-                || consumedPredictionGenera.Contains(prediction.Key))
+            if (consumedPredictionGenera.Contains(prediction.Key))
             {
                 continue;
             }
@@ -904,7 +906,7 @@ public sealed class BiologySurveyViewModel
                 rewardThresholds));
         }
 
-        return bands.Take(body.BiologicalSignalCount).ToArray();
+        return bands.ToArray();
     }
 
     private static SystemScanBodySnapshot? ResolveBody(

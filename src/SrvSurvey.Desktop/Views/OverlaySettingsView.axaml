@@ -1036,7 +1036,9 @@
                       Content="Skip bodies exceeding:" />
             <CheckBox IsChecked="{Binding SystemSurvey.ShowNonBodySignals, Mode=TwoWay}"
                       Content="Show non-body signals" />
-            <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
+            <Grid ColumnDefinitions="*,150"
+                  ColumnSpacing="12"
+                  IsEnabled="{Binding SystemSurvey.HighlightDssCandidates}">
               <TextBlock VerticalAlignment="Center"
                          Text="Minimum DSS value (credits)" />
               <NumericUpDown Grid.Column="1"
@@ -1071,20 +1073,25 @@
                       Content="Use downloaded bio data from Canonn and Spansh" />
             <CheckBox IsChecked="{Binding SystemSurvey.AutoShowPriorScans, Mode=TwoWay}"
                       Content="Show aiming guidance to bio signals from Canonn" />
-            <CheckBox IsChecked="{Binding SystemSurvey.HideOwnCanonnSignals, Mode=TwoWay}"
-                      Content="Hide my own scans. Uncheck to revisit signals after dying" />
-            <CheckBox IsChecked="{Binding SystemSurvey.SkipPriorScansLowValue, Mode=TwoWay}"
-                      Content="Skip signals with reward below:" />
-            <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
-              <TextBlock VerticalAlignment="Center"
-                         Text="Minimum reward (credits)" />
-              <NumericUpDown Grid.Column="1"
-                             Minimum="0"
-                             Maximum="100000000"
-                             Increment="100000"
-                             FormatString="N0"
-                             Value="{Binding SystemSurvey.PriorScanMinimumValue, Mode=TwoWay}" />
-            </Grid>
+            <StackPanel Spacing="12"
+                        IsEnabled="{Binding SystemSurvey.AutoShowPriorScans}">
+              <CheckBox IsChecked="{Binding SystemSurvey.HideOwnCanonnSignals, Mode=TwoWay}"
+                        Content="Hide my own scans. Uncheck to revisit signals after dying" />
+              <CheckBox IsChecked="{Binding SystemSurvey.SkipPriorScansLowValue, Mode=TwoWay}"
+                        Content="Skip signals with reward below:" />
+              <Grid ColumnDefinitions="*,150"
+                    ColumnSpacing="12"
+                    IsEnabled="{Binding SystemSurvey.SkipPriorScansLowValue}">
+                <TextBlock VerticalAlignment="Center"
+                           Text="Minimum reward (credits)" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="0"
+                               Maximum="100000000"
+                               Increment="100000"
+                               FormatString="N0"
+                               Value="{Binding SystemSurvey.PriorScanMinimumValue, Mode=TwoWay}" />
+              </Grid>
+            </StackPanel>
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="Prior-scan guidance uses Canonn coordinates for the current body. Disabling external data prevents these network requests." />
@@ -1127,46 +1134,49 @@
                              FormatString="N0"
                              Value="{Binding SystemSurvey.SurfaceRadarSize, Mode=TwoWay}" />
             </Grid>
-            <CheckBox IsChecked="{Binding SystemSurvey.ShowCanonnSignalsOnRadar, Mode=TwoWay}"
-                      Content="Show bio signals from Canonn on the radar" />
-            <StackPanel Spacing="8"
-                        IsEnabled="{Binding SystemSurvey.ShowCanonnSignalsOnRadar}">
-              <RadioButton GroupName="CanonnRadarCircleStyle"
-                           IsChecked="{Binding SystemSurvey.UseSmallCanonnRadarCircles, Mode=TwoWay}"
-                           Content="Use small circles" />
-              <RadioButton GroupName="CanonnRadarCircleStyle"
-                           IsChecked="{Binding SystemSurvey.UseBioSignalRadius, Mode=TwoWay}"
-                           Content="Use bio signal radius" />
-              <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                <StackPanel Spacing="4">
-                  <TextBlock Classes="muted" FontSize="11" Text="Small circles (~100 m)" />
-                  <Border Background="#101010"
-                          BorderBrush="{DynamicResource RavenBorderBrush}"
-                          BorderThickness="1"
-                          CornerRadius="4"
-                          ClipToBounds="True"
-                          Height="120">
-                    <Image Source="avares://SrvSurvey.Desktop/Assets/SettingsVisualAids/radar-small-circles-preview.png"
-                           Stretch="Uniform"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center" />
-                  </Border>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Spacing="4">
-                  <TextBlock Classes="muted" FontSize="11" Text="Bio signal radius (organism sample range)" />
-                  <Border Background="#101010"
-                          BorderBrush="{DynamicResource RavenBorderBrush}"
-                          BorderThickness="1"
-                          CornerRadius="4"
-                          ClipToBounds="True"
-                          Height="120">
-                    <Image Source="avares://SrvSurvey.Desktop/Assets/SettingsVisualAids/radar-radius-preview.png"
-                           Stretch="Uniform"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center" />
-                  </Border>
-                </StackPanel>
-              </Grid>
+            <StackPanel Spacing="12"
+                        IsEnabled="{Binding SystemSurvey.AutoShowPriorScans}">
+              <CheckBox IsChecked="{Binding SystemSurvey.ShowCanonnSignalsOnRadar, Mode=TwoWay}"
+                        Content="Show bio signals from Canonn on the radar" />
+              <StackPanel Spacing="8"
+                          IsEnabled="{Binding SystemSurvey.ShowCanonnSignalsOnRadar}">
+                <RadioButton GroupName="CanonnRadarCircleStyle"
+                             IsChecked="{Binding SystemSurvey.UseSmallCanonnRadarCircles, Mode=TwoWay}"
+                             Content="Use small circles" />
+                <RadioButton GroupName="CanonnRadarCircleStyle"
+                             IsChecked="{Binding SystemSurvey.UseBioSignalRadius, Mode=TwoWay}"
+                             Content="Use bio signal radius" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                  <StackPanel Spacing="4">
+                    <TextBlock Classes="muted" FontSize="11" Text="Small circles (~100 m)" />
+                    <Border Background="#101010"
+                            BorderBrush="{DynamicResource RavenBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            ClipToBounds="True"
+                            Height="120">
+                      <Image Source="avares://SrvSurvey.Desktop/Assets/SettingsVisualAids/radar-small-circles-preview.png"
+                             Stretch="Uniform"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                    </Border>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Classes="muted" FontSize="11" Text="Bio signal radius (organism sample range)" />
+                    <Border Background="#101010"
+                            BorderBrush="{DynamicResource RavenBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            ClipToBounds="True"
+                            Height="120">
+                      <Image Source="avares://SrvSurvey.Desktop/Assets/SettingsVisualAids/radar-radius-preview.png"
+                             Stretch="Uniform"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                    </Border>
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
             </StackPanel>
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
@@ -1194,6 +1204,7 @@
                         HorizontalAlignment="Left">
               <NumericUpDown Width="120"
                              MinWidth="120"
+                             IsEnabled="{Binding SystemSurvey.KeepBioPlottersVisibleAfterDss}"
                              Minimum="0"
                              Maximum="600"
                              Increment="5"

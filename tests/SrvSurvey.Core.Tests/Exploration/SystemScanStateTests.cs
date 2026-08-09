@@ -277,6 +277,20 @@ public sealed class SystemScanStateTests
     }
 
     [Fact]
+    public void DssCompletionSetsScannedBodyAsCurrent()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse(PlanetScan));
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}""")));
+
+        Assert.Equal(1, state.CurrentBodyId);
+    }
+
+    [Fact]
     public void FssCountExcludesAsteroidsRingsAndBarycentres()
     {
         var state = new SystemScanState();

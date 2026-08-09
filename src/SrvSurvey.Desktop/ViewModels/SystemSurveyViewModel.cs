@@ -363,6 +363,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 dssVisibilityWindowWasActive =
                     IsWithinPostDssBiologyWindow;
                 OnPropertyChanged(nameof(IsWithinPostDssBiologyWindow));
+                RefreshDisplay();
+                RaiseVisibilityProperties();
             }
         }
     }
@@ -379,6 +381,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 dssVisibilityWindowWasActive =
                     IsWithinPostDssBiologyWindow;
                 OnPropertyChanged(nameof(IsWithinPostDssBiologyWindow));
+                RefreshDisplay();
+                RaiseVisibilityProperties();
             }
         }
     }
@@ -512,6 +516,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             if (SetPreference(ref drawBodyBiosOnlyWhenNear, value))
             {
                 RefreshDisplay();
+                RaiseVisibilityProperties();
             }
         }
     }

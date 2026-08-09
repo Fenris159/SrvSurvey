@@ -464,6 +464,24 @@ public sealed class OverlayPresentationContractTests
     }
 
     [Fact]
+    public void SystemBiologyUsesSharedBodyPipAndRewardColumns()
+    {
+        var root = FindRepositoryRoot();
+        var biologySurvey = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "BiologySurveyOverlayPresentation.axaml"));
+
+        Assert.Contains("Grid.IsSharedSizeScope=\"True\"", biologySurvey);
+        Assert.Contains("SharedSizeGroup=\"SystemBiologyBodyName\"", biologySurvey);
+        Assert.Contains("SharedSizeGroup=\"SystemBiologyPips\"", biologySurvey);
+        Assert.Contains("SharedSizeGroup=\"SystemBiologyReward\"", biologySurvey);
+        Assert.Contains("<ItemsControl HorizontalAlignment=\"Left\"", biologySurvey);
+        Assert.Contains("ItemsSource=\"{Binding RewardBands}\"", biologySurvey);
+    }
+
+    [Fact]
     public void SharedPresentationsOwnCompactionMapSizingAndDividerBehavior()
     {
         var root = FindRepositoryRoot();

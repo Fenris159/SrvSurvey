@@ -70,16 +70,22 @@
       <ScrollViewer MaxHeight="620"
                     HorizontalScrollBarVisibility="Disabled"
                     VerticalScrollBarVisibility="Auto">
-        <StackPanel Spacing="3">
+        <StackPanel Grid.IsSharedSizeScope="True"
+                    Spacing="3">
           <ItemsControl IsVisible="{Binding Survey.BiologySurveyDisplay.IsSystemOverview}"
                         ItemsSource="{Binding Survey.BiologySurveyDisplay.Bodies}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:BiologyBodyRowViewModel">
-                <!-- Match Route Bodies visual grammar:
-                     body icon | label | reward bands | value (flex right). -->
+                <!-- Match Route Bodies visual grammar with list-wide columns:
+                     body icon | body name | left-aligned reward PIPs | value. -->
                 <Grid Margin="0,1"
-                      ColumnDefinitions="Auto,Auto,Auto,*"
                       ColumnSpacing="5">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="SystemBiologyBodyIcon" />
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="SystemBiologyBodyName" />
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="SystemBiologyPips" />
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="SystemBiologyReward" />
+                  </Grid.ColumnDefinitions>
                   <Border Width="14"
                           Height="18"
                           Background="Transparent"
@@ -103,11 +109,13 @@
                                TextDecorations="Strikethrough" />
                   </Grid>
                   <StackPanel Grid.Column="2"
-                              Margin="1,0,3,0"
-                              VerticalAlignment="Center"
-                              Orientation="Horizontal"
-                              Spacing="4">
-                    <ItemsControl ItemsSource="{Binding RewardBands}">
+                               Margin="1,0,3,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Orientation="Horizontal"
+                               Spacing="4">
+                    <ItemsControl HorizontalAlignment="Left"
+                                  ItemsSource="{Binding RewardBands}">
                       <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                           <StackPanel Orientation="Horizontal" Spacing="2" />
