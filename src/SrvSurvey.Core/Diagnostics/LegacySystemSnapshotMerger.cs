@@ -187,12 +187,7 @@ public static class LegacySystemSnapshotMerger
         var organisms = GetOrCreateArray(body, "organisms");
         foreach (var snapshot in snapshots)
         {
-            var organism = organisms
-                    .OfType<JsonObject>()
-                    .FirstOrDefault(candidate => string.Equals(
-                        ReadString(candidate["genus"]),
-                        snapshot.Genus,
-                        StringComparison.Ordinal))
+            var organism = FindOrganism(organisms, snapshot)
                 ?? new JsonObject();
             if (organism.Parent is null)
             {
@@ -228,6 +223,24 @@ public static class LegacySystemSnapshotMerger
             WriteTrue(organism, "analyzed", snapshot.IsAnalyzed);
             WriteTrue(organism, "isNewEntry", snapshot.IsRegionalFirst);
         }
+    }
+
+    private static JsonObject? FindOrganism(
+        JsonArray organisms,
+        SystemOrganismSnapshot snapshot)
+    {
+        return OrganismIdentityMatcher.FindBestMatch(
+            organisms.OfType<JsonObject>(),
+            new OrganismIdentity(
+                snapshot.Genus,
+                snapshot.EntryId,
+                snapshot.Variant,
+                snapshot.Species),
+            candidate => new OrganismIdentity(
+                ReadString(candidate["genus"]),
+                ReadInt64(candidate["entryId"]),
+                ReadString(candidate["variant"]),
+                ReadString(candidate["species"])));
     }
 
     private static JsonObject FindOrCreateBody(
@@ -392,6 +405,28 @@ public static class LegacySystemSnapshotMerger
 
         return value.TryGetValue<string>(out var text)
             && int.TryParse(
+                text,
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out result)
+                    ? result
+                    : null;
+    }
+
+    private static long? ReadInt64(JsonNode? node)
+    {
+        if (node is not JsonValue value)
+        {
+            return null;
+        }
+
+        if (value.TryGetValue<long>(out var result))
+        {
+            return result;
+        }
+
+        return value.TryGetValue<string>(out var text)
+            && long.TryParse(
                 text,
                 NumberStyles.Integer,
                 CultureInfo.InvariantCulture,

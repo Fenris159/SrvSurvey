@@ -88,6 +88,7 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
         return new PriorScanSpecies(
             group.Key,
             reference.SpeciesName,
+            ExobiologyReferenceCatalog.GetGenusName(reference),
             displayName,
             reference.Reward,
             analyzed,
@@ -281,6 +282,7 @@ public sealed record PriorScanPlan(
 public sealed record PriorScanSpecies(
     long EntryId,
     string SpeciesName,
+    string GenusName,
     string DisplayName,
     long Reward,
     bool IsAnalyzed,

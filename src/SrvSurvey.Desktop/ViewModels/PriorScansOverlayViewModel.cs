@@ -5,6 +5,7 @@ using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -15,6 +16,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     private readonly ICanonnSystemPoiClient client;
     private readonly PriorScanPlanner planner;
     private readonly Func<string?> commanderNameProvider;
+    private readonly Func<SystemSurfaceBodySnapshot?> currentSurfaceProvider;
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
         "CA2213:Disposable fields should be disposed",
@@ -43,7 +45,8 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         ICanonnSystemPoiClient client,
         ExobiologyReferenceCatalog catalog,
         Func<string?> commanderNameProvider,
-        OverlayPlatformCapabilities capabilities)
+        OverlayPlatformCapabilities capabilities,
+        Func<SystemSurfaceBodySnapshot?>? currentSurfaceProvider = null)
     {
         this.survey = survey ?? throw new ArgumentNullException(nameof(survey));
         this.client = client ?? throw new ArgumentNullException(nameof(client));
@@ -51,6 +54,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             catalog ?? throw new ArgumentNullException(nameof(catalog)));
         this.commanderNameProvider = commanderNameProvider
             ?? throw new ArgumentNullException(nameof(commanderNameProvider));
+        this.currentSurfaceProvider = currentSurfaceProvider ?? (() => null);
         ArgumentNullException.ThrowIfNull(capabilities);
         inputMode = capabilities.SupportsClickThrough
             ? "PASSIVE"
@@ -394,8 +398,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             .Where(item => !item.IsAnalyzed)
             .SelectMany(item =>
             {
-                var genus = ExobiologyReferenceCatalog.GetGenusName(
-                    item.SpeciesName);
+                var genus = item.GenusName;
                 var radius = ExobiologyReferenceCatalog.GetSampleDistanceMeters(
                     genus);
                 return item.Targets.Select(target =>
@@ -489,7 +492,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             .Select(organism => organism.EntryId!.Value)
             .ToArray()
             ?? [];
-        var samples = new[]
+        var activeSamples = new[]
             {
                 survey.CurrentExobiology.ScanOne,
                 survey.CurrentExobiology.ScanTwo,
@@ -504,6 +507,21 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             .Select(TryCreatePersonalSample)
             .Where(sample => sample is not null)
             .Cast<PriorScanPersonalSample>()
+            .ToArray();
+        var historicalSamples = currentSurfaceProvider()?.BioScans
+            .Where(sample => !string.Equals(
+                sample.Status,
+                "Died",
+                StringComparison.OrdinalIgnoreCase))
+            .Where(sample => !string.IsNullOrWhiteSpace(sample.Species))
+            .Select(sample => new PriorScanPersonalSample(
+                sample.Species,
+                sample.Location))
+            .ToArray()
+            ?? [];
+        var samples = activeSamples
+            .Concat(historicalSamples)
+            .Distinct()
             .ToArray();
         var commander = commanderNameProvider()?.Trim() ?? string.Empty;
         context = new PriorScanContext(
@@ -661,8 +679,7 @@ public sealed record PriorScanSpeciesViewModel(
         PriorScanSpecies species,
         double altitudeMeters)
     {
-        var genus = ExobiologyReferenceCatalog.GetGenusName(
-            species.SpeciesName);
+        var genus = species.GenusName;
         var approachAngle = altitudeMeters > 500
             && species.Targets.Count > 0
             && species.Targets[0] is { DistanceMeters: > 0 } target

@@ -41,13 +41,15 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
 
         Assert.Equal(
             [
-                ("bio.confirmed", "Confirmed reward PIP"),
-                ("bio.confirmedDim", "Analyzed reward PIP"),
-                ("bio.potential", "Possible reward segment"),
-                ("bio.prediction", "Predicted reward PIP"),
-                ("bio.predictionPotential", "Predicted possible segment"),
-                ("bio.gold", "First-discovery candidate PIP"),
-                ("bio.goldDark", "First-discovery candidate (analyzed)"),
+                ("bio.confirmed", "Confirmed organism reward PIP"),
+                ("bio.confirmedDim", "Analyzed organism reward PIP"),
+                ("bio.potential", "Confirmed reward-range upper segment"),
+                ("bio.prediction", "Predicted organism reward PIP"),
+                ("bio.predictionPotential", "Predicted reward-range upper segment"),
+                ("bio.gold", "Commander/regional-first highlight PIP"),
+                ("bio.goldDark", "Commander/regional-first highlight (analyzed)"),
+                ("bio.galacticRegion", "Galactic-region candidate PIP"),
+                ("bio.galacticRegionPotential", "Galactic-region possible segment"),
                 ("bio.unknown", "Unknown reward frame"),
                 ("bio.unknownGlyph", "Unknown reward question mark"),
                 ("bio.hatch", "Prediction hatch lines"),

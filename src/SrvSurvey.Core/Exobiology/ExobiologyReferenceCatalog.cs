@@ -8,6 +8,9 @@ public sealed class ExobiologyReferenceCatalog
 {
     private const string EmbeddedResourceName =
         "SrvSurvey.Core.Resources.codexRef.json";
+    private const string AnemoneSubclass = "Anemone";
+    private const string AmphoraPlantSubclass = "Amphora Plant";
+    private const string BarkMoundsSubclass = "Bark Mounds";
 
     private readonly Dictionary<string, ExobiologyReference> byVariant;
     private readonly Dictionary<string, ExobiologyReference> bySpecies;
@@ -170,6 +173,99 @@ public sealed class ExobiologyReferenceCatalog
         return $"{CodexEntPrefix}{genus}_Genus_Name;";
     }
 
+    /// <summary>
+    /// Returns the canonical journal genus for a catalog entry. Horizons
+    /// biology variants use unrelated variant tokens (for example Seed and
+    /// SeedABCD for Brain Trees), so their catalog subclass must be used to
+    /// recover the genus emitted by FSSBodySignals and ScanOrganic.
+    /// </summary>
+    public static string GetGenusName(ExobiologyReference reference)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        if (reference.IsBiology)
+        {
+            var legacyGenus = reference.SubClass switch
+            {
+                AnemoneSubclass => "$Codex_Ent_Sphere_Name;",
+                AmphoraPlantSubclass => "$Codex_Ent_Vents_Name;",
+                BarkMoundsSubclass => "$Codex_Ent_Cone_Name;",
+                "Brain Tree" => "$Codex_Ent_Brancae_Name;",
+                "Shards" => "$Codex_Ent_Ground_Struct_Ice_Name;",
+                "Tubers" => "$Codex_Ent_Tube_Name;",
+                _ => null,
+            };
+            if (legacyGenus is not null)
+            {
+                return legacyGenus;
+            }
+        }
+
+        return GetGenusName(reference.SpeciesName);
+    }
+
+    /// <summary>
+    /// Returns the catalog's canonical English genus label, including the
+    /// legacy Horizons names normalized by the original Codex reference
+    /// loader for prediction matching.
+    /// </summary>
+    public static string GetGenusDisplayName(ExobiologyReference reference)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        var legacyDisplayName = reference.SubClass switch
+        {
+            AnemoneSubclass => AnemoneSubclass,
+            AmphoraPlantSubclass => AmphoraPlantSubclass,
+            BarkMoundsSubclass => BarkMoundsSubclass,
+            "Brain Tree" => "Brain Trees",
+            "Shards" => "Crystalline Shards",
+            "Tubers" => "Sinuous Tubers",
+            _ => null,
+        };
+        return legacyDisplayName
+            ?? GetGenusDisplayName(GetGenusName(reference));
+    }
+
+    public static string GetGenusDisplayName(string? genusName)
+    {
+        if (string.IsNullOrWhiteSpace(genusName))
+        {
+            return "Unknown genus";
+        }
+
+        var normalized = genusName
+            .Replace(CodexEntPrefix, string.Empty, StringComparison.Ordinal)
+            .Replace("_Genus_Name;", string.Empty, StringComparison.Ordinal)
+            .Replace(CodexNameSuffix, string.Empty, StringComparison.Ordinal)
+            .ToUpperInvariant();
+        return normalized switch
+        {
+            "ALEOIDS" => "Aleoida",
+            "BACTERIAL" => "Bacterium",
+            "CACTOID" => "Cactoida",
+            "CLYPEUS" => "Clypeus",
+            "CONCHAS" => "Concha",
+            "ELECTRICAE" => "Electricae",
+            "FONTICULUS" => "Fonticulua",
+            "SHRUBS" => "Frutexa",
+            "FUMEROLAS" => "Fumerola",
+            "FUNGOIDS" => "Fungoida",
+            "OSSEUS" => "Osseus",
+            "RECEPTA" => "Recepta",
+            "STRATUM" => "Stratum",
+            "TUBUS" => "Tubus",
+            "TUSSOCKS" => "Tussock",
+            "VENTS" => AmphoraPlantSubclass,
+            "SPHERE" => AnemoneSubclass,
+            "CONE" => BarkMoundsSubclass,
+            "BRANCAE" => "Brain Trees",
+            "GROUND_STRUCT_ICE" => "Crystalline Shards",
+            "TUBE" => "Sinuous Tubers",
+            "INGENSRADICES" => "Radicoida",
+            _ => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(
+                normalized.Replace('_', ' ').ToLowerInvariant()),
+        };
+    }
+
     public static int GetSampleDistanceMeters(string? genusName)
     {
         if (string.IsNullOrWhiteSpace(genusName))
@@ -202,47 +298,6 @@ public sealed class ExobiologyReferenceCatalog
             "OSSEUS" or "TUBUS" => 800,
             "ELECTRICAE" => 1_000,
             _ => 50,
-        };
-    }
-
-    public static string GetGenusDisplayName(string? genusName)
-    {
-        if (string.IsNullOrWhiteSpace(genusName))
-        {
-            return "Unknown genus";
-        }
-
-        var normalized = genusName
-            .Replace(CodexEntPrefix, string.Empty, StringComparison.Ordinal)
-            .Replace("_Genus_Name;", string.Empty, StringComparison.Ordinal)
-            .Replace(CodexNameSuffix, string.Empty, StringComparison.Ordinal)
-            .ToUpperInvariant();
-        return normalized switch
-        {
-            "ALEOIDS" => "Aleoida",
-            "BACTERIAL" => "Bacterium",
-            "CACTOID" => "Cactoida",
-            "CLYPEUS" => "Clypeus",
-            "CONCHAS" => "Concha",
-            "ELECTRICAE" => "Electricae",
-            "FONTICULUS" => "Fonticulua",
-            "SHRUBS" => "Frutexa",
-            "FUMEROLAS" => "Fumerola",
-            "FUNGOIDS" => "Fungoida",
-            "OSSEUS" => "Osseus",
-            "RECEPTA" => "Recepta",
-            "STRATUM" => "Stratum",
-            "TUBUS" => "Tubus",
-            "TUSSOCKS" => "Tussock",
-            "VENTS" => "Amphora Plant",
-            "SPHERE" => "Anemone",
-            "CONE" => "Bark Mounds",
-            "BRANCAE" => "Brain Tree",
-            "GROUND_STRUCT_ICE" => "Crystalline Shards",
-            "TUBE" => "Sinuous Tubers",
-            "INGENSRADICES" => "Radicoida",
-            _ => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(
-                normalized.Replace('_', ' ').ToLowerInvariant()),
         };
     }
 

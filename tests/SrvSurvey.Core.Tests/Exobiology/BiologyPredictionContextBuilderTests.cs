@@ -90,6 +90,50 @@ public sealed class BiologyPredictionContextBuilderTests
         Assert.True(inputs.Context.NebulaDistanceLy > 0);
     }
 
+    [Fact]
+    public void ResolvesKnownGenusFromRawLegacyIdentityWithoutLocalizedText()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""));
+        state.Apply(Parse(
+            """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"G","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""));
+        state.Apply(Parse(PlanetScan));
+        state.Apply(Parse(
+            """{"event":"FSSBodySignals","SystemAddress":42,"BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""));
+        state.Apply(Parse(
+            """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Brancae_Name;","Species":"$Codex_Ent_Seed_Name;","Variant":"$Codex_Ent_Seed_Name;"}"""));
+
+        var inputs = BiologyPredictionContextBuilder.Build(
+            state.CreateSnapshot(),
+            bodyId: 1);
+
+        Assert.NotNull(inputs);
+        Assert.Equal(["Brain Trees"], inputs.Knowledge.KnownGenera);
+        Assert.True(inputs.Knowledge.KnownSpeciesByGenus.ContainsKey(
+            "Brain Trees"));
+    }
+
+    [Fact]
+    public void ResolvesGenusOnlyLegacySignalToCriteriaDisplayName()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""));
+        state.Apply(Parse(
+            """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"G","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""));
+        state.Apply(Parse(PlanetScan));
+        state.Apply(Parse(
+            """{"event":"FSSBodySignals","SystemAddress":42,"BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Brancae_Name;","Genus_Localised":"Brain Tree"}]}"""));
+
+        var inputs = BiologyPredictionContextBuilder.Build(
+            state.CreateSnapshot(),
+            bodyId: 1);
+
+        Assert.NotNull(inputs);
+        Assert.Equal(["Brain Trees"], inputs.Knowledge.KnownGenera);
+    }
+
     [Theory]
     [InlineData("DAB", "D")]
     [InlineData("WN", "W")]

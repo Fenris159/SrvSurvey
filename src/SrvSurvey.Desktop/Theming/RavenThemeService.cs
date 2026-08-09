@@ -36,6 +36,9 @@ public sealed class RavenThemeService
                 "bio.predictionPotential",
             ["RavenOverlayBioGoldBrush"] = "bio.gold",
             ["RavenOverlayBioGoldDimBrush"] = "bio.goldDark",
+            ["RavenOverlayBioGalacticRegionBrush"] = "bio.galacticRegion",
+            ["RavenOverlayBioGalacticRegionPotentialBrush"] =
+                "bio.galacticRegionPotential",
             ["RavenOverlayBioUnknownBrush"] = "bio.unknown",
             ["RavenOverlayBioUnknownGlyphBrush"] = "bio.unknownGlyph",
             ["RavenOverlayBioHatchBrush"] = "bio.hatch",

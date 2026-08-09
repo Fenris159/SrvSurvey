@@ -70,7 +70,7 @@ public sealed class BiologyCodexViewModelTests : IDisposable
 
         survey.ApplyUpdate(
         [
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310206,"Name_Localised":"Aleoida Coronamus - Lime","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
+            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310206,"Name_Localised":"Aleoida Coronamus - Lime","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""),
         ],
         null);
         Assert.Equal(
@@ -117,8 +117,8 @@ public sealed class BiologyCodexViewModelTests : IDisposable
             Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
             Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
             Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Yellow","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2320101,"Name_Localised":"Bacterium Aurasus - Teal","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
+            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Yellow","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""),
+            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2320101,"Name_Localised":"Bacterium Aurasus - Teal","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1.1,"Longitude":2.1}"""),
         ],
         null);
 
@@ -152,8 +152,8 @@ public sealed class BiologyCodexViewModelTests : IDisposable
         [
             Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
             Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}]}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Yellow","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2320101,"Name_Localised":"Bacterium Aurasus - Teal","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
+            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Yellow","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""),
+            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2320101,"Name_Localised":"Bacterium Aurasus - Teal","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1.1,"Longitude":2.1}"""),
         ],
         null);
         long? selectedAtOpen = null;

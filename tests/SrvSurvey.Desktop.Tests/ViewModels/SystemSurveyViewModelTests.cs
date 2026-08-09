@@ -868,7 +868,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
                 Parse(BodyInformationScan),
                 Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1},{"Type":"$SAA_SignalType_Geological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
                 Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":100,"Name_Localised":"Silicate Vapour Fumarole","SubCategory":"$Codex_SubCategory_Geology_and_Anomalies;"}"""),
-                Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","IsNewEntry":true}"""),
+                Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2,"IsNewEntry":true}"""),
                 Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""),
                 Parse("""{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""),
             ],
@@ -885,14 +885,15 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Equal("Arcus", organism.SpeciesName);
         Assert.Equal("Green", organism.VariantName);
         Assert.Equal("7.25 M CR", organism.RewardText);
-        Assert.True(organism.IsGlobalRegionalFirst);
-        Assert.False(organism.IsRegionalFirst);
-        Assert.True(organism.IsHighlightedFirst);
+        Assert.False(organism.IsGlobalRegionalFirst);
+        Assert.True(organism.IsRegionalFirst);
+        Assert.False(organism.IsHighlightedFirst);
         Assert.True(organism.IsCurrentSample);
         Assert.False(organism.ShouldDim);
         var organismGroup = Assert.Single(biology.OrganismGroups);
         Assert.Equal("Aleoida:", organismGroup.GenusLabel);
-        Assert.True(organismGroup.IsGlobalRegionalFirst);
+        Assert.False(organismGroup.IsGlobalRegionalFirst);
+        Assert.True(organismGroup.IsRegionalFirst);
         Assert.Equal("Arcus", Assert.Single(organismGroup.Species).SpeciesName);
         Assert.Equal(
             "First-footfall value: 36.26 M CR",
@@ -909,6 +910,106 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void BiologySurveyMarksOnlyTheExactSameGenusSpeciesAsCurrent()
+    {
+        var viewModel = CreateViewModel();
+        var activeScan = new BioSampleSnapshot(
+            new SurfaceLocation(1, 2),
+            150,
+            "$Codex_Ent_Aleoids_Genus_Name;",
+            "$Codex_Ent_Aleoids_02_Name;",
+            "Aleoida Coronamus - Lime",
+            2310206,
+            "Test 1");
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+                Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""),
+                Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_02_Name;","Species_Localised":"Aleoida Coronamus","Variant":"$Codex_Ent_Aleoids_02_L_Name;","Variant_Localised":"Aleoida Coronamus - Lime"}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.Fss },
+            new ExobiologySnapshot(null, activeScan, null, 0, [], 0));
+
+        var organisms = Assert.IsType<BiologySurveyViewModel>(
+            viewModel.BiologySurvey).Organisms;
+        Assert.Equal(2, organisms.Count);
+        Assert.False(Assert.Single(
+            organisms,
+            organism => organism.SpeciesName == "Arcus").IsCurrentSample);
+        Assert.True(Assert.Single(
+            organisms,
+            organism => organism.SpeciesName == "Coronamus").IsCurrentSample);
+    }
+
+    [Fact]
+    public void BiologySurveyClearsExternalFirstCandidateAfterJournalConfirmation()
+    {
+        var reference = ExobiologyReferenceCatalog.LoadEmbedded()
+            .FindByDisplayName("Aleoida Coronamus - Lime");
+        Assert.NotNull(reference);
+        var globalRegionalCandidates = RegionalCodexCandidateCatalog.FromEntries(
+        [
+            new(
+                18,
+                "Inner Orion Spur",
+                reference.EntryId,
+                reference.DisplayName ?? "Aleoida Coronamus - Lime"),
+        ]);
+        var viewModel = CreateViewModel(globalRegionalCandidates);
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""),
+                Parse(PredictableAleoidaScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.Fss });
+        var previouslyDiscovered = new Dictionary<long, CommanderCodexFirst>
+        {
+            [reference.EntryId] = new(
+                DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+                99,
+                7),
+        };
+        viewModel.UpdateCommanderCodexContext(
+            new CommanderCodexData(
+                "fid",
+                "Cmdr Test",
+                0,
+                null,
+                previouslyDiscovered),
+            new CommanderCodexData(
+                "fid",
+                "Cmdr Test",
+                18,
+                "Inner Orion Spur",
+                previouslyDiscovered),
+            18);
+
+        var prediction = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        Assert.True(prediction.IsPrediction);
+        Assert.True(prediction.IsGlobalRegionalFirst);
+
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310206,"Name_Localised":"Aleoida Coronamus - Lime","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2,"IsNewEntry":false}"""),
+                Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_02_Name;","Species_Localised":"Aleoida Coronamus","Variant":"$Codex_Ent_Aleoids_02_L_Name;","Variant_Localised":"Aleoida Coronamus - Lime"}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.Fss });
+
+        var confirmed = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        Assert.False(confirmed.IsPrediction);
+        Assert.False(confirmed.IsGlobalRegionalFirst);
+        Assert.False(confirmed.IsCommanderFirst);
+        Assert.False(confirmed.IsRegionalFirst);
+        Assert.False(confirmed.IsHighlightedFirst);
+        Assert.False(Assert.Single(
+            viewModel.BiologySurvey.OrganismGroups).IsGlobalRegionalFirst);
+    }
+
+    [Fact]
     public void BiologySurveyInfersCommanderAndRegionalFirstsFromLedgers()
     {
         var viewModel = CreateViewModel();
@@ -917,7 +1018,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
                 Parse(BodyInformationScan),
                 Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
-                Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
+                Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""),
                 Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""),
             ],
             new EliteStatus { GuiFocus = GuiFocus.Fss });
@@ -1300,6 +1401,15 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.False(prediction.IsCommanderFirst);
         Assert.False(prediction.IsRegionalFirst);
         Assert.True(prediction.IsHighlightedFirst);
+
+        viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.SystemMap });
+        var candidateBand = Assert.Single(Assert.Single(
+            viewModel.BiologySurvey!.Bodies).RewardBands);
+        Assert.True(candidateBand.IsPrediction);
+        Assert.True(candidateBand.IsHighlighted);
+        Assert.True(candidateBand.IsGlobalRegionalFirst);
+
+        viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.Fss });
 
         viewModel.DisableBioPredictions = true;
 

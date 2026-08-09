@@ -34,6 +34,9 @@ public sealed class BiologyRewardBandControl : Control
     public static readonly StyledProperty<bool> IsHighlightedProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, bool>(
             nameof(IsHighlighted));
+    public static readonly StyledProperty<bool> IsGlobalRegionalFirstProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, bool>(
+            nameof(IsGlobalRegionalFirst));
     public static readonly StyledProperty<IBrush?> FilledBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(FilledBrush));
@@ -55,6 +58,12 @@ public sealed class BiologyRewardBandControl : Control
     public static readonly StyledProperty<IBrush?> DimmedHighlightBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(DimmedHighlightBrush));
+    public static readonly StyledProperty<IBrush?> GlobalRegionalBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(GlobalRegionalBrush));
+    public static readonly StyledProperty<IBrush?> GlobalRegionalPotentialBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(GlobalRegionalPotentialBrush));
     public static readonly StyledProperty<IBrush?> EdgeBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(EdgeBrush));
@@ -92,6 +101,7 @@ public sealed class BiologyRewardBandControl : Control
             BucketThreeMillionsProperty,
             IsPredictionProperty,
             IsHighlightedProperty,
+            IsGlobalRegionalFirstProperty,
             FilledBrushProperty,
             PotentialBrushProperty,
             DimmedFilledBrushProperty,
@@ -99,6 +109,8 @@ public sealed class BiologyRewardBandControl : Control
             PredictionPotentialBrushProperty,
             HighlightBrushProperty,
             DimmedHighlightBrushProperty,
+            GlobalRegionalBrushProperty,
+            GlobalRegionalPotentialBrushProperty,
             EdgeBrushProperty,
             PredictionBrushProperty,
             UnknownGlyphBrushProperty,
@@ -157,6 +169,12 @@ public sealed class BiologyRewardBandControl : Control
         set => SetValue(IsHighlightedProperty, value);
     }
 
+    public bool IsGlobalRegionalFirst
+    {
+        get => GetValue(IsGlobalRegionalFirstProperty);
+        set => SetValue(IsGlobalRegionalFirstProperty, value);
+    }
+
     public IBrush? FilledBrush
     {
         get => GetValue(FilledBrushProperty);
@@ -197,6 +215,18 @@ public sealed class BiologyRewardBandControl : Control
     {
         get => GetValue(DimmedHighlightBrushProperty);
         set => SetValue(DimmedHighlightBrushProperty, value);
+    }
+
+    public IBrush? GlobalRegionalBrush
+    {
+        get => GetValue(GlobalRegionalBrushProperty);
+        set => SetValue(GlobalRegionalBrushProperty, value);
+    }
+
+    public IBrush? GlobalRegionalPotentialBrush
+    {
+        get => GetValue(GlobalRegionalPotentialBrushProperty);
+        set => SetValue(GlobalRegionalPotentialBrushProperty, value);
     }
 
     public IBrush? EdgeBrush
@@ -257,9 +287,20 @@ public sealed class BiologyRewardBandControl : Control
                 BucketOneMillions,
                 BucketTwoMillions,
                 BucketThreeMillions));
-        var edge = state.IsUnknown
-            ? brushes.Unknown
-            : EdgeBrush ?? brushes.Filled;
+        IBrush edge;
+        if (state.IsUnknown)
+        {
+            edge = brushes.Unknown;
+        }
+        else if (IsGlobalRegionalFirst)
+        {
+            edge = brushes.Filled;
+        }
+        else
+        {
+            edge = EdgeBrush ?? brushes.Filled;
+        }
+
         var outer = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
         context.DrawRectangle(Brushes.Transparent, new Pen(edge, 1), outer, 2, 2);
 
@@ -297,6 +338,11 @@ public sealed class BiologyRewardBandControl : Control
 
     private IBrush ResolveFilledBrush()
     {
+        if (IsGlobalRegionalFirst)
+        {
+            return GlobalRegionalBrush ?? Brushes.White;
+        }
+
         if (IsHighlighted)
         {
             return IsDimmed
@@ -316,6 +362,11 @@ public sealed class BiologyRewardBandControl : Control
 
     private IBrush ResolvePotentialBrush()
     {
+        if (IsGlobalRegionalFirst)
+        {
+            return GlobalRegionalPotentialBrush ?? Brushes.Gray;
+        }
+
         if (IsHighlighted)
         {
             return DimmedHighlightBrush ?? Brushes.DarkGoldenrod;

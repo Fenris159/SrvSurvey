@@ -22,7 +22,7 @@ public sealed class SurfaceSurveyJournalTracker
             ["amp"] = "Amphora Plant",
             ["bac"] = "Bacterium",
             ["bar"] = "Bark Mounds",
-            ["bra"] = "Brain Tree",
+            ["bra"] = "Brain Trees",
             ["cac"] = "Cactoida",
             ["cly"] = "Clypeus",
             ["con"] = "Concha",
@@ -251,8 +251,7 @@ public sealed class SurfaceSurveyJournalTracker
         }
 
         return catalog.BiologyEntries
-            .Select(entry => ExobiologyReferenceCatalog.GetGenusName(
-                entry.SpeciesName))
+            .Select(ExobiologyReferenceCatalog.GetGenusName)
             .Distinct(StringComparer.Ordinal)
             .FirstOrDefault(genus => string.Equals(
                 ExobiologyReferenceCatalog.GetGenusDisplayName(genus),
@@ -403,14 +402,17 @@ public sealed class SurfaceSurveyJournalTracker
         }
 
         if (options.SkipAnalyzedCompositionScans
-            && options.AnalyzedSpecies?.Contains(reference.SpeciesName) == true)
+            && options.AnalyzedSpeciesByBodyId?.TryGetValue(
+                context.BodyId,
+                out var analyzedSpecies) == true
+            && analyzedSpecies.Contains(reference.SpeciesName))
         {
             return 0;
         }
 
         var result = await store.AddBookmarkAsync(
                 context,
-                ExobiologyReferenceCatalog.GetGenusName(reference.SpeciesName),
+                ExobiologyReferenceCatalog.GetGenusName(reference),
                 location,
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
@@ -733,7 +735,8 @@ public sealed record SurfaceSurveyTrackingOptions(
     bool AutoRemoveTrackerOnFinalSample,
     bool AutoTrackCompositionScans = true,
     bool SkipAnalyzedCompositionScans = true,
-    IReadOnlySet<string>? AnalyzedSpecies = null)
+    IReadOnlyDictionary<int, IReadOnlySet<string>>?
+        AnalyzedSpeciesByBodyId = null)
 {
     public static SurfaceSurveyTrackingOptions Default { get; } = new(
         AutoRemoveTrackerOnSampling: true,

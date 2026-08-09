@@ -13,6 +13,8 @@ public sealed class SystemScanState
         "$Codex_SubCategory_Geology_and_Anomalies;";
     private const string OrganicCodexCategory =
         "$Codex_SubCategory_Organic_Structures;";
+    private const string FixedLifeCloud = "$Fixed_Event_Life_Cloud;";
+    private const string FixedLifeRing = "$Fixed_Event_Life_Ring;";
     private const string BodyIdProperty = "BodyID";
     private const string BodyNameProperty = "BodyName";
     private static readonly Lazy<ExobiologyReferenceCatalog> DefaultBioCatalog =
@@ -475,25 +477,31 @@ public sealed class SystemScanState
             return;
         }
 
-        var reference = bioCatalog.FindByVariant(GetString(root, "Variant"))
-            ?? bioCatalog.FindBySpecies(GetString(root, "Species"));
+        var variant = GetString(root, "Variant");
+        var species = GetString(root, "Species");
+        var reference = bioCatalog.FindByVariant(variant)
+            ?? bioCatalog.FindBySpecies(species);
         var genus = GetString(root, "Genus")
             ?? (reference is null
                 ? null
-                : ExobiologyReferenceCatalog.GetGenusName(
-                    reference.SpeciesName));
+                : ExobiologyReferenceCatalog.GetGenusName(reference));
         if (string.IsNullOrWhiteSpace(genus))
         {
             return;
         }
 
-        var organism = body.GetOrCreateOrganism(genus);
+        var organism = body.GetOrCreateOrganism(
+            genus,
+            reference?.EntryId,
+            variant,
+            species);
+        organism.Genus = genus;
         organism.GenusLocalized = GetString(root, "Genus_Localised")
             ?? organism.GenusLocalized;
-        organism.Species = GetString(root, "Species") ?? organism.Species;
+        organism.Species = species ?? organism.Species;
         organism.SpeciesLocalized = GetString(root, "Species_Localised")
             ?? organism.SpeciesLocalized;
-        organism.Variant = GetString(root, "Variant") ?? organism.Variant;
+        organism.Variant = variant ?? organism.Variant;
         organism.VariantLocalized = GetString(root, "Variant_Localised")
             ?? organism.VariantLocalized;
         if (reference is not null)
@@ -531,15 +539,34 @@ public sealed class SystemScanState
         }
 
         if (category != OrganicCodexCategory
+            || GetString(root, "NearestDestination") is FixedLifeCloud
+                or FixedLifeRing
+            || GetDouble(root, "Latitude") is not { } latitude
+            || GetDouble(root, "Longitude") is not { } longitude
+            || latitude == 0
+            || longitude == 0
             || GetInt64(root, "EntryID") is not { } entryId
             || bioCatalog.FindByEntryId(entryId) is not { } reference)
         {
             return;
         }
 
-        var genus = ExobiologyReferenceCatalog.GetGenusName(
+        var genus = ExobiologyReferenceCatalog.GetGenusName(reference);
+        var organism = body.GetOrCreateOrganism(
+            genus,
+            reference.EntryId,
+            reference.VariantName,
             reference.SpeciesName);
-        var organism = body.GetOrCreateOrganism(genus);
+        organism.Genus = genus;
+        organism.GenusLocalized ??= body.Organisms
+            .FirstOrDefault(candidate => !ReferenceEquals(candidate, organism)
+                && string.Equals(
+                    candidate.Genus,
+                    genus,
+                    StringComparison.Ordinal)
+                && !string.IsNullOrWhiteSpace(candidate.GenusLocalized))
+            ?.GenusLocalized
+            ?? ExobiologyReferenceCatalog.GetGenusDisplayName(reference);
         organism.Species = reference.SpeciesName;
         organism.Variant = reference.VariantName;
         organism.VariantLocalized = GetString(root, "Name_Localised")
@@ -697,11 +724,13 @@ public sealed class SystemScanState
             return false;
         }
 
-        var existed = target.Organisms.TryGetValue(
+        var organism = target.GetOrCreateOrganism(
             sourceOrganism.Genus,
-            out var organism);
-        organism ??= target.GetOrCreateOrganism(sourceOrganism.Genus);
-        var changed = !existed;
+            sourceOrganism.EntryId,
+            sourceOrganism.Variant,
+            sourceOrganism.Species,
+            out var created);
+        var changed = created;
         changed |= SetIfMissing(
             ref organism.GenusLocalized,
             sourceOrganism.GenusLocalized);
@@ -1275,8 +1304,7 @@ public sealed class SystemScanState
 
         public IReadOnlyList<SystemBodyParentSnapshot> Parents = [];
 
-        public Dictionary<string, OrganismState> Organisms { get; } =
-            new(StringComparer.Ordinal);
+        public List<OrganismState> Organisms { get; } = [];
 
         public HashSet<string> AnalyzedGeologicalSignals { get; } =
             new(StringComparer.Ordinal);
@@ -1289,44 +1317,44 @@ public sealed class SystemScanState
             var scanValue = IsScanned
                 ? ExplorationValueCalculator.Calculate(
                     new ExplorationValueRequest
-    {
-        BodyClass = bodyClass,
-        IsTerraformable = IsTerraformable,
-        Mass = Mass,
-        IsFirstDiscoverer = !WasDiscovered,
-        IsMapped = false,
-        IsFirstMapped = !WasMapped,
-        IsOdyssey = isOdyssey,
-        WithEfficiencyBonus = false
-    })
+                    {
+                        BodyClass = bodyClass,
+                        IsTerraformable = IsTerraformable,
+                        Mass = Mass,
+                        IsFirstDiscoverer = !WasDiscovered,
+                        IsMapped = false,
+                        IsFirstMapped = !WasMapped,
+                        IsOdyssey = isOdyssey,
+                        WithEfficiencyBonus = false
+                    })
                 : 0;
             var mappedValue = IsScanned && Kind != SystemBodyKind.Star
                 ? ExplorationValueCalculator.Calculate(
                     new ExplorationValueRequest
-    {
-        BodyClass = bodyClass,
-        IsTerraformable = IsTerraformable,
-        Mass = Mass,
-        IsFirstDiscoverer = !WasDiscovered,
-        IsMapped = true,
-        IsFirstMapped = !WasMapped,
-        IsOdyssey = isOdyssey,
-        WithEfficiencyBonus = true
-    })
+                    {
+                        BodyClass = bodyClass,
+                        IsTerraformable = IsTerraformable,
+                        Mass = Mass,
+                        IsFirstDiscoverer = !WasDiscovered,
+                        IsMapped = true,
+                        IsFirstMapped = !WasMapped,
+                        IsOdyssey = isOdyssey,
+                        WithEfficiencyBonus = true
+                    })
                 : scanValue;
             var currentValue = IsDssComplete
                 ? ExplorationValueCalculator.Calculate(
                     new ExplorationValueRequest
-    {
-        BodyClass = bodyClass,
-        IsTerraformable = IsTerraformable,
-        Mass = Mass,
-        IsFirstDiscoverer = !WasDiscovered,
-        IsMapped = true,
-        IsFirstMapped = !WasMapped,
-        IsOdyssey = isOdyssey,
-        WithEfficiencyBonus = DssEfficiencyBonus
-    })
+                    {
+                        BodyClass = bodyClass,
+                        IsTerraformable = IsTerraformable,
+                        Mass = Mass,
+                        IsFirstDiscoverer = !WasDiscovered,
+                        IsMapped = true,
+                        IsFirstMapped = !WasMapped,
+                        IsOdyssey = isOdyssey,
+                        WithEfficiencyBonus = DssEfficiencyBonus
+                    })
                 : scanValue;
 
             return new SystemScanBodySnapshot(
@@ -1360,7 +1388,7 @@ public sealed class SystemScanState
                 BiologicalSignalCount,
                 Math.Min(
                     BiologicalSignalCount,
-                    Organisms.Values.Count(organism => organism.IsAnalyzed)),
+                    Organisms.Count(organism => organism.IsAnalyzed)),
                 GeologicalSignalCount,
                 Math.Min(GeologicalSignalCount, AnalyzedGeologicalSignals.Count),
                 scanValue,
@@ -1371,8 +1399,11 @@ public sealed class SystemScanState
                 new Dictionary<string, double>(Materials),
                 Rings.ToArray(),
                 Parents.ToArray(),
-                Organisms.Values
+                Organisms
                     .OrderBy(organism => organism.Genus, StringComparer.Ordinal)
+                    .ThenBy(organism => organism.EntryId ?? long.MaxValue)
+                    .ThenBy(organism => organism.Variant, StringComparer.Ordinal)
+                    .ThenBy(organism => organism.Species, StringComparer.Ordinal)
                     .Select(organism => organism.CreateSnapshot())
                     .ToArray(),
                 AnalyzedGeologicalSignals
@@ -1382,13 +1413,62 @@ public sealed class SystemScanState
 
         public OrganismState GetOrCreateOrganism(string genus)
         {
-            if (!Organisms.TryGetValue(genus, out var organism))
+            return GetOrCreateOrganism(
+                genus,
+                entryId: null,
+                variant: null,
+                species: null,
+                out _);
+        }
+
+        public OrganismState GetOrCreateOrganism(
+            string genus,
+            long? entryId,
+            string? variant,
+            string? species)
+        {
+            return GetOrCreateOrganism(
+                genus,
+                entryId,
+                variant,
+                species,
+                out _);
+        }
+
+        public OrganismState GetOrCreateOrganism(
+            string genus,
+            long? entryId,
+            string? variant,
+            string? species,
+            out bool created)
+        {
+            var organism = FindOrganism(genus, entryId, variant, species);
+            if (organism is not null)
             {
-                organism = new OrganismState(genus);
-                Organisms.Add(genus, organism);
+                created = false;
+                return organism;
             }
 
+            organism = new OrganismState(genus);
+            Organisms.Add(organism);
+            created = true;
             return organism;
+        }
+
+        private OrganismState? FindOrganism(
+            string genus,
+            long? entryId,
+            string? variant,
+            string? species)
+        {
+            return OrganismIdentityMatcher.FindBestMatch(
+                Organisms,
+                new OrganismIdentity(genus, entryId, variant, species),
+                organism => new OrganismIdentity(
+                    organism.Genus,
+                    organism.EntryId,
+                    organism.Variant,
+                    organism.Species));
         }
 
         private static string GetShortName(string bodyName, string? systemName)
@@ -1403,7 +1483,7 @@ public sealed class SystemScanState
 
     private sealed class OrganismState(string genus)
     {
-        public string Genus { get; } = genus;
+        public string Genus { get; set; } = genus;
 
         public string? GenusLocalized;
 

@@ -198,6 +198,70 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
     }
 
     [Fact]
+    public async Task MigrationKeepsMultipleSpeciesFromTheSameGenus()
+    {
+        var catalog = ExobiologyReferenceCatalog.LoadEmbedded();
+        var references = catalog.BiologyEntries
+            .GroupBy(reference =>
+                ExobiologyReferenceCatalog.GetGenusName(reference.SpeciesName))
+            .Select(group => group
+                .GroupBy(reference => reference.SpeciesName, StringComparer.Ordinal)
+                .Select(species => species.First())
+                .Take(2)
+                .ToArray())
+            .First(group => group.Length == 2);
+        var genus = ExobiologyReferenceCatalog.GetGenusName(
+            references[0].SpeciesName);
+        Directory.CreateDirectory(directory);
+        await File.WriteAllTextAsync(
+            Path.Combine(directory, "F123-live.json"),
+            """{"fid":"F123","commander":"Drew","organicRewards":0,"scannedBioEntryIds":[]}""");
+        var organicDirectory = Path.Combine(directory, "organic", "F123");
+        Directory.CreateDirectory(organicDirectory);
+        var organisms = new JsonObject();
+        for (var index = 0; index < references.Length; index++)
+        {
+            var reference = references[index];
+            organisms[$"organism-{index}"] = new JsonObject
+            {
+                ["genus"] = genus,
+                ["species"] = reference.SpeciesName,
+                ["variant"] = reference.VariantName,
+            };
+        }
+
+        await File.WriteAllTextAsync(
+            Path.Combine(organicDirectory, "Test 1.json"),
+            new JsonObject
+            {
+                ["systemName"] = "Test",
+                ["bodyName"] = "Test 1",
+                ["commander"] = "Drew",
+                ["bodyId"] = 1,
+                ["systemAddress"] = 42,
+                ["organisms"] = organisms,
+            }.ToJsonString());
+
+        var result = await new LegacyOrganicProfileMigrator(directory, catalog)
+            .MigrateAsync();
+
+        Assert.Empty(result.Errors);
+        Assert.Equal(2, result.MigratedOrganismCount);
+        var systemPath = Assert.Single(Directory.GetFiles(
+            Path.Combine(directory, "systems", "F123"),
+            "*.json"));
+        var body = Assert.Single(JsonNode.Parse(
+            await File.ReadAllTextAsync(systemPath))!["bodies"]!.AsArray())!;
+        var migrated = body["organisms"]!.AsArray();
+        Assert.Equal(2, migrated.Count);
+        Assert.Equal(
+            references.Select(reference => reference.VariantName)
+                .OrderBy(value => value, StringComparer.Ordinal),
+            migrated.Select(organism => organism!["variant"]!.GetValue<string>())
+                .OrderBy(value => value, StringComparer.Ordinal));
+    }
+
+    [Fact]
     public async Task CorruptClaimShapesAndOverflowArePreservedWithoutWrites()
     {
         Directory.CreateDirectory(directory);

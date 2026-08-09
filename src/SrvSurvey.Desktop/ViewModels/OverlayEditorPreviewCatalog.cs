@@ -192,7 +192,11 @@ internal static class OverlayEditorPreviewCatalog
                 BiologySignalRewardBandViewModel.Known(
                     1_000_000, false, false, thresholds),
                 BiologySignalRewardBandViewModel.Predicted(
-                    1_000_000, 9_400_000, false, thresholds),
+                    1_000_000,
+                    9_400_000,
+                    true,
+                    thresholds,
+                    isGlobalRegionalFirst: true),
                 BiologySignalRewardBandViewModel.Known(
                     7_600_000, true, false, thresholds),
             ],
@@ -329,7 +333,11 @@ internal static class OverlayEditorPreviewCatalog
                         BiologySignalRewardBandViewModel.Known(
                             5_200_000, false, false, thresholds),
                         BiologySignalRewardBandViewModel.Predicted(
-                            1_000_000, 9_400_000, false, thresholds),
+                            1_000_000,
+                            9_400_000,
+                            true,
+                            thresholds,
+                            isGlobalRegionalFirst: true),
                         BiologySignalRewardBandViewModel.Known(
                             13_000_000, true, false, thresholds),
                     ],
@@ -443,7 +451,7 @@ internal static class OverlayEditorPreviewCatalog
                     BiologyOrganismPreviewTraits.Analyzed
                         | BiologyOrganismPreviewTraits.Dimmed),
                 new("Stratum", "Tectonicas", "Emerald", 95_190_000,
-                    BiologyOrganismPreviewTraits.GlobalRegionalFirst
+                    BiologyOrganismPreviewTraits.RegionalFirst
                         | BiologyOrganismPreviewTraits.HighlightedFirst)),
             RewardSummary = "Known reward: 121.82 M CR",
             FirstFootfallRewardSummary = "First-footfall total: 609.10 M CR",

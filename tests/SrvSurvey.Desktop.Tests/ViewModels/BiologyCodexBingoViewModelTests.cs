@@ -49,6 +49,8 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
             store,
             catalog,
             journalDirectory);
+        Assert.Null(viewModel.SelectedNode);
+        Assert.Equal(0, viewModel.SelectedCompletionPercent);
         string? copied = null;
         var launched = new List<Uri>();
         CodexBingoNearestRequest? nearest = null;
@@ -84,6 +86,7 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
             viewModel.RootNodes[0].Find(
                 "species:$Codex_Ent_Aleoids_01_Name;"));
         viewModel.SelectedNode = species;
+        Assert.Equal(species.CompletionPercent, viewModel.SelectedCompletionPercent);
 
         await viewModel.FindMissingVariantsAsync();
 

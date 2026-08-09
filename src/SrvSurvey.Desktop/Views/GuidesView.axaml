@@ -147,6 +147,8 @@
                                                           PipPredictionBrush="{DynamicResource RavenOverlayBioPredictionBrush}"
                                                           PipPredictionPotentialBrush="{DynamicResource RavenOverlayBioPredictionPotentialBrush}"
                                                           PipHighlightBrush="{DynamicResource RavenOverlayBioGoldBrush}"
+                                                          PipGlobalRegionalBrush="{DynamicResource RavenOverlayBioGalacticRegionBrush}"
+                                                          PipGlobalRegionalPotentialBrush="{DynamicResource RavenOverlayBioGalacticRegionPotentialBrush}"
                                                           PipUnknownBrush="{DynamicResource RavenOverlayBioUnknownBrush}"
                                                           PipUnknownGlyphBrush="{DynamicResource RavenOverlayBioUnknownGlyphBrush}"
                                                           PipHatchBrush="{DynamicResource RavenOverlayBioHatchBrush}"

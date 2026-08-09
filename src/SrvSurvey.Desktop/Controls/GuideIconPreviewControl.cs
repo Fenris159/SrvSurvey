@@ -58,6 +58,12 @@ public sealed class GuideIconPreviewControl : Control
     public static readonly StyledProperty<IBrush?> PipHighlightBrushProperty =
         AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
             nameof(PipHighlightBrush));
+    public static readonly StyledProperty<IBrush?> PipGlobalRegionalBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipGlobalRegionalBrush));
+    public static readonly StyledProperty<IBrush?> PipGlobalRegionalPotentialBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipGlobalRegionalPotentialBrush));
     public static readonly StyledProperty<IBrush?> PipUnknownBrushProperty =
         AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
             nameof(PipUnknownBrush));
@@ -90,6 +96,8 @@ public sealed class GuideIconPreviewControl : Control
             PipPredictionBrushProperty,
             PipPredictionPotentialBrushProperty,
             PipHighlightBrushProperty,
+            PipGlobalRegionalBrushProperty,
+            PipGlobalRegionalPotentialBrushProperty,
             PipUnknownBrushProperty,
             PipUnknownGlyphBrushProperty,
             PipHatchBrushProperty,
@@ -192,6 +200,18 @@ public sealed class GuideIconPreviewControl : Control
         set => SetValue(PipHighlightBrushProperty, value);
     }
 
+    public IBrush? PipGlobalRegionalBrush
+    {
+        get => GetValue(PipGlobalRegionalBrushProperty);
+        set => SetValue(PipGlobalRegionalBrushProperty, value);
+    }
+
+    public IBrush? PipGlobalRegionalPotentialBrush
+    {
+        get => GetValue(PipGlobalRegionalPotentialBrushProperty);
+        set => SetValue(PipGlobalRegionalPotentialBrushProperty, value);
+    }
+
     public IBrush? PipUnknownBrush
     {
         get => GetValue(PipUnknownBrushProperty);
@@ -239,6 +259,9 @@ public sealed class GuideIconPreviewControl : Control
         var pipPredictionPotential =
             PipPredictionPotentialBrush ?? muted;
         var pipHighlight = PipHighlightBrush ?? gold;
+        var pipGlobalRegional = PipGlobalRegionalBrush ?? Brushes.White;
+        var pipGlobalRegionalPotential =
+            PipGlobalRegionalPotentialBrush ?? Brushes.Gray;
         var pipUnknown = PipUnknownBrush ?? muted;
         var pipUnknownGlyph = PipUnknownGlyphBrush ?? Brushes.LightGray;
         var pipHatch = PipHatchBrush ?? muted;
@@ -297,6 +320,16 @@ public sealed class GuideIconPreviewControl : Control
                     pipEmpty,
                     pipHatch,
                     isPrediction: false);
+                break;
+            case GuideIconKind.BiologyRewardGlobalRegional:
+                DrawRewardPips(
+                    context,
+                    center,
+                    pipGlobalRegional,
+                    pipGlobalRegionalPotential,
+                    pipEmpty,
+                    pipHatch,
+                    isPrediction: true);
                 break;
             case GuideIconKind.BiologyRewardDimmed:
                 DrawRewardPips(

@@ -92,7 +92,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             options.ExobiologyCatalog
                 ?? ExobiologyReferenceCatalog.LoadEmbedded(),
             this.commanderNameProvider,
-            platform.Capabilities);
+            platform.Capabilities,
+            () => surfaceSurvey.CurrentSurface);
         survey.PropertyChanged += OnSurveyPropertyChanged;
         surfaceSurvey.PropertyChanged += OnSurfaceSurveyPropertyChanged;
         priorScansViewModel.PropertyChanged +=

@@ -47,6 +47,8 @@ public sealed class RavenThemeServiceTests : IDisposable
         colors["orangeDark"] = Color.FromArgb(255, 65, 43, 21);
         colors["bio.confirmed"] = Color.FromArgb(255, 23, 45, 67);
         colors["bio.gold"] = Color.FromArgb(255, 78, 90, 12);
+        colors["bio.galacticRegion"] = Color.FromArgb(255, 240, 241, 242);
+        colors["bio.galacticRegionPotential"] = Color.FromArgb(255, 91, 92, 93);
         colors["bio.unknownGlyph"] = Color.FromArgb(255, 98, 76, 54);
         colors["guardian.primary"] = Color.FromArgb(255, 21, 42, 63);
         var service = new RavenThemeService(
@@ -81,6 +83,14 @@ public sealed class RavenThemeServiceTests : IDisposable
             Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenOverlayBioConfirmedBrush"]).Color);
         Assert.Equal(
+            Color.FromArgb(255, 240, 241, 242),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenOverlayBioGalacticRegionBrush"]).Color);
+        Assert.Equal(
+            Color.FromArgb(255, 91, 92, 93),
+            Assert.IsType<SolidColorBrush>(application.Resources[
+                "RavenOverlayBioGalacticRegionPotentialBrush"]).Color);
+        Assert.Equal(
             Color.FromArgb(255, 98, 76, 54),
             Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenOverlayBioUnknownGlyphBrush"]).Color);
@@ -106,6 +116,8 @@ public sealed class RavenThemeServiceTests : IDisposable
                      "RavenOverlayBioPotentialBrush",
                      "RavenOverlayBioPredictionPotentialBrush",
                      "RavenOverlayBioGoldDimBrush",
+                     "RavenOverlayBioGalacticRegionBrush",
+                     "RavenOverlayBioGalacticRegionPotentialBrush",
                      "RavenOverlayBioUnknownBrush",
                      "RavenOverlayBioUnknownGlyphBrush",
                      "RavenOverlayBioHatchBrush",

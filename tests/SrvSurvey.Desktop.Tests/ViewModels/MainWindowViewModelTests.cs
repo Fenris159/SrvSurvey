@@ -187,7 +187,7 @@ public sealed class MainWindowViewModelTests
                 """
                 {"timestamp":"2026-07-25T12:00:00Z","event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0],"Population":0}
                 {"timestamp":"2026-07-25T12:00:01Z","event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}
-                {"timestamp":"2026-07-25T12:00:02Z","event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;"}
+                {"timestamp":"2026-07-25T12:00:02Z","event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}
 
                 """);
             var paths = new AppDataPaths(

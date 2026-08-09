@@ -50,6 +50,8 @@ public static class OverlayThemeResources
             "BioPredictionPotential",
             "BioGold",
             "BioGoldDim",
+            "BioGalacticRegion",
+            "BioGalacticRegionPotential",
             "BioUnknown",
             "BioUnknownGlyph",
             "BioHatch",
