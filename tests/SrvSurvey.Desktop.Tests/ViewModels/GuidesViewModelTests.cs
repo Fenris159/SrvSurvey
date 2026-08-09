@@ -86,6 +86,10 @@ public sealed class GuidesViewModelTests
             Icon(GuideIconKind.BiologyRewardPredicted).Meaning,
             StringComparison.OrdinalIgnoreCase);
         Assert.Contains(
+            "dotted group frame",
+            Icon(GuideIconKind.BiologyRewardPredicted).Meaning,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
             "current Commander",
             Icon(GuideIconKind.BiologyRewardHighlighted).Meaning,
             StringComparison.OrdinalIgnoreCase);

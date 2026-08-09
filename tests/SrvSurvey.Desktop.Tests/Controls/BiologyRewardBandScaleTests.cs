@@ -1,4 +1,6 @@
 using Avalonia.Media;
+using Avalonia.Controls;
+using Avalonia;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Controls;
 
@@ -102,5 +104,27 @@ public sealed class BiologyRewardBandScaleTests
         Assert.All(
             state.Segments,
             segment => Assert.Equal(BiologyRewardBandSegment.Filled, segment));
+    }
+
+    [Fact]
+    public void SignalGroupFrameAddsInsetsWithoutConstrainingItsChild()
+    {
+        var child = new Border
+        {
+            Width = 30,
+            Height = 28,
+        };
+        var control = new BiologyRewardBandGroupControl
+        {
+            Child = child,
+            FrameBrush = Brushes.Orange,
+        };
+
+        control.Measure(Size.Infinity);
+        control.Arrange(new Rect(control.DesiredSize));
+
+        Assert.Equal(new Size(34, 30), control.DesiredSize);
+        Assert.Equal(new Rect(2, 1, 30, 28), child.Bounds);
+        Assert.Same(Brushes.Orange, control.FrameBrush);
     }
 }

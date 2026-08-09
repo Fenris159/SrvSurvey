@@ -1220,6 +1220,17 @@ public sealed class BiologyBodyRowViewModel
     public IReadOnlyList<BiologySignalRewardBandViewModel> RewardBands { get; init; } =
         [];
 
+    public IEnumerable<BiologySignalRewardBandViewModel> SignalRewardBands =>
+        RewardBands.Take(Math.Max(0, SignalCount));
+
+    public IEnumerable<BiologySignalRewardBandViewModel> AlternativeRewardBands =>
+        RewardBands.Skip(Math.Max(0, SignalCount));
+
+    public bool HasAlternativeRewardBands => RewardBands.Count > SignalCount;
+
+    public bool IsRewardBandGroupHighlighted => IsDestination
+        || (AnalyzedSignalCount > 0 && AnalyzedSignalCount < SignalCount);
+
     public double RewardBucketOneMillions { get; init; } = 3;
 
     public double RewardBucketTwoMillions { get; init; } = 7;

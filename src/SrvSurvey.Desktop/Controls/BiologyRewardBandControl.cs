@@ -302,7 +302,18 @@ public sealed class BiologyRewardBandControl : Control
         }
 
         var outer = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
-        context.DrawRectangle(Brushes.Transparent, new Pen(edge, 1), outer, 2, 2);
+        var edgePen = new Pen(edge, 1, DashStyle.Dot);
+        using (context.PushOpacity(96d / 255d))
+        {
+            context.DrawRectangle(Brushes.Transparent, edgePen, outer, 2, 2);
+            if (IsGlobalRegionalFirst)
+            {
+                // Legacy regional/galactic-first PIPs reinforce the translucent
+                // white edge twice so it remains identifiable over the hatch.
+                context.DrawRectangle(Brushes.Transparent, edgePen, outer, 2, 2);
+                context.DrawRectangle(Brushes.Transparent, edgePen, outer, 2, 2);
+            }
+        }
 
         if (state.IsUnknown)
         {

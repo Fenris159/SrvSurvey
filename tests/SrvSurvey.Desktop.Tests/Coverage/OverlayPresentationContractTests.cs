@@ -479,7 +479,12 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("SharedSizeGroup=\"SystemBiologyPips\"", biologySurvey);
         Assert.Contains("SharedSizeGroup=\"SystemBiologyReward\"", biologySurvey);
         Assert.Contains("<ItemsControl HorizontalAlignment=\"Left\"", biologySurvey);
-        Assert.Contains("ItemsSource=\"{Binding RewardBands}\"", biologySurvey);
+        Assert.Contains("<controls:BiologyRewardBandGroupControl", biologySurvey);
+        Assert.Contains("ItemsSource=\"{Binding SignalRewardBands}\"", biologySurvey);
+        Assert.Contains("ItemsSource=\"{Binding AlternativeRewardBands}\"", biologySurvey);
+        Assert.Contains(
+            "Classes.highlight=\"{Binding IsRewardBandGroupHighlighted}\"",
+            biologySurvey);
     }
 
     [Fact]

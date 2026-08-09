@@ -99,6 +99,7 @@ public sealed class LegacyOverlayThemeStore
                     "The legacy overlay theme is not a JSON object.");
             var colors = new Dictionary<string, Color>(StringComparer.Ordinal);
             ParseObject(root, string.Empty, colors);
+            _ = OverlayThemePresetCatalog.TryUpgradeLegacyBiologyPalette(colors);
             foreach (var fallback in DefaultColors)
             {
                 colors.TryAdd(fallback.Key, fallback.Value);

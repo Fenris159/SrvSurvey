@@ -6,6 +6,30 @@ public static class OverlayThemePresetCatalog
 {
     public const string DefaultName = "Default";
 
+    private static readonly string[] PresetIdentityKeys =
+    [
+        "orange",
+        "orangeDark",
+        "cyan",
+        "cyanDark",
+        "yellow",
+        "white",
+        "menuGold",
+        "grey",
+    ];
+
+    private static readonly string[] ExpandedBiologyKeys =
+    [
+        "bio.confirmed",
+        "bio.confirmedDim",
+        "bio.potential",
+        "bio.predictionPotential",
+        "bio.galacticRegion",
+        "bio.galacticRegionPotential",
+        "bio.unknownGlyph",
+        "bio.empty",
+    ];
+
     public static IReadOnlyList<OverlayThemePreset> Presets { get; } =
     [
         new(DefaultName, LegacyOverlayThemeStore.CreateDefault().Colors),
@@ -62,6 +86,40 @@ public static class OverlayThemePresetCatalog
             && candidate == entry.Value));
     }
 
+    internal static bool TryUpgradeLegacyBiologyPalette(
+        Dictionary<string, Color> colors)
+    {
+        ArgumentNullException.ThrowIfNull(colors);
+        if (ExpandedBiologyKeys.Any(colors.ContainsKey))
+        {
+            return false;
+        }
+
+        var preset = Presets.FirstOrDefault(candidate => PresetIdentityKeys.All(key =>
+            colors.TryGetValue(key, out var color)
+            && candidate.Colors[key] == color));
+        if (preset is null)
+        {
+            return false;
+        }
+
+        var legacyBiology = CreateLegacyBiologyPalette(preset);
+        if (legacyBiology.Any(entry =>
+                !colors.TryGetValue(entry.Key, out var color)
+                || color != entry.Value))
+        {
+            return false;
+        }
+
+        foreach (var entry in preset.Colors.Where(entry =>
+                     entry.Key.StartsWith("bio.", StringComparison.Ordinal)))
+        {
+            colors[entry.Key] = entry.Value;
+        }
+
+        return true;
+    }
+
     private static OverlayThemePreset CreateExpandedPreset(
         string name,
         string headerPrimary,
@@ -93,6 +151,34 @@ public static class OverlayThemePresetCatalog
         ApplySettlements(colors, palette);
         ApplyGuardian(colors, palette);
         return new OverlayThemePreset(name, colors);
+    }
+
+    private static IReadOnlyDictionary<string, Color> CreateLegacyBiologyPalette(
+        OverlayThemePreset preset)
+    {
+        if (string.Equals(preset.Name, DefaultName, StringComparison.Ordinal))
+        {
+            return new Dictionary<string, Color>(StringComparer.Ordinal)
+            {
+                ["bio.gold"] = Color.Parse("#FFD700"),
+                ["bio.goldDark"] = Color.Parse("#785F00"),
+                ["bio.unknown"] = Color.Parse("#696969"),
+                ["bio.hatch"] = Color.Parse("#404040F2"),
+                ["bio.white"] = Color.Parse("#FFFFFF"),
+                ["bio.prediction"] = Color.Parse("#2F4F4F"),
+            };
+        }
+
+        var surface = Scale(preset.Colors["orange"], 0.10);
+        return new Dictionary<string, Color>(StringComparer.Ordinal)
+        {
+            ["bio.gold"] = preset.Colors["yellow"],
+            ["bio.goldDark"] = Scale(preset.Colors["yellow"], 0.42),
+            ["bio.unknown"] = preset.Colors["grey"],
+            ["bio.hatch"] = WithAlpha(surface, 242),
+            ["bio.white"] = preset.Colors["white"],
+            ["bio.prediction"] = Scale(preset.Colors["cyan"], 0.32),
+        };
     }
 
     private static void ApplyGeneral(

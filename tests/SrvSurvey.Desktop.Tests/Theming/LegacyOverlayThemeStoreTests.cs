@@ -1,5 +1,6 @@
 using Avalonia.Media;
 using SrvSurvey.Desktop.Theming;
+using System.Text.Json;
 
 namespace SrvSurvey.Desktop.Tests.Theming;
 
@@ -154,6 +155,64 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         Assert.NotNull(result.BackupPath);
         Assert.True(File.Exists(result.BackupPath));
         Assert.Equal("{\"orange\":[1,2,3]}", File.ReadAllText(result.BackupPath!));
+    }
+
+    [Fact]
+    public void LegacyCeruleanGoldBiologyPaletteIsUpgradedInMemory()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "theme.json");
+        File.WriteAllText(path, JsonSerializer.Serialize(
+            CreateLegacyCeruleanGoldColors()));
+
+        var theme = new LegacyOverlayThemeStore(path).Load();
+
+        Assert.True(OverlayThemePresetCatalog.TryGet(
+            "Cerulean Gold",
+            out var currentPreset));
+        Assert.Equal(
+            currentPreset.Colors["bio.prediction"],
+            theme.GetColor("bio.prediction"));
+        Assert.NotEqual(
+            Color.Parse("#4D4F51"),
+            theme.GetColor("bio.prediction"));
+        Assert.Equal(
+            "Cerulean Gold",
+            OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name);
+    }
+
+    [Fact]
+    public void ExplicitExpandedBiologyPaletteIsNotMigrated()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "theme.json");
+        var colors = CreateLegacyCeruleanGoldColors();
+        colors["bio.confirmed"] = "#010203";
+        File.WriteAllText(path, JsonSerializer.Serialize(colors));
+
+        var theme = new LegacyOverlayThemeStore(path).Load();
+
+        Assert.Equal(Color.Parse("#4D4F51"), theme.GetColor("bio.prediction"));
+        Assert.Equal(Color.Parse("#010203"), theme.GetColor("bio.confirmed"));
+    }
+
+    private static Dictionary<string, string> CreateLegacyCeruleanGoldColors()
+    {
+        var preset = OverlayThemePresetCatalog.Presets.Single(candidate =>
+            candidate.Name == "Cerulean Gold");
+        var colors = preset.Colors
+            .Where(entry => !entry.Key.StartsWith("bio.", StringComparison.Ordinal))
+            .ToDictionary(
+                entry => entry.Key,
+                entry => LegacyOverlayThemeStore.FormatHtmlColor(entry.Value),
+                StringComparer.Ordinal);
+        colors["bio.gold"] = "#FFCC33";
+        colors["bio.goldDark"] = "#6B5615";
+        colors["bio.unknown"] = "#70808C";
+        colors["bio.hatch"] = "#061017F2";
+        colors["bio.white"] = "#C8E4FA";
+        colors["bio.prediction"] = "#4D4F51";
+        return colors;
     }
 
     public void Dispose()
