@@ -24,10 +24,19 @@ public static class OverlayThemePresetCatalog
         "bio.confirmedDim",
         "bio.potential",
         "bio.predictionPotential",
+        "bio.goldFill",
+        "bio.goldDarkFill",
         "bio.galacticRegion",
         "bio.galacticRegionPotential",
         "bio.unknownGlyph",
         "bio.empty",
+        "bio.confirmedEdge",
+        "bio.confirmedDimEdge",
+        "bio.predictionEdge",
+        "bio.goldEdge",
+        "bio.goldDarkEdge",
+        "bio.galacticRegionEdge",
+        "bio.unknownEdge",
     ];
 
     public static IReadOnlyList<OverlayThemePreset> Presets { get; } =
@@ -120,6 +129,32 @@ public static class OverlayThemePresetCatalog
         return true;
     }
 
+    internal static bool AddMissingExpandedBiologyColors(
+        Dictionary<string, Color> colors)
+    {
+        ArgumentNullException.ThrowIfNull(colors);
+        var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
+        var preset = Presets.FirstOrDefault(candidate => PresetIdentityKeys.All(key =>
+            colors.TryGetValue(key, out var color)
+            && candidate.Colors[key] == color));
+        var changed = false;
+        foreach (var fallback in defaults.Where(entry =>
+                     entry.Key.StartsWith("bio.", StringComparison.Ordinal)))
+        {
+            if (colors.ContainsKey(fallback.Key))
+            {
+                continue;
+            }
+
+            colors[fallback.Key] = preset is not null
+                ? preset.Colors[fallback.Key]
+                : DeriveMissingBiologyColor(fallback.Key, colors, fallback.Value);
+            changed = true;
+        }
+
+        return changed;
+    }
+
     private static OverlayThemePreset CreateExpandedPreset(
         string name,
         string headerPrimary,
@@ -163,7 +198,7 @@ public static class OverlayThemePresetCatalog
                 ["bio.gold"] = Color.Parse("#FFD700"),
                 ["bio.goldDark"] = Color.Parse("#785F00"),
                 ["bio.unknown"] = Color.Parse("#696969"),
-                ["bio.hatch"] = Color.Parse("#404040F2"),
+                ["bio.hatch"] = Color.FromArgb(242, 64, 64, 64),
                 ["bio.white"] = Color.Parse("#FFFFFF"),
                 ["bio.prediction"] = Color.Parse("#2F4F4F"),
             };
@@ -200,20 +235,67 @@ public static class OverlayThemePresetCatalog
         ExpandedPalette palette)
     {
         var prediction = Blend(palette.Primary, palette.Secondary, 0.65);
+        var predictionDark = Scale(prediction, 0.45);
+        var goldFill = Scale(palette.Value, 0.68);
+        var goldDarkFill = Scale(goldFill, 0.34);
         colors["bio.confirmed"] = palette.Primary;
         colors["bio.confirmedDim"] = palette.PrimaryDark;
-        colors["bio.potential"] = Scale(palette.Primary, 0.30);
+        colors["bio.potential"] = WithAlpha(palette.PrimaryDark, 140);
         colors["bio.prediction"] = prediction;
-        colors["bio.predictionPotential"] = Scale(prediction, 0.45);
+        colors["bio.predictionPotential"] = WithAlpha(predictionDark, 180);
         colors["bio.gold"] = palette.Value;
         colors["bio.goldDark"] = Scale(palette.Value, 0.42);
+        colors["bio.goldFill"] = goldFill;
+        colors["bio.goldDarkFill"] = goldDarkFill;
         colors["bio.galacticRegion"] = palette.Text;
-        colors["bio.galacticRegionPotential"] = Scale(palette.Text, 0.50);
+        colors["bio.galacticRegionPotential"] = WithAlpha(
+            Scale(palette.Text, 0.74),
+            140);
         colors["bio.unknown"] = palette.Muted;
-        colors["bio.unknownGlyph"] = palette.Text;
-        colors["bio.hatch"] = WithAlpha(Scale(prediction, 0.28), 190);
-        colors["bio.empty"] = WithAlpha(palette.Primary, 48);
+        colors["bio.unknownGlyph"] = palette.Muted;
+        colors["bio.hatch"] = WithAlpha(palette.Muted, 242);
+        colors["bio.empty"] = colors["black"];
         colors["bio.white"] = palette.Text;
+        colors["bio.confirmedEdge"] = WithAlpha(palette.Primary, 96);
+        colors["bio.confirmedDimEdge"] = WithAlpha(palette.PrimaryDark, 96);
+        colors["bio.predictionEdge"] = WithAlpha(predictionDark, 96);
+        colors["bio.goldEdge"] = WithAlpha(palette.Value, 96);
+        colors["bio.goldDarkEdge"] = WithAlpha(goldFill, 96);
+        colors["bio.galacticRegionEdge"] = WithAlpha(palette.Text, 96);
+        colors["bio.unknownEdge"] = WithAlpha(predictionDark, 96);
+    }
+
+    private static Color DeriveMissingBiologyColor(
+        string key,
+        IReadOnlyDictionary<string, Color> colors,
+        Color fallback)
+    {
+        Color Get(string name, Color value) => colors.TryGetValue(name, out var color)
+            ? color
+            : value;
+
+        return key switch
+        {
+            "bio.goldFill" => Scale(Get("bio.gold", fallback), 0.68),
+            "bio.goldDarkFill" => Scale(Get("bio.goldDark", fallback), 0.34),
+            "bio.confirmedEdge" => WithAlpha(
+                Get("bio.confirmed", Get("orange", fallback)),
+                96),
+            "bio.confirmedDimEdge" => WithAlpha(
+                Get("bio.confirmedDim", Get("orangeDark", fallback)),
+                96),
+            "bio.predictionEdge" or "bio.unknownEdge" => WithAlpha(
+                Get("cyanDark", fallback),
+                96),
+            "bio.goldEdge" => WithAlpha(Get("bio.gold", fallback), 96),
+            "bio.goldDarkEdge" => WithAlpha(
+                Get("bio.goldFill", Get("bio.goldDark", fallback)),
+                96),
+            "bio.galacticRegionEdge" => WithAlpha(
+                Get("bio.white", Get("white", fallback)),
+                96),
+            _ => fallback,
+        };
     }
 
     private static void ApplyColonisation(

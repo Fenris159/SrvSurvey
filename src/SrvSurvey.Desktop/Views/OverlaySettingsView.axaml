@@ -1271,7 +1271,7 @@
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
                                                   FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
                                                   PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
-                                                  EdgeBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                  EdgeBrush="{DynamicResource RavenOverlayBioConfirmedEdgeBrush}"
                                                   EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
               </Border>
               <TextBlock VerticalAlignment="Center" FontSize="16" Text="&lt;" />
@@ -1299,7 +1299,7 @@
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
                                                   FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
                                                   PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
-                                                  EdgeBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                  EdgeBrush="{DynamicResource RavenOverlayBioConfirmedEdgeBrush}"
                                                   EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
               </Border>
               <TextBlock VerticalAlignment="Center" FontSize="16" Text="&lt;" />
@@ -1327,7 +1327,7 @@
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
                                                   FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
                                                   PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
-                                                  EdgeBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                  EdgeBrush="{DynamicResource RavenOverlayBioConfirmedEdgeBrush}"
                                                   EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
               </Border>
               <TextBlock VerticalAlignment="Center" FontSize="16" Text="&lt;" />
@@ -1356,7 +1356,7 @@
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
                                                   FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
                                                   PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
-                                                  EdgeBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                  EdgeBrush="{DynamicResource RavenOverlayBioConfirmedEdgeBrush}"
                                                   EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
               </Border>
             </StackPanel>

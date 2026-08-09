@@ -47,6 +47,8 @@ public sealed class RavenThemeServiceTests : IDisposable
         colors["orangeDark"] = Color.FromArgb(255, 65, 43, 21);
         colors["bio.confirmed"] = Color.FromArgb(255, 23, 45, 67);
         colors["bio.gold"] = Color.FromArgb(255, 78, 90, 12);
+        colors["bio.goldFill"] = Color.FromArgb(255, 44, 55, 66);
+        colors["bio.predictionEdge"] = Color.FromArgb(72, 12, 98, 123);
         colors["bio.galacticRegion"] = Color.FromArgb(255, 240, 241, 242);
         colors["bio.galacticRegionPotential"] = Color.FromArgb(255, 91, 92, 93);
         colors["bio.unknownGlyph"] = Color.FromArgb(255, 98, 76, 54);
@@ -78,6 +80,14 @@ public sealed class RavenThemeServiceTests : IDisposable
             Color.FromArgb(255, 78, 90, 12),
             Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenOverlayBioGoldBrush"]).Color);
+        Assert.Equal(
+            Color.FromArgb(255, 44, 55, 66),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenOverlayBioGoldFillBrush"]).Color);
+        Assert.Equal(
+            Color.FromArgb(72, 12, 98, 123),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenOverlayBioPredictionEdgeBrush"]).Color);
         Assert.Equal(
             Color.FromArgb(255, 23, 45, 67),
             Assert.IsType<SolidColorBrush>(
@@ -116,6 +126,8 @@ public sealed class RavenThemeServiceTests : IDisposable
                      "RavenOverlayBioPotentialBrush",
                      "RavenOverlayBioPredictionPotentialBrush",
                      "RavenOverlayBioGoldDimBrush",
+                     "RavenOverlayBioGoldFillBrush",
+                     "RavenOverlayBioGoldDimFillBrush",
                      "RavenOverlayBioGalacticRegionBrush",
                      "RavenOverlayBioGalacticRegionPotentialBrush",
                      "RavenOverlayBioUnknownBrush",
@@ -124,6 +136,13 @@ public sealed class RavenThemeServiceTests : IDisposable
                      "RavenOverlayBioEmptyBrush",
                      "RavenOverlayBioWhiteBrush",
                      "RavenOverlayBioPredictionBrush",
+                     "RavenOverlayBioConfirmedEdgeBrush",
+                     "RavenOverlayBioConfirmedDimEdgeBrush",
+                     "RavenOverlayBioPredictionEdgeBrush",
+                     "RavenOverlayBioGoldEdgeBrush",
+                     "RavenOverlayBioGoldDimEdgeBrush",
+                     "RavenOverlayBioGalacticRegionEdgeBrush",
+                     "RavenOverlayBioUnknownEdgeBrush",
                      "RavenOverlayColoniseSurplusBrush",
                      "RavenOverlayColoniseSurplusDimBrush",
                      "RavenOverlayColoniseDeficitBrush",

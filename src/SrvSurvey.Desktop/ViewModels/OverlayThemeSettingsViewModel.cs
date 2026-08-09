@@ -40,11 +40,16 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         new(
             CategoryExobiology,
             "bio.gold",
-            "Commander/regional-first highlight PIP"),
+            "Commander/regional-first marker"),
         new(
             CategoryExobiology,
             "bio.goldDark",
-            "Commander/regional-first highlight (analyzed)"),
+            "Commander/regional-first marker (analyzed)"),
+        new(CategoryExobiology, "bio.goldFill", "Commander/regional-first PIP fill"),
+        new(
+            CategoryExobiology,
+            "bio.goldDarkFill",
+            "Commander/regional-first PIP fill (analyzed)"),
         new(
             CategoryExobiology,
             "bio.galacticRegion",
@@ -58,6 +63,25 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         new(CategoryExobiology, "bio.hatch", "Prediction hatch lines"),
         new(CategoryExobiology, "bio.empty", "Empty reward segment"),
         new(CategoryExobiology, "bio.white", "Biology labels and values"),
+        new(CategoryExobiology, "bio.confirmedEdge", "Confirmed PIP outer border"),
+        new(
+            CategoryExobiology,
+            "bio.confirmedDimEdge",
+            "Analyzed PIP outer border"),
+        new(CategoryExobiology, "bio.predictionEdge", "Predicted PIP outer border"),
+        new(
+            CategoryExobiology,
+            "bio.goldEdge",
+            "Commander/regional-first PIP outer border"),
+        new(
+            CategoryExobiology,
+            "bio.goldDarkEdge",
+            "Analyzed first-discovery PIP outer border"),
+        new(
+            CategoryExobiology,
+            "bio.galacticRegionEdge",
+            "Galactic-region PIP outer border"),
+        new(CategoryExobiology, "bio.unknownEdge", "Unknown reward PIP outer border"),
         new(CategoryColonisation, "colonise.surplus", "Surplus"),
         new(CategoryColonisation, "colonise.surplusDark", "Surplus (dim)"),
         new(CategoryColonisation, "colonise.deficit", "Deficit"),

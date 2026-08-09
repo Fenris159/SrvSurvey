@@ -182,6 +182,47 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     }
 
     [Fact]
+    public void OriginalDefaultBiologyPaletteGainsLegacyPipLayersAndEdges()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "theme.json");
+        var colors = new Dictionary<string, int[]>(StringComparer.Ordinal)
+        {
+            ["orange"] = [255, 255, 111, 0],
+            ["orangeDark"] = [255, 95, 48, 3],
+            ["cyan"] = [255, 84, 223, 237],
+            ["cyanDark"] = [255, 0, 139, 139],
+            ["yellow"] = [255, 255, 255, 0],
+            ["white"] = [255, 255, 255, 255],
+            ["menuGold"] = [235, 235, 145, 0],
+            ["grey"] = [255, 100, 100, 100],
+            ["bio.gold"] = [255, 255, 215, 0],
+            ["bio.goldDark"] = [255, 120, 95, 0],
+            ["bio.unknown"] = [255, 105, 105, 105],
+            ["bio.hatch"] = [242, 64, 64, 64],
+            ["bio.white"] = [255, 255, 255, 255],
+            ["bio.prediction"] = [255, 47, 79, 79],
+        };
+        File.WriteAllText(path, JsonSerializer.Serialize(colors));
+
+        var theme = new LegacyOverlayThemeStore(path).Load();
+        var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
+
+        Assert.Null(theme.Error);
+        Assert.Equal(defaults["bio.prediction"], theme.GetColor("bio.prediction"));
+        Assert.Equal(defaults["bio.goldFill"], theme.GetColor("bio.goldFill"));
+        Assert.Equal(
+            defaults["bio.predictionPotential"],
+            theme.GetColor("bio.predictionPotential"));
+        Assert.Equal(
+            defaults["bio.predictionEdge"],
+            theme.GetColor("bio.predictionEdge"));
+        Assert.Equal(
+            OverlayThemePresetCatalog.DefaultName,
+            OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name);
+    }
+
+    [Fact]
     public void ExplicitExpandedBiologyPaletteIsNotMigrated()
     {
         Directory.CreateDirectory(temporaryDirectory);

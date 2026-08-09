@@ -36,6 +36,8 @@ public sealed class RavenThemeService
                 "bio.predictionPotential",
             ["RavenOverlayBioGoldBrush"] = "bio.gold",
             ["RavenOverlayBioGoldDimBrush"] = "bio.goldDark",
+            ["RavenOverlayBioGoldFillBrush"] = "bio.goldFill",
+            ["RavenOverlayBioGoldDimFillBrush"] = "bio.goldDarkFill",
             ["RavenOverlayBioGalacticRegionBrush"] = "bio.galacticRegion",
             ["RavenOverlayBioGalacticRegionPotentialBrush"] =
                 "bio.galacticRegionPotential",
@@ -44,6 +46,14 @@ public sealed class RavenThemeService
             ["RavenOverlayBioHatchBrush"] = "bio.hatch",
             ["RavenOverlayBioEmptyBrush"] = "bio.empty",
             ["RavenOverlayBioWhiteBrush"] = "bio.white",
+            ["RavenOverlayBioConfirmedEdgeBrush"] = "bio.confirmedEdge",
+            ["RavenOverlayBioConfirmedDimEdgeBrush"] = "bio.confirmedDimEdge",
+            ["RavenOverlayBioPredictionEdgeBrush"] = "bio.predictionEdge",
+            ["RavenOverlayBioGoldEdgeBrush"] = "bio.goldEdge",
+            ["RavenOverlayBioGoldDimEdgeBrush"] = "bio.goldDarkEdge",
+            ["RavenOverlayBioGalacticRegionEdgeBrush"] =
+                "bio.galacticRegionEdge",
+            ["RavenOverlayBioUnknownEdgeBrush"] = "bio.unknownEdge",
             ["RavenOverlayColoniseSurplusBrush"] = "colonise.surplus",
             ["RavenOverlayColoniseSurplusDimBrush"] = "colonise.surplusDark",
             ["RavenOverlayColoniseDeficitBrush"] = "colonise.deficit",

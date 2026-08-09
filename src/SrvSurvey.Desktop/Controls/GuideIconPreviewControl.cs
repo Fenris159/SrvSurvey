@@ -76,6 +76,24 @@ public sealed class GuideIconPreviewControl : Control
     public static readonly StyledProperty<IBrush?> PipEmptyBrushProperty =
         AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
             nameof(PipEmptyBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipConfirmedEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedDimEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipConfirmedDimEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipPredictionEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipPredictionEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipHighlightEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipHighlightEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipGlobalRegionalEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipGlobalRegionalEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipUnknownEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipUnknownEdgeBrush));
 
     static GuideIconPreviewControl()
     {
@@ -101,7 +119,13 @@ public sealed class GuideIconPreviewControl : Control
             PipUnknownBrushProperty,
             PipUnknownGlyphBrushProperty,
             PipHatchBrushProperty,
-            PipEmptyBrushProperty);
+            PipEmptyBrushProperty,
+            PipConfirmedEdgeBrushProperty,
+            PipConfirmedDimEdgeBrushProperty,
+            PipPredictionEdgeBrushProperty,
+            PipHighlightEdgeBrushProperty,
+            PipGlobalRegionalEdgeBrushProperty,
+            PipUnknownEdgeBrushProperty);
     }
 
     public GuideIconKind Kind
@@ -236,6 +260,42 @@ public sealed class GuideIconPreviewControl : Control
         set => SetValue(PipEmptyBrushProperty, value);
     }
 
+    public IBrush? PipConfirmedEdgeBrush
+    {
+        get => GetValue(PipConfirmedEdgeBrushProperty);
+        set => SetValue(PipConfirmedEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipConfirmedDimEdgeBrush
+    {
+        get => GetValue(PipConfirmedDimEdgeBrushProperty);
+        set => SetValue(PipConfirmedDimEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipPredictionEdgeBrush
+    {
+        get => GetValue(PipPredictionEdgeBrushProperty);
+        set => SetValue(PipPredictionEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipHighlightEdgeBrush
+    {
+        get => GetValue(PipHighlightEdgeBrushProperty);
+        set => SetValue(PipHighlightEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipGlobalRegionalEdgeBrush
+    {
+        get => GetValue(PipGlobalRegionalEdgeBrushProperty);
+        set => SetValue(PipGlobalRegionalEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipUnknownEdgeBrush
+    {
+        get => GetValue(PipUnknownEdgeBrushProperty);
+        set => SetValue(PipUnknownEdgeBrushProperty, value);
+    }
+
     public override void Render(DrawingContext context)
     {
         base.Render(context);
@@ -266,6 +326,13 @@ public sealed class GuideIconPreviewControl : Control
         var pipUnknownGlyph = PipUnknownGlyphBrush ?? Brushes.LightGray;
         var pipHatch = PipHatchBrush ?? muted;
         var pipEmpty = PipEmptyBrush ?? Brushes.Transparent;
+        var pipConfirmedEdge = PipConfirmedEdgeBrush ?? pipConfirmed;
+        var pipConfirmedDimEdge = PipConfirmedDimEdgeBrush ?? pipConfirmedDim;
+        var pipPredictionEdge = PipPredictionEdgeBrush ?? pipPrediction;
+        var pipHighlightEdge = PipHighlightEdgeBrush ?? pipHighlight;
+        var pipGlobalRegionalEdge =
+            PipGlobalRegionalEdgeBrush ?? pipGlobalRegional;
+        var pipUnknownEdge = PipUnknownEdgeBrush ?? pipUnknown;
         var bounds = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
         context.DrawRectangle(background, new Pen(muted, 1), bounds, 8, 8);
         var center = bounds.Center;
@@ -295,6 +362,7 @@ public sealed class GuideIconPreviewControl : Control
                 DrawRewardPips(
                     context,
                     center,
+                    pipConfirmedEdge,
                     pipConfirmed,
                     pipPotential,
                     pipEmpty,
@@ -305,6 +373,7 @@ public sealed class GuideIconPreviewControl : Control
                 DrawRewardPips(
                     context,
                     center,
+                    pipPredictionEdge,
                     pipPrediction,
                     pipPredictionPotential,
                     pipEmpty,
@@ -315,6 +384,7 @@ public sealed class GuideIconPreviewControl : Control
                 DrawRewardPips(
                     context,
                     center,
+                    pipHighlightEdge,
                     pipHighlight,
                     pipHighlight,
                     pipEmpty,
@@ -325,16 +395,19 @@ public sealed class GuideIconPreviewControl : Control
                 DrawRewardPips(
                     context,
                     center,
+                    pipGlobalRegionalEdge,
                     pipGlobalRegional,
                     pipGlobalRegionalPotential,
                     pipEmpty,
                     pipHatch,
-                    isPrediction: true);
+                    isPrediction: true,
+                    reinforceEdge: true);
                 break;
             case GuideIconKind.BiologyRewardDimmed:
                 DrawRewardPips(
                     context,
                     center,
+                    pipConfirmedDimEdge,
                     pipConfirmedDim,
                     pipPotential,
                     pipEmpty,
@@ -345,7 +418,7 @@ public sealed class GuideIconPreviewControl : Control
                 DrawUnknownPip(
                     context,
                     center,
-                    pipUnknown,
+                    pipUnknownEdge,
                     pipUnknownGlyph);
                 break;
             case GuideIconKind.CanonnSignals:
@@ -582,14 +655,22 @@ public sealed class GuideIconPreviewControl : Control
     private static void DrawRewardPips(
         DrawingContext context,
         Point center,
+        IBrush edge,
         IBrush filled,
         IBrush potential,
         IBrush empty,
         IBrush hatch,
-        bool isPrediction)
+        bool isPrediction,
+        bool reinforceEdge = false)
     {
         var frame = new Rect(center.X - 12, center.Y - 25, 24, 50);
-        context.DrawRectangle(null, new Pen(filled, 1.5), frame, 3, 3);
+        var edgePen = new Pen(edge, 1.5);
+        context.DrawRectangle(null, edgePen, frame, 3, 3);
+        if (reinforceEdge)
+        {
+            context.DrawRectangle(null, edgePen, frame, 3, 3);
+            context.DrawRectangle(null, edgePen, frame, 3, 3);
+        }
         for (var index = 0; index < 4; index++)
         {
             var segment = new Rect(

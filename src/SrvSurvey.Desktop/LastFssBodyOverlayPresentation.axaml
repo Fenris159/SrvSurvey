@@ -122,14 +122,21 @@
                                                     PotentialBrush="{DynamicResource RavenBioPotentialBrush}"
                                                     PredictionFilledBrush="{DynamicResource RavenBioPredictionBrush}"
                                                     PredictionPotentialBrush="{DynamicResource RavenBioPredictionPotentialBrush}"
-                                                    HighlightBrush="{DynamicResource RavenBioGoldBrush}"
-                                                    DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
+                                                    HighlightBrush="{DynamicResource RavenBioGoldFillBrush}"
+                                                    DimmedHighlightBrush="{DynamicResource RavenBioGoldDimFillBrush}"
                                                     GlobalRegionalBrush="{DynamicResource RavenBioGalacticRegionBrush}"
                                                     GlobalRegionalPotentialBrush="{DynamicResource RavenBioGalacticRegionPotentialBrush}"
                                                     UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
                                                     UnknownGlyphBrush="{DynamicResource RavenBioUnknownGlyphBrush}"
                                                     HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                    EmptyBrush="{DynamicResource RavenBioEmptyBrush}" />
+                                                    EmptyBrush="{DynamicResource RavenBioEmptyBrush}"
+                                                    FilledEdgeBrush="{DynamicResource RavenBioConfirmedEdgeBrush}"
+                                                    DimmedFilledEdgeBrush="{DynamicResource RavenBioConfirmedDimEdgeBrush}"
+                                                    PredictionEdgeBrush="{DynamicResource RavenBioPredictionEdgeBrush}"
+                                                    HighlightEdgeBrush="{DynamicResource RavenBioGoldEdgeBrush}"
+                                                    DimmedHighlightEdgeBrush="{DynamicResource RavenBioGoldDimEdgeBrush}"
+                                                    GlobalRegionalEdgeBrush="{DynamicResource RavenBioGalacticRegionEdgeBrush}"
+                                                    UnknownEdgeBrush="{DynamicResource RavenBioUnknownEdgeBrush}" />
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>

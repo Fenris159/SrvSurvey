@@ -37,6 +37,8 @@ public sealed class OverlayPresentationContractTests
             "RavenBioConfirmedDimBrush", "RavenBioPotentialBrush",
             "RavenBioPredictionBrush", "RavenBioPredictionPotentialBrush",
             "RavenBioUnknownGlyphBrush", "RavenBioEmptyBrush",
+            "RavenBioConfirmedEdgeBrush", "RavenBioPredictionEdgeBrush",
+            "RavenBioGoldEdgeBrush", "RavenBioGalacticRegionEdgeBrush",
         ]),
         Contract("PlotBodyInfo", [
             "src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml",
@@ -57,6 +59,7 @@ public sealed class OverlayPresentationContractTests
             "LastFssSignalsText", "LastFssBiologyRewardBands", "LastFssBiologyRewardText", "FssTuningIndicator",
             "RavenBioConfirmedBrush", "RavenBioPredictionBrush",
             "RavenBioUnknownGlyphBrush", "RavenBioEmptyBrush",
+            "RavenBioConfirmedEdgeBrush", "RavenBioPredictionEdgeBrush",
         ]),
         Contract("PlotFSSInfo", ["src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml", "src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml"], [
             "SystemTitle", "ScanSummary", "FssFilterDescription", "FssBodies", "ScanValue", "DssValue",

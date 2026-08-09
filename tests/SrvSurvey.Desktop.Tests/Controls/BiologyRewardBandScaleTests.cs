@@ -63,6 +63,29 @@ public sealed class BiologyRewardBandScaleTests
     }
 
     [Fact]
+    public void EveryLegacyPipStateHasAnIndependentOuterEdgeBrush()
+    {
+        var control = new BiologyRewardBandControl
+        {
+            FilledEdgeBrush = Brushes.Orange,
+            DimmedFilledEdgeBrush = Brushes.DarkOrange,
+            PredictionEdgeBrush = Brushes.DarkCyan,
+            HighlightEdgeBrush = Brushes.Gold,
+            DimmedHighlightEdgeBrush = Brushes.DarkGoldenrod,
+            GlobalRegionalEdgeBrush = Brushes.White,
+            UnknownEdgeBrush = Brushes.Gray,
+        };
+
+        Assert.Same(Brushes.Orange, control.FilledEdgeBrush);
+        Assert.Same(Brushes.DarkOrange, control.DimmedFilledEdgeBrush);
+        Assert.Same(Brushes.DarkCyan, control.PredictionEdgeBrush);
+        Assert.Same(Brushes.Gold, control.HighlightEdgeBrush);
+        Assert.Same(Brushes.DarkGoldenrod, control.DimmedHighlightEdgeBrush);
+        Assert.Same(Brushes.White, control.GlobalRegionalEdgeBrush);
+        Assert.Same(Brushes.Gray, control.UnknownEdgeBrush);
+    }
+
+    [Fact]
     public void UnknownRewardUsesQuestionStateEvenWithMaximum()
     {
         var state = BiologyRewardBandScale.Calculate(
