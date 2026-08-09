@@ -506,7 +506,8 @@ public sealed class JournalDirectoryMonitor
             {
                 consecutiveStatusReadFailures++;
                 if (consecutiveStatusReadFailures
-                    >= StatusReadFailureReportThreshold)
+                    >= StatusReadFailureReportThreshold
+                    && !statusReadFailureReported)
                 {
                     statusReadFailureReported = true;
                     errors.Add(statusResult.Error);

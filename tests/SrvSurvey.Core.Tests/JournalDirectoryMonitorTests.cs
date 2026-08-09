@@ -190,6 +190,7 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         await File.WriteAllTextAsync(statusPath, string.Empty);
         var transientFailure = await monitor.PollAsync();
         var persistentFailure = await monitor.PollAsync();
+        var repeatedFailure = await monitor.PollAsync();
 
         Assert.False(transientFailure.HasChanges);
         Assert.Empty(transientFailure.Errors);
@@ -199,6 +200,11 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
             "after 3 attempts",
             Assert.Single(persistentFailure.Errors));
         Assert.False(persistentFailure.StatusReadErrorRecovered);
+        Assert.Empty(repeatedFailure.Errors);
+        Assert.False(repeatedFailure.HasChanges);
+        Assert.Null(repeatedFailure.Status);
+        Assert.False(repeatedFailure.StatusReadErrorRecovered);
+        Assert.Same(initial.Status, monitor.CurrentStatus);
 
         await File.WriteAllTextAsync(
             statusPath,
