@@ -8,6 +8,9 @@ public sealed class ExobiologyReferenceCatalog
 {
     private const string EmbeddedResourceName =
         "SrvSurvey.Core.Resources.codexRef.json";
+    private const string AnemoneSubclass = "Anemone";
+    private const string AmphoraPlantSubclass = "Amphora Plant";
+    private const string BarkMoundsSubclass = "Bark Mounds";
 
     private readonly Dictionary<string, ExobiologyReference> byVariant;
     private readonly Dictionary<string, ExobiologyReference> bySpecies;
@@ -183,9 +186,9 @@ public sealed class ExobiologyReferenceCatalog
         {
             var legacyGenus = reference.SubClass switch
             {
-                "Anemone" => "$Codex_Ent_Sphere_Name;",
-                "Amphora Plant" => "$Codex_Ent_Vents_Name;",
-                "Bark Mounds" => "$Codex_Ent_Cone_Name;",
+                AnemoneSubclass => "$Codex_Ent_Sphere_Name;",
+                AmphoraPlantSubclass => "$Codex_Ent_Vents_Name;",
+                BarkMoundsSubclass => "$Codex_Ent_Cone_Name;",
                 "Brain Tree" => "$Codex_Ent_Brancae_Name;",
                 "Shards" => "$Codex_Ent_Ground_Struct_Ice_Name;",
                 "Tubers" => "$Codex_Ent_Tube_Name;",
@@ -210,9 +213,9 @@ public sealed class ExobiologyReferenceCatalog
         ArgumentNullException.ThrowIfNull(reference);
         var legacyDisplayName = reference.SubClass switch
         {
-            "Anemone" => "Anemone",
-            "Amphora Plant" => "Amphora Plant",
-            "Bark Mounds" => "Bark Mounds",
+            AnemoneSubclass => AnemoneSubclass,
+            AmphoraPlantSubclass => AmphoraPlantSubclass,
+            BarkMoundsSubclass => BarkMoundsSubclass,
             "Brain Tree" => "Brain Trees",
             "Shards" => "Crystalline Shards",
             "Tubers" => "Sinuous Tubers",
@@ -220,6 +223,47 @@ public sealed class ExobiologyReferenceCatalog
         };
         return legacyDisplayName
             ?? GetGenusDisplayName(GetGenusName(reference));
+    }
+
+    public static string GetGenusDisplayName(string? genusName)
+    {
+        if (string.IsNullOrWhiteSpace(genusName))
+        {
+            return "Unknown genus";
+        }
+
+        var normalized = genusName
+            .Replace(CodexEntPrefix, string.Empty, StringComparison.Ordinal)
+            .Replace("_Genus_Name;", string.Empty, StringComparison.Ordinal)
+            .Replace(CodexNameSuffix, string.Empty, StringComparison.Ordinal)
+            .ToUpperInvariant();
+        return normalized switch
+        {
+            "ALEOIDS" => "Aleoida",
+            "BACTERIAL" => "Bacterium",
+            "CACTOID" => "Cactoida",
+            "CLYPEUS" => "Clypeus",
+            "CONCHAS" => "Concha",
+            "ELECTRICAE" => "Electricae",
+            "FONTICULUS" => "Fonticulua",
+            "SHRUBS" => "Frutexa",
+            "FUMEROLAS" => "Fumerola",
+            "FUNGOIDS" => "Fungoida",
+            "OSSEUS" => "Osseus",
+            "RECEPTA" => "Recepta",
+            "STRATUM" => "Stratum",
+            "TUBUS" => "Tubus",
+            "TUSSOCKS" => "Tussock",
+            "VENTS" => AmphoraPlantSubclass,
+            "SPHERE" => AnemoneSubclass,
+            "CONE" => BarkMoundsSubclass,
+            "BRANCAE" => "Brain Trees",
+            "GROUND_STRUCT_ICE" => "Crystalline Shards",
+            "TUBE" => "Sinuous Tubers",
+            "INGENSRADICES" => "Radicoida",
+            _ => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(
+                normalized.Replace('_', ' ').ToLowerInvariant()),
+        };
     }
 
     public static int GetSampleDistanceMeters(string? genusName)
@@ -254,47 +298,6 @@ public sealed class ExobiologyReferenceCatalog
             "OSSEUS" or "TUBUS" => 800,
             "ELECTRICAE" => 1_000,
             _ => 50,
-        };
-    }
-
-    public static string GetGenusDisplayName(string? genusName)
-    {
-        if (string.IsNullOrWhiteSpace(genusName))
-        {
-            return "Unknown genus";
-        }
-
-        var normalized = genusName
-            .Replace(CodexEntPrefix, string.Empty, StringComparison.Ordinal)
-            .Replace("_Genus_Name;", string.Empty, StringComparison.Ordinal)
-            .Replace(CodexNameSuffix, string.Empty, StringComparison.Ordinal)
-            .ToUpperInvariant();
-        return normalized switch
-        {
-            "ALEOIDS" => "Aleoida",
-            "BACTERIAL" => "Bacterium",
-            "CACTOID" => "Cactoida",
-            "CLYPEUS" => "Clypeus",
-            "CONCHAS" => "Concha",
-            "ELECTRICAE" => "Electricae",
-            "FONTICULUS" => "Fonticulua",
-            "SHRUBS" => "Frutexa",
-            "FUMEROLAS" => "Fumerola",
-            "FUNGOIDS" => "Fungoida",
-            "OSSEUS" => "Osseus",
-            "RECEPTA" => "Recepta",
-            "STRATUM" => "Stratum",
-            "TUBUS" => "Tubus",
-            "TUSSOCKS" => "Tussock",
-            "VENTS" => "Amphora Plant",
-            "SPHERE" => "Anemone",
-            "CONE" => "Bark Mounds",
-            "BRANCAE" => "Brain Trees",
-            "GROUND_STRUCT_ICE" => "Crystalline Shards",
-            "TUBE" => "Sinuous Tubers",
-            "INGENSRADICES" => "Radicoida",
-            _ => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(
-                normalized.Replace('_', ' ').ToLowerInvariant()),
         };
     }
 

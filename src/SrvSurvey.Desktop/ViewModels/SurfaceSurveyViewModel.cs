@@ -954,7 +954,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         return ExobiologyReferenceCatalog.GetGenusDisplayName(name);
     }
 
-    private IReadOnlyDictionary<int, IReadOnlySet<string>>
+    private Dictionary<int, IReadOnlySet<string>>
         GetAnalyzedSpeciesByBodyId()
     {
         return survey.Snapshot.Bodies

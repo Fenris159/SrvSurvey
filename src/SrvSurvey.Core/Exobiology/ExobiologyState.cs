@@ -136,12 +136,19 @@ public sealed class ExobiologyState
         OrganicRewards = seed.OrganicRewards;
         CountRadicoidaUnica = seed.CountRadicoidaUnica;
         var activeSample = seed.ScanTwo ?? seed.ScanOne;
-        ActiveSpeciesDisplayName = activeSample is null
-            ? null
-            : (activeSample.EntryId > 0
-                ? catalog.FindByEntryId(activeSample.EntryId)
-                : null)?.DisplayName
+        ActiveSpeciesDisplayName = null;
+        if (activeSample is not null)
+        {
+            ExobiologyReference? activeReference = null;
+            if (activeSample.EntryId > 0)
+            {
+                activeReference = catalog.FindByEntryId(activeSample.EntryId);
+            }
+
+            ActiveSpeciesDisplayName = activeReference?.DisplayName
                 ?? catalog.FindBySpecies(activeSample.Species)?.DisplayName;
+        }
+
         UpdateSampleDistance();
         scannedBioEntryIds.Clear();
         scannedBioEntryIds.UnionWith(seed.ScannedBioEntryIds);

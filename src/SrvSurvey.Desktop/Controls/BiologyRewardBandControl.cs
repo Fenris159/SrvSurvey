@@ -287,11 +287,20 @@ public sealed class BiologyRewardBandControl : Control
                 BucketOneMillions,
                 BucketTwoMillions,
                 BucketThreeMillions));
-        var edge = state.IsUnknown
-            ? brushes.Unknown
-            : IsGlobalRegionalFirst
-                ? brushes.Filled
-                : EdgeBrush ?? brushes.Filled;
+        IBrush edge;
+        if (state.IsUnknown)
+        {
+            edge = brushes.Unknown;
+        }
+        else if (IsGlobalRegionalFirst)
+        {
+            edge = brushes.Filled;
+        }
+        else
+        {
+            edge = EdgeBrush ?? brushes.Filled;
+        }
+
         var outer = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
         context.DrawRectangle(Brushes.Transparent, new Pen(edge, 1), outer, 2, 2);
 
