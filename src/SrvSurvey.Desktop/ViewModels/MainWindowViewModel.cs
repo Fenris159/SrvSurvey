@@ -2567,12 +2567,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             && update.JournalEvents.Count == 0
             && !isManualRefresh)
         {
-            StatusMessage = journalState.IsShutdown
-                ? "Elite session closed normally; waiting for the next journal session."
-                : update.JournalPath is null
-                    ? "Status.json is readable again."
-                    : $"Status.json is readable again; monitoring "
-                        + $"{Path.GetFileName(update.JournalPath)}.";
+            if (journalState.IsShutdown)
+            {
+                StatusMessage =
+                    "Elite session closed normally; waiting for the next journal session.";
+            }
+            else if (update.JournalPath is null)
+            {
+                StatusMessage = "Status.json is readable again.";
+            }
+            else
+            {
+                StatusMessage = $"Status.json is readable again; monitoring "
+                    + $"{Path.GetFileName(update.JournalPath)}.";
+            }
         }
 
         if (update.JournalEvents.Count > 0
