@@ -1,36 +1,34 @@
-# SrvSurvey-XP 2.1.3.0-rc.6
+# SrvSurvey-XP 2.1.3.0-rc.7
 
-This release candidate focuses on accurate, compact overlay previews and
-exobiology presentation. The changes below are the delta from
-`2.1.3.0-rc.5`.
+This release candidate restores exobiology behavior that was lost or
+misinterpreted during the Avalonia port. The changes below are the delta from
+`2.1.3.0-rc.6`.
 
-## What's new since 2.1.3.0-rc.5
+## What's new since 2.1.3.0-rc.6
 
-- Adds state controls to supported overlay-editor folder tabs so game-driven
-  presentations can be previewed without waiting for the corresponding journal
-  event. Editor previews continue to use the same shared presentations as live
-  overlays.
-- Restores System Biology prediction and discovery markers, groups any number
-  of organism variants into compact rows, colors variant names by their
-  biological color, and shows analyzed status without muting that color.
-- Uses the Route Workspace body-type artwork in the System Biology overview and
-  keeps confirmed-body previews limited to organisms that actually exist.
-- Makes Biology Sample Status progress accurate and bounded, centers the stale
-  sample warning, and clarifies the idle sampling state.
-- Replaces directional font glyphs with theme-aware vector chevrons that switch
-  between near and far forms. Ground Target now uses a ringed pointer, and
-  markers without a specific far threshold use a 1 km fallback.
-- Adds explicit theme colors for confirmed, predicted, possible, highlighted,
-  analyzed, and unknown biology reward PIPs across the default and preset
-  themes, with expanded descriptions in the overlay icon glossary.
+- Preserves exact organism identity across journals, predictions, snapshot
+  merges, legacy migration, and restart recovery, including bodies containing
+  multiple species or variants from the same genus.
+- Restores canonical Horizons genus handling for Brain Trees, anemones, bark
+  mounds, Amphora Plants, crystalline shards, and sinuous tubers, including
+  their sampling-distance behavior.
+- Aligns sampling and composition tracking with legacy behavior: completed
+  analysis clears partial sample state, active organisms resolve by EntryID or
+  species, and analyzed-species suppression remains local to the correct body.
+- Restores durable prior-scan ownership and regional Codex fallback when journal
+  coordinates are unavailable, while unresolved Codex EntryIDs are never
+  classified as commander first discoveries.
+- Adds the distinct white potential galactic or regional first-discovery PIP,
+  theme controls, and glossary guidance, while filtering fixed-life Codex events
+  and invalid surface coordinates from organism results.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.6`
-- Tag: `xp-v2.1.3.0-rc.6`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.6-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.6-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.6-x86_64.AppImage`
+- Version: `2.1.3.0-rc.7`
+- Tag: `xp-v2.1.3.0-rc.7`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.7-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.7-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.7-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
