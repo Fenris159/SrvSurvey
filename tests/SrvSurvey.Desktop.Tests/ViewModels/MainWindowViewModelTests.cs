@@ -14,6 +14,7 @@ using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Theming;
+using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json.Nodes;
 
@@ -2759,6 +2760,81 @@ public sealed class MainWindowViewModelTests
             Assert.Single(publisher.Calls);
             Assert.Equal(statusBefore, viewModel.StatusMessage);
             Assert.Equal(lastUpdatedBefore, viewModel.LastUpdated);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LiveStatusReadRecoveryClearsShutdownWarning()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-status-recovery-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-08-09T010000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"event\":\"Shutdown\"}\n");
+            var statusPath = Path.Combine(journals, StatusFileReader.FileName);
+            await File.WriteAllTextAsync(statusPath, string.Empty);
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            using var viewModel = new MainWindowViewModel(journals,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = paths,
+                });
+
+            await viewModel.RefreshAsync();
+            await viewModel.RefreshAsync();
+
+            Assert.Contains("Could not read", viewModel.StatusMessage);
+            Assert.Equal("Session closed", viewModel.SessionState);
+
+            await File.WriteAllTextAsync(
+                statusPath,
+                "{\"event\":\"Status\",\"Flags\":0}");
+            const string recoveredMessage =
+                "Elite session closed normally; waiting for the next journal session.";
+            using var cancellation = new CancellationTokenSource(
+                TimeSpan.FromSeconds(5));
+            PropertyChangedEventHandler cancelWhenRecovered = (_, eventArgs) =>
+            {
+                if (eventArgs.PropertyName == nameof(
+                        MainWindowViewModel.StatusMessage)
+                    && viewModel.StatusMessage == recoveredMessage)
+                {
+                    cancellation.Cancel();
+                }
+            };
+            viewModel.PropertyChanged += cancelWhenRecovered;
+            try
+            {
+                await viewModel.MonitorAsync(
+                    TimeSpan.FromMilliseconds(5),
+                    cancellation.Token);
+            }
+            finally
+            {
+                viewModel.PropertyChanged -= cancelWhenRecovered;
+            }
+
+            Assert.Equal(recoveredMessage, viewModel.StatusMessage);
         }
         finally
         {

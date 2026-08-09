@@ -2563,6 +2563,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             StatusMessage = string.Join(Environment.NewLine, update.Errors);
         }
+        else if (update.StatusReadErrorRecovered
+            && update.JournalEvents.Count == 0
+            && !isManualRefresh)
+        {
+            StatusMessage = journalState.IsShutdown
+                ? "Elite session closed normally; waiting for the next journal session."
+                : update.JournalPath is null
+                    ? "Status.json is readable again."
+                    : $"Status.json is readable again; monitoring "
+                        + $"{Path.GetFileName(update.JournalPath)}.";
+        }
 
         if (update.JournalEvents.Count > 0
             || update.Status is not null
@@ -2571,6 +2582,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             || update.ShipLocker is not null
             || update.Market is not null
             || update.Errors.Count > 0
+            || update.StatusReadErrorRecovered
             || isManualRefresh)
         {
             LastUpdated = $"Last update: {DateTimeOffset.Now:G}";

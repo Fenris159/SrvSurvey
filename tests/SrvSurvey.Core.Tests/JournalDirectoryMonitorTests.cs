@@ -175,6 +175,44 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
     }
 
     [Fact]
+    public async Task PollDefersTransientStatusReadErrorAndSignalsRecovery()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var statusPath = Path.Combine(
+            temporaryDirectory,
+            StatusFileReader.FileName);
+        await File.WriteAllTextAsync(
+            statusPath,
+            "{\"event\":\"Status\",\"Flags\":1}");
+        var monitor = new JournalDirectoryMonitor(temporaryDirectory);
+        var initial = await monitor.PollAsync();
+
+        await File.WriteAllTextAsync(statusPath, string.Empty);
+        var transientFailure = await monitor.PollAsync();
+        var persistentFailure = await monitor.PollAsync();
+
+        Assert.False(transientFailure.HasChanges);
+        Assert.Empty(transientFailure.Errors);
+        Assert.Null(transientFailure.Status);
+        Assert.Same(initial.Status, monitor.CurrentStatus);
+        Assert.Contains(
+            "after 3 attempts",
+            Assert.Single(persistentFailure.Errors));
+        Assert.False(persistentFailure.StatusReadErrorRecovered);
+
+        await File.WriteAllTextAsync(
+            statusPath,
+            "{\"event\":\"Status\",\"Flags\":0,\"GuiFocus\":1}");
+        var recovered = await monitor.PollAsync();
+
+        Assert.Empty(recovered.Errors);
+        Assert.NotNull(recovered.Status);
+        Assert.Equal(GuiFocus.InternalPanel, recovered.Status.GuiFocus);
+        Assert.True(recovered.StatusReadErrorRecovered);
+        Assert.True(recovered.HasChanges);
+    }
+
+    [Fact]
     public async Task PollReportsCompanionStampFailuresOnceUntilRecovery()
     {
         Directory.CreateDirectory(temporaryDirectory);
