@@ -135,8 +135,13 @@ public sealed class ExobiologyState
         ScanTwo = seed.ScanTwo;
         OrganicRewards = seed.OrganicRewards;
         CountRadicoidaUnica = seed.CountRadicoidaUnica;
-        ActiveSpeciesDisplayName = catalog.FindBySpecies(
-            seed.ScanTwo?.Species ?? seed.ScanOne?.Species)?.DisplayName;
+        var activeSample = seed.ScanTwo ?? seed.ScanOne;
+        ActiveSpeciesDisplayName = activeSample is null
+            ? null
+            : (activeSample.EntryId > 0
+                ? catalog.FindByEntryId(activeSample.EntryId)
+                : null)?.DisplayName
+                ?? catalog.FindBySpecies(activeSample.Species)?.DisplayName;
         UpdateSampleDistance();
         scannedBioEntryIds.Clear();
         scannedBioEntryIds.UnionWith(seed.ScannedBioEntryIds);
@@ -306,6 +311,13 @@ public sealed class ExobiologyState
             ScanOne = sample;
             ScanTwo = null;
         }
+        else if (scanType == "Analyse")
+        {
+            LastOrganicScan = null;
+            ScanOne = null;
+            ScanTwo = null;
+            ActiveSpeciesDisplayName = null;
+        }
         else if (ScanOne is not null && ScanTwo is null)
         {
             ScanTwo = sample;
@@ -314,14 +326,6 @@ public sealed class ExobiologyState
         {
             ScanOne = sample;
         }
-        else if (scanType == "Analyse")
-        {
-            LastOrganicScan = null;
-            ScanOne = null;
-            ScanTwo = null;
-            ActiveSpeciesDisplayName = null;
-        }
-
         if (scanType == "Analyse")
         {
             if (species == RadicoidaUnicaSpecies)

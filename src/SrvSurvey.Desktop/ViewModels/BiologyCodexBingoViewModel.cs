@@ -278,6 +278,9 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         : $"{SelectedNode.DiscoveredCount:N0} of {SelectedNode.TotalCount:N0} · "
             + SelectedNode.Completion.ToString("P1");
 
+    public double SelectedCompletionPercent =>
+        SelectedNode?.CompletionPercent ?? 0;
+
     public bool HasSelectedEntry => SelectedNode?.Definition.Entry is not null;
 
     public string SelectedEntryId => SelectedNode?.Definition.Entry is { } entry
@@ -1121,6 +1124,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         OnPropertyChanged(nameof(SelectedTitle));
         OnPropertyChanged(nameof(SelectedKind));
         OnPropertyChanged(nameof(SelectedProgress));
+        OnPropertyChanged(nameof(SelectedCompletionPercent));
         OnPropertyChanged(nameof(HasSelectedEntry));
         OnPropertyChanged(nameof(SelectedEntryId));
         OnPropertyChanged(nameof(SelectedReward));

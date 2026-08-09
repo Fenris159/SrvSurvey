@@ -146,6 +146,9 @@ public sealed class OverlayEditorFolderTabTests
             Assert.All(
                 identified.Survey.BiologySurveyDisplay.OrganismGroups,
                 group => Assert.False(group.IsPrediction));
+            Assert.DoesNotContain(
+                identified.Survey.BiologySurveyDisplay.OrganismGroups,
+                group => group.IsGlobalRegionalFirst);
             Assert.Contains(
                 identified.Survey.BiologySurveyDisplay.OrganismGroups,
                 group => group.IsAnalyzed);

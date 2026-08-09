@@ -50,6 +50,49 @@ public sealed class ExobiologyStateTests
     }
 
     [Fact]
+    public void AnalyseClearsActiveSampleWhenIntermediateSampleIsMissing()
+    {
+        var state = CreateState();
+        state.Apply(Event(Organic("Log")));
+
+        state.Apply(Event(Organic("Analyse")));
+
+        var snapshot = state.CreateSnapshot();
+        Assert.Null(snapshot.LastOrganicScan);
+        Assert.Null(snapshot.ScanOne);
+        Assert.Null(snapshot.ScanTwo);
+        Assert.Null(state.ActiveSpeciesDisplayName);
+        Assert.Equal(Aleoida.Reward, snapshot.OrganicRewards);
+    }
+
+    [Fact]
+    public void ResetRestoresActiveVariantByEntryIdBeforeSpecies()
+    {
+        var alternateVariant = new ExobiologyReference(
+            2310102,
+            "$Codex_Ent_Aleoids_01_C_Name;",
+            AleoidaSpecies,
+            "Aleoida Arcus - Turquoise",
+            Aleoida.Reward);
+        var sample = Sample(alternateVariant);
+        var seed = new ExobiologySnapshot(
+            "123456|7|" + AleoidaSpecies,
+            sample,
+            null,
+            0,
+            [],
+            0);
+
+        var state = new ExobiologyState(
+            new ExobiologyReferenceCatalog([Aleoida, alternateVariant]),
+            seed);
+
+        Assert.Equal(
+            alternateVariant.DisplayName,
+            state.ActiveSpeciesDisplayName);
+    }
+
+    [Fact]
     public void SwitchingSpeciesAbandonsPriorActiveSamples()
     {
         var other = new ExobiologyReference(

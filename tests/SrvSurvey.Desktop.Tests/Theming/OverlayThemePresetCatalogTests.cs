@@ -30,6 +30,10 @@ public sealed class OverlayThemePresetCatalogTests
             Color.Parse("#8A6A00"),
             defaults["bio.predictionPotential"]);
         Assert.Equal(Color.Parse("#FFFF00"), defaults["bio.gold"]);
+        Assert.Equal(Color.Parse("#FFFFFF"), defaults["bio.galacticRegion"]);
+        Assert.Equal(
+            Color.Parse("#808080"),
+            defaults["bio.galacticRegionPotential"]);
         Assert.Equal(Color.Parse("#B0B0B0"), defaults["bio.unknownGlyph"]);
         Assert.Equal((byte)190, defaults["bio.hatch"].A);
         Assert.Equal((byte)48, defaults["bio.empty"].A);
@@ -61,6 +65,7 @@ public sealed class OverlayThemePresetCatalogTests
         Assert.Equal(Color.Parse(values), preset.Colors["colonise.highlight"]);
         Assert.Equal(Color.Parse(primary), preset.Colors["bio.confirmed"]);
         Assert.Equal(Color.Parse(values), preset.Colors["bio.gold"]);
+        Assert.Equal(Color.Parse(text), preset.Colors["bio.galacticRegion"]);
         Assert.Equal(Color.Parse(text), preset.Colors["bio.unknownGlyph"]);
         Assert.Equal(Color.Parse(text), preset.Colors["bio.white"]);
         Assert.NotEqual(

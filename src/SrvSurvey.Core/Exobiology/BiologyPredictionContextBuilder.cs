@@ -7,11 +7,14 @@ public static class BiologyPredictionContextBuilder
 {
     private static readonly Lazy<NebulaCatalog> DefaultNebulaCatalog =
         new(NebulaCatalog.LoadEmbedded);
+    private static readonly Lazy<ExobiologyReferenceCatalog>
+        DefaultReferenceCatalog = new(ExobiologyReferenceCatalog.LoadEmbedded);
 
     public static BiologyPredictionInputs? Build(
         SystemScanSnapshot system,
         int bodyId,
-        NebulaCatalog? nebulaCatalog = null)
+        NebulaCatalog? nebulaCatalog = null,
+        ExobiologyReferenceCatalog? referenceCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(system);
         var body = system.Bodies.FirstOrDefault(candidate => candidate.BodyId == bodyId);
@@ -80,7 +83,9 @@ public static class BiologyPredictionContextBuilder
 
         return new BiologyPredictionInputs(
             context,
-            CreateKnowledge(body));
+            CreateKnowledge(
+                body,
+                referenceCatalog ?? DefaultReferenceCatalog.Value));
     }
 
     public static string? FlattenStarType(string? starType)
@@ -101,24 +106,29 @@ public static class BiologyPredictionContextBuilder
     }
 
     private static BiologyPredictionKnowledge CreateKnowledge(
-        SystemScanBodySnapshot body)
+        SystemScanBodySnapshot body,
+        ExobiologyReferenceCatalog referenceCatalog)
     {
-        var knownGenera = body.Organisms
-            .Select(organism => organism.GenusLocalized)
-            .Where(name => !string.IsNullOrWhiteSpace(name))
-            .Cast<string>()
+        var knownOrganisms = body.Organisms
+            .Select(organism => new
+            {
+                Genus = ResolveGenusDisplayName(organism, referenceCatalog),
+                Species = organism.SpeciesLocalized ?? organism.Species,
+            })
+            .Where(organism => !string.IsNullOrWhiteSpace(organism.Genus))
+            .ToArray();
+        var knownGenera = knownOrganisms
+            .Select(organism => organism.Genus!)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var knownSpecies = body.Organisms
-            .Where(organism => !string.IsNullOrWhiteSpace(organism.GenusLocalized))
+        var knownSpecies = knownOrganisms
             .Where(organism => !string.IsNullOrWhiteSpace(organism.Species))
             .GroupBy(
-                organism => organism.GenusLocalized!,
+                organism => organism.Genus!,
                 StringComparer.OrdinalIgnoreCase)
             .ToDictionary(
                 group => group.Key,
-                group => group.First().SpeciesLocalized
-                    ?? group.First().Species!,
+                group => group.First().Species!,
                 StringComparer.OrdinalIgnoreCase);
 
         return new BiologyPredictionKnowledge
@@ -128,6 +138,29 @@ public static class BiologyPredictionContextBuilder
             KnownGenera = knownGenera,
             KnownSpeciesByGenus = knownSpecies,
         };
+    }
+
+    private static string? ResolveGenusDisplayName(
+        SystemOrganismSnapshot organism,
+        ExobiologyReferenceCatalog referenceCatalog)
+    {
+        var reference = organism.EntryId is > 0
+            ? referenceCatalog.FindByEntryId(organism.EntryId.Value)
+            : null;
+        reference ??= referenceCatalog.FindByVariant(organism.Variant)
+            ?? referenceCatalog.FindBySpecies(organism.Species);
+        if (reference is not null)
+        {
+            return ExobiologyReferenceCatalog.GetGenusDisplayName(reference);
+        }
+
+        if (!string.IsNullOrWhiteSpace(organism.Genus))
+        {
+            return ExobiologyReferenceCatalog.GetGenusDisplayName(
+                organism.Genus);
+        }
+
+        return organism.GenusLocalized;
     }
 
     private static SystemScanBodySnapshot[] GetParentStars(

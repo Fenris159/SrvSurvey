@@ -239,7 +239,13 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
             false,
             AutoTrackCompositionScans: true,
             SkipAnalyzedCompositionScans: true,
-            new HashSet<string>(StringComparer.Ordinal) { AleoidaSpecies });
+            new Dictionary<int, IReadOnlySet<string>>
+            {
+                [7] = new HashSet<string>(StringComparer.Ordinal)
+                {
+                    AleoidaSpecies,
+                },
+            });
 
         var result = await tracker.ApplyAsync(
             Session(),
@@ -256,6 +262,34 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
         Assert.Equal(0, result.MutationCount);
         Assert.Empty((await store.LoadBodyAsync(BodyContext()))
             .Snapshot!.Bookmarks);
+    }
+
+    [Fact]
+    public async Task CompositionTrackingOnlySkipsSpeciesAnalyzedOnSameBody()
+    {
+        var (tracker, store) = CreateTracker();
+        var options = new SurfaceSurveyTrackingOptions(
+            false,
+            false,
+            AutoTrackCompositionScans: true,
+            SkipAnalyzedCompositionScans: true,
+            new Dictionary<int, IReadOnlySet<string>>
+            {
+                [8] = new HashSet<string>(StringComparer.Ordinal)
+                {
+                    AleoidaSpecies,
+                },
+            });
+
+        var result = await tracker.ApplyAsync(
+            Session(),
+            [Event(CodexEntry(latitude: 5, longitude: 6))],
+            Status(1, 2),
+            options);
+
+        Assert.Equal(1, result.MutationCount);
+        Assert.Single((await store.LoadBodyAsync(BodyContext()))
+            .Snapshot!.Bookmarks[AleoidaGenus]);
     }
 
     [Fact]

@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Navigation;
 
 namespace SrvSurvey.Core.Tests.Exobiology;
 
@@ -61,6 +62,30 @@ public sealed class CommanderCodexJournalTrackerTests : IDisposable
         Assert.True(result.HasChanges);
         var global = await store.LoadAsync("F123", null);
         Assert.Equal(42, Assert.Single(global.Data!.Firsts).Value.SystemAddress);
+    }
+
+    [Fact]
+    public async Task UsesJournalRegionWhenStarPositionIsUnavailable()
+    {
+        var store = new CommanderCodexStore(temporaryDirectory);
+        var tracker = new CommanderCodexJournalTracker(store);
+
+        var result = await tracker.ApplyAsync(
+        [
+            Parse("""{"timestamp":"2026-07-24T10:00:00Z","event":"Commander","Name":"Cmdr Test","FID":"F123"}"""),
+            Parse("""{"timestamp":"2026-07-24T10:01:00Z","event":"CodexEntry","EntryID":2310101,"SystemAddress":42,"BodyID":1,"Region":"$Codex_RegionName_18;"}"""),
+        ]);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(2, result.ChangedFileCount);
+        var regional = await store.LoadAsync("F123", null, 18);
+        Assert.True(regional.Exists);
+        Assert.Equal(
+            42,
+            Assert.Single(regional.Data!.Firsts).Value.SystemAddress);
+        Assert.Equal(
+            GalacticRegionMap.Regions.Single(region => region.Id == 18).Name,
+            regional.Data.RegionName);
     }
 
     [Fact]

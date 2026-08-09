@@ -47,6 +47,20 @@ public sealed class BiologyRewardBandScaleTests
     }
 
     [Fact]
+    public void GalacticRegionCandidateHasIndependentStateAndBrushes()
+    {
+        var control = new BiologyRewardBandControl();
+
+        control.IsGlobalRegionalFirst = true;
+        control.GlobalRegionalBrush = Brushes.White;
+        control.GlobalRegionalPotentialBrush = Brushes.Gray;
+
+        Assert.True(control.IsGlobalRegionalFirst);
+        Assert.Same(Brushes.White, control.GlobalRegionalBrush);
+        Assert.Same(Brushes.Gray, control.GlobalRegionalPotentialBrush);
+    }
+
+    [Fact]
     public void UnknownRewardUsesQuestionStateEvenWithMaximum()
     {
         var state = BiologyRewardBandScale.Calculate(

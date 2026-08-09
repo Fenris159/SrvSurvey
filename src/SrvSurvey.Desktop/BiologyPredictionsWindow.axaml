@@ -284,7 +284,7 @@
                                     <TextBlock Foreground="{DynamicResource RavenTextBrush}"
                                                FontSize="8"
                                                FontWeight="Bold"
-                                               Text="GLOBAL REGIONAL FIRST" />
+                                               Text="GALACTIC-REGION CANDIDATE" />
                                   </Border>
                                   <Border Margin="0,2,5,0"
                                           Classes="badge"
@@ -324,9 +324,12 @@
                                                                   BucketThreeMillions="{Binding RewardBucketThreeMillions}"
                                                                   IsPrediction="{Binding IsPrediction}"
                                                                   IsHighlighted="{Binding IsHighlightedFirst}"
+                                                                  IsGlobalRegionalFirst="{Binding IsGlobalRegionalFirst}"
                                                                   FilledBrush="{DynamicResource RavenAccentBrush}"
                                                                   PotentialBrush="{DynamicResource RavenAccentMutedBrush}"
                                                                   HighlightBrush="{DynamicResource RavenWarningBrush}"
+                                                                  GlobalRegionalBrush="{DynamicResource RavenOverlayBioGalacticRegionBrush}"
+                                                                  GlobalRegionalPotentialBrush="{DynamicResource RavenOverlayBioGalacticRegionPotentialBrush}"
                                                                   EdgeBrush="{DynamicResource RavenBorderBrush}"
                                                                   UnknownGlyphBrush="{DynamicResource RavenMutedTextBrush}" />
                                 <TextBlock Classes="monospace"

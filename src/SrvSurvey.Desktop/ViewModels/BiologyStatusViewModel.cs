@@ -155,15 +155,26 @@ public sealed record BiologyStatusViewModel(
         SystemScanBodySnapshot body,
         BioSampleSnapshot activeScan)
     {
-        return body.Organisms.FirstOrDefault(organism =>
-            string.Equals(
-                organism.Species,
-                activeScan.Species,
-                StringComparison.Ordinal)
-            || string.Equals(
-                organism.Genus,
-                activeScan.Genus,
-                StringComparison.Ordinal));
+        var entryMatch = activeScan.EntryId > 0
+            ? body.Organisms.FirstOrDefault(organism =>
+                organism.EntryId == activeScan.EntryId)
+            : null;
+        var speciesMatch = entryMatch is null
+            && !string.IsNullOrWhiteSpace(activeScan.Species)
+                ? body.Organisms.FirstOrDefault(organism => string.Equals(
+                    organism.Species,
+                    activeScan.Species,
+                    StringComparison.Ordinal))
+                : null;
+        return entryMatch
+            ?? speciesMatch
+            ?? body.Organisms.FirstOrDefault(organism =>
+                organism.EntryId is not > 0
+                && string.IsNullOrWhiteSpace(organism.Species)
+                && string.Equals(
+                    organism.Genus,
+                    activeScan.Genus,
+                    StringComparison.Ordinal));
     }
 
     private static string BuildStaleSampleWarning(

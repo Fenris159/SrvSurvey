@@ -1,6 +1,7 @@
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -126,6 +127,41 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
         Assert.Equal(1, client.CallCount);
     }
 
+    [Fact]
+    public async Task HideOwnSignalsIncludesHistoricalNonDeathSamples()
+    {
+        var survey = CreateSurvey();
+        survey.HideOwnCanonnSignals = true;
+        var client = new StubClient(new CanonnSystemPoiResult(
+            "Test",
+            [Signal("1", 0, 0.01)]));
+        var currentSurface = new SystemSurfaceBodySnapshot(
+            1,
+            "Test 1",
+            1_000_000,
+            null,
+            new Dictionary<string, IReadOnlyList<SurfaceCoordinate>>(),
+            [
+                new SurfaceBioScan(
+                    new SurfaceCoordinate(0, 0.01),
+                    150,
+                    "$Codex_Ent_Aleoids_Genus_Name;",
+                    Species,
+                    "Abandoned",
+                    2310101,
+                    "Test 1"),
+            ]);
+        using var viewModel = CreateViewModel(
+            survey,
+            client,
+            () => currentSurface);
+
+        await viewModel.RefreshAsync();
+
+        Assert.Empty(viewModel.Species);
+        Assert.False(viewModel.ShouldShow);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -149,7 +185,8 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
 
     private static PriorScansOverlayViewModel CreateViewModel(
         SystemSurveyViewModel survey,
-        ICanonnSystemPoiClient client)
+        ICanonnSystemPoiClient client,
+        Func<SystemSurfaceBodySnapshot?>? currentSurfaceProvider = null)
     {
         return new PriorScansOverlayViewModel(
             survey,
@@ -165,7 +202,8 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
                     HudCategory: "Biology"),
             ]),
             () => "CMDR Test",
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows),
+            currentSurfaceProvider);
     }
 
     private static EliteStatus SurfaceStatus(int heading)

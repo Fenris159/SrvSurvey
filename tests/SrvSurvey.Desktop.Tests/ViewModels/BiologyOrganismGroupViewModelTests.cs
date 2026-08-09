@@ -123,6 +123,136 @@ public sealed class BiologyOrganismGroupViewModelTests
         Assert.Contains(survey.Organisms, row => row.IsUnknown);
     }
 
+    [Fact]
+    public void GenusOnlyRestartMarksOnlyExactActivePredictionAsCurrent()
+    {
+        var scan = new SystemScanState();
+        scan.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""));
+        scan.Apply(Parse(
+            """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"G","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""));
+        scan.Apply(Parse(
+            """{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Parents":[{"Star":0}],"PlanetClass":"Rocky body","Landable":true,"SurfaceTemperature":180,"SurfaceGravity":2,"SurfacePressure":1000,"SemiMajorAxis":100000}"""));
+        scan.Apply(Parse(
+            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""));
+        var evaluator = new BiologyPredictionEvaluator(
+            new BiologyCriteriaCatalog(
+            [
+                new BiologyCriteriaNode(
+                    "Aleoida",
+                    "Arcus",
+                    "Green",
+                    [],
+                    [],
+                    false,
+                    null),
+                new BiologyCriteriaNode(
+                    "Aleoida",
+                    "Coronamus",
+                    "Lime",
+                    [],
+                    [],
+                    false,
+                    null),
+            ]));
+        var activeScan = new BioSampleSnapshot(
+            new SurfaceLocation(1, 2),
+            150,
+            "$Codex_Ent_Aleoids_Genus_Name;",
+            "$Codex_Ent_Aleoids_02_Name;",
+            "Aleoida Coronamus - Lime",
+            2310206,
+            "Test 1");
+
+        var survey = BiologySurveyViewModel.CreateBodyDetail(
+            scan.CreateSnapshot(),
+            1,
+            new ExobiologySnapshot(null, activeScan, null, 0, [], 0),
+            new BiologySurveyBodyDetailOptions(
+                highlightRegionalFirsts: false,
+                dimAnalyzedOrganisms: false,
+                hideGeoCount: false,
+                disablePredictions: false)
+            {
+                PredictionEvaluator = evaluator,
+            });
+
+        Assert.NotNull(survey);
+        Assert.Equal(2, survey.Organisms.Count);
+        Assert.False(Assert.Single(
+            survey.Organisms,
+            organism => organism.SpeciesName == "Arcus").IsCurrentSample);
+        Assert.True(Assert.Single(
+            survey.Organisms,
+            organism => organism.SpeciesName == "Coronamus").IsCurrentSample);
+    }
+
+    [Fact]
+    public void KnownVariantResolvesMissingEntryIdWithoutTreatingZeroAsAFirst()
+    {
+        var scan = new SystemScanState();
+        scan.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""));
+        scan.Apply(Parse(
+            """{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body","Landable":true}"""));
+        scan.Apply(Parse(
+            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""));
+        scan.Apply(Parse(
+            """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Variant":"$Codex_Ent_Aleoids_01_B_Name;"}"""));
+        var snapshot = scan.CreateSnapshot();
+        var body = Assert.Single(snapshot.Bodies);
+        var organism = Assert.Single(body.Organisms);
+        var discoveryContext = new BiologyDiscoveryContext(
+            42,
+            new CommanderCodexData(
+                "fid",
+                "Drew",
+                0,
+                null,
+                new Dictionary<long, CommanderCodexFirst>()),
+            null,
+            null,
+            RegionalCodexCandidateCatalog.Empty);
+        var options = new BiologySurveyBodyDetailOptions(
+            highlightRegionalFirsts: false,
+            dimAnalyzedOrganisms: false,
+            hideGeoCount: false,
+            disablePredictions: true)
+        {
+            DiscoveryContext = discoveryContext,
+        };
+
+        var missingEntryBody = body with
+        {
+            Organisms = [organism with { EntryId = null }],
+        };
+        var resolved = BiologySurveyViewModel.CreateBodyDetail(
+            snapshot with { Bodies = [missingEntryBody] },
+            1,
+            ExobiologySnapshot.Empty,
+            options);
+        Assert.True(Assert.Single(resolved!.Organisms).IsCommanderFirst);
+
+        var unresolvedBody = body with
+        {
+            Organisms =
+            [
+                organism with
+                {
+                    EntryId = 0,
+                    Species = "$Unknown_Species;",
+                    Variant = "$Unknown_Variant;",
+                },
+            ],
+        };
+        var unresolved = BiologySurveyViewModel.CreateBodyDetail(
+            snapshot with { Bodies = [unresolvedBody] },
+            1,
+            ExobiologySnapshot.Empty,
+            options);
+        Assert.False(Assert.Single(unresolved!.Organisms).IsCommanderFirst);
+    }
+
     private static BiologyOrganismRowViewModel Prediction(
         string species,
         string variant,

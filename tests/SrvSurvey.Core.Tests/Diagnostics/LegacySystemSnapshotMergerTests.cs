@@ -106,6 +106,36 @@ public sealed class LegacySystemSnapshotMergerTests
         Assert.True(existing["bodies"]!["future"]!.GetValue<bool>());
     }
 
+    [Fact]
+    public void MergeKeepsMultipleSpeciesFromTheSameGenus()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse(
+            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Genus_BrainTree;"}]}"""));
+        state.Apply(Parse(
+            """{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Genus_BrainTree;","Species":"$Species_BrainTree_A;","Variant":"$Variant_BrainTree_A;"}"""));
+        state.Apply(Parse(
+            """{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Genus_BrainTree;","Species":"$Species_BrainTree_B;","Variant":"$Variant_BrainTree_B;"}"""));
+
+        var merged = LegacySystemSnapshotMerger.Merge(
+            JsonNode.Parse(
+                """{"name":"Test","address":42,"bodies":[]}""")!.AsObject(),
+            state.CreateSnapshot(),
+            "Drew",
+            DateTimeOffset.UtcNow,
+            DateTimeOffset.UtcNow);
+
+        var organisms = Assert.Single(merged["bodies"]!.AsArray())!["organisms"]!
+            .AsArray();
+        Assert.Equal(2, organisms.Count);
+        Assert.Equal(
+            ["$Variant_BrainTree_A;", "$Variant_BrainTree_B;"],
+            organisms.Select(organism =>
+                organism!["variant"]!.GetValue<string>()));
+    }
+
     private static JournalEventEnvelope Parse(string json)
     {
         var success = JournalEventEnvelope.TryParse(

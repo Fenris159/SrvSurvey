@@ -121,6 +121,8 @@ public static class OverlayThemePresetCatalog
         colors["bio.predictionPotential"] = Scale(prediction, 0.45);
         colors["bio.gold"] = palette.Value;
         colors["bio.goldDark"] = Scale(palette.Value, 0.42);
+        colors["bio.galacticRegion"] = palette.Text;
+        colors["bio.galacticRegionPotential"] = Scale(palette.Text, 0.50);
         colors["bio.unknown"] = palette.Muted;
         colors["bio.unknownGlyph"] = palette.Text;
         colors["bio.hatch"] = WithAlpha(Scale(prediction, 0.28), 190);

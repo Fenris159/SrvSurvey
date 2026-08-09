@@ -94,7 +94,7 @@ public sealed class SystemScanStateTests
         state.Apply(Parse(
             """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""));
         state.Apply(Parse(
-            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","IsNewEntry":true}"""));
+            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2,"IsNewEntry":true}"""));
 
         var reported = Assert.Single(
             Assert.Single(state.CreateSnapshot().Bodies).Organisms);
@@ -118,6 +118,95 @@ public sealed class SystemScanStateTests
         Assert.True(organism.IsAnalyzed);
         Assert.True(organism.IsRegionalFirst);
         Assert.Equal(1, body.AnalyzedBiologicalSignalCount);
+    }
+
+    [Fact]
+    public void OrganicEventsKeepMultipleSpeciesFromTheSameGenus()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse(
+            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_BrainTree_Genus_Name;","Genus_Localised":"Brain Tree"}]}"""));
+        state.Apply(Parse(
+            """{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_BrainTree_Genus_Name;","Species":"$Codex_Ent_BrainTree_01_Name;","Variant":"$Codex_Ent_BrainTree_01_A_Name;"}"""));
+        state.Apply(Parse(
+            """{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_BrainTree_Genus_Name;","Species":"$Codex_Ent_BrainTree_02_Name;","Variant":"$Codex_Ent_BrainTree_02_A_Name;"}"""));
+
+        var body = Assert.Single(state.CreateSnapshot().Bodies);
+        Assert.Equal(2, body.Organisms.Count);
+        Assert.Equal(2, body.AnalyzedBiologicalSignalCount);
+        Assert.Equal(
+            [
+                "$Codex_Ent_BrainTree_01_A_Name;",
+                "$Codex_Ent_BrainTree_02_A_Name;",
+            ],
+            body.Organisms.Select(organism => organism.Variant));
+    }
+
+    [Fact]
+    public void LegacyCodexEntriesUseCanonicalGenusAndKeepDistinctVariants()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse(
+            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Brancae_Name;","Genus_Localised":"Brain Tree"}]}"""));
+        state.Apply(Parse(
+            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2100201,"Name":"$Codex_Ent_Seed_Name;","Name_Localised":"Roseum Brain Tree","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""));
+        state.Apply(Parse(
+            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2100202,"Name":"$Codex_Ent_SeedABCD_01_Name;","Name_Localised":"Gypseeum Brain Tree","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1.1,"Longitude":2.1}"""));
+
+        var body = Assert.Single(state.CreateSnapshot().Bodies);
+        Assert.Equal(2, body.Organisms.Count);
+        Assert.All(body.Organisms, organism =>
+        {
+            Assert.Equal("$Codex_Ent_Brancae_Name;", organism.Genus);
+            Assert.Equal("Brain Tree", organism.GenusLocalized);
+        });
+        Assert.Equal(
+            [2100201L, 2100202L],
+            body.Organisms.Select(organism => organism.EntryId));
+    }
+
+    [Fact]
+    public void ExactEntryIdentityCorrectsMismatchedGenusWithoutDuplication()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse(
+            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""));
+        state.Apply(Parse(
+            """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Wrong_Genus;","Species":"$Codex_Ent_Seed_Name;","Variant":"$Codex_Ent_Seed_Name;"}"""));
+        state.Apply(Parse(
+            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2100201,"Name_Localised":"Roseum Brain Tree","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""));
+
+        var organism = Assert.Single(
+            Assert.Single(state.CreateSnapshot().Bodies).Organisms);
+        Assert.Equal("$Codex_Ent_Brancae_Name;", organism.Genus);
+        Assert.Equal(2100201, organism.EntryId);
+    }
+
+    [Fact]
+    public void OrganicCodexEntriesRequireSurfaceCoordinatesAndExcludeFixedLife()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse(
+            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""));
+        state.Apply(Parse(
+            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""));
+        state.Apply(Parse(
+            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":0,"Longitude":2}"""));
+        state.Apply(Parse(
+            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2,"NearestDestination":"$Fixed_Event_Life_Cloud;"}"""));
+        Assert.Empty(Assert.Single(state.CreateSnapshot().Bodies).Organisms);
+
+        state.Apply(Parse(
+            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""));
+        Assert.Single(Assert.Single(state.CreateSnapshot().Bodies).Organisms);
     }
 
     [Fact]

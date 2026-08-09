@@ -82,8 +82,16 @@ public sealed class GuidesViewModelTests
             Icon(GuideIconKind.BiologyRewardPredicted).Meaning,
             StringComparison.OrdinalIgnoreCase);
         Assert.Contains(
-            "first-discovery",
+            "current Commander",
             Icon(GuideIconKind.BiologyRewardHighlighted).Meaning,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "external candidate data",
+            Icon(GuideIconKind.BiologyRewardGlobalRegional).Meaning,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "advisory",
+            Icon(GuideIconKind.BiologyRewardGlobalRegional).Meaning,
             StringComparison.OrdinalIgnoreCase);
         Assert.Contains(
             "already been analyzed",

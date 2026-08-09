@@ -70,6 +70,8 @@ public sealed class GuideIconPreviewControlTests
             PipPredictionBrush = Brushes.Gold,
             PipPredictionPotentialBrush = Brushes.DarkGoldenrod,
             PipHighlightBrush = Brushes.Yellow,
+            PipGlobalRegionalBrush = Brushes.White,
+            PipGlobalRegionalPotentialBrush = Brushes.Gray,
             PipUnknownBrush = Brushes.Gray,
             PipUnknownGlyphBrush = Brushes.LightGray,
             PipHatchBrush = Brushes.Black,

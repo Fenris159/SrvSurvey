@@ -20,24 +20,24 @@
                    FontWeight="Bold"
                    IsVisible="{Binding IsGlobalRegionalFirst}"
                    Text="&#x2600;"
-                   ToolTip.Tip="First discovery for this Galactic region" />
+                   ToolTip.Tip="Potential first discovery for this Galactic region; awaiting journal confirmation" />
         <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
                    FontSize="9"
                    FontWeight="Bold"
                    IsVisible="{Binding IsCommanderFirst}"
                    Text="&#x2691;"
-                   ToolTip.Tip="First discovery for this Commander" />
+                   ToolTip.Tip="New to this Commander according to Commander Codex history" />
         <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
                    FontSize="9"
                    FontWeight="Bold"
                    IsVisible="{Binding IsHighlightedRegionalFirst}"
                    Text="&#x2690;"
-                   ToolTip.Tip="First regional discovery for this Commander" />
+                   ToolTip.Tip="New to this Commander in the current Codex region" />
         <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
                    FontSize="9"
                    IsVisible="{Binding IsStandardRegionalFirst}"
                    Text="&#x2690;"
-                   ToolTip.Tip="First regional discovery for this Commander" />
+                   ToolTip.Tip="New to this Commander in the current Codex region" />
       </StackPanel>
     </DataTemplate>
   </UserControl.Resources>
@@ -124,6 +124,7 @@
                                                              BucketThreeMillions="{Binding RewardBucketThreeMillions}"
                                                              IsPrediction="{Binding IsPrediction}"
                                                              IsHighlighted="{Binding IsHighlighted}"
+                                                             IsGlobalRegionalFirst="{Binding IsGlobalRegionalFirst}"
                                                              IsDimmed="{Binding ShouldDim}"
                                                              FilledBrush="{DynamicResource RavenBioConfirmedBrush}"
                                                              PotentialBrush="{DynamicResource RavenBioPotentialBrush}"
@@ -132,6 +133,8 @@
                                                              PredictionPotentialBrush="{DynamicResource RavenBioPredictionPotentialBrush}"
                                                              HighlightBrush="{DynamicResource RavenBioGoldBrush}"
                                                              DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
+                                                             GlobalRegionalBrush="{DynamicResource RavenBioGalacticRegionBrush}"
+                                                             GlobalRegionalPotentialBrush="{DynamicResource RavenBioGalacticRegionPotentialBrush}"
                                                              UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
                                                              UnknownGlyphBrush="{DynamicResource RavenBioUnknownGlyphBrush}"
                                                              HatchBrush="{DynamicResource RavenBioHatchBrush}"
@@ -207,6 +210,7 @@
                                                          BucketThreeMillions="{Binding RewardBucketThreeMillions}"
                                                          IsPrediction="{Binding IsPrediction}"
                                                          IsHighlighted="{Binding IsHighlightedFirst}"
+                                                         IsGlobalRegionalFirst="{Binding IsGlobalRegionalFirst}"
                                                          IsDimmed="{Binding ShouldDim}"
                                                          FilledBrush="{DynamicResource RavenBioConfirmedBrush}"
                                                          PotentialBrush="{DynamicResource RavenBioPotentialBrush}"
@@ -215,6 +219,8 @@
                                                          PredictionPotentialBrush="{DynamicResource RavenBioPredictionPotentialBrush}"
                                                          HighlightBrush="{DynamicResource RavenBioGoldBrush}"
                                                          DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
+                                                         GlobalRegionalBrush="{DynamicResource RavenBioGalacticRegionBrush}"
+                                                         GlobalRegionalPotentialBrush="{DynamicResource RavenBioGalacticRegionPotentialBrush}"
                                                          UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
                                                          UnknownGlyphBrush="{DynamicResource RavenBioUnknownGlyphBrush}"
                                                          HatchBrush="{DynamicResource RavenBioHatchBrush}"

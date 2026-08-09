@@ -441,8 +441,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         var temperatureWarning = FormatTemperatureWarning(
             body,
             temperatureClause);
-        var genusName = ExobiologyReferenceCatalog.GetGenusName(
-            reference.SpeciesName);
+        var genusName = ExobiologyReferenceCatalog.GetGenusName(reference);
         return new BiologyCodexOrganismViewModel(
             reference.EntryId,
             reference.DisplayName ?? reference.VariantName,

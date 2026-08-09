@@ -1,6 +1,6 @@
 # Exobiology parity checklist
 
-Last updated: 2026-08-04
+Last updated: 2026-08-08
 
 Compares the Avalonia port against upstream WinForms
 (`njthomson/SrvSurvey`) for exobiology workflows: overlays, data feed,
@@ -41,6 +41,10 @@ Status legend: `done` · `n/a` (already equivalent) · `open`
 | E11 | Canonn rings on surface radar | done | Coordinator pushes `SurfaceMarkers` → `SetPriorScanSurfaceMarkers` |
 | E12 | First-footfall control on Exobiology tab | done | Checkbox + `ToggleFirstFootfallCommand` |
 | E13 | Live sample 1/2/analyse indicators on Exobiology tab | done | Bound to scanOne / scanTwo |
+| E14 | Canonical legacy/Horizons organism identity | done | EntryID/variant-first matching preserves multiple same-genus organisms across journal, merge, and migration paths |
+| E15 | Regional Codex fallback and first-discovery identity | done | Journal `Region` is used when coordinates are absent; unresolved EntryIDs are never treated as commander firsts |
+| E16 | Prior-scan ownership history | done | Hide-own filtering includes durable non-death samples, not only the two live sampling slots |
+| E17 | Sampling lifecycle and restart identity | done | Analyse always clears partial active state; restart display and active rows resolve EntryID/species before genus |
 
 ## Surface integration map
 
@@ -72,7 +76,7 @@ Hard hide conditions exercised in tests: docked, taxi, FSD jump, System Map
 (for bio status), AutoShow off, DSS temporary window expiry, guardian/human
 obscuring (coordinator), build-project suppress.
 
-## Integration notes (audit 2026-08-04)
+## Integration notes (audit 2026-08-08)
 
 **Wired and matching legacy**
 
@@ -84,6 +88,10 @@ obscuring (coordinator), build-project suppress.
 - External data vs external bio data split; prior scans need external data only
 - Codex images settings, reward buckets, predictions disable flag
 - System status remaining bio list when bio system plotter is off
+- Organic Codex surface filtering for fixed life events and invalid coordinates
+- Body-local composition tracker suppression for already-analyzed species
+- Canonical Horizons genus recovery for Brain Trees, anemones, bark mounds,
+  Amphora Plants, crystalline shards, and sinuous tubers
 
 **Port-only (no legacy equivalent)**
 

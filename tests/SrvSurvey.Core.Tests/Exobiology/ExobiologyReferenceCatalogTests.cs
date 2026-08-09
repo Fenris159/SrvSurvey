@@ -64,6 +64,27 @@ public sealed class ExobiologyReferenceCatalogTests
         Assert.Equal(expected, entry.GetLegacyLocalImageName());
     }
 
+    [Theory]
+    [InlineData(2100201, "$Codex_Ent_Brancae_Name;")]
+    [InlineData(2100202, "$Codex_Ent_Brancae_Name;")]
+    [InlineData(2100301, "$Codex_Ent_Cone_Name;")]
+    [InlineData(2100401, "$Codex_Ent_Sphere_Name;")]
+    [InlineData(2101400, "$Codex_Ent_Vents_Name;")]
+    [InlineData(2101500, "$Codex_Ent_Ground_Struct_Ice_Name;")]
+    [InlineData(2100501, "$Codex_Ent_Tube_Name;")]
+    public void LegacyBiologyUsesCanonicalJournalGenus(
+        long entryId,
+        string expectedGenus)
+    {
+        var reference = ExobiologyReferenceCatalog.LoadEmbedded()
+            .FindByEntryId(entryId);
+
+        Assert.NotNull(reference);
+        Assert.Equal(
+            expectedGenus,
+            ExobiologyReferenceCatalog.GetGenusName(reference));
+    }
+
     [Fact]
     public void LoadRejectsNonObjectReference()
     {
@@ -97,6 +118,7 @@ public sealed class ExobiologyReferenceCatalogTests
     [Theory]
     [InlineData("$Codex_Ent_Aleoids_Genus_Name;", "Aleoida")]
     [InlineData("$Codex_Ent_Bacterial_Genus_Name;", "Bacterium")]
+    [InlineData("$Codex_Ent_Brancae_Name;", "Brain Trees")]
     [InlineData("$Codex_Ent_Ground_Struct_Ice_Name;", "Crystalline Shards")]
     [InlineData("$Codex_Ent_Ingensradices_Genus_Name;", "Radicoida")]
     [InlineData("custom_tracker", "Custom Tracker")]

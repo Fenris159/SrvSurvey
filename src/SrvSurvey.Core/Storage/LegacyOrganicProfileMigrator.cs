@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Exploration;
 
 namespace SrvSurvey.Core.Storage;
 
@@ -1068,7 +1069,11 @@ public sealed class LegacyOrganicProfileMigrator
                 $"The legacy organism '{key}' has no recoverable genus.");
         }
 
-        var existing = FindExistingOrganism(target, sourceOrganism, genus);
+        var existing = FindExistingOrganism(
+            target,
+            sourceOrganism,
+            reference,
+            genus);
         var changed = false;
         if (existing is null)
         {
@@ -1078,7 +1083,11 @@ public sealed class LegacyOrganicProfileMigrator
             changed = true;
         }
 
-        var organismChanged = FillOrganism(existing, sourceOrganism, reference);
+        var organismChanged = FillOrganism(
+            existing,
+            sourceOrganism,
+            reference,
+            genus);
         return changed || organismChanged;
     }
 
@@ -1108,35 +1117,34 @@ public sealed class LegacyOrganicProfileMigrator
         var species = GetString(sourceOrganism, SpeciesProperty);
         var reference = catalog.FindByVariant(variant)
             ?? catalog.FindBySpecies(species);
-        var genus = GetString(sourceOrganism, GenusProperty)
-            ?? (reference is null
-                ? null
-                : ExobiologyReferenceCatalog.GetGenusName(
-                    reference.SpeciesName));
+        var genus = reference is null
+            ? GetString(sourceOrganism, GenusProperty)
+            : ExobiologyReferenceCatalog.GetGenusName(reference);
         return (reference, genus);
     }
 
     private static JsonObject? FindExistingOrganism(
         JsonArray target,
         JsonObject sourceOrganism,
+        ExobiologyReference? reference,
         string? genus)
     {
-        var variant = GetString(sourceOrganism, VariantProperty);
-        if (!string.IsNullOrWhiteSpace(variant))
-        {
-            var existingByVariant = target.OfType<JsonObject>().FirstOrDefault(organism =>
-                string.Equals(
-                    GetString(organism, VariantProperty),
-                    variant,
-                    StringComparison.Ordinal));
-            if (existingByVariant is not null)
-            {
-                return existingByVariant;
-            }
-        }
-
-        return target.OfType<JsonObject>().FirstOrDefault(organism =>
-            string.Equals(GetString(organism, GenusProperty), genus, StringComparison.Ordinal));
+        var sourceEntryId = GetInt64(sourceOrganism, EntryIdProperty);
+        var entryId = sourceEntryId is > 0
+            ? sourceEntryId
+            : reference?.EntryId;
+        var variant = GetString(sourceOrganism, VariantProperty)
+            ?? reference?.VariantName;
+        var species = GetString(sourceOrganism, SpeciesProperty)
+            ?? reference?.SpeciesName;
+        return OrganismIdentityMatcher.FindBestMatch(
+            target.OfType<JsonObject>(),
+            new OrganismIdentity(genus, entryId, variant, species),
+            organism => new OrganismIdentity(
+                GetString(organism, GenusProperty),
+                GetInt64(organism, EntryIdProperty),
+                GetString(organism, VariantProperty),
+                GetString(organism, SpeciesProperty)));
     }
 
     private static void ValidateLegacyBioScan(JsonObject scan)
@@ -1190,7 +1198,8 @@ public sealed class LegacyOrganicProfileMigrator
     private static bool FillOrganism(
         JsonObject target,
         JsonObject source,
-        ExobiologyReference? reference)
+        ExobiologyReference? reference,
+        string genus)
     {
         var changed = false;
         EnsureOptionalInt64(target, EntryIdProperty);
@@ -1204,6 +1213,14 @@ public sealed class LegacyOrganicProfileMigrator
         }
 
         changed |= FillMissingReferenceData(target, reference);
+        if (!string.Equals(
+                GetString(target, GenusProperty),
+                genus,
+                StringComparison.Ordinal))
+        {
+            target[GenusProperty] = genus;
+            changed = true;
+        }
 
         if (GetBoolean(source, AnalyzedProperty) == true
             && GetBoolean(target, AnalyzedProperty) != true)

@@ -10,6 +10,7 @@ public sealed class CommanderCodexJournalTracker(
     JournalSessionState? session = null,
     string? frontierIdFilter = null)
 {
+    private const string JournalRegionPrefix = "$Codex_RegionName_";
     private readonly CommanderCodexStore store = store
         ?? throw new ArgumentNullException(nameof(store));
     private readonly JournalSessionState session = session ?? new();
@@ -65,7 +66,7 @@ public sealed class CommanderCodexJournalTracker(
             return 1;
         }
 
-        QueueDiscovery(pending, discovery);
+        QueueDiscovery(pending, discovery, journalEvent.Payload);
         return 1;
     }
 
@@ -113,7 +114,8 @@ public sealed class CommanderCodexJournalTracker(
 
     private void QueueDiscovery(
         Dictionary<LedgerKey, List<CommanderCodexDiscovery>> pending,
-        CommanderCodexDiscovery discovery)
+        CommanderCodexDiscovery discovery,
+        JsonElement root)
     {
         AddPending(
             pending,
@@ -123,8 +125,11 @@ public sealed class CommanderCodexJournalTracker(
                 0,
                 null),
             discovery);
-        if (session.StarPosition is not { } position
-            || GalacticRegionMap.Find(position) is not { } region)
+        var region = session.StarPosition is { } position
+            ? GalacticRegionMap.Find(position)
+            : null;
+        region ??= FindJournalRegion(GetString(root, "Region"));
+        if (region is null)
         {
             return;
         }
@@ -137,6 +142,32 @@ public sealed class CommanderCodexJournalTracker(
                 region.Id,
                 region.Name),
             discovery);
+    }
+
+    private static GalacticRegion? FindJournalRegion(string? journalName)
+    {
+        if (string.IsNullOrWhiteSpace(journalName))
+        {
+            return null;
+        }
+
+        if (journalName.StartsWith(JournalRegionPrefix, StringComparison.Ordinal)
+            && journalName.EndsWith(';')
+            && int.TryParse(
+                journalName[JournalRegionPrefix.Length..^1],
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var regionId))
+        {
+            return GalacticRegionMap.Regions.FirstOrDefault(region =>
+                region.Id == regionId);
+        }
+
+        return GalacticRegionMap.Regions.FirstOrDefault(region =>
+            string.Equals(
+                region.Name,
+                journalName,
+                StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task<(int ChangedEntryCount, int ChangedFileCount)> PersistPendingAsync(
@@ -185,6 +216,14 @@ public sealed class CommanderCodexJournalTracker(
         }
 
         discoveries.Add(discovery);
+    }
+
+    private static string? GetString(JsonElement root, string propertyName)
+    {
+        return root.TryGetProperty(propertyName, out var value)
+            && value.ValueKind == JsonValueKind.String
+                ? value.GetString()
+                : null;
     }
 
     private static long? GetInt64(JsonElement root, string propertyName)

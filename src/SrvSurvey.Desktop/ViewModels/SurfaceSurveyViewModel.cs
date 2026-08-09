@@ -467,7 +467,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                     survey.AutoRemoveTrackerOnFinalSample,
                     survey.AutoTrackCompositionScans,
                     survey.SkipAnalyzedCompositionScans,
-                    GetAnalyzedSpecies()),
+                    GetAnalyzedSpeciesByBodyId()),
                 cancellationToken)
             .ConfigureAwait(true);
         var deathResult = await MarkLostSurfaceScansAsync(
@@ -954,14 +954,21 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         return ExobiologyReferenceCatalog.GetGenusDisplayName(name);
     }
 
-    private HashSet<string> GetAnalyzedSpecies()
+    private IReadOnlyDictionary<int, IReadOnlySet<string>>
+        GetAnalyzedSpeciesByBodyId()
     {
         return survey.Snapshot.Bodies
-            .SelectMany(body => body.Organisms)
-            .Where(organism => organism.IsAnalyzed
-                && !string.IsNullOrWhiteSpace(organism.Species))
-            .Select(organism => organism.Species!)
-            .ToHashSet(StringComparer.Ordinal);
+            .Select(body => new
+            {
+                body.BodyId,
+                Species = (IReadOnlySet<string>)body.Organisms
+                    .Where(organism => organism.IsAnalyzed
+                        && !string.IsNullOrWhiteSpace(organism.Species))
+                    .Select(organism => organism.Species!)
+                    .ToHashSet(StringComparer.Ordinal),
+            })
+            .Where(body => body.Species.Count > 0)
+            .ToDictionary(body => body.BodyId, body => body.Species);
     }
 
     private void OnSurveyPropertyChanged(

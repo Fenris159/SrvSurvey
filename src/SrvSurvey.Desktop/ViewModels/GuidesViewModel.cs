@@ -205,6 +205,7 @@ public enum GuideIconKind
     BiologyRewardKnown,
     BiologyRewardPredicted,
     BiologyRewardHighlighted,
+    BiologyRewardGlobalRegional,
     BiologyRewardDimmed,
     BiologyRewardUnknown,
     CanonnSignals,

@@ -34,6 +34,8 @@ public sealed class LegacyOverlayThemeStore
             ["bio.predictionPotential"] = Color.FromArgb(255, 138, 106, 0),
             ["bio.gold"] = Color.FromArgb(255, 255, 255, 0),
             ["bio.goldDark"] = Color.FromArgb(255, 120, 111, 0),
+            ["bio.galacticRegion"] = Color.FromArgb(255, 255, 255, 255),
+            ["bio.galacticRegionPotential"] = Color.FromArgb(255, 128, 128, 128),
             ["bio.unknown"] = Color.FromArgb(255, 105, 105, 105),
             ["bio.unknownGlyph"] = Color.FromArgb(255, 176, 176, 176),
             ["bio.hatch"] = Color.FromArgb(190, 64, 32, 0),

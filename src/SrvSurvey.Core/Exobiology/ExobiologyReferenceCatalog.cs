@@ -170,6 +170,58 @@ public sealed class ExobiologyReferenceCatalog
         return $"{CodexEntPrefix}{genus}_Genus_Name;";
     }
 
+    /// <summary>
+    /// Returns the canonical journal genus for a catalog entry. Horizons
+    /// biology variants use unrelated variant tokens (for example Seed and
+    /// SeedABCD for Brain Trees), so their catalog subclass must be used to
+    /// recover the genus emitted by FSSBodySignals and ScanOrganic.
+    /// </summary>
+    public static string GetGenusName(ExobiologyReference reference)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        if (reference.IsBiology)
+        {
+            var legacyGenus = reference.SubClass switch
+            {
+                "Anemone" => "$Codex_Ent_Sphere_Name;",
+                "Amphora Plant" => "$Codex_Ent_Vents_Name;",
+                "Bark Mounds" => "$Codex_Ent_Cone_Name;",
+                "Brain Tree" => "$Codex_Ent_Brancae_Name;",
+                "Shards" => "$Codex_Ent_Ground_Struct_Ice_Name;",
+                "Tubers" => "$Codex_Ent_Tube_Name;",
+                _ => null,
+            };
+            if (legacyGenus is not null)
+            {
+                return legacyGenus;
+            }
+        }
+
+        return GetGenusName(reference.SpeciesName);
+    }
+
+    /// <summary>
+    /// Returns the catalog's canonical English genus label, including the
+    /// legacy Horizons names normalized by the original Codex reference
+    /// loader for prediction matching.
+    /// </summary>
+    public static string GetGenusDisplayName(ExobiologyReference reference)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        var legacyDisplayName = reference.SubClass switch
+        {
+            "Anemone" => "Anemone",
+            "Amphora Plant" => "Amphora Plant",
+            "Bark Mounds" => "Bark Mounds",
+            "Brain Tree" => "Brain Trees",
+            "Shards" => "Crystalline Shards",
+            "Tubers" => "Sinuous Tubers",
+            _ => null,
+        };
+        return legacyDisplayName
+            ?? GetGenusDisplayName(GetGenusName(reference));
+    }
+
     public static int GetSampleDistanceMeters(string? genusName)
     {
         if (string.IsNullOrWhiteSpace(genusName))
@@ -237,7 +289,7 @@ public sealed class ExobiologyReferenceCatalog
             "VENTS" => "Amphora Plant",
             "SPHERE" => "Anemone",
             "CONE" => "Bark Mounds",
-            "BRANCAE" => "Brain Tree",
+            "BRANCAE" => "Brain Trees",
             "GROUND_STRUCT_ICE" => "Crystalline Shards",
             "TUBE" => "Sinuous Tubers",
             "INGENSRADICES" => "Radicoida",

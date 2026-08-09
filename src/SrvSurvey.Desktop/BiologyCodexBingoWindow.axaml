@@ -191,7 +191,7 @@
               </StackPanel>
               <ProgressBar Height="8"
                            Maximum="100"
-                           Value="{Binding SelectedNode.CompletionPercent}" />
+                           Value="{Binding SelectedCompletionPercent}" />
               <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                 <StackPanel Spacing="3">
                   <TextBlock Classes="muted" Text="COMPLETION" />
