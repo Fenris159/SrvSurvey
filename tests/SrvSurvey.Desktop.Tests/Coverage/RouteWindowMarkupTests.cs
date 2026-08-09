@@ -92,6 +92,19 @@ public sealed class RouteWindowMarkupTests
     }
 
     [Fact]
+    public void SaveAsValidationUsesABooleanVisibilityBinding()
+    {
+        var document = LoadRouteWindow();
+        var error = document.Descendants()
+            .Single(element =>
+                element.Attribute("Text")?.Value == "{Binding SaveAsError}");
+
+        Assert.Equal(
+            "{Binding HasSaveAsError}",
+            error.Attribute("IsVisible")?.Value);
+    }
+
+    [Fact]
     public void RouteListReservesScrollbarGutterOutsidePanels()
     {
         var document = LoadRouteWindow();

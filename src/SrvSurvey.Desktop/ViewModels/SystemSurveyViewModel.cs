@@ -819,11 +819,15 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             if (SetField(ref bodyInformation, value))
             {
                 OnPropertyChanged(nameof(HasBodyInformation));
+                OnPropertyChanged(nameof(BodyInformationDisplay));
             }
         }
     }
 
     public bool HasBodyInformation => BodyInformation is not null;
+
+    public BodyInformationViewModel BodyInformationDisplay =>
+        BodyInformation ?? BodyInformationViewModel.Empty;
 
     public BiologySurveyViewModel? BiologySurvey
     {
@@ -2934,6 +2938,30 @@ public sealed record BodyInformationViewModel(
     IReadOnlyList<BodyRingRowViewModel> Rings,
     bool IsScanRequired)
 {
+    public static BodyInformationViewModel Empty { get; } = new(
+        0,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        false,
+        false,
+        string.Empty,
+        false,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        [],
+        [],
+        [],
+        false);
+
     public bool HasMarkers => !string.IsNullOrWhiteSpace(Markers);
 
     public bool HasMappedValue => !string.IsNullOrWhiteSpace(MappedValue);

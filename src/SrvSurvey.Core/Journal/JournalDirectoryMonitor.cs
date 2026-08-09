@@ -8,6 +8,8 @@ namespace SrvSurvey.Core.Journal;
     Justification = "The monitor is process-scoped and its poll gate may have in-flight waiters.")]
 public sealed class JournalDirectoryMonitor
 {
+    private const int StatusReadFailureReportThreshold = 2;
+
     private readonly string journalDirectory;
     private readonly string? targetFrontierId;
     private readonly Dictionary<string, JournalIdentityCacheEntry>
@@ -29,6 +31,8 @@ public sealed class JournalDirectoryMonitor
     private CompanionFileStamp? cargoFileStamp;
     private CompanionFileStamp? shipLockerFileStamp;
     private CompanionFileStamp? marketFileStamp;
+    private int consecutiveStatusReadFailures;
+    private bool statusReadFailureReported;
     private bool hasCompletedFirstPoll;
 
     public JournalDirectoryMonitor(
@@ -130,7 +134,10 @@ public sealed class JournalDirectoryMonitor
             companions.Market,
             errors,
             IsBootstrapRead: !hasCompletedFirstPoll,
-            ShipLocker: companions.ShipLocker);
+            ShipLocker: companions.ShipLocker)
+        {
+            StatusReadErrorRecovered = companions.StatusReadErrorRecovered,
+        };
         hasCompletedFirstPoll = true;
         return update;
     }
@@ -173,7 +180,13 @@ public sealed class JournalDirectoryMonitor
             .ConfigureAwait(false);
         var market = await PollMarketCompanionAsync(errors, cancellationToken)
             .ConfigureAwait(false);
-        return new CompanionPollResults(status, navRoute, cargo, shipLocker, market);
+        return new CompanionPollResults(
+            status.Status,
+            navRoute,
+            cargo,
+            shipLocker,
+            market,
+            status.ReadErrorRecovered);
     }
 
     private void RaiseUpdateEvents(JournalMonitorUpdate update)
@@ -218,7 +231,8 @@ public sealed class JournalDirectoryMonitor
         NavRouteSnapshot? NavRoute,
         CargoSnapshot? Cargo,
         ShipLockerSnapshot? ShipLocker,
-        MarketSnapshot? Market);
+        MarketSnapshot? Market,
+        bool StatusReadErrorRecovered);
 
     public async Task RunAsync(
         TimeSpan? pollingInterval = null,
@@ -455,11 +469,12 @@ public sealed class JournalDirectoryMonitor
         DateTime LastWriteTimeUtc,
         string? FrontierId);
 
-    private async Task<EliteStatus?> PollStatusCompanionAsync(
+    private async Task<StatusCompanionPollResult> PollStatusCompanionAsync(
         List<string> errors,
         CancellationToken cancellationToken)
     {
         EliteStatus? status = null;
+        var readErrorRecovered = false;
         var statusPath = Path.Combine(journalDirectory, StatusFileReader.FileName);
         var statusStampState = GetCompanionFileStamp(
             statusPath,
@@ -475,6 +490,7 @@ public sealed class JournalDirectoryMonitor
             if (statusResult.Status is not null
                 && statusResult.ContentHash is not null)
             {
+                readErrorRecovered = ResetStatusReadFailure();
                 statusFileStamp = nextStatusFileStamp;
                 if (!string.Equals(
                         statusResult.ContentHash,
@@ -488,16 +504,36 @@ public sealed class JournalDirectoryMonitor
             }
             else if (statusResult.Error is not null)
             {
-                errors.Add(statusResult.Error);
+                consecutiveStatusReadFailures++;
+                if (consecutiveStatusReadFailures
+                    >= StatusReadFailureReportThreshold
+                    && !statusReadFailureReported)
+                {
+                    statusReadFailureReported = true;
+                    errors.Add(statusResult.Error);
+                }
             }
         }
         else if (statusStampState == CompanionFileStampState.Missing)
         {
+            readErrorRecovered = ResetStatusReadFailure();
             statusFileStamp = null;
         }
 
-        return status;
+        return new StatusCompanionPollResult(status, readErrorRecovered);
     }
+
+    private bool ResetStatusReadFailure()
+    {
+        var wasReported = statusReadFailureReported;
+        consecutiveStatusReadFailures = 0;
+        statusReadFailureReported = false;
+        return wasReported;
+    }
+
+    private readonly record struct StatusCompanionPollResult(
+        EliteStatus? Status,
+        bool ReadErrorRecovered);
 
     private async Task<NavRouteSnapshot?> PollNavRouteCompanionAsync(
         List<string> errors,
@@ -770,6 +806,8 @@ public sealed record JournalMonitorUpdate(
     bool IsBootstrapRead,
     ShipLockerSnapshot? ShipLocker = null)
 {
+    public bool StatusReadErrorRecovered { get; init; }
+
     public bool HasChanges => IsBootstrapRead
         || JournalEvents.Count > 0
         || Status is not null
@@ -777,5 +815,6 @@ public sealed record JournalMonitorUpdate(
         || Cargo is not null
         || ShipLocker is not null
         || Market is not null
-        || Errors.Count > 0;
+        || Errors.Count > 0
+        || StatusReadErrorRecovered;
 }

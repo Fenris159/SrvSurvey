@@ -582,7 +582,7 @@
           <TextBox Text="{Binding SaveAsName, Mode=TwoWay}"
                    PlaceholderText="Route name" />
           <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
-                     IsVisible="{Binding !!SaveAsError}"
+                     IsVisible="{Binding HasSaveAsError}"
                      Text="{Binding SaveAsError}"
                      TextWrapping="Wrap" />
           <StackPanel Orientation="Horizontal"

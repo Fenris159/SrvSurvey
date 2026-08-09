@@ -1,34 +1,24 @@
-# SrvSurvey-XP 2.1.3.0-rc.7
+# SrvSurvey-XP 2.1.3.0-rc.8
 
-This release candidate restores exobiology behavior that was lost or
-misinterpreted during the Avalonia port. The changes below are the delta from
-`2.1.3.0-rc.6`.
+This release candidate hardens Elite status monitoring and removes noisy UI
+binding failures. The changes below are the delta from `2.1.3.0-rc.7`.
 
-## What's new since 2.1.3.0-rc.6
+## What's fixed since 2.1.3.0-rc.7
 
-- Preserves exact organism identity across journals, predictions, snapshot
-  merges, legacy migration, and restart recovery, including bodies containing
-  multiple species or variants from the same genus.
-- Restores canonical Horizons genus handling for Brain Trees, anemones, bark
-  mounds, Amphora Plants, crystalline shards, and sinuous tubers, including
-  their sampling-distance behavior.
-- Aligns sampling and composition tracking with legacy behavior: completed
-  analysis clears partial sample state, active organisms resolve by EntryID or
-  species, and analyzed-species suppression remains local to the correct body.
-- Restores durable prior-scan ownership and regional Codex fallback when journal
-  coordinates are unavailable, while unresolved Codex EntryIDs are never
-  classified as commander first discoveries.
-- Adds the distinct white potential galactic or regional first-discovery PIP,
-  theme controls, and glossary guidance, while filtering fixed-life Codex events
-  and invalid surface coordinates from organism results.
+- Defers the first failed `Status.json` poll so Elite's brief shutdown rewrite
+  no longer leaves a JSON warning after the game closes, while persistent read
+  failures are still reported once and recovery clears the warning.
+- Prevents Save As validation from treating its error text as a Boolean value.
+- Keeps body-information overlay bindings valid while no body is selected,
+  eliminating the repeated null-binding errors during target transitions.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.7`
-- Tag: `xp-v2.1.3.0-rc.7`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.7-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.7-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.7-x86_64.AppImage`
+- Version: `2.1.3.0-rc.8`
+- Tag: `xp-v2.1.3.0-rc.8`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.8-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.8-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.8-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
