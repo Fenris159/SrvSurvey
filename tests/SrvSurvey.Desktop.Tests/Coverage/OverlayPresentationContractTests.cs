@@ -1,4 +1,5 @@
 using SrvSurvey.Desktop.Platform.Overlay;
+using System.Xml.Linq;
 
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
@@ -479,6 +480,52 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("SharedSizeGroup=\"SystemBiologyReward\"", biologySurvey);
         Assert.Contains("<ItemsControl HorizontalAlignment=\"Left\"", biologySurvey);
         Assert.Contains("ItemsSource=\"{Binding RewardBands}\"", biologySurvey);
+    }
+
+    [Fact]
+    public void OverlaySettingsDisableInactiveDssAndCanonnDependencies()
+    {
+        var root = FindRepositoryRoot();
+        var document = XDocument.Load(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Views",
+            "OverlaySettingsView.axaml"));
+        var controls = document.Descendants().ToArray();
+        XElement BoundControl(string name, string property, string binding) =>
+            controls.Single(element =>
+                element.Name.LocalName == name
+                && element.Attribute(property)?.Value.Contains(
+                    binding,
+                    StringComparison.Ordinal) == true);
+
+        var distance = BoundControl(
+            "NumericUpDown",
+            "Value",
+            "SystemSurvey.DssDistanceLimitLs");
+        Assert.Equal(
+            "{Binding SystemSurvey.SkipDistantDssCandidates}",
+            distance.Parent?.Attribute("IsEnabled")?.Value);
+
+        var priorScans = BoundControl(
+            "CheckBox",
+            "IsChecked",
+            "SystemSurvey.AutoShowPriorScans");
+        Assert.Equal(
+            "{Binding SystemSurvey.UseExternalData}",
+            priorScans.Parent?.Attribute("IsEnabled")?.Value);
+
+        var radar = BoundControl(
+            "CheckBox",
+            "IsChecked",
+            "SystemSurvey.ShowCanonnSignalsOnRadar");
+        Assert.Equal(
+            "{Binding SystemSurvey.AutoShowPriorScans}",
+            radar.Parent?.Attribute("IsEnabled")?.Value);
+        Assert.Equal(
+            "{Binding SystemSurvey.UseExternalData}",
+            radar.Parent?.Parent?.Attribute("IsEnabled")?.Value);
     }
 
     [Fact]
