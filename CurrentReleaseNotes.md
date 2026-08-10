@@ -1,36 +1,26 @@
-# SrvSurvey-XP 2.1.3.0-rc.9
+# SrvSurvey-XP 2.1.3.0-rc.10
 
-This release candidate restores System Biology overlay state and prediction
-parity. The changes below are the delta from `2.1.3.0-rc.8`.
+This release candidate improves overlay-position fidelity and external system
+data refreshes. The changes below are the delta from `2.1.3.0-rc.9`.
 
-## What's fixed since 2.1.3.0-rc.8
+## What's fixed since 2.1.3.0-rc.9
 
-- Shows the newly mapped body's biology details for the configured post-DSS
-  interval, including during supercruise, and immediately updates the overlay
-  when its proximity or post-DSS visibility settings change.
-- Preserves every plausible genus prediction PIP even when alternative
-  candidates exceed the reported biological-signal count, matching the legacy
-  overlay without treating those candidates as extra signals or rewards.
-- Aligns System Biology body names, prediction PIPs, and reward estimates in
-  stable shared columns so rows remain compact and readable.
-- Restores the legacy biology PIP layers and state styling, including complete
-  prediction ranges, independent fills, hatching, segment borders, outer
-  frames, and galactic or regional first markers. The expanded PIP palette is
-  available in the theme editor and presets, while older custom themes derive
-  the new roles from their existing biology and general colours.
-- Keeps live overlay dragging and the position editor synchronized through the
-  same `plotters.json` layout. Opening the editor now persists any pending live
-  moves first, so its previews start at the positions just set in game.
-- Disables dependent DSS, prior-scan, radar, and post-DSS duration controls when
-  their parent setting is off, making the active behavior unambiguous.
+- Aligns editor preview coordinates with the live overlay content origin, so a
+  panel moved in game appears at the same relative position in the editor.
+- Prevents the idle Biology Sample Status state from binding its progress bar
+  to a missing selected organism, removing repeated null-binding log errors
+  without changing the intentional ready-state transition.
+- Looks up EDSM body data by system address and bypasses stale cached misses for
+  newly visited systems. Expected EDSM or Spansh indexing delays now use bounded
+  retries instead of being reported as permanent availability warnings.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.9`
-- Tag: `xp-v2.1.3.0-rc.9`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.9-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.9-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.9-x86_64.AppImage`
+- Version: `2.1.3.0-rc.10`
+- Tag: `xp-v2.1.3.0-rc.10`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.10-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.10-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.10-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.

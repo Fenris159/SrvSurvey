@@ -1271,6 +1271,56 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task NotIndexedExternalBodiesRetryAndStopAfterSuccess()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-system-body-retry-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+            var external = new SequenceSystemBodyDataClient(
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]),
+                new SystemBodyDataLoadResult([], [], []));
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            using var viewModel = new MainWindowViewModel(journals,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = paths,
+                    SystemBodyDataClient = external,
+                    SystemBodyDataRetryDelay = TimeSpan.Zero,
+                });
+
+            await viewModel.RefreshAsync();
+            await viewModel.PendingSystemBodyDataLoad;
+            Assert.Equal(1, external.CallCount);
+
+            await viewModel.RefreshAsync();
+            await viewModel.PendingSystemBodyDataLoad;
+            Assert.Equal(2, external.CallCount);
+
+            await viewModel.RefreshAsync();
+            Assert.Equal(2, external.CallCount);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task SystemChangeCancelsStaleExternalBodyRequest()
     {
         var root = Path.Combine(
@@ -2981,6 +3031,29 @@ public sealed class MainWindowViewModelTests
         {
             CallCount++;
             return Task.FromResult(result);
+        }
+    }
+
+    private sealed class SequenceSystemBodyDataClient
+        : ISystemBodyDataClient
+    {
+        private readonly Queue<SystemBodyDataLoadResult> results;
+
+        public SequenceSystemBodyDataClient(
+            params SystemBodyDataLoadResult[] results)
+        {
+            this.results = new Queue<SystemBodyDataLoadResult>(results);
+        }
+
+        public int CallCount { get; private set; }
+
+        public Task<SystemBodyDataLoadResult> GetAsync(
+            string systemName,
+            long systemAddress,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return Task.FromResult(results.Dequeue());
         }
     }
 

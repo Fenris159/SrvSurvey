@@ -14,7 +14,8 @@ public sealed class SystemBodyDataClientTests
         var client = new SystemBodyDataClient(
             new HttpClient(handler),
             new Uri("https://edsm.test/"),
-            new Uri("https://spansh.test/api/"));
+            new Uri("https://spansh.test/api/"),
+            utcNow: () => DateTimeOffset.FromUnixTimeSeconds(120));
 
         var result = await client.GetAsync("Test System", 42);
 
@@ -23,7 +24,7 @@ public sealed class SystemBodyDataClientTests
             .Select(provider => provider.Provider));
         Assert.Equal(
             [
-                "https://edsm.test/api-system-v1/bodies?systemName=Test%20System",
+                "https://edsm.test/api-system-v1/bodies?systemId64=42&cacheEpoch=4",
                 "https://spansh.test/api/dump/42/",
             ],
             handler.Requests.Order(StringComparer.Ordinal));
@@ -123,11 +124,59 @@ public sealed class SystemBodyDataClientTests
             warning => warning.Contains("16 MiB", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task ProvidersNotIndexedYetAreReportedWithoutWarnings()
+    {
+        var handler = new ProviderHandler
+        {
+            EdsmJson = "{}",
+            SpanshStatus = HttpStatusCode.NotFound,
+        };
+        var client = new SystemBodyDataClient(
+            new HttpClient(handler),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/"),
+            utcNow: () => DateTimeOffset.FromUnixTimeSeconds(120));
+
+        var result = await client.GetAsync("Test System", 42);
+
+        Assert.Empty(result.Providers);
+        Assert.Empty(result.Warnings);
+        Assert.Equal(["EDSM", "Spansh"], result.NotIndexedProviders);
+    }
+
+    [Fact]
+    public async Task EdsmRetryUsesANewCacheEpoch()
+    {
+        var handler = new ProviderHandler();
+        var now = DateTimeOffset.FromUnixTimeSeconds(120);
+        var client = new SystemBodyDataClient(
+            new HttpClient(handler),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/"),
+            utcNow: () => now);
+
+        await client.GetAsync("Test System", 42);
+        now = now.AddSeconds(30);
+        await client.GetAsync("Test System", 42);
+
+        Assert.Contains(
+            "https://edsm.test/api-system-v1/bodies?systemId64=42&cacheEpoch=4",
+            handler.Requests);
+        Assert.Contains(
+            "https://edsm.test/api-system-v1/bodies?systemId64=42&cacheEpoch=5",
+            handler.Requests);
+    }
+
     private sealed class ProviderHandler : HttpMessageHandler
     {
         public List<string> Requests { get; } = [];
 
         public string SpanshJson { get; init; } = SpanshJsonTemplate;
+
+        public HttpStatusCode SpanshStatus { get; init; } = HttpStatusCode.OK;
+
+        public string EdsmJson { get; init; } = EdsmJsonTemplate;
 
         public bool OversizeEdsm { get; init; }
 
@@ -138,7 +187,7 @@ public sealed class SystemBodyDataClientTests
             Requests.Add(request.RequestUri!.AbsoluteUri);
             if (request.RequestUri.Host == "spansh.test")
             {
-                return Task.FromResult(Response(SpanshJson));
+                return Task.FromResult(Response(SpanshJson, SpanshStatus));
             }
 
             var response = Response(EdsmJson);
@@ -150,9 +199,11 @@ public sealed class SystemBodyDataClientTests
             return Task.FromResult(response);
         }
 
-        private static HttpResponseMessage Response(string content)
+        private static HttpResponseMessage Response(
+            string content,
+            HttpStatusCode statusCode = HttpStatusCode.OK)
         {
-            return new HttpResponseMessage(HttpStatusCode.OK)
+            return new HttpResponseMessage(statusCode)
             {
                 Content = new StringContent(
                     content,
@@ -161,7 +212,7 @@ public sealed class SystemBodyDataClientTests
             };
         }
 
-        private const string EdsmJson =
+        private const string EdsmJsonTemplate =
             """
             {
               "id64": 42,
