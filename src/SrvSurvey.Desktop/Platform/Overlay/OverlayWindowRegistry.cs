@@ -328,15 +328,21 @@ internal static class OverlayWindowMetrics
         var logicalWidth = presentation is not null
             && presentation.Bounds.Width > 0
             ? presentation.Bounds.Width
-            : registered.Window.Bounds.Width > 0
-                ? registered.Window.Bounds.Width
-                : registered.Window.Width;
+            : registered.Window.Bounds.Width;
+        if (!(logicalWidth > 0))
+        {
+            logicalWidth = registered.Window.Width;
+        }
+
         var logicalHeight = presentation is not null
             && presentation.Bounds.Height > 0
             ? presentation.Bounds.Height
-            : registered.Window.Bounds.Height > 0
-                ? registered.Window.Bounds.Height
-                : registered.Window.Height;
+            : registered.Window.Bounds.Height;
+        if (!(logicalHeight > 0))
+        {
+            logicalHeight = registered.Window.Height;
+        }
+
         var width = double.IsFinite(logicalWidth) && logicalWidth > 0
             ? (int)Math.Ceiling(logicalWidth * scaling)
             : fallback.Width;

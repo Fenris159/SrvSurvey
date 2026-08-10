@@ -127,7 +127,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     private async Task<ProviderResult> FetchAsync(
         string provider,
         Uri requestUri,
-        Func<JsonElement, SystemScanSnapshot> parser,
+        Func<JsonElement, SystemScanSnapshot?> parser,
         CancellationToken cancellationToken)
     {
         using var timeoutCancellation = CancellationTokenSource
@@ -151,11 +151,12 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
                     timeoutCancellation.Token)
                 .ConfigureAwait(false);
             using var document = JsonDocument.Parse(bytes);
+            var snapshot = parser(document.RootElement);
             return new ProviderResult(
                 provider,
-                parser(document.RootElement),
+                snapshot,
                 null,
-                false);
+                snapshot is null);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -168,10 +169,6 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
                 null,
                 $"{provider} body data timed out safely.",
                 false);
-        }
-        catch (ProviderDataNotIndexedException)
-        {
-            return new ProviderResult(provider, null, null, true);
         }
         catch (Exception exception) when (
             exception is HttpRequestException
@@ -186,7 +183,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         }
     }
 
-    private static SystemScanSnapshot ParseEdsm(
+    private static SystemScanSnapshot? ParseEdsm(
         JsonElement root,
         string expectedName,
         long expectedAddress)
@@ -194,7 +191,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         RequireObject(root, EdsmBodiesResponseLabel);
         if (!root.EnumerateObject().Any())
         {
-            throw new ProviderDataNotIndexedException();
+            return null;
         }
 
         ValidateAddress(root, expectedAddress, EdsmBodiesResponseLabel);
@@ -876,7 +873,4 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         string? Warning,
         bool NotIndexed);
 
-    private sealed class ProviderDataNotIndexedException : Exception
-    {
-    }
 }
