@@ -19,25 +19,25 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
         Directory.CreateDirectory(journalDirectory);
         var store = new CommanderCodexStore(dataDirectory);
         await store.TrackAsync(new CommanderCodexTrackRequest
-    {
-        FrontierId = "F123",
-        CommanderName = "Cmdr Test",
-        EntryId = 2310101,
-        Timestamp = DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
-        SystemAddress = 42,
-        BodyId = 3
-    });
+        {
+            FrontierId = "F123",
+            CommanderName = "Cmdr Test",
+            EntryId = 2310101,
+            Timestamp = DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            SystemAddress = 42,
+            BodyId = 3
+        });
         await store.TrackAsync(new CommanderCodexTrackRequest
-    {
-        FrontierId = "F123",
-        CommanderName = "Cmdr Test",
-        EntryId = 2310101,
-        Timestamp = DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
-        SystemAddress = 42,
-        BodyId = 3,
-        RegionId = 18,
-        RegionName = "Inner Orion Spur"
-    });
+        {
+            FrontierId = "F123",
+            CommanderName = "Cmdr Test",
+            EntryId = 2310101,
+            Timestamp = DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            SystemAddress = 42,
+            BodyId = 3,
+            RegionId = 18,
+            RegionName = "Inner Orion Spur"
+        });
         await store.SetManualDiscoveryAsync(
             "F123",
             "Cmdr Test",

@@ -387,7 +387,7 @@ namespace SrvSurvey.Core.Inara
                     {
                         var direction = item.Value<string>("Direction");
                         var amount = itemCount(item, 0);
-                transferred |= changeCount(cargo, itemName(item), direction == ToShipDirection ? amount : -amount);
+                        transferred |= changeCount(cargo, itemName(item), direction == ToShipDirection ? amount : -amount);
                     }
                     return transferred;
                 case "SearchAndRescue":

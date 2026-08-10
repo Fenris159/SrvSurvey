@@ -170,16 +170,16 @@ public sealed class ExplorationState
     {
         return ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
-    {
-        BodyClass = body.BodyClass,
-        IsTerraformable = body.IsTerraformable,
-        Mass = body.Mass,
-        IsFirstDiscoverer = body.IsFirstDiscoverer,
-        IsMapped = isMapped,
-        IsFirstMapped = body.IsFirstMapped,
-        IsOdyssey = isOdyssey,
-        WithEfficiencyBonus = withEfficiencyBonus
-    });
+            {
+                BodyClass = body.BodyClass,
+                IsTerraformable = body.IsTerraformable,
+                Mass = body.Mass,
+                IsFirstDiscoverer = body.IsFirstDiscoverer,
+                IsMapped = isMapped,
+                IsFirstMapped = body.IsFirstMapped,
+                IsOdyssey = isOdyssey,
+                WithEfficiencyBonus = withEfficiencyBonus
+            });
     }
 
     private static BodyKey? GetBodyKey(JsonElement root)

@@ -142,16 +142,16 @@ internal sealed class X11OverlayPlatformService
 
         return new X11OverlayPlatformService(
             new X11OverlayPlatformContext
-    {
-        Display = display,
-        ShapeAvailable = shapeAvailable,
-        Host = host,
-        StackingMode = stackingMode,
-        AtomType = atomType,
-        WindowTypeAtom = windowTypeAtom,
-        KdeOnScreenDisplayAtom = kdeOnScreenDisplayAtom,
-        NormalWindowAtom = normalWindowAtom
-    });
+            {
+                Display = display,
+                ShapeAvailable = shapeAvailable,
+                Host = host,
+                StackingMode = stackingMode,
+                AtomType = atomType,
+                WindowTypeAtom = windowTypeAtom,
+                KdeOnScreenDisplayAtom = kdeOnScreenDisplayAtom,
+                NormalWindowAtom = normalWindowAtom
+            });
     }
 
     public OverlayPreparationResult PreparePassiveWindow(Window window)

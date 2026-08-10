@@ -81,13 +81,13 @@ public sealed class JumpInfoViewModelTests : IDisposable
             [],
             new EliteStatus
             {
-            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
-            Destination = new StatusDestination
-            {
-            Name = "Beta",
-            System = 3,
-            Body = 0,
-            },
+                Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+                Destination = new StatusDestination
+                {
+                    Name = "Beta",
+                    System = 3,
+                    Body = 0,
+                },
             },
             followedRoute));
         await viewModel.PendingSummaryLoad;
@@ -125,9 +125,9 @@ public sealed class JumpInfoViewModelTests : IDisposable
             [],
             new EliteStatus
             {
-            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
-            GuiFocus = GuiFocus.ExternalPanel,
-            Destination = destination,
+                Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+                GuiFocus = GuiFocus.ExternalPanel,
+                Destination = destination,
             },
             followedRoute));
         Assert.False(viewModel.ShouldShow);
@@ -141,9 +141,9 @@ public sealed class JumpInfoViewModelTests : IDisposable
             [Event("Music", "\"MusicTrack\":\"GalaxyMap\"")],
             new EliteStatus
             {
-            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
-            GuiFocus = GuiFocus.NoFocus,
-            Destination = destination,
+                Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+                GuiFocus = GuiFocus.NoFocus,
+                Destination = destination,
             },
             followedRoute));
         Assert.False(viewModel.ShouldShow);
@@ -179,8 +179,8 @@ public sealed class JumpInfoViewModelTests : IDisposable
             [],
             new EliteStatus
             {
-            Flags = StatusFlags.InMainShip,
-            GuiFocus = GuiFocus.Fss,
+                Flags = StatusFlags.InMainShip,
+                GuiFocus = GuiFocus.Fss,
             },
             null));
 
@@ -202,12 +202,12 @@ public sealed class JumpInfoViewModelTests : IDisposable
             [FsdTarget("Historical", 99, "A")],
             new EliteStatus
             {
-            Destination = new StatusDestination
-            {
-            Name = "Beta",
-            System = 3,
-            Body = 0,
-            },
+                Destination = new StatusDestination
+                {
+                    Name = "Beta",
+                    System = 3,
+                    Body = 0,
+                },
             },
             null,
             IsBootstrapRead: true));

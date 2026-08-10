@@ -12,15 +12,15 @@ public sealed class BoxelSearchStateTests
 
         var activated = state.TryActivate(
             new BoxelSearchActivationRequest
-    {
-        TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
-        LowMassCode = 'b',
-        StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
-        SkipAlreadyVisited = false,
-        SkipKnownToSpansh = false,
-        CompletionMode = BoxelCompletionMode.EnterSystem,
-        AutoCopy = true
-    },
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
+                LowMassCode = 'b',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = false,
+                CompletionMode = BoxelCompletionMode.EnterSystem,
+                AutoCopy = true
+            },
             out var error);
 
         Assert.True(activated, error);
@@ -30,15 +30,15 @@ public sealed class BoxelSearchStateTests
 
         Assert.False(state.TryActivate(
             new BoxelSearchActivationRequest
-    {
-        TopBoxel = BoxelAddress.Parse("Dryio Flyuae AA-A h0"),
-        LowMassCode = 'h',
-        StartedOn = DateTimeOffset.UtcNow,
-        SkipAlreadyVisited = false,
-        SkipKnownToSpansh = false,
-        CompletionMode = BoxelCompletionMode.EnterSystem,
-        AutoCopy = false
-    },
+            {
+                TopBoxel = BoxelAddress.Parse("Dryio Flyuae AA-A h0"),
+                LowMassCode = 'h',
+                StartedOn = DateTimeOffset.UtcNow,
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = false,
+                CompletionMode = BoxelCompletionMode.EnterSystem,
+                AutoCopy = false
+            },
             out error));
         Assert.Contains("Mass-code h", error);
     }
@@ -69,15 +69,15 @@ public sealed class BoxelSearchStateTests
 
         state.TryActivate(
             new BoxelSearchActivationRequest
-    {
-        TopBoxel = BoxelAddress.Parse("Wregoe BU-Y b2-0"),
-        LowMassCode = 'b',
-        StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
-        SkipAlreadyVisited = false,
-        SkipKnownToSpansh = false,
-        CompletionMode = BoxelCompletionMode.EnterSystem,
-        AutoCopy = true
-    },
+            {
+                TopBoxel = BoxelAddress.Parse("Wregoe BU-Y b2-0"),
+                LowMassCode = 'b',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = false,
+                CompletionMode = BoxelCompletionMode.EnterSystem,
+                AutoCopy = true
+            },
             out _);
 
         Assert.Equal(1, state.CurrentCount);
@@ -127,15 +127,15 @@ public sealed class BoxelSearchStateTests
         var state = new BoxelSearchState();
         state.TryActivate(
             new BoxelSearchActivationRequest
-    {
-        TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
-        LowMassCode = 'c',
-        StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
-        SkipAlreadyVisited = true,
-        SkipKnownToSpansh = true,
-        CompletionMode = BoxelCompletionMode.EnterSystem,
-        AutoCopy = false
-    },
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = true,
+                SkipKnownToSpansh = true,
+                CompletionMode = BoxelCompletionMode.EnterSystem,
+                AutoCopy = false
+            },
             out _);
 
         state.MergeLocalSystems(
@@ -167,15 +167,15 @@ public sealed class BoxelSearchStateTests
         var state = new BoxelSearchState();
         state.TryActivate(
             new BoxelSearchActivationRequest
-    {
-        TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
-        LowMassCode = 'c',
-        StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
-        SkipAlreadyVisited = false,
-        SkipKnownToSpansh = false,
-        CompletionMode = BoxelCompletionMode.EnterSystem,
-        AutoCopy = true
-    },
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = false,
+                CompletionMode = BoxelCompletionMode.EnterSystem,
+                AutoCopy = true
+            },
             out _);
 
         Assert.False(state.TrySetSystemComplete(
@@ -196,15 +196,15 @@ public sealed class BoxelSearchStateTests
         var state = new BoxelSearchState();
         state.TryActivate(
             new BoxelSearchActivationRequest
-    {
-        TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
-        LowMassCode = 'c',
-        StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
-        SkipAlreadyVisited = false,
-        SkipKnownToSpansh = false,
-        CompletionMode = BoxelCompletionMode.EnterSystem,
-        AutoCopy = true
-    },
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = false,
+                CompletionMode = BoxelCompletionMode.EnterSystem,
+                AutoCopy = true
+            },
             out _);
         var firstChild = state.TopBoxel!.Children[0];
 
@@ -227,15 +227,15 @@ public sealed class BoxelSearchStateTests
         var state = new BoxelSearchState();
         Assert.True(state.TryActivate(
             new BoxelSearchActivationRequest
-    {
-        TopBoxel = sol,
-        LowMassCode = sol!.MassCode,
-        StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
-        SkipAlreadyVisited = false,
-        SkipKnownToSpansh = false,
-        CompletionMode = BoxelCompletionMode.EnterSystem,
-        AutoCopy = true
-    },
+            {
+                TopBoxel = sol,
+                LowMassCode = sol!.MassCode,
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = false,
+                CompletionMode = BoxelCompletionMode.EnterSystem,
+                AutoCopy = true
+            },
             out var error), error);
 
         var handled = state.Apply(Parse(
@@ -254,15 +254,15 @@ public sealed class BoxelSearchStateTests
         var state = new BoxelSearchState();
         state.TryActivate(
             new BoxelSearchActivationRequest
-    {
-        TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
-        LowMassCode = 'c',
-        StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
-        SkipAlreadyVisited = false,
-        SkipKnownToSpansh = false,
-        CompletionMode = BoxelCompletionMode.EnterSystem,
-        AutoCopy = true
-    },
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = false,
+                CompletionMode = BoxelCompletionMode.EnterSystem,
+                AutoCopy = true
+            },
             out _);
         var current = state.Current;
         var completed = state.TopBoxel!.Children[0];
@@ -291,15 +291,15 @@ public sealed class BoxelSearchStateTests
         var state = new BoxelSearchState();
         state.TryActivate(
             new BoxelSearchActivationRequest
-    {
-        TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
-        LowMassCode = 'c',
-        StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
-        SkipAlreadyVisited = false,
-        SkipKnownToSpansh = false,
-        CompletionMode = mode,
-        AutoCopy = true
-    },
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = false,
+                CompletionMode = mode,
+                AutoCopy = true
+            },
             out _);
         return state;
     }

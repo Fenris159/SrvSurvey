@@ -355,13 +355,15 @@ public sealed class GuardianViewModelTests
                 GuardianSiteKind.Ruins,
                 "Ruins",
                 1,
-                new GalacticCoordinate(0, 0, 0)) with { SiteType = "Beta" };
+                new GalacticCoordinate(0, 0, 0)) with
+            { SiteType = "Beta" };
             var structure = CreateReference(
                 2,
                 GuardianSiteKind.Structure,
                 "Structure",
                 2,
-                new GalacticCoordinate(1, 0, 0)) with { SiteType = "Bowl" };
+                new GalacticCoordinate(1, 0, 0)) with
+            { SiteType = "Bowl" };
             var published = new GuardianPublishedSiteCatalog(
             [
                 CreatePublishedSite(

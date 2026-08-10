@@ -70,28 +70,28 @@ public sealed class JourneyJournalProcessorTests
 
         var starReward = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
-    {
-        BodyClass = "G",
-        IsTerraformable = false,
-        Mass = 1,
-        IsFirstDiscoverer = true,
-        IsMapped = false,
-        IsFirstMapped = true,
-        IsOdyssey = true,
-        WithEfficiencyBonus = false
-    });
+            {
+                BodyClass = "G",
+                IsTerraformable = false,
+                Mass = 1,
+                IsFirstDiscoverer = true,
+                IsMapped = false,
+                IsFirstMapped = true,
+                IsOdyssey = true,
+                WithEfficiencyBonus = false
+            });
         var mappedPlanetReward = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
-    {
-        BodyClass = "Earthlike body",
-        IsTerraformable = false,
-        Mass = 1,
-        IsFirstDiscoverer = true,
-        IsMapped = true,
-        IsFirstMapped = true,
-        IsOdyssey = true,
-        WithEfficiencyBonus = true
-    });
+            {
+                BodyClass = "Earthlike body",
+                IsTerraformable = false,
+                Mass = 1,
+                IsFirstDiscoverer = true,
+                IsMapped = true,
+                IsFirstMapped = true,
+                IsOdyssey = true,
+                WithEfficiencyBonus = true
+            });
         Assert.Equal(
             starReward + mappedPlanetReward,
             sol.Counts.ExplorationRewards);
@@ -103,16 +103,16 @@ public sealed class JourneyJournalProcessorTests
     {
         var scanReward = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
-    {
-        BodyClass = "Water world",
-        IsTerraformable = true,
-        Mass = 1.2,
-        IsFirstDiscoverer = true,
-        IsMapped = false,
-        IsFirstMapped = true,
-        IsOdyssey = true,
-        WithEfficiencyBonus = false
-    });
+            {
+                BodyClass = "Water world",
+                IsTerraformable = true,
+                Mass = 1.2,
+                IsFirstDiscoverer = true,
+                IsMapped = false,
+                IsFirstMapped = true,
+                IsOdyssey = true,
+                WithEfficiencyBonus = false
+            });
         var visit = CreateVisit() with
         {
             BodiesScanned = new HashSet<int> { 4 },
@@ -138,16 +138,16 @@ public sealed class JourneyJournalProcessorTests
         var counts = result.Journey.CurrentSystem!.Counts;
         var mappedReward = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
-    {
-        BodyClass = "Water world",
-        IsTerraformable = true,
-        Mass = 1.2,
-        IsFirstDiscoverer = true,
-        IsMapped = true,
-        IsFirstMapped = true,
-        IsOdyssey = true,
-        WithEfficiencyBonus = true
-    });
+            {
+                BodyClass = "Water world",
+                IsTerraformable = true,
+                Mass = 1.2,
+                IsFirstDiscoverer = true,
+                IsMapped = true,
+                IsFirstMapped = true,
+                IsOdyssey = true,
+                WithEfficiencyBonus = true
+            });
         Assert.Equal(1, result.ProcessedEventCount);
         Assert.Equal(2, result.IgnoredEventCount);
         Assert.Equal(1, counts.BodyScans);

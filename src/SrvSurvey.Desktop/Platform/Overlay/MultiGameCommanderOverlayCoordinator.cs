@@ -142,16 +142,16 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
         var capabilities = platform.Capabilities;
         var shouldShow = ShouldShow(
             new MultiGameOverlayVisibilityContext
-    {
-        HasMultipleGameWindows = commanderInstances.HasMultipleGameWindows,
-        HideByPreference = overlayBehavior.HideMultiGameCommanderOverlay,
-        IsSuppressed = isSuppressed,
-        SupportsPassiveOverlay = capabilities.SupportsPassiveOverlay,
-        SupportsClickThrough = capabilities.SupportsClickThrough,
-        SupportsGameWindowTracking = capabilities.SupportsGameWindowTracking,
-        GameWindow = gameWindow,
-        IsApplicationActive = isApplicationActive()
-    });
+            {
+                HasMultipleGameWindows = commanderInstances.HasMultipleGameWindows,
+                HideByPreference = overlayBehavior.HideMultiGameCommanderOverlay,
+                IsSuppressed = isSuppressed,
+                SupportsPassiveOverlay = capabilities.SupportsPassiveOverlay,
+                SupportsClickThrough = capabilities.SupportsClickThrough,
+                SupportsGameWindowTracking = capabilities.SupportsGameWindowTracking,
+                GameWindow = gameWindow,
+                IsApplicationActive = isApplicationActive()
+            });
         if (!shouldShow)
         {
             CloseWindow();

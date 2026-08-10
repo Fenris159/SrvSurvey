@@ -71,15 +71,15 @@ public sealed class MultiGameCommanderOverlayCoordinatorTests
     {
         return MultiGameCommanderOverlayCoordinator.ShouldShow(
             new MultiGameOverlayVisibilityContext
-    {
-        HasMultipleGameWindows = hasMultipleGameWindows,
-        HideByPreference = hideByPreference,
-        IsSuppressed = isSuppressed,
-        SupportsPassiveOverlay = supportsPassiveOverlay,
-        SupportsClickThrough = supportsClickThrough,
-        SupportsGameWindowTracking = supportsGameWindowTracking,
-        GameWindow = gameWindow,
-        IsApplicationActive = isApplicationActive
-    });
+            {
+                HasMultipleGameWindows = hasMultipleGameWindows,
+                HideByPreference = hideByPreference,
+                IsSuppressed = isSuppressed,
+                SupportsPassiveOverlay = supportsPassiveOverlay,
+                SupportsClickThrough = supportsClickThrough,
+                SupportsGameWindowTracking = supportsGameWindowTracking,
+                GameWindow = gameWindow,
+                IsApplicationActive = isApplicationActive
+            });
     }
 }

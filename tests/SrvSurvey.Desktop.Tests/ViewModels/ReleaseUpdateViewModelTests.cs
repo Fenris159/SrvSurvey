@@ -44,21 +44,21 @@ public sealed class ReleaseUpdateViewModelTests
                 new Version(2, 0, 95, 0));
             viewModel.ConfigureInstaller(
                 new ReleaseInstallerConfiguration
-    {
-        DownloadService = new StubDownloader(calls),
-        StagingService = new StubStagingService(calls),
-        InstallationPreparer = new StubPreparer(calls),
-        HandoffService = new StubHandoff(calls),
-        DataDirectory = temporaryDirectory,
-        InstallationDirectory = installationDirectory,
-        StartupArguments = ["--frontier-id", "F123"],
-        Shutdown = () =>
-                    {
-                        calls.Add("shutdown");
-                        shutdown = true;
-                        return Task.CompletedTask;
-                    }
-    });
+                {
+                    DownloadService = new StubDownloader(calls),
+                    StagingService = new StubStagingService(calls),
+                    InstallationPreparer = new StubPreparer(calls),
+                    HandoffService = new StubHandoff(calls),
+                    DataDirectory = temporaryDirectory,
+                    InstallationDirectory = installationDirectory,
+                    StartupArguments = ["--frontier-id", "F123"],
+                    Shutdown = () =>
+                                {
+                                    calls.Add("shutdown");
+                                    shutdown = true;
+                                    return Task.CompletedTask;
+                                }
+                });
             await viewModel.CheckAsync();
             viewModel.InstallConfirmed = true;
 
@@ -98,18 +98,18 @@ public sealed class ReleaseUpdateViewModelTests
             var calls = new List<string>();
             viewModel.ConfigureInstaller(
                 new ReleaseInstallerConfiguration
-    {
-        DownloadService = new StubDownloader(calls),
-        StagingService = new StubStagingService(calls),
-        InstallationPreparer = new StubPreparer(calls),
-        HandoffService = new StubHandoff(calls),
-        DataDirectory = temporaryDirectory,
-        InstallationDirectory = installationDirectory,
-        StartupArguments = [],
-        Shutdown = () => Task.CompletedTask,
-        AutomaticInstallationUnavailableReason = "This AppImage is mounted read-only and cannot replace itself; use Open releases to download the new AppImage.",
-        IsAppImage = true
-    });
+                {
+                    DownloadService = new StubDownloader(calls),
+                    StagingService = new StubStagingService(calls),
+                    InstallationPreparer = new StubPreparer(calls),
+                    HandoffService = new StubHandoff(calls),
+                    DataDirectory = temporaryDirectory,
+                    InstallationDirectory = installationDirectory,
+                    StartupArguments = [],
+                    Shutdown = () => Task.CompletedTask,
+                    AutomaticInstallationUnavailableReason = "This AppImage is mounted read-only and cannot replace itself; use Open releases to download the new AppImage.",
+                    IsAppImage = true
+                });
 
             await viewModel.CheckAsync();
 

@@ -1,0 +1,2 @@
+# Keep C# working-tree line endings aligned with .editorconfig on every host.
+*.cs text eol=crlf

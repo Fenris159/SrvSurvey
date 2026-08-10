@@ -97,40 +97,40 @@ internal static class OverlayEditorPreviewCatalog
 
     private static object Create(string plotterName, string previewState) =>
         plotterName switch
-    {
-        "PlotBioStatus"
-            or "PlotBioSystem"
-            or "PlotBodyInfo"
-            or "PlotFlightWarning"
-            or "PlotFSS"
-            or "PlotFSSInfo"
-            or "PlotSysStatus" =>
-                CreateSystemSurveyPreview(plotterName, previewState),
-        "PlotGuardians"
-            or "PlotGuardianSystem"
-            or "PlotRamTah" => GuardianOverlayViewModel.CreateEditorPreview(),
-        "PlotGuardianStatus" => GuardianOverlayViewModel.CreateEditorPreview(
-            ParseGuardianStatusState(previewState)),
-        "PlotRouteBio" => CreateRouteBioPreview(),
-        "PlotBuildCommodities" => CreateColonizationPreview(),
-        "PlotFloatie" => CreateNotificationPreview(),
-        "PlotFootCombat" or "PlotMassacre" => CreateCombatPreview(),
-        "PlotGalMap" => CreateGalaxyMapPreview(),
-        "PlotGrounded" or "PlotMiniTrack" => CreateSurfaceSurveyPreview(),
-        "PlotHumanSite" => CreateHumanSitePreview(),
-        "PlotJumpInfo" => CreateJumpInfoPreview(),
-        "PlotFleetCarrierRoute" => CreateFleetCarrierRoutePreview(
-            ParseFleetCarrierRouteState(previewState)),
-        "PlotMultiGameCommander" => CreateMultiCommanderPreview(),
-        "PlotPriorScans" => CreatePriorScansPreview(),
-        "PlotPulse" => CreatePulsePreview(ParsePulseState(previewState)),
-        "PlotQuestMini" => CreateQuestPreview(),
-        "PlotSphericalSearch" => CreateSphericalSearchPreview(),
-        "PlotStationInfo" => CreateStationInfoPreview(),
-        "PlotTrackTarget" => CreateGroundTargetPreview(),
-        _ => throw new InvalidOperationException(
-            $"No editor preview data context is defined for {plotterName}."),
-    };
+        {
+            "PlotBioStatus"
+                or "PlotBioSystem"
+                or "PlotBodyInfo"
+                or "PlotFlightWarning"
+                or "PlotFSS"
+                or "PlotFSSInfo"
+                or "PlotSysStatus" =>
+                    CreateSystemSurveyPreview(plotterName, previewState),
+            "PlotGuardians"
+                or "PlotGuardianSystem"
+                or "PlotRamTah" => GuardianOverlayViewModel.CreateEditorPreview(),
+            "PlotGuardianStatus" => GuardianOverlayViewModel.CreateEditorPreview(
+                ParseGuardianStatusState(previewState)),
+            "PlotRouteBio" => CreateRouteBioPreview(),
+            "PlotBuildCommodities" => CreateColonizationPreview(),
+            "PlotFloatie" => CreateNotificationPreview(),
+            "PlotFootCombat" or "PlotMassacre" => CreateCombatPreview(),
+            "PlotGalMap" => CreateGalaxyMapPreview(),
+            "PlotGrounded" or "PlotMiniTrack" => CreateSurfaceSurveyPreview(),
+            "PlotHumanSite" => CreateHumanSitePreview(),
+            "PlotJumpInfo" => CreateJumpInfoPreview(),
+            "PlotFleetCarrierRoute" => CreateFleetCarrierRoutePreview(
+                ParseFleetCarrierRouteState(previewState)),
+            "PlotMultiGameCommander" => CreateMultiCommanderPreview(),
+            "PlotPriorScans" => CreatePriorScansPreview(),
+            "PlotPulse" => CreatePulsePreview(ParsePulseState(previewState)),
+            "PlotQuestMini" => CreateQuestPreview(),
+            "PlotSphericalSearch" => CreateSphericalSearchPreview(),
+            "PlotStationInfo" => CreateStationInfoPreview(),
+            "PlotTrackTarget" => CreateGroundTargetPreview(),
+            _ => throw new InvalidOperationException(
+                $"No editor preview data context is defined for {plotterName}."),
+        };
 
     private static SystemSurveyOverlayViewModel CreateSystemSurveyPreview(
         string plotterName,

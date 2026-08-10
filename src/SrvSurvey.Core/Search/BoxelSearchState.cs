@@ -421,20 +421,20 @@ public sealed class BoxelSearchState
     public BoxelSearchSnapshot CreateSnapshot()
     {
         return new BoxelSearchSnapshot
-    {
-        Active = IsActive,
-        TopBoxel = TopBoxel,
-        StartedOn = StartedOn,
-        Current = Current,
-        CurrentCount = CurrentCount,
-        LowMassCode = LowMassCode,
-        CompletedPrefixes = completed.Order(StringComparer.Ordinal).ToArray(),
-        AutoCopy = AutoCopy,
-        Collapsed = Collapsed,
-        SkipAlreadyVisited = SkipAlreadyVisited,
-        SkipKnownToSpansh = SkipKnownToSpansh,
-        CompletionMode = CompletionMode
-    };
+        {
+            Active = IsActive,
+            TopBoxel = TopBoxel,
+            StartedOn = StartedOn,
+            Current = Current,
+            CurrentCount = CurrentCount,
+            LowMassCode = LowMassCode,
+            CompletedPrefixes = completed.Order(StringComparer.Ordinal).ToArray(),
+            AutoCopy = AutoCopy,
+            Collapsed = Collapsed,
+            SkipAlreadyVisited = SkipAlreadyVisited,
+            SkipKnownToSpansh = SkipKnownToSpansh,
+            CompletionMode = CompletionMode
+        };
     }
 
     private bool ApplyVisitedSystem(

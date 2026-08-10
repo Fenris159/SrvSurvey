@@ -161,10 +161,10 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
 
     public async Task RefreshAsync()
     {
-            if (IsBusy)
-            {
-                return;
-            }
+        if (IsBusy)
+        {
+            return;
+        }
 
         try
         {

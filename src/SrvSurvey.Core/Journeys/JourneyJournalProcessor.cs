@@ -513,16 +513,16 @@ public sealed class JourneyJournalProcessor
     {
         return ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
-    {
-        BodyClass = body.BodyClass,
-        IsTerraformable = body.IsTerraformable,
-        Mass = body.Mass,
-        IsFirstDiscoverer = body.IsFirstDiscoverer,
-        IsMapped = isMapped,
-        IsFirstMapped = body.IsFirstMapped,
-        IsOdyssey = isOdyssey,
-        WithEfficiencyBonus = withEfficiencyBonus
-    });
+            {
+                BodyClass = body.BodyClass,
+                IsTerraformable = body.IsTerraformable,
+                Mass = body.Mass,
+                IsFirstDiscoverer = body.IsFirstDiscoverer,
+                IsMapped = isMapped,
+                IsFirstMapped = body.IsFirstMapped,
+                IsOdyssey = isOdyssey,
+                WithEfficiencyBonus = withEfficiencyBonus
+            });
     }
 
     private void UpdateCurrent(

@@ -946,7 +946,7 @@ public sealed class GuardianSiteMapControl : Control
             TargetPointName,
             StringComparison.OrdinalIgnoreCase);
         var isNearest = Proximity?.NearestPoint is
-            { Distance: <= 75 } nearest
+        { Distance: <= 75 } nearest
             && string.Equals(
                 nearest.Point.Name,
                 point.Name,

@@ -2266,16 +2266,16 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         CommodityOverlay.Apply(
             ColonizationCommodityPlanner.Create(
                 new ColonizationCommodityPlanRequest
-    {
-        Projects = Projects.Select(row => row.Project),
-        HiddenBuildIds = hiddenProjectIds,
-        PrimaryBuildId = primaryProjectId,
-        CommanderName = CommanderName,
-        FleetCarriers = fleetCarriers,
-        ShipCargo = shipCargo,
-        Construction = construction,
-        Market = currentMarket
-    }),
+                {
+                    Projects = Projects.Select(row => row.Project),
+                    HiddenBuildIds = hiddenProjectIds,
+                    PrimaryBuildId = primaryProjectId,
+                    CommanderName = CommanderName,
+                    FleetCarriers = fleetCarriers,
+                    ShipCargo = shipCargo,
+                    Construction = construction,
+                    Market = currentMarket
+                }),
             latestStatus,
             hasMarketSinceDocking,
             construction.IsSquadronBankOpen);
