@@ -1,5 +1,6 @@
 using Avalonia.Media;
 using SrvSurvey.Desktop.Theming;
+using System.Text.Json;
 
 namespace SrvSurvey.Desktop.Tests.Theming;
 
@@ -54,6 +55,67 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
 
         Assert.Contains("not supported", error.Message);
         Assert.Equal(invalid, File.ReadAllText(statePath));
+    }
+
+    [Fact]
+    public void StatesSavedBeforePipEdgesGainMatchingPresetRolesOnLoad()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var statePath = Path.Combine(temporaryDirectory, "overlay-theme-states.json");
+        var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
+        var addedRoles = new[]
+        {
+            "bio.goldFill",
+            "bio.goldDarkFill",
+            "bio.confirmedDimPotential",
+            "bio.goldPotential",
+            "bio.goldDarkPotential",
+            "bio.confirmedEdge",
+            "bio.confirmedDimEdge",
+            "bio.predictionEdge",
+            "bio.goldEdge",
+            "bio.goldDarkEdge",
+            "bio.galacticRegionEdge",
+            "bio.unknownEdge",
+            "bio.confirmedSegmentEdge",
+            "bio.confirmedPotentialSegmentEdge",
+            "bio.confirmedDimSegmentEdge",
+            "bio.confirmedDimPotentialSegmentEdge",
+            "bio.predictionSegmentEdge",
+            "bio.predictionPotentialSegmentEdge",
+            "bio.goldSegmentEdge",
+            "bio.goldPotentialSegmentEdge",
+            "bio.goldDarkSegmentEdge",
+            "bio.goldDarkPotentialSegmentEdge",
+            "bio.galacticRegionSegmentEdge",
+            "bio.galacticRegionPotentialSegmentEdge",
+        };
+        foreach (var role in addedRoles)
+        {
+            Assert.True(colors.Remove(role));
+        }
+
+        var serializedColors = colors.ToDictionary(
+            entry => entry.Key,
+            entry => LegacyOverlayThemeStore.FormatHtmlColor(entry.Value));
+        File.WriteAllText(
+            statePath,
+            JsonSerializer.Serialize(new
+            {
+                version = 1,
+                states = new[]
+                {
+                    new { name = "Older default", colors = serializedColors },
+                },
+            }));
+
+        var loaded = new OverlayThemeStateStore(statePath).Load();
+
+        Assert.Null(loaded.Error);
+        var state = Assert.Single(loaded.States);
+        var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
+        Assert.All(addedRoles, role =>
+            Assert.Equal(defaults[role], state.Colors[role]));
     }
 
     public void Dispose()

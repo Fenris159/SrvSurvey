@@ -379,10 +379,14 @@ internal static class OverlayEditorPreviewCatalog
                     HasCanonnSignals = true,
                     RewardBands =
                     [
-                        BiologySignalRewardBandViewModel.Predicted(
-                            1_690_000, 19_010_000, false, thresholds),
                         BiologySignalRewardBandViewModel.Known(
                             7_600_000, false, false, thresholds),
+                        BiologySignalRewardBandViewModel.Predicted(
+                            1_690_000, 19_010_000, false, thresholds),
+                        BiologySignalRewardBandViewModel.Predicted(
+                            3_330_000, 7_620_000, false, thresholds),
+                        BiologySignalRewardBandViewModel.Predicted(
+                            10_100_000, 19_010_000, true, thresholds),
                     ],
                     RewardBucketOneMillions = thresholds.BucketOneMillions,
                     RewardBucketTwoMillions = thresholds.BucketTwoMillions,

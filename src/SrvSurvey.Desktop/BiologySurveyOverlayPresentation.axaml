@@ -40,7 +40,66 @@
                    ToolTip.Tip="New to this Commander in the current Codex region" />
       </StackPanel>
     </DataTemplate>
+    <DataTemplate x:Key="BiologyRewardBandTemplate"
+                  x:DataType="vm:BiologySignalRewardBandViewModel">
+      <controls:BiologyRewardBandControl Width="13"
+                                         Height="28"
+                                         MinimumReward="{Binding MinimumReward}"
+                                         MaximumReward="{Binding MaximumReward}"
+                                         BucketOneMillions="{Binding RewardBucketOneMillions}"
+                                         BucketTwoMillions="{Binding RewardBucketTwoMillions}"
+                                         BucketThreeMillions="{Binding RewardBucketThreeMillions}"
+                                         IsPrediction="{Binding IsPrediction}"
+                                         IsHighlighted="{Binding IsHighlighted}"
+                                         IsGlobalRegionalFirst="{Binding IsGlobalRegionalFirst}"
+                                         IsDimmed="{Binding ShouldDim}"
+                                         FilledBrush="{DynamicResource RavenBioConfirmedBrush}"
+                                         PotentialBrush="{DynamicResource RavenBioPotentialBrush}"
+                                         DimmedFilledBrush="{DynamicResource RavenBioConfirmedDimBrush}"
+                                         PredictionFilledBrush="{DynamicResource RavenBioPredictionBrush}"
+                                         PredictionPotentialBrush="{DynamicResource RavenBioPredictionPotentialBrush}"
+                                         HighlightBrush="{DynamicResource RavenBioGoldFillBrush}"
+                                         DimmedHighlightBrush="{DynamicResource RavenBioGoldDimFillBrush}"
+                                         GlobalRegionalBrush="{DynamicResource RavenBioGalacticRegionBrush}"
+                                         GlobalRegionalPotentialBrush="{DynamicResource RavenBioGalacticRegionPotentialBrush}"
+                                         UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
+                                         UnknownGlyphBrush="{DynamicResource RavenBioUnknownGlyphBrush}"
+                                         HatchBrush="{DynamicResource RavenBioHatchBrush}"
+                                         EmptyBrush="{DynamicResource RavenBioEmptyBrush}"
+                                         FilledEdgeBrush="{DynamicResource RavenBioConfirmedEdgeBrush}"
+                                         DimmedFilledEdgeBrush="{DynamicResource RavenBioConfirmedDimEdgeBrush}"
+                                         PredictionEdgeBrush="{DynamicResource RavenBioPredictionEdgeBrush}"
+                                         HighlightEdgeBrush="{DynamicResource RavenBioGoldEdgeBrush}"
+                                         DimmedHighlightEdgeBrush="{DynamicResource RavenBioGoldDimEdgeBrush}"
+                                         GlobalRegionalEdgeBrush="{DynamicResource RavenBioGalacticRegionEdgeBrush}"
+                                         UnknownEdgeBrush="{DynamicResource RavenBioUnknownEdgeBrush}" />
+    </DataTemplate>
   </UserControl.Resources>
+  <UserControl.Styles>
+    <Style Selector="controls|BiologyRewardBandControl">
+      <Setter Property="FilledSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedSegmentEdgeBrush}" />
+      <Setter Property="PotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedPotentialSegmentEdgeBrush}" />
+      <Setter Property="DimmedFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedDimSegmentEdgeBrush}" />
+      <Setter Property="DimmedPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedDimPotentialSegmentEdgeBrush}" />
+      <Setter Property="PredictionFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioPredictionSegmentEdgeBrush}" />
+      <Setter Property="PredictionPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioPredictionPotentialSegmentEdgeBrush}" />
+      <Setter Property="HighlightFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioGoldSegmentEdgeBrush}" />
+      <Setter Property="HighlightPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioGoldPotentialSegmentEdgeBrush}" />
+      <Setter Property="DimmedHighlightFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioGoldDimSegmentEdgeBrush}" />
+      <Setter Property="DimmedHighlightPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioGoldDimPotentialSegmentEdgeBrush}" />
+      <Setter Property="GlobalRegionalFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioGalacticRegionSegmentEdgeBrush}" />
+      <Setter Property="GlobalRegionalPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioGalacticRegionPotentialSegmentEdgeBrush}" />
+      <Setter Property="DimmedPotentialBrush" Value="{DynamicResource RavenBioConfirmedDimPotentialBrush}" />
+      <Setter Property="HighlightPotentialBrush" Value="{DynamicResource RavenBioGoldPotentialBrush}" />
+      <Setter Property="DimmedHighlightPotentialBrush" Value="{DynamicResource RavenBioGoldDimPotentialBrush}" />
+    </Style>
+    <Style Selector="controls|BiologyRewardBandGroupControl">
+      <Setter Property="FrameBrush" Value="{DynamicResource RavenPrimaryBrush}" />
+    </Style>
+    <Style Selector="controls|BiologyRewardBandGroupControl.highlight">
+      <Setter Property="FrameBrush" Value="{DynamicResource RavenSecondaryBrush}" />
+    </Style>
+  </UserControl.Styles>
   <Border Margin="0"
           Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
@@ -70,16 +129,22 @@
       <ScrollViewer MaxHeight="620"
                     HorizontalScrollBarVisibility="Disabled"
                     VerticalScrollBarVisibility="Auto">
-        <StackPanel Spacing="3">
+        <StackPanel Grid.IsSharedSizeScope="True"
+                    Spacing="3">
           <ItemsControl IsVisible="{Binding Survey.BiologySurveyDisplay.IsSystemOverview}"
                         ItemsSource="{Binding Survey.BiologySurveyDisplay.Bodies}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:BiologyBodyRowViewModel">
-                <!-- Match Route Bodies visual grammar:
-                     body icon | label | reward bands | value (flex right). -->
+                <!-- Match Route Bodies visual grammar with list-wide columns:
+                     body icon | body name | left-aligned reward PIPs | value. -->
                 <Grid Margin="0,1"
-                      ColumnDefinitions="Auto,Auto,Auto,*"
                       ColumnSpacing="5">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="SystemBiologyBodyIcon" />
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="SystemBiologyBodyName" />
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="SystemBiologyPips" />
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="SystemBiologyReward" />
+                  </Grid.ColumnDefinitions>
                   <Border Width="14"
                           Height="18"
                           Background="Transparent"
@@ -103,45 +168,38 @@
                                TextDecorations="Strikethrough" />
                   </Grid>
                   <StackPanel Grid.Column="2"
-                              Margin="1,0,3,0"
-                              VerticalAlignment="Center"
-                              Orientation="Horizontal"
-                              Spacing="4">
-                    <ItemsControl ItemsSource="{Binding RewardBands}">
-                      <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                          <StackPanel Orientation="Horizontal" Spacing="2" />
-                        </ItemsPanelTemplate>
-                      </ItemsControl.ItemsPanel>
-                      <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:BiologySignalRewardBandViewModel">
-                          <controls:BiologyRewardBandControl Width="13"
-                                                             Height="28"
-                                                             MinimumReward="{Binding MinimumReward}"
-                                                             MaximumReward="{Binding MaximumReward}"
-                                                             BucketOneMillions="{Binding RewardBucketOneMillions}"
-                                                             BucketTwoMillions="{Binding RewardBucketTwoMillions}"
-                                                             BucketThreeMillions="{Binding RewardBucketThreeMillions}"
-                                                             IsPrediction="{Binding IsPrediction}"
-                                                             IsHighlighted="{Binding IsHighlighted}"
-                                                             IsGlobalRegionalFirst="{Binding IsGlobalRegionalFirst}"
-                                                             IsDimmed="{Binding ShouldDim}"
-                                                             FilledBrush="{DynamicResource RavenBioConfirmedBrush}"
-                                                             PotentialBrush="{DynamicResource RavenBioPotentialBrush}"
-                                                             DimmedFilledBrush="{DynamicResource RavenBioConfirmedDimBrush}"
-                                                             PredictionFilledBrush="{DynamicResource RavenBioPredictionBrush}"
-                                                             PredictionPotentialBrush="{DynamicResource RavenBioPredictionPotentialBrush}"
-                                                             HighlightBrush="{DynamicResource RavenBioGoldBrush}"
-                                                             DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
-                                                             GlobalRegionalBrush="{DynamicResource RavenBioGalacticRegionBrush}"
-                                                             GlobalRegionalPotentialBrush="{DynamicResource RavenBioGalacticRegionPotentialBrush}"
-                                                             UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
-                                                             UnknownGlyphBrush="{DynamicResource RavenBioUnknownGlyphBrush}"
-                                                             HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                             EmptyBrush="{DynamicResource RavenBioEmptyBrush}" />
-                        </DataTemplate>
-                      </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                               Margin="1,0,3,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Orientation="Horizontal"
+                               Spacing="4">
+                    <StackPanel HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="3">
+                      <controls:BiologyRewardBandGroupControl
+                          Classes.highlight="{Binding IsRewardBandGroupHighlighted}">
+                        <ItemsControl HorizontalAlignment="Left"
+                                      ItemTemplate="{StaticResource BiologyRewardBandTemplate}"
+                                      ItemsSource="{Binding SignalRewardBands}">
+                          <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                              <StackPanel Orientation="Horizontal" Spacing="2" />
+                            </ItemsPanelTemplate>
+                          </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                      </controls:BiologyRewardBandGroupControl>
+                      <ItemsControl HorizontalAlignment="Left"
+                                    IsVisible="{Binding HasAlternativeRewardBands}"
+                                    ItemTemplate="{StaticResource BiologyRewardBandTemplate}"
+                                    ItemsSource="{Binding AlternativeRewardBands}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="2" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                      </ItemsControl>
+                    </StackPanel>
                     <controls:CanonnLogoControl Width="16"
                                                 Height="16"
                                                 VerticalAlignment="Center"
@@ -217,14 +275,21 @@
                                                          DimmedFilledBrush="{DynamicResource RavenBioConfirmedDimBrush}"
                                                          PredictionFilledBrush="{DynamicResource RavenBioPredictionBrush}"
                                                          PredictionPotentialBrush="{DynamicResource RavenBioPredictionPotentialBrush}"
-                                                         HighlightBrush="{DynamicResource RavenBioGoldBrush}"
-                                                         DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
+                                                         HighlightBrush="{DynamicResource RavenBioGoldFillBrush}"
+                                                         DimmedHighlightBrush="{DynamicResource RavenBioGoldDimFillBrush}"
                                                          GlobalRegionalBrush="{DynamicResource RavenBioGalacticRegionBrush}"
                                                          GlobalRegionalPotentialBrush="{DynamicResource RavenBioGalacticRegionPotentialBrush}"
                                                          UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
                                                          UnknownGlyphBrush="{DynamicResource RavenBioUnknownGlyphBrush}"
                                                          HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                         EmptyBrush="{DynamicResource RavenBioEmptyBrush}" />
+                                                         EmptyBrush="{DynamicResource RavenBioEmptyBrush}"
+                                                         FilledEdgeBrush="{DynamicResource RavenBioConfirmedEdgeBrush}"
+                                                         DimmedFilledEdgeBrush="{DynamicResource RavenBioConfirmedDimEdgeBrush}"
+                                                         PredictionEdgeBrush="{DynamicResource RavenBioPredictionEdgeBrush}"
+                                                         HighlightEdgeBrush="{DynamicResource RavenBioGoldEdgeBrush}"
+                                                         DimmedHighlightEdgeBrush="{DynamicResource RavenBioGoldDimEdgeBrush}"
+                                                         GlobalRegionalEdgeBrush="{DynamicResource RavenBioGalacticRegionEdgeBrush}"
+                                                         UnknownEdgeBrush="{DynamicResource RavenBioUnknownEdgeBrush}" />
 
                       <Grid Grid.Column="1"
                             RowDefinitions="Auto,Auto"

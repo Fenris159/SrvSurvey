@@ -25,22 +25,47 @@ public sealed class LegacyOverlayThemeStore
             ["black"] = Color.FromArgb(255, 0, 0, 0),
             ["menuGold"] = Color.FromArgb(235, 235, 145, 0),
             ["grey"] = Color.FromArgb(255, 100, 100, 100),
-            // Reward PIPs use their own Elite-inspired orange/yellow palette
-            // instead of borrowing the general overlay accents.
+            // Reward PIPs preserve the legacy VolumeBar palette. Fill colors,
+            // possible-range colors, and outer edges are independent because
+            // the WinForms renderer used a different brush for each layer.
             ["bio.confirmed"] = Color.FromArgb(255, 255, 111, 0),
-            ["bio.confirmedDim"] = Color.FromArgb(255, 156, 79, 5),
-            ["bio.potential"] = Color.FromArgb(255, 95, 48, 3),
-            ["bio.prediction"] = Color.FromArgb(255, 255, 196, 0),
-            ["bio.predictionPotential"] = Color.FromArgb(255, 138, 106, 0),
-            ["bio.gold"] = Color.FromArgb(255, 255, 255, 0),
-            ["bio.goldDark"] = Color.FromArgb(255, 120, 111, 0),
-            ["bio.galacticRegion"] = Color.FromArgb(255, 255, 255, 255),
-            ["bio.galacticRegionPotential"] = Color.FromArgb(255, 128, 128, 128),
+            ["bio.confirmedDim"] = Color.FromArgb(255, 85, 36, 0),
+            ["bio.potential"] = Color.FromArgb(140, 95, 48, 3),
+            ["bio.confirmedDimPotential"] = Color.FromArgb(140, 31, 16, 1),
+            ["bio.prediction"] = Color.FromArgb(255, 84, 223, 237),
+            ["bio.predictionPotential"] = Color.FromArgb(180, 0, 139, 139),
+            ["bio.gold"] = Color.FromArgb(255, 255, 215, 0),
+            ["bio.goldDark"] = Color.FromArgb(255, 120, 95, 0),
+            ["bio.goldFill"] = Color.FromArgb(255, 184, 134, 11),
+            ["bio.goldDarkFill"] = Color.FromArgb(255, 63, 45, 3),
+            ["bio.goldPotential"] = Color.FromArgb(144, 184, 134, 11),
+            ["bio.goldDarkPotential"] = Color.FromArgb(140, 184, 134, 11),
+            ["bio.galacticRegion"] = Color.FromArgb(255, 244, 244, 244),
+            ["bio.galacticRegionPotential"] = Color.FromArgb(140, 184, 184, 184),
             ["bio.unknown"] = Color.FromArgb(255, 105, 105, 105),
-            ["bio.unknownGlyph"] = Color.FromArgb(255, 176, 176, 176),
-            ["bio.hatch"] = Color.FromArgb(190, 64, 32, 0),
-            ["bio.empty"] = Color.FromArgb(48, 255, 111, 0),
+            ["bio.unknownGlyph"] = Color.FromArgb(255, 105, 105, 105),
+            ["bio.hatch"] = Color.FromArgb(242, 64, 64, 64),
+            ["bio.empty"] = Color.FromArgb(255, 0, 0, 0),
             ["bio.white"] = Color.FromArgb(255, 255, 255, 255),
+            ["bio.confirmedEdge"] = Color.FromArgb(96, 255, 111, 0),
+            ["bio.confirmedDimEdge"] = Color.FromArgb(96, 85, 36, 0),
+            ["bio.predictionEdge"] = Color.FromArgb(96, 0, 139, 139),
+            ["bio.goldEdge"] = Color.FromArgb(96, 255, 215, 0),
+            ["bio.goldDarkEdge"] = Color.FromArgb(96, 184, 134, 11),
+            ["bio.galacticRegionEdge"] = Color.FromArgb(96, 255, 255, 255),
+            ["bio.unknownEdge"] = Color.FromArgb(96, 0, 139, 139),
+            ["bio.confirmedSegmentEdge"] = Color.FromArgb(255, 95, 48, 3),
+            ["bio.confirmedPotentialSegmentEdge"] = Color.FromArgb(124, 255, 111, 0),
+            ["bio.confirmedDimSegmentEdge"] = Color.FromArgb(255, 31, 16, 1),
+            ["bio.confirmedDimPotentialSegmentEdge"] = Color.FromArgb(124, 85, 36, 0),
+            ["bio.predictionSegmentEdge"] = Color.FromArgb(255, 0, 139, 139),
+            ["bio.predictionPotentialSegmentEdge"] = Color.FromArgb(255, 0, 139, 139),
+            ["bio.goldSegmentEdge"] = Color.FromArgb(255, 255, 215, 0),
+            ["bio.goldPotentialSegmentEdge"] = Color.FromArgb(144, 214, 164, 11),
+            ["bio.goldDarkSegmentEdge"] = Color.FromArgb(255, 184, 134, 11),
+            ["bio.goldDarkPotentialSegmentEdge"] = Color.FromArgb(124, 63, 45, 3),
+            ["bio.galacticRegionSegmentEdge"] = Color.FromArgb(255, 128, 128, 128),
+            ["bio.galacticRegionPotentialSegmentEdge"] = Color.FromArgb(144, 255, 255, 255),
             ["colonise.surplus"] = Color.FromArgb(255, 0, 255, 0),
             ["colonise.surplusDark"] = Color.FromArgb(255, 0, 139, 0),
             ["colonise.deficit"] = Color.FromArgb(255, 255, 0, 0),
@@ -99,6 +124,8 @@ public sealed class LegacyOverlayThemeStore
                     "The legacy overlay theme is not a JSON object.");
             var colors = new Dictionary<string, Color>(StringComparer.Ordinal);
             ParseObject(root, string.Empty, colors);
+            _ = OverlayThemePresetCatalog.TryUpgradeLegacyBiologyPalette(colors);
+            _ = OverlayThemePresetCatalog.AddMissingExpandedBiologyColors(colors);
             foreach (var fallback in DefaultColors)
             {
                 colors.TryAdd(fallback.Key, fallback.Value);

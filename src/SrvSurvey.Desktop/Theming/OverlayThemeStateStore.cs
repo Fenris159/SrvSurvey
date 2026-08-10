@@ -156,6 +156,7 @@ public sealed class OverlayThemeStateStore
                     colors.Add(entry.Key, color);
                 }
 
+                _ = OverlayThemePresetCatalog.AddMissingExpandedBiologyColors(colors);
                 ValidateColors(name, colors);
                 states.Add(new OverlayThemeState(name, colors));
             }

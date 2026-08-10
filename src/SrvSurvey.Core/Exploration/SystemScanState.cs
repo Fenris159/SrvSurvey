@@ -432,6 +432,7 @@ public sealed class SystemScanState
         body.DssEfficiencyBonus =
             (GetInt32(root, "ProbesUsed") ?? int.MaxValue)
             <= (GetInt32(root, "EfficiencyTarget") ?? -1);
+        CurrentBodyId = body.BodyId;
     }
 
     private void ApplyBodySignals(JsonElement root)

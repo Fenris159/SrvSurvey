@@ -870,6 +870,116 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void DssCompletionShowsTargetBodyDetailDuringGraceWindowInSupercruise()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "supercruise-dss-transition-ui-settings.json")),
+            utcNow: () => now);
+        var supercruiseStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 1,
+                Name = "Test 1",
+            },
+        };
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+            ],
+            supercruiseStatus);
+
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+
+        viewModel.ApplyUpdate(
+            [Parse("""{"timestamp":"2026-07-25T12:00:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}""")],
+            supercruiseStatus);
+
+        Assert.True(viewModel.IsWithinPostDssBiologyWindow);
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.Equal("Test 1 biology", viewModel.BiologySurvey.Heading);
+        Assert.NotNull(viewModel.BiologyStatus);
+
+        now = now.AddSeconds(121);
+
+        Assert.True(viewModel.RefreshTransientState());
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.Null(viewModel.BiologyStatus);
+    }
+
+    [Fact]
+    public void PostDssSettingsImmediatelyRebuildBiologyPanels()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "live-dss-settings-ui-settings.json")),
+            utcNow: () => now);
+        var supercruiseStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 1,
+                Name = "Test 1",
+            },
+        };
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+                Parse("""{"timestamp":"2026-07-25T12:00:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""),
+            ],
+            supercruiseStatus);
+
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+
+        viewModel.KeepBioPlottersVisibleAfterDss = false;
+
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.Null(viewModel.BiologyStatus);
+
+        var notifiedVisible = false;
+        viewModel.PropertyChanged += (_, eventArgs) =>
+        {
+            if (eventArgs.PropertyName == nameof(
+                    SystemSurveyViewModel.ShouldShowBioStatus)
+                && viewModel.ShouldShowBioStatus)
+            {
+                notifiedVisible = true;
+            }
+        };
+
+        viewModel.KeepBioPlottersVisibleAfterDss = true;
+
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.NotNull(viewModel.BiologyStatus);
+        Assert.True(notifiedVisible);
+
+        viewModel.BioPlotterDssDurationSeconds = 0;
+
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.Null(viewModel.BiologyStatus);
+
+        notifiedVisible = false;
+        viewModel.BioPlotterDssDurationSeconds = 120;
+
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.NotNull(viewModel.BiologyStatus);
+        Assert.True(notifiedVisible);
+    }
+
+    [Fact]
     public void BiologySurveyShowsBodySamplesRewardsFootfallAndGeology()
     {
         var viewModel = CreateViewModel();
@@ -1250,11 +1360,23 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
         Assert.False(viewModel.ShouldShowBioSystem);
 
+        var notifiedVisible = false;
+        viewModel.PropertyChanged += (_, eventArgs) =>
+        {
+            if (eventArgs.PropertyName == nameof(
+                    SystemSurveyViewModel.ShouldShowBioSystem)
+                && viewModel.ShouldShowBioSystem)
+            {
+                notifiedVisible = true;
+            }
+        };
+
         viewModel.DrawBodyBiosOnlyWhenNear = false;
 
         Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
         Assert.Equal("Test 2 biology", viewModel.BiologySurvey.Heading);
         Assert.True(viewModel.ShouldShowBioSystem);
+        Assert.True(notifiedVisible);
     }
 
     [Fact]
@@ -1437,6 +1559,96 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.False(genus.IsPrediction);
         Assert.True(genus.IsGenusIdentified);
         Assert.Equal("Reward pending identification", viewModel.BiologySurvey.RewardSummary);
+    }
+
+    [Fact]
+    public void BiologySystemKeepsAlternativePredictionPipsBeyondSignalCount()
+    {
+        var criteria = new BiologyCriteriaCatalog(
+        [
+            new BiologyCriteriaNode(
+                "Aleoida",
+                "Arcus",
+                "Yellow",
+                [],
+                [],
+                false,
+                null),
+            new BiologyCriteriaNode(
+                "Bacterium",
+                "Acies",
+                "Lime",
+                [],
+                [],
+                false,
+                null),
+        ]);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "alternative-prediction-pips-ui-settings.json")),
+            biologyCriteria: criteria);
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""),
+                Parse(PredictableAleoidaScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.SystemMap });
+
+        var body = Assert.Single(viewModel.BiologySurvey!.Bodies);
+
+        Assert.Equal(1, body.SignalCount);
+        Assert.Equal(2, body.RewardBands.Count);
+        Assert.All(body.RewardBands, band => Assert.True(band.IsPrediction));
+        Assert.Single(body.SignalRewardBands);
+        Assert.Single(body.AlternativeRewardBands);
+        Assert.True(body.HasAlternativeRewardBands);
+    }
+
+    [Fact]
+    public void BiologySystemPreservesSpoihaaeAlternativeGenusPipParity()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Spoihaae QY-Y d1-267","SystemAddress":9182513942803,"StarPos":[-9648.8125,-1474.8125,19577.9375]}"""),
+                Parse("""{"event":"Scan","ScanType":"Detailed","BodyName":"Spoihaae QY-Y d1-267","BodyID":0,"StarSystem":"Spoihaae QY-Y d1-267","SystemAddress":9182513942803,"StarType":"F","StellarMass":1.2,"Radius":695700000,"SurfaceTemperature":6500,"SemiMajorAxis":0}"""),
+                Parse("""{"event":"FSSBodySignals","BodyName":"Spoihaae QY-Y d1-267 7 d","BodyID":55,"SystemAddress":9182513942803,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":3}]}"""),
+                Parse(SpoihaaeBody7DScan),
+                Parse("""{"event":"FSSBodySignals","BodyName":"Spoihaae QY-Y d1-267 7 e","BodyID":56,"SystemAddress":9182513942803,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":3}]}"""),
+                Parse(SpoihaaeBody7EScan),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.SystemMap });
+
+        var bodies = viewModel.BiologySurvey!.Bodies;
+        Assert.Equal(2, bodies.Count);
+        AssertBodyPipParity(
+            bodies.Single(body => body.BodyId == 55),
+            16_074_600,
+            1_849_000);
+        AssertBodyPipParity(
+            bodies.Single(body => body.BodyId == 56),
+            15_225_600,
+            1_000_000);
+    }
+
+    private static void AssertBodyPipParity(
+        BiologyBodyRowViewModel body,
+        long expectedMaximumReward,
+        long expectedOverflowMaximum)
+    {
+        Assert.Equal(3, body.SignalCount);
+        Assert.Equal(4, body.RewardBands.Count);
+        Assert.Equal(3, body.SignalRewardBands.Count());
+        var overflow = Assert.Single(body.AlternativeRewardBands);
+        Assert.True(body.HasAlternativeRewardBands);
+        Assert.Equal(4_352_400, body.MinimumReward);
+        Assert.Equal(expectedMaximumReward, body.MaximumReward);
+        Assert.Equal(1_000_000, overflow.MinimumReward);
+        Assert.Equal(expectedOverflowMaximum, overflow.MaximumReward);
+        Assert.True(overflow.IsPrediction);
     }
 
     [Fact]
@@ -1693,6 +1905,84 @@ public sealed class SystemSurveyViewModelTests : IDisposable
           "SemiMajorAxis":100000,
           "Landable":true,
           "Materials":[{"Name":"Iron","Percent":20}]
+        }
+        """;
+
+    private const string SpoihaaeBody7DScan = """
+        {
+          "event":"Scan",
+          "ScanType":"Detailed",
+          "BodyName":"Spoihaae QY-Y d1-267 7 d",
+          "BodyID":55,
+          "Parents":[{"Null":54},{"Planet":48},{"Star":0}],
+          "StarSystem":"Spoihaae QY-Y d1-267",
+          "SystemAddress":9182513942803,
+          "DistanceFromArrivalLS":1696.060364,
+          "PlanetClass":"Rocky body",
+          "Atmosphere":"thin carbon dioxide atmosphere",
+          "AtmosphereType":"CarbonDioxide",
+          "AtmosphereComposition":[
+            {"Name":"CarbonDioxide","Percent":99.009911},
+            {"Name":"SulphurDioxide","Percent":0.990099}
+          ],
+          "Volcanism":"",
+          "SurfaceGravity":0.727877,
+          "SurfaceTemperature":161.964722,
+          "SurfacePressure":1041.205200,
+          "Landable":true,
+          "Materials":[
+            {"Name":"iron","Percent":19.515636},
+            {"Name":"sulphur","Percent":19.145538},
+            {"Name":"carbon","Percent":16.099415},
+            {"Name":"nickel","Percent":14.760810},
+            {"Name":"phosphorus","Percent":10.307120},
+            {"Name":"chromium","Percent":8.776830},
+            {"Name":"germanium","Percent":5.661762},
+            {"Name":"arsenic","Percent":2.532017},
+            {"Name":"niobium","Percent":1.333790},
+            {"Name":"tin","Percent":1.169078},
+            {"Name":"technetium","Percent":0.697996}
+          ],
+          "SemiMajorAxis":5678971.827030
+        }
+        """;
+
+    private const string SpoihaaeBody7EScan = """
+        {
+          "event":"Scan",
+          "ScanType":"Detailed",
+          "BodyName":"Spoihaae QY-Y d1-267 7 e",
+          "BodyID":56,
+          "Parents":[{"Null":54},{"Planet":48},{"Star":0}],
+          "StarSystem":"Spoihaae QY-Y d1-267",
+          "SystemAddress":9182513942803,
+          "DistanceFromArrivalLS":1696.087102,
+          "PlanetClass":"Rocky body",
+          "Atmosphere":"thin carbon dioxide atmosphere",
+          "AtmosphereType":"CarbonDioxide",
+          "AtmosphereComposition":[
+            {"Name":"CarbonDioxide","Percent":99.009911},
+            {"Name":"SulphurDioxide","Percent":0.990099}
+          ],
+          "Volcanism":"",
+          "SurfaceGravity":0.681229,
+          "SurfaceTemperature":160.884781,
+          "SurfacePressure":912.025330,
+          "Landable":true,
+          "Materials":[
+            {"Name":"iron","Percent":19.078423},
+            {"Name":"sulphur","Percent":18.716614},
+            {"Name":"carbon","Percent":15.738734},
+            {"Name":"nickel","Percent":14.430120},
+            {"Name":"phosphorus","Percent":10.076207},
+            {"Name":"manganese","Percent":7.879194},
+            {"Name":"germanium","Percent":5.534920},
+            {"Name":"zinc","Percent":5.184801},
+            {"Name":"antimony","Percent":1.170493},
+            {"Name":"tin","Percent":1.142887},
+            {"Name":"tungsten","Percent":1.047597}
+          ],
+          "SemiMajorAxis":6911848.187447
         }
         """;
 }

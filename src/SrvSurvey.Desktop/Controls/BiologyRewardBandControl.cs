@@ -43,6 +43,9 @@ public sealed class BiologyRewardBandControl : Control
     public static readonly StyledProperty<IBrush?> PotentialBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(PotentialBrush));
+    public static readonly StyledProperty<IBrush?> DimmedPotentialBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(DimmedPotentialBrush));
     public static readonly StyledProperty<IBrush?> DimmedFilledBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(DimmedFilledBrush));
@@ -58,6 +61,12 @@ public sealed class BiologyRewardBandControl : Control
     public static readonly StyledProperty<IBrush?> DimmedHighlightBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(DimmedHighlightBrush));
+    public static readonly StyledProperty<IBrush?> HighlightPotentialBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(HighlightPotentialBrush));
+    public static readonly StyledProperty<IBrush?> DimmedHighlightPotentialBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(DimmedHighlightPotentialBrush));
     public static readonly StyledProperty<IBrush?> GlobalRegionalBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(GlobalRegionalBrush));
@@ -67,6 +76,63 @@ public sealed class BiologyRewardBandControl : Control
     public static readonly StyledProperty<IBrush?> EdgeBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(EdgeBrush));
+    public static readonly StyledProperty<IBrush?> FilledEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(FilledEdgeBrush));
+    public static readonly StyledProperty<IBrush?> DimmedFilledEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(DimmedFilledEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PredictionEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(PredictionEdgeBrush));
+    public static readonly StyledProperty<IBrush?> HighlightEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(HighlightEdgeBrush));
+    public static readonly StyledProperty<IBrush?> DimmedHighlightEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(DimmedHighlightEdgeBrush));
+    public static readonly StyledProperty<IBrush?> GlobalRegionalEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(GlobalRegionalEdgeBrush));
+    public static readonly StyledProperty<IBrush?> UnknownEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(UnknownEdgeBrush));
+    public static readonly StyledProperty<IBrush?> FilledSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(FilledSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PotentialSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(PotentialSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> DimmedFilledSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(DimmedFilledSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> DimmedPotentialSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(DimmedPotentialSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PredictionFilledSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(PredictionFilledSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PredictionPotentialSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(PredictionPotentialSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> HighlightFilledSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(HighlightFilledSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> HighlightPotentialSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(HighlightPotentialSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> DimmedHighlightFilledSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(DimmedHighlightFilledSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> DimmedHighlightPotentialSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(DimmedHighlightPotentialSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> GlobalRegionalFilledSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(GlobalRegionalFilledSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> GlobalRegionalPotentialSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(GlobalRegionalPotentialSegmentEdgeBrush));
     public static readonly StyledProperty<IBrush?> PredictionBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(PredictionBrush));
@@ -89,7 +155,7 @@ public sealed class BiologyRewardBandControl : Control
     // Immutable brush is free-threaded; a static SolidColorBrush would pin to the
     // first UI thread that touches it and break parallel Avalonia rendering tests.
     private static readonly IBrush DefaultEmptyBrush =
-        new ImmutableSolidColorBrush(Color.FromArgb(48, 255, 111, 0));
+        new ImmutableSolidColorBrush(Colors.Black);
 
     static BiologyRewardBandControl()
     {
@@ -104,14 +170,36 @@ public sealed class BiologyRewardBandControl : Control
             IsGlobalRegionalFirstProperty,
             FilledBrushProperty,
             PotentialBrushProperty,
+            DimmedPotentialBrushProperty,
             DimmedFilledBrushProperty,
             PredictionFilledBrushProperty,
             PredictionPotentialBrushProperty,
             HighlightBrushProperty,
             DimmedHighlightBrushProperty,
+            HighlightPotentialBrushProperty,
+            DimmedHighlightPotentialBrushProperty,
             GlobalRegionalBrushProperty,
             GlobalRegionalPotentialBrushProperty,
             EdgeBrushProperty,
+            FilledEdgeBrushProperty,
+            DimmedFilledEdgeBrushProperty,
+            PredictionEdgeBrushProperty,
+            HighlightEdgeBrushProperty,
+            DimmedHighlightEdgeBrushProperty,
+            GlobalRegionalEdgeBrushProperty,
+            UnknownEdgeBrushProperty,
+            FilledSegmentEdgeBrushProperty,
+            PotentialSegmentEdgeBrushProperty,
+            DimmedFilledSegmentEdgeBrushProperty,
+            DimmedPotentialSegmentEdgeBrushProperty,
+            PredictionFilledSegmentEdgeBrushProperty,
+            PredictionPotentialSegmentEdgeBrushProperty,
+            HighlightFilledSegmentEdgeBrushProperty,
+            HighlightPotentialSegmentEdgeBrushProperty,
+            DimmedHighlightFilledSegmentEdgeBrushProperty,
+            DimmedHighlightPotentialSegmentEdgeBrushProperty,
+            GlobalRegionalFilledSegmentEdgeBrushProperty,
+            GlobalRegionalPotentialSegmentEdgeBrushProperty,
             PredictionBrushProperty,
             UnknownGlyphBrushProperty,
             UnknownBrushProperty,
@@ -187,6 +275,12 @@ public sealed class BiologyRewardBandControl : Control
         set => SetValue(PotentialBrushProperty, value);
     }
 
+    public IBrush? DimmedPotentialBrush
+    {
+        get => GetValue(DimmedPotentialBrushProperty);
+        set => SetValue(DimmedPotentialBrushProperty, value);
+    }
+
     public IBrush? DimmedFilledBrush
     {
         get => GetValue(DimmedFilledBrushProperty);
@@ -217,6 +311,18 @@ public sealed class BiologyRewardBandControl : Control
         set => SetValue(DimmedHighlightBrushProperty, value);
     }
 
+    public IBrush? HighlightPotentialBrush
+    {
+        get => GetValue(HighlightPotentialBrushProperty);
+        set => SetValue(HighlightPotentialBrushProperty, value);
+    }
+
+    public IBrush? DimmedHighlightPotentialBrush
+    {
+        get => GetValue(DimmedHighlightPotentialBrushProperty);
+        set => SetValue(DimmedHighlightPotentialBrushProperty, value);
+    }
+
     public IBrush? GlobalRegionalBrush
     {
         get => GetValue(GlobalRegionalBrushProperty);
@@ -233,6 +339,120 @@ public sealed class BiologyRewardBandControl : Control
     {
         get => GetValue(EdgeBrushProperty);
         set => SetValue(EdgeBrushProperty, value);
+    }
+
+    public IBrush? FilledEdgeBrush
+    {
+        get => GetValue(FilledEdgeBrushProperty);
+        set => SetValue(FilledEdgeBrushProperty, value);
+    }
+
+    public IBrush? DimmedFilledEdgeBrush
+    {
+        get => GetValue(DimmedFilledEdgeBrushProperty);
+        set => SetValue(DimmedFilledEdgeBrushProperty, value);
+    }
+
+    public IBrush? PredictionEdgeBrush
+    {
+        get => GetValue(PredictionEdgeBrushProperty);
+        set => SetValue(PredictionEdgeBrushProperty, value);
+    }
+
+    public IBrush? HighlightEdgeBrush
+    {
+        get => GetValue(HighlightEdgeBrushProperty);
+        set => SetValue(HighlightEdgeBrushProperty, value);
+    }
+
+    public IBrush? DimmedHighlightEdgeBrush
+    {
+        get => GetValue(DimmedHighlightEdgeBrushProperty);
+        set => SetValue(DimmedHighlightEdgeBrushProperty, value);
+    }
+
+    public IBrush? GlobalRegionalEdgeBrush
+    {
+        get => GetValue(GlobalRegionalEdgeBrushProperty);
+        set => SetValue(GlobalRegionalEdgeBrushProperty, value);
+    }
+
+    public IBrush? UnknownEdgeBrush
+    {
+        get => GetValue(UnknownEdgeBrushProperty);
+        set => SetValue(UnknownEdgeBrushProperty, value);
+    }
+
+    public IBrush? FilledSegmentEdgeBrush
+    {
+        get => GetValue(FilledSegmentEdgeBrushProperty);
+        set => SetValue(FilledSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? PotentialSegmentEdgeBrush
+    {
+        get => GetValue(PotentialSegmentEdgeBrushProperty);
+        set => SetValue(PotentialSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? DimmedFilledSegmentEdgeBrush
+    {
+        get => GetValue(DimmedFilledSegmentEdgeBrushProperty);
+        set => SetValue(DimmedFilledSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? DimmedPotentialSegmentEdgeBrush
+    {
+        get => GetValue(DimmedPotentialSegmentEdgeBrushProperty);
+        set => SetValue(DimmedPotentialSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? PredictionFilledSegmentEdgeBrush
+    {
+        get => GetValue(PredictionFilledSegmentEdgeBrushProperty);
+        set => SetValue(PredictionFilledSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? PredictionPotentialSegmentEdgeBrush
+    {
+        get => GetValue(PredictionPotentialSegmentEdgeBrushProperty);
+        set => SetValue(PredictionPotentialSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? HighlightFilledSegmentEdgeBrush
+    {
+        get => GetValue(HighlightFilledSegmentEdgeBrushProperty);
+        set => SetValue(HighlightFilledSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? HighlightPotentialSegmentEdgeBrush
+    {
+        get => GetValue(HighlightPotentialSegmentEdgeBrushProperty);
+        set => SetValue(HighlightPotentialSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? DimmedHighlightFilledSegmentEdgeBrush
+    {
+        get => GetValue(DimmedHighlightFilledSegmentEdgeBrushProperty);
+        set => SetValue(DimmedHighlightFilledSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? DimmedHighlightPotentialSegmentEdgeBrush
+    {
+        get => GetValue(DimmedHighlightPotentialSegmentEdgeBrushProperty);
+        set => SetValue(DimmedHighlightPotentialSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? GlobalRegionalFilledSegmentEdgeBrush
+    {
+        get => GetValue(GlobalRegionalFilledSegmentEdgeBrushProperty);
+        set => SetValue(GlobalRegionalFilledSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? GlobalRegionalPotentialSegmentEdgeBrush
+    {
+        get => GetValue(GlobalRegionalPotentialSegmentEdgeBrushProperty);
+        set => SetValue(GlobalRegionalPotentialSegmentEdgeBrushProperty, value);
     }
 
     public IBrush? PredictionBrush
@@ -287,33 +507,56 @@ public sealed class BiologyRewardBandControl : Control
                 BucketOneMillions,
                 BucketTwoMillions,
                 BucketThreeMillions));
-        IBrush edge;
-        if (state.IsUnknown)
-        {
-            edge = brushes.Unknown;
-        }
-        else if (IsGlobalRegionalFirst)
-        {
-            edge = brushes.Filled;
-        }
-        else
-        {
-            edge = EdgeBrush ?? brushes.Filled;
-        }
-
-        var outer = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
-        context.DrawRectangle(Brushes.Transparent, new Pen(edge, 1), outer, 2, 2);
+        var edge = ResolveEdgeBrush(state, brushes);
 
         if (state.IsUnknown)
         {
             DrawUnknownMarker(context, brushes.UnknownGlyph);
+            DrawOuterEdge(context, edge);
             return;
         }
 
-        DrawSegments(context, state, brushes.Filled, brushes.Potential);
+        DrawSegments(
+            context,
+            state,
+            brushes.Filled,
+            brushes.Potential,
+            brushes.FilledEdge,
+            brushes.PotentialEdge);
         if (IsPrediction)
         {
             DrawPredictionHatch(context, brushes.Hatch);
+        }
+
+        // Paint the frame last so the hatch and anti-aliased segment edges
+        // cannot cover the translucent dotted state indicator.
+        DrawOuterEdge(context, edge);
+    }
+
+    private void DrawOuterEdge(DrawingContext context, IBrush edge)
+    {
+        // Legacy VolumeBar uses a 1.9 px dotted frame. Keep the complete stroke
+        // inside this clipped control so native overlay opacity cannot erase it.
+        const double thickness = 1.9;
+        const double inset = thickness / 2;
+        var outer = new Rect(
+            inset,
+            inset,
+            Bounds.Width - thickness,
+            Bounds.Height - thickness);
+        var edgePen = new Pen(
+            edge,
+            thickness,
+            DashStyle.Dot,
+            PenLineCap.Round,
+            PenLineJoin.Round);
+        context.DrawRectangle(Brushes.Transparent, edgePen, outer, 2, 2);
+        if (IsGlobalRegionalFirst)
+        {
+            // Legacy regional/galactic-first PIPs reinforce the translucent
+            // white edge twice so it remains identifiable over the hatch.
+            context.DrawRectangle(Brushes.Transparent, edgePen, outer, 2, 2);
+            context.DrawRectangle(Brushes.Transparent, edgePen, outer, 2, 2);
         }
     }
 
@@ -321,19 +564,110 @@ public sealed class BiologyRewardBandControl : Control
         IBrush Unknown,
         IBrush Filled,
         IBrush Potential,
+        IBrush FilledEdge,
+        IBrush PotentialEdge,
         IBrush UnknownGlyph,
         IBrush Hatch);
 
+    private IBrush ResolveEdgeBrush(
+        BiologyRewardBandState state,
+        BandBrushes brushes)
+    {
+        if (state.IsUnknown)
+        {
+            return UnknownEdgeBrush ?? EdgeBrush ?? brushes.Unknown;
+        }
+
+        if (IsGlobalRegionalFirst)
+        {
+            return GlobalRegionalEdgeBrush ?? EdgeBrush ?? brushes.Filled;
+        }
+
+        if (IsHighlighted)
+        {
+            return IsDimmed
+                ? DimmedHighlightEdgeBrush
+                    ?? HighlightEdgeBrush
+                    ?? EdgeBrush
+                    ?? brushes.Filled
+                : HighlightEdgeBrush ?? EdgeBrush ?? brushes.Filled;
+        }
+
+        if (IsPrediction)
+        {
+            return PredictionEdgeBrush ?? EdgeBrush ?? brushes.Filled;
+        }
+
+        return IsDimmed
+            ? DimmedFilledEdgeBrush ?? FilledEdgeBrush ?? EdgeBrush ?? brushes.Filled
+            : FilledEdgeBrush ?? EdgeBrush ?? brushes.Filled;
+    }
+
     private BandBrushes ResolveBandBrushes()
     {
+        var filled = ResolveFilledBrush();
+        var potential = ResolvePotentialBrush();
+        var segmentEdges = ResolveSegmentEdgeBrushes(filled, potential);
         return new BandBrushes(
             UnknownBrush ?? Brushes.Gray,
-            ResolveFilledBrush(),
-            ResolvePotentialBrush(),
+            filled,
+            potential,
+            segmentEdges.Filled,
+            segmentEdges.Potential,
             // PredictionBrush previously controlled the unknown question mark.
             // Keep it as a compatibility fallback for existing direct callers.
             UnknownGlyphBrush ?? PredictionBrush ?? Brushes.LightGray,
             HatchBrush ?? PredictionBrush ?? Brushes.LightGray);
+    }
+
+    private readonly record struct SegmentEdgeBrushes(
+        IBrush Filled,
+        IBrush Potential);
+
+    private SegmentEdgeBrushes ResolveSegmentEdgeBrushes(
+        IBrush filledFallback,
+        IBrush potentialFallback)
+    {
+        if (IsGlobalRegionalFirst)
+        {
+            return new SegmentEdgeBrushes(
+                GlobalRegionalFilledSegmentEdgeBrush ?? filledFallback,
+                GlobalRegionalPotentialSegmentEdgeBrush ?? potentialFallback);
+        }
+
+        if (IsHighlighted)
+        {
+            return IsDimmed
+                ? new SegmentEdgeBrushes(
+                    DimmedHighlightFilledSegmentEdgeBrush
+                        ?? HighlightFilledSegmentEdgeBrush
+                        ?? filledFallback,
+                    DimmedHighlightPotentialSegmentEdgeBrush
+                        ?? HighlightPotentialSegmentEdgeBrush
+                        ?? potentialFallback)
+                : new SegmentEdgeBrushes(
+                    HighlightFilledSegmentEdgeBrush ?? filledFallback,
+                    HighlightPotentialSegmentEdgeBrush ?? potentialFallback);
+        }
+
+        if (IsPrediction)
+        {
+            return new SegmentEdgeBrushes(
+                PredictionFilledSegmentEdgeBrush ?? filledFallback,
+                PredictionPotentialSegmentEdgeBrush ?? potentialFallback);
+        }
+
+        return IsDimmed
+            ? new SegmentEdgeBrushes(
+                DimmedFilledSegmentEdgeBrush
+                    ?? FilledSegmentEdgeBrush
+                    ?? filledFallback,
+                DimmedPotentialSegmentEdgeBrush
+                    ?? PotentialSegmentEdgeBrush
+                    ?? potentialFallback)
+            : new SegmentEdgeBrushes(
+                FilledSegmentEdgeBrush ?? filledFallback,
+                PotentialSegmentEdgeBrush ?? potentialFallback);
     }
 
     private IBrush ResolveFilledBrush()
@@ -369,11 +703,23 @@ public sealed class BiologyRewardBandControl : Control
 
         if (IsHighlighted)
         {
-            return DimmedHighlightBrush ?? Brushes.DarkGoldenrod;
+            return IsDimmed
+                ? DimmedHighlightPotentialBrush
+                    ?? HighlightPotentialBrush
+                    ?? DimmedHighlightBrush
+                    ?? Brushes.DarkGoldenrod
+                : HighlightPotentialBrush
+                    ?? HighlightBrush
+                    ?? Brushes.Gold;
         }
 
-        return IsPrediction
-            ? PredictionPotentialBrush ?? Brushes.DarkCyan
+        if (IsPrediction)
+        {
+            return PredictionPotentialBrush ?? Brushes.DarkCyan;
+        }
+
+        return IsDimmed
+            ? DimmedPotentialBrush ?? PotentialBrush ?? Brushes.DarkOrange
             : PotentialBrush ?? Brushes.DarkOrange;
     }
 
@@ -397,7 +743,9 @@ public sealed class BiologyRewardBandControl : Control
         DrawingContext context,
         BiologyRewardBandState state,
         IBrush filled,
-        IBrush potential)
+        IBrush potential,
+        IBrush filledEdge,
+        IBrush potentialEdge)
     {
         const double gap = 1;
         var segmentHeight = (Bounds.Height - 3 - gap * 3) / 4;
@@ -407,7 +755,14 @@ public sealed class BiologyRewardBandControl : Control
             var y = Bounds.Height - 1.5 - segmentHeight
                 - index * (segmentHeight + gap);
             var rect = new Rect(2, y, Bounds.Width - 4, segmentHeight);
-            DrawSegment(context, segment, rect, filled, potential);
+            DrawSegment(
+                context,
+                segment,
+                rect,
+                filled,
+                potential,
+                filledEdge,
+                potentialEdge);
         }
     }
 
@@ -416,17 +771,24 @@ public sealed class BiologyRewardBandControl : Control
         BiologyRewardBandSegment segment,
         Rect rect,
         IBrush filled,
-        IBrush potential)
+        IBrush potential,
+        IBrush filledEdge,
+        IBrush potentialEdge)
     {
         if (segment == BiologyRewardBandSegment.Filled)
         {
-            context.DrawRectangle(filled, null, rect, 1, 1);
+            context.DrawRectangle(filled, new Pen(filledEdge, 1), rect, 1, 1);
             return;
         }
 
         if (segment == BiologyRewardBandSegment.Potential)
         {
-            context.DrawRectangle(potential, null, rect, 1, 1);
+            context.DrawRectangle(
+                potential,
+                new Pen(potentialEdge, 1),
+                rect,
+                1,
+                1);
             return;
         }
 

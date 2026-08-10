@@ -31,11 +31,18 @@ public sealed class RavenThemeService
             ["RavenOverlayBioConfirmedBrush"] = "bio.confirmed",
             ["RavenOverlayBioConfirmedDimBrush"] = "bio.confirmedDim",
             ["RavenOverlayBioPotentialBrush"] = "bio.potential",
+            ["RavenOverlayBioConfirmedDimPotentialBrush"] =
+                "bio.confirmedDimPotential",
             ["RavenOverlayBioPredictionBrush"] = "bio.prediction",
             ["RavenOverlayBioPredictionPotentialBrush"] =
                 "bio.predictionPotential",
             ["RavenOverlayBioGoldBrush"] = "bio.gold",
             ["RavenOverlayBioGoldDimBrush"] = "bio.goldDark",
+            ["RavenOverlayBioGoldFillBrush"] = "bio.goldFill",
+            ["RavenOverlayBioGoldDimFillBrush"] = "bio.goldDarkFill",
+            ["RavenOverlayBioGoldPotentialBrush"] = "bio.goldPotential",
+            ["RavenOverlayBioGoldDimPotentialBrush"] =
+                "bio.goldDarkPotential",
             ["RavenOverlayBioGalacticRegionBrush"] = "bio.galacticRegion",
             ["RavenOverlayBioGalacticRegionPotentialBrush"] =
                 "bio.galacticRegionPotential",
@@ -68,6 +75,29 @@ public sealed class RavenThemeService
             ["RavenOverlayGuardianWarningBrush"] = "guardian.warning",
             ["RavenOverlayGuardianSurfaceBrush"] = "guardian.surface",
         };
+
+    private static readonly string[] BiologyEdgeKeys =
+    [
+        "confirmedEdge",
+        "confirmedDimEdge",
+        "predictionEdge",
+        "goldEdge",
+        "goldDarkEdge",
+        "galacticRegionEdge",
+        "unknownEdge",
+        "confirmedSegmentEdge",
+        "confirmedPotentialSegmentEdge",
+        "confirmedDimSegmentEdge",
+        "confirmedDimPotentialSegmentEdge",
+        "predictionSegmentEdge",
+        "predictionPotentialSegmentEdge",
+        "goldSegmentEdge",
+        "goldPotentialSegmentEdge",
+        "goldDarkSegmentEdge",
+        "goldDarkPotentialSegmentEdge",
+        "galacticRegionSegmentEdge",
+        "galacticRegionPotentialSegmentEdge",
+    ];
 
     private readonly Application application;
     private readonly ThemePreferenceStore preferenceStore;
@@ -158,6 +188,14 @@ public sealed class RavenThemeService
         {
             SetBrush(mapping.Key, theme.GetColor(mapping.Value));
         }
+
+        foreach (var themeKey in BiologyEdgeKeys)
+        {
+            SetBrush(
+                GetBiologyEdgeResourceKey(themeKey),
+                theme.GetColor($"bio.{themeKey}"));
+        }
+
         if (notify)
         {
             OverlayThemeChanged?.Invoke(this, EventArgs.Empty);
@@ -172,5 +210,15 @@ public sealed class RavenThemeService
     private void SetBrush(string key, Color value)
     {
         application.Resources[key] = new SolidColorBrush(value);
+    }
+
+    private static string GetBiologyEdgeResourceKey(string themeKey)
+    {
+        var resourceSuffix = char.ToUpperInvariant(themeKey[0]) + themeKey[1..];
+        resourceSuffix = resourceSuffix.Replace(
+            "GoldDark",
+            "GoldDim",
+            StringComparison.Ordinal);
+        return $"RavenOverlayBio{resourceSuffix}Brush";
     }
 }

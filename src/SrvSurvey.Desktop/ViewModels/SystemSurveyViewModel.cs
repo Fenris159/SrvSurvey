@@ -363,6 +363,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 dssVisibilityWindowWasActive =
                     IsWithinPostDssBiologyWindow;
                 OnPropertyChanged(nameof(IsWithinPostDssBiologyWindow));
+                RefreshDisplay();
+                RaiseVisibilityProperties();
             }
         }
     }
@@ -379,6 +381,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 dssVisibilityWindowWasActive =
                     IsWithinPostDssBiologyWindow;
                 OnPropertyChanged(nameof(IsWithinPostDssBiologyWindow));
+                RefreshDisplay();
+                RaiseVisibilityProperties();
             }
         }
     }
@@ -512,6 +516,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             if (SetPreference(ref drawBodyBiosOnlyWhenNear, value))
             {
                 RefreshDisplay();
+                RaiseVisibilityProperties();
             }
         }
     }
@@ -1956,16 +1961,16 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             body.BodyId,
             exobiology,
             new BiologySurveyBodyDetailOptions(
-                        HighlightRegionalFirsts,
-                        DimAnalyzedOrganisms,
-                        HideGeoCountInBioSystem,
-                        DisableBioPredictions)
-                    {
-                        DiscoveryContext = biologyDiscoveryContext,
-                        RewardThresholds = BiologyRewardThresholds,
-                        PredictionEvaluator = biologyPredictionEvaluator,
-                        ReferenceCatalog = biologyCatalog,
-                    });
+                HighlightRegionalFirsts,
+                DimAnalyzedOrganisms,
+                HideGeoCountInBioSystem,
+                DisableBioPredictions)
+            {
+                DiscoveryContext = biologyDiscoveryContext,
+                RewardThresholds = BiologyRewardThresholds,
+                PredictionEvaluator = biologyPredictionEvaluator,
+                ReferenceCatalog = biologyCatalog,
+            });
         var signalCount = Math.Max(
             1,
             details?.Organisms.Count ?? body.BiologicalSignalCount);

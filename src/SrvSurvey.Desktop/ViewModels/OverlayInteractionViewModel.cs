@@ -449,8 +449,14 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return false;
         }
 
-        if (!IsLiveInteractionEnabled
-            && !ReloadPersistedLayout("Overlay positions cannot be edited"))
+        if (IsLiveInteractionEnabled)
+        {
+            if (!PersistPendingLivePositionsForEditor())
+            {
+                return false;
+            }
+        }
+        else if (!ReloadPersistedLayout("Overlay positions cannot be edited"))
         {
             return false;
         }
@@ -696,14 +702,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                     "The overlay layout store is unavailable.");
             }
 
-            var result = layoutStore.Save(changes);
-            var updated = layoutStore.Load();
-            if (updated.Error is not null)
-            {
-                throw new InvalidDataException(updated.Error);
-            }
-
-            activeLayout.ReplaceWith(updated);
+            var result = PersistLivePositions(changes);
             StatusMessage = $"Saved {result.UpdatedPlacementCount:N0} live overlay position(s) and restored click-through mode."
                 + FormatFailureSuffix(failures);
         }
@@ -718,6 +717,60 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             StatusMessage = "Live overlays returned to click-through mode, but their moved positions were not saved: "
                 + exception.Message;
         }
+    }
+
+    private bool PersistPendingLivePositionsForEditor()
+    {
+        var changes = liveEditSession?.Changes;
+        if (changes is null || changes.Count == 0)
+        {
+            return true;
+        }
+
+        try
+        {
+            _ = PersistLivePositions(changes);
+            // Continue live interaction from the layout now shared by disk,
+            // runtime overlays, and the editor. Rebasing prevents the same
+            // placements from remaining pending after the editor opens.
+            var synchronizedLayout = activeLayout
+                ?? throw new InvalidOperationException(
+                    "The active overlay layout is unavailable.");
+            liveEditSession = new OverlayPositionEditSession(
+                synchronizedLayout);
+            return true;
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException
+                or ArgumentException)
+        {
+            StatusMessage = "Overlay positions cannot be edited because pending live positions could not be synchronized: "
+                + exception.Message;
+            return false;
+        }
+    }
+
+    private LegacyOverlayLayoutSaveResult PersistLivePositions(
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> changes)
+    {
+        if (layoutStore is null || activeLayout is null)
+        {
+            throw new InvalidOperationException(
+                "The overlay layout store is unavailable.");
+        }
+
+        var result = layoutStore.Save(changes);
+        var updated = layoutStore.Load();
+        if (updated.Error is not null)
+        {
+            throw new InvalidDataException(updated.Error);
+        }
+
+        activeLayout.ReplaceWith(updated);
+        return result;
     }
 
     private static string GetNoChangeInteractionStatus(List<string> failures)

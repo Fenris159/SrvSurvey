@@ -1,4 +1,5 @@
 using SrvSurvey.Desktop.Platform.Overlay;
+using System.Xml.Linq;
 
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
@@ -34,8 +35,16 @@ public sealed class OverlayPresentationContractTests
             "GeologicalSignals", "RadicoidaUnicaCountText",
             "BiologySurveyOverlayPresentation", "RavenBioConfirmedBrush",
             "RavenBioConfirmedDimBrush", "RavenBioPotentialBrush",
+            "RavenBioConfirmedDimPotentialBrush",
             "RavenBioPredictionBrush", "RavenBioPredictionPotentialBrush",
             "RavenBioUnknownGlyphBrush", "RavenBioEmptyBrush",
+            "RavenBioConfirmedEdgeBrush", "RavenBioPredictionEdgeBrush",
+            "RavenBioGoldEdgeBrush", "RavenBioGalacticRegionEdgeBrush",
+            "RavenBioGoldPotentialBrush", "RavenBioGoldDimPotentialBrush",
+            "RavenBioConfirmedSegmentEdgeBrush",
+            "RavenBioPredictionSegmentEdgeBrush",
+            "RavenBioGoldSegmentEdgeBrush",
+            "RavenBioGalacticRegionSegmentEdgeBrush",
         ]),
         Contract("PlotBodyInfo", [
             "src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml",
@@ -55,7 +64,11 @@ public sealed class OverlayPresentationContractTests
             "LastFssBodyName", "LastFssBodyDistance", "LastFssScanValue", "LastFssMappedValue",
             "LastFssSignalsText", "LastFssBiologyRewardBands", "LastFssBiologyRewardText", "FssTuningIndicator",
             "RavenBioConfirmedBrush", "RavenBioPredictionBrush",
+            "RavenBioConfirmedDimPotentialBrush",
             "RavenBioUnknownGlyphBrush", "RavenBioEmptyBrush",
+            "RavenBioConfirmedEdgeBrush", "RavenBioPredictionEdgeBrush",
+            "RavenBioConfirmedSegmentEdgeBrush",
+            "RavenBioPredictionSegmentEdgeBrush",
         ]),
         Contract("PlotFSSInfo", ["src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml", "src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml"], [
             "SystemTitle", "ScanSummary", "FssFilterDescription", "FssBodies", "ScanValue", "DssValue",
@@ -461,6 +474,75 @@ public sealed class OverlayPresentationContractTests
             "Border.badge.overlay-state-pill.overlay-state-pill-compact",
             ravenStyles);
         Assert.Contains("Property=\"Width\" Value=\"42\"", ravenStyles);
+    }
+
+    [Fact]
+    public void SystemBiologyUsesSharedBodyPipAndRewardColumns()
+    {
+        var root = FindRepositoryRoot();
+        var biologySurvey = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "BiologySurveyOverlayPresentation.axaml"));
+
+        Assert.Contains("Grid.IsSharedSizeScope=\"True\"", biologySurvey);
+        Assert.Contains("SharedSizeGroup=\"SystemBiologyBodyName\"", biologySurvey);
+        Assert.Contains("SharedSizeGroup=\"SystemBiologyPips\"", biologySurvey);
+        Assert.Contains("SharedSizeGroup=\"SystemBiologyReward\"", biologySurvey);
+        Assert.Contains("<ItemsControl HorizontalAlignment=\"Left\"", biologySurvey);
+        Assert.Contains("<controls:BiologyRewardBandGroupControl", biologySurvey);
+        Assert.Contains("ItemsSource=\"{Binding SignalRewardBands}\"", biologySurvey);
+        Assert.Contains("ItemsSource=\"{Binding AlternativeRewardBands}\"", biologySurvey);
+        Assert.Contains(
+            "Classes.highlight=\"{Binding IsRewardBandGroupHighlighted}\"",
+            biologySurvey);
+    }
+
+    [Fact]
+    public void OverlaySettingsDisableInactiveDssAndCanonnDependencies()
+    {
+        var root = FindRepositoryRoot();
+        var document = XDocument.Load(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Views",
+            "OverlaySettingsView.axaml"));
+        var controls = document.Descendants().ToArray();
+        XElement BoundControl(string name, string property, string binding) =>
+            controls.Single(element =>
+                element.Name.LocalName == name
+                && element.Attribute(property)?.Value.Contains(
+                    binding,
+                    StringComparison.Ordinal) == true);
+
+        var distance = BoundControl(
+            "NumericUpDown",
+            "Value",
+            "SystemSurvey.DssDistanceLimitLs");
+        Assert.Equal(
+            "{Binding SystemSurvey.SkipDistantDssCandidates}",
+            distance.Parent?.Attribute("IsEnabled")?.Value);
+
+        var priorScans = BoundControl(
+            "CheckBox",
+            "IsChecked",
+            "SystemSurvey.AutoShowPriorScans");
+        Assert.Equal(
+            "{Binding SystemSurvey.UseExternalData}",
+            priorScans.Parent?.Attribute("IsEnabled")?.Value);
+
+        var radar = BoundControl(
+            "CheckBox",
+            "IsChecked",
+            "SystemSurvey.ShowCanonnSignalsOnRadar");
+        Assert.Equal(
+            "{Binding SystemSurvey.AutoShowPriorScans}",
+            radar.Parent?.Attribute("IsEnabled")?.Value);
+        Assert.Equal(
+            "{Binding SystemSurvey.UseExternalData}",
+            radar.Parent?.Parent?.Attribute("IsEnabled")?.Value);
     }
 
     [Fact]

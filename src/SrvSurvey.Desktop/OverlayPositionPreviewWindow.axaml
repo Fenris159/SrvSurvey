@@ -15,6 +15,25 @@
         TransparencyLevelHint="Transparent"
         ClipToBounds="False"
         Title="Overlay position preview">
+  <Window.Styles>
+    <Style Selector="controls|BiologyRewardBandControl">
+      <Setter Property="FilledSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedSegmentEdgeBrush}" />
+      <Setter Property="PotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedPotentialSegmentEdgeBrush}" />
+      <Setter Property="DimmedFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedDimSegmentEdgeBrush}" />
+      <Setter Property="DimmedPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedDimPotentialSegmentEdgeBrush}" />
+      <Setter Property="PredictionFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioPredictionSegmentEdgeBrush}" />
+      <Setter Property="PredictionPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioPredictionPotentialSegmentEdgeBrush}" />
+      <Setter Property="HighlightFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioGoldSegmentEdgeBrush}" />
+      <Setter Property="HighlightPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioGoldPotentialSegmentEdgeBrush}" />
+      <Setter Property="DimmedHighlightFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioGoldDimSegmentEdgeBrush}" />
+      <Setter Property="DimmedHighlightPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioGoldDimPotentialSegmentEdgeBrush}" />
+      <Setter Property="GlobalRegionalFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioGalacticRegionSegmentEdgeBrush}" />
+      <Setter Property="GlobalRegionalPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioGalacticRegionPotentialSegmentEdgeBrush}" />
+      <Setter Property="DimmedPotentialBrush" Value="{DynamicResource RavenBioConfirmedDimPotentialBrush}" />
+      <Setter Property="HighlightPotentialBrush" Value="{DynamicResource RavenBioGoldPotentialBrush}" />
+      <Setter Property="DimmedHighlightPotentialBrush" Value="{DynamicResource RavenBioGoldDimPotentialBrush}" />
+    </Style>
+  </Window.Styles>
   <!--
     Editor-only chrome shell:
       1) Yellow folder tab with panel display name (identification)
@@ -226,14 +245,21 @@
                                                                DimmedFilledBrush="{DynamicResource RavenBioConfirmedDimBrush}"
                                                                PredictionFilledBrush="{DynamicResource RavenBioPredictionBrush}"
                                                                PredictionPotentialBrush="{DynamicResource RavenBioPredictionPotentialBrush}"
-                                                               HighlightBrush="{DynamicResource RavenBioGoldBrush}"
-                                                               DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
+                                                               HighlightBrush="{DynamicResource RavenBioGoldFillBrush}"
+                                                               DimmedHighlightBrush="{DynamicResource RavenBioGoldDimFillBrush}"
                                                                GlobalRegionalBrush="{DynamicResource RavenBioGalacticRegionBrush}"
                                                                GlobalRegionalPotentialBrush="{DynamicResource RavenBioGalacticRegionPotentialBrush}"
                                                                UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
                                                                UnknownGlyphBrush="{DynamicResource RavenBioUnknownGlyphBrush}"
                                                                HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                               EmptyBrush="{DynamicResource RavenBioEmptyBrush}" />
+                                                               EmptyBrush="{DynamicResource RavenBioEmptyBrush}"
+                                                               FilledEdgeBrush="{DynamicResource RavenBioConfirmedEdgeBrush}"
+                                                               DimmedFilledEdgeBrush="{DynamicResource RavenBioConfirmedDimEdgeBrush}"
+                                                               PredictionEdgeBrush="{DynamicResource RavenBioPredictionEdgeBrush}"
+                                                               HighlightEdgeBrush="{DynamicResource RavenBioGoldEdgeBrush}"
+                                                               DimmedHighlightEdgeBrush="{DynamicResource RavenBioGoldDimEdgeBrush}"
+                                                               GlobalRegionalEdgeBrush="{DynamicResource RavenBioGalacticRegionEdgeBrush}"
+                                                               UnknownEdgeBrush="{DynamicResource RavenBioUnknownEdgeBrush}" />
                           </DataTemplate>
                         </ItemsControl.ItemTemplate>
                       </ItemsControl>
