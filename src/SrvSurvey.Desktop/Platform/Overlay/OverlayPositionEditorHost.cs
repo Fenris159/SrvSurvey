@@ -233,7 +233,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         {
             foreach (var preview in previews)
             {
-                var metrics = preview.GetPanelMetrics(hostScaling);
+                var metrics = preview.GetPanelMetrics(preview.RenderScaling);
                 var referenceSize = GetReferenceSize(preview, metrics);
                 var center = new PixelPoint(
                     hostBounds.X + ((hostBounds.Width - referenceSize.Width) / 2),
@@ -380,7 +380,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        var metrics = preview.GetPanelMetrics(hostScaling);
+        var metrics = preview.GetPanelMetrics(preview.RenderScaling);
         var panelPosition = new PixelPoint(
             eventArgs.Point.X + metrics.OriginOffset.X,
             eventArgs.Point.Y + metrics.OriginOffset.Y);
@@ -636,7 +636,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         OverlayPositionPreviewWindow preview,
         OverlayPositionEditSession session)
     {
-        var metrics = preview.GetPanelMetrics(hostScaling);
+        var metrics = preview.GetPanelMetrics(preview.RenderScaling);
         var hasRuntimeReference = runtimePlacementReferences.TryGetValue(
             preview.Definition.Name,
             out var runtimeReference);

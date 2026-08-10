@@ -555,7 +555,9 @@ public sealed partial class OverlayCoverageInventoryTests
             Native("src/SrvSurvey.Desktop/BiologySurveyOverlayPresentation.axaml")));
         Assert.Contains("Width=\"240\"", biologyOverlay);
         Assert.Contains("BiologySurveyOverlayPresentation", biologyOverlay);
-        Assert.Contains("Text=\"System biology\"", biologyPresentation);
+        Assert.Contains(
+            "Text=\"{Binding Survey.BiologySurveyDisplay.Title}\"",
+            biologyPresentation);
         Assert.Contains("Padding=\"4\"", biologyPresentation);
         Assert.Contains("BorderThickness=\"0\"", biologyPresentation);
         Assert.Contains("CornerRadius=\"5\"", biologyPresentation);

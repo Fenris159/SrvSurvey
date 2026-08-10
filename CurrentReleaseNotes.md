@@ -6,7 +6,9 @@ data refreshes. The changes below are the delta from `2.1.3.0-rc.9`.
 ## What's fixed since 2.1.3.0-rc.9
 
 - Aligns editor preview coordinates with the live overlay content origin, so a
-  panel moved in game appears at the same relative position in the editor.
+  panel moved in-game appears at the same relative position in the editor.
+- Labels the System Biology overview, prediction, and identified-body states
+  distinctly so the active panel content is immediately clear.
 - Prevents the idle Biology Sample Status state from binding its progress bar
   to a missing selected organism, removing repeated null-binding log errors
   without changing the intentional ready-state transition.
