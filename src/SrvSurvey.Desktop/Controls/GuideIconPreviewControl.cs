@@ -507,52 +507,56 @@ public sealed class GuideIconPreviewControl : Control
                 DrawRewardPips(
                     context,
                     center,
-                    pipConfirmedEdge,
-                    pipConfirmed,
-                    pipPotential,
-                    pipConfirmedSegmentEdge,
-                    pipConfirmedPotentialSegmentEdge,
-                    pipEmpty,
-                    pipHatch,
+                    new RewardPipBrushes(
+                        pipConfirmedEdge,
+                        pipConfirmed,
+                        pipPotential,
+                        pipConfirmedSegmentEdge,
+                        pipConfirmedPotentialSegmentEdge,
+                        pipEmpty,
+                        pipHatch),
                     isPrediction: false);
                 break;
             case GuideIconKind.BiologyRewardPredicted:
                 DrawRewardPips(
                     context,
                     center,
-                    pipPredictionEdge,
-                    pipPrediction,
-                    pipPredictionPotential,
-                    pipPredictionSegmentEdge,
-                    pipPredictionPotentialSegmentEdge,
-                    pipEmpty,
-                    pipHatch,
+                    new RewardPipBrushes(
+                        pipPredictionEdge,
+                        pipPrediction,
+                        pipPredictionPotential,
+                        pipPredictionSegmentEdge,
+                        pipPredictionPotentialSegmentEdge,
+                        pipEmpty,
+                        pipHatch),
                     isPrediction: true);
                 break;
             case GuideIconKind.BiologyRewardHighlighted:
                 DrawRewardPips(
                     context,
                     center,
-                    pipHighlightEdge,
-                    pipHighlight,
-                    pipHighlightPotential,
-                    pipHighlightSegmentEdge,
-                    pipHighlightPotentialSegmentEdge,
-                    pipEmpty,
-                    pipHatch,
+                    new RewardPipBrushes(
+                        pipHighlightEdge,
+                        pipHighlight,
+                        pipHighlightPotential,
+                        pipHighlightSegmentEdge,
+                        pipHighlightPotentialSegmentEdge,
+                        pipEmpty,
+                        pipHatch),
                     isPrediction: false);
                 break;
             case GuideIconKind.BiologyRewardGlobalRegional:
                 DrawRewardPips(
                     context,
                     center,
-                    pipGlobalRegionalEdge,
-                    pipGlobalRegional,
-                    pipGlobalRegionalPotential,
-                    pipGlobalRegionalSegmentEdge,
-                    pipGlobalRegionalPotentialSegmentEdge,
-                    pipEmpty,
-                    pipHatch,
+                    new RewardPipBrushes(
+                        pipGlobalRegionalEdge,
+                        pipGlobalRegional,
+                        pipGlobalRegionalPotential,
+                        pipGlobalRegionalSegmentEdge,
+                        pipGlobalRegionalPotentialSegmentEdge,
+                        pipEmpty,
+                        pipHatch),
                     isPrediction: true,
                     reinforceEdge: true);
                 break;
@@ -560,13 +564,14 @@ public sealed class GuideIconPreviewControl : Control
                 DrawRewardPips(
                     context,
                     center,
-                    pipConfirmedDimEdge,
-                    pipConfirmedDim,
-                    pipConfirmedDimPotential,
-                    pipConfirmedDimSegmentEdge,
-                    pipConfirmedDimPotentialSegmentEdge,
-                    pipEmpty,
-                    pipHatch,
+                    new RewardPipBrushes(
+                        pipConfirmedDimEdge,
+                        pipConfirmedDim,
+                        pipConfirmedDimPotential,
+                        pipConfirmedDimSegmentEdge,
+                        pipConfirmedDimPotentialSegmentEdge,
+                        pipEmpty,
+                        pipHatch),
                     isPrediction: false);
                 break;
             case GuideIconKind.BiologyRewardUnknown:
@@ -807,22 +812,25 @@ public sealed class GuideIconPreviewControl : Control
         };
     }
 
+    private readonly record struct RewardPipBrushes(
+        IBrush Edge,
+        IBrush Filled,
+        IBrush Potential,
+        IBrush FilledEdge,
+        IBrush PotentialEdge,
+        IBrush Empty,
+        IBrush Hatch);
+
     private static void DrawRewardPips(
         DrawingContext context,
         Point center,
-        IBrush edge,
-        IBrush filled,
-        IBrush potential,
-        IBrush filledEdge,
-        IBrush potentialEdge,
-        IBrush empty,
-        IBrush hatch,
+        RewardPipBrushes brushes,
         bool isPrediction,
         bool reinforceEdge = false)
     {
         var frame = new Rect(center.X - 12, center.Y - 25, 24, 50);
         var edgePen = new Pen(
-            edge,
+            brushes.Edge,
             1.9,
             DashStyle.Dot,
             PenLineCap.Round,
@@ -837,22 +845,27 @@ public sealed class GuideIconPreviewControl : Control
             var segmentBrush = GetRewardSegmentBrush(
                 index,
                 isPrediction,
-                filled,
-                potential,
-                empty);
-            var segmentPen = ReferenceEquals(segmentBrush, empty)
-                ? null
-                : new Pen(
-                    isPrediction && index == 2
-                        ? potentialEdge
-                        : filledEdge,
-                    1);
+                brushes.Filled,
+                brushes.Potential,
+                brushes.Empty);
+            Pen? segmentPen = null;
+            if (!ReferenceEquals(segmentBrush, brushes.Empty))
+            {
+                var segmentEdge = brushes.FilledEdge;
+                if (isPrediction && index == 2)
+                {
+                    segmentEdge = brushes.PotentialEdge;
+                }
+
+                segmentPen = new Pen(segmentEdge, 1);
+            }
+
             context.DrawRectangle(segmentBrush, segmentPen, segment, 1, 1);
         }
 
         if (isPrediction)
         {
-            var hatchPen = new Pen(hatch, 1);
+            var hatchPen = new Pen(brushes.Hatch, 1);
             for (var x = frame.Left - frame.Height; x < frame.Right; x += 6)
             {
                 var startX = Math.Max(x, frame.Left);
