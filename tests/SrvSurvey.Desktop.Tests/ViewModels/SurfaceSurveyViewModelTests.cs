@@ -327,6 +327,33 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Assert.True(viewModel.ShouldShowMiniTrack);
     }
 
+    [Theory]
+    [InlineData(GuiFocus.CommsPanel)]
+    [InlineData(GuiFocus.RolePanel)]
+    public async Task MiniTrackHonorsLandingGearSuppressionDuringFocusedFlight(
+        GuiFocus focus)
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            "#1",
+            new SurfaceCoordinate(0, 2));
+        survey.AutoShowMiniTrack = true;
+        survey.AutoHideSurfaceRadarWithoutLandingGear = true;
+        ApplySurveyContext(
+            survey,
+            Status(StatusFlags.InMainShip, focus: focus));
+
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        Assert.True(viewModel.HasQuickTrackers);
+        Assert.False(viewModel.ShouldShowMiniTrack);
+    }
+
     [Fact]
     public void RadarZoomUsesLegacyFactorBoundsAndAutomaticReset()
     {

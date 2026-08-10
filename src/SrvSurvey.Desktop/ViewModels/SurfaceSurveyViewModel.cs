@@ -916,7 +916,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     {
         if (surface is null
             || survey.CurrentStatus is not { } status
-            || !status.HasLatitudeLongitude)
+            || !status.HasLatitudeLongitude
+            || survey.ShouldSuppressSurfaceNavigationForLandingGear)
         {
             return false;
         }
