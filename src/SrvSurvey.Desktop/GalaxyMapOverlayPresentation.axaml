@@ -6,6 +6,8 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:GalaxyMapOverlayViewModel"
              mc:Ignorable="d"
+             MaxWidth="240"
+             HorizontalAlignment="Left"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"

@@ -293,6 +293,7 @@ public sealed class OverlayPresentationContractTests
     [InlineData("PlotFSS", "LastFssBodyOverlayPresentation.axaml", "LastFssBodyOverlayWindow.axaml", 240, true)]
     [InlineData("PlotBodyInfo", "BodyInformationOverlayPresentation.axaml", "BodyInformationOverlayWindow.axaml", 260, true)]
     [InlineData("PlotFleetCarrierRoute", "FleetCarrierRouteOverlayPresentation.axaml", "FleetCarrierRouteOverlayWindow.axaml", 260, true)]
+    [InlineData("PlotGalMap", "GalaxyMapOverlayPresentation.axaml", "GalaxyMapOverlayWindow.axaml", 240, true)]
     [InlineData("PlotGuardianStatus", "GuardianStatusOverlayPresentation.axaml", "GuardianStatusOverlayWindow.axaml", 260, true)]
     [InlineData("PlotGuardianSystem", "GuardianSystemOverlayPresentation.axaml", "GuardianSystemOverlayWindow.axaml", 190, true)]
     [InlineData("PlotHumanSite", "HumanSiteOverlayPresentation.axaml", "HumanSiteOverlayWindow.axaml", 260, true)]
