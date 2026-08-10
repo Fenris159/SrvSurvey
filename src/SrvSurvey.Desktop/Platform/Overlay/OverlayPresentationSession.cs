@@ -89,6 +89,11 @@ public sealed class OverlayPresentationSession : IDisposable
             return controller.SetInteractive(window, interactive);
         }
 
+        public IDisposable? BeginVisibleCursorSession(Window window)
+        {
+            return controller.BeginVisibleCursorSession(window);
+        }
+
         public void BeginMoveDrag(
             Window window,
             PointerPressedEventArgs eventArgs)

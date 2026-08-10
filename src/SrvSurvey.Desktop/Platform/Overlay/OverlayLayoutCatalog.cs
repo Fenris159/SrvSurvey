@@ -17,7 +17,9 @@ public static class OverlayLayoutCatalog
     public static IReadOnlyList<OverlayLayoutDefinition> Supported { get; } =
     [
         Define("PlotBioStatus", "Biology sample status", "SystemSurvey.AutoShowBioStatus", OverlayLayoutCategory.BiologyAndSurface, new(260, 80), new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8)),
-        Define("PlotBioSystem", "System biology", "SystemSurvey.AutoShowBioSystem", OverlayLayoutCategory.BiologyAndSurface, new(240, 200), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Bottom, 144)),
+        // Keep the legacy bottom-based initial location, but top-anchor custom
+        // moves because the three shared Biology states have different heights.
+        Define("PlotBioSystem", "System biology", "SystemSurvey.AutoShowBioSystem", OverlayLayoutCategory.BiologyAndSurface, new(240, 200), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Bottom, 144, MoveVerticalAnchor: LegacyVerticalAnchor.Top)),
         Define("PlotBodyInfo", "Body information", "SystemSurvey.AutoShowBodyInfo", OverlayLayoutCategory.ExplorationAndNavigation, new(260, 280), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)),
         Define("PlotBuildCommodities", "Colonization commodities", "Colonization.AutoShowCommodityOverlay", OverlayLayoutCategory.CombatAndColonization, new(270, 380), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)),
         Define("PlotFlightWarning", "Flight warning", "SystemSurvey.AutoShowFlightWarnings", OverlayLayoutCategory.StatusAndUtilities, new(300, 80), new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 90)),
@@ -90,7 +92,8 @@ public static class OverlayLayoutCatalog
                 anchor.Vertical,
                 anchor.VerticalOffset,
                 null),
-            anchor.ShowInGalaxyMap);
+            anchor.ShowInGalaxyMap,
+            anchor.MoveVerticalAnchor ?? anchor.Vertical);
     }
 }
 
@@ -101,7 +104,8 @@ internal readonly record struct OverlayLayoutAnchor(
     int HorizontalOffset,
     LegacyVerticalAnchor Vertical,
     int VerticalOffset,
-    bool ShowInGalaxyMap = false);
+    bool ShowInGalaxyMap = false,
+    LegacyVerticalAnchor? MoveVerticalAnchor = null);
 
 public sealed record OverlayLayoutDefinition(
     string Name,
@@ -110,7 +114,8 @@ public sealed record OverlayLayoutDefinition(
     OverlayLayoutCategory Category,
     PixelSize PreviewSize,
     LegacyOverlayPlacement DefaultPlacement,
-    bool ShowInGalaxyMap);
+    bool ShowInGalaxyMap,
+    LegacyVerticalAnchor MoveVerticalAnchor);
 
 public sealed record OverlayLayoutCategoryDefinition(
     OverlayLayoutCategory Category,

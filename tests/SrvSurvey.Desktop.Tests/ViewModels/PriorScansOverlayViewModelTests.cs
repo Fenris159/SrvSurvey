@@ -84,6 +84,25 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task LandingGearPreferenceSuppressesLoadedPlanDuringShipFlight()
+    {
+        var survey = CreateSurvey();
+        var client = new StubClient(new CanonnSystemPoiResult(
+            "Test",
+            [Signal("1", 0, 0.01)]));
+        using var viewModel = CreateViewModel(survey, client);
+        await viewModel.RefreshAsync();
+        Assert.True(viewModel.ShouldShow);
+
+        survey.AutoHideSurfaceRadarWithoutLandingGear = true;
+        survey.ApplyUpdate([], ShipStatus(landingGearDown: false));
+        Assert.False(viewModel.ShouldShow);
+
+        survey.ApplyUpdate([], ShipStatus(landingGearDown: true));
+        Assert.True(viewModel.ShouldShow);
+    }
+
+    [Fact]
     public async Task PreferencesFilterRowsAndControlRadarPresentation()
     {
         var survey = CreateSurvey();
@@ -215,6 +234,21 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
             PlanetRadius = 1_000_000,
             Heading = heading,
             Altitude = 1_000,
+        };
+    }
+
+    private static EliteStatus ShipStatus(bool landingGearDown)
+    {
+        return new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong
+                | StatusFlags.InMainShip
+                | (landingGearDown
+                    ? StatusFlags.LandingGearDown
+                    : StatusFlags.None),
+            BodyName = "Test 1",
+            PlanetRadius = 1_000_000,
+            GuiFocus = GuiFocus.CommsPanel,
         };
     }
 

@@ -868,6 +868,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             || status.Altitude >= 10_000
             || status.InTaxi
             || status.FsdChargingJump
+            || survey.ShouldSuppressSurfaceNavigationForLandingGear
             || survey.IsFsdJumping)
         {
             return false;
@@ -888,9 +889,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             return false;
         }
 
-        return !survey.AutoHideSurfaceRadarWithoutLandingGear
-            || mode != OverlayGameMode.Flying
-            || status.LandingGearDown;
+        return true;
     }
 
     private bool HasRadarContent()
@@ -917,7 +916,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     {
         if (surface is null
             || survey.CurrentStatus is not { } status
-            || !status.HasLatitudeLongitude)
+            || !status.HasLatitudeLongitude
+            || survey.ShouldSuppressSurfaceNavigationForLandingGear)
         {
             return false;
         }

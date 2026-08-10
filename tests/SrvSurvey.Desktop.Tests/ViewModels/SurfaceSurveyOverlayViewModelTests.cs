@@ -1,3 +1,4 @@
+using Avalonia.Headless.XUnit;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
@@ -42,6 +43,51 @@ public sealed class SurfaceSurveyOverlayViewModelTests : IDisposable
 
         Assert.Equal("BLOCKED", viewModel.InputMode);
         Assert.Equal("Click-through was rejected.", viewModel.PlatformStatus);
+    }
+
+    [AvaloniaFact]
+    public void RecreatedWindowKeepsConfiguredSurfaceGeometry()
+    {
+        var (surfaceSurvey, survey) = CreateSurfaceSurvey();
+        using var ownedSurfaceSurvey = surfaceSurvey;
+        using var viewModel = new SurfaceSurveyOverlayViewModel(
+            surfaceSurvey,
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>(
+                StringComparer.Ordinal),
+            defaultOpacity: null,
+            error: null);
+
+        survey.SurfaceRadarSize = 3;
+        var first = CreateWindow(viewModel, layout);
+        var recreated = CreateWindow(viewModel, layout);
+        Assert.Equal(380, first.Width);
+        Assert.Equal(500, first.Height);
+        Assert.Equal(first.Width, recreated.Width);
+        Assert.Equal(first.Height, recreated.Height);
+
+        survey.SurfaceRadarSize = 0;
+        SystemSurveyOverlayCoordinator.ApplySurfaceWindowSize(
+            recreated,
+            layout,
+            viewModel);
+        Assert.Equal(250, recreated.Width);
+        Assert.Equal(400, recreated.Height);
+    }
+
+    private static SurfaceSurveyOverlayWindow CreateWindow(
+        SurfaceSurveyOverlayViewModel viewModel,
+        LegacyOverlayLayout layout)
+    {
+        var window = new SurfaceSurveyOverlayWindow(viewModel);
+        OverlayThemeResources.ApplyLegacyFormFactor(window, "PlotGrounded");
+        OverlayThemeResources.ApplyScale(window, layout, "PlotGrounded");
+        SystemSurveyOverlayCoordinator.ApplySurfaceWindowSize(
+            window,
+            layout,
+            viewModel);
+        return window;
     }
 
     private (SurfaceSurveyViewModel SurfaceSurvey, SystemSurveyViewModel Survey)

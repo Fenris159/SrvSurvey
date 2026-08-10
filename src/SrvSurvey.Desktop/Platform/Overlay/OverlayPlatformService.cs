@@ -14,6 +14,13 @@ public interface IOverlayPlatformService : IDisposable
 
     OverlayInteractionResult SetInteractive(Window window, bool interactive);
 
+    IDisposable? BeginVisibleCursorSession(Window window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        window.Activate();
+        return null;
+    }
+
     OverlayInteractionResult PrepareInteractiveWindow(Window window)
     {
         return SetInteractive(window, interactive: true);
@@ -178,6 +185,13 @@ internal sealed partial class WindowsOverlayPlatformService
                 : Capabilities.StatusText);
     }
 
+    public IDisposable BeginVisibleCursorSession(Window window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        window.Activate();
+        return CursorVisibilitySession.Begin(ShowCursor);
+    }
+
     public void Dispose()
     {
     }
@@ -314,6 +328,10 @@ internal sealed partial class WindowsOverlayPlatformService
     private static partial bool ShowWindow(nint window, int command);
 
     [LibraryImport("user32.dll")]
+    private static partial int ShowCursor(
+        [MarshalAs(UnmanagedType.Bool)] bool show);
+
+    [LibraryImport("user32.dll")]
     private static partial int SetWindowRgn(
         nint window,
         nint region,
@@ -336,6 +354,48 @@ internal sealed partial class WindowsOverlayPlatformService
     [LibraryImport("gdi32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool DeleteObject(nint objectHandle);
+
+}
+
+internal sealed class CursorVisibilitySession : IDisposable
+{
+    private const int MaximumAdjustments = 64;
+    private readonly Func<bool, int> showCursor;
+    private int remainingAdjustments;
+
+    private CursorVisibilitySession(
+        Func<bool, int> showCursor,
+        int adjustments)
+    {
+        this.showCursor = showCursor;
+        remainingAdjustments = adjustments;
+    }
+
+    public static CursorVisibilitySession Begin(Func<bool, int> showCursor)
+    {
+        ArgumentNullException.ThrowIfNull(showCursor);
+
+        var adjustments = 1;
+        var displayCount = showCursor(true);
+        while (displayCount < 0 && adjustments < MaximumAdjustments)
+        {
+            displayCount = showCursor(true);
+            adjustments++;
+        }
+
+        return new CursorVisibilitySession(showCursor, adjustments);
+    }
+
+    public void Dispose()
+    {
+        var remaining = Interlocked.Exchange(
+            ref remainingAdjustments,
+            0);
+        for (var index = 0; index < remaining; index++)
+        {
+            _ = showCursor(false);
+        }
+    }
 }
 
 public sealed record OverlayInteractionResult(

@@ -158,13 +158,14 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         var safeScaling = double.IsFinite(scaling) && scaling > 0
             ? scaling
             : 1d;
-        var panelOrigin = PreviewBody.TranslatePoint(default, this);
+        var panel = runtimePresentation ?? PreviewBody;
+        var panelOrigin = panel.TranslatePoint(default, this);
         var origin = panelOrigin ?? default;
         var originOffset = new PixelPoint(
             (int)Math.Round(origin.X * safeScaling),
             (int)Math.Round(origin.Y * safeScaling));
-        var panelExtent = PreviewBody.TranslatePoint(
-            new Point(PreviewBody.Bounds.Width, PreviewBody.Bounds.Height),
+        var panelExtent = panel.TranslatePoint(
+            new Point(panel.Bounds.Width, panel.Bounds.Height),
             this);
         PixelSize panelSize;
         if (panelOrigin is { } start
@@ -330,6 +331,8 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         }
 
         runtimePresentation = presentation;
+        presentation.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
+        presentation.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
         // Host the real shared template inside the yellow body; the folder
         // tab above remains editor-only chrome for identification.
         PreviewBody.Child = presentation;

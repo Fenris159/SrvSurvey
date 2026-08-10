@@ -207,7 +207,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         ApplySurveyContext(
             survey,
             Status(
-                StatusFlags.InMainShip,
+                StatusFlags.InMainShip | StatusFlags.LandingGearDown,
                 focus: GuiFocus.RolePanel));
         await viewModel.ApplyUpdateAsync(
             Session(),
@@ -215,6 +215,26 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             survey.CurrentStatus,
             ExobiologySnapshot.Empty);
         Assert.True(viewModel.ShouldShow);
+
+        ApplySurveyContext(survey, Status(StatusFlags.Supercruise));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+        Assert.True(viewModel.ShouldShow);
+
+        ApplySurveyContext(
+            survey,
+            Status(
+                StatusFlags.InMainShip,
+                focus: GuiFocus.RolePanel));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+        Assert.False(viewModel.ShouldShow);
 
         ApplySurveyContext(
             survey,
@@ -305,6 +325,33 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         survey.SuppressForActiveBuildProjects = true;
         survey.SetActiveBuildProjects(true);
         Assert.True(viewModel.ShouldShowMiniTrack);
+    }
+
+    [Theory]
+    [InlineData(GuiFocus.CommsPanel)]
+    [InlineData(GuiFocus.RolePanel)]
+    public async Task MiniTrackHonorsLandingGearSuppressionDuringFocusedFlight(
+        GuiFocus focus)
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            "#1",
+            new SurfaceCoordinate(0, 2));
+        survey.AutoShowMiniTrack = true;
+        survey.AutoHideSurfaceRadarWithoutLandingGear = true;
+        ApplySurveyContext(
+            survey,
+            Status(StatusFlags.InMainShip, focus: focus));
+
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        Assert.True(viewModel.HasQuickTrackers);
+        Assert.False(viewModel.ShouldShowMiniTrack);
     }
 
     [Fact]

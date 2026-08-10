@@ -139,13 +139,12 @@ public sealed class OverlayPositionEditSession
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         var placement = GetPlacement(plotterName);
-        var defaults = OverlayLayoutCatalog
-            .GetRequired(plotterName)
-            .DefaultPlacement;
+        var definition = OverlayLayoutCatalog.GetRequired(plotterName);
+        var defaults = definition.DefaultPlacement;
         var reanchored = placement with
         {
             Horizontal = defaults.Horizontal,
-            Vertical = defaults.Vertical,
+            Vertical = definition.MoveVerticalAnchor,
         };
         var centered = OverlayInteractionViewModel.CreatePlacement(
             reanchored,

@@ -207,12 +207,16 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             host);
 
         Assert.True(viewModel.ToggleLiveOverlayInteraction());
+        Assert.Equal(1, platform.VisibleCursorSessionStarts);
+        Assert.Equal(1, platform.ActiveVisibleCursorSessions);
         window.Position = new PixelPoint(420, 310);
         Assert.Contains("Moved live overlay", viewModel.StatusMessage);
 
         Assert.True(viewModel.ToggleLiveOverlayInteraction());
 
         Assert.Equal([true, false], platform.InteractiveStates);
+        Assert.Equal(0, platform.ActiveVisibleCursorSessions);
+        Assert.Equal(1, platform.VisibleCursorSessionDisposals);
         Assert.Equal(
             new PixelPoint(420, 310),
             store.Load().GetPosition(
@@ -301,8 +305,9 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             Position = new PixelPoint(400, 208),
         };
         registry.Register(window, "PlotJumpInfo");
+        var platform = new FakeOverlayPlatform();
         var viewModel = new OverlayInteractionViewModel(
-            new FakeOverlayPlatform(),
+            platform,
             new FakeGameWindowTracker(new GameWindowSnapshot(
                 (nint)1,
                 42,
@@ -339,6 +344,8 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         Assert.Equal(original, activeLayout.Placements["PlotJumpInfo"]);
         Assert.False(viewModel.IsLiveInteractionEnabled);
+        Assert.Equal(0, platform.ActiveVisibleCursorSessions);
+        Assert.Equal(1, platform.VisibleCursorSessionDisposals);
     }
 
     [Fact]
@@ -691,6 +698,12 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         public List<bool> InteractiveStates { get; } = [];
 
+        public int VisibleCursorSessionStarts { get; private set; }
+
+        public int ActiveVisibleCursorSessions { get; private set; }
+
+        public int VisibleCursorSessionDisposals { get; private set; }
+
         public OverlayPreparationResult PreparePassiveWindow(Window window)
         {
             return new OverlayPreparationResult(true, true, "Prepared");
@@ -704,8 +717,29 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             return new OverlayInteractionResult(true, interactive, "Prepared");
         }
 
+        public IDisposable BeginVisibleCursorSession(Window window)
+        {
+            VisibleCursorSessionStarts++;
+            ActiveVisibleCursorSessions++;
+            return new CallbackDisposable(() =>
+            {
+                ActiveVisibleCursorSessions--;
+                VisibleCursorSessionDisposals++;
+            });
+        }
+
         public void Dispose()
         {
+        }
+
+        private sealed class CallbackDisposable(Action callback) : IDisposable
+        {
+            private Action? callback = callback;
+
+            public void Dispose()
+            {
+                Interlocked.Exchange(ref callback, null)?.Invoke();
+            }
         }
     }
 
