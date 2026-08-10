@@ -51,37 +51,6 @@ public sealed class RavenThemeService
             ["RavenOverlayBioHatchBrush"] = "bio.hatch",
             ["RavenOverlayBioEmptyBrush"] = "bio.empty",
             ["RavenOverlayBioWhiteBrush"] = "bio.white",
-            ["RavenOverlayBioConfirmedEdgeBrush"] = "bio.confirmedEdge",
-            ["RavenOverlayBioConfirmedDimEdgeBrush"] = "bio.confirmedDimEdge",
-            ["RavenOverlayBioPredictionEdgeBrush"] = "bio.predictionEdge",
-            ["RavenOverlayBioGoldEdgeBrush"] = "bio.goldEdge",
-            ["RavenOverlayBioGoldDimEdgeBrush"] = "bio.goldDarkEdge",
-            ["RavenOverlayBioGalacticRegionEdgeBrush"] =
-                "bio.galacticRegionEdge",
-            ["RavenOverlayBioUnknownEdgeBrush"] = "bio.unknownEdge",
-            ["RavenOverlayBioConfirmedSegmentEdgeBrush"] =
-                "bio.confirmedSegmentEdge",
-            ["RavenOverlayBioConfirmedPotentialSegmentEdgeBrush"] =
-                "bio.confirmedPotentialSegmentEdge",
-            ["RavenOverlayBioConfirmedDimSegmentEdgeBrush"] =
-                "bio.confirmedDimSegmentEdge",
-            ["RavenOverlayBioConfirmedDimPotentialSegmentEdgeBrush"] =
-                "bio.confirmedDimPotentialSegmentEdge",
-            ["RavenOverlayBioPredictionSegmentEdgeBrush"] =
-                "bio.predictionSegmentEdge",
-            ["RavenOverlayBioPredictionPotentialSegmentEdgeBrush"] =
-                "bio.predictionPotentialSegmentEdge",
-            ["RavenOverlayBioGoldSegmentEdgeBrush"] = "bio.goldSegmentEdge",
-            ["RavenOverlayBioGoldPotentialSegmentEdgeBrush"] =
-                "bio.goldPotentialSegmentEdge",
-            ["RavenOverlayBioGoldDimSegmentEdgeBrush"] =
-                "bio.goldDarkSegmentEdge",
-            ["RavenOverlayBioGoldDimPotentialSegmentEdgeBrush"] =
-                "bio.goldDarkPotentialSegmentEdge",
-            ["RavenOverlayBioGalacticRegionSegmentEdgeBrush"] =
-                "bio.galacticRegionSegmentEdge",
-            ["RavenOverlayBioGalacticRegionPotentialSegmentEdgeBrush"] =
-                "bio.galacticRegionPotentialSegmentEdge",
             ["RavenOverlayColoniseSurplusBrush"] = "colonise.surplus",
             ["RavenOverlayColoniseSurplusDimBrush"] = "colonise.surplusDark",
             ["RavenOverlayColoniseDeficitBrush"] = "colonise.deficit",
@@ -106,6 +75,29 @@ public sealed class RavenThemeService
             ["RavenOverlayGuardianWarningBrush"] = "guardian.warning",
             ["RavenOverlayGuardianSurfaceBrush"] = "guardian.surface",
         };
+
+    private static readonly string[] BiologyEdgeKeys =
+    [
+        "confirmedEdge",
+        "confirmedDimEdge",
+        "predictionEdge",
+        "goldEdge",
+        "goldDarkEdge",
+        "galacticRegionEdge",
+        "unknownEdge",
+        "confirmedSegmentEdge",
+        "confirmedPotentialSegmentEdge",
+        "confirmedDimSegmentEdge",
+        "confirmedDimPotentialSegmentEdge",
+        "predictionSegmentEdge",
+        "predictionPotentialSegmentEdge",
+        "goldSegmentEdge",
+        "goldPotentialSegmentEdge",
+        "goldDarkSegmentEdge",
+        "goldDarkPotentialSegmentEdge",
+        "galacticRegionSegmentEdge",
+        "galacticRegionPotentialSegmentEdge",
+    ];
 
     private readonly Application application;
     private readonly ThemePreferenceStore preferenceStore;
@@ -196,6 +188,14 @@ public sealed class RavenThemeService
         {
             SetBrush(mapping.Key, theme.GetColor(mapping.Value));
         }
+
+        foreach (var themeKey in BiologyEdgeKeys)
+        {
+            SetBrush(
+                GetBiologyEdgeResourceKey(themeKey),
+                theme.GetColor($"bio.{themeKey}"));
+        }
+
         if (notify)
         {
             OverlayThemeChanged?.Invoke(this, EventArgs.Empty);
@@ -210,5 +210,15 @@ public sealed class RavenThemeService
     private void SetBrush(string key, Color value)
     {
         application.Resources[key] = new SolidColorBrush(value);
+    }
+
+    private static string GetBiologyEdgeResourceKey(string themeKey)
+    {
+        var resourceSuffix = char.ToUpperInvariant(themeKey[0]) + themeKey[1..];
+        resourceSuffix = resourceSuffix.Replace(
+            "GoldDark",
+            "GoldDim",
+            StringComparison.Ordinal);
+        return $"RavenOverlayBio{resourceSuffix}Brush";
     }
 }

@@ -49,6 +49,7 @@ public sealed class RavenThemeServiceTests : IDisposable
         colors["bio.gold"] = Color.FromArgb(255, 78, 90, 12);
         colors["bio.goldFill"] = Color.FromArgb(255, 44, 55, 66);
         colors["bio.predictionEdge"] = Color.FromArgb(72, 12, 98, 123);
+        colors["bio.goldDarkEdge"] = Color.FromArgb(91, 45, 67, 89);
         colors["bio.predictionSegmentEdge"] = Color.FromArgb(255, 9, 87, 65);
         colors["bio.galacticRegion"] = Color.FromArgb(255, 240, 241, 242);
         colors["bio.galacticRegionPotential"] = Color.FromArgb(255, 91, 92, 93);
@@ -89,6 +90,10 @@ public sealed class RavenThemeServiceTests : IDisposable
             Color.FromArgb(72, 12, 98, 123),
             Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenOverlayBioPredictionEdgeBrush"]).Color);
+        Assert.Equal(
+            Color.FromArgb(91, 45, 67, 89),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenOverlayBioGoldDimEdgeBrush"]).Color);
         Assert.Equal(
             Color.FromArgb(255, 9, 87, 65),
             Assert.IsType<SolidColorBrush>(application.Resources[
