@@ -64,16 +64,16 @@ public sealed class JumpInfoRoutePlannerTests
 
         var plan = JumpInfoRoutePlanner.Create(
             new JumpInfoRoutePlannerRequest
-    {
-        FsdTarget = new JumpTarget("Neutron", 3),
-        Status = null,
-        CurrentSystemName = "Sol",
-        CurrentSystemAddress = 1,
-        CurrentPosition = new GalacticCoordinate(0, 0, 0),
-        NavRoute = route,
-        FollowedRoute = null,
-        MaximumJumpRange = 25
-    });
+            {
+                FsdTarget = new JumpTarget("Neutron", 3),
+                Status = null,
+                CurrentSystemName = "Sol",
+                CurrentSystemAddress = 1,
+                CurrentPosition = new GalacticCoordinate(0, 0, 0),
+                NavRoute = route,
+                FollowedRoute = null,
+                MaximumJumpRange = 25
+            });
 
         Assert.NotNull(plan);
         Assert.Equal(JumpInfoRouteSource.NavRoute, plan.Source);
@@ -107,9 +107,9 @@ public sealed class JumpInfoRoutePlannerTests
 
         var plan = JumpInfoRoutePlanner.Create(
             new JumpInfoRoutePlannerRequest
-    {
-        FsdTarget = null,
-        Status = new EliteStatus
+            {
+                FsdTarget = null,
+                Status = new EliteStatus
                 {
                     Destination = new StatusDestination
                     {
@@ -118,12 +118,12 @@ public sealed class JumpInfoRoutePlannerTests
                         Body = 0,
                     },
                 },
-        CurrentSystemName = "Sol",
-        CurrentSystemAddress = 1,
-        CurrentPosition = new GalacticCoordinate(0, 0, 0),
-        NavRoute = navRoute,
-        FollowedRoute = followed
-    });
+                CurrentSystemName = "Sol",
+                CurrentSystemAddress = 1,
+                CurrentPosition = new GalacticCoordinate(0, 0, 0),
+                NavRoute = navRoute,
+                FollowedRoute = followed
+            });
 
         Assert.NotNull(plan);
         Assert.Equal(JumpInfoRouteSource.FollowedRoute, plan.Source);

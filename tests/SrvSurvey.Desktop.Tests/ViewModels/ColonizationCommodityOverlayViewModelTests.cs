@@ -264,10 +264,10 @@ public sealed class ColonizationCommodityOverlayViewModelTests
     private static ColonizationCommodityPlan Plan()
     {
         return new ColonizationCommodityPlan
-    {
-        Title = "Test build (no_truss)",
-        ProjectNames = ["Test build (no_truss)"],
-        Rows = [
+        {
+            Title = "Test build (no_truss)",
+            ProjectNames = ["Test build (no_truss)"],
+            Rows = [
                 new ColonizationCommodityPlanRow
     {
         Commodity = "steel",
@@ -280,7 +280,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         IsAssignedToOther = false
     },
             ],
-        FleetCarriers = [
+            FleetCarriers = [
                 new ColonizationFleetCarrier
                 {
                     MarketId = 1,
@@ -288,16 +288,16 @@ public sealed class ColonizationCommodityOverlayViewModelTests
                     DisplayName = "Supply carrier",
                 },
             ],
-        TotalRemaining = 100,
-        TripsInCurrentShip = 2,
-        FleetCarrierDeficit = 80,
-        FleetCarrierDeficitTrips = 2,
-        IsAtConstructionSite = false,
-        IsLocalProjectUntracked = false,
-        IsDockedAtUntrackedFleetCarrier = false,
-        IsConstructionComplete = false,
-        IsConstructionFailed = false
-    };
+            TotalRemaining = 100,
+            TripsInCurrentShip = 2,
+            FleetCarrierDeficit = 80,
+            FleetCarrierDeficitTrips = 2,
+            IsAtConstructionSite = false,
+            IsLocalProjectUntracked = false,
+            IsDockedAtUntrackedFleetCarrier = false,
+            IsConstructionComplete = false,
+            IsConstructionFailed = false
+        };
     }
 
     private static EliteStatus Status(GuiFocus focus)

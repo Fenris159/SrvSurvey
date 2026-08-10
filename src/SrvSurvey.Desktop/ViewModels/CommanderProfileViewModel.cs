@@ -3194,36 +3194,36 @@ public sealed record FrontierCommanderSelectionOption(
     public static FrontierCommanderSelectionOption Automatic(
     string? frontierId,
     string? commanderName)
-{
-    var commander = string.IsNullOrWhiteSpace(commanderName)
-        ? frontierId
-        : commanderName.Trim();
-    var detail = "waiting for journal";
-    if (!string.IsNullOrWhiteSpace(commander))
     {
-        detail = string.IsNullOrWhiteSpace(frontierId)
-            ? commander
-            : $"{commander} ({frontierId})";
+        var commander = string.IsNullOrWhiteSpace(commanderName)
+            ? frontierId
+            : commanderName.Trim();
+        var detail = "waiting for journal";
+        if (!string.IsNullOrWhiteSpace(commander))
+        {
+            detail = string.IsNullOrWhiteSpace(frontierId)
+                ? commander
+                : $"{commander} ({frontierId})";
+        }
+
+        return new FrontierCommanderSelectionOption(
+            frontierId ?? string.Empty,
+            commander ?? string.Empty,
+            $"Automatic · {detail}",
+            true);
     }
 
-    return new FrontierCommanderSelectionOption(
-        frontierId ?? string.Empty,
-        commander ?? string.Empty,
-        $"Automatic · {detail}",
-        true);
-}
-
-public static FrontierCommanderSelectionOption Linked(
-        FrontierLinkedCommander commander) => new(
-        commander.FrontierId,
-        commander.CommanderName,
-        string.Equals(
-            commander.CommanderName,
+    public static FrontierCommanderSelectionOption Linked(
+            FrontierLinkedCommander commander) => new(
             commander.FrontierId,
-            StringComparison.OrdinalIgnoreCase)
-                ? commander.FrontierId
-                : $"{commander.CommanderName} ({commander.FrontierId})",
-        false);
+            commander.CommanderName,
+            string.Equals(
+                commander.CommanderName,
+                commander.FrontierId,
+                StringComparison.OrdinalIgnoreCase)
+                    ? commander.FrontierId
+                    : $"{commander.CommanderName} ({commander.FrontierId})",
+            false);
 }
 
 public sealed record FrontierShipRowViewModel(

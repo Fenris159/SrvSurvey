@@ -9,15 +9,15 @@ public sealed class ExplorationValueCalculatorTests
     {
         var value = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
-    {
-        BodyClass = "NS",
-        IsTerraformable = false,
-        Mass = 1.4,
-        IsFirstDiscoverer = true,
-        IsMapped = false,
-        IsFirstMapped = true,
-        IsOdyssey = true
-    });
+            {
+                BodyClass = "NS",
+                IsTerraformable = false,
+                Mass = 1.4,
+                IsFirstDiscoverer = true,
+                IsMapped = false,
+                IsFirstMapped = true,
+                IsOdyssey = true
+            });
 
         Assert.Equal(23106, value);
     }
@@ -27,38 +27,38 @@ public sealed class ExplorationValueCalculatorTests
     {
         var scan = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
-    {
-        BodyClass = "High metal content body",
-        IsTerraformable = true,
-        Mass = 1,
-        IsFirstDiscoverer = true,
-        IsMapped = false,
-        IsFirstMapped = true,
-        IsOdyssey = true
-    });
+            {
+                BodyClass = "High metal content body",
+                IsTerraformable = true,
+                Mass = 1,
+                IsFirstDiscoverer = true,
+                IsMapped = false,
+                IsFirstMapped = true,
+                IsOdyssey = true
+            });
         var efficientMapping = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
-    {
-        BodyClass = "High metal content body",
-        IsTerraformable = true,
-        Mass = 1,
-        IsFirstDiscoverer = true,
-        IsMapped = true,
-        IsFirstMapped = true,
-        IsOdyssey = true
-    });
+            {
+                BodyClass = "High metal content body",
+                IsTerraformable = true,
+                Mass = 1,
+                IsFirstDiscoverer = true,
+                IsMapped = true,
+                IsFirstMapped = true,
+                IsOdyssey = true
+            });
         var inefficientMapping = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
-    {
-        BodyClass = "High metal content body",
-        IsTerraformable = true,
-        Mass = 1,
-        IsFirstDiscoverer = true,
-        IsMapped = true,
-        IsFirstMapped = true,
-        IsOdyssey = true,
-        WithEfficiencyBonus = false
-    });
+            {
+                BodyClass = "High metal content body",
+                IsTerraformable = true,
+                Mass = 1,
+                IsFirstDiscoverer = true,
+                IsMapped = true,
+                IsFirstMapped = true,
+                IsOdyssey = true,
+                WithEfficiencyBonus = false
+            });
 
         Assert.Equal(449200, scan);
         Assert.Equal(2700541, efficientMapping);

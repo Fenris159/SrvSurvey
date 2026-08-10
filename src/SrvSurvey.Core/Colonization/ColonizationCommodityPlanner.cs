@@ -91,16 +91,16 @@ public static class ColonizationCommodityPlanner
                 StringComparison.OrdinalIgnoreCase)
             && !carriers.Any(carrier => carrier.MarketId == dock.MarketId);
         var rowContext = new CommodityRowContext
-    {
-        Projects = relevantProjects,
-        CommanderName = request.CommanderName,
-        CargoNames = cargoNames,
-        ShipCounts = shipCounts,
-        CarrierCounts = carrierCounts,
-        LocalMarket = localMarket,
-        Capacity = Math.Max(0, construction.ShipCargoCapacity),
-        DockedAtLinkedCarrier = dockedAtLinkedCarrier
-    };
+        {
+            Projects = relevantProjects,
+            CommanderName = request.CommanderName,
+            CargoNames = cargoNames,
+            ShipCounts = shipCounts,
+            CarrierCounts = carrierCounts,
+            LocalMarket = localMarket,
+            Capacity = Math.Max(0, construction.ShipCargoCapacity),
+            DockedAtLinkedCarrier = dockedAtLinkedCarrier
+        };
         var rows = requirements
             .Where(requirement => requirement.Value.Remaining > 0)
             .Select(requirement => CreateRow(
@@ -241,26 +241,26 @@ public static class ColonizationCommodityPlanner
         var isAvailable = context.LocalMarket.AvailableCommodities.Contains(commodity);
         var carrierDeficit = Math.Max(0, requirement.Remaining - onCarriers);
         return new ColonizationCommodityPlanRow
-    {
-        Commodity = commodity,
-        DisplayName = string.IsNullOrWhiteSpace(localizedName)
+        {
+            Commodity = commodity,
+            DisplayName = string.IsNullOrWhiteSpace(localizedName)
                 ? DisplayNames.GetValueOrDefault(
                     commodity,
                     commodity)
                 : localizedName,
-        Category = Categories.GetValueOrDefault(commodity, "Other"),
-        Needed = requirement.Remaining,
-        InShip = inShip,
-        OnFleetCarriers = onCarriers,
-        IsAssignedToCommander = assignedToCommander,
-        IsAssignedToOther = !assignedToCommander && assigners.Length > 0,
-        IsAvailableAtCurrentMarket = isAvailable,
-        IsUnavailableAtCurrentMarket = context.LocalMarket.HasAvailableCommodities && !isAvailable,
-        CanCompleteFleetCarrierLoad = isAvailable
+            Category = Categories.GetValueOrDefault(commodity, "Other"),
+            Needed = requirement.Remaining,
+            InShip = inShip,
+            OnFleetCarriers = onCarriers,
+            IsAssignedToCommander = assignedToCommander,
+            IsAssignedToOther = !assignedToCommander && assigners.Length > 0,
+            IsAvailableAtCurrentMarket = isAvailable,
+            IsUnavailableAtCurrentMarket = context.LocalMarket.HasAvailableCommodities && !isAvailable,
+            CanCompleteFleetCarrierLoad = isAvailable
                 && !context.DockedAtLinkedCarrier
                 && carrierDeficit > 0
                 && context.Capacity > carrierDeficit
-    };
+        };
     }
 
     private sealed class CommodityRowContext

@@ -646,17 +646,17 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             : char.ToLowerInvariant(LowMassCode[0]);
         if (!state.TryActivate(
                 new BoxelSearchActivationRequest
-    {
-        TopBoxel = topBoxel,
-        LowMassCode = selectedMassCode,
-        StartedOn = StartedOn,
-        SkipAlreadyVisited = SkipAlreadyVisited,
-        SkipKnownToSpansh = SkipKnownToSpansh,
-        CompletionMode = CompleteOnFssAllBodies
+                {
+                    TopBoxel = topBoxel,
+                    LowMassCode = selectedMassCode,
+                    StartedOn = StartedOn,
+                    SkipAlreadyVisited = SkipAlreadyVisited,
+                    SkipKnownToSpansh = SkipKnownToSpansh,
+                    CompletionMode = CompleteOnFssAllBodies
                         ? BoxelCompletionMode.FssAllBodies
                         : BoxelCompletionMode.EnterSystem,
-        AutoCopy = AutoCopy
-    },
+                    AutoCopy = AutoCopy
+                },
                 out var error))
         {
             StatusMessage = error ?? "The boxel search configuration is invalid.";

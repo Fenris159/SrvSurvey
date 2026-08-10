@@ -72,10 +72,10 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
 
     public string IcyRingLabel => editorPreview?.IcyRingLabel
         ?? (route.NextHop?.Carrier is
-            {
-                HasIcyRing: true,
-                IsSystemPristine: true,
-            }
+        {
+            HasIcyRing: true,
+            IsSystemPristine: true,
+        }
                 ? "PRISTINE ICY RING"
                 : "ICY RING");
 

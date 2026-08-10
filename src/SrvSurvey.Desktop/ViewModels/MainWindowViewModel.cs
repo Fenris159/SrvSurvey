@@ -2637,17 +2637,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             eddnPublisher.SetSuspended(hasMultipleGameWindows);
             var eddnResult = await eddnPublisher.ApplyAsync(
                 new EddnApplyRequest
-    {
-        JournalEvents = update.JournalEvents,
-        Status = latestStatus,
-        Enabled = NetworkPrivacy.EddnUploadEnabled,
-        UseTestSchemas = NetworkPrivacy.EddnUseTestSchemas,
-        AllowPublishing = !update.IsBootstrapRead
+                {
+                    JournalEvents = update.JournalEvents,
+                    Status = latestStatus,
+                    Enabled = NetworkPrivacy.EddnUploadEnabled,
+                    UseTestSchemas = NetworkPrivacy.EddnUseTestSchemas,
+                    AllowPublishing = !update.IsBootstrapRead
                         && !hasMultipleGameWindows,
-        JournalDirectory = folderResolution.SelectedPath,
-        JournalPath = update.JournalPath,
-        AllowSharedData = !hasMultipleGameWindows
-    },
+                    JournalDirectory = folderResolution.SelectedPath,
+                    JournalPath = update.JournalPath,
+                    AllowSharedData = !hasMultipleGameWindows
+                },
                 cancellationToken: CancellationToken.None);
             NetworkPrivacy.ReportPublicationResult(eddnResult);
             foreach (var warning in eddnResult.Warnings)

@@ -154,6 +154,12 @@ jobs:
       - name: Restore
         run: dotnet restore SrvSurvey.slnx
 
+      - name: Verify formatting
+        run: >-
+          dotnet format whitespace SrvSurvey.slnx
+          --no-restore
+          --verify-no-changes
+
       - name: Build
         run: dotnet build SrvSurvey.slnx --configuration Release --no-restore
 

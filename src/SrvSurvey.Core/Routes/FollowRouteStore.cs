@@ -145,26 +145,26 @@ public sealed class FollowRouteStore
                 continue;
             }
 
-        var routeName = route.Name?.Trim();
-        if (string.IsNullOrWhiteSpace(routeName))
-        {
-            routeName = candidate.IsLegacy
-                ? $"Commander route ({frontierId})"
-                : Path.GetFileNameWithoutExtension(candidate.Path);
-        }
-        result.Add(new FollowRouteCatalogEntry(
-            routeName,
-            Path.GetFileName(candidate.Path),
-            candidate.Path,
-            candidate.IsLegacy,
-            new DateTimeOffset(
-                File.GetLastWriteTimeUtc(candidate.Path),
-                TimeSpan.Zero),
-            new DateTimeOffset(
-                File.GetCreationTimeUtc(candidate.Path),
-                TimeSpan.Zero),
-            route.Notes,
-            route.IsFavorite));
+            var routeName = route.Name?.Trim();
+            if (string.IsNullOrWhiteSpace(routeName))
+            {
+                routeName = candidate.IsLegacy
+                    ? $"Commander route ({frontierId})"
+                    : Path.GetFileNameWithoutExtension(candidate.Path);
+            }
+            result.Add(new FollowRouteCatalogEntry(
+                routeName,
+                Path.GetFileName(candidate.Path),
+                candidate.Path,
+                candidate.IsLegacy,
+                new DateTimeOffset(
+                    File.GetLastWriteTimeUtc(candidate.Path),
+                    TimeSpan.Zero),
+                new DateTimeOffset(
+                    File.GetCreationTimeUtc(candidate.Path),
+                    TimeSpan.Zero),
+                route.Notes,
+                route.IsFavorite));
         }
 
         return result
