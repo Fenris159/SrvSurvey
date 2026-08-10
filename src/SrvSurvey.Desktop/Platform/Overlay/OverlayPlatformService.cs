@@ -189,16 +189,7 @@ internal sealed partial class WindowsOverlayPlatformService
     {
         ArgumentNullException.ThrowIfNull(window);
         window.Activate();
-
-        var adjustments = 1;
-        var displayCount = ShowCursor(show: true);
-        while (displayCount < 0 && adjustments < 64)
-        {
-            displayCount = ShowCursor(show: true);
-            adjustments++;
-        }
-
-        return new WindowsCursorVisibilityLease(adjustments);
+        return CursorVisibilitySession.Begin(ShowCursor);
     }
 
     public void Dispose()
@@ -364,20 +355,45 @@ internal sealed partial class WindowsOverlayPlatformService
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool DeleteObject(nint objectHandle);
 
-    private sealed class WindowsCursorVisibilityLease(int adjustments)
-        : IDisposable
-    {
-        private int remainingAdjustments = adjustments;
+}
 
-        public void Dispose()
+internal sealed class CursorVisibilitySession : IDisposable
+{
+    private const int MaximumAdjustments = 64;
+    private readonly Func<bool, int> showCursor;
+    private int remainingAdjustments;
+
+    private CursorVisibilitySession(
+        Func<bool, int> showCursor,
+        int adjustments)
+    {
+        this.showCursor = showCursor;
+        remainingAdjustments = adjustments;
+    }
+
+    public static CursorVisibilitySession Begin(Func<bool, int> showCursor)
+    {
+        ArgumentNullException.ThrowIfNull(showCursor);
+
+        var adjustments = 1;
+        var displayCount = showCursor(true);
+        while (displayCount < 0 && adjustments < MaximumAdjustments)
         {
-            var remaining = Interlocked.Exchange(
-                ref remainingAdjustments,
-                0);
-            for (var index = 0; index < remaining; index++)
-            {
-                _ = ShowCursor(show: false);
-            }
+            displayCount = showCursor(true);
+            adjustments++;
+        }
+
+        return new CursorVisibilitySession(showCursor, adjustments);
+    }
+
+    public void Dispose()
+    {
+        var remaining = Interlocked.Exchange(
+            ref remainingAdjustments,
+            0);
+        for (var index = 0; index < remaining; index++)
+        {
+            _ = showCursor(false);
         }
     }
 }
