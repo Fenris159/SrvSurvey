@@ -21,6 +21,15 @@ public sealed record BiologyStatusViewModel(
     bool HasCodexImage = false,
     bool IsStaleActiveSample = false)
 {
+    private static readonly BiologyActiveSampleViewModel EmptyActiveSample = new(
+        string.Empty,
+        0,
+        0,
+        null,
+        null,
+        0,
+        false);
+
     private static readonly Lazy<BiologyPredictionEvaluator>
         DefaultPredictionEvaluator = new(() => new BiologyPredictionEvaluator(
             BiologyCriteriaCatalog.LoadEmbedded()));
@@ -28,6 +37,9 @@ public sealed record BiologyStatusViewModel(
     public bool HasSignals => Signals.Count > 0;
 
     public bool HasActiveSample => ActiveSample is not null;
+
+    public BiologyActiveSampleViewModel ActiveSampleDisplay =>
+        ActiveSample ?? EmptyActiveSample;
 
     public bool HasCodexNotification => CodexNotification is not null;
 

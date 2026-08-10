@@ -393,6 +393,20 @@ public sealed class OverlayPresentationContractTests
     }
 
     [Fact]
+    public void BiologyStatusBindingsUseTheNonNullActiveSampleProjection()
+    {
+        var root = FindRepositoryRoot();
+        var biologyStatus = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "BiologyStatusOverlayPresentation.axaml"));
+
+        Assert.Contains("ActiveSampleDisplay.", biologyStatus);
+        Assert.DoesNotContain("ActiveSample.", biologyStatus);
+    }
+
+    [Fact]
     public void RequestedCompactRowsDoNotUsePanelFillingValueColumns()
     {
         var root = FindRepositoryRoot();
