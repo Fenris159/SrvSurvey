@@ -68,7 +68,9 @@ public sealed class EddnPublisherTests
         Assert.Equal("Test Cmdr", header.GetProperty("uploaderID").GetString());
         Assert.Equal("4.1.2.3", header.GetProperty("gameversion").GetString());
         Assert.Equal("r123/r0 ", header.GetProperty("gamebuild").GetString());
-        Assert.Equal("SrvSurvey", header.GetProperty("softwareName").GetString());
+        Assert.Equal(
+            "SrvSurvey-XP",
+            header.GetProperty("softwareName").GetString());
         Assert.Equal("2.0.95", header.GetProperty("softwareVersion").GetString());
         var message = root.GetProperty("message");
         Assert.Equal("Test A", message.GetProperty("StarSystem").GetString());

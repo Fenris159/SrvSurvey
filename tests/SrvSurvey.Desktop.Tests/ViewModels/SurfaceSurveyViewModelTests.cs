@@ -119,6 +119,12 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Assert.Contains(viewModel.RadarMarkers, marker => marker.IsBookmark);
         Assert.Contains(viewModel.RadarMarkers, marker => marker.IsActiveSample);
         Assert.Contains(viewModel.RadarMarkers, marker => marker.IsVehicle);
+        Assert.False(Assert.Single(
+            viewModel.RadarMarkers,
+            marker => marker.IsHistoricalScan).IsInsideRadius);
+        Assert.True(Assert.Single(
+            viewModel.RadarMarkers,
+            marker => marker.IsActiveSample).IsInsideRadius);
         Assert.Equal(2, viewModel.NavigationMarkers.Count);
         Assert.Contains(
             viewModel.NavigationMarkers,

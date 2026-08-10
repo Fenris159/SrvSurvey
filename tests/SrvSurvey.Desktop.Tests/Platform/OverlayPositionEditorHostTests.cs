@@ -154,13 +154,52 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         runtimeWindow.Close();
     }
 
-    [AvaloniaFact]
-    public void EditorReanchorsExistingBiologyPositionWithoutMovingItsTopEdge()
+    [AvaloniaTheory]
+    [InlineData(
+        "PlotBioSystem",
+        OverlayLayoutCategory.BiologyAndSurface,
+        "bottom")]
+    [InlineData(
+        "PlotFloatie",
+        OverlayLayoutCategory.StatusAndUtilities,
+        "bottom")]
+    [InlineData(
+        "PlotGrounded",
+        OverlayLayoutCategory.BiologyAndSurface,
+        "middle")]
+    [InlineData(
+        "PlotGuardians",
+        OverlayLayoutCategory.Guardian,
+        "middle")]
+    [InlineData(
+        "PlotHumanSite",
+        OverlayLayoutCategory.SitesAndQuests,
+        "middle")]
+    [InlineData(
+        "PlotPriorScans",
+        OverlayLayoutCategory.BiologyAndSurface,
+        "middle")]
+    [InlineData(
+        "PlotRamTah",
+        OverlayLayoutCategory.Guardian,
+        "middle")]
+    [InlineData(
+        "PlotStationInfo",
+        OverlayLayoutCategory.CombatAndColonization,
+        "middle")]
+    [InlineData(
+        "PlotSysStatus",
+        OverlayLayoutCategory.ExplorationAndNavigation,
+        "bottom")]
+    public void EditorReanchorsExistingDynamicPanelPositionWithoutMovingItsTopEdge(
+        string plotterName,
+        OverlayLayoutCategory category,
+        string startingVerticalAnchor)
     {
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(
             Path.Combine(temporaryDirectory, "plotters.json"),
-            "{\"PlotBioSystem\":\"left:300, bottom:100\"}");
+            $"{{\"{plotterName}\":\"left:300, {startingVerticalAnchor}:100\"}}");
         var platform = new FakeOverlayPlatform();
         var registry = new OverlayWindowRegistry();
         var runtimeWindow = new Window
@@ -169,7 +208,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             Height = 600,
             Position = new PixelPoint(420, 310),
         };
-        registry.Register(runtimeWindow, "PlotBioSystem");
+        registry.Register(runtimeWindow, plotterName);
         runtimeWindow.Show();
         var runtimeSize = OverlayWindowMetrics.GetPixelSize(
             registry.Snapshot().Single());
@@ -189,12 +228,12 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             registry,
             host);
         viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
-            candidate.Category == OverlayLayoutCategory.BiologyAndSurface);
+            candidate.Category == category);
 
         Assert.True(viewModel.Begin());
 
         var preview = host.PreviewWindows.Single(candidate =>
-            candidate.Definition.Name == "PlotBioSystem");
+            candidate.Definition.Name == plotterName);
         Assert.Equal(
             runtimeWindow.Position,
             preview.GetPanelScreenOrigin(preview.RenderScaling));

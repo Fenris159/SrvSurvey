@@ -1222,7 +1222,7 @@
                          Text="seconds" />
             </StackPanel>
             <CheckBox IsChecked="{Binding SystemSurvey.DrawBodyBiosOnlyWhenNear, Mode=TwoWay}"
-                      Content="Show body bio signals only when target body is close by." />
+                      Content="Show body bio signals only when the target body is close by (DSS always shows the targeted body)." />
             <CheckBox IsChecked="{Binding SystemSurvey.HideGeoCountInBioSystem, Mode=TwoWay}"
                       Content="Hide geo signals" />
           </StackPanel>
@@ -1380,6 +1380,19 @@
                       Content="Show body information panel" />
             <CheckBox IsChecked="{Binding SystemSurvey.ShowBodyInfoInSystemMap, Mode=TwoWay}"
                       Content="In the System Map" />
+            <StackPanel Margin="36,0,0,0"
+                        Orientation="Horizontal"
+                        Spacing="8">
+              <TextBlock VerticalAlignment="Center"
+                         Text="Extend Body Predictions preview by:" />
+              <NumericUpDown Width="80"
+                             Minimum="0"
+                             Maximum="600"
+                             Increment="1"
+                             FormatString="N0"
+                             Value="{Binding SystemSurvey.BodyPredictionPreviewExtensionSeconds, Mode=TwoWay}" />
+              <TextBlock VerticalAlignment="Center" Text="seconds" />
+            </StackPanel>
             <CheckBox IsChecked="{Binding SystemSurvey.ShowBodyInfoInOrbit, Mode=TwoWay}"
                       Content="In orbit around a body" />
             <CheckBox IsChecked="{Binding SystemSurvey.ShowBodyInfoAtSurface, Mode=TwoWay}"

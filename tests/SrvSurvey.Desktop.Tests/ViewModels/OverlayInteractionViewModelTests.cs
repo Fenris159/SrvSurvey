@@ -113,6 +113,61 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             previewSession.GetPlacement("PlotJumpInfo"));
     }
 
+    [Theory]
+    [InlineData("PlotBioSystem")]
+    [InlineData("PlotFloatie")]
+    [InlineData("PlotGrounded")]
+    [InlineData("PlotGuardians")]
+    [InlineData("PlotHumanSite")]
+    [InlineData("PlotPriorScans")]
+    [InlineData("PlotRamTah")]
+    [InlineData("PlotStationInfo")]
+    [InlineData("PlotSysStatus")]
+    public void LiveMoveKeepsDynamicPanelTopEdgeStableAcrossContentHeights(
+        string plotterName)
+    {
+        var original = OverlayLayoutCatalog.GetRequired(plotterName)
+            .DefaultPlacement with
+        {
+            Opacity = 0.7,
+        };
+        var active = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                [plotterName] = original,
+            },
+            null,
+            null);
+        var session = new OverlayPositionEditSession(active);
+        var previewSession = new OverlayPositionEditSession(active);
+        var gameBounds = new PixelRect(100, 200, 1200, 800);
+        var liveSize = new PixelSize(220, 140);
+        var movedPosition = new PixelPoint(420, 310);
+
+        Assert.True(OverlayInteractionViewModel.MoveLiveOverlay(
+            session,
+            active,
+            plotterName,
+            movedPosition,
+            liveSize,
+            gameBounds,
+            previewSession));
+
+        var placement = session.GetPlacement(plotterName);
+        Assert.Equal(LegacyVerticalAnchor.Top, placement.Vertical);
+        Assert.Equal(placement, previewSession.GetPlacement(plotterName));
+        Assert.Equal(
+            movedPosition,
+            active.GetPosition(plotterName, gameBounds, liveSize));
+        Assert.Equal(
+            movedPosition.Y,
+            active.GetPosition(
+                plotterName,
+                gameBounds,
+                new PixelSize(liveSize.Width, liveSize.Height + 120))!
+                .Value.Y);
+    }
+
     [Fact]
     public void ModeCanArmWithoutEliteAndShowsTheSelectedCategory()
     {

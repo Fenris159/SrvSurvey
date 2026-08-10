@@ -45,6 +45,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private long? latestBiologyEntryId;
     private bool autoShowBodyInfo;
     private bool showBodyInfoInSystemMap;
+    private int bodyPredictionPreviewExtensionSeconds;
     private bool showBodyInfoInOrbit;
     private bool showBodyInfoAtSurface;
     private bool hideBodyInfoInBubble;
@@ -145,6 +146,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         var preferences = settingsStore.Load();
         autoShowBodyInfo = preferences.AutoShowBodyInfo;
         showBodyInfoInSystemMap = preferences.ShowBodyInfoInSystemMap;
+        bodyPredictionPreviewExtensionSeconds =
+            preferences.BodyPredictionPreviewExtensionSeconds;
         showBodyInfoInOrbit = preferences.ShowBodyInfoInOrbit;
         showBodyInfoAtSurface = preferences.ShowBodyInfoAtSurface;
         hideBodyInfoInBubble = preferences.HideBodyInfoInBubble;
@@ -238,6 +241,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get => showBodyInfoInSystemMap;
         set => SetPreference(ref showBodyInfoInSystemMap, value);
+    }
+
+    public int BodyPredictionPreviewExtensionSeconds
+    {
+        get => bodyPredictionPreviewExtensionSeconds;
+        set => SetPreference(
+            ref bodyPredictionPreviewExtensionSeconds,
+            Math.Clamp(value, 0, 600));
     }
 
     public bool ShowBodyInfoInOrbit
@@ -1806,6 +1817,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         var allowRetainedBiologyBody = status?.HasLatitudeLongitude == true
             || IsWithinPostDssBiologyWindow;
+        var restrictBodyBiologyToNearbyTarget = DrawBodyBiosOnlyWhenNear
+            && ResolveGameMode() != OverlayGameMode.Saa;
         var externalBiologyBodyIds = UseExternalData && AutoShowPriorScans
             ? canonnBiologyBodyIds
             : null;
@@ -1832,7 +1845,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     status,
                     exobiology,
                     new BiologySurveyCreateOptions(
-                        DrawBodyBiosOnlyWhenNear,
+                        restrictBodyBiologyToNearbyTarget,
                         HighlightRegionalFirsts,
                         DimAnalyzedOrganisms,
                         HideGeoCountInBioSystem,
@@ -1990,7 +2003,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         timedBiologyBodyId = body.BodyId;
         timedBiologyStartedAt = utcNow();
         timedBiologyExpiresAt = timedBiologyStartedAt
-            + TimeSpan.FromSeconds(2 * signalCount);
+            + TimeSpan.FromSeconds(
+                2 * signalCount + BodyPredictionPreviewExtensionSeconds);
     }
 
     private void ClearTimedBiologySelection(bool refreshDisplay)
@@ -2651,6 +2665,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             settingsStore.Save(new SystemSurveyPreferences(
                 AutoShowBodyInfo,
                 ShowBodyInfoInSystemMap,
+                BodyPredictionPreviewExtensionSeconds,
                 ShowBodyInfoInOrbit,
                 ShowBodyInfoAtSurface,
                 HideBodyInfoInBubble,
