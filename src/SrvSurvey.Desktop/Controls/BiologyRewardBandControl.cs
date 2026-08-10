@@ -709,8 +709,8 @@ public sealed class BiologyRewardBandControl : Control
                     ?? DimmedHighlightBrush
                     ?? Brushes.DarkGoldenrod
                 : HighlightPotentialBrush
-                    ?? DimmedHighlightBrush
-                    ?? Brushes.DarkGoldenrod;
+                    ?? HighlightBrush
+                    ?? Brushes.Gold;
         }
 
         if (IsPrediction)

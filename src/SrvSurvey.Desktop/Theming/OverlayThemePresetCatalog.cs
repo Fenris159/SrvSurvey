@@ -331,6 +331,23 @@ public static class OverlayThemePresetCatalog
             "bio.goldDarkPotential" => WithAlpha(
                 Get("bio.goldFill", fallback),
                 140),
+            "bio.predictionPotential" => WithAlpha(
+                Scale(
+                    Get("bio.prediction", Get("cyan", fallback)),
+                    0.45),
+                180),
+            "bio.galacticRegion" =>
+                Get("bio.white", Get("white", fallback)),
+            "bio.galacticRegionPotential" => WithAlpha(
+                Scale(
+                    Get(
+                        "bio.galacticRegion",
+                        Get("bio.white", Get("white", fallback))),
+                    0.74),
+                140),
+            "bio.unknownGlyph" =>
+                Get("bio.unknown", Get("grey", fallback)),
+            "bio.empty" => Get("black", fallback),
             "bio.confirmedEdge" => WithAlpha(
                 Get("bio.confirmed", Get("orange", fallback)),
                 96),

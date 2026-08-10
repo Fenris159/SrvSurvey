@@ -13,6 +13,14 @@ parity. The changes below are the delta from `2.1.3.0-rc.8`.
   overlay without treating those candidates as extra signals or rewards.
 - Aligns System Biology body names, prediction PIPs, and reward estimates in
   stable shared columns so rows remain compact and readable.
+- Restores the legacy biology PIP layers and state styling, including complete
+  prediction ranges, independent fills, hatching, segment borders, outer
+  frames, and galactic or regional first markers. The expanded PIP palette is
+  available in the theme editor and presets, while older custom themes derive
+  the new roles from their existing biology and general colours.
+- Keeps live overlay dragging and the position editor synchronized through the
+  same `plotters.json` layout. Opening the editor now persists any pending live
+  moves first, so its previews start at the positions just set in game.
 - Disables dependent DSS, prior-scan, radar, and post-DSS duration controls when
   their parent setting is off, making the active behavior unambiguous.
 

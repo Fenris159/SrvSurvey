@@ -235,6 +235,52 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     }
 
     [Fact]
+    public void NonPresetLegacyBiologyPaletteDerivesExpandedCustomRoles()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "theme.json");
+        var colors = new Dictionary<string, int[]>(StringComparer.Ordinal)
+        {
+            ["orange"] = [255, 10, 20, 30],
+            ["orangeDark"] = [255, 4, 8, 12],
+            ["cyan"] = [255, 120, 140, 160],
+            ["cyanDark"] = [255, 40, 50, 60],
+            ["yellow"] = [255, 210, 190, 70],
+            ["white"] = [255, 220, 210, 200],
+            ["black"] = [255, 4, 5, 6],
+            ["menuGold"] = [235, 170, 120, 40],
+            ["grey"] = [255, 80, 70, 60],
+            ["bio.gold"] = [255, 210, 190, 70],
+            ["bio.goldDark"] = [255, 90, 70, 20],
+            ["bio.unknown"] = [255, 70, 60, 50],
+            ["bio.hatch"] = [242, 30, 25, 20],
+            ["bio.white"] = [255, 200, 180, 160],
+            ["bio.prediction"] = [255, 100, 80, 60],
+        };
+        File.WriteAllText(path, JsonSerializer.Serialize(colors));
+
+        var theme = new LegacyOverlayThemeStore(path).Load();
+
+        Assert.Null(theme.Error);
+        Assert.Null(OverlayThemePresetCatalog.FindMatching(theme.Colors));
+        Assert.Equal(
+            Color.FromArgb(180, 45, 36, 27),
+            theme.GetColor("bio.predictionPotential"));
+        Assert.Equal(
+            Color.FromArgb(255, 200, 180, 160),
+            theme.GetColor("bio.galacticRegion"));
+        Assert.Equal(
+            Color.FromArgb(140, 148, 133, 118),
+            theme.GetColor("bio.galacticRegionPotential"));
+        Assert.Equal(
+            Color.FromArgb(255, 70, 60, 50),
+            theme.GetColor("bio.unknownGlyph"));
+        Assert.Equal(
+            Color.FromArgb(255, 4, 5, 6),
+            theme.GetColor("bio.empty"));
+    }
+
+    [Fact]
     public void ExplicitExpandedBiologyPaletteIsNotMigrated()
     {
         Directory.CreateDirectory(temporaryDirectory);
