@@ -186,6 +186,44 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     }
 
     [Fact]
+    public void MissingActiveSampleUsesANonNullPresentationProjection()
+    {
+        var status = new BiologyStatusViewModel(
+            1,
+            "1",
+            0,
+            1,
+            [],
+            null,
+            null,
+            false,
+            string.Empty,
+            string.Empty,
+            null);
+
+        Assert.Null(status.ActiveSample);
+        Assert.False(status.HasActiveSample);
+        Assert.Equal(string.Empty, status.ActiveSampleDisplay.DisplayName);
+        Assert.False(status.ActiveSampleDisplay.IsSecondSampleComplete);
+        Assert.Equal(0, status.ActiveSampleDisplay.SampleScaleBarWidth);
+        Assert.False(status.ActiveSampleDisplay.HasReward);
+        Assert.Equal(string.Empty, status.ActiveSampleDisplay.RewardText);
+
+        var active = new BiologyActiveSampleViewModel(
+            "Aleoida Arcus",
+            2,
+            150,
+            200,
+            0,
+            7_252_500,
+            false);
+
+        Assert.Same(
+            active,
+            (status with { ActiveSample = active }).ActiveSampleDisplay);
+    }
+
+    [Fact]
     public void CodexImageIndicatorTracksNotificationImageAvailability()
     {
         var viewModel = CreateViewModel();

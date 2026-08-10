@@ -314,3 +314,41 @@ public sealed record RegisteredOverlayWindow(
 {
     public Visual RenderSource => PresentationVisual ?? Window;
 }
+
+internal static class OverlayWindowMetrics
+{
+    public static PixelSize GetPixelSize(RegisteredOverlayWindow registered)
+    {
+        ArgumentNullException.ThrowIfNull(registered);
+        var fallback = OverlayLayoutCatalog
+            .GetRequired(registered.PlotterName)
+            .PreviewSize;
+        var scaling = Math.Max(0.1, registered.Window.RenderScaling);
+        var presentation = registered.PresentationVisual;
+        var logicalWidth = presentation is not null
+            && presentation.Bounds.Width > 0
+            ? presentation.Bounds.Width
+            : registered.Window.Bounds.Width;
+        if (!(logicalWidth > 0))
+        {
+            logicalWidth = registered.Window.Width;
+        }
+
+        var logicalHeight = presentation is not null
+            && presentation.Bounds.Height > 0
+            ? presentation.Bounds.Height
+            : registered.Window.Bounds.Height;
+        if (!(logicalHeight > 0))
+        {
+            logicalHeight = registered.Window.Height;
+        }
+
+        var width = double.IsFinite(logicalWidth) && logicalWidth > 0
+            ? (int)Math.Ceiling(logicalWidth * scaling)
+            : fallback.Width;
+        var height = double.IsFinite(logicalHeight) && logicalHeight > 0
+            ? (int)Math.Ceiling(logicalHeight * scaling)
+            : fallback.Height;
+        return new PixelSize(Math.Max(width, 1), Math.Max(height, 1));
+    }
+}

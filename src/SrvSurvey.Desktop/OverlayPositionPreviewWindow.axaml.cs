@@ -8,6 +8,10 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
 
+internal readonly record struct OverlayPreviewPanelMetrics(
+    PixelPoint OriginOffset,
+    PixelSize PanelSize);
+
 public sealed partial class OverlayPositionPreviewWindow : Window
 {
     private double globalOpacity = 1d;
@@ -147,6 +151,58 @@ public sealed partial class OverlayPositionPreviewWindow : Window
                 Math.Max(1, (int)Math.Ceiling(Bounds.Width * safeScaling)),
                 Math.Max(1, (int)Math.Ceiling(Bounds.Height * safeScaling)))
             : GetExpectedPixelSize(safeScaling);
+    }
+
+    internal OverlayPreviewPanelMetrics GetPanelMetrics(double scaling)
+    {
+        var safeScaling = double.IsFinite(scaling) && scaling > 0
+            ? scaling
+            : 1d;
+        var panelOrigin = PreviewBody.TranslatePoint(default, this);
+        var origin = panelOrigin ?? default;
+        var originOffset = new PixelPoint(
+            (int)Math.Round(origin.X * safeScaling),
+            (int)Math.Round(origin.Y * safeScaling));
+        var panelExtent = PreviewBody.TranslatePoint(
+            new Point(PreviewBody.Bounds.Width, PreviewBody.Bounds.Height),
+            this);
+        PixelSize panelSize;
+        if (panelOrigin is { } start
+            && panelExtent is { } end
+            && end.X > start.X
+            && end.Y > start.Y)
+        {
+            panelSize = new PixelSize(
+                Math.Max(
+                    1,
+                    (int)Math.Ceiling((end.X - start.X) * safeScaling)),
+                Math.Max(
+                    1,
+                    (int)Math.Ceiling((end.Y - start.Y) * safeScaling)));
+        }
+        else
+        {
+            var fallbackScale = safeScaling * scaleFactor;
+            panelSize = new PixelSize(
+                Math.Max(
+                    1,
+                    (int)Math.Ceiling(
+                        Definition.PreviewSize.Width * fallbackScale)),
+                Math.Max(
+                    1,
+                    (int)Math.Ceiling(
+                        Definition.PreviewSize.Height * fallbackScale)));
+        }
+
+        return new OverlayPreviewPanelMetrics(originOffset, panelSize);
+    }
+
+    internal PixelPoint GetPanelScreenOrigin(double scaling)
+    {
+        var offset = GetPanelMetrics(scaling).OriginOffset;
+        return new PixelPoint(
+            Position.X + offset.X,
+            Position.Y + offset.Y);
     }
 
     public void ConfigureScale(

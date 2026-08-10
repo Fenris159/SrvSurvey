@@ -76,10 +76,10 @@
               <Ellipse Stroke="{DynamicResource RavenWarningBrush}"
                        StrokeThickness="2"
                        Fill="{DynamicResource RavenPrimaryDimBrush}"
-                       IsVisible="{Binding Survey.BiologyStatus.ActiveSample.IsSecondSampleComplete}" />
+                       IsVisible="{Binding Survey.BiologyStatus.ActiveSampleDisplay.IsSecondSampleComplete}" />
               <Ellipse Stroke="{DynamicResource RavenWarningBrush}"
                        StrokeThickness="2"
-                       IsVisible="{Binding !Survey.BiologyStatus.ActiveSample.IsSecondSampleComplete}" />
+                       IsVisible="{Binding !Survey.BiologyStatus.ActiveSampleDisplay.IsSecondSampleComplete}" />
             </Grid>
             <!-- Stage 3: always empty outline -->
             <Grid Width="24" Height="24">
@@ -93,7 +93,7 @@
             <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                        FontSize="14"
                        FontWeight="SemiBold"
-                       Text="{Binding Survey.BiologyStatus.ActiveSample.DisplayName}"
+                       Text="{Binding Survey.BiologyStatus.ActiveSampleDisplay.DisplayName}"
                        TextWrapping="Wrap"
                        TextTrimming="CharacterEllipsis"
                        MaxHeight="40" />
@@ -102,13 +102,13 @@
                         Spacing="6"
                         VerticalAlignment="Center">
               <Border Height="2"
-                      Width="{Binding Survey.BiologyStatus.ActiveSample.SampleScaleBarWidth}"
+                      Width="{Binding Survey.BiologyStatus.ActiveSampleDisplay.SampleScaleBarWidth}"
                       VerticalAlignment="Center"
                       Background="{DynamicResource RavenAccentBrush}" />
               <TextBlock Classes="muted"
                          Foreground="{DynamicResource RavenAccentBrush}"
                          FontSize="10"
-                         Text="{Binding Survey.BiologyStatus.ActiveSample.SampleScaleLabel}" />
+                         Text="{Binding Survey.BiologyStatus.ActiveSampleDisplay.SampleScaleLabel}" />
             </StackPanel>
           </Grid>
         </Grid>
@@ -187,8 +187,8 @@
                      TextAlignment="Center" />
           <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                      FontSize="10"
-                     IsVisible="{Binding Survey.BiologyStatus.ActiveSample.HasReward}"
-                     Text="{Binding Survey.BiologyStatus.ActiveSample.RewardText}" />
+                     IsVisible="{Binding Survey.BiologyStatus.ActiveSampleDisplay.HasReward}"
+                     Text="{Binding Survey.BiologyStatus.ActiveSampleDisplay.RewardText}" />
           <Panel Width="28"
                  Height="28"
                  IsVisible="{Binding Survey.BiologyStatus.ShowCodexImageIndicator}">

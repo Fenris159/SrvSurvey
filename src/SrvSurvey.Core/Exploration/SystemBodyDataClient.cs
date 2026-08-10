@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net;
 using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Network;
@@ -20,13 +21,23 @@ public sealed record SystemBodyDataProviderSnapshot(
 
 public sealed record SystemBodyDataLoadResult(
     IReadOnlyList<SystemBodyDataProviderSnapshot> Providers,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<string> NotIndexedProviders)
+{
+    public SystemBodyDataLoadResult(
+        IReadOnlyList<SystemBodyDataProviderSnapshot> providers,
+        IReadOnlyList<string> warnings)
+        : this(providers, warnings, [])
+    {
+    }
+}
 
 public sealed class SystemBodyDataClient : ISystemBodyDataClient
 {
     private const int MaximumResponseBytes = 16 * 1024 * 1024;
     private const double LightSecondMeters = 299_792_458d;
     private const double SolarRadiusMeters = 695_700_000d;
+    private const long EdsmCacheEpochSeconds = 30;
     private const string EdsmBodiesResponseLabel = "EDSM bodies response";
     private static readonly DateTimeOffset BiologicalSignalCutoff =
         new(2022, 11, 29, 0, 0, 0, TimeSpan.Zero);
@@ -40,17 +51,20 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     private readonly Uri edsmBaseUri;
     private readonly Uri spanshBaseUri;
     private readonly TimeSpan requestTimeout;
+    private readonly Func<DateTimeOffset> utcNow;
 
     public SystemBodyDataClient(
         HttpClient? client = null,
         Uri? edsmBaseUri = null,
         Uri? spanshBaseUri = null,
-        TimeSpan? requestTimeout = null)
+        TimeSpan? requestTimeout = null,
+        Func<DateTimeOffset>? utcNow = null)
     {
         this.client = client ?? SharedClient;
         this.edsmBaseUri = edsmBaseUri ?? DefaultEdsmBaseUri;
         this.spanshBaseUri = spanshBaseUri ?? DefaultSpanshBaseUri;
         this.requestTimeout = requestTimeout ?? TimeSpan.FromSeconds(20);
+        this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         if (this.requestTimeout <= TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(
@@ -71,8 +85,11 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             "EDSM",
             new Uri(
                 edsmBaseUri,
-                "api-system-v1/bodies?systemName="
-                    + Uri.EscapeDataString(normalizedName)),
+                "api-system-v1/bodies?systemId64="
+                    + systemAddress.ToString(CultureInfo.InvariantCulture)
+                    + "&cacheEpoch="
+                    + (utcNow().ToUnixTimeSeconds() / EdsmCacheEpochSeconds)
+                        .ToString(CultureInfo.InvariantCulture)),
             root => ParseEdsm(root, normalizedName, systemAddress),
             cancellationToken);
         var spanshTask = FetchAsync(
@@ -100,13 +117,17 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             results
                 .Where(result => result.Warning is not null)
                 .Select(result => result.Warning!)
+                .ToArray(),
+            results
+                .Where(result => result.NotIndexed)
+                .Select(result => result.Provider)
                 .ToArray());
     }
 
     private async Task<ProviderResult> FetchAsync(
         string provider,
         Uri requestUri,
-        Func<JsonElement, SystemScanSnapshot> parser,
+        Func<JsonElement, SystemScanSnapshot?> parser,
         CancellationToken cancellationToken)
     {
         using var timeoutCancellation = CancellationTokenSource
@@ -119,16 +140,23 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
                     HttpCompletionOption.ResponseHeadersRead,
                     timeoutCancellation.Token)
                 .ConfigureAwait(false);
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return new ProviderResult(provider, null, null, true);
+            }
+
             response.EnsureSuccessStatusCode();
             var bytes = await ReadBoundedAsync(
                     response.Content,
                     timeoutCancellation.Token)
                 .ConfigureAwait(false);
             using var document = JsonDocument.Parse(bytes);
+            var snapshot = parser(document.RootElement);
             return new ProviderResult(
                 provider,
-                parser(document.RootElement),
-                null);
+                snapshot,
+                null,
+                snapshot is null);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -139,7 +167,8 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             return new ProviderResult(
                 provider,
                 null,
-                $"{provider} body data timed out safely.");
+                $"{provider} body data timed out safely.",
+                false);
         }
         catch (Exception exception) when (
             exception is HttpRequestException
@@ -149,16 +178,22 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             return new ProviderResult(
                 provider,
                 null,
-                $"{provider} body data is unavailable: {exception.Message}");
+                $"{provider} body data is unavailable: {exception.Message}",
+                false);
         }
     }
 
-    private static SystemScanSnapshot ParseEdsm(
+    private static SystemScanSnapshot? ParseEdsm(
         JsonElement root,
         string expectedName,
         long expectedAddress)
     {
         RequireObject(root, EdsmBodiesResponseLabel);
+        if (!root.EnumerateObject().Any())
+        {
+            return null;
+        }
+
         ValidateAddress(root, expectedAddress, EdsmBodiesResponseLabel);
         var systemName = GetString(root, "name") ?? expectedName;
         var bodies = ReadBodyArray(root, EdsmBodiesResponseLabel)
@@ -835,5 +870,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     private sealed record ProviderResult(
         string Provider,
         SystemScanSnapshot? Snapshot,
-        string? Warning);
+        string? Warning,
+        bool NotIndexed);
+
 }

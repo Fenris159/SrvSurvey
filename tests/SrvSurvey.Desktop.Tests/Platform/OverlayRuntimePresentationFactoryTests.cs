@@ -192,6 +192,7 @@ public sealed class OverlayRuntimePresentationFactoryTests
     {
         var predictions = CreateSystemSurveyState("PlotBioSystem", 1)
             .Survey.BiologySurveyDisplay;
+        Assert.Equal("Body Predictions", predictions.Title);
         Assert.Equal("4 biological signals", predictions.ProgressText);
         Assert.Equal(4, predictions.OrganismGroups.Count);
         Assert.All(predictions.Organisms, organism =>
@@ -199,6 +200,7 @@ public sealed class OverlayRuntimePresentationFactoryTests
 
         var identified = CreateSystemSurveyState("PlotBioSystem", 2)
             .Survey.BiologySurveyDisplay;
+        Assert.Equal("Identified Bio", identified.Title);
         Assert.Equal("3 biological signals", identified.ProgressText);
         Assert.Equal(3, identified.OrganismGroups.Count);
         Assert.DoesNotContain(identified.Organisms, organism =>

@@ -86,6 +86,9 @@ public sealed class OverlayEditorFolderTabTests
             var overview = Assert.IsType<SystemSurveyOverlayViewModel>(
                 presentation.DataContext);
             Assert.True(overview.Survey.BiologySurveyDisplay.IsSystemOverview);
+            Assert.Equal(
+                "System biology",
+                overview.Survey.BiologySurveyDisplay.Title);
             Assert.All(
                 overview.Survey.BiologySurveyDisplay.Bodies,
                 body => Assert.StartsWith(
@@ -107,6 +110,9 @@ public sealed class OverlayEditorFolderTabTests
             var predictions = Assert.IsType<SystemSurveyOverlayViewModel>(
                 presentation.DataContext);
             Assert.True(predictions.Survey.BiologySurveyDisplay.IsBodyDetail);
+            Assert.Equal(
+                "Body Predictions",
+                predictions.Survey.BiologySurveyDisplay.Title);
             Assert.True(predictions.Survey.BiologySurveyDisplay.RequiresDss);
             Assert.All(
                 predictions.Survey.BiologySurveyDisplay.Organisms,
@@ -133,6 +139,9 @@ public sealed class OverlayEditorFolderTabTests
             var identified = Assert.IsType<SystemSurveyOverlayViewModel>(
                 presentation.DataContext);
             Assert.True(identified.Survey.BiologySurveyDisplay.IsBodyDetail);
+            Assert.Equal(
+                "Identified Bio",
+                identified.Survey.BiologySurveyDisplay.Title);
             Assert.False(identified.Survey.BiologySurveyDisplay.RequiresDss);
             Assert.Contains(
                 identified.Survey.BiologySurveyDisplay.Organisms,

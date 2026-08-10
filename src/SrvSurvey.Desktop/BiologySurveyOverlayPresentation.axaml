@@ -110,7 +110,7 @@
       <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                  FontSize="12"
                  FontWeight="SemiBold"
-                 Text="System biology" />
+                 Text="{Binding Survey.BiologySurveyDisplay.Title}" />
       <TextBlock Foreground="{DynamicResource RavenTextBrush}"
                  FontSize="10"
                  FontWeight="SemiBold"

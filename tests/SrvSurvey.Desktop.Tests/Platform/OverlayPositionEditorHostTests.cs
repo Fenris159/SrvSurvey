@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -83,6 +84,127 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
 
         Assert.True(runtimeWindow.IsVisible);
         runtimeWindow.Close();
+    }
+
+    [AvaloniaFact]
+    public void EditorAlignsPreviewBodyWithCurrentLivePanelGeometry()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            "{\"PlotBioSystem\":\"left:300, bottom:100\"}");
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var runtimeWindow = new Window
+        {
+            Width = 500,
+            Height = 600,
+            Position = new PixelPoint(420, 310),
+        };
+        registry.Register(runtimeWindow, "PlotBioSystem");
+        runtimeWindow.Show();
+        var runtimeSize = OverlayWindowMetrics.GetPixelSize(
+            registry.Snapshot().Single());
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                new PixelRect(100, 200, 1200, 800),
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            activeLayout,
+            registry,
+            host);
+        viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
+            candidate.Category == OverlayLayoutCategory.BiologyAndSurface);
+
+        Assert.True(viewModel.Begin());
+
+        var preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotBioSystem");
+        Assert.False(runtimeWindow.IsVisible);
+        Assert.Equal(
+            new PixelPoint(420, 310),
+            preview.GetPanelScreenOrigin(preview.RenderScaling));
+        Assert.True(preview.Position.Y < 310);
+        Assert.NotEqual(
+            runtimeSize.Height,
+            preview.GetPanelMetrics(preview.RenderScaling).PanelSize.Height);
+
+        OverlayPreviewMovedEventArgs? moved = null;
+        host.PreviewMoved += (_, eventArgs) => moved = eventArgs;
+        var metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        var movedPanelOrigin = new PixelPoint(510, 430);
+        preview.Position = new PixelPoint(
+            movedPanelOrigin.X - metrics.OriginOffset.X,
+            movedPanelOrigin.Y - metrics.OriginOffset.Y);
+
+        Assert.NotNull(moved);
+        Assert.Equal(movedPanelOrigin, moved.Position);
+        Assert.Equal(runtimeSize, moved.PreviewSize);
+
+        viewModel.Cancel();
+
+        Assert.True(runtimeWindow.IsVisible);
+        runtimeWindow.Close();
+    }
+
+    [AvaloniaFact]
+    public void MovingPreviewAcrossDpiBoundarySavesCurrentPanelOrigin()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var hostBounds = new PixelRect(100, 200, 1200, 800);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                hostBounds,
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            activeLayout,
+            registry,
+            host);
+        viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
+            candidate.Category == OverlayLayoutCategory.BiologyAndSurface);
+
+        Assert.True(viewModel.Begin());
+
+        var preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotBioSystem");
+        preview.SetRenderScaling(2d);
+        var currentMetrics = preview.GetPanelMetrics(preview.RenderScaling);
+        var openingDisplayMetrics = preview.GetPanelMetrics(1d);
+        var movedPanelOrigin = new PixelPoint(510, 430);
+
+        Assert.Equal(2d, preview.RenderScaling);
+        Assert.NotEqual(
+            openingDisplayMetrics.OriginOffset,
+            currentMetrics.OriginOffset);
+
+        preview.Position = new PixelPoint(
+            movedPanelOrigin.X - currentMetrics.OriginOffset.X,
+            movedPanelOrigin.Y - currentMetrics.OriginOffset.Y);
+        viewModel.Save();
+
+        var persisted = store.Load();
+        Assert.Equal(
+            movedPanelOrigin,
+            persisted.GetPosition(
+                preview.Definition.Name,
+                hostBounds,
+                currentMetrics.PanelSize));
     }
 
     public void Dispose()

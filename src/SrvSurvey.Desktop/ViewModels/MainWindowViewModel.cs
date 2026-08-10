@@ -34,6 +34,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 {
     private static readonly TimeSpan IdleHousekeepingInterval =
         TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan DefaultSystemBodyDataRetryDelay =
+        TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan MaximumSystemBodyDataRetryDelay =
+        TimeSpan.FromMinutes(4);
+    private const int MaximumSystemBodyDataRetryAttempts = 5;
 
     private const string Unavailable = "—";
     private const string SettingsNavigationKey = "settings";
@@ -50,6 +55,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly CommanderCodexJournalTracker commanderCodexJournalTracker;
     private readonly SystemScanPersistenceStore systemScanPersistenceStore;
     private readonly ISystemBodyDataClient? systemBodyDataClient;
+    private readonly TimeSpan systemBodyDataRetryDelay;
     private readonly CargoInventoryState cargoInventoryState = new();
     private readonly FirstFootfallInferenceSettingsStore
         firstFootfallInferenceSettingsStore;
@@ -138,6 +144,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private DateTimeOffset? activeSystemVisitedAt;
     private string? loadedSystemHistoryKey;
     private string? loadedSystemBodyDataKey;
+    private DateTimeOffset? systemBodyDataRetryAt;
+    private int systemBodyDataRetryAttempts;
     private EliteStatus? latestStatus;
     private CargoSnapshot? latestCargo;
     private ShipLockerSnapshot? latestShipLocker;
@@ -297,6 +305,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         this.systemScanPersistenceStore = resolvedSystemScanPersistenceStore
             ?? new SystemScanPersistenceStore(AppDataPaths.DataDirectory);
         this.systemBodyDataClient = resolvedSystemBodyDataClient;
+        systemBodyDataRetryDelay = options.SystemBodyDataRetryDelay
+            ?? DefaultSystemBodyDataRetryDelay;
         this.firstFootfallInferenceSettingsStore =
             resolvedFirstFootfallInferenceSettingsStore
                 ?? new FirstFootfallInferenceSettingsStore(
@@ -2609,6 +2619,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         await ApplyExternalPublicationAsync(
             update,
             allowSharedCargo: !IsSharedCargoSuppressed);
+        StartSystemBodyDataRetryIfDue();
     }
 
     private async Task ApplyExternalPublicationAsync(
@@ -2886,6 +2897,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             CancellationToken.None);
         loadedSystemHistoryKey = null;
         loadedSystemBodyDataKey = null;
+        ResetSystemBodyDataRetry();
         CancelSystemBodyDataRequest();
         activeProfileFrontierId = journalState.FrontierId;
         activeProfileCommanderName = journalState.CommanderName
@@ -3172,6 +3184,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         if (!SystemSurvey.UseExternalData)
         {
             loadedSystemBodyDataKey = null;
+            ResetSystemBodyDataRetry();
             CancelSystemBodyDataRequest();
             return;
         }
@@ -3181,24 +3194,36 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             || current.SystemAddress is not { } systemAddress
             || systemAddress <= 0)
         {
+            loadedSystemBodyDataKey = null;
+            ResetSystemBodyDataRetry();
+            CancelSystemBodyDataRequest();
             return;
         }
 
         var key = systemAddress
             + "\nbiology="
             + SystemSurvey.UseExternalBioData;
-        if (string.Equals(
+        var sameKey = string.Equals(
             loadedSystemBodyDataKey,
             key,
-            StringComparison.Ordinal))
+            StringComparison.Ordinal);
+        if (sameKey
+            && (systemBodyDataRetryAt is null
+                || systemBodyDataRetryAt > DateTimeOffset.UtcNow))
         {
             return;
+        }
+
+        if (!sameKey)
+        {
+            ResetSystemBodyDataRetry();
         }
 
         CancelSystemBodyDataRequest();
         var cancellation = new CancellationTokenSource();
         systemBodyDataCancellation = cancellation;
         loadedSystemBodyDataKey = key;
+        systemBodyDataRetryAt = null;
         try
         {
             var result = await systemBodyDataClient.GetAsync(
@@ -3225,6 +3250,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 applicationLogService?.Append(warning);
             }
 
+            ScheduleSystemBodyDataRetry(result.NotIndexedProviders);
+
             if (changed)
             {
                 await PersistCurrentSystemScanAsync();
@@ -3243,6 +3270,55 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
             cancellation.Dispose();
         }
+    }
+
+    private void ScheduleSystemBodyDataRetry(
+        IReadOnlyList<string> notIndexedProviders)
+    {
+        if (notIndexedProviders.Count == 0)
+        {
+            ResetSystemBodyDataRetry();
+            return;
+        }
+
+        systemBodyDataRetryAttempts++;
+        if (systemBodyDataRetryAttempts > MaximumSystemBodyDataRetryAttempts)
+        {
+            systemBodyDataRetryAt = null;
+            applicationLogService?.Append(
+                $"External body data remains unindexed by {string.Join(", ", notIndexedProviders)}; "
+                    + "automatic retries are paused until the system context changes.");
+            return;
+        }
+
+        var multiplier = 1L << (systemBodyDataRetryAttempts - 1);
+        var delayTicks = Math.Min(
+            systemBodyDataRetryDelay.Ticks * multiplier,
+            MaximumSystemBodyDataRetryDelay.Ticks);
+        var delay = TimeSpan.FromTicks(delayTicks);
+        systemBodyDataRetryAt = DateTimeOffset.UtcNow + delay;
+        applicationLogService?.Append(
+            $"External body data is not indexed yet by {string.Join(", ", notIndexedProviders)}; "
+                + $"retry {systemBodyDataRetryAttempts:N0} of "
+                + $"{MaximumSystemBodyDataRetryAttempts:N0} is scheduled in "
+                + $"{delay.TotalSeconds:N0} seconds.");
+    }
+
+    private void StartSystemBodyDataRetryIfDue()
+    {
+        if (systemBodyDataRetryAt is null
+            || systemBodyDataRetryAt > DateTimeOffset.UtcNow)
+        {
+            return;
+        }
+
+        PendingSystemBodyDataLoad = LoadCurrentSystemBodyDataAsync();
+    }
+
+    private void ResetSystemBodyDataRetry()
+    {
+        systemBodyDataRetryAt = null;
+        systemBodyDataRetryAttempts = 0;
     }
 
     private void CancelSystemBodyDataRequest()

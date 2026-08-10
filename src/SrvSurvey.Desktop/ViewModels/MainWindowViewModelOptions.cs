@@ -177,6 +177,8 @@ public sealed class MainWindowViewModelOptions
 
     public ISystemBodyDataClient? SystemBodyDataClient { get; init; }
 
+    internal TimeSpan? SystemBodyDataRetryDelay { get; init; }
+
     public IInaraPublisher? InaraPublisher { get; init; }
 
     public CommanderProfileViewModel? FrontierProfile { get; init; }
