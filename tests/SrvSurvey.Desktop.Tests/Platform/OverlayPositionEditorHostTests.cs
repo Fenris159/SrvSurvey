@@ -85,6 +85,74 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         runtimeWindow.Close();
     }
 
+    [AvaloniaFact]
+    public void EditorAlignsPreviewBodyWithCurrentLivePanelGeometry()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            "{\"PlotBioSystem\":\"left:300, bottom:100\"}");
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var runtimeWindow = new Window
+        {
+            Width = 500,
+            Height = 600,
+            Position = new PixelPoint(420, 310),
+        };
+        registry.Register(runtimeWindow, "PlotBioSystem");
+        runtimeWindow.Show();
+        var runtimeSize = OverlayWindowMetrics.GetPixelSize(
+            registry.Snapshot().Single());
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                new PixelRect(100, 200, 1200, 800),
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            activeLayout,
+            registry,
+            host);
+        viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
+            candidate.Category == OverlayLayoutCategory.BiologyAndSurface);
+
+        Assert.True(viewModel.Begin());
+
+        var preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotBioSystem");
+        Assert.False(runtimeWindow.IsVisible);
+        Assert.Equal(
+            new PixelPoint(420, 310),
+            preview.GetPanelScreenOrigin(preview.RenderScaling));
+        Assert.True(preview.Position.Y < 310);
+        Assert.NotEqual(
+            runtimeSize.Height,
+            preview.GetPanelMetrics(preview.RenderScaling).PanelSize.Height);
+
+        OverlayPreviewMovedEventArgs? moved = null;
+        host.PreviewMoved += (_, eventArgs) => moved = eventArgs;
+        var metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        var movedPanelOrigin = new PixelPoint(510, 430);
+        preview.Position = new PixelPoint(
+            movedPanelOrigin.X - metrics.OriginOffset.X,
+            movedPanelOrigin.Y - metrics.OriginOffset.Y);
+
+        Assert.NotNull(moved);
+        Assert.Equal(movedPanelOrigin, moved.Position);
+        Assert.Equal(runtimeSize, moved.PreviewSize);
+
+        viewModel.Cancel();
+
+        Assert.True(runtimeWindow.IsVisible);
+        runtimeWindow.Close();
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

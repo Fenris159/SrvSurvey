@@ -866,7 +866,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        var size = GetLiveWindowPixelSize(registered);
+        var size = OverlayWindowMetrics.GetPixelSize(registered);
         if (activeLayout is null
             || !MoveLiveOverlay(
                 liveEditSession,
@@ -967,32 +967,6 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
         activeLayout.ReplaceWith(updated);
         return true;
-    }
-
-    private static PixelSize GetLiveWindowPixelSize(
-        RegisteredOverlayWindow registered)
-    {
-        var fallback = OverlayLayoutCatalog.Supported
-            .FirstOrDefault(definition => string.Equals(
-                definition.Name,
-                registered.PlotterName,
-                StringComparison.Ordinal))
-            ?.PreviewSize
-            ?? new PixelSize(1, 1);
-        var scaling = Math.Max(0.1, registered.Window.RenderScaling);
-        var logicalWidth = registered.Window.Bounds.Width > 0
-            ? registered.Window.Bounds.Width
-            : registered.Window.Width;
-        var logicalHeight = registered.Window.Bounds.Height > 0
-            ? registered.Window.Bounds.Height
-            : registered.Window.Height;
-        var width = double.IsFinite(logicalWidth) && logicalWidth > 0
-            ? (int)Math.Ceiling(logicalWidth * scaling)
-            : fallback.Width;
-        var height = double.IsFinite(logicalHeight) && logicalHeight > 0
-            ? (int)Math.Ceiling(logicalHeight * scaling)
-            : fallback.Height;
-        return new PixelSize(Math.Max(width, 1), Math.Max(height, 1));
     }
 
     public void Dispose()
@@ -1116,7 +1090,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         var runtimePosition = activeLayout.GetPosition(
             plotterName,
             liveHostBounds,
-            GetLiveWindowPixelSize(registered));
+            OverlayWindowMetrics.GetPixelSize(registered));
         if (runtimePosition is { } position)
         {
             registered.Window.Position = position;
