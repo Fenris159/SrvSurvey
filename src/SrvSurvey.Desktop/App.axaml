@@ -1,5 +1,6 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
              xmlns:localization="using:SrvSurvey.Desktop.Localization"
              xmlns:presentation="using:SrvSurvey.Desktop.Presentation"
              x:Class="SrvSurvey.Desktop.App"
@@ -44,12 +45,15 @@
     <SolidColorBrush x:Key="RavenOverlayBioConfirmedBrush" Color="#FF6F00" />
     <SolidColorBrush x:Key="RavenOverlayBioConfirmedDimBrush" Color="#552400" />
     <SolidColorBrush x:Key="RavenOverlayBioPotentialBrush" Color="#8C5F3003" />
+    <SolidColorBrush x:Key="RavenOverlayBioConfirmedDimPotentialBrush" Color="#8C1F1001" />
     <SolidColorBrush x:Key="RavenOverlayBioPredictionBrush" Color="#54DFED" />
     <SolidColorBrush x:Key="RavenOverlayBioPredictionPotentialBrush" Color="#B4008B8B" />
     <SolidColorBrush x:Key="RavenOverlayBioGoldBrush" Color="#FFD700" />
     <SolidColorBrush x:Key="RavenOverlayBioGoldDimBrush" Color="#785F00" />
     <SolidColorBrush x:Key="RavenOverlayBioGoldFillBrush" Color="#B8860B" />
     <SolidColorBrush x:Key="RavenOverlayBioGoldDimFillBrush" Color="#3F2D03" />
+    <SolidColorBrush x:Key="RavenOverlayBioGoldPotentialBrush" Color="#90B8860B" />
+    <SolidColorBrush x:Key="RavenOverlayBioGoldDimPotentialBrush" Color="#8CB8860B" />
     <SolidColorBrush x:Key="RavenOverlayBioGalacticRegionBrush" Color="#F4F4F4" />
     <SolidColorBrush x:Key="RavenOverlayBioGalacticRegionPotentialBrush" Color="#8CB8B8B8" />
     <SolidColorBrush x:Key="RavenOverlayBioUnknownBrush" Color="#696969" />
@@ -64,6 +68,18 @@
     <SolidColorBrush x:Key="RavenOverlayBioGoldDimEdgeBrush" Color="#60B8860B" />
     <SolidColorBrush x:Key="RavenOverlayBioGalacticRegionEdgeBrush" Color="#60FFFFFF" />
     <SolidColorBrush x:Key="RavenOverlayBioUnknownEdgeBrush" Color="#60008B8B" />
+    <SolidColorBrush x:Key="RavenOverlayBioConfirmedSegmentEdgeBrush" Color="#FF5F3003" />
+    <SolidColorBrush x:Key="RavenOverlayBioConfirmedPotentialSegmentEdgeBrush" Color="#7CFF6F00" />
+    <SolidColorBrush x:Key="RavenOverlayBioConfirmedDimSegmentEdgeBrush" Color="#FF1F1001" />
+    <SolidColorBrush x:Key="RavenOverlayBioConfirmedDimPotentialSegmentEdgeBrush" Color="#7C552400" />
+    <SolidColorBrush x:Key="RavenOverlayBioPredictionSegmentEdgeBrush" Color="#FF008B8B" />
+    <SolidColorBrush x:Key="RavenOverlayBioPredictionPotentialSegmentEdgeBrush" Color="#FF008B8B" />
+    <SolidColorBrush x:Key="RavenOverlayBioGoldSegmentEdgeBrush" Color="#FFFFD700" />
+    <SolidColorBrush x:Key="RavenOverlayBioGoldPotentialSegmentEdgeBrush" Color="#90D6A40B" />
+    <SolidColorBrush x:Key="RavenOverlayBioGoldDimSegmentEdgeBrush" Color="#FFB8860B" />
+    <SolidColorBrush x:Key="RavenOverlayBioGoldDimPotentialSegmentEdgeBrush" Color="#7C3F2D03" />
+    <SolidColorBrush x:Key="RavenOverlayBioGalacticRegionSegmentEdgeBrush" Color="#FF808080" />
+    <SolidColorBrush x:Key="RavenOverlayBioGalacticRegionPotentialSegmentEdgeBrush" Color="#90FFFFFF" />
     <SolidColorBrush x:Key="RavenOverlayColoniseSurplusBrush" Color="#00FF00" />
     <SolidColorBrush x:Key="RavenOverlayColoniseSurplusDimBrush" Color="#008B00" />
     <SolidColorBrush x:Key="RavenOverlayColoniseDeficitBrush" Color="#FF0000" />
@@ -94,6 +110,23 @@
   </Application.Resources>
   <Application.Styles>
     <FluentTheme />
+    <Style Selector="controls|BiologyRewardBandControl">
+      <Setter Property="FilledSegmentEdgeBrush" Value="{DynamicResource RavenOverlayBioConfirmedSegmentEdgeBrush}" />
+      <Setter Property="PotentialSegmentEdgeBrush" Value="{DynamicResource RavenOverlayBioConfirmedPotentialSegmentEdgeBrush}" />
+      <Setter Property="DimmedFilledSegmentEdgeBrush" Value="{DynamicResource RavenOverlayBioConfirmedDimSegmentEdgeBrush}" />
+      <Setter Property="DimmedPotentialSegmentEdgeBrush" Value="{DynamicResource RavenOverlayBioConfirmedDimPotentialSegmentEdgeBrush}" />
+      <Setter Property="PredictionFilledSegmentEdgeBrush" Value="{DynamicResource RavenOverlayBioPredictionSegmentEdgeBrush}" />
+      <Setter Property="PredictionPotentialSegmentEdgeBrush" Value="{DynamicResource RavenOverlayBioPredictionPotentialSegmentEdgeBrush}" />
+      <Setter Property="HighlightFilledSegmentEdgeBrush" Value="{DynamicResource RavenOverlayBioGoldSegmentEdgeBrush}" />
+      <Setter Property="HighlightPotentialSegmentEdgeBrush" Value="{DynamicResource RavenOverlayBioGoldPotentialSegmentEdgeBrush}" />
+      <Setter Property="DimmedHighlightFilledSegmentEdgeBrush" Value="{DynamicResource RavenOverlayBioGoldDimSegmentEdgeBrush}" />
+      <Setter Property="DimmedHighlightPotentialSegmentEdgeBrush" Value="{DynamicResource RavenOverlayBioGoldDimPotentialSegmentEdgeBrush}" />
+      <Setter Property="GlobalRegionalFilledSegmentEdgeBrush" Value="{DynamicResource RavenOverlayBioGalacticRegionSegmentEdgeBrush}" />
+      <Setter Property="GlobalRegionalPotentialSegmentEdgeBrush" Value="{DynamicResource RavenOverlayBioGalacticRegionPotentialSegmentEdgeBrush}" />
+      <Setter Property="DimmedPotentialBrush" Value="{DynamicResource RavenOverlayBioConfirmedDimPotentialBrush}" />
+      <Setter Property="HighlightPotentialBrush" Value="{DynamicResource RavenOverlayBioGoldPotentialBrush}" />
+      <Setter Property="DimmedHighlightPotentialBrush" Value="{DynamicResource RavenOverlayBioGoldDimPotentialBrush}" />
+    </Style>
     <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
     <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/RavenStyles.axaml" />
     <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/GuardianLegacyOverlayStyles.axaml" />

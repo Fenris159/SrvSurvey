@@ -66,7 +66,12 @@ public sealed class BiologyRewardBandGroupControl : Decorator
         var frame = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
         context.DrawRectangle(
             Brushes.Transparent,
-            new Pen(FrameBrush, 1, DashStyle.Dot),
+            new Pen(
+                FrameBrush,
+                1,
+                DashStyle.Dot,
+                PenLineCap.Round,
+                PenLineJoin.Round),
             frame,
             2,
             2);

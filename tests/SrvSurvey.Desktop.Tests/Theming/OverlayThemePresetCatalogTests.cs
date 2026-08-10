@@ -27,6 +27,9 @@ public sealed class OverlayThemePresetCatalogTests
         Assert.Equal(
             Color.FromArgb(140, 95, 48, 3),
             defaults["bio.potential"]);
+        Assert.Equal(
+            Color.FromArgb(140, 31, 16, 1),
+            defaults["bio.confirmedDimPotential"]);
         Assert.Equal(Color.Parse("#54DFED"), defaults["bio.prediction"]);
         Assert.Equal(
             Color.FromArgb(180, 0, 139, 139),
@@ -35,6 +38,12 @@ public sealed class OverlayThemePresetCatalogTests
         Assert.Equal(Color.Parse("#785F00"), defaults["bio.goldDark"]);
         Assert.Equal(Color.Parse("#B8860B"), defaults["bio.goldFill"]);
         Assert.Equal(Color.Parse("#3F2D03"), defaults["bio.goldDarkFill"]);
+        Assert.Equal(
+            Color.FromArgb(144, 184, 134, 11),
+            defaults["bio.goldPotential"]);
+        Assert.Equal(
+            Color.FromArgb(140, 184, 134, 11),
+            defaults["bio.goldDarkPotential"]);
         Assert.Equal(Color.Parse("#F4F4F4"), defaults["bio.galacticRegion"]);
         Assert.Equal(
             Color.FromArgb(140, 184, 184, 184),
@@ -63,6 +72,42 @@ public sealed class OverlayThemePresetCatalogTests
         Assert.Equal(
             Color.FromArgb(96, 0, 139, 139),
             defaults["bio.unknownEdge"]);
+        Assert.Equal(
+            Color.Parse("#5F3003"),
+            defaults["bio.confirmedSegmentEdge"]);
+        Assert.Equal(
+            Color.FromArgb(124, 255, 111, 0),
+            defaults["bio.confirmedPotentialSegmentEdge"]);
+        Assert.Equal(
+            Color.Parse("#1F1001"),
+            defaults["bio.confirmedDimSegmentEdge"]);
+        Assert.Equal(
+            Color.FromArgb(124, 85, 36, 0),
+            defaults["bio.confirmedDimPotentialSegmentEdge"]);
+        Assert.Equal(
+            Color.Parse("#008B8B"),
+            defaults["bio.predictionSegmentEdge"]);
+        Assert.Equal(
+            Color.Parse("#008B8B"),
+            defaults["bio.predictionPotentialSegmentEdge"]);
+        Assert.Equal(
+            Color.Parse("#FFD700"),
+            defaults["bio.goldSegmentEdge"]);
+        Assert.Equal(
+            Color.FromArgb(144, 214, 164, 11),
+            defaults["bio.goldPotentialSegmentEdge"]);
+        Assert.Equal(
+            Color.Parse("#B8860B"),
+            defaults["bio.goldDarkSegmentEdge"]);
+        Assert.Equal(
+            Color.FromArgb(124, 63, 45, 3),
+            defaults["bio.goldDarkPotentialSegmentEdge"]);
+        Assert.Equal(
+            Color.Parse("#808080"),
+            defaults["bio.galacticRegionSegmentEdge"]);
+        Assert.Equal(
+            Color.FromArgb(144, 255, 255, 255),
+            defaults["bio.galacticRegionPotentialSegmentEdge"]);
     }
 
     [Theory]
@@ -101,6 +146,9 @@ public sealed class OverlayThemePresetCatalogTests
             preset.Colors["bio.prediction"],
             preset.Colors["bio.predictionPotential"]);
         Assert.Equal((byte)242, preset.Colors["bio.hatch"].A);
+        Assert.Equal((byte)140, preset.Colors["bio.confirmedDimPotential"].A);
+        Assert.Equal((byte)144, preset.Colors["bio.goldPotential"].A);
+        Assert.Equal((byte)140, preset.Colors["bio.goldDarkPotential"].A);
         Assert.Equal(preset.Colors["black"], preset.Colors["bio.empty"]);
         Assert.Equal((byte)96, preset.Colors["bio.confirmedEdge"].A);
         Assert.Equal((byte)96, preset.Colors["bio.confirmedDimEdge"].A);
@@ -128,6 +176,33 @@ public sealed class OverlayThemePresetCatalogTests
         Assert.Equal(
             preset.Colors["bio.predictionEdge"],
             preset.Colors["bio.unknownEdge"]);
+        Assert.Equal(
+            preset.Colors["orangeDark"],
+            preset.Colors["bio.confirmedSegmentEdge"]);
+        Assert.Equal(
+            (byte)124,
+            preset.Colors["bio.confirmedPotentialSegmentEdge"].A);
+        AssertSameRgb(
+            preset.Colors["bio.predictionPotential"],
+            preset.Colors["bio.predictionSegmentEdge"]);
+        Assert.Equal(
+            preset.Colors["bio.predictionSegmentEdge"],
+            preset.Colors["bio.predictionPotentialSegmentEdge"]);
+        Assert.Equal(
+            preset.Colors["yellow"],
+            preset.Colors["bio.goldSegmentEdge"]);
+        Assert.Equal(
+            (byte)144,
+            preset.Colors["bio.goldPotentialSegmentEdge"].A);
+        Assert.Equal(
+            preset.Colors["bio.goldFill"],
+            preset.Colors["bio.goldDarkSegmentEdge"]);
+        Assert.Equal(
+            (byte)124,
+            preset.Colors["bio.goldDarkPotentialSegmentEdge"].A);
+        Assert.Equal(
+            (byte)144,
+            preset.Colors["bio.galacticRegionPotentialSegmentEdge"].A);
         Assert.Equal(required["red"], preset.Colors["red"]);
         Assert.Equal(required["green"], preset.Colors["green"]);
     }

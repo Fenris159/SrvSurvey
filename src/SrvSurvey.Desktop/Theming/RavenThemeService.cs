@@ -31,6 +31,8 @@ public sealed class RavenThemeService
             ["RavenOverlayBioConfirmedBrush"] = "bio.confirmed",
             ["RavenOverlayBioConfirmedDimBrush"] = "bio.confirmedDim",
             ["RavenOverlayBioPotentialBrush"] = "bio.potential",
+            ["RavenOverlayBioConfirmedDimPotentialBrush"] =
+                "bio.confirmedDimPotential",
             ["RavenOverlayBioPredictionBrush"] = "bio.prediction",
             ["RavenOverlayBioPredictionPotentialBrush"] =
                 "bio.predictionPotential",
@@ -38,6 +40,9 @@ public sealed class RavenThemeService
             ["RavenOverlayBioGoldDimBrush"] = "bio.goldDark",
             ["RavenOverlayBioGoldFillBrush"] = "bio.goldFill",
             ["RavenOverlayBioGoldDimFillBrush"] = "bio.goldDarkFill",
+            ["RavenOverlayBioGoldPotentialBrush"] = "bio.goldPotential",
+            ["RavenOverlayBioGoldDimPotentialBrush"] =
+                "bio.goldDarkPotential",
             ["RavenOverlayBioGalacticRegionBrush"] = "bio.galacticRegion",
             ["RavenOverlayBioGalacticRegionPotentialBrush"] =
                 "bio.galacticRegionPotential",
@@ -54,6 +59,29 @@ public sealed class RavenThemeService
             ["RavenOverlayBioGalacticRegionEdgeBrush"] =
                 "bio.galacticRegionEdge",
             ["RavenOverlayBioUnknownEdgeBrush"] = "bio.unknownEdge",
+            ["RavenOverlayBioConfirmedSegmentEdgeBrush"] =
+                "bio.confirmedSegmentEdge",
+            ["RavenOverlayBioConfirmedPotentialSegmentEdgeBrush"] =
+                "bio.confirmedPotentialSegmentEdge",
+            ["RavenOverlayBioConfirmedDimSegmentEdgeBrush"] =
+                "bio.confirmedDimSegmentEdge",
+            ["RavenOverlayBioConfirmedDimPotentialSegmentEdgeBrush"] =
+                "bio.confirmedDimPotentialSegmentEdge",
+            ["RavenOverlayBioPredictionSegmentEdgeBrush"] =
+                "bio.predictionSegmentEdge",
+            ["RavenOverlayBioPredictionPotentialSegmentEdgeBrush"] =
+                "bio.predictionPotentialSegmentEdge",
+            ["RavenOverlayBioGoldSegmentEdgeBrush"] = "bio.goldSegmentEdge",
+            ["RavenOverlayBioGoldPotentialSegmentEdgeBrush"] =
+                "bio.goldPotentialSegmentEdge",
+            ["RavenOverlayBioGoldDimSegmentEdgeBrush"] =
+                "bio.goldDarkSegmentEdge",
+            ["RavenOverlayBioGoldDimPotentialSegmentEdgeBrush"] =
+                "bio.goldDarkPotentialSegmentEdge",
+            ["RavenOverlayBioGalacticRegionSegmentEdgeBrush"] =
+                "bio.galacticRegionSegmentEdge",
+            ["RavenOverlayBioGalacticRegionPotentialSegmentEdgeBrush"] =
+                "bio.galacticRegionPotentialSegmentEdge",
             ["RavenOverlayColoniseSurplusBrush"] = "colonise.surplus",
             ["RavenOverlayColoniseSurplusDimBrush"] = "colonise.surplusDark",
             ["RavenOverlayColoniseDeficitBrush"] = "colonise.deficit",

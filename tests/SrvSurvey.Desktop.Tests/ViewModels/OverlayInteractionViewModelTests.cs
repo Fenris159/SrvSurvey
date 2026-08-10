@@ -228,6 +228,61 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void OpeningEditorDuringLiveInteractionPersistsAndUsesMovedPosition()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            "{\"PlotJumpInfo\":\"center:0, top:8\"}");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var host = new FakeEditorHost();
+        var gameBounds = new PixelRect(100, 200, 1200, 800);
+        var window = new Window
+        {
+            Width = 600,
+            Height = 100,
+            Position = new PixelPoint(400, 208),
+        };
+        registry.Register(window, "PlotJumpInfo");
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                gameBounds,
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            activeLayout,
+            registry,
+            host);
+
+        Assert.True(viewModel.ToggleLiveOverlayInteraction());
+        window.Position = new PixelPoint(475, 325);
+
+        Assert.True(viewModel.Begin());
+
+        var savedPlacement = store.Load().Placements["PlotJumpInfo"];
+        Assert.Equal(savedPlacement, activeLayout.Placements["PlotJumpInfo"]);
+        Assert.Equal(savedPlacement, host.OpenedJumpInfoPlacement);
+        Assert.Equal(
+            new PixelPoint(475, 325),
+            store.Load().GetPosition(
+                "PlotJumpInfo",
+                gameBounds,
+                new PixelSize(600, 100)));
+        Assert.True(viewModel.IsLiveInteractionEnabled);
+
+        // The live session was rebased on the shared saved layout. With no
+        // further move, closing live interaction must not rewrite it again.
+        Assert.True(viewModel.ToggleLiveOverlayInteraction());
+        Assert.Contains("no positions moved", viewModel.StatusMessage);
+    }
+
+    [AvaloniaFact]
     public void LiveDragAndOpenEditorStaySynchronizedAndDisposeRestoresChanges()
     {
         Directory.CreateDirectory(temporaryDirectory);

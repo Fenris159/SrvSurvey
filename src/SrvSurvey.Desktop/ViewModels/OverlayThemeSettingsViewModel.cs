@@ -32,6 +32,10 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         new(CategoryExobiology, "bio.confirmed", "Confirmed organism reward PIP"),
         new(CategoryExobiology, "bio.confirmedDim", "Analyzed organism reward PIP"),
         new(CategoryExobiology, "bio.potential", "Confirmed reward-range upper segment"),
+        new(
+            CategoryExobiology,
+            "bio.confirmedDimPotential",
+            "Analyzed reward-range upper segment"),
         new(CategoryExobiology, "bio.prediction", "Predicted organism reward PIP"),
         new(
             CategoryExobiology,
@@ -50,6 +54,14 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
             CategoryExobiology,
             "bio.goldDarkFill",
             "Commander/regional-first PIP fill (analyzed)"),
+        new(
+            CategoryExobiology,
+            "bio.goldPotential",
+            "Commander/regional-first possible segment"),
+        new(
+            CategoryExobiology,
+            "bio.goldDarkPotential",
+            "Analyzed first-discovery possible segment"),
         new(
             CategoryExobiology,
             "bio.galacticRegion",
@@ -82,6 +94,54 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
             "bio.galacticRegionEdge",
             "Galactic-region PIP outer border"),
         new(CategoryExobiology, "bio.unknownEdge", "Unknown reward PIP outer border"),
+        new(
+            CategoryExobiology,
+            "bio.confirmedSegmentEdge",
+            "Confirmed PIP filled-segment border"),
+        new(
+            CategoryExobiology,
+            "bio.confirmedPotentialSegmentEdge",
+            "Confirmed PIP possible-segment border"),
+        new(
+            CategoryExobiology,
+            "bio.confirmedDimSegmentEdge",
+            "Analyzed PIP filled-segment border"),
+        new(
+            CategoryExobiology,
+            "bio.confirmedDimPotentialSegmentEdge",
+            "Analyzed PIP possible-segment border"),
+        new(
+            CategoryExobiology,
+            "bio.predictionSegmentEdge",
+            "Predicted PIP filled-segment border"),
+        new(
+            CategoryExobiology,
+            "bio.predictionPotentialSegmentEdge",
+            "Predicted PIP possible-segment border"),
+        new(
+            CategoryExobiology,
+            "bio.goldSegmentEdge",
+            "Commander/regional-first filled-segment border"),
+        new(
+            CategoryExobiology,
+            "bio.goldPotentialSegmentEdge",
+            "Commander/regional-first possible-segment border"),
+        new(
+            CategoryExobiology,
+            "bio.goldDarkSegmentEdge",
+            "Analyzed first-discovery filled-segment border"),
+        new(
+            CategoryExobiology,
+            "bio.goldDarkPotentialSegmentEdge",
+            "Analyzed first-discovery possible-segment border"),
+        new(
+            CategoryExobiology,
+            "bio.galacticRegionSegmentEdge",
+            "Galactic-region filled-segment border"),
+        new(
+            CategoryExobiology,
+            "bio.galacticRegionPotentialSegmentEdge",
+            "Galactic-region possible-segment border"),
         new(CategoryColonisation, "colonise.surplus", "Surplus"),
         new(CategoryColonisation, "colonise.surplusDark", "Surplus (dim)"),
         new(CategoryColonisation, "colonise.deficit", "Deficit"),

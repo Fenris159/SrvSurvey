@@ -67,6 +67,9 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
         {
             "bio.goldFill",
             "bio.goldDarkFill",
+            "bio.confirmedDimPotential",
+            "bio.goldPotential",
+            "bio.goldDarkPotential",
             "bio.confirmedEdge",
             "bio.confirmedDimEdge",
             "bio.predictionEdge",
@@ -74,6 +77,18 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
             "bio.goldDarkEdge",
             "bio.galacticRegionEdge",
             "bio.unknownEdge",
+            "bio.confirmedSegmentEdge",
+            "bio.confirmedPotentialSegmentEdge",
+            "bio.confirmedDimSegmentEdge",
+            "bio.confirmedDimPotentialSegmentEdge",
+            "bio.predictionSegmentEdge",
+            "bio.predictionPotentialSegmentEdge",
+            "bio.goldSegmentEdge",
+            "bio.goldPotentialSegmentEdge",
+            "bio.goldDarkSegmentEdge",
+            "bio.goldDarkPotentialSegmentEdge",
+            "bio.galacticRegionSegmentEdge",
+            "bio.galacticRegionPotentialSegmentEdge",
         };
         foreach (var role in addedRoles)
         {

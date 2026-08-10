@@ -10,6 +10,25 @@
              MaxWidth="240"
              HorizontalAlignment="Left"
              ClipToBounds="True">
+  <UserControl.Styles>
+    <Style Selector="controls|BiologyRewardBandControl">
+      <Setter Property="FilledSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedSegmentEdgeBrush}" />
+      <Setter Property="PotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedPotentialSegmentEdgeBrush}" />
+      <Setter Property="DimmedFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedDimSegmentEdgeBrush}" />
+      <Setter Property="DimmedPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedDimPotentialSegmentEdgeBrush}" />
+      <Setter Property="PredictionFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioPredictionSegmentEdgeBrush}" />
+      <Setter Property="PredictionPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioPredictionPotentialSegmentEdgeBrush}" />
+      <Setter Property="HighlightFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioGoldSegmentEdgeBrush}" />
+      <Setter Property="HighlightPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioGoldPotentialSegmentEdgeBrush}" />
+      <Setter Property="DimmedHighlightFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioGoldDimSegmentEdgeBrush}" />
+      <Setter Property="DimmedHighlightPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioGoldDimPotentialSegmentEdgeBrush}" />
+      <Setter Property="GlobalRegionalFilledSegmentEdgeBrush" Value="{DynamicResource RavenBioGalacticRegionSegmentEdgeBrush}" />
+      <Setter Property="GlobalRegionalPotentialSegmentEdgeBrush" Value="{DynamicResource RavenBioGalacticRegionPotentialSegmentEdgeBrush}" />
+      <Setter Property="DimmedPotentialBrush" Value="{DynamicResource RavenBioConfirmedDimPotentialBrush}" />
+      <Setter Property="HighlightPotentialBrush" Value="{DynamicResource RavenBioGoldPotentialBrush}" />
+      <Setter Property="DimmedHighlightPotentialBrush" Value="{DynamicResource RavenBioGoldDimPotentialBrush}" />
+    </Style>
+  </UserControl.Styles>
   <Border Margin="0"
           Padding="4"
           Background="{DynamicResource RavenWindowBrush}"

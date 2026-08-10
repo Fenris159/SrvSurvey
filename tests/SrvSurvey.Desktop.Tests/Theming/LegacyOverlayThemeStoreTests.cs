@@ -218,6 +218,18 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
             defaults["bio.predictionEdge"],
             theme.GetColor("bio.predictionEdge"));
         Assert.Equal(
+            defaults["bio.predictionSegmentEdge"],
+            theme.GetColor("bio.predictionSegmentEdge"));
+        Assert.Equal(
+            defaults["bio.goldPotentialSegmentEdge"],
+            theme.GetColor("bio.goldPotentialSegmentEdge"));
+        Assert.Equal(
+            defaults["bio.confirmedDimPotential"],
+            theme.GetColor("bio.confirmedDimPotential"));
+        Assert.Equal(
+            defaults["bio.goldPotential"],
+            theme.GetColor("bio.goldPotential"));
+        Assert.Equal(
             OverlayThemePresetCatalog.DefaultName,
             OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name);
     }

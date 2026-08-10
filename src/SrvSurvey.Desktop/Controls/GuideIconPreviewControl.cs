@@ -49,6 +49,9 @@ public sealed class GuideIconPreviewControl : Control
     public static readonly StyledProperty<IBrush?> PipPotentialBrushProperty =
         AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
             nameof(PipPotentialBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedDimPotentialBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipConfirmedDimPotentialBrush));
     public static readonly StyledProperty<IBrush?> PipPredictionBrushProperty =
         AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
             nameof(PipPredictionBrush));
@@ -58,6 +61,9 @@ public sealed class GuideIconPreviewControl : Control
     public static readonly StyledProperty<IBrush?> PipHighlightBrushProperty =
         AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
             nameof(PipHighlightBrush));
+    public static readonly StyledProperty<IBrush?> PipHighlightPotentialBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipHighlightPotentialBrush));
     public static readonly StyledProperty<IBrush?> PipGlobalRegionalBrushProperty =
         AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
             nameof(PipGlobalRegionalBrush));
@@ -94,6 +100,36 @@ public sealed class GuideIconPreviewControl : Control
     public static readonly StyledProperty<IBrush?> PipUnknownEdgeBrushProperty =
         AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
             nameof(PipUnknownEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipConfirmedSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedPotentialSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipConfirmedPotentialSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedDimSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipConfirmedDimSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedDimPotentialSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipConfirmedDimPotentialSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipPredictionSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipPredictionSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipPredictionPotentialSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipPredictionPotentialSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipHighlightSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipHighlightSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipHighlightPotentialSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipHighlightPotentialSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipGlobalRegionalSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipGlobalRegionalSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipGlobalRegionalPotentialSegmentEdgeBrushProperty =
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
+            nameof(PipGlobalRegionalPotentialSegmentEdgeBrush));
 
     static GuideIconPreviewControl()
     {
@@ -111,9 +147,11 @@ public sealed class GuideIconPreviewControl : Control
             PipConfirmedBrushProperty,
             PipConfirmedDimBrushProperty,
             PipPotentialBrushProperty,
+            PipConfirmedDimPotentialBrushProperty,
             PipPredictionBrushProperty,
             PipPredictionPotentialBrushProperty,
             PipHighlightBrushProperty,
+            PipHighlightPotentialBrushProperty,
             PipGlobalRegionalBrushProperty,
             PipGlobalRegionalPotentialBrushProperty,
             PipUnknownBrushProperty,
@@ -125,7 +163,17 @@ public sealed class GuideIconPreviewControl : Control
             PipPredictionEdgeBrushProperty,
             PipHighlightEdgeBrushProperty,
             PipGlobalRegionalEdgeBrushProperty,
-            PipUnknownEdgeBrushProperty);
+            PipUnknownEdgeBrushProperty,
+            PipConfirmedSegmentEdgeBrushProperty,
+            PipConfirmedPotentialSegmentEdgeBrushProperty,
+            PipConfirmedDimSegmentEdgeBrushProperty,
+            PipConfirmedDimPotentialSegmentEdgeBrushProperty,
+            PipPredictionSegmentEdgeBrushProperty,
+            PipPredictionPotentialSegmentEdgeBrushProperty,
+            PipHighlightSegmentEdgeBrushProperty,
+            PipHighlightPotentialSegmentEdgeBrushProperty,
+            PipGlobalRegionalSegmentEdgeBrushProperty,
+            PipGlobalRegionalPotentialSegmentEdgeBrushProperty);
     }
 
     public GuideIconKind Kind
@@ -206,6 +254,12 @@ public sealed class GuideIconPreviewControl : Control
         set => SetValue(PipPotentialBrushProperty, value);
     }
 
+    public IBrush? PipConfirmedDimPotentialBrush
+    {
+        get => GetValue(PipConfirmedDimPotentialBrushProperty);
+        set => SetValue(PipConfirmedDimPotentialBrushProperty, value);
+    }
+
     public IBrush? PipPredictionBrush
     {
         get => GetValue(PipPredictionBrushProperty);
@@ -222,6 +276,12 @@ public sealed class GuideIconPreviewControl : Control
     {
         get => GetValue(PipHighlightBrushProperty);
         set => SetValue(PipHighlightBrushProperty, value);
+    }
+
+    public IBrush? PipHighlightPotentialBrush
+    {
+        get => GetValue(PipHighlightPotentialBrushProperty);
+        set => SetValue(PipHighlightPotentialBrushProperty, value);
     }
 
     public IBrush? PipGlobalRegionalBrush
@@ -296,6 +356,66 @@ public sealed class GuideIconPreviewControl : Control
         set => SetValue(PipUnknownEdgeBrushProperty, value);
     }
 
+    public IBrush? PipConfirmedSegmentEdgeBrush
+    {
+        get => GetValue(PipConfirmedSegmentEdgeBrushProperty);
+        set => SetValue(PipConfirmedSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipConfirmedPotentialSegmentEdgeBrush
+    {
+        get => GetValue(PipConfirmedPotentialSegmentEdgeBrushProperty);
+        set => SetValue(PipConfirmedPotentialSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipConfirmedDimSegmentEdgeBrush
+    {
+        get => GetValue(PipConfirmedDimSegmentEdgeBrushProperty);
+        set => SetValue(PipConfirmedDimSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipConfirmedDimPotentialSegmentEdgeBrush
+    {
+        get => GetValue(PipConfirmedDimPotentialSegmentEdgeBrushProperty);
+        set => SetValue(PipConfirmedDimPotentialSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipPredictionSegmentEdgeBrush
+    {
+        get => GetValue(PipPredictionSegmentEdgeBrushProperty);
+        set => SetValue(PipPredictionSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipPredictionPotentialSegmentEdgeBrush
+    {
+        get => GetValue(PipPredictionPotentialSegmentEdgeBrushProperty);
+        set => SetValue(PipPredictionPotentialSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipHighlightSegmentEdgeBrush
+    {
+        get => GetValue(PipHighlightSegmentEdgeBrushProperty);
+        set => SetValue(PipHighlightSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipHighlightPotentialSegmentEdgeBrush
+    {
+        get => GetValue(PipHighlightPotentialSegmentEdgeBrushProperty);
+        set => SetValue(PipHighlightPotentialSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipGlobalRegionalSegmentEdgeBrush
+    {
+        get => GetValue(PipGlobalRegionalSegmentEdgeBrushProperty);
+        set => SetValue(PipGlobalRegionalSegmentEdgeBrushProperty, value);
+    }
+
+    public IBrush? PipGlobalRegionalPotentialSegmentEdgeBrush
+    {
+        get => GetValue(PipGlobalRegionalPotentialSegmentEdgeBrushProperty);
+        set => SetValue(PipGlobalRegionalPotentialSegmentEdgeBrushProperty, value);
+    }
+
     public override void Render(DrawingContext context)
     {
         base.Render(context);
@@ -315,10 +435,14 @@ public sealed class GuideIconPreviewControl : Control
         var pipConfirmed = PipConfirmedBrush ?? primary;
         var pipConfirmedDim = PipConfirmedDimBrush ?? muted;
         var pipPotential = PipPotentialBrush ?? muted;
+        var pipConfirmedDimPotential =
+            PipConfirmedDimPotentialBrush ?? pipPotential;
         var pipPrediction = PipPredictionBrush ?? secondary;
         var pipPredictionPotential =
             PipPredictionPotentialBrush ?? muted;
         var pipHighlight = PipHighlightBrush ?? gold;
+        var pipHighlightPotential =
+            PipHighlightPotentialBrush ?? pipHighlight;
         var pipGlobalRegional = PipGlobalRegionalBrush ?? Brushes.White;
         var pipGlobalRegionalPotential =
             PipGlobalRegionalPotentialBrush ?? Brushes.Gray;
@@ -333,6 +457,27 @@ public sealed class GuideIconPreviewControl : Control
         var pipGlobalRegionalEdge =
             PipGlobalRegionalEdgeBrush ?? pipGlobalRegional;
         var pipUnknownEdge = PipUnknownEdgeBrush ?? pipUnknown;
+        var pipConfirmedSegmentEdge =
+            PipConfirmedSegmentEdgeBrush ?? pipConfirmed;
+        var pipConfirmedPotentialSegmentEdge =
+            PipConfirmedPotentialSegmentEdgeBrush ?? pipPotential;
+        var pipConfirmedDimSegmentEdge =
+            PipConfirmedDimSegmentEdgeBrush ?? pipConfirmedDim;
+        var pipConfirmedDimPotentialSegmentEdge =
+            PipConfirmedDimPotentialSegmentEdgeBrush ?? pipPotential;
+        var pipPredictionSegmentEdge =
+            PipPredictionSegmentEdgeBrush ?? pipPrediction;
+        var pipPredictionPotentialSegmentEdge =
+            PipPredictionPotentialSegmentEdgeBrush ?? pipPredictionPotential;
+        var pipHighlightSegmentEdge =
+            PipHighlightSegmentEdgeBrush ?? pipHighlight;
+        var pipHighlightPotentialSegmentEdge =
+            PipHighlightPotentialSegmentEdgeBrush ?? pipHighlight;
+        var pipGlobalRegionalSegmentEdge =
+            PipGlobalRegionalSegmentEdgeBrush ?? pipGlobalRegional;
+        var pipGlobalRegionalPotentialSegmentEdge =
+            PipGlobalRegionalPotentialSegmentEdgeBrush
+                ?? pipGlobalRegionalPotential;
         var bounds = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
         context.DrawRectangle(background, new Pen(muted, 1), bounds, 8, 8);
         var center = bounds.Center;
@@ -365,6 +510,8 @@ public sealed class GuideIconPreviewControl : Control
                     pipConfirmedEdge,
                     pipConfirmed,
                     pipPotential,
+                    pipConfirmedSegmentEdge,
+                    pipConfirmedPotentialSegmentEdge,
                     pipEmpty,
                     pipHatch,
                     isPrediction: false);
@@ -376,6 +523,8 @@ public sealed class GuideIconPreviewControl : Control
                     pipPredictionEdge,
                     pipPrediction,
                     pipPredictionPotential,
+                    pipPredictionSegmentEdge,
+                    pipPredictionPotentialSegmentEdge,
                     pipEmpty,
                     pipHatch,
                     isPrediction: true);
@@ -386,7 +535,9 @@ public sealed class GuideIconPreviewControl : Control
                     center,
                     pipHighlightEdge,
                     pipHighlight,
-                    pipHighlight,
+                    pipHighlightPotential,
+                    pipHighlightSegmentEdge,
+                    pipHighlightPotentialSegmentEdge,
                     pipEmpty,
                     pipHatch,
                     isPrediction: false);
@@ -398,6 +549,8 @@ public sealed class GuideIconPreviewControl : Control
                     pipGlobalRegionalEdge,
                     pipGlobalRegional,
                     pipGlobalRegionalPotential,
+                    pipGlobalRegionalSegmentEdge,
+                    pipGlobalRegionalPotentialSegmentEdge,
                     pipEmpty,
                     pipHatch,
                     isPrediction: true,
@@ -409,7 +562,9 @@ public sealed class GuideIconPreviewControl : Control
                     center,
                     pipConfirmedDimEdge,
                     pipConfirmedDim,
-                    pipPotential,
+                    pipConfirmedDimPotential,
+                    pipConfirmedDimSegmentEdge,
+                    pipConfirmedDimPotentialSegmentEdge,
                     pipEmpty,
                     pipHatch,
                     isPrediction: false);
@@ -658,19 +813,20 @@ public sealed class GuideIconPreviewControl : Control
         IBrush edge,
         IBrush filled,
         IBrush potential,
+        IBrush filledEdge,
+        IBrush potentialEdge,
         IBrush empty,
         IBrush hatch,
         bool isPrediction,
         bool reinforceEdge = false)
     {
         var frame = new Rect(center.X - 12, center.Y - 25, 24, 50);
-        var edgePen = new Pen(edge, 1.5);
-        context.DrawRectangle(null, edgePen, frame, 3, 3);
-        if (reinforceEdge)
-        {
-            context.DrawRectangle(null, edgePen, frame, 3, 3);
-            context.DrawRectangle(null, edgePen, frame, 3, 3);
-        }
+        var edgePen = new Pen(
+            edge,
+            1.9,
+            DashStyle.Dot,
+            PenLineCap.Round,
+            PenLineJoin.Round);
         for (var index = 0; index < 4; index++)
         {
             var segment = new Rect(
@@ -684,28 +840,40 @@ public sealed class GuideIconPreviewControl : Control
                 filled,
                 potential,
                 empty);
-            context.DrawRectangle(segmentBrush, null, segment, 1, 1);
+            var segmentPen = ReferenceEquals(segmentBrush, empty)
+                ? null
+                : new Pen(
+                    isPrediction && index == 2
+                        ? potentialEdge
+                        : filledEdge,
+                    1);
+            context.DrawRectangle(segmentBrush, segmentPen, segment, 1, 1);
         }
 
-        if (!isPrediction)
+        if (isPrediction)
         {
-            return;
-        }
-
-        var hatchPen = new Pen(hatch, 1);
-        for (var x = frame.Left - frame.Height; x < frame.Right; x += 6)
-        {
-            var startX = Math.Max(x, frame.Left);
-            var endX = Math.Min(x + frame.Height, frame.Right);
-            if (startX >= endX)
+            var hatchPen = new Pen(hatch, 1);
+            for (var x = frame.Left - frame.Height; x < frame.Right; x += 6)
             {
-                continue;
-            }
+                var startX = Math.Max(x, frame.Left);
+                var endX = Math.Min(x + frame.Height, frame.Right);
+                if (startX >= endX)
+                {
+                    continue;
+                }
 
-            context.DrawLine(
-                hatchPen,
-                new Point(startX, frame.Bottom - (startX - x)),
-                new Point(endX, frame.Bottom - (endX - x)));
+                context.DrawLine(
+                    hatchPen,
+                    new Point(startX, frame.Bottom - (startX - x)),
+                    new Point(endX, frame.Bottom - (endX - x)));
+            }
+        }
+
+        context.DrawRectangle(null, edgePen, frame, 3, 3);
+        if (reinforceEdge)
+        {
+            context.DrawRectangle(null, edgePen, frame, 3, 3);
+            context.DrawRectangle(null, edgePen, frame, 3, 3);
         }
     }
 

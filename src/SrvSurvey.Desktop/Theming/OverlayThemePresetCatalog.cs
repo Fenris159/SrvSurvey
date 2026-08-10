@@ -23,9 +23,12 @@ public static class OverlayThemePresetCatalog
         "bio.confirmed",
         "bio.confirmedDim",
         "bio.potential",
+        "bio.confirmedDimPotential",
         "bio.predictionPotential",
         "bio.goldFill",
         "bio.goldDarkFill",
+        "bio.goldPotential",
+        "bio.goldDarkPotential",
         "bio.galacticRegion",
         "bio.galacticRegionPotential",
         "bio.unknownGlyph",
@@ -37,6 +40,18 @@ public static class OverlayThemePresetCatalog
         "bio.goldDarkEdge",
         "bio.galacticRegionEdge",
         "bio.unknownEdge",
+        "bio.confirmedSegmentEdge",
+        "bio.confirmedPotentialSegmentEdge",
+        "bio.confirmedDimSegmentEdge",
+        "bio.confirmedDimPotentialSegmentEdge",
+        "bio.predictionSegmentEdge",
+        "bio.predictionPotentialSegmentEdge",
+        "bio.goldSegmentEdge",
+        "bio.goldPotentialSegmentEdge",
+        "bio.goldDarkSegmentEdge",
+        "bio.goldDarkPotentialSegmentEdge",
+        "bio.galacticRegionSegmentEdge",
+        "bio.galacticRegionPotentialSegmentEdge",
     ];
 
     public static IReadOnlyList<OverlayThemePreset> Presets { get; } =
@@ -241,12 +256,17 @@ public static class OverlayThemePresetCatalog
         colors["bio.confirmed"] = palette.Primary;
         colors["bio.confirmedDim"] = palette.PrimaryDark;
         colors["bio.potential"] = WithAlpha(palette.PrimaryDark, 140);
+        colors["bio.confirmedDimPotential"] = WithAlpha(
+            Scale(palette.PrimaryDark, 0.33),
+            140);
         colors["bio.prediction"] = prediction;
         colors["bio.predictionPotential"] = WithAlpha(predictionDark, 180);
         colors["bio.gold"] = palette.Value;
         colors["bio.goldDark"] = Scale(palette.Value, 0.42);
         colors["bio.goldFill"] = goldFill;
         colors["bio.goldDarkFill"] = goldDarkFill;
+        colors["bio.goldPotential"] = WithAlpha(goldFill, 144);
+        colors["bio.goldDarkPotential"] = WithAlpha(goldFill, 140);
         colors["bio.galacticRegion"] = palette.Text;
         colors["bio.galacticRegionPotential"] = WithAlpha(
             Scale(palette.Text, 0.74),
@@ -263,6 +283,28 @@ public static class OverlayThemePresetCatalog
         colors["bio.goldDarkEdge"] = WithAlpha(goldFill, 96);
         colors["bio.galacticRegionEdge"] = WithAlpha(palette.Text, 96);
         colors["bio.unknownEdge"] = WithAlpha(predictionDark, 96);
+        colors["bio.confirmedSegmentEdge"] = palette.PrimaryDark;
+        colors["bio.confirmedPotentialSegmentEdge"] = WithAlpha(
+            palette.Primary,
+            124);
+        colors["bio.confirmedDimSegmentEdge"] = Scale(palette.PrimaryDark, 0.33);
+        colors["bio.confirmedDimPotentialSegmentEdge"] = WithAlpha(
+            Scale(palette.Primary, 0.33),
+            124);
+        colors["bio.predictionSegmentEdge"] = predictionDark;
+        colors["bio.predictionPotentialSegmentEdge"] = predictionDark;
+        colors["bio.goldSegmentEdge"] = palette.Value;
+        colors["bio.goldPotentialSegmentEdge"] = WithAlpha(
+            Blend(goldFill, palette.Value, 0.4),
+            144);
+        colors["bio.goldDarkSegmentEdge"] = goldFill;
+        colors["bio.goldDarkPotentialSegmentEdge"] = WithAlpha(
+            goldDarkFill,
+            124);
+        colors["bio.galacticRegionSegmentEdge"] = Scale(palette.Text, 0.5);
+        colors["bio.galacticRegionPotentialSegmentEdge"] = WithAlpha(
+            palette.Text,
+            144);
     }
 
     private static Color DeriveMissingBiologyColor(
@@ -278,6 +320,17 @@ public static class OverlayThemePresetCatalog
         {
             "bio.goldFill" => Scale(Get("bio.gold", fallback), 0.68),
             "bio.goldDarkFill" => Scale(Get("bio.goldDark", fallback), 0.34),
+            "bio.confirmedDimPotential" => WithAlpha(
+                Scale(
+                    Get("bio.confirmedDim", Get("orangeDark", fallback)),
+                    0.33),
+                140),
+            "bio.goldPotential" => WithAlpha(
+                Get("bio.goldFill", fallback),
+                144),
+            "bio.goldDarkPotential" => WithAlpha(
+                Get("bio.goldFill", fallback),
+                140),
             "bio.confirmedEdge" => WithAlpha(
                 Get("bio.confirmed", Get("orange", fallback)),
                 96),
@@ -294,6 +347,37 @@ public static class OverlayThemePresetCatalog
             "bio.galacticRegionEdge" => WithAlpha(
                 Get("bio.white", Get("white", fallback)),
                 96),
+            "bio.confirmedSegmentEdge" =>
+                Get("orangeDark", Get("bio.confirmedDim", fallback)),
+            "bio.confirmedPotentialSegmentEdge" => WithAlpha(
+                Get("bio.confirmed", Get("orange", fallback)),
+                124),
+            "bio.confirmedDimSegmentEdge" => Scale(
+                Get("bio.confirmedDim", Get("orangeDark", fallback)),
+                0.33),
+            "bio.confirmedDimPotentialSegmentEdge" => WithAlpha(
+                Scale(Get("bio.confirmed", Get("orange", fallback)), 0.33),
+                124),
+            "bio.predictionSegmentEdge" or
+                "bio.predictionPotentialSegmentEdge" =>
+                Get("cyanDark", fallback),
+            "bio.goldSegmentEdge" => Get("bio.gold", fallback),
+            "bio.goldPotentialSegmentEdge" => WithAlpha(
+                Blend(
+                    Get("bio.goldFill", fallback),
+                    Get("bio.gold", fallback),
+                    0.4),
+                144),
+            "bio.goldDarkSegmentEdge" => Get("bio.goldFill", fallback),
+            "bio.goldDarkPotentialSegmentEdge" => WithAlpha(
+                Get("bio.goldDarkFill", fallback),
+                124),
+            "bio.galacticRegionSegmentEdge" => Scale(
+                Get("bio.white", Get("white", fallback)),
+                0.5),
+            "bio.galacticRegionPotentialSegmentEdge" => WithAlpha(
+                Get("bio.white", Get("white", fallback)),
+                144),
             _ => fallback,
         };
     }
