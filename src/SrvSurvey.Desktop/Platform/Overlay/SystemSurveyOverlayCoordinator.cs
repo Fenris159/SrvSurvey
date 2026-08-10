@@ -740,15 +740,16 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
         if (surfaceWindow is not null)
         {
-            PositionBottomCenter(surfaceWindow, gameWindow.ClientBounds);
+            PositionSurfaceWindow(surfaceWindow, gameWindow.ClientBounds);
             return;
         }
 
         var overlay = new SurfaceSurveyOverlayWindow(surfaceViewModel);
         OverlayThemeResources.Apply(overlay, overlayLayout, "PlotGrounded");
+        ApplySurfaceWindowSize(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
-            PositionBottomCenter,
+            PositionSurfaceWindow,
             CloseSurfaceWindow);
         overlay.Closed += (_, _) =>
         {
@@ -1072,13 +1073,34 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             OverlayWindowPlacement.BottomRight);
     }
 
-    private void PositionBottomCenter(Window window, PixelRect gameBounds)
+    private void PositionSurfaceWindow(Window window, PixelRect gameBounds)
     {
+        ApplySurfaceWindowSize(window);
         PositionWindow(
             window,
             gameBounds,
             "PlotGrounded",
             OverlayWindowPlacement.BottomCenter);
+    }
+
+    private void ApplySurfaceWindowSize(Window window)
+    {
+        ApplySurfaceWindowSize(window, overlayLayout, surfaceViewModel);
+    }
+
+    internal static void ApplySurfaceWindowSize(
+        Window window,
+        LegacyOverlayLayout layout,
+        SurfaceSurveyOverlayViewModel viewModel)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        ArgumentNullException.ThrowIfNull(layout);
+        ArgumentNullException.ThrowIfNull(viewModel);
+        OverlayThemeResources.SetBaseSize(
+            window,
+            layout,
+            viewModel.WindowWidth,
+            viewModel.WindowHeight);
     }
 
     private void PositionBiologyWindow(Window window, PixelRect gameBounds)

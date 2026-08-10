@@ -5,6 +5,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -229,6 +230,7 @@ public sealed class OverlayEditorFolderTabTests
             Assert.Equal(state.CompletionPercent, progress.Value);
             Assert.True(header.ClipToBounds);
             Assert.Equal(0, progress.MinWidth);
+            Assert.True(header.Bounds.Width > 200);
             Assert.True(progress.Bounds.Left >= 0);
             Assert.True(progress.Bounds.Right <= header.Bounds.Width + 0.01);
 
@@ -242,6 +244,72 @@ public sealed class OverlayEditorFolderTabTests
                 presentation.DataContext).Survey.BiologyStatus!;
             Assert.Equal(0, state.CompletionPercent);
             Assert.Equal(0, progress.Value);
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void BiologyStatusDoesNotInstantiateInnerBindingsWhenStatusIsAbsent()
+    {
+        var survey = new SystemSurveyViewModel(new SystemSurveySettingsStore(
+            Path.Combine(
+                Path.GetTempPath(),
+                "SrvSurvey-BiologyStatus-Null-Binding-Tests",
+                Guid.NewGuid().ToString("N"),
+                "ui-settings.json")));
+        var presentation = new BiologyStatusOverlayPresentation
+        {
+            DataContext = new SystemSurveyOverlayViewModel(
+                survey,
+                OverlayPlatformCapabilities.DetectCurrent()),
+        };
+        var window = new Window { Content = presentation };
+        try
+        {
+            window.Show();
+
+            Assert.False(survey.HasBiologyStatus);
+            Assert.Empty(
+                presentation.GetVisualDescendants().OfType<ProgressBar>());
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void CompactRuntimePreviewStartsAtTheEditorPanelOrigin()
+    {
+        var preview = new OverlayPositionPreviewWindow(
+            OverlayLayoutCatalog.GetRequired("PlotPulse"));
+        try
+        {
+            OverlayThemeResources.Apply(preview);
+            preview.ApplyRuntimePresentationTheme();
+            preview.Show();
+
+            var presentation = Assert.IsType<PulseOverlayPresentation>(
+                preview.RuntimePresentation);
+            var metrics = preview.GetPanelMetrics(preview.RenderScaling);
+            var translatedOrigin = presentation.TranslatePoint(default, preview);
+
+            Assert.Equal(
+                Avalonia.Layout.HorizontalAlignment.Left,
+                presentation.HorizontalAlignment);
+            Assert.Equal(
+                Avalonia.Layout.VerticalAlignment.Top,
+                presentation.VerticalAlignment);
+            Assert.NotNull(translatedOrigin);
+            Assert.Equal(
+                (int)Math.Round(
+                    translatedOrigin.Value.X * preview.RenderScaling),
+                metrics.OriginOffset.X);
+            Assert.InRange(metrics.PanelSize.Width, 30, 34);
+            Assert.True(preview.Bounds.Width > metrics.PanelSize.Width);
         }
         finally
         {

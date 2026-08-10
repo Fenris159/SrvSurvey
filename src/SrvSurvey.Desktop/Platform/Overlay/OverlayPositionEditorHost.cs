@@ -650,9 +650,43 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
                     preview.Definition.Name,
                     hostBounds,
                     referenceSize);
+        NormalizeStatefulPanelAnchor(
+            preview.Definition,
+            session,
+            panelPosition,
+            referenceSize,
+            hostBounds);
         preview.Position = new PixelPoint(
             panelPosition.X - metrics.OriginOffset.X,
             panelPosition.Y - metrics.OriginOffset.Y);
+    }
+
+    private static void NormalizeStatefulPanelAnchor(
+        OverlayLayoutDefinition definition,
+        OverlayPositionEditSession session,
+        PixelPoint panelPosition,
+        PixelSize referenceSize,
+        PixelRect bounds)
+    {
+        if (definition.DefaultPlacement.Vertical
+                == definition.MoveVerticalAnchor
+            || session.GetPlacement(definition.Name).Vertical
+                == definition.MoveVerticalAnchor)
+        {
+            return;
+        }
+
+        var placement = session.GetPlacement(definition.Name) with
+        {
+            Vertical = definition.MoveVerticalAnchor,
+        };
+        session.SetPlacement(
+            definition.Name,
+            OverlayInteractionViewModel.CreatePlacement(
+                placement,
+                panelPosition,
+                referenceSize,
+                bounds));
     }
 
     private PixelSize GetReferenceSize(

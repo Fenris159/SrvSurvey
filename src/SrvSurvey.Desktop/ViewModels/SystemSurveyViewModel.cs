@@ -907,6 +907,18 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public bool HasBiologyStatus => BiologyStatus is not null;
 
+    internal bool ShouldSuppressSurfaceNavigationForLandingGear =>
+        AutoHideSurfaceRadarWithoutLandingGear
+        && status is
+        {
+            InMainShip: true,
+            LandingGearDown: false,
+            Landed: false,
+            Docked: false,
+            GlideMode: false,
+        }
+        && !status.Flags.HasFlag(StatusFlags.Supercruise);
+
     public long? LatestBiologyEntryId => latestBiologyEntryId;
 
     public bool IsBodyInfoForced => forceShowBodyInfo;
@@ -1414,6 +1426,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 || status.Docked
                 || status.InTaxi
                 || status.FsdChargingJump
+                || ShouldSuppressSurfaceNavigationForLandingGear
                 || fsdJumping)
             {
                 return false;

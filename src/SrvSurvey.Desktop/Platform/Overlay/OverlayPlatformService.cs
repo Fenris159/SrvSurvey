@@ -14,6 +14,13 @@ public interface IOverlayPlatformService : IDisposable
 
     OverlayInteractionResult SetInteractive(Window window, bool interactive);
 
+    IDisposable? BeginVisibleCursorSession(Window window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        window.Activate();
+        return null;
+    }
+
     OverlayInteractionResult PrepareInteractiveWindow(Window window)
     {
         return SetInteractive(window, interactive: true);
@@ -178,6 +185,22 @@ internal sealed partial class WindowsOverlayPlatformService
                 : Capabilities.StatusText);
     }
 
+    public IDisposable BeginVisibleCursorSession(Window window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        window.Activate();
+
+        var adjustments = 1;
+        var displayCount = ShowCursor(show: true);
+        while (displayCount < 0 && adjustments < 64)
+        {
+            displayCount = ShowCursor(show: true);
+            adjustments++;
+        }
+
+        return new WindowsCursorVisibilityLease(adjustments);
+    }
+
     public void Dispose()
     {
     }
@@ -314,6 +337,10 @@ internal sealed partial class WindowsOverlayPlatformService
     private static partial bool ShowWindow(nint window, int command);
 
     [LibraryImport("user32.dll")]
+    private static partial int ShowCursor(
+        [MarshalAs(UnmanagedType.Bool)] bool show);
+
+    [LibraryImport("user32.dll")]
     private static partial int SetWindowRgn(
         nint window,
         nint region,
@@ -336,6 +363,23 @@ internal sealed partial class WindowsOverlayPlatformService
     [LibraryImport("gdi32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool DeleteObject(nint objectHandle);
+
+    private sealed class WindowsCursorVisibilityLease(int adjustments)
+        : IDisposable
+    {
+        private int remainingAdjustments = adjustments;
+
+        public void Dispose()
+        {
+            var remaining = Interlocked.Exchange(
+                ref remainingAdjustments,
+                0);
+            for (var index = 0; index < remaining; index++)
+            {
+                _ = ShowCursor(show: false);
+            }
+        }
+    }
 }
 
 public sealed record OverlayInteractionResult(

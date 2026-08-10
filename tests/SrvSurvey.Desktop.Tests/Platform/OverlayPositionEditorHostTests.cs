@@ -155,6 +155,72 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void EditorReanchorsExistingBiologyPositionWithoutMovingItsTopEdge()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            "{\"PlotBioSystem\":\"left:300, bottom:100\"}");
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var runtimeWindow = new Window
+        {
+            Width = 500,
+            Height = 600,
+            Position = new PixelPoint(420, 310),
+        };
+        registry.Register(runtimeWindow, "PlotBioSystem");
+        runtimeWindow.Show();
+        var runtimeSize = OverlayWindowMetrics.GetPixelSize(
+            registry.Snapshot().Single());
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                new PixelRect(100, 200, 1200, 800),
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            activeLayout,
+            registry,
+            host);
+        viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
+            candidate.Category == OverlayLayoutCategory.BiologyAndSurface);
+
+        Assert.True(viewModel.Begin());
+
+        var preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotBioSystem");
+        Assert.Equal(
+            runtimeWindow.Position,
+            preview.GetPanelScreenOrigin(preview.RenderScaling));
+
+        viewModel.Save();
+
+        var persisted = store.Load();
+        var placement = persisted.Placements[preview.Definition.Name];
+        Assert.Equal(LegacyVerticalAnchor.Top, placement.Vertical);
+        Assert.Equal(
+            runtimeWindow.Position,
+            persisted.GetPosition(
+                preview.Definition.Name,
+                new PixelRect(100, 200, 1200, 800),
+                runtimeSize));
+        Assert.Equal(
+            runtimeWindow.Position.Y,
+            persisted.GetPosition(
+                preview.Definition.Name,
+                new PixelRect(100, 200, 1200, 800),
+                new PixelSize(runtimeSize.Width, runtimeSize.Height + 120))!
+                .Value.Y);
+        runtimeWindow.Close();
+    }
+
+    [AvaloniaFact]
     public void MovingPreviewAcrossDpiBoundarySavesCurrentPanelOrigin()
     {
         Directory.CreateDirectory(temporaryDirectory);
@@ -205,6 +271,86 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
                 preview.Definition.Name,
                 hostBounds,
                 currentMetrics.PanelSize));
+        Assert.Equal(
+            LegacyVerticalAnchor.Bottom,
+            preview.Definition.DefaultPlacement.Vertical);
+        Assert.Equal(
+            LegacyVerticalAnchor.Top,
+            persisted.Placements[preview.Definition.Name].Vertical);
+        Assert.Equal(
+            movedPanelOrigin.Y,
+            persisted.GetPosition(
+                preview.Definition.Name,
+                hostBounds,
+                new PixelSize(
+                    currentMetrics.PanelSize.Width,
+                    currentMetrics.PanelSize.Height + 120))!.Value.Y);
+    }
+
+    [AvaloniaFact]
+    public void SavedCompactPanelReopensAtItsNewPosition()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            "{\"PlotPulse\":\"left:8, bottom:8\"}");
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var hostBounds = new PixelRect(100, 200, 1200, 800);
+        var runtimeWindow = new Window
+        {
+            Width = 32,
+            Height = 32,
+            Position = new PixelPoint(108, 960),
+        };
+        registry.Register(runtimeWindow, "PlotPulse");
+        runtimeWindow.Show();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                hostBounds,
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            activeLayout,
+            registry,
+            host);
+        viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
+            candidate.Category == OverlayLayoutCategory.StatusAndUtilities);
+
+        Assert.True(viewModel.Begin());
+        var preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotPulse");
+        var metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        var movedPanelOrigin = new PixelPoint(510, 430);
+        preview.Position = new PixelPoint(
+            movedPanelOrigin.X - metrics.OriginOffset.X,
+            movedPanelOrigin.Y - metrics.OriginOffset.Y);
+
+        viewModel.Save();
+
+        Assert.Equal(movedPanelOrigin, runtimeWindow.Position);
+        Assert.Equal(
+            movedPanelOrigin,
+            store.Load().GetPosition(
+                "PlotPulse",
+                hostBounds,
+                new PixelSize(32, 32)));
+
+        Assert.True(viewModel.Begin());
+        preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotPulse");
+        Assert.Equal(
+            movedPanelOrigin,
+            preview.GetPanelScreenOrigin(preview.RenderScaling));
+
+        viewModel.Cancel();
+        runtimeWindow.Close();
     }
 
     public void Dispose()

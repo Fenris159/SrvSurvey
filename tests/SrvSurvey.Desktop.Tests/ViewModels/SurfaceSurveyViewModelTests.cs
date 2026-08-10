@@ -207,7 +207,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         ApplySurveyContext(
             survey,
             Status(
-                StatusFlags.InMainShip,
+                StatusFlags.InMainShip | StatusFlags.LandingGearDown,
                 focus: GuiFocus.RolePanel));
         await viewModel.ApplyUpdateAsync(
             Session(),
@@ -215,6 +215,26 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             survey.CurrentStatus,
             ExobiologySnapshot.Empty);
         Assert.True(viewModel.ShouldShow);
+
+        ApplySurveyContext(survey, Status(StatusFlags.Supercruise));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+        Assert.True(viewModel.ShouldShow);
+
+        ApplySurveyContext(
+            survey,
+            Status(
+                StatusFlags.InMainShip,
+                focus: GuiFocus.RolePanel));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+        Assert.False(viewModel.ShouldShow);
 
         ApplySurveyContext(
             survey,

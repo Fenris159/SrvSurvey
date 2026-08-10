@@ -178,6 +178,37 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         viewModel.ApplyUpdate([], new EliteStatus
         {
+            Flags = StatusFlags.HasLatLong | StatusFlags.InMainShip,
+            GuiFocus = GuiFocus.CommsPanel,
+            BodyName = "Test 1",
+            PlanetRadius = 1_000_000,
+        });
+        Assert.True(viewModel.ShouldLoadPriorScans);
+
+        viewModel.AutoHideSurfaceRadarWithoutLandingGear = true;
+        Assert.False(viewModel.ShouldLoadPriorScans);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong
+                | StatusFlags.InMainShip
+                | StatusFlags.LandingGearDown,
+            GuiFocus = GuiFocus.CommsPanel,
+            BodyName = "Test 1",
+            PlanetRadius = 1_000_000,
+        });
+        Assert.True(viewModel.ShouldLoadPriorScans);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong | StatusFlags.Supercruise,
+            BodyName = "Test 1",
+            PlanetRadius = 1_000_000,
+        });
+        Assert.True(viewModel.ShouldLoadPriorScans);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
             Flags = StatusFlags.HasLatLong | StatusFlags.Docked,
             BodyName = "Test 1",
             PlanetRadius = 1_000_000,

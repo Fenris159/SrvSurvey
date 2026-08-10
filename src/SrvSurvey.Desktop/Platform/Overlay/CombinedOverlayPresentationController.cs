@@ -171,6 +171,12 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             result.Status);
     }
 
+    public IDisposable? BeginVisibleCursorSession(Window window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        return nativePlatform.BeginVisibleCursorSession(host ?? window);
+    }
+
     public void BeginMoveDrag(
         Window window,
         PointerPressedEventArgs eventArgs)

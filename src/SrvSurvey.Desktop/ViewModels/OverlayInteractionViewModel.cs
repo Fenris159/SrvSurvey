@@ -29,6 +29,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private readonly DelegateCommand cancelCommand;
     private OverlayPositionEditSession? editSession;
     private OverlayPositionEditSession? liveEditSession;
+    private IDisposable? cursorVisibilitySession;
     private OverlayLayoutCategoryDefinition selectedCategory;
     private bool isEditing;
     private bool isLiveInteractionEnabled;
@@ -526,16 +527,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             }
 
             activeLayout.ReplaceWith(updated);
-            if (registry is not null)
-            {
-                foreach (var registered in registry.Snapshot())
-                {
-                    OverlayThemeResources.ApplyScale(
-                        registered.Window,
-                        activeLayout,
-                        registered.PlotterName);
-                }
-            }
+            ApplySavedLayoutToRuntimeWindows();
 
             EndSession(closeHost: true, restoreRuntimeWindows: true);
             StatusMessage = $"Saved {result.UpdatedPlacementCount:N0} overlay position/opacity override(s), including scale settings"
@@ -623,6 +615,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return false;
         }
 
+        cursorVisibilitySession = platform.BeginVisibleCursorSession(
+            liveWindows.Keys.First());
         IsLiveInteractionEnabled = true;
         if (IsEditing)
         {
@@ -638,7 +632,16 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         var session = liveEditSession;
         var changes = session?.Changes
             ?? new Dictionary<string, LegacyOverlayPlacement>();
-        var failures = DetachAndRestoreClickThrough();
+        List<string> failures;
+        try
+        {
+            failures = DetachAndRestoreClickThrough();
+        }
+        finally
+        {
+            cursorVisibilitySession?.Dispose();
+            cursorVisibilitySession = null;
+        }
         liveEditSession = null;
         IsLiveInteractionEnabled = false;
         if (IsEditing)
@@ -771,6 +774,41 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
         activeLayout.ReplaceWith(updated);
         return result;
+    }
+
+    private void ApplySavedLayoutToRuntimeWindows()
+    {
+        if (registry is null || activeLayout is null)
+        {
+            return;
+        }
+
+        var game = gameWindowTracker?.GetSnapshot();
+        foreach (var registered in registry.Snapshot())
+        {
+            OverlayThemeResources.ApplyScale(
+                registered.Window,
+                activeLayout,
+                registered.PlotterName);
+            if (game is not
+                {
+                    IsAvailable: true,
+                    ClientBounds: { Width: > 0, Height: > 0 },
+                })
+            {
+                continue;
+            }
+
+            var position = activeLayout.GetPosition(
+                registered.PlotterName,
+                game.ClientBounds,
+                OverlayWindowMetrics.GetPixelSize(registered));
+            if (position is { } savedPosition
+                && registered.Window.Position != savedPosition)
+            {
+                registered.Window.Position = savedPosition;
+            }
+        }
     }
 
     private static string GetNoChangeInteractionStatus(List<string> failures)
