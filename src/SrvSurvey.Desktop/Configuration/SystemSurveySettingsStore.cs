@@ -22,6 +22,12 @@ public sealed class SystemSurveySettingsStore
                 settings,
                 "ShowBodyInfoInSystemMap",
                 defaults.ShowBodyInfoInSystemMap),
+            GetInt32(
+                settings,
+                "BodyPredictionPreviewExtensionSeconds",
+                defaults.BodyPredictionPreviewExtensionSeconds,
+                0,
+                600),
             GetBoolean(
                 settings,
                 "ShowBodyInfoInOrbit",
@@ -241,6 +247,8 @@ public sealed class SystemSurveySettingsStore
             settings["AutoShowBodyInfo"] = preferences.AutoShowBodyInfo;
             settings["ShowBodyInfoInSystemMap"] =
                 preferences.ShowBodyInfoInSystemMap;
+            settings["BodyPredictionPreviewExtensionSeconds"] =
+                preferences.BodyPredictionPreviewExtensionSeconds;
             settings["ShowBodyInfoInOrbit"] = preferences.ShowBodyInfoInOrbit;
             settings["ShowBodyInfoAtSurface"] =
                 preferences.ShowBodyInfoAtSurface;
@@ -447,6 +455,7 @@ public sealed class SystemSurveySettingsStore
 public sealed record SystemSurveyPreferences(
     bool AutoShowBodyInfo,
     bool ShowBodyInfoInSystemMap,
+    int BodyPredictionPreviewExtensionSeconds,
     bool ShowBodyInfoInOrbit,
     bool ShowBodyInfoAtSurface,
     bool HideBodyInfoInBubble,
@@ -501,6 +510,7 @@ public sealed record SystemSurveyPreferences(
     public static SystemSurveyPreferences Default { get; } = new(
         AutoShowBodyInfo: true,
         ShowBodyInfoInSystemMap: true,
+        BodyPredictionPreviewExtensionSeconds: 0,
         ShowBodyInfoInOrbit: true,
         ShowBodyInfoAtSurface: false,
         HideBodyInfoInBubble: true,

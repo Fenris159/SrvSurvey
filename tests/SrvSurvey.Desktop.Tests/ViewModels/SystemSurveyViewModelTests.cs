@@ -714,7 +714,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
-    public void BiologySurveyTemporarilyShowsNewMapSelectionPerSignal()
+    public void BiologySurveyTemporarilyShowsNewMapSelectionPerSignalAndExtension()
     {
         var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
         var viewModel = new SystemSurveyViewModel(
@@ -772,6 +772,21 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Equal(50, viewModel.TimedBiologySelectionProgressPercent);
 
         now = now.AddSeconds(3);
+        Assert.True(viewModel.RefreshTransientState());
+        Assert.False(viewModel.HasTimedBiologySelection);
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+
+        viewModel.BodyPredictionPreviewExtensionSeconds = 5;
+        viewModel.ApplyUpdate([], firstStatus);
+
+        Assert.True(viewModel.HasTimedBiologySelection);
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+
+        now = now.AddSeconds(8);
+        Assert.False(viewModel.RefreshTransientState());
+        Assert.True(viewModel.HasTimedBiologySelection);
+
+        now = now.AddSeconds(1);
         Assert.True(viewModel.RefreshTransientState());
         Assert.False(viewModel.HasTimedBiologySelection);
         Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
@@ -1408,6 +1423,46 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Equal("Test 2 biology", viewModel.BiologySurvey.Heading);
         Assert.True(viewModel.ShouldShowBioSystem);
         Assert.True(notifiedVisible);
+    }
+
+    [Fact]
+    public void BiologySurveyUsesTargetBodyDuringDssWhenNearBodyPreferenceIsEnabled()
+    {
+        var viewModel = CreateViewModel();
+        var destination = new StatusDestination
+        {
+            System = 42,
+            Body = 2,
+            Name = "Test 2",
+        };
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+                Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"PlanetClass":"Rocky body","MassEM":0.1,"Landable":true}"""),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+                GuiFocus = GuiFocus.Saa,
+                Destination = destination,
+            });
+
+        Assert.True(viewModel.DrawBodyBiosOnlyWhenNear);
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.Equal("Test 2 biology", viewModel.BiologySurvey.Heading);
+        Assert.True(viewModel.ShouldShowBioSystem);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            Destination = destination,
+        });
+
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.True(viewModel.ShouldShowBioSystem);
     }
 
     [Fact]

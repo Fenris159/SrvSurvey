@@ -14,6 +14,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
         var preferences = CreateStore().Load();
 
         Assert.Equal(NetworkPrivacyPreferences.Default, preferences);
+        Assert.True(preferences.EddnUseTestSchemas);
         Assert.False(preferences.UploadHumanSettlementGeometry);
     }
 

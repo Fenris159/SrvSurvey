@@ -795,6 +795,12 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         var bearing = SurfaceNavigation.GetBearing(
             options.Current,
             options.Location);
+        var isCompletedHistoricalScan =
+            options.Kind == SurfaceRadarMarkerKind.HistoricalScan
+            && string.Equals(
+                options.StatusText,
+                "Complete",
+                StringComparison.OrdinalIgnoreCase);
         return new SurfaceRadarMarkerViewModel
         {
             Name = options.Name,
@@ -805,7 +811,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             RelativeBearingDegrees = SurfaceNavigation.NormalizeDegrees(
                 bearing - options.Status.NormalizedHeading),
             RadiusMeters = Math.Max(0, options.RadiusMeters),
-            IsInsideRadius = distance < options.RadiusMeters,
+            IsInsideRadius = !isCompletedHistoricalScan
+                && distance < options.RadiusMeters,
             Location = options.Location,
             IsActive = options.IsActive,
         };

@@ -101,7 +101,7 @@ public sealed record NetworkPrivacyPreferences(
 {
     public static NetworkPrivacyPreferences Default { get; } = new(
         EddnUploadEnabled: false,
-        EddnUseTestSchemas: false,
+        EddnUseTestSchemas: true,
         UploadGreenGasGiantCandidates: false,
         UploadHumanSettlementGeometry: false);
 }

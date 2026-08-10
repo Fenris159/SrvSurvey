@@ -1,30 +1,28 @@
-# SrvSurvey-XP 2.1.3.0-rc.11
+# SrvSurvey-XP 2.1.3.0-rc.13
 
-This release candidate stabilizes overlay editing, geometry, and visibility
-transitions. The changes below are the delta from `2.1.3.0-rc.10`.
+This release candidate improves dynamic overlay placement, biological survey
+guidance, and EDDN identification. The changes below are the delta from
+`2.1.3.0-rc.12`.
 
-## What's fixed since 2.1.3.0-rc.10
+## What's fixed since 2.1.3.0-rc.12
 
-- Keeps compact live content aligned to its editor coordinates even when its
-  yellow identification tab is wider, and preserves the top edge of the three
-  variable-height System Biology states.
-- Applies saved editor positions to live windows immediately, preventing stale
-  coordinates or missing panels when the position editor is reopened.
-- Keeps Surface Survey geometry stable across hide/show transitions and keeps
-  the pointer visible throughout live overlay interaction mode.
-- Avoids Biology Sample Status binding errors while its intentionally nullable
-  body status changes.
-- Makes the landing-gear visibility preference suppress both Surface Survey and
-  Prior Scans during main-ship surface flight, including while comms or role
-  panels are open, and restores them when the gear is deployed.
+- Keeps dynamic-height overlay panels aligned by their top edge after moves in
+  either the live interaction mode or position editor.
+- Adds a configurable extension for System Map Body Predictions previews and
+  shows the targeted biological body during DSS even when near-body-only
+  presentation is enabled.
+- Treats completed historical biology scan circles as reference markers so
+  entering them does not interfere with sampling a different organism.
+- Identifies EDDN uploads as SrvSurvey-XP and enables EDDN test schemas by
+  default for new profiles while keeping journal sharing opt-in.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.11`
-- Tag: `xp-v2.1.3.0-rc.11`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.11-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.11-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.11-x86_64.AppImage`
+- Version: `2.1.3.0-rc.13`
+- Tag: `xp-v2.1.3.0-rc.13`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.13-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.13-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.13-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.

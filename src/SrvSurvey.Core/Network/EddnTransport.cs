@@ -264,7 +264,7 @@ namespace SrvSurvey.Core.Network
     internal sealed class UploadPayloadHeader
     {
         public string uploaderID = string.Empty;
-        public string softwareName = "SrvSurvey";
+        public string softwareName = "SrvSurvey-XP";
         public string softwareVersion = string.Empty;
         public string gameversion = string.Empty;
         public string gamebuild = string.Empty;

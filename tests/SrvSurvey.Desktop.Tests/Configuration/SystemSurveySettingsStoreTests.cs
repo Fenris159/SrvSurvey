@@ -14,6 +14,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         var preferences = CreateStore().Load();
 
         Assert.Equal(SystemSurveyPreferences.Default, preferences);
+        Assert.Equal(0, preferences.BodyPredictionPreviewExtensionSeconds);
     }
 
     [Fact]
@@ -26,6 +27,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         var expected = new SystemSurveyPreferences(
             AutoShowBodyInfo: false,
             ShowBodyInfoInSystemMap: false,
+            BodyPredictionPreviewExtensionSeconds: 45,
             ShowBodyInfoInOrbit: false,
             ShowBodyInfoAtSurface: true,
             HideBodyInfoInBubble: false,
@@ -101,6 +103,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
                 + "\"DssValueFloor\":-2,\"DssDistanceLimitLs\":-3,"
                 + "\"BodyInfoBubbleSizeLy\":-4,"
                 + "\"PriorScanMinimumValue\":-5,"
+                + "\"BodyPredictionPreviewExtensionSeconds\":999,"
                 + "\"BioPlotterDssDurationSeconds\":999,"
                 + "\"HighGravityWarningLevel\":75,"
                 + "\"SurfaceRadarSize\":99,"
@@ -115,6 +118,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         Assert.Equal(0, preferences.DssDistanceLimitLs);
         Assert.Equal(0, preferences.BodyInfoBubbleSizeLy);
         Assert.Equal(0, preferences.PriorScanMinimumValue);
+        Assert.Equal(600, preferences.BodyPredictionPreviewExtensionSeconds);
         Assert.Equal(600, preferences.BioPlotterDssDurationSeconds);
         Assert.Equal(50, preferences.HighGravityWarningLevel);
         Assert.Equal(4, preferences.SurfaceRadarSize);
