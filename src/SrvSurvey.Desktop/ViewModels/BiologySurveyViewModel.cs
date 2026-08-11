@@ -316,11 +316,13 @@ public sealed class BiologySurveyViewModel
             Bodies = rows,
             Organisms = [],
             RewardSummary = hasPredictedReward
-                ? FormatEstimatedReward(
+                ? FormatCompactEstimatedReward(
                     minimumSystemReward,
                     maximumSystemReward,
                     hasUnknownReward)
-                : FormatKnownReward(knownSystemReward, hasUnknownReward),
+                : FormatCompactKnownReward(
+                    knownSystemReward,
+                    hasUnknownReward),
             FirstFootfallRewardSummary = string.Empty,
             RadicoidaUnicaCount = options.RadicoidaUnicaCount,
             RequiresDss = false,
@@ -388,24 +390,29 @@ public sealed class BiologySurveyViewModel
             ? Array.Empty<string>()
             : body.AnalyzedGeologicalSignals;
 
+        var isIdentified = body.IsDssComplete;
         return new BiologySurveyViewModel
         {
             Mode = BiologySurveyMode.Body,
-            Title = body.IsDssComplete
+            Title = isIdentified
                 ? "Identified Bio"
                 : "Body Predictions",
             SelectedBodyId = body.BodyId,
-            Heading = $"{body.Name} biology",
+            Heading = body.Name,
             ProgressText = FormatBodyProgressText(body.BiologicalSignalCount),
             Bodies = [],
             Organisms = organisms,
-            RewardSummary = FormatBodyRewardSummary(rewardEstimate),
-            FirstFootfallRewardSummary = FormatFirstFootfallRewardSummary(
-                body,
-                rewardEstimate),
+            RewardSummary = isIdentified
+                ? FormatIdentifiedRewardSummary(rewardEstimate)
+                : FormatCompactBodyRewardSummary(rewardEstimate),
+            FirstFootfallRewardSummary = isIdentified
+                ? FormatCompactFirstFootfallRewardSummary(body, rewardEstimate)
+                : FormatFirstFootfallRewardSummary(body, rewardEstimate),
             RadicoidaUnicaCount = exobiology.CountRadicoidaUnica,
             RequiresDss = body.Organisms.Count == 0 && !body.IsDssComplete,
-            PredictionStatus = predictionSet.Status,
+            PredictionStatus = isIdentified
+                ? "DSS Scan Complete\nExact Organisms Identified"
+                : predictionSet.Status,
             GeologicalSignalCount = geoCount,
             GeologicalSignals = geoSignals
         };
@@ -431,6 +438,34 @@ public sealed class BiologySurveyViewModel
                 rewardEstimate.HasUnknownReward);
     }
 
+    private static string FormatCompactBodyRewardSummary(
+        BiologyRewardEstimate rewardEstimate)
+    {
+        return rewardEstimate.HasPredictedReward
+            ? FormatCompactEstimatedReward(
+                rewardEstimate.MinimumReward,
+                rewardEstimate.MaximumReward,
+                rewardEstimate.HasUnknownReward)
+            : FormatCompactKnownReward(
+                rewardEstimate.KnownReward,
+                rewardEstimate.HasUnknownReward);
+    }
+
+    private static string FormatIdentifiedRewardSummary(
+        BiologyRewardEstimate rewardEstimate)
+    {
+        if (rewardEstimate.KnownReward <= 0)
+        {
+            return rewardEstimate.HasUnknownReward
+                ? "Reward pending identification"
+                : string.Empty;
+        }
+
+        var value = FormatCompactCredits(rewardEstimate.KnownReward);
+        return "Known reward:\n"
+            + (rewardEstimate.HasUnknownReward ? value + " + pending" : value);
+    }
+
     private static string FormatFirstFootfallRewardSummary(
         SystemScanBodySnapshot body,
         BiologyRewardEstimate rewardEstimate)
@@ -450,6 +485,34 @@ public sealed class BiologySurveyViewModel
 
         return "First-footfall value: "
             + FormatCredits(rewardEstimate.KnownReward * 5);
+    }
+
+    private static string FormatCompactFirstFootfallRewardSummary(
+        SystemScanBodySnapshot body,
+        BiologyRewardEstimate rewardEstimate)
+    {
+        if (!body.IsFirstFootfall || rewardEstimate.MaximumReward <= 0)
+        {
+            return string.Empty;
+        }
+
+        if (rewardEstimate.HasPredictedReward)
+        {
+            var minimum = FormatCompactCredits(
+                rewardEstimate.MinimumReward * 5);
+            var maximum = FormatCompactCredits(
+                rewardEstimate.MaximumReward * 5);
+            var range = minimum == maximum
+                ? minimum
+                : $"{minimum} – {maximum}";
+            return "First-footfall estimate:\n"
+                + (rewardEstimate.HasUnknownReward
+                    ? range + " + pending"
+                    : range);
+        }
+
+        return "First-footfall total:\n"
+            + FormatCompactCredits(rewardEstimate.KnownReward * 5);
     }
 
     private sealed class BodyOrganismRowBuildContext
@@ -984,6 +1047,31 @@ public sealed class BiologySurveyViewModel
             : $"Total reward: {FormatCredits(reward)}";
     }
 
+    private static string FormatCompactKnownReward(
+        long reward,
+        bool hasUnknown)
+    {
+        if (reward <= 0)
+        {
+            return hasUnknown ? "Reward pending identification" : string.Empty;
+        }
+
+        var label = hasUnknown ? "Known reward:" : "Total reward:";
+        return $"{label}\n{FormatCompactCredits(reward)}";
+    }
+
+    private static string FormatCompactEstimatedReward(
+        long minimum,
+        long maximum,
+        bool hasUnknown)
+    {
+        var range = minimum == maximum
+            ? FormatCompactCredits(minimum)
+            : $"{FormatCompactCredits(minimum)} – {FormatCompactCredits(maximum)}";
+        return "Estimated reward:\n"
+            + (hasUnknown ? range + " + pending" : range);
+    }
+
     private static string FormatEstimatedReward(
         long minimum,
         long maximum,
@@ -1011,6 +1099,16 @@ public sealed class BiologySurveyViewModel
             >= 1_000_000 => $"{value / 1_000_000d:N2} M CR",
             >= 1_000 => $"{value / 1_000d:N1} K CR",
             _ => $"{value:N0} CR",
+        };
+    }
+
+    private static string FormatCompactCredits(long value)
+    {
+        return value switch
+        {
+            >= 1_000_000 => $"{value / 1_000_000d:N2} M",
+            >= 1_000 => $"{value / 1_000d:N1} K",
+            _ => $"{value:N0}",
         };
     }
 
@@ -1256,10 +1354,10 @@ public sealed class BiologyBodyRowViewModel
             {
                 if (MinimumReward == MaximumReward)
                 {
-                    return $"~{MinimumReward / 1_000_000d:N2} M CR";
+                    return $"~{MinimumReward / 1_000_000d:N2} M";
                 }
 
-                return $"{MinimumReward / 1_000_000d:N2}–{MaximumReward / 1_000_000d:N2} M CR";
+                return $"{MinimumReward / 1_000_000d:N2}–\n{MaximumReward / 1_000_000d:N2} M";
             }
 
             if (KnownReward <= 0)
@@ -1269,10 +1367,10 @@ public sealed class BiologyBodyRowViewModel
 
             if (HasUnknownReward)
             {
-                return $"{KnownReward / 1_000_000d:N2} M+ CR";
+                return $"{KnownReward / 1_000_000d:N2} M+";
             }
 
-            return $"{KnownReward / 1_000_000d:N2} M CR";
+            return $"{KnownReward / 1_000_000d:N2} M";
         }
     }
 

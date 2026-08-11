@@ -427,6 +427,69 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.False(viewModel.ShouldShowBioStatus);
     }
 
+    [Theory]
+    [InlineData("active-sample")]
+    [InlineData("signal-summary")]
+    [InlineData("dss-required")]
+    [InlineData("stale-sample")]
+    public void SupercruiseSuppressesEveryBiologyStatusState(string state)
+    {
+        var viewModel = CreateViewModel();
+        var activeSample = new BioSampleSnapshot(
+            new SurfaceLocation(0, 0),
+            150,
+            "$Codex_Ent_Aleoids_Genus_Name;",
+            "$Codex_Ent_Aleoids_01_Name;",
+            "Active",
+            2310101,
+            state == "stale-sample" ? "Other Body" : "Test 1");
+        var signalsEvent = state == "dss-required"
+            ? Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}""")
+            : Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}""");
+        var exobiology = state is "active-sample" or "stale-sample"
+            ? new ExobiologySnapshot(null, activeSample, null, 0, [], 0)
+            : ExobiologySnapshot.Empty;
+        var supercruise = new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip
+                | StatusFlags.Supercruise
+                | StatusFlags.HasLatLong,
+            GuiFocus = GuiFocus.Saa,
+            BodyName = "Test 1",
+            PlanetRadius = 6_000_000,
+        };
+
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+            Parse(BodyScan),
+            signalsEvent,
+        ],
+        supercruise,
+        exobiology);
+
+        var biologyStatus = Assert.IsType<BiologyStatusViewModel>(
+            viewModel.BiologyStatus);
+        switch (state)
+        {
+            case "active-sample":
+                Assert.True(biologyStatus.HasActiveSample);
+                break;
+            case "signal-summary":
+                Assert.True(biologyStatus.ShowSignalSummary);
+                Assert.False(biologyStatus.IsStaleActiveSample);
+                break;
+            case "dss-required":
+                Assert.True(biologyStatus.RequiresDss);
+                break;
+            case "stale-sample":
+                Assert.True(biologyStatus.IsStaleActiveSample);
+                break;
+        }
+
+        Assert.False(viewModel.ShouldShowBioStatus);
+    }
+
     [Fact]
     public void LiveStatusUpdatesRefreshSampleDistanceAndHideOnTaxiOrJump()
     {

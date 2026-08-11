@@ -120,7 +120,7 @@ public sealed class JournalSessionStateTests
     }
 
     [Fact]
-    public void KnownNomadLaunchDoesNotReuseItsIdAfterLeavingTheVehicle()
+    public void KnownNomadLaunchSurvivesIntermediateStatusWithoutReusingItsId()
     {
         var state = new JournalSessionState();
 
@@ -128,9 +128,46 @@ public sealed class JournalSessionStateTests
             """{"event":"DockSRV","SRVType":"lander01","ID":44}""")));
         Assert.True(state.Apply(Parse(
             """{"event":"LaunchFighter","ID":44,"PlayerControlled":true}""")));
+        Assert.False(state.ReconcileVehicleStatus(new EliteStatus()));
+        Assert.True(state.IsNomadActive);
+
+        Assert.False(state.ReconcileVehicleStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InSrv,
+        }));
+        Assert.True(state.IsNomadActive);
+
         Assert.True(state.ReconcileVehicleStatus(new EliteStatus()));
         Assert.Null(state.ActiveSrvType);
 
+        Assert.False(state.ReconcileVehicleStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InSrv,
+        }));
+        Assert.Null(state.ActiveSrvType);
+    }
+
+    [Fact]
+    public void KnownNomadEmbarkSurvivesIntermediateStatusUntilConfirmedOrExited()
+    {
+        var state = new JournalSessionState();
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"DockSRV","SRVType":"lander01","ID":44}""")));
+        Assert.True(state.Apply(Parse(
+            """{"event":"Embark","SRV":true,"ID":44}""")));
+        Assert.False(state.ReconcileVehicleStatus(new EliteStatus()));
+        Assert.True(state.IsNomadActive);
+
+        Assert.False(state.ReconcileVehicleStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InSrv,
+        }));
+        Assert.True(state.IsNomadActive);
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"Disembark","SRV":true,"ID":44}""")));
+        Assert.Null(state.ActiveSrvType);
         Assert.False(state.ReconcileVehicleStatus(new EliteStatus
         {
             Flags = StatusFlags.InSrv,

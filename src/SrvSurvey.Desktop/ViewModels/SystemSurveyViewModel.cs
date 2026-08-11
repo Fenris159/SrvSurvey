@@ -1427,6 +1427,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 || status is null
                 || status.Docked
                 || status.InTaxi
+                || status.Flags.HasFlag(StatusFlags.Supercruise)
                 || status.FsdChargingJump
                 || fsdJumping)
             {
@@ -1434,8 +1435,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             }
 
             var mode = ResolveGameMode();
-            return mode is OverlayGameMode.SuperCruising
-                or OverlayGameMode.Flying
+            return mode is OverlayGameMode.Flying
                 or OverlayGameMode.Landed
                 or OverlayGameMode.InSrv
                 or OverlayGameMode.OnFoot

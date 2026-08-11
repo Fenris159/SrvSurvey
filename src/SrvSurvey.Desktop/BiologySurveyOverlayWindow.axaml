@@ -10,7 +10,7 @@
         mc:Ignorable="d"
         d:DesignWidth="240"
         d:DesignHeight="240"
-        MinWidth="240"
+        MinWidth="1"
         MaxHeight="720"
         SizeToContent="WidthAndHeight"
         CanResize="False"
