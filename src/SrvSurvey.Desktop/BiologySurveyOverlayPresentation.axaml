@@ -138,7 +138,7 @@
                 <!-- Match Route Bodies visual grammar with list-wide columns:
                      body icon | body name | left-aligned reward PIPs | value. -->
                 <Grid Margin="0,1"
-                      ColumnSpacing="5">
+                      ColumnSpacing="3">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" SharedSizeGroup="SystemBiologyBodyIcon" />
                     <ColumnDefinition Width="Auto" SharedSizeGroup="SystemBiologyBodyName" />
@@ -168,7 +168,7 @@
                                TextDecorations="Strikethrough" />
                   </Grid>
                   <StackPanel Grid.Column="2"
-                               Margin="1,0,3,0"
+                               Margin="1,0,0,0"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                Orientation="Horizontal"
@@ -207,13 +207,12 @@
                                                 ToolTip.Tip="Canonn has known biological signals for this body" />
                   </StackPanel>
                   <TextBlock Grid.Column="3"
-                             MaxWidth="76"
-                             HorizontalAlignment="Right"
+                             HorizontalAlignment="Left"
                              VerticalAlignment="Center"
                              Foreground="{DynamicResource RavenPrimaryBrush}"
                              FontSize="10"
                              Text="{Binding RewardText}"
-                             TextTrimming="CharacterEllipsis" />
+                             TextAlignment="Left" />
                 </Grid>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
@@ -384,18 +383,20 @@
         </StackPanel>
       </ScrollViewer>
 
-      <TextBlock HorizontalAlignment="Center"
+      <TextBlock HorizontalAlignment="Left"
                  Foreground="{DynamicResource RavenMutedTextBrush}"
                  FontSize="9"
                  IsVisible="{Binding Survey.BiologySurveyDisplay.HasRewardSummary}"
                  Text="{Binding Survey.BiologySurveyDisplay.RewardSummary}"
-                 TextTrimming="CharacterEllipsis" />
-      <TextBlock HorizontalAlignment="Center"
+                 TextAlignment="Left"
+                 TextWrapping="Wrap" />
+      <TextBlock HorizontalAlignment="Left"
                  Foreground="{DynamicResource RavenAccentBrush}"
                  FontSize="9"
                  IsVisible="{Binding Survey.BiologySurveyDisplay.HasFirstFootfallRewardSummary}"
                  Text="{Binding Survey.BiologySurveyDisplay.FirstFootfallRewardSummary}"
-                 TextTrimming="CharacterEllipsis" />
+                 TextAlignment="Left"
+                 TextWrapping="Wrap" />
     </StackPanel>
   </Border>
 </UserControl>

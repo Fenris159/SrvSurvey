@@ -495,11 +495,13 @@ public sealed class OverlayPresentationContractTests
     public void SystemBiologyUsesSharedBodyPipAndRewardColumns()
     {
         var root = FindRepositoryRoot();
+        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
         var biologySurvey = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
+            desktop,
             "BiologySurveyOverlayPresentation.axaml"));
+        var biologyWindow = File.ReadAllText(Path.Combine(
+            desktop,
+            "BiologySurveyOverlayWindow.axaml"));
 
         Assert.Contains("Grid.IsSharedSizeScope=\"True\"", biologySurvey);
         Assert.Contains("SharedSizeGroup=\"SystemBiologyBodyName\"", biologySurvey);
@@ -512,6 +514,12 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains(
             "Classes.highlight=\"{Binding IsRewardBandGroupHighlighted}\"",
             biologySurvey);
+        Assert.Contains("Grid.Column=\"3\"", biologySurvey);
+        Assert.Contains("TextAlignment=\"Left\"", biologySurvey);
+        Assert.DoesNotContain("MaxWidth=\"76\"", biologySurvey);
+        Assert.Contains("Padding=\"4\"", biologySurvey);
+        Assert.Contains("MinWidth=\"1\"", biologyWindow);
+        Assert.Contains("SizeToContent=\"WidthAndHeight\"", biologyWindow);
     }
 
     [Fact]

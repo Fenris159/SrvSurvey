@@ -490,7 +490,8 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             7_252_500,
             viewModel.LastFssBiologyRewardBands[0].MinimumReward);
         Assert.Equal(0, viewModel.LastFssBiologyRewardBands[1].MinimumReward);
-        Assert.Contains("7.25 M CR", viewModel.LastFssBiologyRewardText);
+        Assert.Contains("7.25 M", viewModel.LastFssBiologyRewardText);
+        Assert.DoesNotContain(" CR", viewModel.LastFssBiologyRewardText);
     }
 
     [Fact]
@@ -749,7 +750,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(body.RewardBands[0].ShouldDim);
         Assert.Equal(0, body.RewardBands[1].MinimumReward);
         Assert.False(body.RewardBands[1].IsPrediction);
-        Assert.Equal("Known reward: 7.25 M CR", biology.RewardSummary);
+        Assert.Equal("Known reward:\n7.25 M", biology.RewardSummary);
     }
 
     [Fact]
@@ -796,7 +797,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         Assert.True(viewModel.HasTimedBiologySelection);
         Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
-        Assert.Equal("Test 2 biology", viewModel.BiologySurvey.Heading);
+        Assert.Equal("Test 2", viewModel.BiologySurvey.Heading);
         Assert.Equal(100, viewModel.TimedBiologySelectionProgressPercent);
 
         viewModel.ApplyUpdate(
@@ -989,7 +990,10 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         Assert.True(viewModel.IsWithinPostDssBiologyWindow);
         Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
-        Assert.Equal("Test 1 biology", viewModel.BiologySurvey.Heading);
+        Assert.Equal("Test 1", viewModel.BiologySurvey.Heading);
+        Assert.Equal(
+            "DSS Scan Complete\nExact Organisms Identified",
+            viewModel.BiologySurvey.PredictionStatus);
         Assert.NotNull(viewModel.BiologyStatus);
 
         now = now.AddSeconds(121);
@@ -1093,7 +1097,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         var biology = Assert.IsType<BiologySurveyViewModel>(
             viewModel.BiologySurvey);
         Assert.True(biology.IsBodyDetail);
-        Assert.Equal("Test 1 biology", biology.Heading);
+        Assert.Equal("Test 1", biology.Heading);
         var organism = Assert.Single(biology.Organisms);
         Assert.Equal("Aleoida Arcus - Green", organism.DisplayName);
         Assert.Equal("Arcus", organism.SpeciesName);
@@ -1459,7 +1463,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         viewModel.DrawBodyBiosOnlyWhenNear = false;
 
         Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
-        Assert.Equal("Test 2 biology", viewModel.BiologySurvey.Heading);
+        Assert.Equal("Test 2", viewModel.BiologySurvey.Heading);
         Assert.True(viewModel.ShouldShowBioSystem);
         Assert.True(notifiedVisible);
     }
@@ -1491,7 +1495,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         Assert.True(viewModel.DrawBodyBiosOnlyWhenNear);
         Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
-        Assert.Equal("Test 2 biology", viewModel.BiologySurvey.Heading);
+        Assert.Equal("Test 2", viewModel.BiologySurvey.Heading);
         Assert.True(viewModel.ShouldShowBioSystem);
 
         viewModel.ApplyUpdate([], new EliteStatus
@@ -1646,7 +1650,9 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.False(prediction.IsGenusIdentified);
         Assert.True(prediction.HasReward);
         Assert.False(bodySurvey.HasPredictionStatus);
-        Assert.StartsWith("Estimated reward:", bodySurvey.RewardSummary);
+        Assert.Equal("Test 1", bodySurvey.Heading);
+        Assert.StartsWith("Estimated reward:\n", bodySurvey.RewardSummary);
+        Assert.DoesNotContain(" CR", bodySurvey.RewardSummary);
 
         viewModel.UpdateCommanderCodexContext(
             new CommanderCodexData(

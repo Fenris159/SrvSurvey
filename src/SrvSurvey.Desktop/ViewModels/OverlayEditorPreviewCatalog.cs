@@ -395,7 +395,7 @@ internal static class OverlayEditorPreviewCatalog
                 },
             ],
             Organisms = [],
-            RewardSummary = "Estimated reward: 42.75 M – 106 M CR",
+            RewardSummary = "Estimated reward:\n42.75 M – 106 M",
             RequiresDss = false,
         };
     }
@@ -409,7 +409,7 @@ internal static class OverlayEditorPreviewCatalog
             Mode = BiologySurveyMode.Body,
             Title = "Body Predictions",
             SelectedBodyId = 3,
-            Heading = $"{State.CurrentBody} biology",
+            Heading = State.CurrentBody,
             ProgressText = "4 biological signals",
             Bodies = [],
             Organisms = CreateBiologyOrganismPreviews(
@@ -436,7 +436,7 @@ internal static class OverlayEditorPreviewCatalog
                         | BiologyOrganismPreviewTraits.HighlightedFirst),
                 new(TussockGenus, "Capillum", YellowVariant, 19_010_000,
                     BiologyOrganismPreviewTraits.Prediction)),
-            RewardSummary = "Estimated reward: 11.13 M – 33.24 M CR",
+            RewardSummary = "Estimated reward:\n11.13 M – 33.24 M",
             RequiresDss = true,
         };
 
@@ -446,7 +446,7 @@ internal static class OverlayEditorPreviewCatalog
             Mode = BiologySurveyMode.Body,
             Title = "Identified Bio",
             SelectedBodyId = 3,
-            Heading = $"{State.CurrentBody} biology",
+            Heading = State.CurrentBody,
             ProgressText = "3 biological signals",
             Bodies = [],
             Organisms = CreateBiologyOrganismPreviews(
@@ -460,10 +460,10 @@ internal static class OverlayEditorPreviewCatalog
                 new("Stratum", "Tectonicas", "Emerald", 95_190_000,
                     BiologyOrganismPreviewTraits.RegionalFirst
                         | BiologyOrganismPreviewTraits.HighlightedFirst)),
-            RewardSummary = "Known reward: 121.82 M CR",
-            FirstFootfallRewardSummary = "First-footfall total: 609.10 M CR",
+            RewardSummary = "Known reward:\n121.82 M",
+            FirstFootfallRewardSummary = "First-footfall total:\n609.10 M",
             RequiresDss = false,
-            PredictionStatus = "DSS scan complete; exact organisms identified.",
+            PredictionStatus = "DSS Scan Complete\nExact Organisms Identified",
             GeologicalSignalCount = 2,
             GeologicalSignals = ["Fumarole", "Lava spout"],
         };
