@@ -316,7 +316,11 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
 
         Assert.Equal(firstJournal, beforeIdentity.JournalPath);
         Assert.Empty(beforeIdentity.JournalEvents);
+        Assert.True(beforeIdentity.IsAwaitingCommanderIdentity);
+        Assert.True(beforeIdentity.SessionContextChanged);
         Assert.Equal(nextJournal, afterIdentity.JournalPath);
+        Assert.False(afterIdentity.IsAwaitingCommanderIdentity);
+        Assert.True(afterIdentity.SessionContextChanged);
         Assert.Equal(
             ["Fileheader", "Commander"],
             afterIdentity.JournalEvents.Select(entry => entry.EventName));

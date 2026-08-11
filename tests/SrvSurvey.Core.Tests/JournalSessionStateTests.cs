@@ -182,6 +182,20 @@ public sealed class JournalSessionStateTests
     }
 
     [Fact]
+    public void FileheaderTreatsInitialFrontEndAsMainMenuUntilLoadGame()
+    {
+        var state = new JournalSessionState();
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"Fileheader","gameversion":"4.4.0.3"}""")));
+        Assert.True(state.IsAtMainMenu);
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"LoadGame","Commander":"Drew","FID":"F123"}""")));
+        Assert.False(state.IsAtMainMenu);
+    }
+
+    [Fact]
     public void HyperspaceDepartureClearsTransientContextBeforeArrival()
     {
         var state = new JournalSessionState();

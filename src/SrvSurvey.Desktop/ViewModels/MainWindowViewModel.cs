@@ -152,6 +152,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private bool awaitFreshCargoSnapshot;
     private DateTimeOffset? companionIdentityChangedAt;
     private DateTimeOffset lastIdleHousekeepingAt;
+    private bool isAwaitingCommanderIdentity;
     private bool disposed;
 
     public MainWindowViewModel(
@@ -1901,6 +1902,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     private void ApplyJournalAndStatusBaseline(JournalMonitorUpdate update)
     {
+        isAwaitingCommanderIdentity = update.IsAwaitingCommanderIdentity;
         if (update.IsBootstrapRead || update.Status is not null)
         {
             latestStatus = update.Status;
@@ -2036,7 +2038,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             latestStatus is not null,
             !string.IsNullOrWhiteSpace(journalState.CommanderName),
             journalState.IsShutdown,
-            journalState.IsAtMainMenu,
+            journalState.IsAtMainMenu || isAwaitingCommanderIdentity,
             journalState.IsAtCarrierManagement);
         JournalPostProcessor.SelectCommander(journalState.FrontierId);
     }

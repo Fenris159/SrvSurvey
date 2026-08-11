@@ -78,7 +78,11 @@ public sealed class JournalSessionState
                 GameBuild = GetString(root, "build") ?? GameBuild;
                 IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
                 IsShutdown = false;
-                IsAtMainMenu = false;
+                // Elite creates the journal before LoadGame while it is still
+                // in the initial front end, but does not consistently emit a
+                // MainMenu music event there. Treat the new pre-session journal
+                // as the main menu until LoadGame confirms gameplay has begun.
+                IsAtMainMenu = true;
                 IsAtCarrierManagement = false;
                 MusicTrack = null;
                 break;

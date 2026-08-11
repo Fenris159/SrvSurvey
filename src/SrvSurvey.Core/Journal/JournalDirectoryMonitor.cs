@@ -34,6 +34,8 @@ public sealed class JournalDirectoryMonitor
     private int consecutiveStatusReadFailures;
     private bool statusReadFailureReported;
     private bool hasCompletedFirstPoll;
+    private bool isAwaitingCommanderIdentity;
+    private bool lastReportedAwaitingCommanderIdentity;
 
     public JournalDirectoryMonitor(
         string journalDirectory,
@@ -124,6 +126,8 @@ public sealed class JournalDirectoryMonitor
             .ConfigureAwait(false);
         var companions = await PollAllCompanionsAsync(errors, cancellationToken)
             .ConfigureAwait(false);
+        var sessionContextChanged = isAwaitingCommanderIdentity
+            != lastReportedAwaitingCommanderIdentity;
 
         var update = new JournalMonitorUpdate(
             currentJournalPath,
@@ -137,7 +141,10 @@ public sealed class JournalDirectoryMonitor
             ShipLocker: companions.ShipLocker)
         {
             StatusReadErrorRecovered = companions.StatusReadErrorRecovered,
+            IsAwaitingCommanderIdentity = isAwaitingCommanderIdentity,
+            SessionContextChanged = sessionContextChanged,
         };
+        lastReportedAwaitingCommanderIdentity = isAwaitingCommanderIdentity;
         hasCompletedFirstPoll = true;
         return update;
     }
@@ -275,23 +282,35 @@ public sealed class JournalDirectoryMonitor
             .ToArray();
         if (targetFrontierId is null)
         {
+            isAwaitingCommanderIdentity = false;
             return journals.FirstOrDefault();
         }
 
-        foreach (var journal in journals)
+        string? newestFrontierId = null;
+        for (var index = 0; index < journals.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var journal = journals[index];
             var frontierId = await ReadFrontierIdAsync(journal, cancellationToken)
                 .ConfigureAwait(false);
+            if (index == 0)
+            {
+                newestFrontierId = frontierId;
+            }
+
             if (string.Equals(
                     frontierId,
                     targetFrontierId,
                     StringComparison.OrdinalIgnoreCase))
             {
+                isAwaitingCommanderIdentity = index > 0
+                    && newestFrontierId is null;
                 return journal;
             }
         }
 
+        isAwaitingCommanderIdentity = journals.Length > 0
+            && newestFrontierId is null;
         return null;
     }
 
@@ -808,6 +827,10 @@ public sealed record JournalMonitorUpdate(
 {
     public bool StatusReadErrorRecovered { get; init; }
 
+    public bool IsAwaitingCommanderIdentity { get; init; }
+
+    public bool SessionContextChanged { get; init; }
+
     public bool HasChanges => IsBootstrapRead
         || JournalEvents.Count > 0
         || Status is not null
@@ -816,5 +839,6 @@ public sealed record JournalMonitorUpdate(
         || ShipLocker is not null
         || Market is not null
         || Errors.Count > 0
-        || StatusReadErrorRecovered;
+        || StatusReadErrorRecovered
+        || SessionContextChanged;
 }

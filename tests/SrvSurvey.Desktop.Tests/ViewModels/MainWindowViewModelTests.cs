@@ -116,6 +116,76 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task NewPreLoginJournalSuppressesTargetCommanderOverlaysUntilLoadGame()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-menu-session-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            var activeJournal = Path.Combine(
+                journals,
+                "Journal.2026-08-10T100000.01.log");
+            await File.WriteAllTextAsync(
+                activeJournal,
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\"}\n");
+            File.SetLastWriteTimeUtc(
+                activeJournal,
+                new DateTime(2026, 8, 10, 10, 0, 0, DateTimeKind.Utc));
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, StatusFileReader.FileName),
+                "{\"event\":\"Status\",\"Flags\":0,\"Flags2\":0}");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = paths,
+                    TargetFrontierId = "F123",
+                });
+
+            await viewModel.RefreshAsync();
+            Assert.False(viewModel.OverlayBehavior.ShouldSuppressForSession);
+
+            var preLoginJournal = Path.Combine(
+                journals,
+                "Journal.2026-08-10T110000.01.log");
+            await File.WriteAllTextAsync(
+                preLoginJournal,
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n");
+            File.SetLastWriteTimeUtc(
+                preLoginJournal,
+                new DateTime(2026, 8, 10, 11, 0, 0, DateTimeKind.Utc));
+
+            await viewModel.RefreshAsync();
+            Assert.True(viewModel.OverlayBehavior.ShouldSuppressForSession);
+
+            await File.AppendAllTextAsync(
+                preLoginJournal,
+                "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\"}\n");
+
+            await viewModel.RefreshAsync();
+            Assert.False(viewModel.OverlayBehavior.ShouldSuppressForSession);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public void ImportedReadOnlyReferenceCachesActivateWithoutBeingRewritten()
     {
         var root = Path.Combine(
