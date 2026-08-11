@@ -20,7 +20,7 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial nint XSetErrorHandler(nint handler);
 
-    internal static unsafe int InvokeErrorHandler(
+    internal static int InvokeErrorHandler(
         nint handler,
         nint display,
         ref XErrorEvent errorEvent)
@@ -30,14 +30,13 @@ internal static partial class X11Native
             return 0;
         }
 
-        fixed (XErrorEvent* errorEventPointer = &errorEvent)
-        {
-            var callback = (delegate* unmanaged[Cdecl]<
-                nint,
-                XErrorEvent*,
-                int>)handler;
-            return callback(display, errorEventPointer);
-        }
+        var callback = Marshal.GetDelegateForFunctionPointer(
+            handler,
+            typeof(XErrorHandler));
+        object?[] arguments = [display, errorEvent];
+        var result = callback.DynamicInvoke(arguments);
+        errorEvent = (XErrorEvent)arguments[1]!;
+        return result is int errorCode ? errorCode : 0;
     }
 
     [LibraryImport("libX11.so.6")]
