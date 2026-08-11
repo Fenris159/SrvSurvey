@@ -94,16 +94,26 @@ public sealed class JournalSessionState
 
             case "LoadGame":
                 ResetVehicleSessionState();
+                var loadedShipType = GetString(root, "Ship");
                 CommanderName = GetString(root, "Commander") ?? CommanderName;
                 FrontierId = GetString(root, "FID") ?? FrontierId;
                 GameMode = GetString(root, nameof(GameMode)) ?? GameMode;
                 GameVersion = GetString(root, "gameversion") ?? GameVersion;
                 GameBuild = GetString(root, "build") ?? GameBuild;
                 IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
-                ShipType = GetString(root, "Ship") ?? ShipType;
+                ShipType = loadedShipType ?? ShipType;
                 ShipId = GetInt64(root, ShipIdProperty) ?? ShipId;
                 ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
                 ShipIdent = GetString(root, nameof(ShipIdent)) ?? ShipIdent;
+                if (EliteSrvTypes.IsNomad(loadedShipType))
+                {
+                    ActiveSrvType = EliteSrvTypes.Nomad;
+                    if (ShipId is { } loadedVehicleId)
+                    {
+                        srvTypesById[loadedVehicleId] = EliteSrvTypes.Nomad;
+                    }
+                }
+
                 IsShutdown = false;
                 IsAtMainMenu = false;
                 IsAtCarrierManagement = false;
@@ -174,6 +184,17 @@ public sealed class JournalSessionState
                 if (IsNomadActive)
                 {
                     ActiveSrvType = null;
+                }
+
+                break;
+
+            case "Embark" when GetBoolean(root, "SRV") == true:
+                var embarkedVehicleId = GetInt64(root, "ID");
+                if (embarkedVehicleId is { } embarkedId
+                    && srvTypesById.TryGetValue(embarkedId, out var embarkedSrvType)
+                    && EliteSrvTypes.IsNomad(embarkedSrvType))
+                {
+                    ActiveSrvType = EliteSrvTypes.Nomad;
                 }
 
                 break;

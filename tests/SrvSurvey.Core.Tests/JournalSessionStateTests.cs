@@ -78,6 +78,30 @@ public sealed class JournalSessionStateTests
     }
 
     [Fact]
+    public void LoadGameInsideNomadRestoresActiveVehicleIdentity()
+    {
+        var state = new JournalSessionState();
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"LoadGame","Ship":"Lander01","Ship_Localised":"Nomad","ShipID":44,"StartLanded":true}""")));
+
+        Assert.Equal("Lander01", state.ShipType);
+        Assert.Equal(EliteSrvTypes.Nomad, state.ActiveSrvType);
+        Assert.True(state.IsNomadActive);
+        Assert.False(state.IsFighterLaunched);
+        Assert.False(state.ReconcileVehicleStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InSrv,
+        }));
+
+        Assert.True(state.ReconcileVehicleStatus(new EliteStatus()));
+        Assert.Null(state.ActiveSrvType);
+        Assert.True(state.Apply(Parse(
+            """{"event":"Embark","SRV":true,"Taxi":false,"ID":44}""")));
+        Assert.Equal(EliteSrvTypes.Nomad, state.ActiveSrvType);
+    }
+
+    [Fact]
     public void NomadTypeReportedAtDockIsReusedForTheNextLaunch()
     {
         var state = new JournalSessionState();

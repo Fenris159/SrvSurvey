@@ -928,8 +928,7 @@ public sealed partial class App : Application
             GlobalInputAction.MapBeHuge =>
                 humanSiteOverlayCoordinator?.ToggleHuge() == true,
             GlobalInputAction.ToggleAllVisibility => ToggleAllOverlayVisibility(),
-            GlobalInputAction.ToggleOverlayInteraction =>
-                viewModel.OverlayInteraction.ToggleLiveOverlayInteraction(),
+            GlobalInputAction.ToggleOverlayInteraction => ToggleOverlayInteraction(),
             GlobalInputAction.ShowJumpInfo =>
                 viewModel.JumpInfo.ToggleForcedVisibility(),
             GlobalInputAction.ShowFssInfo =>
@@ -1104,6 +1103,20 @@ public sealed partial class App : Application
         }
 
         return handled;
+    }
+
+    private bool ToggleOverlayInteraction()
+    {
+        var viewModel = mainViewModel;
+        if (viewModel is null
+            || !viewModel.OverlayInteraction.ToggleLiveOverlayInteraction())
+        {
+            return false;
+        }
+
+        viewModel.Notifications.ShowOverlayInteraction(
+            viewModel.OverlayInteraction.IsLiveInteractionEnabled);
+        return true;
     }
 
 }

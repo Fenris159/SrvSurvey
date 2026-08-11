@@ -123,6 +123,41 @@ internal static partial class X11Native
         int revertTo,
         nuint time);
 
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XGetInputFocus(
+        nint display,
+        out nuint focusWindow,
+        out int revertTo);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XSendEvent(
+        nint display,
+        nuint window,
+        int propagate,
+        nint eventMask,
+        ref XClientMessageEvent eventSend);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial nuint XCreateFontCursor(
+        nint display,
+        uint shape);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XDefineCursor(
+        nint display,
+        nuint window,
+        nuint cursor);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XUndefineCursor(
+        nint display,
+        nuint window);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XFreeCursor(
+        nint display,
+        nuint cursor);
+
     [LibraryImport("libXext.so.6")]
     internal static partial int XShapeQueryExtension(
         nint display,
@@ -165,6 +200,29 @@ internal static partial class X11Native
         public short Y;
         public ushort Width;
         public ushort Height;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XClientMessageEvent
+    {
+        public int Type;
+        public nuint Serial;
+        public int SendEvent;
+        public nint Display;
+        public nuint Window;
+        public nuint MessageType;
+        public int Format;
+        public XClientMessageData Data;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XClientMessageData
+    {
+        public nint L0;
+        public nint L1;
+        public nint L2;
+        public nint L3;
+        public nint L4;
     }
 
     [StructLayout(LayoutKind.Sequential)]

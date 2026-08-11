@@ -118,6 +118,7 @@ internal sealed partial class WindowsOverlayPlatformService
     private const uint FrameChanged = 0x0020;
     private const int HideWindow = 0;
     private const int RegionOr = 2;
+    private const int ArrowCursorResource = 32512;
 
     public OverlayPlatformCapabilities Capabilities { get; } =
         OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
@@ -188,8 +189,28 @@ internal sealed partial class WindowsOverlayPlatformService
     public IDisposable BeginVisibleCursorSession(Window window)
     {
         ArgumentNullException.ThrowIfNull(window);
+        var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
+        var previousForeground = GetForegroundWindow();
         window.Activate();
-        return CursorVisibilitySession.Begin(ShowCursor);
+        if (handle != nint.Zero)
+        {
+            ActivateOverlayWindow(handle, previousForeground);
+        }
+
+        var visibility = CursorVisibilitySession.Begin(ShowCursor);
+        var arrow = LoadCursor(nint.Zero, (nint)ArrowCursorResource);
+        if (arrow != nint.Zero)
+        {
+            _ = SetCursor(arrow);
+        }
+
+        return new ForegroundCursorVisibilitySession(
+            visibility,
+            handle,
+            previousForeground,
+            GetForegroundWindow,
+            SetForegroundWindow,
+            IsCurrentProcessOverlayWindow);
     }
 
     public void Dispose()
@@ -332,6 +353,46 @@ internal sealed partial class WindowsOverlayPlatformService
         [MarshalAs(UnmanagedType.Bool)] bool show);
 
     [LibraryImport("user32.dll")]
+    private static partial nint GetForegroundWindow();
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetForegroundWindow(nint window);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool BringWindowToTop(nint window);
+
+    [LibraryImport("user32.dll")]
+    private static partial nint SetActiveWindow(nint window);
+
+    [LibraryImport("user32.dll")]
+    private static partial nint SetFocus(nint window);
+
+    [LibraryImport("user32.dll")]
+    private static partial uint GetWindowThreadProcessId(
+        nint window,
+        out uint processId);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool AttachThreadInput(
+        uint attachThread,
+        uint attachToThread,
+        [MarshalAs(UnmanagedType.Bool)] bool attach);
+
+    [LibraryImport("kernel32.dll")]
+    private static partial uint GetCurrentThreadId();
+
+    [LibraryImport("user32.dll", EntryPoint = "LoadCursorW")]
+    private static partial nint LoadCursor(
+        nint instance,
+        nint cursorName);
+
+    [LibraryImport("user32.dll")]
+    private static partial nint SetCursor(nint cursor);
+
+    [LibraryImport("user32.dll")]
     private static partial int SetWindowRgn(
         nint window,
         nint region,
@@ -354,6 +415,49 @@ internal sealed partial class WindowsOverlayPlatformService
     [LibraryImport("gdi32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool DeleteObject(nint objectHandle);
+
+    private static void ActivateOverlayWindow(
+        nint handle,
+        nint previousForeground)
+    {
+        var currentThread = GetCurrentThreadId();
+        var foregroundThread = previousForeground == nint.Zero
+            ? 0
+            : GetWindowThreadProcessId(previousForeground, out _);
+        var attached = foregroundThread != 0
+            && foregroundThread != currentThread
+            && AttachThreadInput(currentThread, foregroundThread, attach: true);
+        try
+        {
+            _ = BringWindowToTop(handle);
+            _ = SetForegroundWindow(handle);
+            _ = SetActiveWindow(handle);
+            _ = SetFocus(handle);
+        }
+        finally
+        {
+            if (attached)
+            {
+                _ = AttachThreadInput(
+                    currentThread,
+                    foregroundThread,
+                    attach: false);
+            }
+        }
+    }
+
+    private static bool IsCurrentProcessOverlayWindow(nint handle)
+    {
+        if (handle == nint.Zero)
+        {
+            return false;
+        }
+
+        _ = GetWindowThreadProcessId(handle, out var processId);
+        return processId == (uint)Environment.ProcessId
+            && ((long)GetWindowLongPtr(handle, ExtendedWindowStyle)
+                & ToolWindow) != 0;
+    }
 
 }
 
@@ -394,6 +498,57 @@ internal sealed class CursorVisibilitySession : IDisposable
         for (var index = 0; index < remaining; index++)
         {
             _ = showCursor(false);
+        }
+    }
+}
+
+internal sealed class ForegroundCursorVisibilitySession : IDisposable
+{
+    private readonly nint interactionWindow;
+    private readonly nint previousForeground;
+    private readonly Func<nint> getForegroundWindow;
+    private readonly Func<nint, bool> setForegroundWindow;
+    private readonly Func<nint, bool> isInteractionWindow;
+    private IDisposable? cursorVisibilitySession;
+
+    public ForegroundCursorVisibilitySession(
+        IDisposable cursorVisibilitySession,
+        nint interactionWindow,
+        nint previousForeground,
+        Func<nint> getForegroundWindow,
+        Func<nint, bool> setForegroundWindow,
+        Func<nint, bool> isInteractionWindow)
+    {
+        this.cursorVisibilitySession = cursorVisibilitySession
+            ?? throw new ArgumentNullException(nameof(cursorVisibilitySession));
+        this.interactionWindow = interactionWindow;
+        this.previousForeground = previousForeground;
+        this.getForegroundWindow = getForegroundWindow
+            ?? throw new ArgumentNullException(nameof(getForegroundWindow));
+        this.setForegroundWindow = setForegroundWindow
+            ?? throw new ArgumentNullException(nameof(setForegroundWindow));
+        this.isInteractionWindow = isInteractionWindow
+            ?? throw new ArgumentNullException(nameof(isInteractionWindow));
+    }
+
+    public void Dispose()
+    {
+        var visibility = Interlocked.Exchange(
+            ref cursorVisibilitySession,
+            null);
+        if (visibility is null)
+        {
+            return;
+        }
+
+        visibility.Dispose();
+        var currentForeground = getForegroundWindow();
+        if (previousForeground != nint.Zero
+            && previousForeground != interactionWindow
+            && (currentForeground == interactionWindow
+                || isInteractionWindow(currentForeground)))
+        {
+            _ = setForegroundWindow(previousForeground);
         }
     }
 }

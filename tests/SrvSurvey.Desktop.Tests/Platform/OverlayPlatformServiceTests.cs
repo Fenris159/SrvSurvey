@@ -1,0 +1,122 @@
+using SrvSurvey.Desktop.Platform.Overlay;
+
+namespace SrvSurvey.Desktop.Tests.Platform;
+
+public sealed class OverlayPlatformServiceTests
+{
+    [Fact]
+    public void CursorSessionRestoresPreviousForegroundFromOverlayWindow()
+    {
+        var cursor = new TrackingDisposable();
+        var restored = new List<nint>();
+        var session = new ForegroundCursorVisibilitySession(
+            cursor,
+            interactionWindow: (nint)20,
+            previousForeground: (nint)10,
+            getForegroundWindow: () => (nint)30,
+            setForegroundWindow: window =>
+            {
+                restored.Add(window);
+                return true;
+            },
+            isInteractionWindow: window => window == (nint)30);
+
+        session.Dispose();
+        session.Dispose();
+
+        Assert.True(cursor.IsDisposed);
+        Assert.Equal([(nint)10], restored);
+    }
+
+    [Fact]
+    public void CursorSessionDoesNotStealFocusFromAnotherApplication()
+    {
+        var cursor = new TrackingDisposable();
+        var restored = new List<nint>();
+        var session = new ForegroundCursorVisibilitySession(
+            cursor,
+            interactionWindow: (nint)20,
+            previousForeground: (nint)10,
+            getForegroundWindow: () => (nint)99,
+            setForegroundWindow: window =>
+            {
+                restored.Add(window);
+                return true;
+            },
+            isInteractionWindow: _ => false);
+
+        session.Dispose();
+
+        Assert.True(cursor.IsDisposed);
+        Assert.Empty(restored);
+    }
+
+    [Fact]
+    public void X11CursorSessionRestoresFocusAndRemovesDefinedCursors()
+    {
+        var undefined = new List<nuint>();
+        var freed = new List<nuint>();
+        var restored = new List<nuint>();
+        var session = new X11CursorVisibilitySession(
+            interactionWindows: [(nuint)20, (nuint)30],
+            cursor: 40,
+            previousActiveWindow: 10,
+            getActiveWindow: () => 99,
+            getFocusWindow: () => 30,
+            activateWindow: window =>
+            {
+                restored.Add(window);
+                return true;
+            },
+            undefineCursor: window =>
+            {
+                undefined.Add(window);
+                return 0;
+            },
+            freeCursor: cursor =>
+            {
+                freed.Add(cursor);
+                return 0;
+            });
+
+        session.Dispose();
+        session.Dispose();
+
+        Assert.Equal([(nuint)20, (nuint)30], undefined);
+        Assert.Equal([(nuint)40], freed);
+        Assert.Equal([(nuint)10], restored);
+    }
+
+    [Fact]
+    public void X11CursorSessionDoesNotRestoreOverAnotherApplication()
+    {
+        var restored = new List<nuint>();
+        var session = new X11CursorVisibilitySession(
+            interactionWindows: [(nuint)20],
+            cursor: 0,
+            previousActiveWindow: 10,
+            getActiveWindow: () => 99,
+            getFocusWindow: () => 98,
+            activateWindow: window =>
+            {
+                restored.Add(window);
+                return true;
+            },
+            undefineCursor: _ => throw new InvalidOperationException(),
+            freeCursor: _ => throw new InvalidOperationException());
+
+        session.Dispose();
+
+        Assert.Empty(restored);
+    }
+
+    private sealed class TrackingDisposable : IDisposable
+    {
+        public bool IsDisposed { get; private set; }
+
+        public void Dispose()
+        {
+            IsDisposed = true;
+        }
+    }
+}

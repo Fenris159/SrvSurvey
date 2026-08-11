@@ -9,7 +9,13 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 internal sealed class X11OverlayPlatformService
     : IOverlayPlatformService, ICombinedOverlayNativeService
 {
+    private const int ClientMessage = 33;
+    private const int RevertToParent = 2;
+    private const uint LeftPointerCursor = 68;
+    private const nint SubstructureNotifyMask = 1 << 19;
+    private const nint SubstructureRedirectMask = 1 << 20;
     private nint display;
+    private readonly HashSet<nuint> interactiveWindowHandles = [];
     private readonly bool shapeAvailable;
     private readonly X11OverlayStackingMode stackingMode;
     private readonly nuint atomType;
@@ -212,6 +218,15 @@ internal sealed class X11OverlayPlatformService
             }
 
             _ = X11Native.XFlush(display);
+            if (interactive)
+            {
+                interactiveWindowHandles.Add(unchecked((nuint)handle));
+            }
+            else
+            {
+                interactiveWindowHandles.Remove(unchecked((nuint)handle));
+            }
+
             window.IsHitTestVisible = interactive;
             return new OverlayInteractionResult(
                 IsPrepared: true,
@@ -227,6 +242,94 @@ internal sealed class X11OverlayPlatformService
                 IsPrepared: false,
                 IsInteractive: false,
                 $"X11 overlay interaction mode could not be changed: {exception.Message}");
+        }
+    }
+
+    public IDisposable? BeginVisibleCursorSession(Window window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        var currentDisplay = display;
+        var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
+        if (currentDisplay == nint.Zero || handle == nint.Zero)
+        {
+            window.Activate();
+            return null;
+        }
+
+        try
+        {
+            var rootWindow = X11Native.XDefaultRootWindow(currentDisplay);
+            var activeWindowAtom = X11Native.XInternAtom(
+                currentDisplay,
+                "_NET_ACTIVE_WINDOW",
+                onlyIfExists: 0);
+            var previousActiveWindow = ReadActiveWindow(
+                currentDisplay,
+                rootWindow,
+                activeWindowAtom);
+            var interactionWindow = unchecked((nuint)handle);
+            var interactionWindows = interactiveWindowHandles
+                .Append(interactionWindow)
+                .Distinct()
+                .ToArray();
+
+            window.Activate();
+            var cursor = X11Native.XCreateFontCursor(
+                currentDisplay,
+                LeftPointerCursor);
+            if (cursor != 0)
+            {
+                foreach (var currentWindow in interactionWindows)
+                {
+                    _ = X11Native.XDefineCursor(
+                        currentDisplay,
+                        currentWindow,
+                        cursor);
+                }
+            }
+
+            _ = ActivateWindow(
+                currentDisplay,
+                rootWindow,
+                activeWindowAtom,
+                interactionWindow,
+                previousActiveWindow);
+            return new X11CursorVisibilitySession(
+                interactionWindows,
+                cursor,
+                previousActiveWindow,
+                getActiveWindow: () => ReadActiveWindow(
+                    currentDisplay,
+                    rootWindow,
+                    activeWindowAtom),
+                getFocusWindow: () => ReadFocusWindow(currentDisplay),
+                activateWindow: target => ActivateWindow(
+                    currentDisplay,
+                    rootWindow,
+                    activeWindowAtom,
+                    target,
+                    interactionWindow),
+                undefineCursor: target =>
+                    X11Native.XUndefineCursor(currentDisplay, target),
+                freeCursor: currentCursor =>
+                {
+                    var result = X11Native.XFreeCursor(
+                        currentDisplay,
+                        currentCursor);
+                    _ = X11Native.XFlush(currentDisplay);
+                    return result;
+                });
+        }
+        catch (Exception exception) when (
+            exception is DllNotFoundException
+                or EntryPointNotFoundException
+                or BadImageFormatException)
+        {
+            Trace.TraceWarning(
+                "X11 overlay cursor activation was unavailable; using the "
+                + $"window-manager fallback: {exception.Message}");
+            window.Activate();
+            return null;
         }
     }
 
@@ -355,6 +458,7 @@ internal sealed class X11OverlayPlatformService
                 pinnedRectangles.Free();
             }
             _ = X11Native.XFlush(display);
+            interactiveWindowHandles.Add(unchecked((nuint)handle));
             window.IsHitTestVisible = true;
             return new OverlayInteractionResult(
                 IsPrepared: true,
@@ -377,6 +481,7 @@ internal sealed class X11OverlayPlatformService
 
     public void Dispose()
     {
+        interactiveWindowHandles.Clear();
         var currentDisplay = display;
         display = nint.Zero;
         if (currentDisplay != nint.Zero)
@@ -445,6 +550,98 @@ internal sealed class X11OverlayPlatformService
         }
     }
 
+    private static nuint ReadActiveWindow(
+        nint display,
+        nuint rootWindow,
+        nuint activeWindowAtom)
+    {
+        if (activeWindowAtom == 0
+            || X11Native.XGetWindowProperty(
+                display,
+                rootWindow,
+                activeWindowAtom,
+                nint.Zero,
+                1,
+                delete: 0,
+                requestedType: 0,
+                out _,
+                out var actualFormat,
+                out var itemCount,
+                out _,
+                out var propertyData) != 0
+            || propertyData == nint.Zero)
+        {
+            return 0;
+        }
+
+        try
+        {
+            return actualFormat == 32 && itemCount > 0
+                ? unchecked((nuint)Marshal.ReadIntPtr(propertyData))
+                : 0;
+        }
+        finally
+        {
+            _ = X11Native.XFree(propertyData);
+        }
+    }
+
+    private static nuint ReadFocusWindow(nint display)
+    {
+        return X11Native.XGetInputFocus(
+                display,
+                out var focusWindow,
+                out _) == 0
+            ? 0
+            : focusWindow;
+    }
+
+    private static bool ActivateWindow(
+        nint display,
+        nuint rootWindow,
+        nuint activeWindowAtom,
+        nuint targetWindow,
+        nuint requestorWindow)
+    {
+        if (targetWindow == 0)
+        {
+            return false;
+        }
+
+        _ = X11Native.XMapRaised(display, targetWindow);
+        if (activeWindowAtom != 0)
+        {
+            var activateEvent = new X11Native.XClientMessageEvent
+            {
+                Type = ClientMessage,
+                Display = display,
+                Window = targetWindow,
+                MessageType = activeWindowAtom,
+                Format = 32,
+                Data = new X11Native.XClientMessageData
+                {
+                    L0 = 1,
+                    L1 = 0,
+                    L2 = unchecked((nint)requestorWindow),
+                },
+            };
+            _ = X11Native.XSendEvent(
+                display,
+                rootWindow,
+                propagate: 0,
+                SubstructureNotifyMask | SubstructureRedirectMask,
+                ref activateEvent);
+        }
+
+        _ = X11Native.XSetInputFocus(
+            display,
+            targetWindow,
+            RevertToParent,
+            time: 0);
+        _ = X11Native.XFlush(display);
+        return true;
+    }
+
     private bool ApplyWindowType(nint handle)
     {
         var windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
@@ -501,5 +698,70 @@ internal sealed class X11OverlayPlatformService
         return stackingMode == X11OverlayStackingMode.KdeOnScreenDisplay
             ? "Overlay edit mode is active through the X11 input region with KDE on-screen-display stacking."
             : "Overlay edit mode is active through the X11 input region.";
+    }
+}
+
+internal sealed class X11CursorVisibilitySession : IDisposable
+{
+    private readonly IReadOnlySet<nuint> interactionWindows;
+    private readonly nuint cursor;
+    private readonly nuint previousActiveWindow;
+    private readonly Func<nuint> getActiveWindow;
+    private readonly Func<nuint> getFocusWindow;
+    private readonly Func<nuint, bool> activateWindow;
+    private readonly Func<nuint, int> undefineCursor;
+    private readonly Func<nuint, int> freeCursor;
+    private int disposed;
+
+    public X11CursorVisibilitySession(
+        IEnumerable<nuint> interactionWindows,
+        nuint cursor,
+        nuint previousActiveWindow,
+        Func<nuint> getActiveWindow,
+        Func<nuint> getFocusWindow,
+        Func<nuint, bool> activateWindow,
+        Func<nuint, int> undefineCursor,
+        Func<nuint, int> freeCursor)
+    {
+        ArgumentNullException.ThrowIfNull(interactionWindows);
+        this.interactionWindows = interactionWindows.ToHashSet();
+        this.cursor = cursor;
+        this.previousActiveWindow = previousActiveWindow;
+        this.getActiveWindow = getActiveWindow
+            ?? throw new ArgumentNullException(nameof(getActiveWindow));
+        this.getFocusWindow = getFocusWindow
+            ?? throw new ArgumentNullException(nameof(getFocusWindow));
+        this.activateWindow = activateWindow
+            ?? throw new ArgumentNullException(nameof(activateWindow));
+        this.undefineCursor = undefineCursor
+            ?? throw new ArgumentNullException(nameof(undefineCursor));
+        this.freeCursor = freeCursor
+            ?? throw new ArgumentNullException(nameof(freeCursor));
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref disposed, 1) != 0)
+        {
+            return;
+        }
+
+        if (cursor != 0)
+        {
+            foreach (var window in interactionWindows)
+            {
+                _ = undefineCursor(window);
+            }
+
+            _ = freeCursor(cursor);
+        }
+
+        if (previousActiveWindow != 0
+            && !interactionWindows.Contains(previousActiveWindow)
+            && (interactionWindows.Contains(getActiveWindow())
+                || interactionWindows.Contains(getFocusWindow())))
+        {
+            _ = activateWindow(previousActiveWindow);
+        }
     }
 }

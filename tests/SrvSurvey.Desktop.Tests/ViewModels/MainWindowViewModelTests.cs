@@ -1195,6 +1195,51 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task RefreshRecognizesNomadLoadedAsTheActiveVehicle()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-loaded-nomad-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(root);
+            await File.WriteAllTextAsync(
+                Path.Combine(root, "Journal.2026-08-11T063600.01.log"),
+                "{\"timestamp\":\"2026-08-11T11:36:59Z\",\"event\":\"LoadGame\",\"Ship\":\"Lander01\",\"Ship_Localised\":\"Nomad\",\"ShipID\":44,\"StartLanded\":true}\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(root, StatusFileReader.FileName),
+                "{\"timestamp\":\"2026-08-11T11:42:38Z\",\"event\":\"Status\",\"Flags\":67108864,\"Flags2\":0,\"Latitude\":16.533182,\"Longitude\":32.519001,\"Altitude\":77}");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(
+                root,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = paths,
+                });
+
+            await viewModel.RefreshAsync();
+            viewModel.SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear = true;
+
+            Assert.Equal("Nomad", viewModel.VehicleState);
+            Assert.Equal(EliteSrvTypes.Nomad, viewModel.CurrentVrOverlayMode);
+            Assert.True(
+                viewModel.SystemSurvey
+                    .ShouldSuppressSurfaceNavigationForLandingGear);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task RefreshLosslesslyUpdatesImportedSystemHistoryAndRepeatState()
     {
         var root = Path.Combine(
