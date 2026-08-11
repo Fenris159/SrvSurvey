@@ -18,6 +18,9 @@ internal static partial class X11Native
     internal static partial int XCloseDisplay(nint display);
 
     [LibraryImport("libX11.so.6")]
+    internal static partial nint XSetErrorHandler(nint handler);
+
+    [LibraryImport("libX11.so.6")]
     internal static partial nuint XDefaultRootWindow(nint display);
 
     [LibraryImport("libX11.so.6", StringMarshalling = StringMarshalling.Utf8)]
@@ -191,6 +194,23 @@ internal static partial class X11Native
     {
         public nint ResourceName;
         public nint ResourceClass;
+    }
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate int XErrorHandler(
+        nint display,
+        ref XErrorEvent errorEvent);
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XErrorEvent
+    {
+        public int Type;
+        public nint Display;
+        public nuint ResourceId;
+        public nuint Serial;
+        public byte ErrorCode;
+        public byte RequestCode;
+        public byte MinorCode;
     }
 
     [StructLayout(LayoutKind.Sequential)]

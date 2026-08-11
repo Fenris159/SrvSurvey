@@ -61,28 +61,31 @@ public sealed class OverlayPlatformServiceTests
             interactionWindows: [(nuint)20, (nuint)30],
             cursor: 40,
             previousActiveWindow: 10,
-            getActiveWindow: () => 99,
-            getFocusWindow: () => 30,
-            activateWindow: window =>
-            {
-                restored.Add(window);
-                return true;
-            },
-            undefineCursor: window =>
-            {
-                undefined.Add(window);
-                return 0;
-            },
-            freeCursor: cursor =>
-            {
-                freed.Add(cursor);
-                return 0;
-            });
+            new X11CursorSessionOperations(
+                getActiveWindow: () => 99,
+                getFocusWindow: () => 30,
+                activateWindow: window =>
+                {
+                    restored.Add(window);
+                    return true;
+                },
+                undefineCursor: window =>
+                {
+                    undefined.Add(window);
+                    return 0;
+                },
+                freeCursor: cursor =>
+                {
+                    freed.Add(cursor);
+                    return 0;
+                }));
 
         session.Dispose();
         session.Dispose();
 
-        Assert.Equal([(nuint)20, (nuint)30], undefined);
+        Assert.Equal(
+            [(nuint)20, (nuint)30],
+            undefined.Order().ToArray());
         Assert.Equal([(nuint)40], freed);
         Assert.Equal([(nuint)10], restored);
     }
@@ -95,15 +98,16 @@ public sealed class OverlayPlatformServiceTests
             interactionWindows: [(nuint)20],
             cursor: 0,
             previousActiveWindow: 10,
-            getActiveWindow: () => 99,
-            getFocusWindow: () => 98,
-            activateWindow: window =>
-            {
-                restored.Add(window);
-                return true;
-            },
-            undefineCursor: _ => throw new InvalidOperationException(),
-            freeCursor: _ => throw new InvalidOperationException());
+            new X11CursorSessionOperations(
+                getActiveWindow: () => 99,
+                getFocusWindow: () => 98,
+                activateWindow: window =>
+                {
+                    restored.Add(window);
+                    return true;
+                },
+                undefineCursor: _ => throw new InvalidOperationException(),
+                freeCursor: _ => throw new InvalidOperationException()));
 
         session.Dispose();
 
