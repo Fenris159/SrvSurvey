@@ -181,7 +181,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task EligibilityMatchesLegacyAltitudePanelAndLandingGearRules()
+    public async Task EligibilityAppliesAltitudePanelLandingGearAndSupercruiseRules()
     {
         var (viewModel, survey, store) = CreateViewModel();
         await store.AddBookmarkAsync(
@@ -222,13 +222,15 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             ExobiologySnapshot.Empty);
         Assert.True(viewModel.ShouldShow);
 
+        survey.AutoShowMiniTrack = true;
         ApplySurveyContext(survey, Status(StatusFlags.Supercruise));
         await viewModel.ApplyUpdateAsync(
             Session(),
             [],
             survey.CurrentStatus,
             ExobiologySnapshot.Empty);
-        Assert.True(viewModel.ShouldShow);
+        Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.ShouldShowMiniTrack);
 
         ApplySurveyContext(
             survey,
@@ -263,6 +265,34 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             survey.CurrentStatus,
             ExobiologySnapshot.Empty);
         Assert.False(viewModel.ShouldShow);
+    }
+
+    [Fact]
+    public async Task SupercruiseSuppressesSurfaceAndMiniTrackWithoutLandingGearPreference()
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            "#1",
+            new SurfaceCoordinate(0, 2));
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            Genus,
+            new SurfaceCoordinate(0, 3));
+        survey.AutoShowMiniTrack = true;
+
+        ApplySurveyContext(survey, Status(StatusFlags.Supercruise));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        Assert.False(survey.AutoHideSurfaceRadarWithoutLandingGear);
+        Assert.True(viewModel.HasQuickTrackers);
+        Assert.False(viewModel.ShouldShowRadar);
+        Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.ShouldShowMiniTrack);
     }
 
     [Fact]

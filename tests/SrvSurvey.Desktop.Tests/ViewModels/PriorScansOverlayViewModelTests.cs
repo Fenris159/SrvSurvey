@@ -100,6 +100,16 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
 
         survey.ApplyUpdate([], ShipStatus(landingGearDown: true));
         Assert.True(viewModel.ShouldShow);
+
+        survey.ApplyUpdate([], new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong
+                | StatusFlags.InMainShip
+                | StatusFlags.Supercruise,
+            BodyName = "Test 1",
+            PlanetRadius = 1_000_000,
+        });
+        Assert.False(viewModel.ShouldShow);
     }
 
     [Fact]

@@ -237,13 +237,14 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             "testbuggy");
         Assert.True(viewModel.ShouldLoadPriorScans);
 
+        viewModel.AutoHideSurfaceRadarWithoutLandingGear = false;
         viewModel.ApplyUpdate([], new EliteStatus
         {
             Flags = StatusFlags.HasLatLong | StatusFlags.Supercruise,
             BodyName = "Test 1",
             PlanetRadius = 1_000_000,
         });
-        Assert.True(viewModel.ShouldLoadPriorScans);
+        Assert.False(viewModel.ShouldLoadPriorScans);
 
         viewModel.ApplyUpdate([], new EliteStatus
         {
