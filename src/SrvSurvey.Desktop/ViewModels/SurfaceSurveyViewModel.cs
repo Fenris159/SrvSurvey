@@ -876,6 +876,9 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             || status.InTaxi
             || status.FsdChargingJump
             || survey.ShouldSuppressSurfaceNavigationForLandingGear
+            || (survey.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn
+                && status.OnFoot
+                && !status.IsGeneticSamplerDrawn)
             || survey.IsFsdJumping)
         {
             return false;
@@ -984,6 +987,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     {
         if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.AutoShowSurfaceRadar)
             or nameof(SystemSurveyViewModel.AutoShowMiniTrack)
+            or nameof(SystemSurveyViewModel.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn)
             or nameof(SystemSurveyViewModel.SurfaceRadarSize)
             or nameof(SystemSurveyViewModel.AutoHideSurfaceRadarWithoutLandingGear)
             or nameof(SystemSurveyViewModel.ShouldSuppressForActiveBuildProjects)

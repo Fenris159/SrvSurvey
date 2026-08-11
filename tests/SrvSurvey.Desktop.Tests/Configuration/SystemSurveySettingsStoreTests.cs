@@ -15,6 +15,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
 
         Assert.Equal(SystemSurveyPreferences.Default, preferences);
         Assert.Equal(0, preferences.BodyPredictionPreviewExtensionSeconds);
+        Assert.False(preferences.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn);
     }
 
     [Fact]
@@ -84,7 +85,8 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
                 new FssPixelColor(6, 7, 8, 9),
                 new FssPixelColor(10, 11, 12, 13),
                 new FssPixelColor(14, 15, 16, 17)),
-            SuppressForActiveBuildProjects: true);
+            SuppressForActiveBuildProjects: true,
+            ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn: true);
 
         store.Save(expected);
 

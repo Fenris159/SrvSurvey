@@ -1912,6 +1912,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             journalState.Apply(journalEvent);
         }
 
+        if (update.Status is { } status)
+        {
+            journalState.ReconcileVehicleStatus(status);
+        }
+
         Colonization.UpdateMusicTrack(journalState.MusicTrack);
         StationInfo.UpdateMusicTrack(journalState.MusicTrack);
         GroundTarget.UpdateMusicTrack(journalState.MusicTrack);
@@ -2456,7 +2461,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             SystemSurvey.ApplyUpdate(
                 update.JournalEvents,
                 update.Status,
-                exobiologyAfter);
+                exobiologyAfter,
+                journalState.ActiveSrvType);
         }
 
         await LoadCurrentSystemHistoryAsync();
@@ -4150,7 +4156,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     private void ApplyStatus(EliteStatus status)
     {
-        VehicleState = DescribeVehicleState(status);
+        VehicleState = DescribeVehicleState(status, journalState.ActiveSrvType);
         SurfacePosition = status.HasLatitudeLongitude
             ? $"{status.Latitude:F6}, {status.Longitude:F6}"
             : Unavailable;
@@ -4160,7 +4166,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         GameUiFocus = status.GuiFocus.ToString();
     }
 
-    private static string DescribeVehicleState(EliteStatus status)
+    private static string DescribeVehicleState(
+        EliteStatus status,
+        string? activeSrvType)
     {
         if (status.OnFoot)
         {
@@ -4169,7 +4177,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         if (status.InSrv)
         {
-            return "SRV";
+            return EliteSrvTypes.IsNomad(activeSrvType)
+                ? "Nomad"
+                : "SRV";
         }
 
         if (status.InFighter)

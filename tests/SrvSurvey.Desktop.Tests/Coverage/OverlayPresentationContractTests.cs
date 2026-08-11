@@ -558,6 +558,69 @@ public sealed class OverlayPresentationContractTests
         Assert.Equal(
             "{Binding SystemSurvey.UseExternalData}",
             radar.Parent?.Parent?.Attribute("IsEnabled")?.Value);
+
+        var miniTrack = BoundControl(
+            "CheckBox",
+            "IsChecked",
+            "SystemSurvey.AutoShowMiniTrack");
+        var samplerGate = BoundControl(
+            "CheckBox",
+            "IsChecked",
+            "SystemSurvey.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn");
+        Assert.Same(miniTrack, samplerGate.ElementsBeforeSelf().Last());
+        Assert.Equal(
+            "{Binding SystemSurvey.AutoShowSurfaceRadar}",
+            samplerGate.Attribute("IsEnabled")?.Value);
+        var samplerGateLabel = Assert.Single(samplerGate.Elements());
+        Assert.Equal("TextBlock", samplerGateLabel.Name.LocalName);
+        Assert.Equal("Wrap", samplerGateLabel.Attribute("TextWrapping")?.Value);
+        Assert.Equal(
+            "Onfoot: Show only when Genetic Sampler is drawn.",
+            samplerGateLabel.Attribute("Text")?.Value);
+    }
+
+    [Fact]
+    public void OverlaySettingsPlaceLongNumericEditorsBelowTheirLabels()
+    {
+        var root = FindRepositoryRoot();
+        var document = XDocument.Load(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Views",
+            "OverlaySettingsView.axaml"));
+        var controls = document.Descendants().ToArray();
+        XElement NumericEditor(string binding) => controls.Single(element =>
+            element.Name.LocalName == "NumericUpDown"
+            && element.Attribute("Value")?.Value.Contains(
+                binding,
+                StringComparison.Ordinal) == true);
+
+        foreach (var binding in new[]
+                 {
+                     "SystemSurvey.FssBodyValueFloor",
+                     "SystemSurvey.DssValueFloor",
+                     "SystemSurvey.DssDistanceLimitLs",
+                 })
+        {
+            var editor = NumericEditor(binding);
+            Assert.Equal("150", editor.Attribute("Width")?.Value);
+            Assert.Equal("Left", editor.Attribute("HorizontalAlignment")?.Value);
+            Assert.Equal("StackPanel", editor.Parent?.Name.LocalName);
+            Assert.Null(editor.Parent?.Attribute("Orientation"));
+            Assert.Equal("TextBlock", editor.PreviousNode is XElement label
+                ? label.Name.LocalName
+                : null);
+        }
+
+        var extension = NumericEditor(
+            "SystemSurvey.BodyPredictionPreviewExtensionSeconds");
+        Assert.Equal("150", extension.Attribute("Width")?.Value);
+        Assert.Equal("Horizontal", extension.Parent?.Attribute("Orientation")?.Value);
+        Assert.Equal("24,0,0,0", extension.Parent?.Parent?.Attribute("Margin")?.Value);
+        Assert.Equal(
+            "Extend Body Predictions preview by:",
+            extension.Parent?.Parent?.Elements().First().Attribute("Text")?.Value);
     }
 
     [Fact]

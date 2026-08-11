@@ -1035,7 +1035,8 @@ public sealed class MainWindowViewModelTests
             await File.WriteAllTextAsync(
                 Path.Combine(root, "Journal.2026-07-24T100000.01.log"),
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\",\"SystemAddress\":10477373803,\"StarPos\":[0,0,0],\"Body\":\"Earth\",\"BodyType\":\"Planet\"}\n");
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\",\"SystemAddress\":10477373803,\"StarPos\":[0,0,0],\"Body\":\"Earth\",\"BodyType\":\"Planet\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"LaunchSRV\",\"SRVType\":\"testbuggy\",\"ID\":7}\n");
             await File.WriteAllTextAsync(
                 Path.Combine(root, StatusFileReader.FileName),
                 "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"Status\",\"Flags\":69206016,\"Flags2\":0,\"Latitude\":12.5,\"Longitude\":-44.25,\"Heading\":-1,\"Altitude\":123.4}");
@@ -1072,6 +1073,47 @@ public sealed class MainWindowViewModelTests
             Assert.Equal(
                 10477373803,
                 viewModel.SystemSurvey.Snapshot.SystemAddress);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task RefreshRecognizesNomadHybridVehicleTelemetry()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-nomad-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(root);
+            await File.WriteAllTextAsync(
+                Path.Combine(root, "Journal.2026-08-11T020000.01.log"),
+                "{\"timestamp\":\"2026-08-11T02:03:24Z\",\"event\":\"LaunchFighter\",\"Loadout\":\"base\",\"ID\":44,\"PlayerControlled\":true}\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(root, StatusFileReader.FileName),
+                "{\"timestamp\":\"2026-08-11T02:05:05Z\",\"event\":\"Status\",\"Flags\":69206020,\"Flags2\":0,\"Latitude\":74.729782,\"Longitude\":-153.820694,\"Altitude\":296}");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(
+                root,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = paths,
+                });
+
+            await viewModel.RefreshAsync();
+
+            Assert.Equal("Nomad", viewModel.VehicleState);
+            Assert.Equal(EliteSrvTypes.Nomad, viewModel.CurrentVrOverlayMode);
         }
         finally
         {

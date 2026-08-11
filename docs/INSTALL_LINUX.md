@@ -1,6 +1,6 @@
 # Install SrvSurvey on Linux
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.13**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.14**.
 
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
@@ -32,14 +32,14 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.13-x86_64.AppImage" \
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.14-x86_64.AppImage" \
     "$HOME/Applications/SrvSurvey/"
 cd "$HOME/Applications/SrvSurvey"
-chmod +x SrvSurvey-XP-2.1.3.0-rc.13-x86_64.AppImage
-./SrvSurvey-XP-2.1.3.0-rc.13-x86_64.AppImage
+chmod +x SrvSurvey-XP-2.1.3.0-rc.14-x86_64.AppImage
+./SrvSurvey-XP-2.1.3.0-rc.14-x86_64.AppImage
 ```
 
-Replace `2.1.3.0-rc.13` with the downloaded version. Keep the AppImage in this folder;
+Replace `2.1.3.0-rc.14` with the downloaded version. Keep the AppImage in this folder;
 create a launcher or shortcut that points to it instead of moving internal
 files out of the AppImage.
 
@@ -48,7 +48,7 @@ the same folder:
 
 ```bash
 cd "$HOME/Applications/SrvSurvey"
-./SrvSurvey-XP-2.1.3.0-rc.13-x86_64.AppImage --appimage-extract-and-run
+./SrvSurvey-XP-2.1.3.0-rc.14-x86_64.AppImage --appimage-extract-and-run
 ```
 
 ## Run the portable archive
@@ -57,10 +57,10 @@ The extracted archive directory is the application's container folder. Keep
 all files together and run `SrvSurvey.Desktop` from that directory:
 
 ```bash
-mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.13"
-tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.13-linux-x64.tar.gz" \
-    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.13"
-cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.13"
+mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.14"
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.14-linux-x64.tar.gz" \
+    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.14"
+cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.14"
 chmod +x SrvSurvey.Desktop
 ./SrvSurvey.Desktop
 ```

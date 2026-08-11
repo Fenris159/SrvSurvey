@@ -266,6 +266,118 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task NomadLandingGearControlsSurfaceAndMiniTrackerVisibility()
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            "#1",
+            new SurfaceCoordinate(0, 2));
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            Genus,
+            new SurfaceCoordinate(0, 3));
+        survey.AutoShowMiniTrack = true;
+        survey.AutoHideSurfaceRadarWithoutLandingGear = true;
+
+        ApplySurveyContext(
+            survey,
+            Status(StatusFlags.InSrv, focus: GuiFocus.RolePanel),
+            EliteSrvTypes.Nomad);
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.ShouldShowMiniTrack);
+
+        ApplySurveyContext(
+            survey,
+            Status(
+                StatusFlags.InSrv | StatusFlags.LandingGearDown,
+                focus: GuiFocus.RolePanel),
+            EliteSrvTypes.Nomad);
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        Assert.True(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShowMiniTrack);
+
+        ApplySurveyContext(
+            survey,
+            Status(StatusFlags.InSrv, focus: GuiFocus.RolePanel),
+            "testbuggy");
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        Assert.True(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShowMiniTrack);
+    }
+
+    [Fact]
+    public async Task OnFootSamplerGateTracksLiveSelectedWeapon()
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            Genus,
+            new SurfaceCoordinate(0, 2));
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            "#1",
+            new SurfaceCoordinate(0, 3));
+        var unarmed = Status(StatusFlags.None) with
+        {
+            Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
+            SelectedWeapon = "$humanoid_fists_name;",
+        };
+        ApplySurveyContext(survey, unarmed);
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        survey.AutoShowMiniTrack = true;
+        Assert.True(viewModel.ShouldShowRadar);
+        Assert.True(viewModel.ShouldShowMiniTrack);
+
+        survey.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn = true;
+        Assert.False(viewModel.ShouldShowRadar);
+        Assert.True(viewModel.ShouldShowMiniTrack);
+        Assert.False(survey.IsGeneticSamplerDrawn);
+
+        ApplySurveyContext(survey, unarmed with
+        {
+            SelectedWeapon = "$humanoid_sampletool_name;",
+        });
+        Assert.True(viewModel.ShouldShowRadar);
+        Assert.True(survey.IsGeneticSamplerDrawn);
+
+        ApplySurveyContext(survey, unarmed);
+        Assert.False(viewModel.ShouldShowRadar);
+        Assert.False(survey.IsGeneticSamplerDrawn);
+
+        ApplySurveyContext(survey, unarmed with
+        {
+            SelectedWeapon = "wpn_s_pistol_kinetic_sauto",
+        });
+        Assert.False(viewModel.ShouldShowRadar);
+        Assert.False(survey.IsGeneticSamplerDrawn);
+
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        Assert.True(viewModel.ShouldShowRadar);
+    }
+
+    [Fact]
     public async Task HiddenQuickTrackersDoNotOpenRadarByThemselves()
     {
         var (viewModel, survey, store) = CreateViewModel();
@@ -592,7 +704,8 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
 
     private static void ApplySurveyContext(
         SystemSurveyViewModel survey,
-        EliteStatus status)
+        EliteStatus status,
+        string? activeSrvType = null)
     {
         survey.ApplyUpdate(
             [
@@ -605,7 +718,9 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
                     {"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test System 1","BodyID":7,"PlanetClass":"Rocky body","Landable":true,"Radius":1000}
                     """),
             ],
-            status);
+            status,
+            null,
+            activeSrvType);
     }
 
     private static EliteStatus Status(
