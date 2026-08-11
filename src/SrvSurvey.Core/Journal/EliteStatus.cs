@@ -60,6 +60,12 @@ public sealed record EliteStatus
     public bool OnFoot => Flags2.HasFlag(StatusFlags2.OnFoot);
 
     [JsonIgnore]
+    public bool IsGeneticSamplerDrawn => string.Equals(
+        SelectedWeapon,
+        "$humanoid_sampletool_name;",
+        StringComparison.Ordinal);
+
+    [JsonIgnore]
     public bool OnFootOnPlanet => Flags2.HasFlag(StatusFlags2.OnFootOnPlanet);
 
     [JsonIgnore]

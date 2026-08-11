@@ -1010,16 +1010,16 @@
                       Content="Show exploration values list" />
             <CheckBox IsChecked="{Binding SystemSurvey.HideGeoCount, Mode=TwoWay}"
                       Content="Hide geo signal counts" />
-            <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
-              <TextBlock VerticalAlignment="Center"
-                         Text="Minimum displayed body value (credits)" />
-              <NumericUpDown Grid.Column="1"
+            <StackPanel Spacing="6">
+              <TextBlock Text="Minimum displayed body value (credits)" />
+              <NumericUpDown Width="150"
+                             HorizontalAlignment="Left"
                              Minimum="0"
                              Maximum="100000000"
                              Increment="1000"
                              FormatString="N0"
                              Value="{Binding SystemSurvey.FssBodyValueFloor, Mode=TwoWay}" />
-            </Grid>
+            </StackPanel>
           </StackPanel>
 
           <StackPanel Grid.Column="1" Spacing="12">
@@ -1036,30 +1036,28 @@
                       Content="Skip bodies exceeding:" />
             <CheckBox IsChecked="{Binding SystemSurvey.ShowNonBodySignals, Mode=TwoWay}"
                       Content="Show non-body signals" />
-            <Grid ColumnDefinitions="*,150"
-                  ColumnSpacing="12"
-                  IsEnabled="{Binding SystemSurvey.HighlightDssCandidates}">
-              <TextBlock VerticalAlignment="Center"
-                         Text="Minimum DSS value (credits)" />
-              <NumericUpDown Grid.Column="1"
+            <StackPanel Spacing="6"
+                        IsEnabled="{Binding SystemSurvey.HighlightDssCandidates}">
+              <TextBlock Text="Minimum DSS value (credits)" />
+              <NumericUpDown Width="150"
+                             HorizontalAlignment="Left"
                              Minimum="0"
                              Maximum="100000000"
                              Increment="10000"
                              FormatString="N0"
                              Value="{Binding SystemSurvey.DssValueFloor, Mode=TwoWay}" />
-            </Grid>
-            <Grid ColumnDefinitions="*,150"
-                  ColumnSpacing="12"
-                  IsEnabled="{Binding SystemSurvey.SkipDistantDssCandidates}">
-              <TextBlock VerticalAlignment="Center"
-                         Text="DSS distance limit (LS from primary star)" />
-              <NumericUpDown Grid.Column="1"
+            </StackPanel>
+            <StackPanel Spacing="6"
+                        IsEnabled="{Binding SystemSurvey.SkipDistantDssCandidates}">
+              <TextBlock Text="DSS distance limit (LS from primary star)" />
+              <NumericUpDown Width="150"
+                             HorizontalAlignment="Left"
                              Minimum="0"
                              Maximum="10000000"
                              Increment="1000"
                              FormatString="N0"
                              Value="{Binding SystemSurvey.DssDistanceLimitLs, Mode=TwoWay}" />
-            </Grid>
+            </StackPanel>
           </StackPanel>
         </Grid>
 
@@ -1112,6 +1110,11 @@
                        Text="Surface history, trackers, and sample-exclusion rings on the bio plot radar." />
             <CheckBox IsChecked="{Binding SystemSurvey.AutoShowMiniTrack, Mode=TwoWay}"
                       Content="Mini trackers" />
+            <CheckBox IsChecked="{Binding SystemSurvey.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn, Mode=TwoWay}"
+                      IsEnabled="{Binding SystemSurvey.AutoShowSurfaceRadar}">
+              <TextBlock Text="Onfoot: Show only when Genetic Sampler is drawn."
+                         TextWrapping="Wrap" />
+            </CheckBox>
             <CheckBox IsChecked="{Binding SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear, Mode=TwoWay}"
                       Content="Hide if landing gear is not deployed when flying." />
             <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnSampling, Mode=TwoWay}"
@@ -1380,18 +1383,17 @@
                       Content="Show body information panel" />
             <CheckBox IsChecked="{Binding SystemSurvey.ShowBodyInfoInSystemMap, Mode=TwoWay}"
                       Content="In the System Map" />
-            <StackPanel Margin="36,0,0,0"
-                        Orientation="Horizontal"
-                        Spacing="8">
-              <TextBlock VerticalAlignment="Center"
-                         Text="Extend Body Predictions preview by:" />
-              <NumericUpDown Width="80"
-                             Minimum="0"
-                             Maximum="600"
-                             Increment="1"
-                             FormatString="N0"
-                             Value="{Binding SystemSurvey.BodyPredictionPreviewExtensionSeconds, Mode=TwoWay}" />
-              <TextBlock VerticalAlignment="Center" Text="seconds" />
+            <StackPanel Margin="24,0,0,0" Spacing="6">
+              <TextBlock Text="Extend Body Predictions preview by:" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <NumericUpDown Width="150"
+                               Minimum="0"
+                               Maximum="600"
+                               Increment="1"
+                               FormatString="N0"
+                               Value="{Binding SystemSurvey.BodyPredictionPreviewExtensionSeconds, Mode=TwoWay}" />
+                <TextBlock VerticalAlignment="Center" Text="seconds" />
+              </StackPanel>
             </StackPanel>
             <CheckBox IsChecked="{Binding SystemSurvey.ShowBodyInfoInOrbit, Mode=TwoWay}"
                       Content="In orbit around a body" />

@@ -28,6 +28,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private readonly RegionalCodexCandidateCatalog regionalCodexCandidates;
     private readonly Func<DateTimeOffset> utcNow;
     private EliteStatus? status;
+    private string? activeSrvType;
     private string? musicTrack;
     private ExobiologySnapshot exobiology = ExobiologySnapshot.Empty;
     private BiologyDiscoveryContext biologyDiscoveryContext =
@@ -68,6 +69,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool useSmallCanonnRadarCircles;
     private bool autoShowSurfaceRadar;
     private bool autoShowMiniTrack;
+    private bool showSurfaceRadarOnlyWhenGeneticSamplerDrawn;
     private int surfaceRadarSize;
     private bool autoHideSurfaceRadarWithoutLandingGear;
     private bool autoRemoveTrackerOnSampling;
@@ -172,6 +174,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         useSmallCanonnRadarCircles = preferences.UseSmallCanonnRadarCircles;
         autoShowSurfaceRadar = preferences.AutoShowSurfaceRadar;
         autoShowMiniTrack = preferences.AutoShowMiniTrack;
+        showSurfaceRadarOnlyWhenGeneticSamplerDrawn =
+            preferences.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn;
         surfaceRadarSize = preferences.SurfaceRadarSize;
         autoHideSurfaceRadarWithoutLandingGear =
             preferences.AutoHideSurfaceRadarWithoutLandingGear;
@@ -482,6 +486,17 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => autoShowMiniTrack;
         set => SetPreference(ref autoShowMiniTrack, value);
     }
+
+    public bool ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn
+    {
+        get => showSurfaceRadarOnlyWhenGeneticSamplerDrawn;
+        set => SetPreference(
+            ref showSurfaceRadarOnlyWhenGeneticSamplerDrawn,
+            value);
+    }
+
+    public bool IsGeneticSamplerDrawn =>
+        CurrentStatus?.IsGeneticSamplerDrawn == true;
 
     public int SurfaceRadarSize
     {
@@ -918,17 +933,27 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public bool HasBiologyStatus => BiologyStatus is not null;
 
-    internal bool ShouldSuppressSurfaceNavigationForLandingGear =>
-        AutoHideSurfaceRadarWithoutLandingGear
-        && status is
+    internal bool ShouldSuppressSurfaceNavigationForLandingGear
+    {
+        get
         {
-            InMainShip: true,
-            LandingGearDown: false,
-            Landed: false,
-            Docked: false,
-            GlideMode: false,
+            if (!AutoHideSurfaceRadarWithoutLandingGear
+                || status is not
+                {
+                    LandingGearDown: false,
+                    Landed: false,
+                    Docked: false,
+                    GlideMode: false,
+                }
+                || status.Flags.HasFlag(StatusFlags.Supercruise))
+            {
+                return false;
+            }
+
+            return status.InMainShip
+                || (status.InSrv && EliteSrvTypes.IsNomad(activeSrvType));
         }
-        && !status.Flags.HasFlag(StatusFlags.Supercruise);
+    }
 
     public long? LatestBiologyEntryId => latestBiologyEntryId;
 
@@ -1460,7 +1485,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public void ApplyUpdate(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? nextStatus,
-        ExobiologySnapshot? nextExobiology = null)
+        ExobiologySnapshot? nextExobiology = null,
+        string? nextActiveSrvType = null)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         if (journalEvents.Count == 0
@@ -1476,6 +1502,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         foreach (var journalEvent in journalEvents)
         {
             ApplyJournalEvent(journalEvent);
+        }
+
+        if (nextStatus is not null || journalEvents.Count > 0)
+        {
+            activeSrvType = nextActiveSrvType;
         }
 
         ApplyStatusUpdate(nextStatus, previousStatus);
@@ -1504,6 +1535,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         if (nextStatus is not null)
         {
             OnPropertyChanged(nameof(CurrentStatus));
+            OnPropertyChanged(nameof(IsGeneticSamplerDrawn));
         }
 
         if (nextExobiology is not null)
@@ -2715,7 +2747,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 SkipRingsForDss,
                 ShowNonBodySignals,
                 FssTuningDetector,
-                SuppressForActiveBuildProjects));
+                SuppressForActiveBuildProjects,
+                ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn));
             SettingsStatus = string.Empty;
         }
         catch (Exception exception) when (

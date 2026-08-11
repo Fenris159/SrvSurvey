@@ -58,6 +58,68 @@ public sealed class JournalSessionStateTests
         Assert.Null(state.ActiveSrvType);
     }
 
+    [Fact]
+    public void NomadLaunchUsesHybridJournalAndStatusTelemetry()
+    {
+        var state = new JournalSessionState();
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"LaunchFighter","Loadout":"base","ID":44,"PlayerControlled":true}""")));
+        Assert.True(state.IsFighterLaunched);
+
+        Assert.True(state.ReconcileVehicleStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.LandingGearDown,
+        }));
+
+        Assert.Equal(EliteSrvTypes.Nomad, state.ActiveSrvType);
+        Assert.True(state.IsNomadActive);
+        Assert.False(state.IsFighterLaunched);
+    }
+
+    [Fact]
+    public void NomadTypeReportedAtDockIsReusedForTheNextLaunch()
+    {
+        var state = new JournalSessionState();
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"DockSRV","SRVType":"lander01","SRVType_Localised":"Nomad","ID":44}""")));
+        Assert.True(state.Apply(Parse(
+            """{"event":"LaunchFighter","Loadout":"base","ID":44,"PlayerControlled":true}""")));
+
+        Assert.True(state.IsNomadActive);
+        Assert.False(state.IsFighterLaunched);
+        Assert.False(state.ReconcileVehicleStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InSrv,
+        }));
+    }
+
+    [Fact]
+    public void ConventionalFighterAndSrvTelemetryRemainDistinct()
+    {
+        var fighterState = new JournalSessionState();
+        Assert.True(fighterState.Apply(Parse(
+            """{"event":"LaunchFighter","ID":7,"PlayerControlled":true}""")));
+        Assert.False(fighterState.ReconcileVehicleStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InFighter,
+        }));
+        Assert.Null(fighterState.ActiveSrvType);
+        Assert.False(fighterState.IsNomadActive);
+        Assert.True(fighterState.IsFighterLaunched);
+
+        var srvState = new JournalSessionState();
+        Assert.True(srvState.Apply(Parse(
+            """{"event":"LaunchSRV","SRVType":"testbuggy","ID":8}""")));
+        Assert.False(srvState.ReconcileVehicleStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InSrv,
+        }));
+        Assert.Equal("testbuggy", srvState.ActiveSrvType);
+        Assert.False(srvState.IsNomadActive);
+    }
+
     [Theory]
     [InlineData("Died")]
     [InlineData("Resurrect")]
@@ -117,6 +179,20 @@ public sealed class JournalSessionStateTests
         Assert.True(state.IsAtCarrierManagement);
         Assert.False(state.IsAtMainMenu);
         Assert.Equal("FleetCarrier_Managment", state.MusicTrack);
+    }
+
+    [Fact]
+    public void FileheaderTreatsInitialFrontEndAsMainMenuUntilLoadGame()
+    {
+        var state = new JournalSessionState();
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"Fileheader","gameversion":"4.4.0.3"}""")));
+        Assert.True(state.IsAtMainMenu);
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"LoadGame","Commander":"Drew","FID":"F123"}""")));
+        Assert.False(state.IsAtMainMenu);
     }
 
     [Fact]

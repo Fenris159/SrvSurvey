@@ -6,6 +6,9 @@ namespace SrvSurvey.Core.Journal;
 public sealed class JournalSessionState
 {
     private const string ShipIdProperty = "ShipID";
+    private readonly Dictionary<long, string> srvTypesById = [];
+    private long? pendingPlayerControlledFighterId;
+
     public string? GameVersion { get; private set; }
 
     public string? GameBuild { get; private set; }
@@ -27,6 +30,8 @@ public sealed class JournalSessionState
     public string? ShipIdent { get; private set; }
 
     public string? ActiveSrvType { get; private set; }
+
+    public bool IsNomadActive => EliteSrvTypes.IsNomad(ActiveSrvType);
 
     public OdysseySuitType CurrentSuit { get; private set; }
 
@@ -68,11 +73,16 @@ public sealed class JournalSessionState
         switch (journalEvent.EventName)
         {
             case "Fileheader":
+                ResetVehicleSessionState();
                 GameVersion = GetString(root, "gameversion") ?? GameVersion;
                 GameBuild = GetString(root, "build") ?? GameBuild;
                 IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
                 IsShutdown = false;
-                IsAtMainMenu = false;
+                // Elite creates the journal before LoadGame while it is still
+                // in the initial front end, but does not consistently emit a
+                // MainMenu music event there. Treat the new pre-session journal
+                // as the main menu until LoadGame confirms gameplay has begun.
+                IsAtMainMenu = true;
                 IsAtCarrierManagement = false;
                 MusicTrack = null;
                 break;
@@ -83,6 +93,7 @@ public sealed class JournalSessionState
                 break;
 
             case "LoadGame":
+                ResetVehicleSessionState();
                 CommanderName = GetString(root, "Commander") ?? CommanderName;
                 FrontierId = GetString(root, "FID") ?? FrontierId;
                 GameMode = GetString(root, nameof(GameMode)) ?? GameMode;
@@ -129,19 +140,42 @@ public sealed class JournalSessionState
                 break;
 
             case "LaunchSRV":
-                ActiveSrvType = GetString(root, "SRVType") ?? ActiveSrvType;
+                var launchedSrvType = GetString(root, "SRVType");
+                ActiveSrvType = launchedSrvType ?? ActiveSrvType;
+                RememberSrvType(root, launchedSrvType);
+                pendingPlayerControlledFighterId = null;
                 break;
 
             case "DockSRV":
+                RememberSrvType(root, GetString(root, "SRVType"));
                 ActiveSrvType = null;
+                pendingPlayerControlledFighterId = null;
                 break;
 
             case "LaunchFighter":
                 IsFighterLaunched = true;
+                if (GetBoolean(root, "PlayerControlled") == true)
+                {
+                    pendingPlayerControlledFighterId = GetInt64(root, "ID");
+                    if (pendingPlayerControlledFighterId is { } vehicleId
+                        && srvTypesById.TryGetValue(vehicleId, out var srvType)
+                        && EliteSrvTypes.IsNomad(srvType))
+                    {
+                        ActiveSrvType = srvType;
+                        IsFighterLaunched = false;
+                    }
+                }
+
                 break;
 
             case "DockFighter":
                 IsFighterLaunched = false;
+                pendingPlayerControlledFighterId = null;
+                if (IsNomadActive)
+                {
+                    ActiveSrvType = null;
+                }
+
                 break;
 
             case "SuitLoadout":
@@ -245,11 +279,63 @@ public sealed class JournalSessionState
         return true;
     }
 
+    public bool ReconcileVehicleStatus(EliteStatus status)
+    {
+        ArgumentNullException.ThrowIfNull(status);
+        var previousSrvType = ActiveSrvType;
+        var previousFighterState = IsFighterLaunched;
+
+        if (status.InSrv && pendingPlayerControlledFighterId is { } vehicleId)
+        {
+            ActiveSrvType = EliteSrvTypes.Nomad;
+            srvTypesById[vehicleId] = EliteSrvTypes.Nomad;
+            IsFighterLaunched = false;
+            pendingPlayerControlledFighterId = null;
+        }
+        else if (status.InFighter)
+        {
+            if (IsNomadActive)
+            {
+                ActiveSrvType = null;
+            }
+
+            pendingPlayerControlledFighterId = null;
+        }
+        else if (!status.InSrv && IsNomadActive)
+        {
+            ActiveSrvType = null;
+        }
+
+        return !string.Equals(
+                previousSrvType,
+                ActiveSrvType,
+                StringComparison.OrdinalIgnoreCase)
+            || previousFighterState != IsFighterLaunched;
+    }
+
     private void ClearLiveLocationContext()
     {
         ActiveSrvType = null;
         IsFighterLaunched = false;
+        pendingPlayerControlledFighterId = null;
         BodyName = null;
+    }
+
+    private void RememberSrvType(JsonElement root, string? srvType)
+    {
+        var vehicleId = GetInt64(root, "ID");
+        if (vehicleId is not null && !string.IsNullOrWhiteSpace(srvType))
+        {
+            srvTypesById[vehicleId.Value] = srvType;
+        }
+    }
+
+    private void ResetVehicleSessionState()
+    {
+        ActiveSrvType = null;
+        IsFighterLaunched = false;
+        pendingPlayerControlledFighterId = null;
+        srvTypesById.Clear();
     }
 
     public JournalSnapshot CreateSnapshot(

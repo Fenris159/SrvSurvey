@@ -228,7 +228,11 @@ public sealed class SystemSurveySettingsStore
             GetBoolean(
                 settings,
                 "SuppressForActiveBuildProjects",
-                defaults.SuppressForActiveBuildProjects));
+                defaults.SuppressForActiveBuildProjects),
+            GetBoolean(
+                settings,
+                "ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn",
+                defaults.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn));
     }
 
     public void Save(SystemSurveyPreferences preferences)
@@ -327,6 +331,8 @@ public sealed class SystemSurveySettingsStore
             settings["ShowNonBodySignals"] = preferences.ShowNonBodySignals;
             settings["SuppressForActiveBuildProjects"] =
                 preferences.SuppressForActiveBuildProjects;
+            settings["ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn"] =
+                preferences.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn;
             WriteFssTuningDetectorSettings(
                 settings,
                 preferences.FssTuningDetector);
@@ -505,7 +511,8 @@ public sealed record SystemSurveyPreferences(
     bool SkipRingsForDss,
     bool ShowNonBodySignals,
     FssTuningDetectorSettings FssTuningDetector,
-    bool SuppressForActiveBuildProjects = false)
+    bool SuppressForActiveBuildProjects = false,
+    bool ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn = false)
 {
     public static SystemSurveyPreferences Default { get; } = new(
         AutoShowBodyInfo: true,
@@ -560,7 +567,8 @@ public sealed record SystemSurveyPreferences(
         SkipRingsForDss: true,
         ShowNonBodySignals: false,
         FssTuningDetector: FssTuningDetectorSettings.Default,
-        SuppressForActiveBuildProjects: false);
+        SuppressForActiveBuildProjects: false,
+        ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn: false);
 }
 
 public sealed record FssTuningDetectorSettings(

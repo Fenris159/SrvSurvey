@@ -199,6 +199,44 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         });
         Assert.True(viewModel.ShouldLoadPriorScans);
 
+        viewModel.ApplyUpdate(
+            [],
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
+                BodyName = "Test 1",
+                PlanetRadius = 1_000_000,
+            },
+            null,
+            EliteSrvTypes.Nomad);
+        Assert.False(viewModel.ShouldLoadPriorScans);
+
+        viewModel.ApplyUpdate(
+            [],
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong
+                    | StatusFlags.InSrv
+                    | StatusFlags.LandingGearDown,
+                BodyName = "Test 1",
+                PlanetRadius = 1_000_000,
+            },
+            null,
+            EliteSrvTypes.Nomad);
+        Assert.True(viewModel.ShouldLoadPriorScans);
+
+        viewModel.ApplyUpdate(
+            [],
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
+                BodyName = "Test 1",
+                PlanetRadius = 1_000_000,
+            },
+            null,
+            "testbuggy");
+        Assert.True(viewModel.ShouldLoadPriorScans);
+
         viewModel.ApplyUpdate([], new EliteStatus
         {
             Flags = StatusFlags.HasLatLong | StatusFlags.Supercruise,

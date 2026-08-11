@@ -152,6 +152,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private bool awaitFreshCargoSnapshot;
     private DateTimeOffset? companionIdentityChangedAt;
     private DateTimeOffset lastIdleHousekeepingAt;
+    private bool isAwaitingCommanderIdentity;
     private bool disposed;
 
     public MainWindowViewModel(
@@ -1901,6 +1902,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     private void ApplyJournalAndStatusBaseline(JournalMonitorUpdate update)
     {
+        isAwaitingCommanderIdentity = update.IsAwaitingCommanderIdentity;
         if (update.IsBootstrapRead || update.Status is not null)
         {
             latestStatus = update.Status;
@@ -1910,6 +1912,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         foreach (var journalEvent in update.JournalEvents)
         {
             journalState.Apply(journalEvent);
+        }
+
+        if (update.Status is { } status)
+        {
+            journalState.ReconcileVehicleStatus(status);
         }
 
         Colonization.UpdateMusicTrack(journalState.MusicTrack);
@@ -2031,7 +2038,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             latestStatus is not null,
             !string.IsNullOrWhiteSpace(journalState.CommanderName),
             journalState.IsShutdown,
-            journalState.IsAtMainMenu,
+            journalState.IsAtMainMenu || isAwaitingCommanderIdentity,
             journalState.IsAtCarrierManagement);
         JournalPostProcessor.SelectCommander(journalState.FrontierId);
     }
@@ -2456,7 +2463,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             SystemSurvey.ApplyUpdate(
                 update.JournalEvents,
                 update.Status,
-                exobiologyAfter);
+                exobiologyAfter,
+                journalState.ActiveSrvType);
         }
 
         await LoadCurrentSystemHistoryAsync();
@@ -4150,7 +4158,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     private void ApplyStatus(EliteStatus status)
     {
-        VehicleState = DescribeVehicleState(status);
+        VehicleState = DescribeVehicleState(status, journalState.ActiveSrvType);
         SurfacePosition = status.HasLatitudeLongitude
             ? $"{status.Latitude:F6}, {status.Longitude:F6}"
             : Unavailable;
@@ -4160,7 +4168,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         GameUiFocus = status.GuiFocus.ToString();
     }
 
-    private static string DescribeVehicleState(EliteStatus status)
+    private static string DescribeVehicleState(
+        EliteStatus status,
+        string? activeSrvType)
     {
         if (status.OnFoot)
         {
@@ -4169,7 +4179,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         if (status.InSrv)
         {
-            return "SRV";
+            return EliteSrvTypes.IsNomad(activeSrvType)
+                ? "Nomad"
+                : "SRV";
         }
 
         if (status.InFighter)
