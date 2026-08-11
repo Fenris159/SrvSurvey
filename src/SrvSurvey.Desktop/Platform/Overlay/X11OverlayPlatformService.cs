@@ -16,7 +16,7 @@ internal sealed class X11OverlayPlatformService
     private const nint SubstructureRedirectMask = 1 << 20;
     private static readonly X11Native.XErrorHandler ErrorHandler = HandleXError;
     private static readonly object ErrorHandlerSync = new();
-    private static X11Native.XErrorHandler? previousErrorHandler;
+    private static nint previousErrorHandlerPointer;
     private static bool errorHandlerInstalled;
     private readonly object displaySync = new();
     private nint display;
@@ -554,12 +554,10 @@ internal sealed class X11OverlayPlatformService
                 ErrorHandler);
             var previousHandlerPointer = X11Native.XSetErrorHandler(
                 errorHandlerPointer);
-            if (previousHandlerPointer != nint.Zero
-                && previousHandlerPointer != errorHandlerPointer)
-            {
-                previousErrorHandler = Marshal.GetDelegateForFunctionPointer<
-                    X11Native.XErrorHandler>(previousHandlerPointer);
-            }
+            previousErrorHandlerPointer = previousHandlerPointer
+                != errorHandlerPointer
+                ? previousHandlerPointer
+                : nint.Zero;
 
             errorHandlerInstalled = true;
         }
@@ -574,7 +572,10 @@ internal sealed class X11OverlayPlatformService
             + $"error {errorEvent.ErrorCode}, request "
             + $"{errorEvent.RequestCode}.{errorEvent.MinorCode}, resource "
             + $"{errorEvent.ResourceId}, display {errorDisplay}.");
-        return previousErrorHandler?.Invoke(errorDisplay, ref errorEvent) ?? 0;
+        return X11Native.InvokeErrorHandler(
+            previousErrorHandlerPointer,
+            errorDisplay,
+            ref errorEvent);
     }
 
     private static nuint[] ReadSupportedAtoms(nint display, nuint atomType)

@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
@@ -137,6 +138,44 @@ public sealed class OverlayPlatformServiceTests
 
         Assert.Empty(restored);
     }
+
+    [Fact]
+    public void X11ErrorHandlerSupportsACompatibleDelegateType()
+    {
+        var invoked = false;
+        var errorEvent = new X11Native.XErrorEvent
+        {
+            ErrorCode = 3,
+        };
+        CompatibleX11ErrorHandler handler = (
+            nint display,
+            ref X11Native.XErrorEvent receivedEvent) =>
+        {
+            invoked = display == (nint)42 && receivedEvent.ErrorCode == 3;
+            return 17;
+        };
+        var handlerPointer = Marshal.GetFunctionPointerForDelegate(handler);
+
+        Assert.Equal(
+            17,
+            X11Native.InvokeErrorHandler(
+                handlerPointer,
+                (nint)42,
+                ref errorEvent));
+        Assert.True(invoked);
+        Assert.Equal(
+            0,
+            X11Native.InvokeErrorHandler(
+                nint.Zero,
+                (nint)42,
+                ref errorEvent));
+        GC.KeepAlive(handler);
+    }
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int CompatibleX11ErrorHandler(
+        nint display,
+        ref X11Native.XErrorEvent errorEvent);
 
     private sealed class TrackingDisposable : IDisposable
     {

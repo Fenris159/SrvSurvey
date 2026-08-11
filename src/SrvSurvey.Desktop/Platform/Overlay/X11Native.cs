@@ -20,6 +20,26 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial nint XSetErrorHandler(nint handler);
 
+    internal static unsafe int InvokeErrorHandler(
+        nint handler,
+        nint display,
+        ref XErrorEvent errorEvent)
+    {
+        if (handler == nint.Zero)
+        {
+            return 0;
+        }
+
+        fixed (XErrorEvent* errorEventPointer = &errorEvent)
+        {
+            var callback = (delegate* unmanaged[Cdecl]<
+                nint,
+                XErrorEvent*,
+                int>)handler;
+            return callback(display, errorEventPointer);
+        }
+    }
+
     [LibraryImport("libX11.so.6")]
     internal static partial nuint XDefaultRootWindow(nint display);
 
