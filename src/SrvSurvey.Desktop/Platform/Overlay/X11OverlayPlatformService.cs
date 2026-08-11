@@ -16,6 +16,7 @@ internal sealed class X11OverlayPlatformService
     private const nint SubstructureRedirectMask = 1 << 20;
     private static readonly X11Native.XErrorHandler ErrorHandler = HandleXError;
     private static readonly object ErrorHandlerSync = new();
+    private static X11Native.XErrorHandler? previousErrorHandler;
     private static bool errorHandlerInstalled;
     private readonly object displaySync = new();
     private nint display;
@@ -177,14 +178,6 @@ internal sealed class X11OverlayPlatformService
     public OverlayInteractionResult SetInteractive(Window window, bool interactive)
     {
         ArgumentNullException.ThrowIfNull(window);
-        if (display == nint.Zero || !shapeAvailable)
-        {
-            return new OverlayInteractionResult(
-                IsPrepared: false,
-                IsInteractive: false,
-                Capabilities.StatusText);
-        }
-
         var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
         {
@@ -194,155 +187,175 @@ internal sealed class X11OverlayPlatformService
                 "The native X11 overlay window is not available.");
         }
 
-        var currentDisplay = display;
-        var windowHandle = unchecked((nuint)handle);
-        if (!interactive)
+        lock (displaySync)
         {
-            interactiveWindowHandles.Remove(windowHandle);
-        }
-
-        try
-        {
-            if (!IsValidWindow(currentDisplay, windowHandle))
+            if (!TryGetDisplay(out var currentDisplay) || !shapeAvailable)
             {
                 return new OverlayInteractionResult(
                     IsPrepared: false,
                     IsInteractive: false,
-                    "The native X11 overlay window is no longer available.");
+                    Capabilities.StatusText);
             }
 
-            var stackingApplied = ApplyWindowType(currentDisplay, handle);
-            if (interactive)
+            var windowHandle = unchecked((nuint)handle);
+            if (!interactive)
             {
-                X11Native.XShapeCombineMask(
-                    currentDisplay,
-                    windowHandle,
-                    X11Native.ShapeInput,
-                    0,
-                    0,
-                    0,
-                    X11Native.ShapeSet);
-            }
-            else
-            {
-                X11Native.XShapeCombineRectangles(
-                    currentDisplay,
-                    windowHandle,
-                    X11Native.ShapeInput,
-                    0,
-                    0,
-                    nint.Zero,
-                    0,
-                    X11Native.ShapeSet,
-                    X11Native.Unsorted);
+                interactiveWindowHandles.Remove(windowHandle);
             }
 
-            _ = X11Native.XFlush(currentDisplay);
-            if (interactive)
+            try
             {
-                interactiveWindowHandles.Add(windowHandle);
-            }
+                if (!IsValidWindow(currentDisplay, windowHandle))
+                {
+                    return new OverlayInteractionResult(
+                        IsPrepared: false,
+                        IsInteractive: false,
+                        "The native X11 overlay window is no longer available.");
+                }
 
-            window.IsHitTestVisible = interactive;
-            return new OverlayInteractionResult(
-                IsPrepared: true,
-                IsInteractive: interactive,
-                CreateStatus(interactive, stackingApplied));
-        }
-        catch (Exception exception) when (
-            exception is DllNotFoundException
-                or EntryPointNotFoundException
-                or BadImageFormatException)
-        {
-            return new OverlayInteractionResult(
-                IsPrepared: false,
-                IsInteractive: false,
-                $"X11 overlay interaction mode could not be changed: {exception.Message}");
+                var stackingApplied = ApplyWindowType(currentDisplay, handle);
+                if (interactive)
+                {
+                    X11Native.XShapeCombineMask(
+                        currentDisplay,
+                        windowHandle,
+                        X11Native.ShapeInput,
+                        0,
+                        0,
+                        0,
+                        X11Native.ShapeSet);
+                }
+                else
+                {
+                    X11Native.XShapeCombineRectangles(
+                        currentDisplay,
+                        windowHandle,
+                        X11Native.ShapeInput,
+                        0,
+                        0,
+                        nint.Zero,
+                        0,
+                        X11Native.ShapeSet,
+                        X11Native.Unsorted);
+                }
+
+                _ = X11Native.XFlush(currentDisplay);
+                if (interactive)
+                {
+                    interactiveWindowHandles.Add(windowHandle);
+                }
+
+                window.IsHitTestVisible = interactive;
+                return new OverlayInteractionResult(
+                    IsPrepared: true,
+                    IsInteractive: interactive,
+                    CreateStatus(interactive, stackingApplied));
+            }
+            catch (Exception exception) when (
+                exception is DllNotFoundException
+                    or EntryPointNotFoundException
+                    or BadImageFormatException)
+            {
+                return new OverlayInteractionResult(
+                    IsPrepared: false,
+                    IsInteractive: false,
+                    $"X11 overlay interaction mode could not be changed: {exception.Message}");
+            }
         }
     }
 
     public IDisposable? BeginVisibleCursorSession(Window window)
     {
         ArgumentNullException.ThrowIfNull(window);
-        var currentDisplay = display;
         var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
-        if (currentDisplay == nint.Zero || handle == nint.Zero)
+        if (handle == nint.Zero)
         {
             window.Activate();
             return null;
         }
 
-        try
+        lock (displaySync)
         {
-            var rootWindow = X11Native.XDefaultRootWindow(currentDisplay);
-            var activeWindowAtom = X11Native.XInternAtom(
-                currentDisplay,
-                "_NET_ACTIVE_WINDOW",
-                onlyIfExists: 0);
-            var previousActiveWindow = ReadLiveActiveWindow(
-                rootWindow,
-                activeWindowAtom);
-            var interactionWindow = unchecked((nuint)handle);
-            interactiveWindowHandles.RemoveWhere(
-                candidate => !IsValidWindow(currentDisplay, candidate));
-            if (!IsValidWindow(currentDisplay, interactionWindow))
+            if (!TryGetDisplay(out var currentDisplay))
             {
                 window.Activate();
                 return null;
             }
 
-            var interactionWindows = interactiveWindowHandles
-                .Append(interactionWindow)
-                .Distinct()
-                .ToArray();
-
-            window.Activate();
-            var cursor = X11Native.XCreateFontCursor(
-                currentDisplay,
-                LeftPointerCursor);
-            if (cursor != 0)
+            try
             {
-                foreach (var currentWindow in interactionWindows)
+                var rootWindow = X11Native.XDefaultRootWindow(currentDisplay);
+                var activeWindowAtom = X11Native.XInternAtom(
+                    currentDisplay,
+                    "_NET_ACTIVE_WINDOW",
+                    onlyIfExists: 0);
+                var previousActiveWindow = ReadActiveWindow(
+                    currentDisplay,
+                    rootWindow,
+                    activeWindowAtom);
+                var interactionWindow = unchecked((nuint)handle);
+                interactiveWindowHandles.RemoveWhere(
+                    candidate => !IsValidWindow(currentDisplay, candidate));
+                if (!IsValidWindow(currentDisplay, interactionWindow))
                 {
-                    _ = X11Native.XDefineCursor(
-                        currentDisplay,
-                        currentWindow,
-                        cursor);
+                    window.Activate();
+                    return null;
                 }
-            }
 
-            _ = ActivateLiveWindow(
-                rootWindow,
-                activeWindowAtom,
-                interactionWindow,
-                previousActiveWindow);
-            return new X11CursorVisibilitySession(
-                interactionWindows,
-                cursor,
-                previousActiveWindow,
-                new X11CursorSessionOperations(
-                    getActiveWindow: () => ReadLiveActiveWindow(
-                        rootWindow,
-                        activeWindowAtom),
-                    getFocusWindow: ReadLiveFocusWindow,
-                    activateWindow: target => ActivateLiveWindow(
-                        rootWindow,
-                        activeWindowAtom,
-                        target,
-                        interactionWindow),
-                    undefineCursor: UndefineLiveCursor,
-                    freeCursor: FreeLiveCursor));
-        }
-        catch (Exception exception) when (
-            exception is DllNotFoundException
-                or EntryPointNotFoundException
-                or BadImageFormatException)
-        {
-            Trace.TraceWarning(
-                "X11 overlay cursor activation was unavailable; using the "
-                + $"window-manager fallback: {exception.Message}");
-            window.Activate();
-            return null;
+                var interactionWindows = interactiveWindowHandles
+                    .Append(interactionWindow)
+                    .Distinct()
+                    .ToArray();
+
+                window.Activate();
+                var cursor = X11Native.XCreateFontCursor(
+                    currentDisplay,
+                    LeftPointerCursor);
+                if (cursor != 0)
+                {
+                    foreach (var currentWindow in interactionWindows)
+                    {
+                        _ = X11Native.XDefineCursor(
+                            currentDisplay,
+                            currentWindow,
+                            cursor);
+                    }
+                }
+
+                _ = ActivateWindow(
+                    currentDisplay,
+                    rootWindow,
+                    activeWindowAtom,
+                    interactionWindow,
+                    previousActiveWindow);
+                return new X11CursorVisibilitySession(
+                    interactionWindows,
+                    cursor,
+                    previousActiveWindow,
+                    new X11CursorSessionOperations(
+                        getActiveWindow: () => ReadLiveActiveWindow(
+                            rootWindow,
+                            activeWindowAtom),
+                        getFocusWindow: ReadLiveFocusWindow,
+                        activateWindow: target => ActivateLiveWindow(
+                            rootWindow,
+                            activeWindowAtom,
+                            target,
+                            interactionWindow),
+                        undefineCursor: UndefineLiveCursor,
+                        freeCursor: FreeLiveCursor));
+            }
+            catch (Exception exception) when (
+                exception is DllNotFoundException
+                    or EntryPointNotFoundException
+                    or BadImageFormatException)
+            {
+                Trace.TraceWarning(
+                    "X11 overlay cursor activation was unavailable; using the "
+                    + $"window-manager fallback: {exception.Message}");
+                window.Activate();
+                return null;
+            }
         }
     }
 
@@ -364,31 +377,34 @@ internal sealed class X11OverlayPlatformService
     public bool SuppressNativeWindow(Window window)
     {
         ArgumentNullException.ThrowIfNull(window);
-        if (display == nint.Zero)
-        {
-            return false;
-        }
-
         var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
         {
             return false;
         }
 
-        try
+        lock (displaySync)
         {
-            _ = X11Native.XUnmapWindow(
-                display,
-                unchecked((nuint)handle));
-            _ = X11Native.XFlush(display);
-            return true;
-        }
-        catch (Exception exception) when (
-            exception is DllNotFoundException
-                or EntryPointNotFoundException
-                or BadImageFormatException)
-        {
-            return false;
+            if (!TryGetDisplay(out var currentDisplay))
+            {
+                return false;
+            }
+
+            try
+            {
+                _ = X11Native.XUnmapWindow(
+                    currentDisplay,
+                    unchecked((nuint)handle));
+                _ = X11Native.XFlush(currentDisplay);
+                return true;
+            }
+            catch (Exception exception) when (
+                exception is DllNotFoundException
+                    or EntryPointNotFoundException
+                    or BadImageFormatException)
+            {
+                return false;
+            }
         }
     }
 
@@ -398,14 +414,6 @@ internal sealed class X11OverlayPlatformService
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(regions);
-        if (display == nint.Zero || !shapeAvailable)
-        {
-            return new OverlayInteractionResult(
-                IsPrepared: false,
-                IsInteractive: false,
-                Capabilities.StatusText);
-        }
-
         var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
         {
@@ -420,94 +428,110 @@ internal sealed class X11OverlayPlatformService
             return SetInteractive(window, interactive: false);
         }
 
-        var currentDisplay = display;
-        var windowHandle = unchecked((nuint)handle);
-        try
+        lock (displaySync)
         {
-            if (!IsValidWindow(currentDisplay, windowHandle))
+            if (!TryGetDisplay(out var currentDisplay) || !shapeAvailable)
             {
-                interactiveWindowHandles.Remove(windowHandle);
                 return new OverlayInteractionResult(
                     IsPrepared: false,
                     IsInteractive: false,
-                    "The native X11 overlay host is no longer available.");
+                    Capabilities.StatusText);
             }
 
-            var rectangles = new X11Native.XRectangle[regions.Count];
-            var rectangleCount = 0;
-            foreach (var region in regions)
-            {
-                if (region.Width <= 0 || region.Height <= 0)
-                {
-                    continue;
-                }
-
-                var left = Math.Clamp(region.X, short.MinValue, short.MaxValue);
-                var top = Math.Clamp(region.Y, short.MinValue, short.MaxValue);
-                var width = Math.Clamp(region.Width, 1, ushort.MaxValue);
-                var height = Math.Clamp(region.Height, 1, ushort.MaxValue);
-                rectangles[rectangleCount++] = new X11Native.XRectangle
-                {
-                    X = (short)left,
-                    Y = (short)top,
-                    Width = (ushort)width,
-                    Height = (ushort)height,
-                };
-            }
-
-            if (rectangleCount == 0)
-            {
-                return SetInteractive(window, interactive: false);
-            }
-
-            var stackingApplied = ApplyWindowType(currentDisplay, handle);
-            var pinnedRectangles = GCHandle.Alloc(
-                rectangles,
-                GCHandleType.Pinned);
+            var windowHandle = unchecked((nuint)handle);
             try
             {
-                X11Native.XShapeCombineRectangles(
-                    currentDisplay,
-                    windowHandle,
-                    X11Native.ShapeInput,
-                    0,
-                    0,
-                    pinnedRectangles.AddrOfPinnedObject(),
-                    rectangleCount,
-                    X11Native.ShapeSet,
-                    X11Native.Unsorted);
+                if (!IsValidWindow(currentDisplay, windowHandle))
+                {
+                    interactiveWindowHandles.Remove(windowHandle);
+                    return new OverlayInteractionResult(
+                        IsPrepared: false,
+                        IsInteractive: false,
+                        "The native X11 overlay host is no longer available.");
+                }
+
+                var rectangles = new X11Native.XRectangle[regions.Count];
+                var rectangleCount = 0;
+                foreach (var region in regions)
+                {
+                    if (region.Width <= 0 || region.Height <= 0)
+                    {
+                        continue;
+                    }
+
+                    var left = Math.Clamp(
+                        region.X,
+                        short.MinValue,
+                        short.MaxValue);
+                    var top = Math.Clamp(
+                        region.Y,
+                        short.MinValue,
+                        short.MaxValue);
+                    var width = Math.Clamp(region.Width, 1, ushort.MaxValue);
+                    var height = Math.Clamp(region.Height, 1, ushort.MaxValue);
+                    rectangles[rectangleCount++] = new X11Native.XRectangle
+                    {
+                        X = (short)left,
+                        Y = (short)top,
+                        Width = (ushort)width,
+                        Height = (ushort)height,
+                    };
+                }
+
+                if (rectangleCount == 0)
+                {
+                    return SetInteractive(window, interactive: false);
+                }
+
+                var stackingApplied = ApplyWindowType(currentDisplay, handle);
+                var pinnedRectangles = GCHandle.Alloc(
+                    rectangles,
+                    GCHandleType.Pinned);
+                try
+                {
+                    X11Native.XShapeCombineRectangles(
+                        currentDisplay,
+                        windowHandle,
+                        X11Native.ShapeInput,
+                        0,
+                        0,
+                        pinnedRectangles.AddrOfPinnedObject(),
+                        rectangleCount,
+                        X11Native.ShapeSet,
+                        X11Native.Unsorted);
+                }
+                finally
+                {
+                    pinnedRectangles.Free();
+                }
+                _ = X11Native.XFlush(currentDisplay);
+                interactiveWindowHandles.Add(windowHandle);
+                window.IsHitTestVisible = true;
+                return new OverlayInteractionResult(
+                    IsPrepared: true,
+                    IsInteractive: true,
+                    stackingApplied
+                        ? "Combined overlay edit mode is active through the X11 input region."
+                        : "Combined overlay edit mode is active, but the preferred stacking hint could not be applied.");
             }
-            finally
+            catch (Exception exception) when (
+                exception is DllNotFoundException
+                    or EntryPointNotFoundException
+                    or BadImageFormatException)
             {
-                pinnedRectangles.Free();
+                return new OverlayInteractionResult(
+                    IsPrepared: false,
+                    IsInteractive: false,
+                    $"The combined X11 overlay input region could not be changed: {exception.Message}");
             }
-            _ = X11Native.XFlush(currentDisplay);
-            interactiveWindowHandles.Add(windowHandle);
-            window.IsHitTestVisible = true;
-            return new OverlayInteractionResult(
-                IsPrepared: true,
-                IsInteractive: true,
-                stackingApplied
-                    ? "Combined overlay edit mode is active through the X11 input region."
-                    : "Combined overlay edit mode is active, but the preferred stacking hint could not be applied.");
-        }
-        catch (Exception exception) when (
-            exception is DllNotFoundException
-                or EntryPointNotFoundException
-                or BadImageFormatException)
-        {
-            return new OverlayInteractionResult(
-                IsPrepared: false,
-                IsInteractive: false,
-                $"The combined X11 overlay input region could not be changed: {exception.Message}");
         }
     }
 
     public void Dispose()
     {
-        interactiveWindowHandles.Clear();
         lock (displaySync)
         {
+            interactiveWindowHandles.Clear();
             var currentDisplay = display;
             display = nint.Zero;
             if (currentDisplay != nint.Zero)
@@ -526,8 +550,17 @@ internal sealed class X11OverlayPlatformService
                 return;
             }
 
-            _ = X11Native.XSetErrorHandler(
-                Marshal.GetFunctionPointerForDelegate(ErrorHandler));
+            var errorHandlerPointer = Marshal.GetFunctionPointerForDelegate(
+                ErrorHandler);
+            var previousHandlerPointer = X11Native.XSetErrorHandler(
+                errorHandlerPointer);
+            if (previousHandlerPointer != nint.Zero
+                && previousHandlerPointer != errorHandlerPointer)
+            {
+                previousErrorHandler = Marshal.GetDelegateForFunctionPointer<
+                    X11Native.XErrorHandler>(previousHandlerPointer);
+            }
+
             errorHandlerInstalled = true;
         }
     }
@@ -541,7 +574,7 @@ internal sealed class X11OverlayPlatformService
             + $"error {errorEvent.ErrorCode}, request "
             + $"{errorEvent.RequestCode}.{errorEvent.MinorCode}, resource "
             + $"{errorEvent.ResourceId}, display {errorDisplay}.");
-        return 0;
+        return previousErrorHandler?.Invoke(errorDisplay, ref errorEvent) ?? 0;
     }
 
     private static nuint[] ReadSupportedAtoms(nint display, nuint atomType)
@@ -663,12 +696,6 @@ internal sealed class X11OverlayPlatformService
         }
 
         _ = X11Native.XMapRaised(display, targetWindow);
-        if (!IsViewableWindow(display, targetWindow))
-        {
-            _ = X11Native.XFlush(display);
-            return false;
-        }
-
         if (activeWindowAtom != 0)
         {
             var activateEvent = new X11Native.XClientMessageEvent
@@ -693,11 +720,15 @@ internal sealed class X11OverlayPlatformService
                 ref activateEvent);
         }
 
-        _ = X11Native.XSetInputFocus(
-            display,
-            targetWindow,
-            RevertToParent,
-            time: 0);
+        if (IsViewableWindow(display, targetWindow))
+        {
+            _ = X11Native.XSetInputFocus(
+                display,
+                targetWindow,
+                RevertToParent,
+                time: 0);
+        }
+
         _ = X11Native.XFlush(display);
         return true;
     }
@@ -721,6 +752,13 @@ internal sealed class X11OverlayPlatformService
                 window,
                 out var attributes) != 0
             && attributes.MapState == X11Native.IsViewable;
+    }
+
+    private bool TryGetDisplay(out nint currentDisplay)
+    {
+        Debug.Assert(Monitor.IsEntered(displaySync));
+        currentDisplay = display;
+        return currentDisplay != nint.Zero;
     }
 
     private nuint ReadLiveActiveWindow(
@@ -856,85 +894,4 @@ internal sealed class X11OverlayPlatformService
             ? "Overlay edit mode is active through the X11 input region with KDE on-screen-display stacking."
             : "Overlay edit mode is active through the X11 input region.";
     }
-}
-
-internal sealed class X11CursorVisibilitySession : IDisposable
-{
-    private readonly HashSet<nuint> interactionWindows;
-    private readonly nuint cursor;
-    private readonly nuint previousActiveWindow;
-    private readonly X11CursorSessionOperations operations;
-    private int disposed;
-
-    public X11CursorVisibilitySession(
-        IEnumerable<nuint> interactionWindows,
-        nuint cursor,
-        nuint previousActiveWindow,
-        X11CursorSessionOperations operations)
-    {
-        ArgumentNullException.ThrowIfNull(interactionWindows);
-        this.interactionWindows = interactionWindows.ToHashSet();
-        this.cursor = cursor;
-        this.previousActiveWindow = previousActiveWindow;
-        this.operations = operations
-            ?? throw new ArgumentNullException(nameof(operations));
-    }
-
-    public void Dispose()
-    {
-        if (Interlocked.Exchange(ref disposed, 1) != 0)
-        {
-            return;
-        }
-
-        if (cursor != 0)
-        {
-            foreach (var window in interactionWindows)
-            {
-                _ = operations.UndefineCursor(window);
-            }
-
-            _ = operations.FreeCursor(cursor);
-        }
-
-        if (previousActiveWindow != 0
-            && !interactionWindows.Contains(previousActiveWindow)
-            && (interactionWindows.Contains(operations.GetActiveWindow())
-                || interactionWindows.Contains(operations.GetFocusWindow())))
-        {
-            _ = operations.ActivateWindow(previousActiveWindow);
-        }
-    }
-}
-
-internal sealed class X11CursorSessionOperations
-{
-    public X11CursorSessionOperations(
-        Func<nuint> getActiveWindow,
-        Func<nuint> getFocusWindow,
-        Func<nuint, bool> activateWindow,
-        Func<nuint, int> undefineCursor,
-        Func<nuint, int> freeCursor)
-    {
-        GetActiveWindow = getActiveWindow
-            ?? throw new ArgumentNullException(nameof(getActiveWindow));
-        GetFocusWindow = getFocusWindow
-            ?? throw new ArgumentNullException(nameof(getFocusWindow));
-        ActivateWindow = activateWindow
-            ?? throw new ArgumentNullException(nameof(activateWindow));
-        UndefineCursor = undefineCursor
-            ?? throw new ArgumentNullException(nameof(undefineCursor));
-        FreeCursor = freeCursor
-            ?? throw new ArgumentNullException(nameof(freeCursor));
-    }
-
-    public Func<nuint> GetActiveWindow { get; }
-
-    public Func<nuint> GetFocusWindow { get; }
-
-    public Func<nuint, bool> ActivateWindow { get; }
-
-    public Func<nuint, int> UndefineCursor { get; }
-
-    public Func<nuint, int> FreeCursor { get; }
 }

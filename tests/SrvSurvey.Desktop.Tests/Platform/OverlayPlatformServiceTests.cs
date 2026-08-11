@@ -114,6 +114,30 @@ public sealed class OverlayPlatformServiceTests
         Assert.Empty(restored);
     }
 
+    [Fact]
+    public void X11CursorSessionDoesNotRestoreAnInteractionWindow()
+    {
+        var restored = new List<nuint>();
+        var session = new X11CursorVisibilitySession(
+            interactionWindows: [(nuint)20],
+            cursor: 0,
+            previousActiveWindow: 20,
+            new X11CursorSessionOperations(
+                getActiveWindow: () => 20,
+                getFocusWindow: () => 20,
+                activateWindow: window =>
+                {
+                    restored.Add(window);
+                    return true;
+                },
+                undefineCursor: _ => throw new InvalidOperationException(),
+                freeCursor: _ => throw new InvalidOperationException()));
+
+        session.Dispose();
+
+        Assert.Empty(restored);
+    }
+
     private sealed class TrackingDisposable : IDisposable
     {
         public bool IsDisposed { get; private set; }

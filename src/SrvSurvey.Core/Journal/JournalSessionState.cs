@@ -275,13 +275,14 @@ public sealed class JournalSessionState
         GameBuild = GetString(root, "build") ?? GameBuild;
         IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
         ShipType = loadedShipType ?? ShipType;
-        ShipId = GetInt64(root, ShipIdProperty) ?? ShipId;
+        var loadedShipId = GetInt64(root, ShipIdProperty);
+        ShipId = loadedShipId ?? ShipId;
         ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
         ShipIdent = GetString(root, nameof(ShipIdent)) ?? ShipIdent;
         if (EliteSrvTypes.IsNomad(loadedShipType))
         {
             ActiveSrvType = EliteSrvTypes.Nomad;
-            if (ShipId is { } loadedVehicleId)
+            if (loadedShipId is { } loadedVehicleId)
             {
                 srvTypesById[loadedVehicleId] = EliteSrvTypes.Nomad;
             }
@@ -308,6 +309,7 @@ public sealed class JournalSessionState
         {
             ActiveSrvType = srvType;
             IsFighterLaunched = false;
+            pendingPlayerControlledFighterId = null;
         }
     }
 

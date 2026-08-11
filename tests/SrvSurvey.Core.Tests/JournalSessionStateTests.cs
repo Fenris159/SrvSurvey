@@ -120,6 +120,44 @@ public sealed class JournalSessionStateTests
     }
 
     [Fact]
+    public void KnownNomadLaunchDoesNotReuseItsIdAfterLeavingTheVehicle()
+    {
+        var state = new JournalSessionState();
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"DockSRV","SRVType":"lander01","ID":44}""")));
+        Assert.True(state.Apply(Parse(
+            """{"event":"LaunchFighter","ID":44,"PlayerControlled":true}""")));
+        Assert.True(state.ReconcileVehicleStatus(new EliteStatus()));
+        Assert.Null(state.ActiveSrvType);
+
+        Assert.False(state.ReconcileVehicleStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InSrv,
+        }));
+        Assert.Null(state.ActiveSrvType);
+    }
+
+    [Theory]
+    [InlineData("{\"event\":\"LoadGame\",\"Ship\":\"Lander01\"}")]
+    [InlineData("{\"event\":\"LoadGame\",\"Ship\":\"Lander01\",\"ShipID\":\"invalid\"}")]
+    public void NomadLoadGameDoesNotMapAStaleShipId(string loadGameEvent)
+    {
+        var state = new JournalSessionState();
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"LoadGame","Ship":"mandalay","ShipID":44}""")));
+        Assert.True(state.Apply(Parse(loadGameEvent)));
+        Assert.Equal(44, state.ShipId);
+        Assert.True(state.ReconcileVehicleStatus(new EliteStatus()));
+        Assert.Null(state.ActiveSrvType);
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"Embark","SRV":true,"ID":44}""")));
+        Assert.Null(state.ActiveSrvType);
+    }
+
+    [Fact]
     public void ConventionalFighterAndSrvTelemetryRemainDistinct()
     {
         var fighterState = new JournalSessionState();
