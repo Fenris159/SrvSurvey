@@ -73,6 +73,25 @@ public sealed class NotificationViewModelTests : IDisposable
     }
 
     [Fact]
+    public void OverlayInteractionReportsBothModeTransitions()
+    {
+        var viewModel = CreateViewModel(new MutableTimeProvider(
+            DateTimeOffset.UtcNow));
+
+        viewModel.ShowOverlayInteraction(enabled: true);
+        viewModel.ShowOverlayInteraction(enabled: false);
+
+        Assert.Collection(
+            viewModel.Messages,
+            message => Assert.Equal(
+                "Overlay mouse interaction enabled",
+                message.Text),
+            message => Assert.Equal(
+                "Overlay mouse interaction disabled",
+                message.Text));
+    }
+
+    [Fact]
     public void MaterialTradesAndTechnologyBrokerKeepPickupTotalsAccurate()
     {
         var viewModel = CreateViewModel(new MutableTimeProvider(

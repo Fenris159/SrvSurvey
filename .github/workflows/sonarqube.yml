@@ -139,7 +139,9 @@ jobs:
             "/o:$env:SONAR_ORGANIZATION",
             '/d:sonar.host.url=https://sonarcloud.io',
             '/d:sonar.cs.opencover.reportsPaths=**/TestResults/**/coverage.opencover.xml',
-            '/d:sonar.coverage.exclusions=SrvSurvey.Desktop/**/*.axaml,src/SrvSurvey.Desktop/**/*.axaml,SrvSurvey.Desktop/**/*.axaml.cs,src/SrvSurvey.Desktop/**/*.axaml.cs,SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs,src/SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs,SrvSurvey/**/*.Designer.cs',
+            # Native Windows/X11 services require real compositor/window handles;
+            # the platform matrix smoke-builds them instead of headless unit tests.
+            '/d:sonar.coverage.exclusions=SrvSurvey.Desktop/**/*.axaml,src/SrvSurvey.Desktop/**/*.axaml,SrvSurvey.Desktop/**/*.axaml.cs,src/SrvSurvey.Desktop/**/*.axaml.cs,SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs,src/SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs,SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs,src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs,SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs,src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs,SrvSurvey/**/*.Designer.cs',
             '/d:sonar.exclusions=**/tools/**,**/artifacts/**,**/*.py,**/*.ps1,**/Assets/**,**/*.png,**/*.jpg,**/*.jpeg,**/*.gif,**/*.ico,**/*.webp,**/*.ttf,**/*.otf,**/*.woff,**/*.woff2,**/*.zip,**/*.dll,**/*.exe,**/*.pdb,**/*.so,**/*.dylib',
             "/d:sonar.token=$env:SONAR_TOKEN"
           )

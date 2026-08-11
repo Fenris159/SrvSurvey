@@ -1,27 +1,29 @@
-# SrvSurvey-XP 2.1.3.0-rc.14
+# SrvSurvey-XP 2.1.3.0-rc.15
 
-This release candidate improves Surface Radar controls and Nomad vehicle-state
-tracking. The changes below are the delta from `2.1.3.0-rc.13`.
+This release candidate improves live overlay mouse interaction and Nomad
+session recovery. The changes below are the delta from `2.1.3.0-rc.14`.
 
-## What's fixed since 2.1.3.0-rc.13
+## What's fixed since 2.1.3.0-rc.14
 
-- Adds an optional on-foot Surface Radar gate that follows the Genetic Sampler
-  selected in `Status.json` while leaving Mini Trackers available.
-- Recognizes the Nomad's hybrid fighter/SRV telemetry so landing-gear
-  suppression works consistently for Surface Survey, Prior Scans, and Mini
-  Trackers without changing conventional SRV behavior.
-- Uses the Nomad vehicle identity for diagnostics and vehicle-specific VR
-  calibration instead of reporting the generic SRV fallback.
-- Places long numeric overlay settings editors below their labels to prevent
-  clipped descriptions and compressed input fields.
+- Restores Nomad identity from `LoadGame` and SRV embark events so vehicle and
+  landing-gear behavior remains correct after starting or resuming a session
+  inside the Nomad.
+- Keeps the pointer visible when Windows live-overlay mouse interaction starts,
+  then restores the previous foreground window without stealing focus from a
+  different application.
+- Adds equivalent best-effort X11 and XWayland cursor activation, explicit
+  overlay cursors, and safe focus restoration without releasing the game's
+  pointer grab.
+- Reports live-overlay mouse interaction entry and exit through the
+  Notifications panel.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.14`
-- Tag: `xp-v2.1.3.0-rc.14`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.14-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.14-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.14-x86_64.AppImage`
+- Version: `2.1.3.0-rc.15`
+- Tag: `xp-v2.1.3.0-rc.15`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.15-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.15-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.15-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.

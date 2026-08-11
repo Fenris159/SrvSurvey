@@ -1469,8 +1469,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             }
 
             var mode = ResolveGameMode();
-            return mode is OverlayGameMode.SuperCruising
-                or OverlayGameMode.Flying
+            return mode is OverlayGameMode.Flying
                 or OverlayGameMode.Landed
                 or OverlayGameMode.InSrv
                 or OverlayGameMode.OnFoot

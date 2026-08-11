@@ -18,6 +18,28 @@ internal static partial class X11Native
     internal static partial int XCloseDisplay(nint display);
 
     [LibraryImport("libX11.so.6")]
+    internal static partial nint XSetErrorHandler(nint handler);
+
+    internal static int InvokeErrorHandler(
+        nint handler,
+        nint display,
+        ref XErrorEvent errorEvent)
+    {
+        if (handler == nint.Zero)
+        {
+            return 0;
+        }
+
+        var callback = Marshal.GetDelegateForFunctionPointer(
+            handler,
+            typeof(XErrorHandler));
+        object?[] arguments = [display, errorEvent];
+        var result = callback.DynamicInvoke(arguments);
+        errorEvent = (XErrorEvent)arguments[1]!;
+        return result is int errorCode ? errorCode : 0;
+    }
+
+    [LibraryImport("libX11.so.6")]
     internal static partial nuint XDefaultRootWindow(nint display);
 
     [LibraryImport("libX11.so.6", StringMarshalling = StringMarshalling.Utf8)]
@@ -123,6 +145,41 @@ internal static partial class X11Native
         int revertTo,
         nuint time);
 
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XGetInputFocus(
+        nint display,
+        out nuint focusWindow,
+        out int revertTo);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XSendEvent(
+        nint display,
+        nuint window,
+        int propagate,
+        nint eventMask,
+        ref XClientMessageEvent eventSend);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial nuint XCreateFontCursor(
+        nint display,
+        uint shape);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XDefineCursor(
+        nint display,
+        nuint window,
+        nuint cursor);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XUndefineCursor(
+        nint display,
+        nuint window);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XFreeCursor(
+        nint display,
+        nuint cursor);
+
     [LibraryImport("libXext.so.6")]
     internal static partial int XShapeQueryExtension(
         nint display,
@@ -158,6 +215,23 @@ internal static partial class X11Native
         public nint ResourceClass;
     }
 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate int XErrorHandler(
+        nint display,
+        ref XErrorEvent errorEvent);
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XErrorEvent
+    {
+        public int Type;
+        public nint Display;
+        public nuint ResourceId;
+        public nuint Serial;
+        public byte ErrorCode;
+        public byte RequestCode;
+        public byte MinorCode;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     internal struct XRectangle
     {
@@ -165,6 +239,29 @@ internal static partial class X11Native
         public short Y;
         public ushort Width;
         public ushort Height;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XClientMessageEvent
+    {
+        public int Type;
+        public nuint Serial;
+        public int SendEvent;
+        public nint Display;
+        public nuint Window;
+        public nuint MessageType;
+        public int Format;
+        public XClientMessageData Data;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XClientMessageData
+    {
+        public nint L0;
+        public nint L1;
+        public nint L2;
+        public nint L3;
+        public nint L4;
     }
 
     [StructLayout(LayoutKind.Sequential)]

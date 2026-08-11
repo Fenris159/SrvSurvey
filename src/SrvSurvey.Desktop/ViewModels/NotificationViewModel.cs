@@ -221,6 +221,13 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
             : "Future screenshots will have no embedded banner");
     }
 
+    public void ShowOverlayInteraction(bool enabled)
+    {
+        ShowMessage(enabled
+            ? "Overlay mouse interaction enabled"
+            : "Overlay mouse interaction disabled");
+    }
+
     public void ShowMessage(string message)
     {
         if (!Enabled || string.IsNullOrWhiteSpace(message))

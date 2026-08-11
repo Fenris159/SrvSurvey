@@ -93,21 +93,7 @@ public sealed class JournalSessionState
                 break;
 
             case "LoadGame":
-                ResetVehicleSessionState();
-                CommanderName = GetString(root, "Commander") ?? CommanderName;
-                FrontierId = GetString(root, "FID") ?? FrontierId;
-                GameMode = GetString(root, nameof(GameMode)) ?? GameMode;
-                GameVersion = GetString(root, "gameversion") ?? GameVersion;
-                GameBuild = GetString(root, "build") ?? GameBuild;
-                IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
-                ShipType = GetString(root, "Ship") ?? ShipType;
-                ShipId = GetInt64(root, ShipIdProperty) ?? ShipId;
-                ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
-                ShipIdent = GetString(root, nameof(ShipIdent)) ?? ShipIdent;
-                IsShutdown = false;
-                IsAtMainMenu = false;
-                IsAtCarrierManagement = false;
-                MusicTrack = null;
+                ApplyLoadGame(root);
                 break;
 
             case "Loadout":
@@ -153,19 +139,7 @@ public sealed class JournalSessionState
                 break;
 
             case "LaunchFighter":
-                IsFighterLaunched = true;
-                if (GetBoolean(root, "PlayerControlled") == true)
-                {
-                    pendingPlayerControlledFighterId = GetInt64(root, "ID");
-                    if (pendingPlayerControlledFighterId is { } vehicleId
-                        && srvTypesById.TryGetValue(vehicleId, out var srvType)
-                        && EliteSrvTypes.IsNomad(srvType))
-                    {
-                        ActiveSrvType = srvType;
-                        IsFighterLaunched = false;
-                    }
-                }
-
+                ApplyLaunchFighter(root);
                 break;
 
             case "DockFighter":
@@ -174,6 +148,17 @@ public sealed class JournalSessionState
                 if (IsNomadActive)
                 {
                     ActiveSrvType = null;
+                }
+
+                break;
+
+            case "Embark" when GetBoolean(root, "SRV") == true:
+                var embarkedVehicleId = GetInt64(root, "ID");
+                if (embarkedVehicleId is { } embarkedId
+                    && srvTypesById.TryGetValue(embarkedId, out var embarkedSrvType)
+                    && EliteSrvTypes.IsNomad(embarkedSrvType))
+                {
+                    ActiveSrvType = EliteSrvTypes.Nomad;
                 }
 
                 break;
@@ -277,6 +262,55 @@ public sealed class JournalSessionState
 
         RecognizedEventCount++;
         return true;
+    }
+
+    private void ApplyLoadGame(JsonElement root)
+    {
+        ResetVehicleSessionState();
+        var loadedShipType = GetString(root, "Ship");
+        CommanderName = GetString(root, "Commander") ?? CommanderName;
+        FrontierId = GetString(root, "FID") ?? FrontierId;
+        GameMode = GetString(root, nameof(GameMode)) ?? GameMode;
+        GameVersion = GetString(root, "gameversion") ?? GameVersion;
+        GameBuild = GetString(root, "build") ?? GameBuild;
+        IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
+        ShipType = loadedShipType ?? ShipType;
+        var loadedShipId = GetInt64(root, ShipIdProperty);
+        ShipId = loadedShipId ?? ShipId;
+        ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
+        ShipIdent = GetString(root, nameof(ShipIdent)) ?? ShipIdent;
+        if (EliteSrvTypes.IsNomad(loadedShipType))
+        {
+            ActiveSrvType = EliteSrvTypes.Nomad;
+            if (loadedShipId is { } loadedVehicleId)
+            {
+                srvTypesById[loadedVehicleId] = EliteSrvTypes.Nomad;
+            }
+        }
+
+        IsShutdown = false;
+        IsAtMainMenu = false;
+        IsAtCarrierManagement = false;
+        MusicTrack = null;
+    }
+
+    private void ApplyLaunchFighter(JsonElement root)
+    {
+        IsFighterLaunched = true;
+        if (GetBoolean(root, "PlayerControlled") != true)
+        {
+            return;
+        }
+
+        pendingPlayerControlledFighterId = GetInt64(root, "ID");
+        if (pendingPlayerControlledFighterId is { } vehicleId
+            && srvTypesById.TryGetValue(vehicleId, out var srvType)
+            && EliteSrvTypes.IsNomad(srvType))
+        {
+            ActiveSrvType = srvType;
+            IsFighterLaunched = false;
+            pendingPlayerControlledFighterId = null;
+        }
     }
 
     public bool ReconcileVehicleStatus(EliteStatus status)
