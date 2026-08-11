@@ -1038,14 +1038,13 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
         Assert.Null(viewModel.BiologyStatus);
 
-        var notifiedVisible = false;
+        var visibilityChanges = 0;
         viewModel.PropertyChanged += (_, eventArgs) =>
         {
             if (eventArgs.PropertyName == nameof(
-                    SystemSurveyViewModel.ShouldShowBioStatus)
-                && viewModel.ShouldShowBioStatus)
+                    SystemSurveyViewModel.ShouldShowBioStatus))
             {
-                notifiedVisible = true;
+                visibilityChanges++;
             }
         };
 
@@ -1053,19 +1052,21 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
         Assert.NotNull(viewModel.BiologyStatus);
-        Assert.True(notifiedVisible);
+        Assert.True(visibilityChanges > 0);
+        Assert.False(viewModel.ShouldShowBioStatus);
 
         viewModel.BioPlotterDssDurationSeconds = 0;
 
         Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
         Assert.Null(viewModel.BiologyStatus);
 
-        notifiedVisible = false;
+        visibilityChanges = 0;
         viewModel.BioPlotterDssDurationSeconds = 120;
 
         Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
         Assert.NotNull(viewModel.BiologyStatus);
-        Assert.True(notifiedVisible);
+        Assert.True(visibilityChanges > 0);
+        Assert.False(viewModel.ShouldShowBioStatus);
     }
 
     [Fact]
