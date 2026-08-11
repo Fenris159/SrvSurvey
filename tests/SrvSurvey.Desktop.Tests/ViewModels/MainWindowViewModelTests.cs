@@ -1195,6 +1195,57 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task RefreshPreservesKnownNomadAcrossIntermediateStatus()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-known-nomad-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(root);
+            await File.WriteAllTextAsync(
+                Path.Combine(root, "Journal.2026-08-11T063600.01.log"),
+                "{\"timestamp\":\"2026-08-11T16:34:30Z\",\"event\":\"DockSRV\",\"SRVType\":\"lander01\",\"ID\":44}\n"
+                + "{\"timestamp\":\"2026-08-11T16:35:00Z\",\"event\":\"LaunchFighter\",\"ID\":44,\"PlayerControlled\":true}\n");
+            var statusPath = Path.Combine(root, StatusFileReader.FileName);
+            await File.WriteAllTextAsync(
+                statusPath,
+                "{\"timestamp\":\"2026-08-11T16:34:59Z\",\"event\":\"Status\",\"Flags\":16777216,\"Flags2\":0}");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(
+                root,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = paths,
+                });
+
+            await viewModel.RefreshAsync();
+            await File.WriteAllTextAsync(
+                statusPath,
+                "{\"timestamp\":\"2026-08-11T16:35:01Z\",\"event\":\"Status\",\"Flags\":67108864,\"Flags2\":0}");
+            await viewModel.RefreshAsync();
+            viewModel.SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear = true;
+
+            Assert.Equal("Nomad", viewModel.VehicleState);
+            Assert.Equal(EliteSrvTypes.Nomad, viewModel.CurrentVrOverlayMode);
+            Assert.True(
+                viewModel.SystemSurvey
+                    .ShouldSuppressSurfaceNavigationForLandingGear);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task RefreshRecognizesNomadLoadedAsTheActiveVehicle()
     {
         var root = Path.Combine(

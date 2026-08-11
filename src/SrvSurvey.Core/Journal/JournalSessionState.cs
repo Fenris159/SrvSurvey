@@ -8,6 +8,7 @@ public sealed class JournalSessionState
     private const string ShipIdProperty = "ShipID";
     private readonly Dictionary<long, string> srvTypesById = [];
     private long? pendingPlayerControlledFighterId;
+    private bool isNomadStatusConfirmationPending;
 
     public string? GameVersion { get; private set; }
 
@@ -130,12 +131,15 @@ public sealed class JournalSessionState
                 ActiveSrvType = launchedSrvType ?? ActiveSrvType;
                 RememberSrvType(root, launchedSrvType);
                 pendingPlayerControlledFighterId = null;
+                isNomadStatusConfirmationPending =
+                    EliteSrvTypes.IsNomad(launchedSrvType);
                 break;
 
             case "DockSRV":
                 RememberSrvType(root, GetString(root, "SRVType"));
                 ActiveSrvType = null;
                 pendingPlayerControlledFighterId = null;
+                isNomadStatusConfirmationPending = false;
                 break;
 
             case "LaunchFighter":
@@ -145,6 +149,7 @@ public sealed class JournalSessionState
             case "DockFighter":
                 IsFighterLaunched = false;
                 pendingPlayerControlledFighterId = null;
+                isNomadStatusConfirmationPending = false;
                 if (IsNomadActive)
                 {
                     ActiveSrvType = null;
@@ -159,8 +164,15 @@ public sealed class JournalSessionState
                     && EliteSrvTypes.IsNomad(embarkedSrvType))
                 {
                     ActiveSrvType = EliteSrvTypes.Nomad;
+                    isNomadStatusConfirmationPending = true;
                 }
 
+                break;
+
+            case "Disembark" when GetBoolean(root, "SRV") == true:
+                ActiveSrvType = null;
+                pendingPlayerControlledFighterId = null;
+                isNomadStatusConfirmationPending = false;
                 break;
 
             case "SuitLoadout":
@@ -310,6 +322,7 @@ public sealed class JournalSessionState
             ActiveSrvType = srvType;
             IsFighterLaunched = false;
             pendingPlayerControlledFighterId = null;
+            isNomadStatusConfirmationPending = true;
         }
     }
 
@@ -325,6 +338,11 @@ public sealed class JournalSessionState
             srvTypesById[vehicleId] = EliteSrvTypes.Nomad;
             IsFighterLaunched = false;
             pendingPlayerControlledFighterId = null;
+            isNomadStatusConfirmationPending = false;
+        }
+        else if (status.InSrv)
+        {
+            isNomadStatusConfirmationPending = false;
         }
         else if (status.InFighter)
         {
@@ -334,8 +352,9 @@ public sealed class JournalSessionState
             }
 
             pendingPlayerControlledFighterId = null;
+            isNomadStatusConfirmationPending = false;
         }
-        else if (!status.InSrv && IsNomadActive)
+        else if (IsNomadActive && !isNomadStatusConfirmationPending)
         {
             ActiveSrvType = null;
         }
@@ -352,6 +371,7 @@ public sealed class JournalSessionState
         ActiveSrvType = null;
         IsFighterLaunched = false;
         pendingPlayerControlledFighterId = null;
+        isNomadStatusConfirmationPending = false;
         BodyName = null;
     }
 
@@ -369,6 +389,7 @@ public sealed class JournalSessionState
         ActiveSrvType = null;
         IsFighterLaunched = false;
         pendingPlayerControlledFighterId = null;
+        isNomadStatusConfirmationPending = false;
         srvTypesById.Clear();
     }
 
