@@ -9,14 +9,14 @@
              mc:Ignorable="d">
   <StackPanel Margin="0,16,0,0" Spacing="24">
     <StackPanel Spacing="5">
-      <TextBlock Classes="eyebrow" Text="OVERLAYS" />
-      <TextBlock Classes="page-title" Text="Game overlays" />
-      <TextBlock Classes="muted"
+      <TextBlock x:Name="OverlaySettingsEyebrow" Classes="eyebrow" Text="OVERLAYS" />
+      <TextBlock x:Name="OverlaySettingsTitle" Classes="page-title" Text="Game overlays" />
+      <TextBlock x:Name="OverlaySettingsDescription" Classes="muted"
                  TextWrapping="Wrap"
                  Text="Control passive Galaxy Map, route, survey, and status surfaces." />
     </StackPanel>
 
-    <Border Classes="card raised">
+    <Border x:Name="PassiveNotificationCard" Classes="card raised">
       <StackPanel Spacing="14">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
           <StackPanel Spacing="4">
@@ -56,7 +56,7 @@
       </StackPanel>
     </Border>
 
-    <Border Classes="card raised">
+    <Border x:Name="GalaxyMapCard" Classes="card raised">
       <StackPanel Spacing="12">
         <StackPanel Spacing="4">
           <TextBlock Classes="card-title" Text="Galaxy Map intelligence" />
@@ -78,7 +78,7 @@
       </StackPanel>
     </Border>
 
-    <Border Classes="card raised">
+    <Border x:Name="GlobalOverlayBehaviorCard" Classes="card raised">
       <StackPanel Spacing="12">
         <StackPanel Spacing="4">
           <TextBlock Classes="card-title" Text="Global overlay behavior" />
@@ -223,7 +223,7 @@
       </StackPanel>
     </Border>
 
-    <Border Classes="card raised">
+    <Border x:Name="PulseOverlayCard" Classes="card raised">
       <StackPanel Spacing="10">
         <StackPanel Spacing="4">
           <TextBlock Classes="card-title" Text="Journal activity and SCO status" />
@@ -269,7 +269,7 @@
       </StackPanel>
     </Border>
 
-    <Border Classes="card raised">
+    <Border x:Name="StreamOverlayCard" Classes="card raised">
       <StackPanel Spacing="10">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
           <StackPanel Spacing="4">
@@ -293,7 +293,7 @@
       </StackPanel>
     </Border>
 
-    <Border Classes="card raised">
+    <Border x:Name="OpenVrOverlayCard" Classes="card raised">
       <StackPanel Spacing="14">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
           <StackPanel Spacing="4">
@@ -425,7 +425,7 @@
       </StackPanel>
     </Border>
 
-    <Border Classes="card raised">
+    <Border x:Name="CombatOverlayCard" Classes="card raised">
       <StackPanel Spacing="14">
         <StackPanel Spacing="4">
           <TextBlock Classes="card-title" Text="Combat overlays" />
@@ -460,7 +460,7 @@
       </StackPanel>
     </Border>
 
-    <Border Classes="card raised">
+    <Border x:Name="GuardianOverlayCard" Classes="card raised">
       <StackPanel Spacing="14">
         <StackPanel Spacing="4">
           <TextBlock Classes="card-title" Text="Guardian overlays" />
@@ -468,116 +468,146 @@
                      TextWrapping="Wrap"
                      Text="Show live Guardian maps, system-site summaries, and Ram Tah artifact guidance using the original game-mode rules." />
         </StackPanel>
-        <CheckBox IsChecked="{Binding Guardian.EnableGuardianSites, Mode=TwoWay}"
-                  Content="Enable Guardian Ruins features" />
-        <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+        <CheckBox IsChecked="{Binding Guardian.EnableGuardianSites, Mode=TwoWay}">
+          <TextBlock Text="Enable Guardian Ruins features"
+                     TextWrapping="Wrap" />
+        </CheckBox>
+        <Grid x:Name="GuardianPrimaryColumns"
+              ColumnDefinitions="*,*"
+              ColumnSpacing="28">
           <StackPanel Spacing="10">
             <TextBlock Classes="eyebrow" Text="SYSTEM SUMMARY" />
-            <CheckBox IsChecked="{Binding Guardian.AutoShowGuardianSummary, Mode=TwoWay}"
-                      Content="Show summary of Guardian sites" />
+            <CheckBox IsChecked="{Binding Guardian.AutoShowGuardianSummary, Mode=TwoWay}">
+              <TextBlock Text="Show summary of Guardian sites"
+                         TextWrapping="Wrap" />
+            </CheckBox>
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="Appears in supercruise, the navigation panel, or the system map and marks the selected destination." />
           </StackPanel>
           <StackPanel Grid.Column="1" Spacing="10">
             <TextBlock Classes="eyebrow" Text="RAM TAH" />
-            <CheckBox IsChecked="{Binding Guardian.AutoShowRamTah, Mode=TwoWay}"
-                      Content="Show helper for Ram Tah missions" />
+            <CheckBox IsChecked="{Binding Guardian.AutoShowRamTah, Mode=TwoWay}">
+              <TextBlock Text="Show helper for Ram Tah missions"
+                         TextWrapping="Wrap" />
+            </CheckBox>
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="At an active ruins or structure, lists incomplete logs, matching obelisks, and available artifact counts." />
           </StackPanel>
         </Grid>
-        <CheckBox IsChecked="{Binding Guardian.SuppressForActiveBuildProjects, Mode=TwoWay}"
-                  Content="Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active" />
-        <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="28">
-          <StackPanel Spacing="10">
-            <TextBlock Classes="eyebrow" Text="MAP ZOOM" />
-            <CheckBox IsChecked="{Binding Guardian.AutoZoomNearObelisks, Mode=TwoWay}"
-                      Content="Auto zoom map if within 30 m of obelisks" />
-            <CheckBox IsChecked="{Binding Guardian.AutoZoomInSrvTurret, Mode=TwoWay}"
-                      Content="Auto zoom map when using SRV turret" />
-            <CheckBox IsChecked="{Binding Guardian.ShowComponentMaterials, Mode=TwoWay}"
-                      Content="Track Guardian component materials" />
-            <CheckBox IsChecked="{Binding Guardian.ShowMapLegend, Mode=TwoWay}"
-                      Content="Show the survey-map legend" />
-            <CheckBox IsChecked="{Binding Guardian.ShowMapNotes, Mode=TwoWay}"
-                      Content="Show commander notes beside survey maps" />
-            <TextBlock Classes="muted"
-                       FontSize="11"
-                       TextWrapping="Wrap"
-                       Text="Shows tower loadouts and destructible panels and preserves the original component survey format. Auto-zoom engages within 30 m of an active obelisk." />
+        <CheckBox IsChecked="{Binding Guardian.SuppressForActiveBuildProjects, Mode=TwoWay}">
+          <TextBlock Text="Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active"
+                     TextWrapping="Wrap" />
+        </CheckBox>
+        <Grid x:Name="GuardianSettingsColumns"
+              ColumnDefinitions="*,*"
+              ColumnSpacing="28">
+          <StackPanel x:Name="GuardianLeftColumn" Spacing="22">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="eyebrow" Text="MAP ZOOM" />
+              <CheckBox IsChecked="{Binding Guardian.AutoZoomNearObelisks, Mode=TwoWay}">
+                <TextBlock Text="Auto zoom map if within 30 m of obelisks"
+                           TextWrapping="Wrap" />
+              </CheckBox>
+              <CheckBox IsChecked="{Binding Guardian.AutoZoomInSrvTurret, Mode=TwoWay}">
+                <TextBlock Text="Auto zoom map when using SRV turret"
+                           TextWrapping="Wrap" />
+              </CheckBox>
+              <CheckBox IsChecked="{Binding Guardian.ShowComponentMaterials, Mode=TwoWay}">
+                <TextBlock Text="Track Guardian component materials"
+                           TextWrapping="Wrap" />
+              </CheckBox>
+              <CheckBox IsChecked="{Binding Guardian.ShowMapLegend, Mode=TwoWay}">
+                <TextBlock Text="Show the survey-map legend"
+                           TextWrapping="Wrap" />
+              </CheckBox>
+              <CheckBox IsChecked="{Binding Guardian.ShowMapNotes, Mode=TwoWay}">
+                <TextBlock Text="Show commander notes beside survey maps"
+                           TextWrapping="Wrap" />
+              </CheckBox>
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         TextWrapping="Wrap"
+                         Text="Shows tower loadouts and destructible panels and preserves the original component survey format. Auto-zoom engages within 30 m of an active obelisk." />
+            </StackPanel>
+            <StackPanel Spacing="10">
+              <TextBlock Classes="eyebrow" Text="ALIGNMENT GUIDES" />
+              <CheckBox IsChecked="{Binding Guardian.DisableRuinsMeasurementGrid, Mode=TwoWay}">
+                <TextBlock Text="Disable site heading assistance overlay."
+                           TextWrapping="Wrap" />
+              </CheckBox>
+              <CheckBox IsChecked="{Binding Guardian.DisableAerialAlignmentGrid, Mode=TwoWay}">
+                <TextBlock Text="Disable aerial screenshot alignment overlay."
+                           TextWrapping="Wrap" />
+              </CheckBox>
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         TextWrapping="Wrap"
+                         Text="Matches upstream polarity: leave unchecked to keep the heading grid and aerial origin guides available at ruins." />
+            </StackPanel>
           </StackPanel>
-          <StackPanel Grid.Column="1" Spacing="6">
-            <TextBlock Classes="eyebrow" Text="OVERLAY SIZE" />
-            <TextBlock Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="Use one of the five original Guardian plotter sizes." />
-          </StackPanel>
-          <ComboBox Grid.Column="2"
-                    MinWidth="150"
-                    VerticalAlignment="Center"
-                    ItemsSource="{Binding Guardian.OverlaySizeOptions}"
-                    SelectedItem="{Binding Guardian.SelectedOverlaySize, Mode=TwoWay}">
-            <ComboBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:GuardianOverlaySizeOption">
-                <TextBlock Text="{Binding Label}" />
-              </DataTemplate>
-            </ComboBox.ItemTemplate>
-          </ComboBox>
-        </Grid>
-        <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
-          <StackPanel Spacing="10">
-            <TextBlock Classes="eyebrow" Text="ALIGNMENT GUIDES" />
-            <CheckBox IsChecked="{Binding Guardian.DisableRuinsMeasurementGrid, Mode=TwoWay}"
-                      Content="Disable site heading assistance overlay." />
-            <CheckBox IsChecked="{Binding Guardian.DisableAerialAlignmentGrid, Mode=TwoWay}"
-                      Content="Disable aerial screenshot alignment overlay." />
-            <TextBlock Classes="muted"
-                       FontSize="11"
-                       TextWrapping="Wrap"
-                       Text="Matches upstream polarity: leave unchecked to keep the heading grid and aerial origin guides available at ruins." />
-          </StackPanel>
-          <StackPanel Grid.Column="1" Spacing="8">
-            <TextBlock Classes="eyebrow" Text="RUINS AERIAL ALTITUDES" />
-            <TextBlock Classes="muted"
-                       FontSize="11"
-                       TextWrapping="Wrap"
-                       Text="Preferred altitude for aerial screenshots (m). Adjust so each site comfortably fits your monitor. Screenshots within 50 m of site origin and 500–2000 m altitude are eligible for aerial copies." />
-            <StackPanel Spacing="8" HorizontalAlignment="Left">
-              <Grid ColumnDefinitions="72,120" ColumnSpacing="10">
-                <TextBlock VerticalAlignment="Center" Text="Alpha" />
-                <NumericUpDown Grid.Column="1"
-                               Width="120"
-                               MinWidth="120"
-                               Minimum="0"
-                               Maximum="5000"
-                               Increment="10"
-                               FormatString="0"
-                               Value="{Binding ScreenshotProcessing.AerialAltitudeAlpha, Mode=TwoWay}" />
-              </Grid>
-              <Grid ColumnDefinitions="72,120" ColumnSpacing="10">
-                <TextBlock VerticalAlignment="Center" Text="Beta" />
-                <NumericUpDown Grid.Column="1"
-                               Width="120"
-                               MinWidth="120"
-                               Minimum="0"
-                               Maximum="5000"
-                               Increment="10"
-                               FormatString="0"
-                               Value="{Binding ScreenshotProcessing.AerialAltitudeBeta, Mode=TwoWay}" />
-              </Grid>
-              <Grid ColumnDefinitions="72,120" ColumnSpacing="10">
-                <TextBlock VerticalAlignment="Center" Text="Gamma" />
-                <NumericUpDown Grid.Column="1"
-                               Width="120"
-                               MinWidth="120"
-                               Minimum="0"
-                               Maximum="5000"
-                               Increment="10"
-                               FormatString="0"
-                               Value="{Binding ScreenshotProcessing.AerialAltitudeGamma, Mode=TwoWay}" />
-              </Grid>
+
+          <StackPanel x:Name="GuardianRightColumn"
+                      Grid.Column="1"
+                      Spacing="22">
+            <StackPanel x:Name="GuardianOverlaySizeSection" Spacing="8">
+              <TextBlock Classes="eyebrow" Text="OVERLAY SIZE" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Use one of the five original Guardian plotter sizes." />
+              <ComboBox Width="200"
+                        HorizontalAlignment="Left"
+                        ItemsSource="{Binding Guardian.OverlaySizeOptions}"
+                        SelectedItem="{Binding Guardian.SelectedOverlaySize, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:GuardianOverlaySizeOption">
+                    <TextBlock Text="{Binding Label}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <StackPanel Spacing="8">
+              <TextBlock Classes="eyebrow" Text="RUINS AERIAL ALTITUDES" />
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         TextWrapping="Wrap"
+                         Text="Preferred altitude for aerial screenshots (m). Adjust so each site comfortably fits your monitor. Screenshots within 50 m of site origin and 500–2000 m altitude are eligible for aerial copies." />
+              <StackPanel Spacing="8" HorizontalAlignment="Left">
+                <Grid ColumnDefinitions="72,120" ColumnSpacing="10">
+                  <TextBlock VerticalAlignment="Center" Text="Alpha" />
+                  <NumericUpDown Grid.Column="1"
+                                 Width="120"
+                                 MinWidth="120"
+                                 Minimum="0"
+                                 Maximum="5000"
+                                 Increment="10"
+                                 FormatString="0"
+                                 Value="{Binding ScreenshotProcessing.AerialAltitudeAlpha, Mode=TwoWay}" />
+                </Grid>
+                <Grid ColumnDefinitions="72,120" ColumnSpacing="10">
+                  <TextBlock VerticalAlignment="Center" Text="Beta" />
+                  <NumericUpDown Grid.Column="1"
+                                 Width="120"
+                                 MinWidth="120"
+                                 Minimum="0"
+                                 Maximum="5000"
+                                 Increment="10"
+                                 FormatString="0"
+                                 Value="{Binding ScreenshotProcessing.AerialAltitudeBeta, Mode=TwoWay}" />
+                </Grid>
+                <Grid ColumnDefinitions="72,120" ColumnSpacing="10">
+                  <TextBlock VerticalAlignment="Center" Text="Gamma" />
+                  <NumericUpDown Grid.Column="1"
+                                 Width="120"
+                                 MinWidth="120"
+                                 Minimum="0"
+                                 Maximum="5000"
+                                 Increment="10"
+                                 FormatString="0"
+                                 Value="{Binding ScreenshotProcessing.AerialAltitudeGamma, Mode=TwoWay}" />
+                </Grid>
+              </StackPanel>
             </StackPanel>
           </StackPanel>
         </Grid>
@@ -588,7 +618,7 @@
       </StackPanel>
     </Border>
 
-    <Border Classes="card raised">
+    <Border x:Name="StationInformationCard" Classes="card raised">
       <StackPanel Spacing="10">
         <TextBlock Classes="card-title" Text="Station information" />
         <CheckBox IsChecked="{Binding StationInfo.AutoShow, Mode=TwoWay}"
@@ -603,7 +633,7 @@
       </StackPanel>
     </Border>
 
-    <Border Classes="card raised">
+    <Border x:Name="HumanSettlementCard" Classes="card raised">
       <StackPanel Spacing="14">
         <StackPanel Spacing="4">
           <TextBlock Classes="card-title" Text="Human settlement map" />
@@ -705,7 +735,8 @@
       </StackPanel>
     </Border>
 
-    <Expander HorizontalAlignment="Stretch"
+    <Expander x:Name="HumanTemplateAuthoringExpander"
+              HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Stretch"
               IsExpanded="False">
       <Expander.Header>
@@ -951,7 +982,7 @@
       </Border>
     </Expander>
 
-    <Border Classes="card raised">
+    <Border x:Name="JumpInformationCard" Classes="card raised">
       <StackPanel Spacing="14">
         <CheckBox IsChecked="{Binding JumpInfo.AutoShow, Mode=TwoWay}"
                   Content="Show next system summary before FSD jumping (uses external data)" />
@@ -978,16 +1009,50 @@
       </StackPanel>
     </Border>
 
-    <Border Classes="card raised">
+    <Border x:Name="ColonizationShoppingCard" Classes="card raised">
+      <StackPanel Spacing="14">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="card-title" Text="Shopping overlay" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Configure the passive in-game commodity list and linked Fleet Carrier columns." />
+        </StackPanel>
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
+          <StackPanel Spacing="10">
+            <CheckBox IsChecked="{Binding Colonization.AutoShowCommodityOverlay, Mode=TwoWay}"
+                      Content="Auto show colonization overlay" />
+            <CheckBox IsChecked="{Binding Colonization.ShowCommodityOverlayOnRightPanel, Mode=TwoWay}"
+                      Content="Show when looking at right-hand panel" />
+            <CheckBox IsChecked="{Binding Colonization.CollapseCoveredCommodityGroups, Mode=TwoWay}"
+                      Content="Collapse cargo groups when enough on FCs" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Spacing="10">
+            <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierCargo, Mode=TwoWay}"
+                      Content="Show Fleet Carrier aggregate counts" />
+            <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierDelta, Mode=TwoWay}"
+                      IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
+                      Content="Show delta vs sum" />
+            <CheckBox IsChecked="{Binding Colonization.InlineFleetCarrierCargo, Mode=TwoWay}"
+                      IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
+                      Content="Share column with ship cargo counts" />
+            <CheckBox IsChecked="{Binding Colonization.HighlightAlmostCoveredFleetCarrierLoads, Mode=TwoWay}"
+                      IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
+                      Content="Highlight if ship can load enough on FCs" />
+          </StackPanel>
+        </Grid>
+      </StackPanel>
+    </Border>
+
+    <Border x:Name="SystemSurveyCard" Classes="card raised">
       <StackPanel Spacing="16">
         <StackPanel Spacing="4">
-          <TextBlock Classes="card-title" Text="System survey overlays" />
-          <TextBlock Classes="muted"
+          <TextBlock x:Name="SystemSurveyCardTitle" Classes="card-title" Text="System survey overlays" />
+          <TextBlock x:Name="SystemSurveyCardDescription" Classes="muted"
                      TextWrapping="Wrap"
                      Text="Configure body details, the FSS body feed, and compact system-completion overlays. These preserve the original survey rules while using the active Raven theme." />
         </StackPanel>
 
-        <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+        <Grid x:Name="ExplorationSurveyGrid" ColumnDefinitions="*,*" ColumnSpacing="28">
           <StackPanel Spacing="12">
             <TextBlock Classes="eyebrow" Text="FSS BODY FEED" />
             <CheckBox IsChecked="{Binding SystemSurvey.AutoShowLastFssBody, Mode=TwoWay}"
@@ -1044,19 +1109,6 @@
                       Content="Skip DSS of rings" />
             <CheckBox IsChecked="{Binding SystemSurvey.SkipDistantDssCandidates, Mode=TwoWay}"
                       Content="Skip bodies exceeding:" />
-            <CheckBox IsChecked="{Binding SystemSurvey.ShowNonBodySignals, Mode=TwoWay}"
-                      Content="Show non-body signals" />
-            <StackPanel Spacing="6"
-                        IsEnabled="{Binding SystemSurvey.HighlightDssCandidates}">
-              <TextBlock Text="Minimum DSS value (credits)" />
-              <NumericUpDown Width="150"
-                             HorizontalAlignment="Left"
-                             Minimum="0"
-                             Maximum="100000000"
-                             Increment="10000"
-                             FormatString="N0"
-                             Value="{Binding SystemSurvey.DssValueFloor, Mode=TwoWay}" />
-            </StackPanel>
             <StackPanel Spacing="6"
                         IsEnabled="{Binding SystemSurvey.SkipDistantDssCandidates}">
               <TextBlock Text="DSS distance limit (LS from primary star)" />
@@ -1068,12 +1120,25 @@
                              FormatString="N0"
                              Value="{Binding SystemSurvey.DssDistanceLimitLs, Mode=TwoWay}" />
             </StackPanel>
+            <StackPanel Spacing="6"
+                        IsEnabled="{Binding SystemSurvey.HighlightDssCandidates}">
+              <TextBlock Text="Minimum DSS value (credits)" />
+              <NumericUpDown Width="150"
+                             HorizontalAlignment="Left"
+                             Minimum="0"
+                             Maximum="100000000"
+                             Increment="10000"
+                             FormatString="N0"
+                             Value="{Binding SystemSurvey.DssValueFloor, Mode=TwoWay}" />
+            </StackPanel>
+            <CheckBox IsChecked="{Binding SystemSurvey.ShowNonBodySignals, Mode=TwoWay}"
+                      Content="Show non-body signals" />
           </StackPanel>
         </Grid>
 
-        <Separator />
+        <Separator x:Name="ExobiologyExternalDataSeparator" />
 
-        <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+        <Grid x:Name="ExobiologyExternalDataGrid" ColumnDefinitions="*,*" ColumnSpacing="28">
           <StackPanel Spacing="12">
             <TextBlock Classes="eyebrow" Text="CANONN PRIOR SCANS" />
             <CheckBox IsChecked="{Binding SystemSurvey.UseExternalData, Mode=TwoWay}"
@@ -1110,8 +1175,65 @@
                        Text="Prior-scan guidance uses Canonn coordinates for the current body. Disabling external data prevents these network requests." />
           </StackPanel>
 
-          <StackPanel Grid.Column="1" Spacing="12">
-            <TextBlock Classes="eyebrow" Text="SURFACE RADAR" />
+          <StackPanel Grid.Column="1"
+                      Spacing="12"
+                      IsEnabled="{Binding SystemSurvey.UseExternalData}">
+            <StackPanel Spacing="12"
+                        IsEnabled="{Binding SystemSurvey.AutoShowPriorScans}">
+              <CheckBox IsChecked="{Binding SystemSurvey.ShowCanonnSignalsOnRadar, Mode=TwoWay}"
+                        Content="Show bio signals from Canonn on the radar" />
+              <StackPanel Spacing="8"
+                          IsEnabled="{Binding SystemSurvey.ShowCanonnSignalsOnRadar}">
+                <RadioButton GroupName="CanonnRadarCircleStyle"
+                             IsChecked="{Binding SystemSurvey.UseSmallCanonnRadarCircles, Mode=TwoWay}"
+                             Content="Use small circles" />
+                <RadioButton GroupName="CanonnRadarCircleStyle"
+                             IsChecked="{Binding SystemSurvey.UseBioSignalRadius, Mode=TwoWay}"
+                             Content="Use bio signal radius" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                  <StackPanel Spacing="4">
+                    <TextBlock Classes="muted" FontSize="11" Text="Small circles (~100 m)" />
+                    <Border Background="#101010"
+                            BorderBrush="{DynamicResource RavenBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            ClipToBounds="True"
+                            Height="120">
+                      <Image Source="avares://SrvSurvey.Desktop/Assets/SettingsVisualAids/radar-small-circles-preview.png"
+                             Stretch="Uniform"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                    </Border>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Classes="muted" FontSize="11" Text="Bio signal radius (organism sample range)" />
+                    <Border Background="#101010"
+                            BorderBrush="{DynamicResource RavenBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            ClipToBounds="True"
+                            Height="120">
+                      <Image Source="avares://SrvSurvey.Desktop/Assets/SettingsVisualAids/radar-radius-preview.png"
+                             Stretch="Uniform"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                    </Border>
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
+            </StackPanel>
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Prior-scan guidance uses Canonn coordinates for the current body (PlotPriorScans list). When surface radar is visible, the same coordinates are drawn as rings on PlotGrounded, matching legacy drawPriorScans. Disabling external data prevents Canonn POI requests. Use External Bio Data controls whether Spansh/Canonn body biology is merged into the system scan; prior-scan coordinates still require External Data only." />
+          </StackPanel>
+        </Grid>
+
+        <Separator x:Name="SurfaceRadarSeparator" />
+
+        <StackPanel x:Name="SurfaceRadarPanel" Spacing="12">
+          <TextBlock Classes="eyebrow" Text="SURFACE RADAR" />
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="12">
             <CheckBox IsChecked="{Binding SystemSurvey.AutoShowSurfaceRadar, Mode=TwoWay}"
                       Content="Show sample scan exclusion zones" />
             <TextBlock Classes="muted"
@@ -1127,6 +1249,9 @@
             </CheckBox>
             <CheckBox IsChecked="{Binding SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear, Mode=TwoWay}"
                       Content="Hide if landing gear is not deployed when flying." />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="12">
             <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnSampling, Mode=TwoWay}"
                       Content="Auto remove tracker location when sampling an organism within 250 m." />
             <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnFinalSample, Mode=TwoWay}"
@@ -1152,61 +1277,13 @@
                              FormatString="N0"
                              Value="{Binding SystemSurvey.SurfaceRadarSize, Mode=TwoWay}" />
             </Grid>
-            <StackPanel IsEnabled="{Binding SystemSurvey.UseExternalData}">
-              <StackPanel Spacing="12"
-                          IsEnabled="{Binding SystemSurvey.AutoShowPriorScans}">
-                <CheckBox IsChecked="{Binding SystemSurvey.ShowCanonnSignalsOnRadar, Mode=TwoWay}"
-                          Content="Show bio signals from Canonn on the radar" />
-                <StackPanel Spacing="8"
-                            IsEnabled="{Binding SystemSurvey.ShowCanonnSignalsOnRadar}">
-                  <RadioButton GroupName="CanonnRadarCircleStyle"
-                               IsChecked="{Binding SystemSurvey.UseSmallCanonnRadarCircles, Mode=TwoWay}"
-                               Content="Use small circles" />
-                  <RadioButton GroupName="CanonnRadarCircleStyle"
-                               IsChecked="{Binding SystemSurvey.UseBioSignalRadius, Mode=TwoWay}"
-                               Content="Use bio signal radius" />
-                  <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                    <StackPanel Spacing="4">
-                      <TextBlock Classes="muted" FontSize="11" Text="Small circles (~100 m)" />
-                      <Border Background="#101010"
-                              BorderBrush="{DynamicResource RavenBorderBrush}"
-                              BorderThickness="1"
-                              CornerRadius="4"
-                              ClipToBounds="True"
-                              Height="120">
-                        <Image Source="avares://SrvSurvey.Desktop/Assets/SettingsVisualAids/radar-small-circles-preview.png"
-                               Stretch="Uniform"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" />
-                      </Border>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="4">
-                      <TextBlock Classes="muted" FontSize="11" Text="Bio signal radius (organism sample range)" />
-                      <Border Background="#101010"
-                              BorderBrush="{DynamicResource RavenBorderBrush}"
-                              BorderThickness="1"
-                              CornerRadius="4"
-                              ClipToBounds="True"
-                              Height="120">
-                        <Image Source="avares://SrvSurvey.Desktop/Assets/SettingsVisualAids/radar-radius-preview.png"
-                               Stretch="Uniform"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" />
-                      </Border>
-                    </StackPanel>
-                  </Grid>
-                </StackPanel>
-              </StackPanel>
             </StackPanel>
-            <TextBlock Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="Prior-scan guidance uses Canonn coordinates for the current body (PlotPriorScans list). When surface radar is visible, the same coordinates are drawn as rings on PlotGrounded, matching legacy drawPriorScans. Disabling external data prevents Canonn POI requests. Use External Bio Data controls whether Spansh/Canonn body biology is merged into the system scan; prior-scan coordinates still require External Data only." />
-          </StackPanel>
-        </Grid>
+          </Grid>
+        </StackPanel>
 
-        <Separator />
+        <Separator x:Name="ExobiologySurveySeparator" />
 
-        <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+        <Grid x:Name="ExobiologySurveyGrid" ColumnDefinitions="*,*" ColumnSpacing="28">
           <StackPanel Spacing="12">
             <TextBlock Classes="eyebrow" Text="EXOBIOLOGY SURVEY" />
             <CheckBox IsChecked="{Binding SystemSurvey.AutoShowBioSystem, Mode=TwoWay}"
@@ -1256,8 +1333,10 @@
           </StackPanel>
         </Grid>
 
-        <StackPanel Spacing="10" HorizontalAlignment="Stretch">
-          <TextBlock Classes="card-title" Text="Species reward groups:" />
+        <Separator x:Name="BiologyRewardSeparator" />
+
+        <StackPanel x:Name="BiologyRewardPanel" Spacing="10" HorizontalAlignment="Stretch">
+          <TextBlock Classes="eyebrow" Text="SPECIES REWARD GROUPS" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
                      Text="Choose the reward level per group by millions of credits:" />
@@ -1384,9 +1463,9 @@
                      TextWrapping="Wrap" />
         </StackPanel>
 
-        <Separator />
+        <Separator x:Name="BodyInformationSeparator" />
 
-        <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+        <Grid x:Name="BodyInformationGrid" ColumnDefinitions="*,*" ColumnSpacing="28">
           <StackPanel Spacing="12">
             <TextBlock Classes="eyebrow" Text="BODY INFORMATION" />
             <CheckBox IsChecked="{Binding SystemSurvey.AutoShowBodyInfo, Mode=TwoWay}"

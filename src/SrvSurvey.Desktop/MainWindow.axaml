@@ -63,9 +63,22 @@
                  SelectedItem="{Binding SelectedNavigation}">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:NavigationItemViewModel">
-              <TextBlock Foreground="{Binding $parent[ListBoxItem].Foreground}"
-                         FontWeight="SemiBold"
-                         Text="{Binding Label}" />
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{Binding $parent[ListBoxItem].Foreground}"
+                           FontWeight="SemiBold"
+                           Text="{Binding Label}" />
+                <Button Grid.Column="1"
+                        Classes="nav-overlay-settings"
+                        IsVisible="{Binding HasOverlaySettings}"
+                        CommandParameter="{Binding Key}"
+                        Click="OpenCategoryOverlaySettings_Click"
+                        ToolTip.Tip="Open category overlay settings">
+                  <PathIcon Width="18"
+                            Height="18"
+                            Data="{StaticResource window_multiple_regular}" />
+                </Button>
+              </Grid>
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>

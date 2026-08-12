@@ -1,0 +1,14 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SrvSurvey.Desktop.OverlayCategorySettingsWindow"
+        Width="920"
+        Height="720"
+        MinWidth="720"
+        MinHeight="520"
+        WindowStartupLocation="CenterOwner"
+        Icon="/Assets/logo.ico">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <ContentControl x:Name="CategorySettingsContent"
+                    Margin="32,16,32,32" />
+  </ScrollViewer>
+</Window>

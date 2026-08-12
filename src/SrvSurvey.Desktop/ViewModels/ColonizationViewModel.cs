@@ -1985,7 +1985,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             CancellationToken.None);
         if (result.Error is not null)
         {
-            StatusMessage = "The imported colonisation cache could not be read: "
+            StatusMessage = "The imported colonization cache could not be read: "
                 + result.Error;
             return;
         }
@@ -2009,7 +2009,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         var warning = result.Warnings.Count == 0
             ? string.Empty
             : $" Ignored {result.Warnings.Count:N0} invalid cached item(s).";
-        StatusMessage = $"Restored {Projects.Count:N0} imported colonisation "
+        StatusMessage = $"Restored {Projects.Count:N0} imported colonization "
             + $"project(s) from {Path.GetFileName(result.Path)}.{warning}";
     }
 
@@ -2217,7 +2217,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         {
             ConstructionStatus = snapshot.CurrentDock.IsConstructionSite
                 ? "Open Construction Services to load current requirements."
-                : "The current station is not a colonisation construction site.";
+                : "The current station is not a colonization construction site.";
             ConstructionResources = [];
             return;
         }
@@ -2444,7 +2444,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
         if (!Projects.Any(project => project.IsShown))
         {
-            return "Ship cargo was not published because no visible colonisation projects are active.";
+            return "Ship cargo was not published because no visible colonization projects are active.";
         }
 
         if (string.IsNullOrWhiteSpace(currentShipType))

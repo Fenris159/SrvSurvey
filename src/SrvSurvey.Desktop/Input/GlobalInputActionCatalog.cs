@@ -60,7 +60,7 @@ public static class GlobalInputActionCatalog
         Define(GlobalInputAction.ShowStationInfo, "showStationInfo", "Toggle station information", "Show or hide information for the current station.", "ALT I"),
         Define(GlobalInputAction.ShowSystemNotes, "showSystemNotes", "Show system notes", "Open notes for the current system.", "CTRL SHIFT N"),
         Define(GlobalInputAction.ShowColonyShopping, "showColonyShopping", "Toggle construction shopping", "Show or hide construction commodity requirements.", "ALT S"),
-        Define(GlobalInputAction.RefreshColonyData, "refreshColonyData", "Refresh construction data", "Refresh active colonisation project data.", "ALT CTRL S"),
+        Define(GlobalInputAction.RefreshColonyData, "refreshColonyData", "Refresh construction data", "Refresh active colonization project data.", "ALT CTRL S"),
         Define(GlobalInputAction.CollapseColonyData, "collapseColonyData", "Collapse construction data", "Collapse or expand construction commodity rows.", "ALT SHIFT S"),
         Define(GlobalInputAction.NextWindow, "nextWindow", "Next Elite window", "Switch overlay tracking to the next Elite process.", "ALT CTRL W"),
         Define(GlobalInputAction.StreamOne, "streamOne", "Toggle stream overlay", "Show or hide the dedicated stream overlay.", "ALT CTRL O"),

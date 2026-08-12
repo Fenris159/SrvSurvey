@@ -159,7 +159,11 @@ internal sealed class GuardianOverlayPreviewState
 
     public string AlignmentStatusText => string.Empty;
 
-    public string BlinkGestureText => "Blink to cycle Guardian targets";
+    public string BlinkGestureText =>
+        "Toggle cockpit mode 2x to confirm.";
+
+    public string GuardianChoiceGestureText =>
+        "Cycle firegroup to choose; toggle cockpit mode 2x to conf.";
 
     public string ActiveMapScaleText => "AUTO 1.0x";
 
@@ -222,10 +226,10 @@ internal sealed class GuardianOverlayPreviewState
     };
 
     public string GuardianOriginFooter =>
-        "Blink when the origin marker is centred.";
+        "Use the aerial guide to center and orient the site. Type .map to return to the survey map.";
 
     public string GuardianOnFootFooter =>
-        "Nearest relic tower A02 · 38.4 m";
+        "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.";
 
     public string GuardianStatusObeliskTitle => "A01 - History #12";
 

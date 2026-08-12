@@ -12,7 +12,7 @@
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
         <StackPanel Spacing="5">
           <TextBlock Classes="eyebrow" Text="RAVEN COLONIAL" />
-          <TextBlock Classes="page-title" Text="Colonisation projects" />
+          <TextBlock Classes="page-title" Text="Colonization projects" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
                      Text="Track active builds, choose which projects feed the cargo list, and inspect live construction requirements." />
@@ -43,7 +43,7 @@
             <CheckBox Grid.Column="1"
                       VerticalAlignment="Center"
                       IsChecked="{Binding Colonization.IsEnabled, Mode=TwoWay}"
-                      Content="Enable colonisation features" />
+                       Content="Enable colonization features" />
           </Grid>
         </Grid>
       </Border>
@@ -108,48 +108,11 @@
                       Content="Track and publish cargo on ship (Needs API Key)" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonisation projects are active." />
+                       Text="This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonization projects are active." />
             <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                        TextWrapping="Wrap"
                        Text="{Binding Colonization.ShipCargoPublishingStatus}" />
           </StackPanel>
-        </Border>
-      </Expander>
-
-      <Expander HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Stretch"
-                IsExpanded="False">
-        <Expander.Header>
-          <StackPanel Spacing="3">
-            <TextBlock Classes="card-title" Text="Shopping overlay" />
-            <TextBlock Classes="muted"
-                       Text="Configure the passive in-game commodity list and linked Fleet Carrier columns." />
-          </StackPanel>
-        </Expander.Header>
-        <Border Margin="0,12,0,0" Classes="card">
-          <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
-            <StackPanel Spacing="10">
-              <CheckBox IsChecked="{Binding Colonization.AutoShowCommodityOverlay, Mode=TwoWay}"
-                        Content="Auto show colonisation overlay" />
-              <CheckBox IsChecked="{Binding Colonization.ShowCommodityOverlayOnRightPanel, Mode=TwoWay}"
-                        Content="Show when looking at right-hand panel" />
-              <CheckBox IsChecked="{Binding Colonization.CollapseCoveredCommodityGroups, Mode=TwoWay}"
-                        Content="Collapse cargo groups when enough on FCs" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Spacing="10">
-              <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierCargo, Mode=TwoWay}"
-                        Content="Show Fleet Carrier aggregate counts" />
-              <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierDelta, Mode=TwoWay}"
-                        IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
-                        Content="Show delta vs sum" />
-              <CheckBox IsChecked="{Binding Colonization.InlineFleetCarrierCargo, Mode=TwoWay}"
-                        IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
-                        Content="Share column with ship cargo counts" />
-              <CheckBox IsChecked="{Binding Colonization.HighlightAlmostCoveredFleetCarrierLoads, Mode=TwoWay}"
-                        IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
-                        Content="Highlight if ship can load enough on FCs" />
-            </StackPanel>
-          </Grid>
         </Border>
       </Expander>
 

@@ -655,6 +655,135 @@ public sealed class OverlayPresentationContractTests
     }
 
     [Fact]
+    public void ExobiologySettingsUseBalancedSeparatedSections()
+    {
+        var root = FindRepositoryRoot();
+        var document = XDocument.Load(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Views",
+            "OverlaySettingsView.axaml"));
+        var controls = document.Descendants().ToArray();
+        XElement Named(string name) => controls.Single(element =>
+            element.Attributes().Any(attribute =>
+                attribute.Name.LocalName == "Name"
+                && attribute.Value == name));
+        XElement BoundCheckBox(string binding) => controls.Single(element =>
+            element.Name.LocalName == "CheckBox"
+            && element.Attribute("IsChecked")?.Value.Contains(
+                binding,
+                StringComparison.Ordinal) == true);
+
+        var canonnGrid = Named("ExobiologyExternalDataGrid");
+        var canonnRadar = BoundCheckBox(
+            "SystemSurvey.ShowCanonnSignalsOnRadar");
+        Assert.Same(canonnGrid.Elements().ElementAt(1), canonnRadar.Parent?.Parent);
+
+        var surfaceRadarSeparator = Named("SurfaceRadarSeparator");
+        var surfaceRadarPanel = Named("SurfaceRadarPanel");
+        Assert.Same(surfaceRadarSeparator, surfaceRadarPanel.PreviousNode);
+        Assert.Contains(
+            BoundCheckBox("SystemSurvey.AutoShowSurfaceRadar"),
+            surfaceRadarPanel.Descendants());
+        Assert.Equal(
+            2,
+            surfaceRadarPanel.Elements()
+                .Single(element => element.Name.LocalName == "Grid")
+                .Elements()
+                .Count());
+
+        var rewardSeparator = Named("BiologyRewardSeparator");
+        var rewardPanel = Named("BiologyRewardPanel");
+        Assert.Same(rewardSeparator, rewardPanel.PreviousNode);
+        var rewardHeading = rewardPanel.Elements().First();
+        Assert.Equal("eyebrow", rewardHeading.Attribute("Classes")?.Value);
+        Assert.Equal(
+            "SPECIES REWARD GROUPS",
+            rewardHeading.Attribute("Text")?.Value);
+    }
+
+    [Fact]
+    public void GuardianSettingsUseBalancedWrappingColumns()
+    {
+        var root = FindRepositoryRoot();
+        var document = XDocument.Load(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Views",
+            "OverlaySettingsView.axaml"));
+        var controls = document.Descendants().ToArray();
+        XElement Named(string name) => controls.Single(element =>
+            element.Attributes().Any(attribute =>
+                attribute.Name.LocalName == "Name"
+                && attribute.Value == name));
+
+        var primaryColumns = Named("GuardianPrimaryColumns");
+        var settingsColumns = Named("GuardianSettingsColumns");
+        Assert.Equal("*,*", primaryColumns.Attribute("ColumnDefinitions")?.Value);
+        Assert.Equal("*,*", settingsColumns.Attribute("ColumnDefinitions")?.Value);
+
+        var leftColumn = Named("GuardianLeftColumn");
+        var rightColumn = Named("GuardianRightColumn");
+        Assert.Equal(
+            ["MAP ZOOM", "ALIGNMENT GUIDES"],
+            leftColumn.Descendants()
+                .Where(element => element.Attribute("Classes")?.Value == "eyebrow")
+                .Select(element => element.Attribute("Text")?.Value));
+        Assert.Equal(
+            ["OVERLAY SIZE", "RUINS AERIAL ALTITUDES"],
+            rightColumn.Descendants()
+                .Where(element => element.Attribute("Classes")?.Value == "eyebrow")
+                .Select(element => element.Attribute("Text")?.Value));
+
+        var sizeSection = Named("GuardianOverlaySizeSection");
+        var sizeSelector = Assert.Single(
+            sizeSection.Elements(),
+            element => element.Name.LocalName == "ComboBox");
+        Assert.Equal(
+            "{Binding Guardian.SelectedOverlaySize, Mode=TwoWay}",
+            sizeSelector.Attribute("SelectedItem")?.Value);
+        Assert.Equal("200", sizeSelector.Attribute("Width")?.Value);
+
+        var guardianCard = Named("GuardianOverlayCard");
+        var guardianCheckBoxes = guardianCard.Descendants().Where(element =>
+            element.Name.LocalName == "CheckBox");
+        Assert.All(guardianCheckBoxes, checkBox =>
+        {
+            var label = Assert.Single(checkBox.Elements());
+            Assert.Equal("TextBlock", label.Name.LocalName);
+            Assert.Equal("Wrap", label.Attribute("TextWrapping")?.Value);
+        });
+    }
+
+    [Fact]
+    public void CurrentCommanderValueIsVerticallyAlignedWithItsLabel()
+    {
+        var root = FindRepositoryRoot();
+        var document = XDocument.Load(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Views",
+            "OverviewView.axaml"));
+        var currentCommander = document.Descendants().Single(element =>
+            element.Name.LocalName == "TextBlock"
+            && element.Attribute("Text")?.Value.Contains(
+                "CommanderInstances.CurrentCommander",
+                StringComparison.Ordinal) == true);
+
+        Assert.Equal(
+            "Center",
+            currentCommander.Attribute("VerticalAlignment")?.Value);
+        Assert.Equal(
+            "Center",
+            currentCommander.ElementsBeforeSelf()
+                .Single()
+                .Attribute("VerticalAlignment")?.Value);
+    }
+
+    [Fact]
     public void OverlaySettingsPlaceLongNumericEditorsBelowTheirLabels()
     {
         var root = FindRepositoryRoot();
@@ -721,6 +850,61 @@ public sealed class OverlayPresentationContractTests
         Assert.Equal(
             "# of bodies before scrolling:",
             fssBodyCount.Parent?.Elements().First().Attribute("Text")?.Value);
+
+        var skipDistant = controls.Single(element =>
+            element.Name.LocalName == "CheckBox"
+            && element.Attribute("IsChecked")?.Value.Contains(
+                "SystemSurvey.SkipDistantDssCandidates",
+                StringComparison.Ordinal) == true);
+        var showNonBodySignals = controls.Single(element =>
+            element.Name.LocalName == "CheckBox"
+            && element.Attribute("IsChecked")?.Value.Contains(
+                "SystemSurvey.ShowNonBodySignals",
+                StringComparison.Ordinal) == true);
+        var distance = NumericEditor("SystemSurvey.DssDistanceLimitLs");
+        var minimumValue = NumericEditor("SystemSurvey.DssValueFloor");
+        var surveyStatusControls = skipDistant.Parent?.Elements().ToArray();
+        Assert.NotNull(surveyStatusControls);
+        Assert.True(Array.IndexOf(surveyStatusControls, skipDistant)
+            < Array.IndexOf(surveyStatusControls, distance.Parent));
+        Assert.True(Array.IndexOf(surveyStatusControls, distance.Parent)
+            < Array.IndexOf(surveyStatusControls, minimumValue.Parent));
+        Assert.True(Array.IndexOf(
+            surveyStatusControls,
+            minimumValue.Parent)
+            < Array.IndexOf(surveyStatusControls, showNonBodySignals));
+    }
+
+    [Fact]
+    public void CategoryOverlaySettingsKeepOwnedControlsOutOfCategoryPages()
+    {
+        var root = FindRepositoryRoot();
+        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        var mainWindow = File.ReadAllText(Path.Combine(
+            desktop,
+            "MainWindow.axaml"));
+        var settings = File.ReadAllText(Path.Combine(
+            desktop,
+            "Views",
+            "OverlaySettingsView.axaml"));
+        var categoryWindow = File.ReadAllText(Path.Combine(
+            desktop,
+            "OverlayCategorySettingsWindow.axaml"));
+        var colonization = File.ReadAllText(Path.Combine(
+            desktop,
+            "Views",
+            "ColonizationView.axaml"));
+
+        Assert.Contains("window_multiple_regular", mainWindow);
+        Assert.Contains("HasOverlaySettings", mainWindow);
+        Assert.Contains("OpenCategoryOverlaySettings_Click", mainWindow);
+        Assert.Contains("Margin=\"32,16,32,32\"", categoryWindow);
+        Assert.Contains("x:Name=\"ColonizationShoppingCard\"", settings);
+        Assert.Contains("Colonization.AutoShowCommodityOverlay", settings);
+        Assert.DoesNotContain(
+            "Colonization.AutoShowCommodityOverlay",
+            colonization);
+        Assert.DoesNotContain("Colonisation projects", colonization);
     }
 
     [Fact]
