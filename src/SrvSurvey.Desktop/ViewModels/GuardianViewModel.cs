@@ -561,6 +561,7 @@ public sealed class GuardianViewModel
             if (SetField(ref isBlinkGesturePrimed, value))
             {
                 OnPropertyChanged(nameof(BlinkGestureText));
+                OnPropertyChanged(nameof(GuardianChoiceGestureText));
                 OnPropertyChanged(nameof(GuardianOnFootFooter));
                 OnPropertyChanged(nameof(GuardianStatusObeliskFooter));
             }
@@ -570,6 +571,10 @@ public sealed class GuardianViewModel
     public string BlinkGestureText => IsBlinkGesturePrimed
         ? "GESTURE READY · toggle once more to confirm"
         : $"Toggle {GetBlinkTriggerName()} twice to confirm the nearby Guardian action";
+
+    public string GuardianChoiceGestureText => IsBlinkGesturePrimed
+        ? "Cycle firegroup chooses; toggle once more to conf."
+        : $"Cycle firegroup chooses; toggle {GetBlinkTriggerName()} 2x to conf.";
 
     public string LiveMapPromptTitle => LiveMapMode switch
     {
@@ -1779,6 +1784,7 @@ public sealed class GuardianViewModel
         currentStatus = status;
         SynchronizeActiveSiteFromStatus(status);
         OnPropertyChanged(nameof(BlinkGestureText));
+        OnPropertyChanged(nameof(GuardianChoiceGestureText));
         OnPropertyChanged(nameof(GuardianOnFootFooter));
         OnPropertyChanged(nameof(GuardianStatusObeliskFooter));
         var blink = statusBlinkDetector.Update(status, DateTimeOffset.UtcNow);
@@ -1797,6 +1803,7 @@ public sealed class GuardianViewModel
         currentStatus = status;
         SynchronizeActiveSiteFromStatus(status);
         OnPropertyChanged(nameof(BlinkGestureText));
+        OnPropertyChanged(nameof(GuardianChoiceGestureText));
         OnPropertyChanged(nameof(GuardianOnFootFooter));
         OnPropertyChanged(nameof(GuardianStatusObeliskFooter));
         var blink = statusBlinkDetector.Update(

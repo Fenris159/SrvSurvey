@@ -1013,6 +1013,10 @@ public sealed class GuardianViewModelTests
 
             await viewModel.UpdateStatusAsync(normal, true, started);
             Assert.True(viewModel.IsGuardianChoiceTwoSelected);
+            Assert.Equal(GuardianLiveMapMode.SiteType, viewModel.LiveMapMode);
+            var saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            Assert.NotEqual("Beta", Assert.Single(saved.Surveys).SiteType);
             await viewModel.UpdateStatusAsync(
                 analysis,
                 true,
@@ -1022,7 +1026,7 @@ public sealed class GuardianViewModelTests
                 true,
                 started.AddSeconds(2));
 
-            var saved = await new GuardianCommanderDataReader(root)
+            saved = await new GuardianCommanderDataReader(root)
                 .ReadAsync("F123", isOdyssey: true);
             Assert.Equal("Beta", Assert.Single(saved.Surveys).SiteType);
             Assert.Equal(GuardianLiveMapMode.Heading, viewModel.LiveMapMode);
@@ -1093,6 +1097,14 @@ public sealed class GuardianViewModelTests
 
             Assert.True(viewModel.IsGuardianPoiChoiceVisible);
             Assert.True(viewModel.IsGuardianChoiceThreeSelected);
+            var saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            var initialSurvey = Assert.Single(saved.Surveys).Survey;
+            Assert.False(
+                initialSurvey.PoiStatuses.TryGetValue(
+                    "c1",
+                    out var initialStatus)
+                && initialStatus == GuardianPoiStatus.Empty);
             await viewModel.UpdateStatusAsync(
                 analysis,
                 true,
@@ -1102,7 +1114,7 @@ public sealed class GuardianViewModelTests
                 true,
                 started.AddSeconds(2));
 
-            var saved = await new GuardianCommanderDataReader(root)
+            saved = await new GuardianCommanderDataReader(root)
                 .ReadAsync("F123", isOdyssey: true);
             Assert.Equal(
                 GuardianPoiStatus.Empty,
@@ -1133,6 +1145,7 @@ public sealed class GuardianViewModelTests
                 Flags = StatusFlags.InMainShip,
             });
             Assert.Contains("lights", viewModel.BlinkGestureText);
+            Assert.Contains("lights", viewModel.GuardianChoiceGestureText);
 
             viewModel.UpdateStatus(new EliteStatus
             {
@@ -1140,6 +1153,7 @@ public sealed class GuardianViewModelTests
                     | StatusFlags2.OnFootExterior,
             });
             Assert.Contains("shields", viewModel.BlinkGestureText);
+            Assert.Contains("shields", viewModel.GuardianChoiceGestureText);
         }
         finally
         {

@@ -162,6 +162,9 @@ internal sealed class GuardianOverlayPreviewState
     public string BlinkGestureText =>
         "Toggle cockpit mode twice to confirm the nearby Guardian action";
 
+    public string GuardianChoiceGestureText =>
+        "Cycle firegroup chooses; toggle cockpit mode 2x to conf.";
+
     public string ActiveMapScaleText => "AUTO 1.0x";
 
     public string TargetObeliskText => "TARGET A01";

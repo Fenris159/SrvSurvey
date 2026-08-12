@@ -48,6 +48,8 @@ public interface IGuardianOverlayPresentationState : INotifyPropertyChanged
 
     string BlinkGestureText { get; }
 
+    string GuardianChoiceGestureText { get; }
+
     string ActiveMapScaleText { get; }
 
     string TargetObeliskText { get; }
