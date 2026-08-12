@@ -14,8 +14,12 @@ improves Guardian input handling. The changes below are the delta from
   and keeps related selectors and numeric controls with their descriptions.
 - Keeps DSS distance and minimum-value editors with their corresponding survey
   controls and preserves their intended presentation order.
-- Honors the configured Guardian fire-group confirmation gesture instead of
-  requiring a fixed secondary-fire input.
+- Clarifies Guardian overlay instructions: cycle the fire group to choose site
+  types and survey-point states, then toggle the configured confirmation
+  control twice to save the choice.
+- Correctly describes aerial site-origin alignment, on-foot relic heading
+  capture with two shield toggles, and configured confirmation controls in
+  Guardian material-capacity warnings.
 - Aligns the current Commander value with its label and standardizes the
   user-facing Colonization spelling.
 
