@@ -966,6 +966,155 @@ public sealed class GuardianViewModelTests
     }
 
     [Fact]
+    public async Task FireGroupChoosesRuinsTypeAndDoubleToggleConfirmsIt()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference() with { SiteType = "" };
+            var templates = new[] { "Alpha", "Beta", "Gamma" }
+                .Select(type => new GuardianSiteTemplate(
+                    type,
+                    type,
+                    string.Empty,
+                    new GuardianMapPoint(0, 0),
+                    1,
+                    [],
+                    [],
+                    new Dictionary<string, GuardianMapPoint>()))
+                .ToArray();
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([]),
+                    Templates = new GuardianSiteTemplateCatalog(templates),
+                });
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}""")],
+                "Drew");
+
+            Assert.Equal(GuardianLiveMapMode.SiteType, viewModel.LiveMapMode);
+            var started = new DateTimeOffset(
+                2026,
+                8,
+                12,
+                12,
+                0,
+                0,
+                TimeSpan.Zero);
+            var normal = StatusNorthOfSite(10) with { FireGroup = 1 };
+            var analysis = normal with
+            {
+                Flags = normal.Flags | StatusFlags.HudInAnalysisMode,
+            };
+
+            await viewModel.UpdateStatusAsync(normal, true, started);
+            Assert.True(viewModel.IsGuardianChoiceTwoSelected);
+            await viewModel.UpdateStatusAsync(
+                analysis,
+                true,
+                started.AddSeconds(1));
+            await viewModel.UpdateStatusAsync(
+                normal,
+                true,
+                started.AddSeconds(2));
+
+            var saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            Assert.Equal("Beta", Assert.Single(saved.Surveys).SiteType);
+            Assert.Equal(GuardianLiveMapMode.Heading, viewModel.LiveMapMode);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task FireGroupChoosesPointStateAndDoubleToggleConfirmsIt()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference() with { SiteHeading = 90 };
+            var published = CreatePublishedSite(reference, []) with
+            {
+                SiteHeading = 90,
+            };
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    PublishedSites = new GuardianPublishedSiteCatalog(
+                        [published]),
+                    Templates = new GuardianSiteTemplateCatalog(
+                    [
+                        new GuardianSiteTemplate(
+                            "Test",
+                            "Test",
+                            string.Empty,
+                            new GuardianMapPoint(0, 0),
+                            1,
+                            [
+                                new GuardianPointOfInterest(
+                                    "c1",
+                                    GuardianPoiType.Casket,
+                                    0,
+                                    10,
+                                    0),
+                            ],
+                            [],
+                            new Dictionary<string, GuardianMapPoint>()),
+                    ]),
+                });
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}""")],
+                "Drew");
+
+            var started = new DateTimeOffset(
+                2026,
+                8,
+                12,
+                12,
+                0,
+                0,
+                TimeSpan.Zero);
+            var normal = StatusNorthOfSite(10) with { FireGroup = 2 };
+            var analysis = normal with
+            {
+                Flags = normal.Flags | StatusFlags.HudInAnalysisMode,
+            };
+            await viewModel.UpdateStatusAsync(normal, true, started);
+
+            Assert.True(viewModel.IsGuardianPoiChoiceVisible);
+            Assert.True(viewModel.IsGuardianChoiceThreeSelected);
+            await viewModel.UpdateStatusAsync(
+                analysis,
+                true,
+                started.AddSeconds(1));
+            await viewModel.UpdateStatusAsync(
+                normal,
+                true,
+                started.AddSeconds(2));
+
+            var saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            Assert.Equal(
+                GuardianPoiStatus.Empty,
+                Assert.Single(saved.Surveys).Survey.PoiStatuses["c1"]);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public void ConfiguredGuardianGestureIsReflectedByOverlayGuidance()
     {
         var root = CreateTemporaryDirectory();

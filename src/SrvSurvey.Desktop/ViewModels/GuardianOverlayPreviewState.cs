@@ -159,7 +159,8 @@ internal sealed class GuardianOverlayPreviewState
 
     public string AlignmentStatusText => string.Empty;
 
-    public string BlinkGestureText => "Blink to cycle Guardian targets";
+    public string BlinkGestureText =>
+        "Toggle cockpit mode twice to confirm the nearby Guardian action";
 
     public string ActiveMapScaleText => "AUTO 1.0x";
 

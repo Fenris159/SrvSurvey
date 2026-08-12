@@ -117,7 +117,7 @@
                    TextWrapping="Wrap" />
         <TextBlock Grid.Row="3"
                    Classes="guardian-legacy-small guardian-legacy-cyan"
-                   Text="{Binding Guardian.BlinkGestureText}"
+                   Text="Cycle firegroup chooses; toggle cockpit mode 2x to conf."
                    TextWrapping="Wrap" />
       </Grid>
 
@@ -256,7 +256,7 @@
         </Grid>
         <TextBlock Grid.Row="3"
                    Classes="guardian-legacy-small guardian-legacy-cyan"
-                   Text="{Binding Guardian.BlinkGestureText}"
+                   Text="Cycle firegroup chooses; toggle cockpit mode 2x to conf."
                    TextWrapping="Wrap" />
       </Grid>
 
