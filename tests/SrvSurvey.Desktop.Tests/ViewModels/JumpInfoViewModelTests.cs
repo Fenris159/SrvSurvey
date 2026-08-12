@@ -96,7 +96,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
         var followedRouteLine = Assert.Single(
             viewModel.DetailLines,
             line => line.Label == "Followed route");
-        Assert.Contains("Hop 2 of 2", followedRouteLine.Value);
+        Assert.Contains("HOP 1 / 1", followedRouteLine.Value);
         Assert.Contains("Survey the A ring", followedRouteLine.Value);
         Assert.DoesNotContain(
             viewModel.DetailLines,
@@ -245,6 +245,140 @@ public sealed class JumpInfoViewModelTests : IDisposable
                 && line.Value == "Inner Scutum-Centaurus Arm");
     }
 
+    [Theory]
+    [InlineData("FSDJump")]
+    [InlineData("CarrierJump")]
+    public async Task CompletedJumpHoldsPreviousContentForLegacyTransition(
+        string eventName)
+    {
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-12T12:00:00Z"));
+        var client = new FakeSummaryClient(CreateSummary());
+        using var viewModel = CreateViewModel(client, time);
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                CreateNavRoute(),
+                [FsdTarget("Beta", 3, "N")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null));
+        await viewModel.PendingSummaryLoad;
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Beta",
+                3,
+                new GalacticCoordinate(45, 0, 0),
+                new NavRouteSnapshot(
+                    time.GetUtcNow(),
+                    "NavRoute",
+                    [
+                        new NavRouteEntry(
+                            "Beta",
+                            3,
+                            new GalacticCoordinate(45, 0, 0),
+                            "N"),
+                        new NavRouteEntry(
+                            "Gamma",
+                            4,
+                            new GalacticCoordinate(60, 0, 0),
+                            "K"),
+                    ]),
+                [
+                    Event(eventName, "\"StarSystem\":\"Beta\""),
+                    FsdTarget("Gamma", 4, "K"),
+                ],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null));
+
+        Assert.Equal("Beta", viewModel.TargetName);
+        Assert.True(viewModel.ShouldShow);
+        Assert.Equal([("Beta", 3L)], client.Requests);
+
+        time.Advance(TimeSpan.FromMilliseconds(999));
+        viewModel.AdvanceTimedTransitions();
+        Assert.Equal("Beta", viewModel.TargetName);
+
+        time.Advance(TimeSpan.FromMilliseconds(1));
+        viewModel.AdvanceTimedTransitions();
+        await viewModel.PendingSummaryLoad;
+
+        Assert.Equal("Gamma", viewModel.TargetName);
+        Assert.Equal([("Beta", 3L), ("Gamma", 4L)], client.Requests);
+    }
+
+    [Fact]
+    public async Task FinalFollowedRouteJumpShowsFinishedForThreeSeconds()
+    {
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-12T12:00:00Z"));
+        using var viewModel = CreateViewModel(
+            new FakeSummaryClient(CreateSummary()),
+            time);
+        var followedRoute = new FollowRouteDocument(
+            "F123",
+            "route.json",
+            true,
+            true,
+            0,
+            [
+                Hop("Sol", 1, 0),
+                Hop("Beta", 3, 45),
+            ]);
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                null,
+                [FsdTarget("Beta", 3, "N")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                followedRoute));
+        await viewModel.PendingSummaryLoad;
+
+        Assert.Equal("HOP 1 / 1", viewModel.JumpProgress);
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Beta",
+                3,
+                new GalacticCoordinate(45, 0, 0),
+                null,
+                [Event(
+                    "FSDJump",
+                    "\"StarSystem\":\"Beta\",\"SystemAddress\":3")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                followedRoute));
+
+        Assert.Equal("FINISHED", viewModel.JumpProgress);
+        Assert.True(viewModel.ShouldShow);
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Beta",
+                3,
+                new GalacticCoordinate(45, 0, 0),
+                null,
+                [],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                followedRoute with
+                {
+                    IsActive = false,
+                    LastReachedIndex = 1,
+                }));
+        Assert.Equal("FINISHED", viewModel.JumpProgress);
+
+        time.Advance(TimeSpan.FromMilliseconds(2999));
+        viewModel.AdvanceTimedTransitions();
+        Assert.Equal("FINISHED", viewModel.JumpProgress);
+
+        time.Advance(TimeSpan.FromMilliseconds(1));
+        viewModel.AdvanceTimedTransitions();
+        Assert.False(viewModel.ShouldShow);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -253,12 +387,15 @@ public sealed class JumpInfoViewModelTests : IDisposable
         }
     }
 
-    private JumpInfoViewModel CreateViewModel(ISystemSummaryClient client)
+    private JumpInfoViewModel CreateViewModel(
+        ISystemSummaryClient client,
+        TimeProvider? timeProvider = null)
     {
         return new JumpInfoViewModel(
             client,
             new JumpInfoSettingsStore(
-                Path.Combine(temporaryDirectory, "ui-settings.json")));
+                Path.Combine(temporaryDirectory, "ui-settings.json")),
+            timeProvider: timeProvider);
     }
 
     private static NavRouteSnapshot CreateNavRoute()
@@ -354,6 +491,16 @@ public sealed class JumpInfoViewModelTests : IDisposable
         {
             Requests.Add((systemName, systemAddress));
             return Task.FromResult(new SystemSummaryLoadResult(summary, []));
+        }
+    }
+
+    private sealed class MutableTimeProvider(DateTimeOffset value) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => value;
+
+        public void Advance(TimeSpan duration)
+        {
+            value += duration;
         }
     }
 }

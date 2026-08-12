@@ -51,7 +51,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             route,
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other));
 
-        Assert.Equal("HOP 2 / 3", viewModel.HopProgress);
+        Assert.Equal("HOP 1 / 2", viewModel.HopProgress);
         Assert.Equal("Col 359 Sector EE-X b16-1", viewModel.SystemName);
         Assert.Equal(
             $"{499.76:N2} LY JUMP  •  {21502.09:N2} LY REMAINING",
@@ -90,6 +90,91 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.Equal("\u2014", viewModel.RestockAmount);
         Assert.False(viewModel.HasCountdown);
         Assert.False(viewModel.HasCountdownPhaseTime);
+    }
+
+    [Fact]
+    public async Task NotStartedRouteLabelsItsFirstSystemAsStart()
+    {
+        var store = new FollowRouteStore(
+            temporaryDirectory,
+            FollowRouteKind.FleetCarrier);
+        var document = (await store.CreateNewAsync("F456")) with
+        {
+            Name = "Carrier Start",
+            IsActive = true,
+            LastReachedIndex = -1,
+            Kind = FollowRouteKind.FleetCarrier,
+            Hops =
+            [
+                Hop("Sol", null, 1),
+                Hop("Colonia", null, 2),
+            ],
+        };
+        await store.SaveAsAsync(document, "Carrier Start");
+        var route = CreateRoute(store);
+        await route.UpdateContextAsync("F456", null, null, null);
+        using var viewModel = new FleetCarrierRouteOverlayViewModel(
+            route,
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other));
+
+        Assert.Equal("START", viewModel.HopProgress);
+        Assert.Equal("Sol", viewModel.SystemName);
+    }
+
+    [Fact]
+    public async Task FinalCarrierArrivalShowsFinishedForThreeSeconds()
+    {
+        var store = new FollowRouteStore(
+            temporaryDirectory,
+            FollowRouteKind.FleetCarrier);
+        var document = (await store.CreateNewAsync("F321")) with
+        {
+            Name = "Carrier Finish",
+            IsActive = true,
+            LastReachedIndex = 1,
+            Kind = FollowRouteKind.FleetCarrier,
+            Hops =
+            [
+                Hop("Sol", null, 1),
+                Hop("Second", null, 2),
+                Hop("Colonia", null, 3),
+            ],
+        };
+        await store.SaveAsAsync(document, "Carrier Finish");
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-12T12:00:00Z"));
+        var route = new RouteWorkspaceViewModel(
+            new FollowRouteService(store),
+            new RouteNameImporter(new EmptyResolver()),
+            new EmptySpanshClient(),
+            FollowRouteKind.FleetCarrier,
+            () => time.GetUtcNow());
+        await route.UpdateContextAsync("F321", "Second", 2, null);
+        using var viewModel = new FleetCarrierRouteOverlayViewModel(
+            route,
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other),
+            time);
+
+        Assert.Equal("HOP 2 / 2", viewModel.HopProgress);
+        await route.ApplyJournalEventsAsync(
+        [
+            Parse(
+                """
+                {"event":"CarrierJump","StarSystem":"Colonia","SystemAddress":3}
+                """),
+        ]);
+
+        Assert.Equal("FINISHED", viewModel.HopProgress);
+        Assert.Equal("Colonia", viewModel.SystemName);
+        Assert.True(viewModel.ShouldShow);
+
+        time.Advance(TimeSpan.FromMilliseconds(2999));
+        viewModel.AdvanceTimedTransitions();
+        Assert.True(viewModel.ShouldShow);
+
+        time.Advance(TimeSpan.FromMilliseconds(1));
+        viewModel.AdvanceTimedTransitions();
+        Assert.False(viewModel.ShouldShow);
     }
 
     [Fact]
@@ -235,6 +320,16 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult<IReadOnlyList<FollowRouteHop>>([]);
+        }
+    }
+
+    private sealed class MutableTimeProvider(DateTimeOffset value) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => value;
+
+        public void Advance(TimeSpan duration)
+        {
+            value += duration;
         }
     }
 }
