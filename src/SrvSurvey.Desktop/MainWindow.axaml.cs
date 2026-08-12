@@ -1,10 +1,13 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Core.Network;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
@@ -13,8 +16,11 @@ public sealed partial class MainWindow : Window
 {
     private readonly MainWindowViewModel viewModel;
     private readonly JournalMonitorSession monitorSession = new();
+    private IReadOnlyList<MainWindowMonitor> applicationMonitors = [];
+    private PixelPoint? lastNormalPosition;
     private Task? closePreparationTask;
     private bool closeReady;
+    private bool applicationWindowPositionSaved;
     private TrayIcon? trayIcon;
 
     public MainWindow()
@@ -28,6 +34,13 @@ public sealed partial class MainWindow : Window
         InputContext = new ApplicationInputContext();
         InitializeComponent();
         DataContext = viewModel;
+        viewModel.DesktopBehavior.ApplicationWindowPreferencesChanged +=
+            OnApplicationWindowPreferencesChanged;
+        Screens.Changed += OnScreensChanged;
+        PositionChanged += OnPositionChanged;
+        RefreshApplicationMonitors();
+        ApplyApplicationWindowPreferences(
+            viewModel.DesktopBehavior.LastApplicationWindowPosition);
         viewModel.ReleaseUpdates.SetDiagnosticsNavigator(viewModel.ShowDiagnostics);
         Opened += OnOpened;
         viewModel.ProfileImportPreparing += StopMonitorForProfileImportAsync;
@@ -46,10 +59,96 @@ public sealed partial class MainWindow : Window
     private void OnOpened(object? sender, EventArgs eventArgs)
     {
         Opened -= OnOpened;
+        if (WindowState == WindowState.Normal)
+        {
+            lastNormalPosition = Position;
+        }
+
         _ = monitorSession.Start(
             RunMonitorAsync,
             exception => Program.ApplicationLog?.Append(
                 "Journal monitor stopped unexpectedly: " + exception));
+    }
+
+    private void OnScreensChanged(object? sender, EventArgs eventArgs)
+    {
+        var currentPosition = GetCurrentApplicationWindowPosition();
+        RefreshApplicationMonitors();
+        ApplyApplicationWindowPreferences(currentPosition);
+    }
+
+    private void OnApplicationWindowPreferencesChanged(
+        object? sender,
+        EventArgs eventArgs)
+    {
+        ApplyApplicationWindowPreferences(lastPosition: null);
+    }
+
+    private void OnPositionChanged(
+        object? sender,
+        PixelPointEventArgs eventArgs)
+    {
+        if (WindowState == WindowState.Normal)
+        {
+            lastNormalPosition = eventArgs.Point;
+        }
+    }
+
+    private void RefreshApplicationMonitors()
+    {
+        applicationMonitors = MainWindowPlacement.DescribeScreens(Screens.All);
+        viewModel.DesktopBehavior.SetAvailableMonitors(
+            applicationMonitors.Select(monitor =>
+                new ApplicationMonitorOption(
+                    monitor.Id,
+                    monitor.DisplayName)));
+    }
+
+    private void ApplyApplicationWindowPreferences(
+        ApplicationWindowPosition? lastPosition)
+    {
+        var automaticMonitorId = IsVisible
+            ? Screens.ScreenFromWindow(this)?.DisplayName
+            : null;
+        var placement = MainWindowPlacement.Resolve(
+            applicationMonitors,
+            viewModel.DesktopBehavior.PreferredMonitorId,
+            viewModel.DesktopBehavior.ApplicationWindowScalePercent,
+            automaticMonitorId,
+            lastPosition);
+        Width = placement.Width;
+        Height = placement.Height;
+        MinWidth = placement.MinimumWidth;
+        MinHeight = placement.MinimumHeight;
+        ApplicationScaleContainer.LayoutTransform = new ScaleTransform(
+            placement.ApplicationScale,
+            placement.ApplicationScale);
+        if (placement.Position is { } position)
+        {
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Position = position;
+            lastNormalPosition = position;
+        }
+    }
+
+    private ApplicationWindowPosition? GetCurrentApplicationWindowPosition()
+    {
+        var position = WindowState == WindowState.Normal
+            ? Position
+            : lastNormalPosition;
+        if (position is not { } point)
+        {
+            return null;
+        }
+
+        var monitor = applicationMonitors.FirstOrDefault(candidate =>
+            point.X >= candidate.Bounds.X
+            && point.X < candidate.Bounds.X + candidate.Bounds.Width
+            && point.Y >= candidate.Bounds.Y
+            && point.Y < candidate.Bounds.Y + candidate.Bounds.Height);
+        return monitor is null
+            ? null
+            : new ApplicationWindowPosition(point.X, point.Y, monitor.Id);
     }
 
     private async Task RunMonitorAsync(CancellationToken cancellationToken)
@@ -87,6 +186,13 @@ public sealed partial class MainWindow : Window
 
     protected override void OnClosing(WindowClosingEventArgs e)
     {
+        if (!applicationWindowPositionSaved
+            && GetCurrentApplicationWindowPosition() is { } position)
+        {
+            applicationWindowPositionSaved = true;
+            viewModel.DesktopBehavior.RememberApplicationWindowPosition(position);
+        }
+
         if (!closeReady)
         {
             e.Cancel = true;
@@ -121,6 +227,10 @@ public sealed partial class MainWindow : Window
         InputContext.SetActive(false);
         InputContext.SetTextInputActive(false);
         viewModel.ProfileImportPreparing -= StopMonitorForProfileImportAsync;
+        viewModel.DesktopBehavior.ApplicationWindowPreferencesChanged -=
+            OnApplicationWindowPreferencesChanged;
+        Screens.Changed -= OnScreensChanged;
+        PositionChanged -= OnPositionChanged;
         viewModel.ReleaseUpdates.SetDiagnosticsNavigator(null);
         trayIcon?.Dispose();
         trayIcon = null;

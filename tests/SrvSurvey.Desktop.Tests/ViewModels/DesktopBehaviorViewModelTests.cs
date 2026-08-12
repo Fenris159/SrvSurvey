@@ -55,6 +55,61 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
         Assert.Contains("no matching game window", viewModel.StatusMessage);
     }
 
+    [Fact]
+    public void ApplicationWindowPreferencesPersistAndSignalPlacementChange()
+    {
+        var viewModel = CreateViewModel(new RecordingSwitcher());
+        var monitor = new ApplicationMonitorOption(
+            "\\\\.\\DISPLAY2",
+            "DISPLAY2 · 2560 × 1440 · 100%");
+        viewModel.SetAvailableMonitors([monitor]);
+        var changeCount = 0;
+        viewModel.ApplicationWindowPreferencesChanged += (_, _) =>
+            changeCount++;
+
+        viewModel.SelectedMonitor = monitor;
+        viewModel.SelectedApplicationWindowScale =
+            ApplicationWindowScaleCatalog.All.Single(option =>
+                option.Percent == 125);
+        viewModel.RememberApplicationWindowPosition(
+            new ApplicationWindowPosition(2100, 75, "\\\\.\\DISPLAY2"));
+
+        Assert.Equal(2, changeCount);
+        Assert.Same(monitor, viewModel.SelectedMonitor);
+        Assert.Equal(125, viewModel.SelectedApplicationWindowScale.Percent);
+        var saved = new DesktopBehaviorSettingsStore(Path.Combine(
+            temporaryDirectory,
+            "ui-settings.json")).Load();
+        Assert.Equal("\\\\.\\DISPLAY2", saved.PreferredMonitorId);
+        Assert.Equal(125, saved.ApplicationWindowScalePercent);
+        Assert.Equal(
+            new ApplicationWindowPosition(2100, 75, "\\\\.\\DISPLAY2"),
+            saved.LastApplicationWindowPosition);
+    }
+
+    [Fact]
+    public void DisconnectedSavedMonitorRemainsSelectedWithFallbackLabel()
+    {
+        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        new DesktopBehaviorSettingsStore(path).Save(
+            new DesktopBehaviorPreferences(
+                true,
+                true,
+                false,
+                false,
+                "DP-2",
+                100));
+        var viewModel = CreateViewModel(new RecordingSwitcher());
+
+        viewModel.SetAvailableMonitors(
+        [
+            new ApplicationMonitorOption("DP-1", "DP-1 (Primary)"),
+        ]);
+
+        Assert.Equal("DP-2", viewModel.SelectedMonitor.Id);
+        Assert.Contains("not connected", viewModel.SelectedMonitor.DisplayName);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
