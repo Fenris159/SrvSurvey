@@ -1000,6 +1000,10 @@ public sealed class GuardianViewModelTests
                 "Drew");
 
             Assert.Equal(GuardianLiveMapMode.SiteType, viewModel.LiveMapMode);
+            Assert.Contains(
+                "active fire group",
+                viewModel.GuardianStatusDetail,
+                StringComparison.Ordinal);
             var started = new DateTimeOffset(
                 2026,
                 8,
@@ -1033,6 +1037,39 @@ public sealed class GuardianViewModelTests
                 .ReadAsync("F123", isOdyssey: true);
             Assert.Equal("Beta", Assert.Single(saved.Surveys).SiteType);
             Assert.Equal(GuardianLiveMapMode.Heading, viewModel.LiveMapMode);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task UnknownStructureSiteTypeGuidanceUsesSiteCommand()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([]),
+                    Templates = new GuardianSiteTemplateCatalog([]),
+                });
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient_Tiny_999:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}""")],
+                "Drew");
+
+            Assert.Equal(GuardianSiteKind.Structure, viewModel.ActiveSite?.Kind);
+            Assert.Equal(GuardianLiveMapMode.SiteType, viewModel.LiveMapMode);
+            Assert.Contains(".site <type>", viewModel.GuardianStatusDetail);
+            Assert.DoesNotContain(
+                "fire group",
+                viewModel.GuardianStatusDetail,
+                StringComparison.OrdinalIgnoreCase);
         }
         finally
         {

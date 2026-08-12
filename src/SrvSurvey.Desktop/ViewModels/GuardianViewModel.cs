@@ -1214,10 +1214,11 @@ public sealed class GuardianViewModel
     {
         get
         {
-            if (IsGuardianSiteTypeChoiceVisible)
+            if (LiveMapMode == GuardianLiveMapMode.SiteType)
             {
-                return
-                    "Select the ruins layout with the active fire group, then use the configured confirmation control twice.";
+                return ActiveSite?.Kind == GuardianSiteKind.Ruins
+                    ? "Select the ruins layout with the active fire group, then use the configured confirmation control twice."
+                    : "Type .site <type> to select the mapped Guardian layout.";
             }
 
             if (IsGuardianHeadingChoiceVisible)
