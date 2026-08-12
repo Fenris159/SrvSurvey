@@ -1006,6 +1006,16 @@
                       Content="Show exploration values in FSS" />
             <CheckBox IsChecked="{Binding SystemSurvey.ShowFssInfoInSystemMap, Mode=TwoWay}"
                       Content="Show list in system map" />
+            <StackPanel Margin="28,0,0,0" Spacing="6">
+              <TextBlock Text="# of bodies before scrolling:" />
+              <NumericUpDown Width="150"
+                             HorizontalAlignment="Left"
+                             Minimum="1"
+                             Maximum="20"
+                             Increment="1"
+                             FormatString="N0"
+                             Value="{Binding SystemSurvey.FssBodiesBeforeScrolling, Mode=TwoWay}" />
+            </StackPanel>
             <CheckBox IsChecked="{Binding SystemSurvey.ShowFssInfoInNavigationPanel, Mode=TwoWay}"
                       Content="Show exploration values list" />
             <CheckBox IsChecked="{Binding SystemSurvey.HideGeoCount, Mode=TwoWay}"
@@ -1383,6 +1393,18 @@
                       Content="Show body information panel" />
             <CheckBox IsChecked="{Binding SystemSurvey.ShowBodyInfoInSystemMap, Mode=TwoWay}"
                       Content="In the System Map" />
+            <StackPanel Margin="24,0,0,0" Spacing="6">
+              <TextBlock Text="Extend Body Information Preview by:" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <NumericUpDown Width="150"
+                               Minimum="0"
+                               Maximum="600"
+                               Increment="1"
+                               FormatString="N0"
+                               Value="{Binding SystemSurvey.BodyInformationPreviewExtensionSeconds, Mode=TwoWay}" />
+                <TextBlock VerticalAlignment="Center" Text="seconds" />
+              </StackPanel>
+            </StackPanel>
             <StackPanel Margin="24,0,0,0" Spacing="6">
               <TextBlock Text="Extend Body Predictions preview by:" />
               <StackPanel Orientation="Horizontal" Spacing="8">

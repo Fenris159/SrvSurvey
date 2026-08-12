@@ -14,7 +14,9 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         var preferences = CreateStore().Load();
 
         Assert.Equal(SystemSurveyPreferences.Default, preferences);
+        Assert.Equal(0, preferences.BodyInformationPreviewExtensionSeconds);
         Assert.Equal(0, preferences.BodyPredictionPreviewExtensionSeconds);
+        Assert.Equal(4, preferences.FssBodiesBeforeScrolling);
         Assert.False(preferences.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn);
     }
 
@@ -28,6 +30,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         var expected = new SystemSurveyPreferences(
             AutoShowBodyInfo: false,
             ShowBodyInfoInSystemMap: false,
+            BodyInformationPreviewExtensionSeconds: 12,
             BodyPredictionPreviewExtensionSeconds: 45,
             ShowBodyInfoInOrbit: false,
             ShowBodyInfoAtSurface: true,
@@ -66,6 +69,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             AutoShowLastFssBody: false,
             AutoShowFssInfo: false,
             ShowFssInfoInSystemMap: true,
+            FssBodiesBeforeScrolling: 9,
             ShowFssInfoInNavigationPanel: true,
             AutoShowSystemStatus: false,
             HideGeoCount: true,
@@ -102,9 +106,11 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         File.WriteAllText(
             path,
             "{\"SystemSurvey\":{\"FssBodyValueFloor\":-1,"
+                + "\"FssBodiesBeforeScrolling\":0,"
                 + "\"DssValueFloor\":-2,\"DssDistanceLimitLs\":-3,"
                 + "\"BodyInfoBubbleSizeLy\":-4,"
                 + "\"PriorScanMinimumValue\":-5,"
+                + "\"BodyInformationPreviewExtensionSeconds\":999,"
                 + "\"BodyPredictionPreviewExtensionSeconds\":999,"
                 + "\"BioPlotterDssDurationSeconds\":999,"
                 + "\"HighGravityWarningLevel\":75,"
@@ -116,10 +122,12 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         var preferences = new SystemSurveySettingsStore(path).Load();
 
         Assert.Equal(0, preferences.FssBodyValueFloor);
+        Assert.Equal(1, preferences.FssBodiesBeforeScrolling);
         Assert.Equal(0, preferences.DssValueFloor);
         Assert.Equal(0, preferences.DssDistanceLimitLs);
         Assert.Equal(0, preferences.BodyInfoBubbleSizeLy);
         Assert.Equal(0, preferences.PriorScanMinimumValue);
+        Assert.Equal(600, preferences.BodyInformationPreviewExtensionSeconds);
         Assert.Equal(600, preferences.BodyPredictionPreviewExtensionSeconds);
         Assert.Equal(600, preferences.BioPlotterDssDurationSeconds);
         Assert.Equal(50, preferences.HighGravityWarningLevel);

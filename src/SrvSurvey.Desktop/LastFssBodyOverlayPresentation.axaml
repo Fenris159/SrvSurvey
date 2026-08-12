@@ -111,13 +111,9 @@
                      FontWeight="SemiBold"
                      VerticalAlignment="Center"
                      Text="{Binding Survey.LastFssSignalsText}" />
-          <Border Grid.Column="1"
-                Padding="4,3"
-                HorizontalAlignment="Left"
-                BorderBrush="{DynamicResource RavenBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="3">
-          <ItemsControl ItemsSource="{Binding Survey.LastFssBiologyRewardBands}">
+          <ItemsControl Grid.Column="1"
+                        HorizontalAlignment="Left"
+                        ItemsSource="{Binding Survey.LastFssBiologyRewardBands}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <StackPanel Orientation="Horizontal" Spacing="3" />
@@ -159,7 +155,6 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          </Border>
         </Grid>
         <TextBlock Classes="monospace overlay-caption"
                    Foreground="{DynamicResource RavenBioWhiteBrush}"
