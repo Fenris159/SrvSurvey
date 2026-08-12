@@ -88,6 +88,23 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
     }
 
     [Fact]
+    public void SavedMonitorFallsBackToAutomaticBeforeMonitorEnumeration()
+    {
+        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        new DesktopBehaviorSettingsStore(path).Save(
+            new DesktopBehaviorPreferences(
+                true,
+                true,
+                false,
+                false,
+                "DP-2",
+                100));
+        var viewModel = CreateViewModel(new RecordingSwitcher());
+
+        Assert.Same(ApplicationMonitorOption.Automatic, viewModel.SelectedMonitor);
+    }
+
+    [Fact]
     public void DisconnectedSavedMonitorRemainsSelectedWithFallbackLabel()
     {
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");

@@ -59,10 +59,11 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
 
     public ApplicationMonitorOption SelectedMonitor
     {
-        get => monitorOptions.First(option => string.Equals(
+        get => monitorOptions.FirstOrDefault(option => string.Equals(
             option.Id,
             preferences.PreferredMonitorId,
-            MonitorIdComparison));
+            MonitorIdComparison))
+            ?? ApplicationMonitorOption.Automatic;
         set
         {
             if (value is not null)
