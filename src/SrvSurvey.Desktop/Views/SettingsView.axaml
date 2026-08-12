@@ -343,13 +343,13 @@
         </Expander>
       </Border>
 
-      <Border Classes="card raised">
+      <Border x:Name="DesktopBehaviorCard" Classes="card raised">
         <StackPanel Spacing="12">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Desktop behavior" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Preserve the original hand-off to the selected Elite Dangerous window without cycling to another commander instance." />
+                       Text="Choose where the application opens and preserve the original hand-off to the selected Elite Dangerous window." />
           </StackPanel>
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
             <StackPanel Spacing="10">
@@ -363,6 +363,30 @@
                         Content="Set focus on Elite Dangerous after each FSD jump." />
               <CheckBox IsChecked="{Binding DesktopBehavior.MinimizeToTray, Mode=TwoWay}"
                         Content="Minimize to system tray" />
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="7">
+              <TextBlock FontWeight="SemiBold" Text="Default monitor" />
+              <ComboBox x:Name="DefaultMonitorComboBox"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding DesktopBehavior.MonitorOptions}"
+                        SelectedItem="{Binding DesktopBehavior.SelectedMonitor, Mode=TwoWay}" />
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         TextWrapping="Wrap"
+                         Text="The last on-screen position is restored when possible. This monitor is used when no saved position is available or its display is disconnected." />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="7">
+              <TextBlock FontWeight="SemiBold" Text="Application window scale" />
+              <ComboBox x:Name="ApplicationWindowScaleComboBox"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding DesktopBehavior.ApplicationWindowScaleOptions}"
+                        SelectedItem="{Binding DesktopBehavior.SelectedApplicationWindowScale, Mode=TwoWay}" />
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         TextWrapping="Wrap"
+                         Text="Scales the complete application interface. Oversized choices are reduced only as needed to fit the active monitor." />
             </StackPanel>
           </Grid>
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"

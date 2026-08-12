@@ -15,6 +15,7 @@
         MinHeight="600"
         Icon="/Assets/logo.ico"
         Title="SrvSurvey">
+  <LayoutTransformControl x:Name="ApplicationScaleContainer">
   <Grid ColumnDefinitions="248,*">
     <Border Background="{DynamicResource RavenSidebarBrush}"
             BorderBrush="{DynamicResource RavenBorderBrush}"
@@ -134,4 +135,5 @@
       </Grid>
     </Border>
   </Grid>
+  </LayoutTransformControl>
 </Window>
