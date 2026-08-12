@@ -301,6 +301,42 @@ public sealed class OverlayRuntimePresentationFactoryTests
         }
     }
 
+    [Fact]
+    public void GuardianChoiceAndOriginPreviewsDescribeTheirActualControls()
+    {
+        var siteType = Assert.IsType<GuardianOverlayViewModel>(
+            OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
+                "PlotGuardianStatus",
+                1));
+        Assert.Contains(
+            "Cycle firegroup to choose",
+            siteType.Guardian.GuardianChoiceGestureText);
+        Assert.Contains(
+            "toggle cockpit mode 2x",
+            siteType.Guardian.GuardianChoiceGestureText);
+
+        var heading = Assert.IsType<GuardianOverlayViewModel>(
+            OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
+                "PlotGuardianStatus",
+                2));
+        Assert.DoesNotContain(
+            "firegroup",
+            heading.Guardian.BlinkGestureText,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "toggle cockpit mode 2x",
+            heading.Guardian.BlinkGestureText,
+            StringComparison.OrdinalIgnoreCase);
+
+        var origin = Assert.IsType<GuardianOverlayViewModel>(
+            OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
+                "PlotGuardianStatus",
+                3));
+        Assert.Contains("aerial guide", origin.Guardian.GuardianOriginFooter);
+        Assert.Contains(".map", origin.Guardian.GuardianOriginFooter);
+        Assert.DoesNotContain("Blink", origin.Guardian.GuardianOriginFooter);
+    }
+
     [AvaloniaFact]
     public void SystemBiologyPresentationHostsSharedTemplateWithData()
     {

@@ -196,6 +196,22 @@ public sealed class GuidesViewModelTests
     }
 
     [Fact]
+    public void GuardianGuideExplainsSelectionConfirmationAndOriginControls()
+    {
+        var guardian = GuideCatalog.Create().Single(
+            category => category.Key == "guardian");
+        var instructions = string.Join(
+            ' ',
+            guardian.Sections.SelectMany(section =>
+                section.Steps.Concat(section.Details)));
+
+        Assert.Contains("fire group", instructions, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("confirmation control twice", instructions, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(".aerial", instructions, StringComparison.Ordinal);
+        Assert.Contains(".map", instructions, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void EmptyCatalogIsRejected()
     {
         Assert.Throws<ArgumentException>(() => new GuidesViewModel([]));

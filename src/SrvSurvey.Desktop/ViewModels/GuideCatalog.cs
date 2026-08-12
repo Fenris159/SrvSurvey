@@ -268,6 +268,7 @@ public static class GuideCatalog
                         "A correct site type and heading make the projected map line up with the ruins or structure.",
                         [
                             "Type A, B, or G for common ruins layouts, or send .site followed by a supported layout name.",
+                            "In a ship or SRV, cycle the fire group to choose Alpha, Beta, Gamma, Present, Absent, or Empty; then toggle the configured Guardian confirmation control twice.",
                             "Face the mapped alignment feature and send .heading; send .heading followed by degrees when entering a heading directly.",
                             "Use .tower to record the nearest relic tower state, .empty for an empty puddle, and .note followed by text to append a site note.",
                             "Use .aerial for origin guidance while taking an aligned aerial screenshot, then .map to return to the live map.",

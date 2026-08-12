@@ -9,6 +9,9 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class GuardianViewModelTests
 {
+    private static readonly string[] RuinsSiteTypes =
+        ["Alpha", "Beta", "Gamma"];
+
     [Theory]
     [InlineData("Robolobster", "Fighter blueprint")]
     [InlineData("Turtle", "Module blueprint")]
@@ -972,7 +975,7 @@ public sealed class GuardianViewModelTests
         try
         {
             var reference = CreateProximityReference() with { SiteType = "" };
-            var templates = new[] { "Alpha", "Beta", "Gamma" }
+            var templates = RuinsSiteTypes
                 .Select(type => new GuardianSiteTemplate(
                     type,
                     type,
@@ -1154,6 +1157,7 @@ public sealed class GuardianViewModelTests
             });
             Assert.Contains("shields", viewModel.BlinkGestureText);
             Assert.Contains("shields", viewModel.GuardianChoiceGestureText);
+            Assert.Contains("shields", viewModel.GuardianMaterialCapacityWarning);
         }
         finally
         {

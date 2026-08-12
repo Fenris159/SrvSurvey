@@ -100,7 +100,7 @@
         </Grid>
         <TextBlock Grid.Row="3"
                    Classes="guardian-legacy-small guardian-legacy-cyan"
-                   Text="{Binding Guardian.BlinkGestureText}"
+                   Text="{Binding Guardian.GuardianChoiceGestureText}"
                    TextWrapping="Wrap" />
       </Grid>
 
@@ -117,7 +117,7 @@
                    TextWrapping="Wrap" />
         <TextBlock Grid.Row="3"
                    Classes="guardian-legacy-small guardian-legacy-cyan"
-                   Text="{Binding Guardian.GuardianChoiceGestureText}"
+                   Text="{Binding Guardian.BlinkGestureText}"
                    TextWrapping="Wrap" />
       </Grid>
 

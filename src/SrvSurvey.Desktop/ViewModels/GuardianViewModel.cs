@@ -570,11 +570,11 @@ public sealed class GuardianViewModel
 
     public string BlinkGestureText => IsBlinkGesturePrimed
         ? "GESTURE READY · toggle once more to confirm"
-        : $"Toggle {GetBlinkTriggerName()} twice to confirm the nearby Guardian action";
+        : $"Toggle {GetBlinkTriggerName()} 2x to confirm.";
 
     public string GuardianChoiceGestureText => IsBlinkGesturePrimed
-        ? "Cycle firegroup chooses; toggle once more to conf."
-        : $"Cycle firegroup chooses; toggle {GetBlinkTriggerName()} 2x to conf.";
+        ? "Cycle firegroup to choose; toggle once more to conf."
+        : $"Cycle firegroup to choose; toggle {GetBlinkTriggerName()} 2x to conf.";
 
     public string LiveMapPromptTitle => LiveMapMode switch
     {
@@ -1217,13 +1217,13 @@ public sealed class GuardianViewModel
             if (IsGuardianSiteTypeChoiceVisible)
             {
                 return
-                    "Select the ruins layout with the active fire group, then confirm with the Guardian gesture.";
+                    "Select the ruins layout with the active fire group, then use the configured confirmation control twice.";
             }
 
             if (IsGuardianHeadingChoiceVisible)
             {
                 return
-                    "Face the mapped alignment feature, then confirm the current heading with the Guardian gesture.";
+                    "Face the mapped alignment feature, then use the configured confirmation control twice.";
             }
 
             if (IsGuardianOriginVisible)
@@ -1350,8 +1350,8 @@ public sealed class GuardianViewModel
         AreGuardianEncodedMaterialsFull && GuardianStatusObelisk is not null;
 
     public string GuardianMaterialCapacityWarning => guardianMaterialWarningPhase
-        ? "Guardian mats full - toggle cockpit mode twice to mark scanned"
-        : "Guardian mats full - toggle cockpit mode again to mark scanned";
+        ? $"Guardian mats full - toggle {GetBlinkTriggerName()} 2x to mark scanned"
+        : $"Guardian mats full - toggle {GetBlinkTriggerName()} again to mark scanned";
 
     public void UpdateOverlayAnimation(DateTimeOffset observedAt)
     {
@@ -1437,8 +1437,8 @@ public sealed class GuardianViewModel
             string.Equals(point.Name, relic.Name, StringComparison.Ordinal))
             ?.RelicHeading ?? -1;
         return heading >= 0
-            ? $"Recorded heading {heading}°. Face the relic tower and use the Guardian gesture to update it."
-            : "Face the relic tower, then use the Guardian gesture to record its heading.";
+            ? $"Recorded heading {heading}°. Face the relic tower and toggle shields 2x to update it."
+            : "Face the relic tower, then toggle shields 2x to record its heading.";
     }
 
     private static bool IsSurveyStatusPoint(GuardianPointOfInterest point)
@@ -1785,6 +1785,7 @@ public sealed class GuardianViewModel
         SynchronizeActiveSiteFromStatus(status);
         OnPropertyChanged(nameof(BlinkGestureText));
         OnPropertyChanged(nameof(GuardianChoiceGestureText));
+        OnPropertyChanged(nameof(GuardianMaterialCapacityWarning));
         OnPropertyChanged(nameof(GuardianOnFootFooter));
         OnPropertyChanged(nameof(GuardianStatusObeliskFooter));
         var blink = statusBlinkDetector.Update(status, DateTimeOffset.UtcNow);
@@ -1804,6 +1805,7 @@ public sealed class GuardianViewModel
         SynchronizeActiveSiteFromStatus(status);
         OnPropertyChanged(nameof(BlinkGestureText));
         OnPropertyChanged(nameof(GuardianChoiceGestureText));
+        OnPropertyChanged(nameof(GuardianMaterialCapacityWarning));
         OnPropertyChanged(nameof(GuardianOnFootFooter));
         OnPropertyChanged(nameof(GuardianStatusObeliskFooter));
         var blink = statusBlinkDetector.Update(
