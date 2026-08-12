@@ -71,7 +71,8 @@ public sealed class OverlayPresentationContractTests
             "RavenBioPredictionSegmentEdgeBrush",
         ]),
         Contract("PlotFSSInfo", ["src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml", "src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml"], [
-            "SystemTitle", "ScanSummary", "FssFilterDescription", "FssBodies", "ScanValue", "DssValue",
+            "SystemTitle", "ScanSummary", "FssFilterDescription", "FssBodies", "FssBodyListMaxHeight", "IsLandable",
+            "ScanValue", "DssValue", "ShowSeparatorBeforeGeologicalSignals", "ShowSeparatorBeforeBiologicalSignals",
             "BiologicalSignalsText", "GeologicalSignalsText", "IsSurfaceScanned", "SCANNED",
             "TextDecorations=\"Strikethrough\"",
         ]),
@@ -289,7 +290,7 @@ public sealed class OverlayPresentationContractTests
     }
 
     [Theory]
-    [InlineData("PlotFSSInfo", "FssInfoOverlayPresentation.axaml", "FssInfoOverlayWindow.axaml", 270, false)]
+    [InlineData("PlotFSSInfo", "FssInfoOverlayPresentation.axaml", "FssInfoOverlayWindow.axaml", 270, true)]
     [InlineData("PlotFSS", "LastFssBodyOverlayPresentation.axaml", "LastFssBodyOverlayWindow.axaml", 240, true)]
     [InlineData("PlotBodyInfo", "BodyInformationOverlayPresentation.axaml", "BodyInformationOverlayWindow.axaml", 260, true)]
     [InlineData("PlotFleetCarrierRoute", "FleetCarrierRouteOverlayPresentation.axaml", "FleetCarrierRouteOverlayWindow.axaml", 260, true)]
@@ -347,7 +348,26 @@ public sealed class OverlayPresentationContractTests
 
         Assert.Contains("FssFilterDescription", fss);
         Assert.Contains("TextWrapping=\"Wrap\"", fss);
-        Assert.Contains("MaxHeight=\"216\"", fss);
+        Assert.Contains(
+            "MaxHeight=\"{Binding Survey.FssBodyListMaxHeight}\"",
+            fss);
+        Assert.Contains("Padding=\"3\"", fss);
+        Assert.Contains("RowSpacing=\"0\"", fss);
+        Assert.Equal(
+            2,
+            fss.Split("Classes=\"overlay-divider\"", StringSplitOptions.None).Length - 1);
+        var lowerDivider = XDocument.Parse(fss)
+            .Descendants()
+            .Where(element =>
+                element.Name.LocalName == "Border"
+                && element.Attribute("Classes")?.Value == "overlay-divider")
+            .Last();
+        Assert.Equal("StackPanel", lowerDivider.Parent?.Name.LocalName);
+        Assert.Equal("0", lowerDivider.Parent?.Attribute("Spacing")?.Value);
+        Assert.Equal(
+            "ScrollViewer",
+            lowerDivider.Parent?.Elements().First().Name.LocalName);
+        Assert.DoesNotContain("<Border Height=\"48\"", fss);
         Assert.Contains("ItemsSource=\"{Binding InlineSegments}\"", routeRow);
         Assert.Contains("<WrapPanel Orientation=\"Horizontal\"", routeRow);
         Assert.DoesNotContain("MaxWidth=\"128\"", routeRow);
@@ -380,6 +400,33 @@ public sealed class OverlayPresentationContractTests
     }
 
     [Fact]
+    public void LastFssBiologyPipsUseTheirStateFramesWithoutAGroupBorder()
+    {
+        var root = FindRepositoryRoot();
+        var lastFss = XDocument.Load(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "LastFssBodyOverlayPresentation.axaml"));
+        var rewardBands = lastFss
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "ItemsControl"
+                && element.Attribute("ItemsSource")?.Value
+                    == "{Binding Survey.LastFssBiologyRewardBands}");
+        var rewardBand = rewardBands
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "BiologyRewardBandControl");
+
+        Assert.Equal("Grid", rewardBands.Parent?.Name.LocalName);
+        Assert.Equal("{Binding IsPrediction}",
+            rewardBand.Attribute("IsPrediction")?.Value);
+        Assert.Equal("{DynamicResource RavenBioPredictionEdgeBrush}",
+            rewardBand.Attribute("PredictionEdgeBrush")?.Value);
+    }
+
+    [Fact]
     public void BodyInformationBindingsUseTheNonNullDisplayProjection()
     {
         var root = FindRepositoryRoot();
@@ -391,6 +438,26 @@ public sealed class OverlayPresentationContractTests
 
         Assert.Contains("Survey.BodyInformationDisplay.", bodyInfo);
         Assert.DoesNotContain("Survey.BodyInformation.", bodyInfo);
+    }
+
+    [Fact]
+    public void BodyInformationHeaderAndCompositionRowsRemainCompact()
+    {
+        var root = FindRepositoryRoot();
+        var bodyInfo = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "BodyInformationOverlayPresentation.axaml"));
+
+        Assert.Contains("Classes=\"badge overlay-state-pill\"", bodyInfo);
+        Assert.Contains("Padding=\"7,1\"", bodyInfo);
+        Assert.True(
+            bodyInfo.IndexOf("BodyInformationDisplay.BodyClass", StringComparison.Ordinal) <
+            bodyInfo.IndexOf("BodyInformationDisplay.Distance", StringComparison.Ordinal));
+        Assert.Equal(
+            2,
+            bodyInfo.Split("MaxWidth=\"210\"", StringSplitOptions.None).Length - 1);
     }
 
     [Fact]
@@ -621,6 +688,22 @@ public sealed class OverlayPresentationContractTests
                 : null);
         }
 
+        var bodyInformationExtension = NumericEditor(
+            "SystemSurvey.BodyInformationPreviewExtensionSeconds");
+        Assert.Equal(
+            "150",
+            bodyInformationExtension.Attribute("Width")?.Value);
+        Assert.Equal(
+            "Horizontal",
+            bodyInformationExtension.Parent?.Attribute("Orientation")?.Value);
+        Assert.Equal(
+            "24,0,0,0",
+            bodyInformationExtension.Parent?.Parent?.Attribute("Margin")?.Value);
+        Assert.Equal(
+            "Extend Body Information Preview by:",
+            bodyInformationExtension.Parent?.Parent?.Elements().First()
+                .Attribute("Text")?.Value);
+
         var extension = NumericEditor(
             "SystemSurvey.BodyPredictionPreviewExtensionSeconds");
         Assert.Equal("150", extension.Attribute("Width")?.Value);
@@ -629,6 +712,15 @@ public sealed class OverlayPresentationContractTests
         Assert.Equal(
             "Extend Body Predictions preview by:",
             extension.Parent?.Parent?.Elements().First().Attribute("Text")?.Value);
+
+        var fssBodyCount = NumericEditor(
+            "SystemSurvey.FssBodiesBeforeScrolling");
+        Assert.Equal("150", fssBodyCount.Attribute("Width")?.Value);
+        Assert.Equal("StackPanel", fssBodyCount.Parent?.Name.LocalName);
+        Assert.Equal("28,0,0,0", fssBodyCount.Parent?.Attribute("Margin")?.Value);
+        Assert.Equal(
+            "# of bodies before scrolling:",
+            fssBodyCount.Parent?.Elements().First().Attribute("Text")?.Value);
     }
 
     [Fact]

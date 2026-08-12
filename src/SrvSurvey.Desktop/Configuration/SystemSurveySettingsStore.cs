@@ -24,6 +24,12 @@ public sealed class SystemSurveySettingsStore
                 defaults.ShowBodyInfoInSystemMap),
             GetInt32(
                 settings,
+                "BodyInformationPreviewExtensionSeconds",
+                defaults.BodyInformationPreviewExtensionSeconds,
+                0,
+                600),
+            GetInt32(
+                settings,
                 "BodyPredictionPreviewExtensionSeconds",
                 defaults.BodyPredictionPreviewExtensionSeconds,
                 0,
@@ -181,6 +187,12 @@ public sealed class SystemSurveySettingsStore
                 settings,
                 "ShowFssInfoInSystemMap",
                 defaults.ShowFssInfoInSystemMap),
+            GetInt32(
+                settings,
+                "FssBodiesBeforeScrolling",
+                defaults.FssBodiesBeforeScrolling,
+                1,
+                20),
             GetBoolean(
                 settings,
                 "ShowFssInfoInNavigationPanel",
@@ -251,6 +263,8 @@ public sealed class SystemSurveySettingsStore
             settings["AutoShowBodyInfo"] = preferences.AutoShowBodyInfo;
             settings["ShowBodyInfoInSystemMap"] =
                 preferences.ShowBodyInfoInSystemMap;
+            settings["BodyInformationPreviewExtensionSeconds"] =
+                preferences.BodyInformationPreviewExtensionSeconds;
             settings["BodyPredictionPreviewExtensionSeconds"] =
                 preferences.BodyPredictionPreviewExtensionSeconds;
             settings["ShowBodyInfoInOrbit"] = preferences.ShowBodyInfoInOrbit;
@@ -315,6 +329,8 @@ public sealed class SystemSurveySettingsStore
             settings["AutoShowFssInfo"] = preferences.AutoShowFssInfo;
             settings["ShowFssInfoInSystemMap"] =
                 preferences.ShowFssInfoInSystemMap;
+            settings["FssBodiesBeforeScrolling"] =
+                preferences.FssBodiesBeforeScrolling;
             settings["ShowFssInfoInNavigationPanel"] =
                 preferences.ShowFssInfoInNavigationPanel;
             settings["AutoShowSystemStatus"] = preferences.AutoShowSystemStatus;
@@ -461,6 +477,7 @@ public sealed class SystemSurveySettingsStore
 public sealed record SystemSurveyPreferences(
     bool AutoShowBodyInfo,
     bool ShowBodyInfoInSystemMap,
+    int BodyInformationPreviewExtensionSeconds,
     int BodyPredictionPreviewExtensionSeconds,
     bool ShowBodyInfoInOrbit,
     bool ShowBodyInfoAtSurface,
@@ -499,6 +516,7 @@ public sealed record SystemSurveyPreferences(
     bool AutoShowLastFssBody,
     bool AutoShowFssInfo,
     bool ShowFssInfoInSystemMap,
+    int FssBodiesBeforeScrolling,
     bool ShowFssInfoInNavigationPanel,
     bool AutoShowSystemStatus,
     bool HideGeoCount,
@@ -517,6 +535,7 @@ public sealed record SystemSurveyPreferences(
     public static SystemSurveyPreferences Default { get; } = new(
         AutoShowBodyInfo: true,
         ShowBodyInfoInSystemMap: true,
+        BodyInformationPreviewExtensionSeconds: 0,
         BodyPredictionPreviewExtensionSeconds: 0,
         ShowBodyInfoInOrbit: true,
         ShowBodyInfoAtSurface: false,
@@ -555,6 +574,7 @@ public sealed record SystemSurveyPreferences(
         AutoShowLastFssBody: true,
         AutoShowFssInfo: true,
         ShowFssInfoInSystemMap: false,
+        FssBodiesBeforeScrolling: 4,
         ShowFssInfoInNavigationPanel: false,
         AutoShowSystemStatus: true,
         HideGeoCount: false,

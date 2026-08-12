@@ -12,6 +12,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 {
+    private const int BodyInformationPreviewBaseSeconds = 3;
+    private const double FssBodyRowExtent = 37;
     private const string OrganicCodexCategory =
         "$Codex_SubCategory_Organic_Structures;";
     private static readonly StringComparer FssBodyNameComparer =
@@ -46,6 +48,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private long? latestBiologyEntryId;
     private bool autoShowBodyInfo;
     private bool showBodyInfoInSystemMap;
+    private int bodyInformationPreviewExtensionSeconds;
     private int bodyPredictionPreviewExtensionSeconds;
     private bool showBodyInfoInOrbit;
     private bool showBodyInfoAtSurface;
@@ -85,6 +88,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool autoShowLastFssBody;
     private bool autoShowFssInfo;
     private bool showFssInfoInSystemMap;
+    private int fssBodiesBeforeScrolling;
     private bool showFssInfoInNavigationPanel;
     private bool autoShowSystemStatus;
     private bool hideGeoCount;
@@ -107,6 +111,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool manuallyHideBodyInfo;
     private bool suppressBiologyOverlaysForRepeatVisit;
     private bool fsdJumping;
+    private int? bodyInformationMapSelectionBodyId;
+    private int? timedBodyInformationBodyId;
+    private DateTimeOffset timedBodyInformationExpiresAt;
     private int? timedBiologyBodyId;
     private DateTimeOffset timedBiologyStartedAt;
     private DateTimeOffset timedBiologyExpiresAt;
@@ -148,6 +155,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         var preferences = settingsStore.Load();
         autoShowBodyInfo = preferences.AutoShowBodyInfo;
         showBodyInfoInSystemMap = preferences.ShowBodyInfoInSystemMap;
+        bodyInformationPreviewExtensionSeconds =
+            preferences.BodyInformationPreviewExtensionSeconds;
         bodyPredictionPreviewExtensionSeconds =
             preferences.BodyPredictionPreviewExtensionSeconds;
         showBodyInfoInOrbit = preferences.ShowBodyInfoInOrbit;
@@ -194,6 +203,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         autoShowLastFssBody = preferences.AutoShowLastFssBody;
         autoShowFssInfo = preferences.AutoShowFssInfo;
         showFssInfoInSystemMap = preferences.ShowFssInfoInSystemMap;
+        fssBodiesBeforeScrolling = preferences.FssBodiesBeforeScrolling;
         showFssInfoInNavigationPanel = preferences.ShowFssInfoInNavigationPanel;
         autoShowSystemStatus = preferences.AutoShowSystemStatus;
         hideGeoCount = preferences.HideGeoCount;
@@ -245,6 +255,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get => showBodyInfoInSystemMap;
         set => SetPreference(ref showBodyInfoInSystemMap, value);
+    }
+
+    public int BodyInformationPreviewExtensionSeconds
+    {
+        get => bodyInformationPreviewExtensionSeconds;
+        set => SetPreference(
+            ref bodyInformationPreviewExtensionSeconds,
+            Math.Clamp(value, 0, 600));
     }
 
     public int BodyPredictionPreviewExtensionSeconds
@@ -624,6 +642,22 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => showFssInfoInSystemMap;
         set => SetPreference(ref showFssInfoInSystemMap, value);
     }
+
+    public int FssBodiesBeforeScrolling
+    {
+        get => fssBodiesBeforeScrolling;
+        set
+        {
+            var normalized = Math.Clamp(value, 1, 20);
+            if (SetPreference(ref fssBodiesBeforeScrolling, normalized))
+            {
+                OnPropertyChanged(nameof(FssBodyListMaxHeight));
+            }
+        }
+    }
+
+    public double FssBodyListMaxHeight =>
+        FssBodiesBeforeScrolling * FssBodyRowExtent;
 
     public bool ShowFssInfoInNavigationPanel
     {
@@ -1250,6 +1284,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             var mode = ResolveGameMode();
             var inSystemMap = mode is OverlayGameMode.SystemMap
                 or OverlayGameMode.Orrery;
+            var inNavigationPanel = mode == OverlayGameMode.ExternalPanel;
             var inOrbit = status.HasLatitudeLongitude
                 && mode is OverlayGameMode.SuperCruising
                     or OverlayGameMode.GlideMode;
@@ -1261,7 +1296,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return mode == OverlayGameMode.Saa
                 || inSystemMap
                     && ShowBodyInfoInSystemMap
-                    && !ShowFssInfoInSystemMap
+                || inNavigationPanel
                 || inOrbit && ShowBodyInfoInOrbit
                 || atSurface && ShowBodyInfoAtSurface;
         }
@@ -1520,6 +1555,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             ResetStateForSystemChange();
         }
 
+        UpdateTimedBodyInformationSelection(nextStatus);
         UpdateTimedBiologySelection(previousStatus, nextStatus);
 
         foreach (var journalEvent in journalEvents)
@@ -1586,6 +1622,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private void ResetStateForSystemChange()
     {
         suppressBiologyOverlaysForRepeatVisit = false;
+        bodyInformationMapSelectionBodyId = null;
+        ClearTimedBodyInformationSelection(refreshDisplay: false);
         ClearTimedBiologySelection(refreshDisplay: false);
         biologyDiscoveryContext = BiologyDiscoveryContext.Unavailable;
         canonnBiologyBodyIds = new HashSet<int>();
@@ -1736,6 +1774,15 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             {
                 OnPropertyChanged(nameof(TimedBiologySelectionProgressPercent));
             }
+        }
+
+        if (timedBodyInformationBodyId is not null
+            && (!IsBodyInformationTimedMapMode(status)
+                || utcNow() >= timedBodyInformationExpiresAt))
+        {
+            ClearTimedBodyInformationSelection(refreshDisplay: true);
+            RaiseVisibilityProperties();
+            changed = true;
         }
 
         if (FssTuningState != FssTuningDetectionState.None)
@@ -1972,6 +2019,78 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 || body.Name.EndsWith(
                     " " + normalized,
                     StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void UpdateTimedBodyInformationSelection(EliteStatus? nextStatus)
+    {
+        // Journal-only updates retain the current preview. Only entry into the
+        // map or a changed map selection starts the bounded display window.
+        if (nextStatus is null)
+        {
+            return;
+        }
+
+        if (!IsBodyInformationTimedMapMode(nextStatus))
+        {
+            bodyInformationMapSelectionBodyId = null;
+            ClearTimedBodyInformationSelection(refreshDisplay: false);
+            return;
+        }
+
+        var destination = nextStatus.Destination;
+        var body = destination is not null
+            && destination.System == snapshot.SystemAddress
+                ? snapshot.Bodies.FirstOrDefault(candidate =>
+                    candidate.BodyId == destination.Body
+                    && candidate.IsDssComplete
+                    && string.Equals(
+                        candidate.Name,
+                        destination.Name,
+                        StringComparison.Ordinal))
+                : null;
+        if (body is null)
+        {
+            bodyInformationMapSelectionBodyId = null;
+            ClearTimedBodyInformationSelection(refreshDisplay: false);
+            return;
+        }
+
+        if (bodyInformationMapSelectionBodyId == body.BodyId)
+        {
+            return;
+        }
+
+        bodyInformationMapSelectionBodyId = body.BodyId;
+        timedBodyInformationBodyId = body.BodyId;
+        timedBodyInformationExpiresAt = utcNow()
+            + TimeSpan.FromSeconds(
+                BodyInformationPreviewBaseSeconds
+                + BodyInformationPreviewExtensionSeconds);
+    }
+
+    private void ClearTimedBodyInformationSelection(bool refreshDisplay)
+    {
+        if (timedBodyInformationBodyId is null)
+        {
+            return;
+        }
+
+        timedBodyInformationBodyId = null;
+        timedBodyInformationExpiresAt = default;
+        if (refreshDisplay)
+        {
+            RefreshDisplay();
+        }
+    }
+
+    private bool IsBodyInformationTimedMapMode(EliteStatus? value)
+    {
+        var mode = OverlayGameModeResolver.Resolve(
+            value,
+            fsdJumping,
+            musicTrack);
+        return mode is OverlayGameMode.SystemMap
+            or OverlayGameMode.Orrery;
     }
 
     private void UpdateTimedBiologySelection(
@@ -2290,20 +2409,42 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return null;
         }
 
-        var targetBody = ResolveTargetBody();
+        var mode = ResolveGameMode();
+        var requiresSelectedTarget = mode is OverlayGameMode.SystemMap
+            or OverlayGameMode.Orrery
+            or OverlayGameMode.ExternalPanel;
+        var targetBody = ResolveTargetBody(requiresSelectedTarget);
         if (targetBody is null)
         {
             return null;
         }
 
-        var mode = ResolveGameMode();
-        if (forceShowBodyInfo
-            || mode is OverlayGameMode.SystemMap or OverlayGameMode.Orrery)
+        if (forceShowBodyInfo)
         {
             return new BodyInfoTarget(
                 targetBody.BodyId,
                 targetBody.Name,
                 targetBody);
+        }
+
+        if ((mode is OverlayGameMode.SystemMap or OverlayGameMode.Orrery)
+            && (timedBodyInformationBodyId != targetBody.BodyId
+                || utcNow() >= timedBodyInformationExpiresAt))
+        {
+            return null;
+        }
+
+        if (mode is OverlayGameMode.SystemMap
+            or OverlayGameMode.Orrery
+            or OverlayGameMode.ExternalPanel
+            or OverlayGameMode.Saa)
+        {
+            return targetBody.IsDssComplete
+                ? new BodyInfoTarget(
+                    targetBody.BodyId,
+                    targetBody.Name,
+                    targetBody)
+                : null;
         }
 
         var currentBody = status?.HasLatitudeLongitude == true
@@ -2317,7 +2458,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 currentBody);
     }
 
-    private SystemScanBodySnapshot? ResolveTargetBody()
+    private SystemScanBodySnapshot? ResolveTargetBody(
+        bool requireDestination = false)
     {
         if (snapshot.SystemAddress is null || status is null)
         {
@@ -2346,7 +2488,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             }
         }
 
-        return status.HasLatitudeLongitude
+        if (requireDestination)
+        {
+            return null;
+        }
+
+        return status.HasLatitudeLongitude || IsWithinPostDssBiologyWindow
             ? ResolveRetainedLocalBody()
             : null;
     }
@@ -2527,11 +2674,6 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             markers.Add("TERRAFORMABLE");
         }
 
-        if (body.IsLandable)
-        {
-            markers.Add("LANDABLE");
-        }
-
         if (body.IsFirstFootfall)
         {
             markers.Add("FIRST FOOTFALL");
@@ -2553,7 +2695,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             HideGeoCount ? 0 : body.AnalyzedGeologicalSignalCount,
             dssWorthy || body.BiologicalSignalCount > 0,
             dssWorthy,
-            body.IsDssComplete);
+            body.IsDssComplete,
+            body.IsLandable);
     }
 
     private IEnumerable<string> CreateDssCandidates()
@@ -2696,6 +2839,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             settingsStore.Save(new SystemSurveyPreferences(
                 AutoShowBodyInfo,
                 ShowBodyInfoInSystemMap,
+                BodyInformationPreviewExtensionSeconds,
                 BodyPredictionPreviewExtensionSeconds,
                 ShowBodyInfoInOrbit,
                 ShowBodyInfoAtSurface,
@@ -2734,6 +2878,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 AutoShowLastFssBody,
                 AutoShowFssInfo,
                 ShowFssInfoInSystemMap,
+                FssBodiesBeforeScrolling,
                 ShowFssInfoInNavigationPanel,
                 AutoShowSystemStatus,
                 HideGeoCount,
@@ -3105,7 +3250,8 @@ public sealed record FssBodyRowViewModel(
     int AnalyzedGeologicalSignalCount,
     bool IsHighlighted,
     bool IsDssCandidate,
-    bool IsSurfaceScanned)
+    bool IsSurfaceScanned,
+    bool IsLandable = false)
 {
     public bool HasMarkers => !string.IsNullOrWhiteSpace(Markers);
 
@@ -3120,6 +3266,12 @@ public sealed record FssBodyRowViewModel(
 
     public bool AreGeologicalSignalsComplete => GeologicalSignalCount > 0
         && AnalyzedGeologicalSignalCount >= GeologicalSignalCount;
+
+    public bool ShowSeparatorBeforeGeologicalSignals =>
+        HasMarkers && HasGeologicalSignals;
+
+    public bool ShowSeparatorBeforeBiologicalSignals =>
+        HasBiologicalSignals && (HasMarkers || HasGeologicalSignals);
 
     public string BiologicalSignalsText => BiologicalSignalCount == 1
         ? "1 GENUS"

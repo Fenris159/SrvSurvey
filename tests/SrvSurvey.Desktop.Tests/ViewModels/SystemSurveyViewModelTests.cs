@@ -512,6 +512,58 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void FssBodyScrollThresholdUpdatesHeightAndPersists()
+    {
+        var viewModel = CreateViewModel();
+        var notifications = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            notifications.Add(eventArgs.PropertyName);
+
+        Assert.Equal(4, viewModel.FssBodiesBeforeScrolling);
+        Assert.Equal(148, viewModel.FssBodyListMaxHeight);
+
+        viewModel.FssBodiesBeforeScrolling = 10;
+
+        Assert.Equal(10, viewModel.FssBodiesBeforeScrolling);
+        Assert.Equal(370, viewModel.FssBodyListMaxHeight);
+        Assert.Contains(
+            nameof(SystemSurveyViewModel.FssBodyListMaxHeight),
+            notifications);
+        Assert.Equal(
+            10,
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "ui-settings.json")).Load().FssBodiesBeforeScrolling);
+
+        viewModel.FssBodiesBeforeScrolling = 0;
+
+        Assert.Equal(1, viewModel.FssBodiesBeforeScrolling);
+        Assert.Equal(37, viewModel.FssBodyListMaxHeight);
+    }
+
+    [Fact]
+    public void FssBodyRowsSeparateMarkersGeoAndBiologyOnOneStatusLine()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(TerraformableScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2},{"Type":"$SAA_SignalType_Geological;","Count":2}]}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.Fss });
+
+        var row = Assert.Single(viewModel.FssBodies);
+
+        Assert.True(row.IsLandable);
+        Assert.Equal("TERRAFORMABLE", row.Markers);
+        Assert.Equal("2 GEO", row.GeologicalSignalsText);
+        Assert.Equal("2 GENERA", row.BiologicalSignalsText);
+        Assert.True(row.ShowSeparatorBeforeGeologicalSignals);
+        Assert.True(row.ShowSeparatorBeforeBiologicalSignals);
+    }
+
+    [Fact]
     public void BodyInformationUsesMapDestinationAndFormatsDetailedScan()
     {
         var viewModel = CreateViewModel();
@@ -522,6 +574,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[500,0,0]}"""),
                 Parse(BodyInformationScan),
+                Parse("""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""),
                 Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2},{"Type":"$SAA_SignalType_Geological;","Count":1}]}"""),
             ],
             new EliteStatus
@@ -547,7 +600,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Equal("123 LS", body.Distance);
         Assert.Equal("TERRAFORMABLE · UNDISCOVERED", body.Markers);
         Assert.EndsWith(" CR", body.ScanValue);
-        Assert.EndsWith(" CR", body.MappedValue);
+        Assert.Empty(body.MappedValue);
         Assert.Equal("300 K", body.Temperature);
         Assert.Equal("1.200 g", body.Gravity);
         Assert.True(body.IsHighGravity);
@@ -569,7 +622,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
-    public void BodyInformationPreservesLegacyVisibilityAndToggleModes()
+    public void BodyInformationHonorsVisibilityAndToggleModes()
     {
         var viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
@@ -607,7 +660,66 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         });
         viewModel.ShowFssInfoInSystemMap = true;
         Assert.False(viewModel.ShouldShowBodyInfo);
-        viewModel.ShowFssInfoInSystemMap = false;
+
+        viewModel.ApplyUpdate(
+            [Parse("""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}""")],
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.SystemMap,
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 1,
+                    Name = "Test 1",
+                },
+            });
+
+        Assert.True(viewModel.ShouldShowBodyInfo);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            GuiFocus = GuiFocus.SystemMap,
+            Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 1,
+                Name = "Test 1",
+            },
+        });
+
+        Assert.NotNull(viewModel.BodyInformation);
+        Assert.True(viewModel.ShouldShowBodyInfo);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            GuiFocus = GuiFocus.ExternalPanel,
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 1,
+                Name = "Test 1",
+            },
+        });
+
+        Assert.NotNull(viewModel.BodyInformation);
+        Assert.True(viewModel.ShouldShowBodyInfo);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            GuiFocus = GuiFocus.ExternalPanel,
+            Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 1,
+                Name = "Test 1",
+            },
+        });
+
+        Assert.NotNull(viewModel.BodyInformation);
         Assert.True(viewModel.ShouldShowBodyInfo);
 
         viewModel.ApplyUpdate([], new EliteStatus
@@ -629,6 +741,106 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.False(viewModel.ShouldShowBodyInfo);
         viewModel.ShowBodyInfoAtSurface = true;
         Assert.True(viewModel.ShouldShowBodyInfo);
+    }
+
+    [Fact]
+    public void DssCompletionShowsBodyInformationForCompletedBody()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "body-info-dss-complete-ui-settings.json")),
+            utcNow: () => now);
+        var dssStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            GuiFocus = GuiFocus.Saa,
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 1,
+                Name = "Test 1",
+            },
+        };
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[500,0,0]}"""),
+                Parse(BodyInformationScan),
+            ],
+            dssStatus);
+
+        Assert.Null(viewModel.BodyInformation);
+        Assert.False(viewModel.ShouldShowBodyInfo);
+
+        viewModel.ApplyUpdate(
+            [Parse("""{"timestamp":"2026-07-25T12:00:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}""")],
+            dssStatus);
+
+        Assert.True(viewModel.ShouldShowBodyInfo);
+        Assert.EndsWith("Test 1", viewModel.BodyInformation?.Name);
+    }
+
+    [Fact]
+    public void BodyInformationMapPreviewUsesBaseAndConfiguredDurationOnlyInMap()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "body-info-preview-duration-ui-settings.json")),
+            utcNow: () => now);
+        var destination = new StatusDestination
+        {
+            System = 42,
+            Body = 1,
+            Name = "Test 1",
+        };
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[500,0,0]}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""),
+            ],
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.ExternalPanel,
+                Destination = destination,
+            });
+
+        now = now.AddMinutes(1);
+        Assert.False(viewModel.RefreshTransientState());
+        Assert.True(viewModel.ShouldShowBodyInfo);
+
+        var systemMapStatus = new EliteStatus
+        {
+            GuiFocus = GuiFocus.SystemMap,
+            Destination = destination,
+        };
+        viewModel.ApplyUpdate([], systemMapStatus);
+        now = now.AddSeconds(2);
+        viewModel.ApplyUpdate([], systemMapStatus);
+        now = now.AddSeconds(1.1);
+
+        Assert.True(viewModel.RefreshTransientState());
+        Assert.Null(viewModel.BodyInformation);
+        Assert.False(viewModel.ShouldShowBodyInfo);
+
+        viewModel.BodyInformationPreviewExtensionSeconds = 5;
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            GuiFocus = GuiFocus.ExternalPanel,
+            Destination = destination,
+        });
+        viewModel.ApplyUpdate([], systemMapStatus);
+        now = now.AddSeconds(7.9);
+
+        Assert.False(viewModel.RefreshTransientState());
+        Assert.True(viewModel.ShouldShowBodyInfo);
+
+        now = now.AddSeconds(0.2);
+        Assert.True(viewModel.RefreshTransientState());
+        Assert.False(viewModel.ShouldShowBodyInfo);
     }
 
     [Fact]
@@ -1631,13 +1843,6 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(systemBand.MinimumReward > 0);
         Assert.True(systemBand.MaximumReward >= systemBand.MinimumReward);
         Assert.StartsWith("Estimated reward:", systemSurvey.RewardSummary);
-        var bodyInformation = Assert.IsType<BodyInformationViewModel>(
-            viewModel.BodyInformation);
-        Assert.StartsWith(
-            "Estimated reward:",
-            bodyInformation.BiologicalReward);
-        Assert.True(bodyInformation.HasBiologicalReward);
-
         viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.Fss });
 
         var bodySurvey = Assert.IsType<BiologySurveyViewModel>(
@@ -1908,6 +2113,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
                 Parse(BodyInformationScan),
+                Parse("""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""),
                 Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
             ],
             new EliteStatus

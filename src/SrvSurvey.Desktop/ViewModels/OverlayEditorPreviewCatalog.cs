@@ -649,7 +649,7 @@ internal static class OverlayEditorPreviewCatalog
         new(
             "B 2",
             "Rocky body",
-            "LANDABLE",
+            string.Empty,
             "✓ 251,600 CR",
             string.Empty,
             BiologicalSignalCount: 0,
@@ -658,11 +658,12 @@ internal static class OverlayEditorPreviewCatalog
             AnalyzedGeologicalSignalCount: 0,
             IsHighlighted: false,
             IsDssCandidate: true,
-            IsSurfaceScanned: true),
+            IsSurfaceScanned: true,
+            IsLandable: true),
         new(
             "B 3",
             "HMC world",
-            "BIO 6 · GEO 2",
+            string.Empty,
             "842,310 CR",
             "2.84 M CR",
             BiologicalSignalCount: 6,
@@ -671,7 +672,8 @@ internal static class OverlayEditorPreviewCatalog
             AnalyzedGeologicalSignalCount: 0,
             IsHighlighted: true,
             IsDssCandidate: true,
-            IsSurfaceScanned: false),
+            IsSurfaceScanned: false,
+            IsLandable: true),
         new(
             "C 1",
             "Water world",
