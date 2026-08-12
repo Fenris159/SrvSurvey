@@ -10,7 +10,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 {
     private const string CategoryGeneral = "General";
     private const string CategoryExobiology = "Exobiology";
-    private const string CategoryColonisation = "Colonisation";
+    private const string CategoryColonisation = "Colonization";
     private const string CategoryHumanSettlements = "Human settlements";
     private const string CategoryGuardian = "Guardian";
 

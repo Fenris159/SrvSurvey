@@ -15,6 +15,8 @@ namespace SrvSurvey.Desktop;
 public sealed partial class MainWindow : Window
 {
     private readonly MainWindowViewModel viewModel;
+    private readonly Dictionary<OverlaySettingsCategory, OverlayCategorySettingsWindow>
+        overlaySettingsWindows = [];
     private readonly JournalMonitorSession monitorSession = new();
     private IReadOnlyList<MainWindowMonitor> applicationMonitors = [];
     private PixelPoint? lastNormalPosition;
@@ -55,6 +57,34 @@ public sealed partial class MainWindow : Window
     }
 
     public ApplicationInputContext InputContext { get; }
+
+    private void OpenCategoryOverlaySettings_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        eventArgs.Handled = true;
+        if (sender is not Button { CommandParameter: string navigationKey }
+            || !OverlaySettingsCategoryCatalog.TryGet(
+                navigationKey,
+                out var definition))
+        {
+            return;
+        }
+
+        if (overlaySettingsWindows.TryGetValue(
+                definition.Category,
+                out var existing))
+        {
+            existing.Activate();
+            return;
+        }
+
+        var window = new OverlayCategorySettingsWindow(definition, viewModel);
+        overlaySettingsWindows.Add(definition.Category, window);
+        window.Closed += (_, _) =>
+            overlaySettingsWindows.Remove(definition.Category);
+        window.Show(this);
+    }
 
     private void OnOpened(object? sender, EventArgs eventArgs)
     {
@@ -224,6 +254,12 @@ public sealed partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        foreach (var window in overlaySettingsWindows.Values.ToArray())
+        {
+            window.Close();
+        }
+
+        overlaySettingsWindows.Clear();
         InputContext.SetActive(false);
         InputContext.SetTextInputActive(false);
         viewModel.ProfileImportPreparing -= StopMonitorForProfileImportAsync;

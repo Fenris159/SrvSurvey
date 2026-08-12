@@ -38,12 +38,27 @@ public sealed class MainWindowViewModelTests
                 "Search",
                 "Guardian",
                 "Quests",
-                "Colonisation",
+                "Colonization",
                 "Diagnostics",
                 "Settings",
                 "Guides",
             ],
             viewModel.NavigationItems.Select(item => item.Label));
+        Assert.Equal(
+            [
+                "exploration",
+                "exobiology",
+                "travel",
+                "guardian",
+                "quests",
+                "colonisation",
+            ],
+            viewModel.NavigationItems
+                .Where(item => item.HasOverlaySettings)
+                .Select(item => item.Key));
+        Assert.DoesNotContain(
+            viewModel.NavigationItems,
+            item => item.Key == "search" && item.HasOverlaySettings);
         Assert.DoesNotContain(
             typeof(NavigationItemViewModel).GetProperties(),
             property => property.Name == "Glyph");

@@ -689,7 +689,7 @@ public sealed class ColonizationProjectEditorViewModel
 
         if (value.Dock is not { IsConstructionSite: true })
         {
-            return "Dock at a colonisation construction site first.";
+            return "Dock at a colonization construction site first.";
         }
 
         if (value.Depot is null)

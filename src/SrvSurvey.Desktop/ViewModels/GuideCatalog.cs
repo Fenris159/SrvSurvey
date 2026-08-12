@@ -39,7 +39,7 @@ public static class GuideCatalog
                         "The numbered navigation follows the major activities in SrvSurvey. Guides remains available even when Elite is not running.",
                         [],
                         [
-                            "Exploration, Exobiology, Travel, Search, Guardian, Quests, and Colonisation contain activity-specific tools.",
+                            "Exploration, Exobiology, Travel, Search, Guardian, Quests, and Colonization contain activity-specific tools.",
                             "Diagnostics explains the live data source and provides repair, update, cache, and journal-inspection tools.",
                             "Settings controls application behavior, overlays, input bindings, privacy, profile migration, screenshots, and appearance.",
                         ]),
@@ -330,7 +330,7 @@ public static class GuideCatalog
             Category(
                 "colonisation",
                 "08",
-                "Colonisation",
+                "Colonization",
                 "Connect Raven Colonial, manage construction projects safely, plan cargo, repair completed build-site records, and reconcile system data.",
                 [
                     Section(
@@ -338,7 +338,7 @@ public static class GuideCatalog
                         "Raven access is opt-in. A valid Commander API key is required before private project data or authenticated mutations are used.",
                         [
                             "Enable Raven Colonial in Settings and save the API key for the active Commander.",
-                            "Open Colonisation and refresh projects. Rejected or mismatched credentials do not replace the stored Commander profile.",
+                            "Open Colonization and refresh projects. Rejected or mismatched credentials do not replace the stored Commander profile.",
                             "Use the Raven links when you need to review a project or system in the website.",
                         ],
                         [
@@ -600,9 +600,9 @@ public static class GuideCatalog
             Icon(GuideIconKind.Glyph, "⚐", "Commander regional first", "The organism is new to this Commander in the current Codex region. The optional regional-first setting promotes the outline flag and its reward PIP to the highlight color.", "Biology system and Codex overlays"),
             Icon(GuideIconKind.Glyph, "☀", "Potential Galactic-region first", "The external regional candidate catalog has no reported discovery for this predicted organism in the current Galactic region. This is advisory until an in-game CodexEntry confirms the result.", "Biology system and body predictions", "global regional first discovery biology"),
             Icon(GuideIconKind.Glyph, "?", "Predicted organism", "A trailing question mark means the body criteria predict the colored species, but a DSS or organic scan has not confirmed it. Hover the marker in the overlay for its state description.", "Biology body predictions", "uncertain predicted species subtype"),
-            Icon(GuideIconKind.Glyph, "►", "Next or active direction", "Calls out the next action, selected destination, active target, route note, or focused row.", "Travel, search, Guardian, colonisation, messages"),
-            Icon(GuideIconKind.Glyph, "✓", "Complete or sufficient", "The scan/task is complete, the condition is valid, or the ship/carrier has enough cargo for the requirement.", "FSS, body information, quests, colonisation"),
-            Icon(GuideIconKind.Glyph, "⚠", "Warning", "The route, gravity, search candidate, build state, or other condition needs attention before proceeding.", "Flight warning, search, travel, colonisation"),
+            Icon(GuideIconKind.Glyph, "►", "Next or active direction", "Calls out the next action, selected destination, active target, route note, or focused row.", "Travel, search, Guardian, colonization, messages"),
+            Icon(GuideIconKind.Glyph, "✓", "Complete or sufficient", "The scan/task is complete, the condition is valid, or the ship/carrier has enough cargo for the requirement.", "FSS, body information, quests, colonization"),
+            Icon(GuideIconKind.Glyph, "⚠", "Warning", "The route, gravity, search candidate, build state, or other condition needs attention before proceeding.", "Flight warning, search, travel, colonization"),
             Icon(GuideIconKind.Glyph, "◆", "Mapped site or Codex item", "Identifies a Guardian/site point or a recorded Codex-style item in compact overlay rows.", "Guardian, Codex, preview rows"),
             Icon(GuideIconKind.Glyph, "◇", "Objective outside target", "A quest objective exists but the Commander is not yet within its required target area.", "Quest indicator and settlement objectives"),
             Icon(GuideIconKind.DirectionalChevron, "", "Near and far bearing chevrons", "An open chevron points toward a near or standard target. A double chevron marks a target beyond its defined far threshold; markers without one use 1 km.", "Prior scans, mini-track, surface survey", "relative bearing direction near far distance"),
@@ -610,7 +610,7 @@ public static class GuideCatalog
             Icon(GuideIconKind.Glyph, "T", "Terraformable", "The body is a terraformable candidate.", "FSS information and system survey"),
             Icon(GuideIconKind.Glyph, "L", "Landable", "The body can be landed on.", "FSS information and system survey"),
             Icon(GuideIconKind.Glyph, "?", "Unknown", "A standalone question mark means the signal, organism, site detail, or reward cannot yet be identified reliably from current data.", "Biology, Guardian, body and system rows"),
-            Icon(GuideIconKind.Glyph, "■", "Construction site", "Identifies construction/build context; the exact row color reports whether the item is actionable, satisfied, or unavailable.", "Colonisation shopping"),
+            Icon(GuideIconKind.Glyph, "■", "Construction site", "Identifies construction/build context; the exact row color reports whether the item is actionable, satisfied, or unavailable.", "Colonization shopping"),
             AssetIcon(DesktopAssetUri("Assets/Routes/refuel-star.png"), "Fuel-scoop stop", "An orange star containing a fuel droplet marks a route waypoint where the ship should refuel by fuel scooping.", "Route Workspace and next-jump overlay", "fuel scoop refuel star route"),
             AssetIcon(DesktopAssetUri("Assets/Routes/neutron-star.png"), "Neutron boost stop", "A blue neutron-star marker identifies a route waypoint that uses or approaches a neutron-star FSD boost.", "Route Workspace and next-jump overlay", "neutron boost fsd star route"),
             .. CreateBodyIconGlossary(),

@@ -1,29 +1,31 @@
-# SrvSurvey-XP 2.1.3.0-rc.17
+# SrvSurvey-XP 2.1.3.0-rc.19
 
-This release candidate improves the FSS and Body Information overlays. The
-changes below are the delta from `2.1.3.0-rc.16`.
+This release candidate adds category-specific overlay configuration and
+improves Guardian input handling. The changes below are the delta from
+`2.1.3.0-rc.18`.
 
-## What's improved since 2.1.3.0-rc.16
+## What's improved since 2.1.3.0-rc.18
 
-- Adds a configurable number of FSS Information bodies shown before scrolling
-  and compacts each entry into a content-sized two-row summary.
-- Lets FSS descriptions wrap, keeps the scrolling boundaries visible, and
-  allows the panel to contract around shorter content.
-- Compacts Body Information headers, statistics, and wrapping material pills
-  while preserving the shared live/editor presentation.
-- Shows DSS-complete Body Information selections in the System Map and left
-  navigation panel, including the completed body after a DSS scan.
-- Adds a three-second System Map Body Information preview with a configurable
-  extension; left-navigation selections remain visible without that timeout.
-- Uses the same prediction PIP border rules in FSS Body Feed and System Biology.
+- Adds dedicated overlay-settings windows for Exploration, Exobiology, Travel,
+  Guardian, Quests, and Colonization directly from the main navigation.
+- Moves category-owned settings into their dedicated windows while retaining
+  global overlay behavior, appearance, and color settings in Settings.
+- Reorganizes Exobiology and Guardian settings into balanced, wrapping sections
+  and keeps related selectors and numeric controls with their descriptions.
+- Keeps DSS distance and minimum-value editors with their corresponding survey
+  controls and preserves their intended presentation order.
+- Honors the configured Guardian fire-group confirmation gesture instead of
+  requiring a fixed secondary-fire input.
+- Aligns the current Commander value with its label and standardizes the
+  user-facing Colonization spelling.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.17`
-- Tag: `xp-v2.1.3.0-rc.17`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.17-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.17-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.17-x86_64.AppImage`
+- Version: `2.1.3.0-rc.19`
+- Tag: `xp-v2.1.3.0-rc.19`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.19-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.19-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.19-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
