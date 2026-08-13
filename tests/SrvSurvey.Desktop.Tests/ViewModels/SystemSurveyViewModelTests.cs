@@ -368,6 +368,82 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void FlightWarningDoesNotUsePostDssRetainedBody()
+    {
+        var now = new DateTimeOffset(2026, 8, 13, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "flight-warning-dss-settings.json")),
+            utcNow: () => now);
+        var supercruiseStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 1,
+                Name = "Test 1",
+            },
+        };
+
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"timestamp":"2026-08-13T12:00:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""),
+            ],
+            supercruiseStatus);
+
+        Assert.True(viewModel.IsWithinPostDssBiologyWindow);
+        Assert.False(viewModel.ShouldShowFlightWarning);
+
+        viewModel.ApplyUpdate([], supercruiseStatus with
+        {
+            Flags = StatusFlags.InMainShip
+                | StatusFlags.Supercruise
+                | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+        });
+
+        Assert.True(viewModel.ShouldShowFlightWarning);
+    }
+
+    [Theory]
+    [InlineData(10, 255, 215, 0, "Need more care with vertical thrust", false)]
+    [InlineData(20, 255, 165, 0, "Easy to bounce or flip if you tap down-thrust", false)]
+    [InlineData(40, 255, 69, 0, "Requires proper technique; hard impacts common", false)]
+    [InlineData(80, 220, 20, 60, "Very unforgiving; small mistakes = hull damage or death", true)]
+    public void FlightWarningUsesGravitySeverityPresentation(
+        double surfaceGravity,
+        byte red,
+        byte green,
+        byte blue,
+        string expectedNote,
+        bool expectedExtreme)
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse($$"""{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body","Landable":true,"SurfaceGravity":{{surfaceGravity}}}"""),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
+                BodyName = "Test 1",
+            });
+
+        var brush = Assert.IsAssignableFrom<Avalonia.Media.ISolidColorBrush>(
+            viewModel.FlightWarningBrush);
+        Assert.Equal(
+            Avalonia.Media.Color.FromRgb(red, green, blue),
+            brush.Color);
+        Assert.Equal(expectedNote, viewModel.FlightWarningNote);
+        Assert.Equal(expectedExtreme, viewModel.IsExtremeFlightWarning);
+    }
+
+    [Fact]
     public void DisplayFiltersBodiesAndBuildsDssAndSignalProgress()
     {
         var viewModel = CreateViewModel();

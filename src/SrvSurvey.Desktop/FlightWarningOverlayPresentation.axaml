@@ -9,30 +9,42 @@
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"
-          Background="{DynamicResource RavenDangerDimBrush}"
+          Background="{Binding Survey.FlightWarningDimBrush}"
           CornerRadius="6">
     <Border Margin="0"
           Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
           BorderThickness="0"
           CornerRadius="5">
-      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
+      <Grid ColumnDefinitions="Auto,*,Auto"
+            RowDefinitions="Auto,Auto"
+            ColumnSpacing="6"
+            RowSpacing="2">
         <Border Width="24"
                 Height="24"
-                Background="{DynamicResource RavenDangerBrush}"
+                Background="{Binding Survey.FlightWarningBrush}"
                 CornerRadius="12">
-          <TextBlock HorizontalAlignment="Center"
+          <Grid>
+            <TextBlock HorizontalAlignment="Center"
                      VerticalAlignment="Center"
                      Foreground="White"
                      FontSize="13"
                      FontWeight="Bold"
+                     IsVisible="{Binding !Survey.IsExtremeFlightWarning}"
                      Text="!" />
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Foreground="White"
+                       FontSize="13"
+                       IsVisible="{Binding Survey.IsExtremeFlightWarning}"
+                       Text="💀" />
+          </Grid>
         </Border>
         <StackPanel Grid.Column="1"
                     VerticalAlignment="Center"
                     Spacing="1">
           <TextBlock Classes="eyebrow" Text="FLIGHT WARNING" />
-          <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+          <TextBlock Foreground="{Binding Survey.FlightWarningBrush}"
                      FontSize="13"
                      FontWeight="Bold"
                      Text="{Binding Survey.FlightWarningText}"
@@ -46,6 +58,14 @@
                      FontWeight="SemiBold"
                      Text="{Binding InputMode}" />
         </Border>
+        <TextBlock Grid.Row="1"
+                   Grid.ColumnSpan="3"
+                   HorizontalAlignment="Center"
+                   Foreground="#A8B0B8"
+                   FontFamily="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani"
+                   FontSize="9"
+                   Text="{Binding Survey.FlightWarningNote}"
+                   TextAlignment="Center" />
       </Grid>
     </Border>
   </Border>

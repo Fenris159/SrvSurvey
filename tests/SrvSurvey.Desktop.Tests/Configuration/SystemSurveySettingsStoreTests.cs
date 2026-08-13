@@ -16,6 +16,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         Assert.Equal(SystemSurveyPreferences.Default, preferences);
         Assert.Equal(0, preferences.BodyInformationPreviewExtensionSeconds);
         Assert.Equal(0, preferences.BodyPredictionPreviewExtensionSeconds);
+        Assert.Equal(120, preferences.BioPlotterDssDurationSeconds);
         Assert.Equal(4, preferences.FssBodiesBeforeScrolling);
         Assert.False(preferences.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn);
     }

@@ -1,26 +1,26 @@
-# SrvSurvey-XP 2.1.3.0-rc.20
+# SrvSurvey-XP 2.1.3.0-rc.21
 
-This release candidate aligns route-overlay timing and progress with legacy
-SrvSurvey. The changes below are the delta from `2.1.3.0-rc.19`.
+This release candidate improves the surface-gravity flight warning. The
+changes below are the delta from `2.1.3.0-rc.20`.
 
-## What's improved since 2.1.3.0-rc.19
+## What's improved since 2.1.3.0-rc.20
 
-- Keeps the completed jump content visible for one second before advancing to
-  the next target for both normal and fleet-carrier jumps.
-- Excludes the starting system from saved-route hop totals and labels the
-  initial route position as `START`.
-- Displays saved-route progress as `HOP 1 / total` through the final
-  destination for normal and fleet-carrier routes.
-- Shows `FINISHED` with the final destination details for three seconds after
-  completing a route, then closes the overlay.
+- Shows the gravity warning only while the commander is actually near the
+  current landable body, instead of retaining it with post-DSS biology panels.
+- Uses four gravity severity styles with distinct colors and concise landing
+  guidance, plus a skull icon for the highest-risk tier.
+- Adds editor preview states named `Noticeable`, `Challenging`, `High risk`,
+  and `Expert only` for checking every warning presentation.
+- Lets the live warning window compact vertically to the shared presentation,
+  matching its dimensions in the overlay editor.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.20`
-- Tag: `xp-v2.1.3.0-rc.20`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.20-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.20-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.20-x86_64.AppImage`
+- Version: `2.1.3.0-rc.21`
+- Tag: `xp-v2.1.3.0-rc.21`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.21-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.21-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.21-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
