@@ -144,6 +144,85 @@ public sealed class JumpInfoViewModelTests : IDisposable
         Assert.Equal([("Beta", 3L), ("Gamma", 4L)], client.Requests);
     }
 
+    [Fact]
+    public async Task WitchspaceUsesDisplayedStarClassWhenTargetOmitsIt()
+    {
+        var client = new FakeSummaryClient(
+            CreateSummary() with { StarClass = null });
+        using var viewModel = CreateViewModel(client);
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                CreateNavRoute(),
+                [FsdTarget("Beta", 3, string.Empty)],
+                new EliteStatus
+                {
+                    Flags = StatusFlags.InMainShip,
+                    Flags2 = StatusFlags2.FsdChargingJump,
+                },
+                null));
+        await viewModel.PendingSummaryLoad;
+        Assert.Equal("STAR CLASS N", viewModel.StarClass);
+
+        viewModel.BeginOverlayPresentation();
+        viewModel.EndOverlayPresentation();
+        Assert.True(viewModel.ShouldShow);
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                null,
+                [Event("StartJump", "\"JumpType\":\"Hyperspace\"")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null));
+
+        Assert.Equal("STAR CLASS N", viewModel.StarClass);
+    }
+
+    [Fact]
+    public async Task WitchspaceAdoptsStarClassReceivedAfterJumpStarts()
+    {
+        var client = new FakeSummaryClient(
+            CreateSummary() with { StarClass = null });
+        using var viewModel = CreateViewModel(client);
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                null,
+                [FsdTarget("Beta", 3, string.Empty)],
+                new EliteStatus
+                {
+                    Flags = StatusFlags.InMainShip,
+                    Flags2 = StatusFlags2.FsdChargingJump,
+                },
+                null));
+        await viewModel.PendingSummaryLoad;
+        Assert.Equal("STAR CLASS UNKNOWN", viewModel.StarClass);
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                null,
+                [
+                    Event("StartJump", "\"JumpType\":\"Hyperspace\""),
+                    FsdTarget("Beta", 3, "N"),
+                ],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null));
+
+        Assert.Equal("STAR CLASS N", viewModel.StarClass);
+    }
+
     [Theory]
     [InlineData("K", true)]
     [InlineData("G", true)]
@@ -460,6 +539,63 @@ public sealed class JumpInfoViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task CompletedJumpQueuesWithoutAnActivePresentation()
+    {
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-13T12:00:00Z"));
+        using var viewModel = CreateViewModel(
+            new FakeSummaryClient(CreateSummary()),
+            time);
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                null,
+                [FsdTarget("Beta", 3, "N")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null));
+        await viewModel.PendingSummaryLoad;
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Beta",
+                3,
+                new GalacticCoordinate(45, 0, 0),
+                null,
+                [
+                    Event("FSDJump", "\"StarSystem\":\"Beta\""),
+                    FsdTarget("Gamma", 4, "K"),
+                ],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null));
+        Assert.Equal("Beta", viewModel.TargetName);
+
+        time.Advance(TimeSpan.FromSeconds(1));
+        viewModel.AdvanceTimedTransitions();
+        Assert.Equal("Beta", viewModel.TargetName);
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Beta",
+                3,
+                new GalacticCoordinate(45, 0, 0),
+                null,
+                [],
+                new EliteStatus
+                {
+                    Flags = StatusFlags.InMainShip,
+                    Flags2 = StatusFlags2.FsdChargingJump,
+                },
+                null));
+        viewModel.BeginOverlayPresentation();
+        await viewModel.PendingSummaryLoad;
+
+        Assert.Equal("Gamma", viewModel.TargetName);
+    }
+
+    [Fact]
     public async Task QueuedTargetCanLeaveAndThenResumeFollowedRoute()
     {
         var time = new MutableTimeProvider(
@@ -663,8 +799,13 @@ public sealed class JumpInfoViewModelTests : IDisposable
             new FakeSummaryClient(CreateSummary()));
         viewModel.Dispose();
 
-        viewModel.BeginOverlayPresentation();
-        viewModel.EndOverlayPresentation();
+        var exception = Record.Exception(() =>
+        {
+            viewModel.BeginOverlayPresentation();
+            viewModel.EndOverlayPresentation();
+        });
+
+        Assert.Null(exception);
     }
 
     public void Dispose()
