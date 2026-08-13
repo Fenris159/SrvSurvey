@@ -135,31 +135,54 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
                 return;
             }
 
-            var overlay = new JumpInfoOverlayWindow(viewModel);
-            OverlayThemeResources.Apply(overlay, overlayLayout, "PlotJumpInfo");
-            overlay.Opened += (_, _) =>
+            JumpInfoOverlayWindow? overlay = null;
+            var presentationCompleted = false;
+            var presentationEnded = false;
+            try
             {
-                PositionWindow(overlay, gameWindow.ClientBounds);
-                var preparation = platform.PreparePassiveWindow(overlay);
-                viewModel.ApplyPreparation(preparation);
-                if (!preparation.IsClickThrough)
+                overlay = new JumpInfoOverlayWindow(viewModel);
+                OverlayThemeResources.Apply(
+                    overlay,
+                    overlayLayout,
+                    "PlotJumpInfo");
+                overlay.Opened += (_, _) =>
                 {
-                    isSuppressed = true;
-                    CloseWindow();
-                }
-            };
-            overlay.Closed += (_, _) =>
+                    PositionWindow(overlay, gameWindow.ClientBounds);
+                    var preparation = platform.PreparePassiveWindow(overlay);
+                    viewModel.ApplyPreparation(preparation);
+                    if (!preparation.IsClickThrough)
+                    {
+                        isSuppressed = true;
+                        CloseWindow();
+                    }
+                };
+                overlay.Closed += (_, _) =>
+                {
+                    if (ReferenceEquals(window, overlay))
+                    {
+                        window = null;
+                        jumpInfo.EndOverlayPresentation();
+                        presentationEnded = true;
+                        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+                    }
+                };
+                window = overlay;
+                overlay.Show();
+                presentationCompleted = true;
+                VisibilityChanged?.Invoke(this, EventArgs.Empty);
+            }
+            finally
             {
-                if (ReferenceEquals(window, overlay))
+                if (!presentationCompleted && !presentationEnded)
                 {
-                    window = null;
+                    if (ReferenceEquals(window, overlay))
+                    {
+                        window = null;
+                    }
+
                     jumpInfo.EndOverlayPresentation();
-                    VisibilityChanged?.Invoke(this, EventArgs.Empty);
                 }
-            };
-            window = overlay;
-            overlay.Show();
-            VisibilityChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
         finally
         {

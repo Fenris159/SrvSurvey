@@ -243,7 +243,7 @@ public sealed class RouteWindowMarkupTests
         var badge = label.Parent
             ?? throw new InvalidDataException(
                 "The scoopable label has no badge parent.");
-        var starClass = badge.Parent?.Elements().Single(element =>
+        var starClass = badge.Parent?.Elements().SingleOrDefault(element =>
             element.Attribute("Text")?.Value
                 == "{Binding JumpInfo.StarClass}")
             ?? throw new InvalidDataException(
@@ -269,9 +269,7 @@ public sealed class RouteWindowMarkupTests
         Assert.DoesNotContain(
             badge.Descendants(),
             element => element.Name.LocalName == "Image");
-        Assert.True(
-            badge.ElementsAfterSelf().FirstOrDefault() == starClass,
-            "The scoopable badge should sit immediately left of the star class.");
+        Assert.Same(starClass, badge.ElementsAfterSelf().FirstOrDefault());
     }
 
     [Fact]

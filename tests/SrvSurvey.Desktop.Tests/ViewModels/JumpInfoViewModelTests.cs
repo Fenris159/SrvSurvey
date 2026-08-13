@@ -652,6 +652,19 @@ public sealed class JumpInfoViewModelTests : IDisposable
         Assert.Equal("FINISHED", viewModel.JumpProgress);
 
         viewModel.EndOverlayPresentation();
+        Assert.Equal("FINISHED", viewModel.JumpProgress);
+        Assert.False(viewModel.ShouldShow);
+    }
+
+    [Fact]
+    public void PresentationCallbacksAreNoOpsAfterDisposal()
+    {
+        var viewModel = CreateViewModel(
+            new FakeSummaryClient(CreateSummary()));
+        viewModel.Dispose();
+
+        viewModel.BeginOverlayPresentation();
+        viewModel.EndOverlayPresentation();
     }
 
     public void Dispose()

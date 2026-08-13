@@ -394,7 +394,11 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     internal void BeginOverlayPresentation()
     {
-        ObjectDisposedException.ThrowIf(disposed, this);
+        if (disposed)
+        {
+            return;
+        }
+
         isOverlayPresented = true;
         if (!hasQueuedPlan)
         {
@@ -531,7 +535,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
         var previousTarget = routePlan?.Target;
         displayedFollowedRoute = followedRoute;
-        routePlan = PreserveInFlightStarClass(JumpInfoRoutePlanner.Create(
+        var nextPlan = JumpInfoRoutePlanner.Create(
             new JumpInfoRoutePlannerRequest
             {
                 FsdTarget = fsdTarget,
@@ -542,7 +546,9 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                 NavRoute = navRoute,
                 FollowedRoute = followedRoute,
                 MaximumJumpRange = maximumJumpRange
-            }));
+            });
+        UpdateInFlightStarClass(nextPlan);
+        routePlan = PreserveInFlightStarClass(nextPlan);
         RaisePlanProperties();
 
         var nextTarget = routePlan?.Target;
@@ -912,25 +918,12 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return plan;
         }
 
-        if (inFlightTarget is null)
-        {
-            inFlightTarget = plan.Target;
-        }
-
         if (!SameTarget(inFlightTarget, plan.Target))
         {
             return plan;
         }
 
-        if (string.IsNullOrWhiteSpace(inFlightTarget.StarClass))
-        {
-            inFlightTarget = inFlightTarget with
-            {
-                StarClass = plan.Target.StarClass,
-            };
-        }
-
-        return string.IsNullOrWhiteSpace(inFlightTarget.StarClass)
+        return string.IsNullOrWhiteSpace(inFlightTarget?.StarClass)
             ? plan
             : plan with
             {
@@ -939,6 +932,24 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                     StarClass = inFlightTarget.StarClass,
                 },
             };
+    }
+
+    private void UpdateInFlightStarClass(JumpInfoRoutePlan? plan)
+    {
+        if (!fsdJumping || plan is null)
+        {
+            return;
+        }
+
+        inFlightTarget ??= plan.Target;
+        if (SameTarget(inFlightTarget, plan.Target)
+            && string.IsNullOrWhiteSpace(inFlightTarget.StarClass))
+        {
+            inFlightTarget = inFlightTarget with
+            {
+                StarClass = plan.Target.StarClass,
+            };
+        }
     }
 
     private static string CreateDiscoveryText(SystemSummary? value)
