@@ -32,14 +32,30 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public string HopProgress => editorPreview?.HopProgress
-        ?? (route.RouteCount == 0
-            ? "NO ROUTE"
-            : IsFinished
-                ? "FINISHED"
-                : route.ReachedCount == 0
-                    ? "START"
-                    : $"HOP {Math.Min(route.ReachedCount, TotalHops):N0} / {TotalHops:N0}");
+    public string HopProgress
+    {
+        get
+        {
+            if (editorPreview is not null)
+            {
+                return editorPreview.HopProgress;
+            }
+
+            if (route.RouteCount == 0)
+            {
+                return "NO ROUTE";
+            }
+
+            if (IsFinished)
+            {
+                return "FINISHED";
+            }
+
+            return route.ReachedCount == 0
+                ? "START"
+                : $"HOP {Math.Min(route.ReachedCount, TotalHops):N0} / {TotalHops:N0}";
+        }
+    }
 
     public string SystemName => editorPreview?.SystemName
         ?? DisplayedHop?.Name
