@@ -17,6 +17,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private JumpInfoOverlayWindow? window;
     private bool isSuppressed;
+    private bool isSynchronizing;
     private bool disposed;
 
     public JumpInfoOverlayCoordinator(
@@ -99,55 +100,94 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
 
     private void SynchronizeWindow()
     {
-        if (disposed)
+        if (disposed || isSynchronizing)
         {
             return;
         }
 
-        gameWindow = gameWindowTracker.GetSnapshot();
-        if (isSuppressed
-            || !jumpInfo.ShouldShow
-            || !platform.Capabilities.SupportsPassiveOverlay
-            || !platform.Capabilities.SupportsClickThrough
-            || !platform.Capabilities.SupportsGameWindowTracking
-            || !gameWindow.IsAvailable
-            || !gameWindow.IsVisible
-            || !gameWindow.IsForeground)
+        isSynchronizing = true;
+        try
         {
-            CloseWindow();
-            return;
-        }
-
-        if (window is not null)
-        {
-            PositionWindow(window, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new JumpInfoOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotJumpInfo");
-        overlay.Opened += (_, _) =>
-        {
-            PositionWindow(overlay, gameWindow.ClientBounds);
-            var preparation = platform.PreparePassiveWindow(overlay);
-            viewModel.ApplyPreparation(preparation);
-            if (!preparation.IsClickThrough)
+            gameWindow = gameWindowTracker.GetSnapshot();
+            if (isSuppressed
+                || !jumpInfo.ShouldShow
+                || !platform.Capabilities.SupportsPassiveOverlay
+                || !platform.Capabilities.SupportsClickThrough
+                || !platform.Capabilities.SupportsGameWindowTracking
+                || !gameWindow.IsAvailable
+                || !gameWindow.IsVisible
+                || !gameWindow.IsForeground)
             {
-                isSuppressed = true;
                 CloseWindow();
+                return;
             }
-        };
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(window, overlay))
+
+            if (window is not null)
             {
-                window = null;
+                PositionWindow(window, gameWindow.ClientBounds);
+                return;
+            }
+
+            jumpInfo.BeginOverlayPresentation();
+            if (!jumpInfo.ShouldShow)
+            {
+                jumpInfo.EndOverlayPresentation();
+                return;
+            }
+
+            JumpInfoOverlayWindow? overlay = null;
+            var presentationCompleted = false;
+            var presentationEnded = false;
+            try
+            {
+                overlay = new JumpInfoOverlayWindow(viewModel);
+                OverlayThemeResources.Apply(
+                    overlay,
+                    overlayLayout,
+                    "PlotJumpInfo");
+                overlay.Opened += (_, _) =>
+                {
+                    PositionWindow(overlay, gameWindow.ClientBounds);
+                    var preparation = platform.PreparePassiveWindow(overlay);
+                    viewModel.ApplyPreparation(preparation);
+                    if (!preparation.IsClickThrough)
+                    {
+                        isSuppressed = true;
+                        CloseWindow();
+                    }
+                };
+                overlay.Closed += (_, _) =>
+                {
+                    if (ReferenceEquals(window, overlay))
+                    {
+                        window = null;
+                        jumpInfo.EndOverlayPresentation();
+                        presentationEnded = true;
+                        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+                    }
+                };
+                window = overlay;
+                overlay.Show();
+                presentationCompleted = true;
                 VisibilityChanged?.Invoke(this, EventArgs.Empty);
             }
-        };
-        window = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+            finally
+            {
+                if (!presentationCompleted && !presentationEnded)
+                {
+                    if (ReferenceEquals(window, overlay))
+                    {
+                        window = null;
+                    }
+
+                    jumpInfo.EndOverlayPresentation();
+                }
+            }
+        }
+        finally
+        {
+            isSynchronizing = false;
+        }
     }
 
     private void PositionWindow(Window window, PixelRect gameBounds)
@@ -187,6 +227,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
 
         window = null;
         overlay.Close();
+        jumpInfo.EndOverlayPresentation();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 }

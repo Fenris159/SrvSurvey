@@ -13,6 +13,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 {
     private const string Unavailable = "\u2014";
+    private const string ScoopableStarClasses = "KGBFOAM";
 
     private readonly ISystemSummaryClient summaryClient;
     private readonly JumpInfoSettingsStore settingsStore;
@@ -24,9 +25,11 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private GalacticCoordinate? currentPosition;
     private NavRouteSnapshot? navRoute;
     private FollowRouteDocument? followedRoute;
+    private FollowRouteDocument? displayedFollowedRoute;
     private EliteStatus? status;
     private string? musicTrack;
     private JumpTarget? fsdTarget;
+    private JumpTarget? inFlightTarget;
     private JumpInfoRoutePlan? routePlan;
     private SystemSummary? summary;
     private IReadOnlyList<JumpInfoDetailLineViewModel> detailLines = [];
@@ -36,6 +39,9 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private DateTimeOffset? jumpVisibleUntil;
     private DateTimeOffset? jumpContentHeldUntil;
     private DateTimeOffset? followedRouteFinishedUntil;
+    private bool isOverlayPresented;
+    private bool isWaitingForOverlayHide;
+    private bool hasQueuedPlan;
     private bool fsdJumping;
     private bool forceShow;
     private bool manuallyHidden;
@@ -141,7 +147,10 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     {
         get
         {
-            if (!AutoShow || routePlan is null || manuallyHidden)
+            if (!AutoShow
+                || routePlan is null
+                || manuallyHidden
+                || isWaitingForOverlayHide)
             {
                 return false;
             }
@@ -180,6 +189,18 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         routePlan?.Target.StarClass ?? summary?.StarClass)
             ? "STAR CLASS UNKNOWN"
             : "STAR CLASS " + (routePlan?.Target.StarClass ?? summary?.StarClass);
+
+    public bool IsScoopableStarClass
+    {
+        get
+        {
+            var starClass = (routePlan?.Target.StarClass ?? summary?.StarClass)
+                ?.Trim();
+            return starClass is { Length: 1 }
+                && ScoopableStarClasses.Contains(
+                    char.ToUpperInvariant(starClass[0]));
+        }
+    }
 
     public string JumpProgress => CreateFollowedRouteProgressText()
         ?? (routePlan is { Legs.Count: > 0 } plan
@@ -267,6 +288,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         IsLoading = false;
         OnPropertyChanged(nameof(TargetName));
         OnPropertyChanged(nameof(StarClass));
+        OnPropertyChanged(nameof(IsScoopableStarClass));
         OnPropertyChanged(nameof(JumpProgress));
         OnPropertyChanged(nameof(TotalDistance));
         OnPropertyChanged(nameof(RouteLegs));
@@ -360,8 +382,49 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         }
 
         jumpContentHeldUntil = null;
+        if (isOverlayPresented)
+        {
+            isWaitingForOverlayHide = true;
+            RaiseVisibilityProperties();
+            return;
+        }
+
+        QueuePlanForNextPresentation();
+    }
+
+    internal void BeginOverlayPresentation()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        isOverlayPresented = true;
+        if (!hasQueuedPlan)
+        {
+            return;
+        }
+
+        hasQueuedPlan = false;
         followedRouteFinishedUntil = null;
         RefreshPlan();
+    }
+
+    internal void EndOverlayPresentation()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        isOverlayPresented = false;
+        if (!isWaitingForOverlayHide)
+        {
+            return;
+        }
+
+        isWaitingForOverlayHide = false;
+        QueuePlanForNextPresentation();
     }
 
     public void Dispose()
@@ -431,12 +494,14 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                 "Hyperspace",
                 StringComparison.OrdinalIgnoreCase):
                 fsdJumping = true;
+                CaptureInFlightTarget();
                 jumpVisibleUntil = null;
                 break;
 
             case "FSDJump":
             case "CarrierJump":
                 fsdJumping = false;
+                inFlightTarget = null;
                 var isFinalFollowedRouteArrival =
                     journalEvent.EventName == "FSDJump"
                     && IsFinalFollowedRouteArrival(journalEvent.Payload);
@@ -459,19 +524,18 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     private void RefreshPlan()
     {
-        if (jumpContentHeldUntil is { } heldUntil)
+        if (routePlan is not null
+            && (jumpContentHeldUntil is not null
+                || isWaitingForOverlayHide
+                || hasQueuedPlan))
         {
-            if (heldUntil > timeProvider.GetUtcNow() && routePlan is not null)
-            {
-                RaiseVisibilityProperties();
-                return;
-            }
-
-            jumpContentHeldUntil = null;
+            RaiseVisibilityProperties();
+            return;
         }
 
         var previousTarget = routePlan?.Target;
-        routePlan = JumpInfoRoutePlanner.Create(
+        displayedFollowedRoute = followedRoute;
+        var nextPlan = JumpInfoRoutePlanner.Create(
             new JumpInfoRoutePlannerRequest
             {
                 FsdTarget = fsdTarget,
@@ -483,6 +547,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                 FollowedRoute = followedRoute,
                 MaximumJumpRange = maximumJumpRange
             });
+        UpdateInFlightStarClass(nextPlan);
+        routePlan = PreserveInFlightStarClass(nextPlan);
         RaisePlanProperties();
 
         var nextTarget = routePlan?.Target;
@@ -655,7 +721,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var nextHop = followedRoute?.NextHop;
+        var nextHop = displayedFollowedRoute?.NextHop;
         if (nextHop is null || !MatchesTarget(nextHop, target))
         {
             return;
@@ -749,6 +815,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(TargetName));
         OnPropertyChanged(nameof(IsQuestTagged));
         OnPropertyChanged(nameof(StarClass));
+        OnPropertyChanged(nameof(IsScoopableStarClass));
         OnPropertyChanged(nameof(JumpProgress));
         OnPropertyChanged(nameof(TotalDistance));
         OnPropertyChanged(nameof(RouteLegs));
@@ -758,20 +825,23 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     private string? CreateFollowedRouteProgressText()
     {
-        if (followedRouteFinishedUntil > timeProvider.GetUtcNow())
+        if (followedRouteFinishedUntil is { } finishedUntil
+            && (finishedUntil > timeProvider.GetUtcNow()
+                || isWaitingForOverlayHide
+                || hasQueuedPlan))
         {
             return "FINISHED";
         }
 
-        if (followedRoute?.NextHop is not { } nextHop
+        if (displayedFollowedRoute?.NextHop is not { } nextHop
             || routePlan?.Target is not { } target
             || !MatchesTarget(nextHop, target))
         {
             return null;
         }
 
-        var totalHops = Math.Max(0, followedRoute.Hops.Count - 1);
-        var nextIndex = followedRoute.LastReachedIndex + 1;
+        var totalHops = Math.Max(0, displayedFollowedRoute.Hops.Count - 1);
+        var nextIndex = displayedFollowedRoute.LastReachedIndex + 1;
         return nextIndex <= 0
             ? "START"
             : $"HOP {Math.Min(nextIndex, totalHops):N0} / {totalHops:N0}";
@@ -804,6 +874,82 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private void RaiseVisibilityProperties()
     {
         OnPropertyChanged(nameof(ShouldShow));
+    }
+
+    private void QueuePlanForNextPresentation()
+    {
+        hasQueuedPlan = routePlan is not null;
+        if (!hasQueuedPlan)
+        {
+            followedRouteFinishedUntil = null;
+            RefreshPlan();
+        }
+    }
+
+    private void CaptureInFlightTarget()
+    {
+        var target = JumpInfoRoutePlanner.SelectTarget(fsdTarget, status)
+            ?? routePlan?.Target;
+        if (target is null)
+        {
+            inFlightTarget = null;
+            return;
+        }
+
+        var starClass = target.StarClass;
+        if (string.IsNullOrWhiteSpace(starClass)
+            && routePlan is { } displayedPlan
+            && SameTarget(displayedPlan.Target, target))
+        {
+            starClass = string.IsNullOrWhiteSpace(
+                displayedPlan.Target.StarClass)
+                    ? summary?.StarClass
+                    : displayedPlan.Target.StarClass;
+        }
+
+        inFlightTarget = target with { StarClass = starClass };
+    }
+
+    private JumpInfoRoutePlan? PreserveInFlightStarClass(
+        JumpInfoRoutePlan? plan)
+    {
+        if (!fsdJumping || plan is null)
+        {
+            return plan;
+        }
+
+        if (!SameTarget(inFlightTarget, plan.Target))
+        {
+            return plan;
+        }
+
+        return string.IsNullOrWhiteSpace(inFlightTarget?.StarClass)
+            ? plan
+            : plan with
+            {
+                Target = plan.Target with
+                {
+                    StarClass = inFlightTarget.StarClass,
+                },
+            };
+    }
+
+    private void UpdateInFlightStarClass(JumpInfoRoutePlan? plan)
+    {
+        if (!fsdJumping || plan is null)
+        {
+            return;
+        }
+
+        inFlightTarget ??= plan.Target;
+        if (SameTarget(inFlightTarget, plan.Target)
+            && string.IsNullOrWhiteSpace(inFlightTarget.StarClass))
+        {
+            inFlightTarget = inFlightTarget with
+            {
+                StarClass = plan.Target.StarClass,
+            };
+        }
     }
 
     private static string CreateDiscoveryText(SystemSummary? value)

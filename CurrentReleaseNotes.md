@@ -1,26 +1,25 @@
-# SrvSurvey-XP 2.1.3.0-rc.21
+# SrvSurvey-XP 2.1.3.0-rc.22
 
-This release candidate improves the surface-gravity flight warning. The
-changes below are the delta from `2.1.3.0-rc.20`.
+This release candidate improves the Next-jump information overlay. The changes
+below are the delta from `2.1.3.0-rc.21`.
 
-## What's improved since 2.1.3.0-rc.20
+## What's improved since 2.1.3.0-rc.21
 
-- Shows the gravity warning only while the commander is actually near the
-  current landable body, instead of retaining it with post-DSS biology panels.
-- Uses four gravity severity styles with distinct colors and concise landing
-  guidance, plus a skull icon for the highest-risk tier.
-- Adds editor preview states named `Noticeable`, `Challenging`, `High risk`,
-  and `Expert only` for checking every warning presentation.
-- Lets the live warning window compact vertically to the shared presentation,
-  matching its dimensions in the overlay editor.
+- Holds the active jump information until the overlay closes, then presents
+  the latest queued target when the overlay next appears.
+- Keeps followed-route progress resumable across any number of off-route jumps.
+- Preserves the destination star class throughout witchspace instead of
+  changing known information to `UNKNOWN` before arrival.
+- Marks K, G, B, F, O, A, and M stars with an icon-free `SCOOPABLE` pill that
+  uses the displayed star-class color.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.21`
-- Tag: `xp-v2.1.3.0-rc.21`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.21-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.21-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.21-x86_64.AppImage`
+- Version: `2.1.3.0-rc.22`
+- Tag: `xp-v2.1.3.0-rc.22`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.22-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.22-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.22-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.

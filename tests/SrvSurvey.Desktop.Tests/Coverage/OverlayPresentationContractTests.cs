@@ -103,7 +103,7 @@ public sealed class OverlayPresentationContractTests
             "CommanderPositionText", "MapProjection", "QuestMarkers", "QuestRoutes", "IsQuestTagged",
         ]),
         Contract("PlotJumpInfo", ["src/SrvSurvey.Desktop/JumpInfoOverlayWindow.axaml", "src/SrvSurvey.Desktop/JumpInfoOverlayPresentation.axaml"], [
-            "TargetName", "StarClass", "JumpProgress", "RouteLegs", "TotalDistance", "DiscoveryText",
+            "TargetName", "StarClass", "IsScoopableStarClass", "SCOOPABLE", "JumpProgress", "RouteLegs", "TotalDistance", "DiscoveryText",
             "TrafficText", "PointsOfInterestText", "DetailLines", "IsQuestTagged",
             "HasRouteGuidanceBadges", "HasRefuelGuidance", "HasNeutronGuidance",
             "Assets/Routes/refuel-star.png",
