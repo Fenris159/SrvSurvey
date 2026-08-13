@@ -230,6 +230,51 @@ public sealed class RouteWindowMarkupTests
     }
 
     [Fact]
+    public void ScoopableStarBadgeMatchesGuidancePillsWithoutAnIcon()
+    {
+        var document = XDocument.Load(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "JumpInfoOverlayPresentation.axaml"));
+        var label = document.Descendants().Single(element =>
+            element.Name.LocalName == "TextBlock"
+            && element.Attribute("Text")?.Value == "SCOOPABLE");
+        var badge = label.Parent
+            ?? throw new InvalidDataException(
+                "The scoopable label has no badge parent.");
+        var starClass = badge.Parent?.Elements().Single(element =>
+            element.Attribute("Text")?.Value
+                == "{Binding JumpInfo.StarClass}")
+            ?? throw new InvalidDataException(
+                "The scoopable badge has no adjacent star-class label.");
+
+        Assert.Equal("Border", badge.Name.LocalName);
+        Assert.Equal("badge", badge.Attribute("Classes")?.Value);
+        Assert.Equal(
+            "{DynamicResource RavenRouteGuidanceBadgeBrush}",
+            badge.Attribute("Background")?.Value);
+        Assert.Equal(
+            "{Binding JumpInfo.IsScoopableStarClass}",
+            badge.Attribute("IsVisible")?.Value);
+        Assert.Equal("18", badge.Attribute("MinHeight")?.Value);
+        Assert.Equal("7,2", badge.Attribute("Padding")?.Value);
+        Assert.Equal("9", label.Attribute("FontSize")?.Value);
+        Assert.Equal(
+            "{DynamicResource RavenWarningBrush}",
+            label.Attribute("Foreground")?.Value);
+        Assert.Equal(
+            starClass.Attribute("Foreground")?.Value,
+            label.Attribute("Foreground")?.Value);
+        Assert.DoesNotContain(
+            badge.Descendants(),
+            element => element.Name.LocalName == "Image");
+        Assert.True(
+            badge.ElementsAfterSelf().FirstOrDefault() == starClass,
+            "The scoopable badge should sit immediately left of the star class.");
+    }
+
+    [Fact]
     public void RouteBodiesWrapBelowTheCompactHopSummary()
     {
         var document = LoadRouteWindow();

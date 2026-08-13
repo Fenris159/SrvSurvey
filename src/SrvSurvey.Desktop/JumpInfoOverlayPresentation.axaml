@@ -45,13 +45,27 @@
                      Text="{Binding TargetName}"
                      TextTrimming="CharacterEllipsis" />
         </StackPanel>
-        <TextBlock Grid.Column="1"
-                   Classes="monospace"
-                   Foreground="{DynamicResource RavenWarningBrush}"
-                   FontSize="12"
-                   FontWeight="SemiBold"
-                   VerticalAlignment="Center"
-                   Text="{Binding JumpInfo.StarClass}" />
+        <StackPanel Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="6"
+                    VerticalAlignment="Center">
+          <Border Classes="badge"
+                  Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
+                  IsVisible="{Binding JumpInfo.IsScoopableStarClass}"
+                  MinHeight="18"
+                  Padding="7,2">
+            <TextBlock VerticalAlignment="Center"
+                       FontSize="9"
+                       Foreground="{DynamicResource RavenWarningBrush}"
+                       Text="SCOOPABLE" />
+          </Border>
+          <TextBlock Classes="monospace"
+                     Foreground="{DynamicResource RavenWarningBrush}"
+                     FontSize="12"
+                     FontWeight="SemiBold"
+                     VerticalAlignment="Center"
+                     Text="{Binding JumpInfo.StarClass}" />
+        </StackPanel>
       </Grid>
 
       <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
