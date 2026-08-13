@@ -5,6 +5,38 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class OverlayEditorPreviewCatalogTests
 {
     [Fact]
+    public void FlightWarningPreviewStatesUseDifficultyNames()
+    {
+        var states = OverlayEditorPreviewCatalog.GetStates("PlotFlightWarning");
+
+        Assert.Equal(
+            ["Noticeable", "Challenging", "High risk", "Expert only"],
+            states.Select(state => state.DisplayName));
+    }
+
+    [Theory]
+    [InlineData(0, 255, 215, 0, false)]
+    [InlineData(1, 255, 165, 0, false)]
+    [InlineData(2, 255, 69, 0, false)]
+    [InlineData(3, 220, 20, 60, true)]
+    public void FlightWarningPreviewCyclesSeverityStates(
+        int stateIndex,
+        byte red,
+        byte green,
+        byte blue,
+        bool expectedExtreme)
+    {
+        var overlay = Assert.IsType<SystemSurveyOverlayViewModel>(
+            OverlayEditorPreviewCatalog.Create("PlotFlightWarning", stateIndex));
+
+        var brush = Assert.IsType<Avalonia.Media.ISolidColorBrush>(
+            overlay.Survey.FlightWarningBrush,
+            exactMatch: false);
+        Assert.Equal(Avalonia.Media.Color.FromRgb(red, green, blue), brush.Color);
+        Assert.Equal(expectedExtreme, overlay.Survey.IsExtremeFlightWarning);
+    }
+
+    [Fact]
     public void SystemBiologyOverviewDemonstratesAlternativePredictionPips()
     {
         var overlay = Assert.IsType<SystemSurveyOverlayViewModel>(

@@ -10,7 +10,7 @@
         d:DesignWidth="300"
         d:DesignHeight="100"
         MinWidth="300"
-        MinHeight="88"
+        MinHeight="1"
         SizeToContent="WidthAndHeight"
         CanResize="False"
         ShowActivated="False"

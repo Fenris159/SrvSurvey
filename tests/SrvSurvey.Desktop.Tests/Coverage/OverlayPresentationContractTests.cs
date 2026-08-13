@@ -55,7 +55,7 @@ public sealed class OverlayPresentationContractTests
             "BodyInformationOverlayPresentation",
         ]),
         Contract("PlotFlightWarning", ["src/SrvSurvey.Desktop/FlightWarningOverlayWindow.axaml", "src/SrvSurvey.Desktop/FlightWarningOverlayPresentation.axaml"], [
-            "FlightWarningText",
+            "FlightWarningText", "FlightWarningBrush", "FlightWarningDimBrush", "FlightWarningNote", "IsExtremeFlightWarning", "MinHeight=\"1\"", "SizeToContent=\"WidthAndHeight\"",
         ]),
         Contract("PlotFootCombat", ["src/SrvSurvey.Desktop/FootCombatOverlayWindow.axaml", "src/SrvSurvey.Desktop/FootCombatOverlayPresentation.axaml"], [
             "SettlementName", "FootCombatKills",

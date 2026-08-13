@@ -37,6 +37,11 @@ internal static class OverlayEditorPreviewCatalog
                 ("signal-summary", "Signal summary"),
                 ("dss-required", "DSS required"),
                 ("stale-sample", "Stale sample")),
+            ["PlotFlightWarning"] = CreatePreviewStates(
+                ("noticeable", "Noticeable"),
+                ("challenging", "Challenging"),
+                ("high-risk", "High risk"),
+                ("extreme", "Expert only")),
             ["PlotGuardianStatus"] = CreatePreviewStates(
                 ("obelisk", "Obelisk target"),
                 ("site-type", "Site type choice"),
@@ -167,6 +172,13 @@ internal static class OverlayEditorPreviewCatalog
             ? CreateBiologyStatus(previewState)
             : CreateBiologyStatus("active-sample");
         var bodyInfo = CreateBodyInformation();
+        var flightWarningGravity = previewState switch
+        {
+            "noticeable" => 1.5,
+            "high-risk" => 4.5,
+            "extreme" => 8.5,
+            _ => 2.84,
+        };
         return new SystemSurveyEditorPreviewState(
             Snapshot: CreatePreviewSnapshot(),
             BiologySurvey: bioSystem,
@@ -202,7 +214,7 @@ internal static class OverlayEditorPreviewCatalog
             ],
             LastFssRewardText: "10.89 M – 34.34 M CR",
             FlightWarningBodyName: State.CurrentBody,
-            FlightWarningGravity: 2.84);
+            FlightWarningGravity: flightWarningGravity);
     }
 
     private static SystemScanSnapshot CreatePreviewSnapshot()

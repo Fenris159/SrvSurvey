@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
@@ -14,6 +16,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 {
     private const int BodyInformationPreviewBaseSeconds = 3;
     private const double FssBodyRowExtent = 37;
+    private const string NoticeableGravityNote =
+        "Need more care with vertical thrust";
+    private const string ChallengingGravityNote =
+        "Easy to bounce or flip if you tap down-thrust";
+    private const string HighRiskGravityNote =
+        "Requires proper technique; hard impacts common";
+    private const string ExtremeGravityNote =
+        "Very unforgiving; small mistakes = hull damage or death";
     private const string OrganicCodexCategory =
         "$Codex_SubCategory_Organic_Structures;";
     private static readonly StringComparer FssBodyNameComparer =
@@ -21,6 +31,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             CultureInfo.InvariantCulture,
             CompareOptions.IgnoreCase | CompareOptions.NumericOrdering);
     private static readonly GalacticCoordinate Sol = new(0, 0, 0);
+    private static readonly FlightWarningLevel NoticeableFlightWarning =
+        CreateFlightWarningLevel("#FFD700", NoticeableGravityNote);
+    private static readonly FlightWarningLevel ChallengingFlightWarning =
+        CreateFlightWarningLevel("#FFA500", ChallengingGravityNote);
+    private static readonly FlightWarningLevel HighRiskFlightWarning =
+        CreateFlightWarningLevel("#FF4500", HighRiskGravityNote);
+    private static readonly FlightWarningLevel ExtremeFlightWarning =
+        CreateFlightWarningLevel("#DC143C", ExtremeGravityNote, true);
 
     private readonly SystemSurveySettingsStore settingsStore;
     private readonly SystemScanState state;
@@ -128,6 +146,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         editorLastFssRewardBands;
     private string? editorLastFssRewardText;
     private string? editorFlightWarningText;
+    private double? editorFlightWarningGravity;
 
     public SystemSurveyViewModel(
         SystemSurveySettingsStore settingsStore,
@@ -1329,7 +1348,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get
         {
-            var body = ResolveRetainedLocalBody();
+            var body = ResolveNearbyLocalBody();
             if (!AutoShowFlightWarnings
                 || status is null
                 || body?.IsLandable != true
@@ -1357,12 +1376,22 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return editorFlightWarningText;
             }
 
-            var body = ResolveRetainedLocalBody();
+            var body = ResolveNearbyLocalBody();
             return body is null
                 ? "HIGH-GRAVITY BODY"
                 : $"WARNING: SURFACE GRAVITY {body.SurfaceGravity / 10d:N2} g";
         }
     }
+
+    public IBrush FlightWarningBrush => ResolveFlightWarningLevel().Brush;
+
+    public IBrush FlightWarningDimBrush =>
+        ResolveFlightWarningLevel().DimBrush;
+
+    public string FlightWarningNote => ResolveFlightWarningLevel().Note;
+
+    public bool IsExtremeFlightWarning =>
+        ResolveFlightWarningLevel().IsExtreme;
 
     /// <summary>
     /// Installs representative display state for the overlay position editor
@@ -1386,6 +1415,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         BiologicalBodies = preview.BiologicalBodies;
         editorLastFssRewardBands = preview.LastFssRewardBands;
         editorLastFssRewardText = preview.LastFssRewardText;
+        editorFlightWarningGravity = preview.FlightWarningGravity > 0
+            ? preview.FlightWarningGravity
+            : null;
         editorFlightWarningText = preview.FlightWarningGravity > 0
             ? $"WARNING: SURFACE GRAVITY {preview.FlightWarningGravity:N2} g"
             : $"HIGH-GRAVITY BODY · {preview.FlightWarningBodyName}";
@@ -1413,6 +1445,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasNonBodySignals));
         OnPropertyChanged(nameof(NonBodySignalsText));
         OnPropertyChanged(nameof(FlightWarningText));
+        RaiseFlightWarningPresentationProperties();
         OnPropertyChanged(nameof(ShouldShowFlightWarning));
         OnPropertyChanged(nameof(HasCanonnBiologyHint));
     }
@@ -1996,6 +2029,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsWithinBodyInfoBubble));
         OnPropertyChanged(nameof(ShouldShowFlightWarning));
         OnPropertyChanged(nameof(FlightWarningText));
+        RaiseFlightWarningPresentationProperties();
         OnPropertyChanged(nameof(HasTimedBiologySelection));
         OnPropertyChanged(nameof(TimedBiologySelectionProgressPercent));
         OnPropertyChanged(nameof(HasCanonnBiologyHint));
@@ -2500,8 +2534,58 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private SystemScanBodySnapshot? ResolveRetainedLocalBody()
     {
-        if (status?.HasLatitudeLongitude != true
-            && !IsWithinPostDssBiologyWindow)
+        return ResolveLocalBody(
+            status?.HasLatitudeLongitude == true
+            || IsWithinPostDssBiologyWindow);
+    }
+
+    private SystemScanBodySnapshot? ResolveNearbyLocalBody()
+    {
+        return ResolveLocalBody(status?.HasLatitudeLongitude == true);
+    }
+
+    private FlightWarningLevel ResolveFlightWarningLevel()
+    {
+        var gravity = editorFlightWarningGravity
+            ?? ResolveNearbyLocalBody()?.SurfaceGravity / 10d
+            ?? 0;
+        return gravity switch
+        {
+            >= 8 => ExtremeFlightWarning,
+            >= 4 => HighRiskFlightWarning,
+            >= 2 => ChallengingFlightWarning,
+            _ => NoticeableFlightWarning,
+        };
+    }
+
+    private static FlightWarningLevel CreateFlightWarningLevel(
+        string color,
+        string note,
+        bool isExtreme = false)
+    {
+        var parsed = Color.Parse(color);
+        return new FlightWarningLevel(
+            note,
+            new ImmutableSolidColorBrush(parsed),
+            new ImmutableSolidColorBrush(Color.FromArgb(
+                76,
+                parsed.R,
+                parsed.G,
+                parsed.B)),
+            isExtreme);
+    }
+
+    private void RaiseFlightWarningPresentationProperties()
+    {
+        OnPropertyChanged(nameof(FlightWarningBrush));
+        OnPropertyChanged(nameof(FlightWarningDimBrush));
+        OnPropertyChanged(nameof(FlightWarningNote));
+        OnPropertyChanged(nameof(IsExtremeFlightWarning));
+    }
+
+    private SystemScanBodySnapshot? ResolveLocalBody(bool isAvailable)
+    {
+        if (!isAvailable)
         {
             return null;
         }
@@ -3237,6 +3321,12 @@ internal sealed record BodyInfoTarget(
     int BodyId,
     string Name,
     SystemScanBodySnapshot? Body);
+
+internal sealed record FlightWarningLevel(
+    string Note,
+    IBrush Brush,
+    IBrush DimBrush,
+    bool IsExtreme);
 
 public sealed record FssBodyRowViewModel(
     string Name,
