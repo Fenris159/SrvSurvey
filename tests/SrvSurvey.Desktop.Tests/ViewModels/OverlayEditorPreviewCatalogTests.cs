@@ -29,8 +29,9 @@ public sealed class OverlayEditorPreviewCatalogTests
         var overlay = Assert.IsType<SystemSurveyOverlayViewModel>(
             OverlayEditorPreviewCatalog.Create("PlotFlightWarning", stateIndex));
 
-        var brush = Assert.IsAssignableFrom<Avalonia.Media.ISolidColorBrush>(
-            overlay.Survey.FlightWarningBrush);
+        var brush = Assert.IsType<Avalonia.Media.ISolidColorBrush>(
+            overlay.Survey.FlightWarningBrush,
+            exactMatch: false);
         Assert.Equal(Avalonia.Media.Color.FromRgb(red, green, blue), brush.Color);
         Assert.Equal(expectedExtreme, overlay.Survey.IsExtremeFlightWarning);
     }

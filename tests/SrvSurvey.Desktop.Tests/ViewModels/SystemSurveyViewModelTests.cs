@@ -434,8 +434,9 @@ public sealed class SystemSurveyViewModelTests : IDisposable
                 BodyName = "Test 1",
             });
 
-        var brush = Assert.IsAssignableFrom<Avalonia.Media.ISolidColorBrush>(
-            viewModel.FlightWarningBrush);
+        var brush = Assert.IsType<Avalonia.Media.ISolidColorBrush>(
+            viewModel.FlightWarningBrush,
+            exactMatch: false);
         Assert.Equal(
             Avalonia.Media.Color.FromRgb(red, green, blue),
             brush.Color);
