@@ -83,6 +83,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
 
     private void OnTimerTick(object? sender, EventArgs eventArgs)
     {
+        jumpInfo.AdvanceTimedTransitions();
         SynchronizeWindow();
     }
 

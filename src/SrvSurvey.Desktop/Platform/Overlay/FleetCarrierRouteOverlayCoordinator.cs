@@ -79,7 +79,8 @@ public sealed class FleetCarrierRouteOverlayCoordinator : IDisposable
 
     private void OnTimerTick(object? sender, EventArgs eventArgs)
     {
-        SynchronizeWindow();
+        viewModel.AdvanceTimedTransitions();
+        SynchronizePolling();
     }
 
     private void OnRoutePropertyChanged(
@@ -98,7 +99,7 @@ public sealed class FleetCarrierRouteOverlayCoordinator : IDisposable
     {
         var shouldPoll = !disposed
             && !isSuppressed
-            && route.ShouldShowFleetCarrierRouteOverlay
+            && viewModel.ShouldShow
             && platform.Capabilities.SupportsPassiveOverlay
             && platform.Capabilities.SupportsClickThrough
             && platform.Capabilities.SupportsGameWindowTracking;
@@ -126,7 +127,7 @@ public sealed class FleetCarrierRouteOverlayCoordinator : IDisposable
         }
 
         if (isSuppressed
-            || !route.ShouldShowFleetCarrierRouteOverlay
+            || !viewModel.ShouldShow
             || !platform.Capabilities.SupportsPassiveOverlay
             || !platform.Capabilities.SupportsClickThrough
             || !platform.Capabilities.SupportsGameWindowTracking)

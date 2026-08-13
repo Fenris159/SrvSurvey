@@ -17,6 +17,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private readonly ISystemSummaryClient summaryClient;
     private readonly JumpInfoSettingsStore settingsStore;
     private readonly GuardianSiteCatalog guardianSites;
+    private readonly TimeProvider timeProvider;
     private CancellationTokenSource? summaryCancellation;
     private string? currentSystemName;
     private long? currentSystemAddress;
@@ -33,6 +34,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         StringComparer.OrdinalIgnoreCase);
     private double? maximumJumpRange;
     private DateTimeOffset? jumpVisibleUntil;
+    private DateTimeOffset? jumpContentHeldUntil;
+    private DateTimeOffset? followedRouteFinishedUntil;
     private bool fsdJumping;
     private bool forceShow;
     private bool manuallyHidden;
@@ -48,7 +51,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     public JumpInfoViewModel(
         ISystemSummaryClient summaryClient,
         JumpInfoSettingsStore settingsStore,
-        GuardianSiteCatalog? guardianSites = null)
+        GuardianSiteCatalog? guardianSites = null,
+        TimeProvider? timeProvider = null)
     {
         this.summaryClient = summaryClient
             ?? throw new ArgumentNullException(nameof(summaryClient));
@@ -56,6 +60,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             ?? throw new ArgumentNullException(nameof(settingsStore));
         this.guardianSites = guardianSites
             ?? GuardianSiteCatalog.LoadEmbedded();
+        this.timeProvider = timeProvider ?? TimeProvider.System;
         var preferences = settingsStore.Load();
         autoShow = preferences.AutoShow;
         minimal = preferences.Minimal;
@@ -150,7 +155,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                     || mode == OverlayGameMode.SuperCruising);
             var automatic = chargingForJump
                 || fsdJumping
-                || jumpVisibleUntil > DateTimeOffset.UtcNow
+                || jumpVisibleUntil > timeProvider.GetUtcNow()
                     && mode != OverlayGameMode.GalaxyMap
                 || ShowWhenNextHopSelected && IsSelectedFollowedRouteHop();
             var forced = forceShow && mode != OverlayGameMode.Fss;
@@ -176,13 +181,14 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             ? "STAR CLASS UNKNOWN"
             : "STAR CLASS " + (routePlan?.Target.StarClass ?? summary?.StarClass);
 
-    public string JumpProgress => routePlan is { Legs.Count: > 0 } plan
-        ? (plan.JumpNumber > 0) switch
-        {
-            true => $"JUMP {plan.JumpNumber:N0} OF {plan.Legs.Count:N0}",
-            false => $"{plan.Legs.Count:N0} ROUTE JUMPS"
-        }
-        : "DIRECT TARGET";
+    public string JumpProgress => CreateFollowedRouteProgressText()
+        ?? (routePlan is { Legs.Count: > 0 } plan
+            ? (plan.JumpNumber > 0) switch
+            {
+                true => $"JUMP {plan.JumpNumber:N0} OF {plan.Legs.Count:N0}",
+                false => $"{plan.Legs.Count:N0} ROUTE JUMPS"
+            }
+            : "DIRECT TARGET");
 
     public string TotalDistance => routePlan is { Legs.Count: > 0 } plan
         ? $"{plan.TotalDistanceLy:N1} LY"
@@ -345,6 +351,19 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         return true;
     }
 
+    internal void AdvanceTimedTransitions()
+    {
+        if (jumpContentHeldUntil is not { } heldUntil
+            || heldUntil > timeProvider.GetUtcNow())
+        {
+            return;
+        }
+
+        jumpContentHeldUntil = null;
+        followedRouteFinishedUntil = null;
+        RefreshPlan();
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -418,13 +437,39 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             case "FSDJump":
             case "CarrierJump":
                 fsdJumping = false;
-                jumpVisibleUntil = DateTimeOffset.UtcNow.AddSeconds(1);
+                var isFinalFollowedRouteArrival =
+                    journalEvent.EventName == "FSDJump"
+                    && IsFinalFollowedRouteArrival(journalEvent.Payload);
+                var transitionAt = timeProvider.GetUtcNow().AddSeconds(
+                    isFinalFollowedRouteArrival ? 3 : 1);
+                jumpVisibleUntil = transitionAt;
+                if (routePlan is not null)
+                {
+                    jumpContentHeldUntil = transitionAt;
+                }
+
+                followedRouteFinishedUntil = isFinalFollowedRouteArrival
+                    ? transitionAt
+                    : null;
+                OnPropertyChanged(nameof(JumpProgress));
+
                 break;
         }
     }
 
     private void RefreshPlan()
     {
+        if (jumpContentHeldUntil is { } heldUntil)
+        {
+            if (heldUntil > timeProvider.GetUtcNow() && routePlan is not null)
+            {
+                RaiseVisibilityProperties();
+                return;
+            }
+
+            jumpContentHeldUntil = null;
+        }
+
         var previousTarget = routePlan?.Target;
         routePlan = JumpInfoRoutePlanner.Create(
             new JumpInfoRoutePlannerRequest
@@ -618,8 +663,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
         var routeDetails = new List<string>
         {
-            $"Hop {(followedRoute!.LastReachedIndex + 2):N0} of "
-                + $"{followedRoute.Hops.Count:N0}",
+            CreateFollowedRouteProgressText() ?? "ROUTE TARGET",
         };
         if (!string.IsNullOrWhiteSpace(nextHop.Notes))
         {
@@ -710,6 +754,51 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(RouteLegs));
         OnPropertyChanged(nameof(TargetLegIndex));
         RaiseVisibilityProperties();
+    }
+
+    private string? CreateFollowedRouteProgressText()
+    {
+        if (followedRouteFinishedUntil > timeProvider.GetUtcNow())
+        {
+            return "FINISHED";
+        }
+
+        if (followedRoute?.NextHop is not { } nextHop
+            || routePlan?.Target is not { } target
+            || !MatchesTarget(nextHop, target))
+        {
+            return null;
+        }
+
+        var totalHops = Math.Max(0, followedRoute.Hops.Count - 1);
+        var nextIndex = followedRoute.LastReachedIndex + 1;
+        return nextIndex <= 0
+            ? "START"
+            : $"HOP {Math.Min(nextIndex, totalHops):N0} / {totalHops:N0}";
+    }
+
+    private bool IsFinalFollowedRouteArrival(JsonElement payload)
+    {
+        if (followedRoute is not
+            {
+                IsActive: true,
+                NextHop: { } nextHop,
+                Hops.Count: > 0,
+            }
+            || followedRoute.LastReachedIndex + 2 != followedRoute.Hops.Count)
+        {
+            return false;
+        }
+
+        var systemName = GetString(payload, "StarSystem");
+        var systemAddress = GetInt64(payload, "SystemAddress");
+        return systemAddress is > 0
+                && nextHop.SystemAddress == systemAddress
+            || !string.IsNullOrWhiteSpace(systemName)
+                && string.Equals(
+                    nextHop.Name,
+                    systemName,
+                    StringComparison.OrdinalIgnoreCase);
     }
 
     private void RaiseVisibilityProperties()
