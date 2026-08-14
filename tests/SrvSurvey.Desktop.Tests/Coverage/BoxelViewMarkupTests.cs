@@ -56,6 +56,9 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("CURRENT BOXEL PREFIX", boxelBindings);
         Assert.Contains("NEXT INCOMPLETE SYSTEM", boxelBindings);
         Assert.Contains("ACTION", boxelBindings);
+        Assert.Contains("{StaticResource question_circle_regular}", boxelBindings);
+        Assert.Contains("Explain expected systems", boxelBindings);
+        Assert.Contains("ExpectedSystemsInfo_Click", boxelBindings);
         Assert.Contains(
             "{Binding BoxelSearch.CanNavigateSearchTree}",
             boxelBindings);
@@ -102,6 +105,55 @@ public sealed class BoxelViewMarkupTests
         Assert.DoesNotContain(
             searchBindings,
             binding => binding.Contains("BoxelSearch", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ExpectedSystemsInformationUsesPlainTextWithHighlightedNames()
+    {
+        var window = XDocument.Load(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "ExpectedSystemsInformationWindow.axaml"));
+        var values = window.Descendants()
+            .SelectMany(element => element.Attributes())
+            .Select(attribute => attribute.Value)
+            .ToArray();
+        var example = window.Descendants().Single(element =>
+            element.Name.LocalName == "WrapPanel"
+            && element.Attribute(XName.Get(
+                "Name",
+                "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value
+                == "ExpectedSystemsExample");
+        var highlightedNames = example.Descendants()
+            .Where(element => element.Name.LocalName == "TextBlock"
+                && element.Attribute("Foreground")?.Value
+                    == "{DynamicResource RavenAccentBrush}")
+            .Select(element => element.Attribute("Text")!.Value)
+            .ToArray();
+        var exampleText = string.Concat(example.Descendants()
+            .Where(element => element.Name.LocalName == "TextBlock")
+            .Select(element => element.Attribute("Text")!.Value));
+
+        Assert.Contains(values, value => value.Contains(
+            "The number produced is an estimate.",
+            StringComparison.Ordinal));
+        Assert.Equal(
+            ["Phimbee AA-A d0", "Phimbee AA-A d7640"],
+            highlightedNames);
+        Assert.Equal(
+            "For example the end system of the \"Phimbee AA-A d0\" boxel is: "
+                + "\"Phimbee AA-A d7640\" so you would enter 7641 and choose APPLY",
+            exampleText);
+        Assert.Contains("Close", values);
+        Assert.DoesNotContain(window.Descendants(), element =>
+            element.Name.LocalName == "Button"
+            && element.Attribute("Classes")?.Value.Contains(
+                "link",
+                StringComparison.Ordinal) == true);
+        Assert.DoesNotContain(
+            values,
+            value => value.Contains("Underline", StringComparison.Ordinal));
     }
 
     [Fact]

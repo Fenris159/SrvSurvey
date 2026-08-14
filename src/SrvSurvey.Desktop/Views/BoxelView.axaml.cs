@@ -12,6 +12,7 @@ namespace SrvSurvey.Desktop.Views;
 public sealed partial class BoxelView : UserControl
 {
     private BoxelSearchLibraryWindow? boxelSearchLibraryWindow;
+    private ExpectedSystemsInformationWindow? expectedSystemsInformationWindow;
 
     public BoxelView()
     {
@@ -185,5 +186,26 @@ public sealed partial class BoxelView : UserControl
         {
             new VoxStellarInformationWindow().Show(owner);
         }
+    }
+
+    private void ExpectedSystemsInfo_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (TopLevel.GetTopLevel(this) is not Window owner)
+        {
+            return;
+        }
+
+        if (expectedSystemsInformationWindow is not null)
+        {
+            expectedSystemsInformationWindow.Activate();
+            return;
+        }
+
+        expectedSystemsInformationWindow = new ExpectedSystemsInformationWindow();
+        expectedSystemsInformationWindow.Closed += (_, _) =>
+            expectedSystemsInformationWindow = null;
+        expectedSystemsInformationWindow.Show(owner);
     }
 }
