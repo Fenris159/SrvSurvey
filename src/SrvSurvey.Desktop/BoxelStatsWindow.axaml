@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        xmlns:search="using:SrvSurvey.Core.Search"
         x:Class="SrvSurvey.Desktop.BoxelStatsWindow"
         x:DataType="vm:BoxelSurveyStatsViewModel"
         mc:Ignorable="d"
@@ -42,7 +43,7 @@
 
     <Grid Grid.Row="1" Margin="20" ColumnDefinitions="320,*" ColumnSpacing="16">
       <Border Classes="card" Padding="14">
-        <Grid RowDefinitions="Auto,Auto,*">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
           <TextBlock Classes="muted" Text="MASS CODE" />
           <ItemsControl Grid.Row="1" Margin="0,8,0,12" ItemsSource="{Binding MassCodes}">
             <ItemsControl.ItemsPanel>
@@ -62,7 +63,26 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          <ListBox Grid.Row="2"
+          <TextBlock Grid.Row="2" Classes="muted" Margin="0,4,0,6" Text="RECENTLY VISITED" />
+          <ItemsControl Grid.Row="3" Margin="0,0,0,10" ItemsSource="{Binding RecentEntries}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="search:BoxelSurveyIndexEntry">
+                <Button Classes="link"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Click="RecentRow_Click">
+                  <TextBlock TextWrapping="Wrap">
+                    <Run Text="{Binding Prefix}" />
+                    <Run Text="  " />
+                    <Run Text="{Binding VisitedSystemCount}" />
+                    <Run Text="/" />
+                    <Run Text="{Binding ImpliedPopulation}" />
+                  </TextBlock>
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <ListBox Grid.Row="4"
                    ItemsSource="{Binding BrowserRows}"
                    DoubleTapped="BrowserRow_DoubleTapped">
             <ListBox.ItemTemplate>

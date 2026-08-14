@@ -70,6 +70,24 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
         Assert.Contains("saved search", viewModel.DetailTitle, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task ExportSkipsBelowMinimumAndWritesWhenLowered()
+    {
+        var coordinator = await CreateCoordinatorWithSystemAsync();
+        using var viewModel = CreateViewModel(coordinator);
+        await viewModel.OpenPrefixAsync("Praea Euq IL-P c5-");
+        await viewModel.ExportAsync();
+        Assert.Null(viewModel.LastExportDirectory);
+
+        viewModel.MinExportText = "1";
+        await viewModel.ExportAsync();
+        Assert.NotNull(viewModel.LastExportDirectory);
+        Assert.True(Directory.Exists(viewModel.LastExportDirectory));
+        Assert.NotEmpty(Directory.GetFiles(viewModel.LastExportDirectory, "*.csv"));
+        Assert.NotEmpty(Directory.GetFiles(viewModel.LastExportDirectory, "*.json"));
+        Assert.NotEmpty(viewModel.RecentEntries);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

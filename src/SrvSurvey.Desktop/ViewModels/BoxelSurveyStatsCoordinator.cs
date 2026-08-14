@@ -34,6 +34,8 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
 
     public string? FrontierId => frontierId;
 
+    public string StoreDataDirectory => store.DataDirectory;
+
     public IReadOnlyList<BoxelSurveyIndexEntry> Index => state.Index;
 
     public BoxelSurveyBoxelSnapshot? Current => state.Current;

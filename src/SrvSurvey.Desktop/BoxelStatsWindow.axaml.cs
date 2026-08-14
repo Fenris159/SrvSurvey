@@ -32,6 +32,15 @@ public sealed partial class BoxelStatsWindow : Window
         }
     }
 
+    private async void RecentRow_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (DataContext is BoxelSurveyStatsViewModel viewModel
+            && sender is Control { DataContext: SrvSurvey.Core.Search.BoxelSurveyIndexEntry entry })
+        {
+            await viewModel.OpenPrefixAsync(entry.Prefix);
+        }
+    }
+
     private async void BrowserRow_DoubleTapped(object? sender, RoutedEventArgs eventArgs)
     {
         if (DataContext is BoxelSurveyStatsViewModel viewModel

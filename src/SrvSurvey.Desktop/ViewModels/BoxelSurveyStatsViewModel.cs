@@ -56,6 +56,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     private IReadOnlyList<BoxelSurveyBrowserRowViewModel> browserRows = [];
     private IReadOnlyList<BoxelSurveyClassRowViewModel> classRows = [];
     private BoxelSurveyBoxelSnapshot? detail;
+    private string? lastExportDirectory;
 
     public BoxelSurveyStatsViewModel(
         BoxelSurveyStatsCoordinator coordinator,
@@ -294,6 +295,12 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     public string? SelectedPrefix => selectedPrefix;
 
+    public string? LastExportDirectory
+    {
+        get => lastExportDirectory;
+        private set => SetField(ref lastExportDirectory, value);
+    }
+
     public BoxelSurveyBoxelSnapshot? Detail => detail;
 
     public BoxelSurveyStatsPreferences Preferences => preferences;
@@ -413,10 +420,99 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         }
     }
 
-    public Task ExportAsync()
+    public async Task ExportAsync()
     {
         ExportRequested?.Invoke(this, EventArgs.Empty);
-        return Task.CompletedTask;
+        var min = preferences.MinSystemsForExport;
+        var format = new BoxelSurveyAverageFormat(preferences.MinSystemsForAverages);
+        IReadOnlyList<BoxelSurveyBoxelSnapshot> snapshots;
+        if (showSearchRollup)
+        {
+            var exported = new List<BoxelSurveyBoxelSnapshot>();
+            foreach (var prefix in RollupPrefixes())
+            {
+                var snapshot = await coordinator.GetAsync(prefix).ConfigureAwait(true);
+                if (snapshot is not null
+                    && BoxelSurveyStatsExporter.MeetsExportMinimum(snapshot, min))
+                {
+                    exported.Add(snapshot);
+                }
+            }
+
+            snapshots = exported;
+        }
+        else if (detail is not null
+            && BoxelSurveyStatsExporter.MeetsExportMinimum(detail, min))
+        {
+            snapshots = [detail];
+        }
+        else
+        {
+            ReportStatus("Nothing met the export minimum.");
+            return;
+        }
+
+        if (snapshots.Count == 0)
+        {
+            ReportStatus("Nothing met the export minimum.");
+            return;
+        }
+
+        var directory = Path.Combine(
+            coordinator.StoreDataDirectory,
+            BoxelSurveyStatsStore.StoreDirectoryName,
+            coordinator.FrontierId ?? "unknown",
+            "exports");
+        Directory.CreateDirectory(directory);
+        var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+        var stem = BoxelSurveyStatsStore.SanitizePrefix(
+            snapshots.Count == 1 ? snapshots[0].Prefix : "search");
+        var jsonPath = Path.Combine(directory, $"{stem}-{stamp}.json");
+        var csvPath = Path.Combine(directory, $"{stem}-{stamp}.csv");
+        if (snapshots.Count == 1
+            && coordinator.State.TryCreateDocument(snapshots[0].Prefix, out var document))
+        {
+            await File.WriteAllTextAsync(jsonPath, BoxelSurveyStatsExporter.ToJson(document))
+                .ConfigureAwait(true);
+            await File.WriteAllTextAsync(
+                    csvPath,
+                    BoxelSurveyStatsExporter.ToDetailCsv(snapshots[0], format))
+                .ConfigureAwait(true);
+        }
+        else
+        {
+            var documents = new List<BoxelSurveyBoxelDocument>();
+            foreach (var snapshot in snapshots)
+            {
+                if (coordinator.State.TryCreateDocument(snapshot.Prefix, out var item))
+                {
+                    documents.Add(item);
+                }
+            }
+
+            var bundle = new System.Text.StringBuilder();
+            bundle.Append('[');
+            for (var index = 0; index < documents.Count; index++)
+            {
+                if (index > 0)
+                {
+                    bundle.Append(',');
+                }
+
+                bundle.Append(BoxelSurveyStatsExporter.ToJson(documents[index]));
+            }
+
+            bundle.Append(']');
+            await File.WriteAllTextAsync(jsonPath, bundle.ToString())
+                .ConfigureAwait(true);
+            await File.WriteAllTextAsync(
+                    csvPath,
+                    BoxelSurveyStatsExporter.ToIndexCsv(snapshots))
+                .ConfigureAwait(true);
+        }
+
+        LastExportDirectory = directory;
+        ReportStatus($"Exported to {directory}.");
     }
 
     public void ReportStatus(string message)
