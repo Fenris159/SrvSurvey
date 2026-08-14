@@ -101,6 +101,10 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
 
         await standard.SetAutoCopyAsync(true);
         await WaitUntilAsync(() => !boxel.AutoCopy);
+        // The selection event starts an asynchronous ownership claim. Entering
+        // the coordinator once more drains that work before the test removes
+        // its profile directory.
+        await coordinator.ClaimAsync(standard);
 
         Assert.True(standard.AutoCopy);
         Assert.False(carrier.AutoCopy);

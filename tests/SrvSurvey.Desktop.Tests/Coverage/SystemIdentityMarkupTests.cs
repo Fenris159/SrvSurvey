@@ -161,7 +161,7 @@ public sealed class SystemIdentityMarkupTests
 
         Assert.All(documents, document =>
             Assert.DoesNotContain(
-                document.Descendants(),
+                document.Root!.DescendantsAndSelf(),
                 HasCopyBehavior));
     }
 
