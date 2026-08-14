@@ -188,6 +188,33 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
         return rollup;
     }
 
+    public async Task<BoxelSurveyRebuildResult?> RebuildAsync(
+        string journalDirectory,
+        string? currentJournalPath = null,
+        IProgress<BoxelSurveyRebuildProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (string.IsNullOrWhiteSpace(frontierId))
+        {
+            return null;
+        }
+
+        var service = new BoxelSurveyRebuildService(
+            store.DataDirectory,
+            journalDirectory);
+        var result = await service.RebuildAsync(
+                frontierId,
+                state,
+                currentJournalPath,
+                progress,
+                cancellationToken)
+            .ConfigureAwait(false);
+        await FlushAsync(cancellationToken).ConfigureAwait(false);
+        RaiseChanged();
+        return result;
+    }
+
     public async Task FlushAsync(CancellationToken cancellationToken = default)
     {
         CancelScheduledFlush();

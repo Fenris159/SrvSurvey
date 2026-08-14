@@ -36,6 +36,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     private readonly BoxelSurveyStatsCoordinator coordinator;
     private readonly BoxelSurveyStatsSettingsStore settingsStore;
     private readonly BoxelSearchViewModel? search;
+    private readonly string? journalDirectory;
+    private readonly Func<string?>? currentJournalPath;
     private readonly List<string> focusedPrefixes = [];
     private BoxelSurveyStatsPreferences preferences;
     private char selectedMassCode = 'c';
@@ -58,13 +60,17 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     public BoxelSurveyStatsViewModel(
         BoxelSurveyStatsCoordinator coordinator,
         BoxelSurveyStatsSettingsStore settingsStore,
-        BoxelSearchViewModel? search = null)
+        BoxelSearchViewModel? search = null,
+        string? journalDirectory = null,
+        Func<string?>? currentJournalPath = null)
     {
         this.coordinator = coordinator
             ?? throw new ArgumentNullException(nameof(coordinator));
         this.settingsStore = settingsStore
             ?? throw new ArgumentNullException(nameof(settingsStore));
         this.search = search;
+        this.journalDirectory = journalDirectory;
+        this.currentJournalPath = currentJournalPath;
         preferences = settingsStore.Load();
         ApplyPreferences();
         minAveragesText = preferences.MinSystemsForAverages.ToString(
@@ -358,10 +364,53 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         OnPropertyChanged(nameof(RecentEntries));
     }
 
-    public Task RebuildAsync()
+    public async Task RebuildAsync()
     {
         RebuildRequested?.Invoke(this, EventArgs.Empty);
-        return Task.CompletedTask;
+        if (string.IsNullOrWhiteSpace(journalDirectory))
+        {
+            ReportStatus("Rebuild needs a journal folder.");
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            var progress = new Progress<BoxelSurveyRebuildProgress>(update =>
+            {
+                ReportStatus(string.Create(
+                    CultureInfo.CurrentCulture,
+                    $"{update.Stage}: {update.Processed}/{update.Total} {update.CurrentFile}"));
+            });
+            var result = await coordinator.RebuildAsync(
+                    journalDirectory,
+                    currentJournalPath?.Invoke(),
+                    progress)
+                .ConfigureAwait(true);
+            if (result is null)
+            {
+                ReportStatus("Rebuild needs an active commander.");
+                return;
+            }
+
+            ReportStatus(string.Create(
+                CultureInfo.CurrentCulture,
+                $"Rebuilt {result.SystemFilesIngested} system files and {result.JournalFilesProcessed} journals."));
+            await RefreshAsync().ConfigureAwait(true);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or DirectoryNotFoundException
+                or OperationCanceledException)
+        {
+            ReportStatus("Rebuild failed: " + exception.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     public Task ExportAsync()

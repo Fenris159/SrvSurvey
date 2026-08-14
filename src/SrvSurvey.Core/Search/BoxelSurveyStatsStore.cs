@@ -26,10 +26,11 @@ public sealed class BoxelSurveyStatsStore
     public BoxelSurveyStatsStore(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        rootDirectory = Path.Combine(
-            Path.GetFullPath(dataDirectory),
-            StoreDirectoryName);
+        DataDirectory = Path.GetFullPath(dataDirectory);
+        rootDirectory = Path.Combine(DataDirectory, StoreDirectoryName);
     }
+
+    public string DataDirectory { get; }
 
     public async Task<IReadOnlyList<BoxelSurveyIndexEntry>> ListIndexAsync(
         string frontierId,

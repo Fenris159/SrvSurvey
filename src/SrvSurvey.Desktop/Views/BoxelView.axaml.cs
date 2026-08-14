@@ -176,7 +176,9 @@ public sealed partial class BoxelView : UserControl
         var stats = new BoxelSurveyStatsViewModel(
             viewModel.BoxelSurveyStats,
             new BoxelSurveyStatsSettingsStore(viewModel.AppDataPaths.UiSettingsPath),
-            viewModel.BoxelSearch);
+            viewModel.BoxelSearch,
+            viewModel.JournalFolderPath,
+            () => viewModel.CurrentJournalPath);
         await stats.InitializeAsync();
         boxelStatsWindow = new BoxelStatsWindow
         {
@@ -201,7 +203,9 @@ public sealed partial class BoxelView : UserControl
         var stats = new BoxelSurveyStatsViewModel(
             viewModel.BoxelSurveyStats,
             new BoxelSurveyStatsSettingsStore(viewModel.AppDataPaths.UiSettingsPath),
-            viewModel.BoxelSearch);
+            viewModel.BoxelSearch,
+            viewModel.JournalFolderPath,
+            () => viewModel.CurrentJournalPath);
         await stats.FocusPrefixesAsync(request.Prefixes, request.LowMassCode);
         boxelStatsWindow = new BoxelStatsWindow
         {
