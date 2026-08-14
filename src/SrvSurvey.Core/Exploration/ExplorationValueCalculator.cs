@@ -116,7 +116,7 @@ public static class ExplorationValueCalculator
     {
         return planetClass switch
         {
-            "Metal rich body" => 21790,
+            "Metal rich body" => 21790 + (isTerraformable ? 105678 : 0),
             "Ammonia world" => 96932,
             "Sudarsky class I gas giant" => 1656,
             "Sudarsky class II gas giant" or "High metal content body" =>
