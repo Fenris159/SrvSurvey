@@ -27,6 +27,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private readonly TimeSpan systemSuggestionDelay;
     private readonly KnownSystemAddressCatalog knownSystems;
     private readonly BoxelCompletionAuditor completionAuditor;
+    private readonly BoxelSurveyStatsCoordinator? surveyStats;
     private readonly BoxelSearchState state = new();
     private readonly Dictionary<string, BoxelNavigationOptionViewModel>
         navigationOptions = new(StringComparer.Ordinal);
@@ -110,7 +111,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         KnownSystemAddressCatalog? knownSystems = null,
         SavedBoxelSearchStore? savedSearchStore = null,
         ISystemNameSuggestionClient? systemNameSuggestionClient = null,
-        TimeSpan? systemSuggestionDelay = null)
+        TimeSpan? systemSuggestionDelay = null,
+        BoxelSurveyStatsCoordinator? surveyStats = null)
     {
         this.profileStore = profileStore
             ?? throw new ArgumentNullException(nameof(profileStore));
@@ -120,6 +122,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             ?? throw new ArgumentNullException(nameof(emptyBoxelStore));
         this.systemResolver = systemResolver
             ?? throw new ArgumentNullException(nameof(systemResolver));
+        this.surveyStats = surveyStats;
         this.systemNameSuggestionClient = systemNameSuggestionClient;
         this.systemSuggestionDelay = systemSuggestionDelay
             ?? TimeSpan.FromMilliseconds(450);
@@ -332,6 +335,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     }
 
     public bool IsActive => state.IsActive;
+
+    public BoxelSurveyStatsCoordinator? SurveyStats => surveyStats;
 
     public BoxelSearchNotificationState CreateNotificationState()
     {

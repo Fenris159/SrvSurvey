@@ -69,6 +69,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         Justification = "The system-body worker disposes the captured source in its finally block.")]
     private CancellationTokenSource? systemBodyDataCancellation;
     private readonly RouteAutoCopyCoordinator routeAutoCopyCoordinator;
+    private readonly BoxelSurveyStatsCoordinator boxelSurveyStats;
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
     private readonly IEddnPublisher eddnPublisher;
@@ -450,6 +451,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         NearestSystems = new NearestSystemsViewModel(
             nearestSystemsClient ?? new NearestSystemsClient(),
             sharedSystemResolver);
+        boxelSurveyStats = new BoxelSurveyStatsCoordinator(
+            new BoxelSurveyStatsStore(AppDataPaths.DataDirectory));
         BoxelSearch = new BoxelSearchViewModel(
             commanderProfileStore,
             new LegacySystemDataReader(AppDataPaths.DataDirectory),
@@ -459,7 +462,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             systemNameSuggestionClient: systemNameSuggestionClient
                 ?? new FallbackSystemNameSuggestionClient(
                     new EdsmSystemNameSuggestionClient(),
-                    new ArdentSystemNameSuggestionClient()));
+                    new ArdentSystemNameSuggestionClient()),
+            surveyStats: boxelSurveyStats);
         GroundTarget = new GroundTargetViewModel(
             new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
         SystemNotes = new SystemNotesViewModel(
@@ -855,6 +859,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public SphereLimitViewModel Search { get; }
 
     public BoxelSearchViewModel BoxelSearch { get; }
+
+    public BoxelSurveyStatsCoordinator BoxelSurveyStats => boxelSurveyStats;
 
     public NearestSystemsViewModel NearestSystems { get; }
 
@@ -2475,6 +2481,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         if (!skipPersistedBootstrapEvents)
         {
             await BoxelSearch.ApplyJournalEventsAsync(update.JournalEvents);
+            await boxelSurveyStats.ApplyJournalEventsAsync(update.JournalEvents);
+        }
+        else
+        {
+            await boxelSurveyStats.ApplyBootstrapContextAsync(update.JournalEvents);
         }
     }
 
@@ -2529,6 +2540,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         await LoadCurrentSystemHistoryAsync();
+        await boxelSurveyStats.IngestSnapshotAsync(SystemSurvey.Snapshot);
         PendingSystemBodyDataLoad = LoadCurrentSystemBodyDataAsync();
         if (!update.IsBootstrapRead
             && await ApplyFirstFootfallTextCommandsAsync(update.JournalEvents) > 0)
@@ -3005,6 +3017,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         if (result.Data is null)
         {
+            await boxelSurveyStats.SwitchCommanderAsync(journalState.FrontierId);
             activeProfileRavenApiKey = null;
             Inara.SetCommanderProfile(
                 null,
@@ -3058,6 +3071,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             activeProfileCommanderName,
             result.Data.IsOdyssey,
             result.Data.BoxelSearch);
+        await boxelSurveyStats.SwitchCommanderAsync(result.Data.FrontierId);
         await Guardian.LoadProfileAsync(
             result.Data.FrontierId,
             result.Data.IsOdyssey,
@@ -4392,6 +4406,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         disposed = true;
         routeAutoCopyCoordinator.Dispose();
+        boxelSurveyStats.Dispose();
         BoxelSearch.CancelPendingOperations();
         JournalPostProcessor.Cancel();
         CancelSystemBodyDataRequest();

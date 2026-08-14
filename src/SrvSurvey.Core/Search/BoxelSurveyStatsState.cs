@@ -116,6 +116,31 @@ public sealed class BoxelSurveyStatsState
     public bool ShouldLoadDocument(string prefix)
         => boxels.TryGetValue(prefix, out var boxel) && !boxel.IsHydrated;
 
+    public bool UnloadDocument(string prefix)
+    {
+        if (!boxels.TryGetValue(prefix, out var boxel) || !boxel.IsHydrated)
+        {
+            return false;
+        }
+
+        if (dirtyPrefixes.Contains(prefix))
+        {
+            return false;
+        }
+
+        var snapshot = CreateSnapshot(boxel);
+        foreach (var system in boxel.Systems.Values)
+        {
+            if (system.SystemAddress > 0)
+            {
+                addressToPrefix.Remove(system.SystemAddress);
+            }
+        }
+
+        boxels[prefix] = WorkingBoxel.FromIndexEntry(snapshot.ToIndexEntry());
+        return true;
+    }
+
     public bool TryGet(string prefix, out BoxelSurveyBoxelSnapshot snapshot)
     {
         snapshot = BoxelSurveyBoxelSnapshot.Empty;
