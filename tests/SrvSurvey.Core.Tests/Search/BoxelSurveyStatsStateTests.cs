@@ -269,6 +269,28 @@ public sealed class BoxelSurveyStatsStateTests
     }
 
     [Fact]
+    public void RepeatedIdenticalCompleteSnapshotDoesNotBumpVersion()
+    {
+        var state = new BoxelSurveyStatsState();
+        Jump(state, SystemA, SystemAAddress);
+        var body = PlanetBody(1, "Icy body", mass: 1, scanValue: 100, mappedValue: 200, currentValue: 100);
+        var snapshot = Snapshot(
+            SystemA,
+            SystemAAddress,
+            [body],
+            expectedBodyCount: 3,
+            allBodiesFound: true);
+        Assert.True(state.IngestSnapshot(snapshot));
+        var version = state.Version;
+        var dirty = state.DirtyPrefixes.Count;
+        Assert.True(state.IngestSnapshot(snapshot));
+        Assert.Equal(version, state.Version);
+        Assert.Equal(dirty, state.DirtyPrefixes.Count);
+        Assert.True(state.TryGet(Prefix(SystemA), out var stored));
+        Assert.Equal(1, stored.CountsOf(BoxelPlanetClass.Icy).Count);
+    }
+
+    [Fact]
     public void InefficientDssIsPreservedThroughLaterScan()
     {
         var state = new BoxelSurveyStatsState();

@@ -584,14 +584,13 @@ public sealed class BoxelSurveyStatsState
 
         if (replaceBodies || CanReplaceBodies(system, snapshot, snapshotBodies.Keys))
         {
-            if (replaceBodies
-                || snapshotBodies.Count != system.Bodies.Count
-                || snapshotBodies.Keys.Any(id => !system.Bodies.ContainsKey(id)))
+            foreach (var extraId in system.Bodies.Keys
+                         .Where(id => !snapshotBodies.ContainsKey(id))
+                         .ToArray())
             {
+                system.Bodies.Remove(extraId);
                 changed = true;
             }
-
-            system.Bodies.Clear();
         }
 
         foreach (var pair in snapshotBodies)
@@ -600,9 +599,8 @@ public sealed class BoxelSurveyStatsState
                 || !existing.HasSameFacts(pair.Value))
             {
                 changed = true;
+                system.Bodies[pair.Key] = pair.Value;
             }
-
-            system.Bodies[pair.Key] = pair.Value;
         }
 
         if (changed)
