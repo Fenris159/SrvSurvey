@@ -309,8 +309,13 @@ public sealed class BoxelSurveyStatsState
             return false;
         }
 
-        var system = OpenSystem(boxel, address, journalEvent.Timestamp);
+        var system = OpenSystem(boxel, address, journalEvent.Timestamp, out var changed);
         currentPrefix = system.Boxel.Prefix;
+        if (changed)
+        {
+            Touch(system.Boxel);
+        }
+
         return true;
     }
 
@@ -509,12 +514,22 @@ public sealed class BoxelSurveyStatsState
             return false;
         }
 
-        var system = OpenSystem(boxel, snapshot.SystemAddress.Value, visitedAt);
+        var system = OpenSystem(
+            boxel,
+            snapshot.SystemAddress.Value,
+            visitedAt,
+            out var changed);
         currentPrefix = system.Boxel.Prefix;
-        system.AllBodiesFound |= snapshot.AllBodiesFound;
+        if (!system.AllBodiesFound && snapshot.AllBodiesFound)
+        {
+            system.AllBodiesFound = true;
+            changed = true;
+        }
+
         if (snapshot.ExpectedBodyCount > system.FssDiscoveryBodyCount)
         {
             system.FssDiscoveryBodyCount = snapshot.ExpectedBodyCount;
+            changed = true;
         }
 
         var snapshotBodies = new Dictionary<int, WorkingBody>();
@@ -528,9 +543,13 @@ public sealed class BoxelSurveyStatsState
                 continue;
             }
 
+            system.Bodies.TryGetValue(source.BodyId, out var existing);
             BoxelPlanetClassifier.TryGetHeliumPercent(
                 source.AtmosphereComposition,
                 out var helium);
+            var dssEfficiency = recomputeValues
+                ? false
+                : InferDssEfficiency(source, existing);
             var values = recomputeValues
                 ? BoxelSurveyValueCalculator.Calculate(
                     BoxelPlanetClassifier.ToPlanetClassString(classified),
@@ -539,7 +558,7 @@ public sealed class BoxelSurveyStatsState
                     source.WasDiscovered,
                     source.WasMapped,
                     source.IsDssComplete,
-                    source.IsDssComplete,
+                    dssEfficiency,
                     isOdyssey)
                 : (source.ScanValue, source.CurrentScanValue, source.EstimatedMappedValue);
             snapshotBodies[source.BodyId] = new WorkingBody
@@ -559,23 +578,58 @@ public sealed class BoxelSurveyStatsState
                 WasDiscovered = source.WasDiscovered,
                 WasMapped = source.WasMapped,
                 DssComplete = source.IsDssComplete,
-                DssEfficiencyBonus = source.IsDssComplete,
+                DssEfficiencyBonus = dssEfficiency,
             };
         }
 
         if (replaceBodies || CanReplaceBodies(system, snapshot, snapshotBodies.Keys))
         {
+            if (replaceBodies
+                || snapshotBodies.Count != system.Bodies.Count
+                || snapshotBodies.Keys.Any(id => !system.Bodies.ContainsKey(id)))
+            {
+                changed = true;
+            }
+
             system.Bodies.Clear();
         }
 
         foreach (var pair in snapshotBodies)
         {
+            if (!system.Bodies.TryGetValue(pair.Key, out var existing)
+                || !existing.HasSameFacts(pair.Value))
+            {
+                changed = true;
+            }
+
             system.Bodies[pair.Key] = pair.Value;
         }
 
-        system.Recalculate();
-        Touch(system.Boxel);
+        if (changed)
+        {
+            system.Recalculate();
+            Touch(system.Boxel);
+        }
+
         return true;
+    }
+
+    private static bool InferDssEfficiency(
+        SystemScanBodySnapshot source,
+        WorkingBody? existing)
+    {
+        if (existing?.DssComplete == true)
+        {
+            return existing.DssEfficiencyBonus;
+        }
+
+        if (!source.IsDssComplete)
+        {
+            return false;
+        }
+
+        return source.CurrentScanValue == source.EstimatedMappedValue
+            && source.EstimatedMappedValue > 0;
     }
 
     private static bool CanReplaceBodies(
@@ -599,10 +653,12 @@ public sealed class BoxelSurveyStatsState
     private WorkingSystem OpenSystem(
         BoxelAddress boxel,
         long address,
-        DateTimeOffset? visitedAt)
+        DateTimeOffset? visitedAt,
+        out bool changed)
     {
         var workingBoxel = GetOrCreateBoxel(boxel);
         workingBoxel.IsHydrated = true;
+        changed = false;
         if (address > 0)
         {
             addressToPrefix[address] = workingBoxel.Prefix;
@@ -627,15 +683,23 @@ public sealed class BoxelSurveyStatsState
             system.GeneratedName = boxel.GeneratedName;
             system.N2 = boxel.N2;
             workingBoxel.Systems[system.GeneratedName] = system;
+            changed = true;
         }
 
-        if (address > 0)
+        if (address > 0 && system.SystemAddress != address)
         {
             system.SystemAddress = address;
+            changed = true;
         }
 
-        system.LastVisited = Later(system.LastVisited, visitedAt);
-        workingBoxel.LastVisited = Later(workingBoxel.LastVisited, visitedAt);
+        var lastVisited = Later(system.LastVisited, visitedAt);
+        if (lastVisited != system.LastVisited)
+        {
+            system.LastVisited = lastVisited;
+            workingBoxel.LastVisited = Later(workingBoxel.LastVisited, visitedAt);
+            changed = true;
+        }
+
         return system;
     }
 
@@ -1121,6 +1185,22 @@ public sealed class BoxelSurveyStatsState
         public bool DssComplete { get; set; }
 
         public bool DssEfficiencyBonus { get; set; }
+
+        public bool HasSameFacts(WorkingBody other)
+            => BodyId == other.BodyId
+                && Class == other.Class
+                && Terraformable == other.Terraformable
+                && Landable == other.Landable
+                && Atmospheric == other.Atmospheric
+                && MassEm.Equals(other.MassEm)
+                && Nullable.Equals(HeliumPercent, other.HeliumPercent)
+                && ScanValue == other.ScanValue
+                && CurrentValue == other.CurrentValue
+                && MappedPotentialValue == other.MappedPotentialValue
+                && WasDiscovered == other.WasDiscovered
+                && WasMapped == other.WasMapped
+                && DssComplete == other.DssComplete
+                && DssEfficiencyBonus == other.DssEfficiencyBonus;
 
         public static WorkingBody FromContribution(BoxelSurveyBodyContribution body)
             => new()

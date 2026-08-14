@@ -254,6 +254,63 @@ public sealed class BoxelSurveyStatsStateTests
     }
 
     [Fact]
+    public void RepeatedIdenticalSnapshotDoesNotBumpVersion()
+    {
+        var state = new BoxelSurveyStatsState();
+        Jump(state, SystemA, SystemAAddress);
+        var body = PlanetBody(1, "Icy body", mass: 1, scanValue: 100, mappedValue: 200, currentValue: 100);
+        var snapshot = Snapshot(SystemA, SystemAAddress, [body], expectedBodyCount: 3);
+        Assert.True(state.IngestSnapshot(snapshot));
+        var version = state.Version;
+        var dirty = state.DirtyPrefixes.Count;
+        Assert.True(state.IngestSnapshot(snapshot));
+        Assert.Equal(version, state.Version);
+        Assert.Equal(dirty, state.DirtyPrefixes.Count);
+    }
+
+    [Fact]
+    public void InefficientDssIsPreservedThroughLaterScan()
+    {
+        var state = new BoxelSurveyStatsState();
+        Jump(state, SystemA, SystemAAddress);
+        var efficient = BoxelSurveyValueCalculator.Calculate(
+            "Rocky body",
+            terraformable: false,
+            0.2,
+            wasDiscovered: false,
+            wasMapped: false,
+            dssComplete: true,
+            dssEfficiencyBonus: true,
+            isOdyssey: true);
+        var inefficient = BoxelSurveyValueCalculator.Calculate(
+            "Rocky body",
+            terraformable: false,
+            0.2,
+            wasDiscovered: false,
+            wasMapped: false,
+            dssComplete: true,
+            dssEfficiencyBonus: false,
+            isOdyssey: true);
+        Assert.True(efficient.Current > inefficient.Current);
+        var body = PlanetBody(
+            3,
+            "Rocky body",
+            mass: 0.2,
+            scanValue: inefficient.Scan,
+            mappedValue: efficient.Mapped,
+            currentValue: inefficient.Current,
+            dssComplete: true);
+        Assert.True(state.IngestSnapshot(Snapshot(SystemA, SystemAAddress, [body])));
+        ScanPlanet(state, SystemAAddress, 3, "Rocky body", mass: 0.2);
+
+        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        var stored = Assert.Single(Assert.Single(snapshot.Systems).Bodies);
+        Assert.True(stored.DssComplete);
+        Assert.False(stored.DssEfficiencyBonus);
+        Assert.Equal(inefficient.Current, stored.CurrentValue);
+    }
+
+    [Fact]
     public void SnapshotMergesTerraformableFlagWithoutDuplicatingBody()
     {
         var state = new BoxelSurveyStatsState();
@@ -325,7 +382,7 @@ public sealed class BoxelSurveyStatsStateTests
             wasDiscovered: false,
             wasMapped: false,
             dssComplete: true,
-            dssEfficiencyBonus: true,
+            dssEfficiencyBonus: false,
             isOdyssey: true);
         var body = PlanetBody(
             1,

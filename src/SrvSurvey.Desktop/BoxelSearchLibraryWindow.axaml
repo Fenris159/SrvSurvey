@@ -84,7 +84,7 @@
                 BorderBrush="{DynamicResource RavenBorderBrush}"
                 BorderThickness="0,1"
                 Padding="12,9">
-          <Grid ColumnDefinitions="46,52,1.4*,145,145,190,1.4*,44,78"
+          <Grid ColumnDefinitions="46,52,1.4*,145,145,190,1.4*,78,44"
                 ColumnSpacing="10">
             <TextBlock Classes="table-heading"
                        HorizontalAlignment="Center"
@@ -137,11 +137,11 @@
             <TextBlock Grid.Column="7"
                        Classes="table-heading"
                        HorizontalAlignment="Center"
-                       Text="STATS" />
+                       Text="EDIT" />
             <TextBlock Grid.Column="8"
                        Classes="table-heading"
                        HorizontalAlignment="Center"
-                       Text="EDIT" />
+                       Text="STATS" />
           </Grid>
         </Border>
 
@@ -164,7 +164,7 @@
                   <Border BorderBrush="{DynamicResource RavenBorderBrush}"
                           BorderThickness="0,0,0,1"
                           Padding="12,11">
-                    <Grid ColumnDefinitions="46,52,1.4*,145,145,190,1.4*,44,78"
+                    <Grid ColumnDefinitions="46,52,1.4*,145,145,190,1.4*,78,44"
                           ColumnSpacing="10">
                       <CheckBox HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
@@ -215,6 +215,11 @@
                                  Text="{Binding NotesDisplay}"
                                  TextTrimming="CharacterEllipsis" />
                       <Button Grid.Column="7"
+                              Classes="secondary"
+                              HorizontalAlignment="Center"
+                              Command="{Binding EditNotesCommand}"
+                              Content="Notes" />
+                      <Button Grid.Column="8"
                               Classes="link"
                               Width="36"
                               Height="36"
@@ -229,11 +234,6 @@
                                   Height="16"
                                   Data="{StaticResource data_pie_regular}" />
                       </Button>
-                      <Button Grid.Column="8"
-                              Classes="secondary"
-                              HorizontalAlignment="Center"
-                              Command="{Binding EditNotesCommand}"
-                              Content="Notes" />
                     </Grid>
                   </Border>
                 </DataTemplate>

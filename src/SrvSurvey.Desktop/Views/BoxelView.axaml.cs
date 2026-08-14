@@ -169,6 +169,19 @@ public sealed partial class BoxelView : UserControl
 
         if (boxelStatsWindow is not null)
         {
+            if (boxelStatsWindow.DataContext is BoxelSurveyStatsViewModel existing)
+            {
+                var prefix = viewModel.BoxelSurveyStats.Current?.Prefix;
+                if (!string.IsNullOrWhiteSpace(prefix))
+                {
+                    await existing.OpenPrefixAsync(prefix);
+                }
+                else
+                {
+                    await existing.InitializeAsync();
+                }
+            }
+
             boxelStatsWindow.Activate();
             return;
         }

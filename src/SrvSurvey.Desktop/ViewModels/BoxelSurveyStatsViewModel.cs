@@ -91,7 +91,6 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
                 SelectedMassCode = text[0];
             }
         });
-        OpenRowCommand = new AsyncCommand(OpenRowAsync);
         BackCommand = new RelayCommand(_ =>
         {
             IsDetailVisible = false;
@@ -110,8 +109,6 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     public event EventHandler? ExportRequested;
 
     public ICommand SelectMassCodeCommand { get; }
-
-    public ICommand OpenRowCommand { get; }
 
     public ICommand BackCommand { get; }
 
@@ -524,25 +521,6 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     public void Dispose()
     {
         coordinator.Changed -= OnCoordinatorChanged;
-    }
-
-    private async Task OpenRowAsync()
-    {
-        // CommandParameter is supplied through the button; Avalonia binds it
-        // separately from ICommand.Execute in some hosts, so OpenPrefix is
-        // also invoked from the window code-behind.
-    }
-
-    internal async Task OpenRowAsync(object? parameter)
-    {
-        if (parameter is BoxelSurveyBrowserRowViewModel row)
-        {
-            await OpenPrefixAsync(row.Prefix).ConfigureAwait(false);
-        }
-        else if (parameter is string prefix)
-        {
-            await OpenPrefixAsync(prefix).ConfigureAwait(false);
-        }
     }
 
     private async Task RefreshDetailAsync(CancellationToken cancellationToken = default)
