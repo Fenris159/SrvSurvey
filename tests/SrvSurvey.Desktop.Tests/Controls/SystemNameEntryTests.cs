@@ -6,6 +6,7 @@ using SrvSurvey.Desktop.Controls;
 
 namespace SrvSurvey.Desktop.Tests.Controls;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class SystemNameEntryTests
 {
     [AvaloniaFact]

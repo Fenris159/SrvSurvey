@@ -1352,6 +1352,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "ACTION",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "ACTIVE",
     "IsFormat": false,
     "SourceKinds": [
@@ -4636,6 +4644,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Boxel hierarchy",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Boxel search",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "Boxel search disabled; its progress was retained.",
     "IsFormat": false,
     "SourceKinds": [
@@ -4818,6 +4842,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+  },
+  {
+    "Text": "CHILD BOXELS \u00B7 ONE LEVEL SMALLER",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "CLICK-THROUGH",
@@ -5144,6 +5176,14 @@
   },
   {
     "Text": "CURRENT BOXEL",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "CURRENT BOXEL PREFIX",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -7935,6 +7975,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
+    "Text": "Could not open VoxStellar: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VoxStellarSharingViewModel.cs"
+  },
+  {
     "Text": "Could not open the desktop surface.",
     "IsFormat": false,
     "SourceKinds": [
@@ -8671,6 +8719,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Data use and licensing",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
     "Text": "Deactivate",
@@ -10343,6 +10399,14 @@
   },
   {
     "Text": "Enable Require FSS to report all bodies when entering a system is not enough and you want completion to wait for a full FSS identification.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Enable Send Journal to VoxStellar for boxel surveying to upload new live Scan, FSDTarget, FSDJump, FSSDiscoveryScan, SAASignalsFound, ScanOrganic, ScanBaryCentre, and CodexEntry events with your Commander name.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -14121,6 +14185,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayWindowPlacement.cs"
   },
   {
+    "Text": "How VoxStellar uses the data",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+  },
+  {
     "Text": "How the interface is organized",
     "IsFormat": false,
     "SourceKinds": [
@@ -14240,6 +14312,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "I understand this audit can make more than 1,000 Spansh requests",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "ID",
@@ -15045,6 +15125,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Integration license",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+  },
+  {
     "Text": "Integrity",
     "IsFormat": false,
     "SourceKinds": [
@@ -15711,6 +15799,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "LAST VISITED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "LATITUDE",
     "IsFormat": false,
     "SourceKinds": [
@@ -15797,6 +15893,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "LOCATION IN SEARCH",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "LONGITUDE",
@@ -16926,6 +17030,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Lowest incomplete suffix in the current boxel.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Lua debug code",
@@ -18170,6 +18282,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
+  },
+  {
+    "Text": "NEXT AT THIS LEVEL \u2192",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "NEXT INCOMPLETE SYSTEM",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "NEXT JUMP",
@@ -20602,6 +20730,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
+    "Text": "Open the information button beside VoxStellar before opting in. It lists the journal events, the exploration data VoxStellar says it stores, its user-content license, privacy policy, terms, and the MIT-licensed EDMC plugin protocol adapted by SrvSurvey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Open the next boxel at this level",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Open the previous boxel at this level",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "Open the route workspace and organize this commander\u0027s saved route files.",
     "IsFormat": false,
     "SourceKinds": [
@@ -20609,6 +20761,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Open this ancestor boxel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Open this child boxel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "OpenVR could not be initialized: {0}",
@@ -21957,6 +22125,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Plugin source",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+  },
+  {
     "Text": "Point name",
     "IsFormat": false,
     "SourceKinds": [
@@ -22640,6 +22816,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Privacy policy",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+  },
+  {
     "Text": "Processing is opt-in and writes converted output to the configured destination.",
     "IsFormat": false,
     "SourceKinds": [
@@ -23177,12 +23361,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/InaraSettingsViewModel.cs"
   },
   {
+    "Text": "Queued {0} exploration events for VoxStellar.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VoxStellarSharingViewModel.cs"
+  },
+  {
     "Text": "Queued {0} for EDDN ({1} schemas).",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
+  },
+  {
+    "Text": "Queued {0} for VoxStellar.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VoxStellarSharingViewModel.cs"
   },
   {
     "Text": "Queued {0} journal events for EDDN ({1} schemas).",
@@ -25283,6 +25483,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Require FSS to report all bodies before completion",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "Research mission tracker",
     "IsFormat": false,
     "SourceKinds": [
@@ -25491,6 +25699,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "Resume Search",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "Resume paused quest",
     "IsFormat": false,
     "SourceKinds": [
@@ -25505,6 +25721,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
+  },
+  {
+    "Text": "Return one level toward the search root",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Review Raven changes",
@@ -25601,6 +25825,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
+  },
+  {
+    "Text": "Review what SrvSurvey sends before opting in.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
     "Text": "Reward bands changed for this session but could not be saved: {0}",
@@ -25706,6 +25938,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Route Manager, FC Routes, and Boxel auto-copy are mutually exclusive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Route Workspace",
@@ -26293,6 +26533,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "SPANSH UPDATED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "SPECIES",
     "IsFormat": false,
     "SourceKinds": [
@@ -26596,6 +26844,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Save Progress",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Save a Raven API key before Fleet Carrier cargo can sync.",
@@ -27297,6 +27553,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuidesView.axaml"
   },
   {
+    "Text": "Search procedural boxels, track every generated system, and choose what counts as complete.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "Searching for {0}\u2026",
     "IsFormat": true,
     "SourceKinds": [
@@ -27383,6 +27647,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "See your path from the search root, move between boxels at the same level, or open a smaller child boxel. This does not move between systems in the table.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Select Confirm clear to remove all unclaimed organic rewards. Active sample progress will be kept.",
@@ -27618,6 +27890,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Send Journal to VoxStellar for boxel surveying",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "SendText",
     "IsFormat": false,
     "SourceKinds": [
@@ -27648,6 +27928,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardChordFormatter.cs"
+  },
+  {
+    "Text": "Service terms",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
     "Text": "ServiceUri",
@@ -28057,6 +28345,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Share a survey with VoxStellar",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Share data",
@@ -29575,6 +29871,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
+    "Text": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "SrvSurvey fleet-carrier route files",
     "IsFormat": false,
     "SourceKinds": [
@@ -29621,6 +29925,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/HumanSiteOverlayWindow.axaml"
+  },
+  {
+    "Text": "SrvSurvey is not affiliated with VoxStellar. Your use of VoxStellar is governed by VoxStellar\u0027s current privacy policy and terms of service.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
     "Text": "SrvSurvey journal activity overlay",
@@ -31314,6 +31626,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Terms of service",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+  },
+  {
     "Text": "Terraformable",
     "IsFormat": false,
     "SourceKinds": [
@@ -31801,6 +32121,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
+  },
+  {
+    "Text": "The VoxStellar preference changed for this session but could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VoxStellarSharingViewModel.cs"
   },
   {
     "Text": "The Windows overlay input region could not be applied.",
@@ -33323,6 +33651,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander \u002B data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+  },
+  {
     "Text": "The personal key is stored only in this commander profile. No application token is embedded or required for write events.",
     "IsFormat": false,
     "SourceKinds": [
@@ -34193,6 +34529,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The upload protocol was adapted from the VoxStellar plugin for EDMC. Copyright \u00A9 2023 Sven Ziereis. The plugin\u0027s MIT License permits use and modification with its copyright and permission notice and provides the software without warranty. This implementation remains distributed under SrvSurvey\u0027s GPL-3.0 license.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
     "Text": "The verified update helper is waiting. SrvSurvey will now close; the old installation remains available for automatic rollback.",
@@ -35067,6 +35411,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Treat systems visited before the start date as complete",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Treat systems whose Spansh body data predates the start date as complete",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "Trip totals and body scans",
     "IsFormat": false,
     "SourceKinds": [
@@ -35243,6 +35603,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+  },
+  {
+    "Text": "UP ONE LEVEL",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "UPDATED 2 M AGO | QUEST LOCATION",
@@ -36399,6 +36767,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml"
   },
   {
+    "Text": "VOXSTELLAR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+  },
+  {
     "Text": "VR RUNTIME PROCESS",
     "IsFormat": false,
     "SourceKinds": [
@@ -36661,6 +37037,71 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "VoxStellar",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "VoxStellar data use and licensing",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+  },
+  {
+    "Text": "VoxStellar is an independent boxel-surveying service. SrvSurvey can send selected new exploration journal events to it only after you opt in from the top of the Boxel workspace.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "VoxStellar maintains its own database and says it does not forward these submissions to EDDN. Use a separate EDDN-capable tool when you also want to contribute discoveries to the wider community database.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "VoxStellar says it stores system names and coordinates, stars, planets and moons, exobiology discoveries, boxel classifications and metadata, discovery timestamps, and commander attribution for survey tracking, analysis, dashboards, and team collaboration.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+  },
+  {
+    "Text": "VoxStellar upload cannot be enabled because this build does not include its integration signing key.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VoxStellarSharingViewModel.cs"
+  },
+  {
+    "Text": "VoxStellar upload is unavailable in this build because its integration signing key is not configured.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VoxStellarSharingViewModel.cs"
+  },
+  {
+    "Text": "VoxStellar\u0027s terms say that you remain responsible for submitted content. By posting user content, you grant VoxStellar a worldwide, non-exclusive, royalty-free license to use, modify, publicly perform, publicly display, reproduce, and distribute it through the service. The service is provided as-is and its policies may change.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
     "Text": "WAITING",
@@ -37103,6 +37544,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ErrorReportWindow.axaml"
   },
   {
+    "Text": "What is sent",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+  },
+  {
     "Text": "What is this expedition for?",
     "IsFormat": false,
     "SourceKinds": [
@@ -37141,6 +37590,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "When enabled, SrvSurvey sends your commander name and the complete JSON data from these new live journal events: Scan, FSDTarget, FSDJump, FSSDiscoveryScan, SAASignalsFound, ScanOrganic, ScanBaryCentre, and CodexEntry.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
     "Text": "When enabled, matching live Scan journal events include commander name, system coordinates, and the original scan payload. Startup history is never uploaded.",
@@ -42159,6 +42616,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "\u2190 PREVIOUS AT THIS LEVEL",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "\u2691 UNDISCOVERED",

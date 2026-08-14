@@ -31,13 +31,60 @@
   </UserControl.Styles>
   <ScrollViewer HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="32" Spacing="24" MaxWidth="1300">
-      <StackPanel Spacing="5">
-        <TextBlock Classes="eyebrow" Text="BOXEL" />
-        <TextBlock Classes="page-title" Text="Boxel search" />
-        <TextBlock Classes="muted"
-                   TextWrapping="Wrap"
-                   Text="Search procedural boxels, track every generated system, and choose what counts as complete." />
-      </StackPanel>
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="eyebrow" Text="BOXEL" />
+          <TextBlock Classes="page-title" Text="Boxel search" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Search procedural boxels, track every generated system, and choose what counts as complete." />
+        </StackPanel>
+        <StackPanel Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    MaxWidth="390"
+                    Spacing="7">
+          <StackPanel HorizontalAlignment="Right"
+                      Orientation="Horizontal"
+                      Spacing="8">
+            <Button Classes="secondary"
+                    Height="46"
+                    Click="VoxStellar_Click">
+              <StackPanel Orientation="Horizontal" Spacing="9">
+                <Image Width="30"
+                       Height="30"
+                       Stretch="UniformToFill"
+                       Source="avares://SrvSurvey.Desktop/Assets/VoxStellar/voxstellar.png" />
+                <TextBlock VerticalAlignment="Center"
+                           FontWeight="SemiBold"
+                           Text="VoxStellar" />
+              </StackPanel>
+            </Button>
+            <Button Classes="secondary"
+                    Width="46"
+                    Height="46"
+                    Padding="0"
+                    CornerRadius="23"
+                    Click="VoxStellarInfo_Click"
+                    ToolTip.Tip="VoxStellar data use and licensing">
+              <TextBlock FontSize="25"
+                         FontWeight="SemiBold"
+                         Text="ⓘ" />
+            </Button>
+          </StackPanel>
+          <CheckBox HorizontalAlignment="Right"
+                    IsChecked="{Binding VoxStellar.JournalUploadEnabled, Mode=TwoWay}"
+                    IsEnabled="{Binding VoxStellar.CanChangeUploadPreference}">
+            <TextBlock TextWrapping="Wrap"
+                       Text="Send Journal to VoxStellar for boxel surveying" />
+          </CheckBox>
+          <TextBlock Classes="muted"
+                     FontSize="10"
+                     IsVisible="{Binding VoxStellar.HasStatusMessage}"
+                     TextAlignment="Right"
+                     TextWrapping="Wrap"
+                     Text="{Binding VoxStellar.StatusMessage}" />
+        </StackPanel>
+      </Grid>
 
       <Border Classes="card raised" Padding="0">
         <Grid ColumnDefinitions="6,*">

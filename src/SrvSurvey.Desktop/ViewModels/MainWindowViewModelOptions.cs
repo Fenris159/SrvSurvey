@@ -177,6 +177,8 @@ public sealed class MainWindowViewModelOptions
 
     public IEddnPublisher? EddnPublisher { get; init; }
 
+    public IVoxStellarPublisher? VoxStellarPublisher { get; init; }
+
     public ISystemBodyDataClient? SystemBodyDataClient { get; init; }
 
     internal TimeSpan? SystemBodyDataRetryDelay { get; init; }

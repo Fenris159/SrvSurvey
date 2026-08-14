@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop;
 using SrvSurvey.Desktop.ViewModels;
@@ -129,5 +130,43 @@ public sealed partial class BoxelView : UserControl
             DataContext = new BoxelSearchLibraryViewModel(viewModel.BoxelSearch)
         };
         window.Show(owner);
+    }
+
+    private async void VoxStellar_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is not MainWindowViewModel viewModel)
+        {
+            return;
+        }
+
+        try
+        {
+            var launcher = TopLevel.GetTopLevel(this)?.Launcher
+                ?? throw new InvalidOperationException(
+                    "The desktop link launcher is not available.");
+            if (!await launcher.LaunchUriAsync(WellKnownUris.VoxStellarWebsite))
+            {
+                throw new InvalidOperationException(
+                    "The default browser declined the request.");
+            }
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or NotSupportedException)
+        {
+            viewModel.VoxStellar.ReportLinkFailure(exception.Message);
+        }
+    }
+
+    private void VoxStellarInfo_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (TopLevel.GetTopLevel(this) is Window owner)
+        {
+            new VoxStellarInformationWindow().Show(owner);
+        }
     }
 }

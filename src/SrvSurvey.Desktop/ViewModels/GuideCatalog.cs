@@ -318,6 +318,17 @@ public static class GuideCatalog
                         [
                             "External timestamps describe when a community service last received data, not guaranteed first-discovery or current in-game completeness. Treat skip rules as workflow filters rather than proof that a system has nothing left to discover.",
                         ]),
+                    Section(
+                        "Share a survey with VoxStellar",
+                        "VoxStellar is an independent boxel-surveying service. SrvSurvey can send selected new exploration journal events to it only after you opt in from the top of the Boxel workspace.",
+                        [
+                            "Open the information button beside VoxStellar before opting in. It lists the journal events, the exploration data VoxStellar says it stores, its user-content license, privacy policy, terms, and the MIT-licensed EDMC plugin protocol adapted by SrvSurvey.",
+                            "Enable Send Journal to VoxStellar for boxel surveying to upload new live Scan, FSDTarget, FSDJump, FSSDiscoveryScan, SAASignalsFound, ScanOrganic, ScanBaryCentre, and CodexEntry events with your Commander name.",
+                            "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
+                        ],
+                        [
+                            "VoxStellar maintains its own database and says it does not forward these submissions to EDDN. Use a separate EDDN-capable tool when you also want to contribute discoveries to the wider community database.",
+                        ]),
                 ]),
             Category(
                 "guardian",

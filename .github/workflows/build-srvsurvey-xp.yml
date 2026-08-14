@@ -170,6 +170,7 @@ jobs:
         shell: pwsh
         env:
           INARA_APPLICATION_API_KEY: ${{ secrets.INARA_APPLICATION_API_KEY }}
+          VOXSTELLAR_SHARED_KEY: ${{ secrets.VOXSTELLAR_SHARED_KEY }}
         run: |
           dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj `
             --configuration Release `
@@ -179,6 +180,7 @@ jobs:
             -p:Version="${{ needs.release-metadata.outputs.package_version }}" `
             -p:FileVersion="${{ needs.release-metadata.outputs.file_version }}" `
             -p:InaraApplicationApiKey="$env:INARA_APPLICATION_API_KEY" `
+            -p:VoxStellarSharedKey="$env:VOXSTELLAR_SHARED_KEY" `
             -p:DebugType=None `
             -p:DebugSymbols=false
 

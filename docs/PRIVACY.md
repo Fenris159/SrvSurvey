@@ -54,6 +54,40 @@ safely attribute shared `Cargo.json`, `ShipLocker.json`, or `Status.json` data t
 a commander. Those shared inputs are suppressed for Inara while journal events
 that belong to the instance's selected commander continue to be processed.
 
+## VoxStellar
+
+VoxStellar journal upload is disabled by default and is controlled separately
+at the top of the Boxel workspace. When enabled, SrvSurvey sends the active
+commander name and the complete JSON data from new live `Scan`, `FSDTarget`,
+`FSDJump`, `FSSDiscoveryScan`, `SAASignalsFound`, `ScanOrganic`,
+`ScanBaryCentre`, and `CodexEntry` events. Startup history, replayed journal
+events, and unrelated events are not uploaded. New publication is also
+suppressed while multiple Elite windows make commander attribution ambiguous.
+
+Each request is sent directly to VoxStellar as a `commander` + `data` JSON
+object and signed with HMAC-SHA256. The ordered queue is memory-only. Turning
+the option off advances its consent generation so entries that have not begun
+uploading cannot be sent under the former consent state. Logs record only event
+names and transport outcomes; they do not include journal payloads, commander
+names, request signatures, or the shared integration key.
+
+VoxStellar says it stores system and coordinate data, stars, planets and moons,
+exobiology discoveries, boxel metadata, timestamps, and commander attribution
+in its own boxel-focused database and does not forward the submissions to EDDN.
+Its current privacy policy and terms govern the external service. In particular,
+its terms grant VoxStellar a worldwide, non-exclusive, royalty-free license to
+use, modify, display, reproduce, and distribute submitted user content through
+the service. The Boxel workspace information button links to those current
+documents before the opt-in control.
+
+The webhook protocol is adapted from the MIT-licensed EDMC-VoxStellar plugin.
+Release packages receive its distributed application signing key from the
+repository's `VOXSTELLAR_SHARED_KEY` secret at publish time; the value is not
+committed or logged. It is a shared application credential embedded in the
+published binary and must not be treated as a private commander credential.
+Local developer builds can use the `SRVSURVEY_VOXSTELLAR_SHARED_KEY`
+environment variable instead.
+
 ## Frontier commander profile
 
 Linking a Frontier account is optional. SrvSurvey uses OAuth 2 authorization
@@ -94,6 +128,6 @@ details.
 
 ## Other publishers
 
-EDDN, Raven Colonial, Canonn settlement geometry, and Green Gas Giant
+EDDN, VoxStellar, Raven Colonial, Canonn settlement geometry, and Green Gas Giant
 publication retain their existing independent opt-in controls and payload
 rules. Enabling Inara does not enable or modify any of them.

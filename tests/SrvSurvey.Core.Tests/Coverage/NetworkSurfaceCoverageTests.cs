@@ -14,6 +14,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Navigation/SystemSummaryClient.cs",
         "src/SrvSurvey.Core/Network/EddnPublisher.cs",
         "src/SrvSurvey.Core/Network/EddnTransport.cs",
+        "src/SrvSurvey.Core/Network/VoxStellarPublisher.cs",
         "src/SrvSurvey.Core/Quests/RavenQuestClient.cs",
         "src/SrvSurvey.Core/Routes/SpanshRouteClient.cs",
         "src/SrvSurvey.Core/Search/ArdentSystemNameSuggestionClient.cs",
@@ -40,6 +41,9 @@ public sealed class NetworkSurfaceCoverageTests
                     StringComparison.Ordinal)
                 && !path.EndsWith(
                     "EddnPublisher.cs",
+                    StringComparison.Ordinal)
+                && !path.EndsWith(
+                    "VoxStellarPublisher.cs",
                     StringComparison.Ordinal))
             .ToArray();
 
@@ -128,6 +132,10 @@ public sealed class NetworkSurfaceCoverageTests
             "inara-publication",
             ["src/SrvSurvey.Core/Inara/InaraPublisher.cs"],
             ["tests/SrvSurvey.Core.Tests/Inara/InaraPublisherTests.cs"]),
+        new(
+            "voxstellar-publication",
+            ["src/SrvSurvey.Core/Network/VoxStellarPublisher.cs"],
+            ["tests/SrvSurvey.Core.Tests/Network/VoxStellarPublisherTests.cs"]),
         new(
             "inara-community-goal-read",
             [

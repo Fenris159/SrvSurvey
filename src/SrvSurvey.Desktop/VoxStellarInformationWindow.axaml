@@ -1,0 +1,98 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SrvSurvey.Desktop.VoxStellarInformationWindow"
+        Width="760"
+        Height="720"
+        MinWidth="620"
+        MinHeight="560"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        Title="VoxStellar data use and licensing">
+  <Grid RowDefinitions="Auto,*,Auto" Margin="26">
+    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+      <Image Width="52"
+             Height="52"
+             Stretch="UniformToFill"
+             Source="avares://SrvSurvey.Desktop/Assets/VoxStellar/voxstellar.png" />
+      <StackPanel Grid.Column="1" Spacing="4">
+        <TextBlock Classes="eyebrow" Text="VOXSTELLAR" />
+        <TextBlock Classes="page-title"
+                   FontSize="25"
+                   Text="Data use and licensing" />
+        <TextBlock Classes="muted"
+                   TextWrapping="Wrap"
+                   Text="Review what SrvSurvey sends before opting in." />
+      </StackPanel>
+    </Grid>
+
+    <ScrollViewer Grid.Row="1" Margin="0,22,0,0">
+      <StackPanel Spacing="18">
+        <Border Classes="card raised">
+          <StackPanel Spacing="9">
+            <TextBlock Classes="card-title" Text="What is sent" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="When enabled, SrvSurvey sends your commander name and the complete JSON data from these new live journal events: Scan, FSDTarget, FSDJump, FSSDiscoveryScan, SAASignalsFound, ScanOrganic, ScanBaryCentre, and CodexEntry." />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading." />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+          <StackPanel Spacing="9">
+            <TextBlock Classes="card-title" Text="How VoxStellar uses the data" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="VoxStellar says it stores system names and coordinates, stars, planets and moons, exobiology discoveries, boxel classifications and metadata, discovery timestamps, and commander attribution for survey tracking, analysis, dashboards, and team collaboration." />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="VoxStellar states that it maintains its own boxel-focused database and does not submit this data to EDDN. Its privacy policy also covers account information and technical connection information collected when using its website." />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+          <StackPanel Spacing="9">
+            <TextBlock Classes="card-title" Text="Service terms" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="VoxStellar's terms say that you remain responsible for submitted content. By posting user content, you grant VoxStellar a worldwide, non-exclusive, royalty-free license to use, modify, publicly perform, publicly display, reproduce, and distribute it through the service. The service is provided as-is and its policies may change." />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="SrvSurvey is not affiliated with VoxStellar. Your use of VoxStellar is governed by VoxStellar's current privacy policy and terms of service." />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+          <StackPanel Spacing="9">
+            <TextBlock Classes="card-title" Text="Integration license" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="The upload protocol was adapted from the VoxStellar plugin for EDMC. Copyright © 2023 Sven Ziereis. The plugin's MIT License permits use and modification with its copyright and permission notice and provides the software without warranty. This implementation remains distributed under SrvSurvey's GPL-3.0 license." />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Grid Grid.Row="2"
+          Margin="0,20,0,0"
+          ColumnDefinitions="*,Auto"
+          ColumnSpacing="12">
+      <WrapPanel>
+        <Button Classes="secondary"
+                Margin="0,0,8,8"
+                Click="PrivacyPolicy_Click"
+                Content="Privacy policy" />
+        <Button Classes="secondary"
+                Margin="0,0,8,8"
+                Click="TermsOfService_Click"
+                Content="Terms of service" />
+        <Button Classes="secondary"
+                Margin="0,0,8,8"
+                Click="PluginSource_Click"
+                Content="Plugin source" />
+      </WrapPanel>
+      <Button Grid.Column="1"
+              Classes="primary"
+              HorizontalAlignment="Right"
+              Click="Close_Click"
+              Content="Close" />
+    </Grid>
+  </Grid>
+</Window>

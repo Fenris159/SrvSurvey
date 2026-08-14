@@ -24,6 +24,27 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("{Binding BoxelSearch.Systems}", boxelBindings);
         Assert.Contains("Save Progress", boxelBindings);
         Assert.Contains("Resume Search", boxelBindings);
+        Assert.Contains("VoxStellar", boxelBindings);
+        Assert.Contains(
+            "Send Journal to VoxStellar for boxel surveying",
+            boxelBindings);
+        Assert.Contains(
+            "{Binding VoxStellar.JournalUploadEnabled, Mode=TwoWay}",
+            boxelBindings);
+        Assert.Contains(
+            "{Binding VoxStellar.CanChangeUploadPreference}",
+            boxelBindings);
+        Assert.Contains("VoxStellar_Click", boxelBindings);
+        Assert.Contains("VoxStellarInfo_Click", boxelBindings);
+        Assert.Contains(
+            "avares://SrvSurvey.Desktop/Assets/VoxStellar/voxstellar.png",
+            boxelBindings);
+        var voxStellarImage = boxel.Descendants().Single(element =>
+            element.Name.LocalName == "Image"
+            && element.Attribute("Source")?.Value.Contains(
+                "VoxStellar",
+                StringComparison.Ordinal) == true);
+        Assert.Equal("30", voxStellarImage.Attribute("Height")?.Value);
         Assert.Contains(
             "{Binding BoxelSearch.SystemNameSuggestions}",
             boxelBindings);
@@ -81,6 +102,36 @@ public sealed class BoxelViewMarkupTests
         Assert.DoesNotContain(
             searchBindings,
             binding => binding.Contains("BoxelSearch", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void VoxStellarInformationExplainsConsentDataAndLicensing()
+    {
+        var window = XDocument.Load(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "VoxStellarInformationWindow.axaml"));
+        var values = window.Descendants()
+            .SelectMany(element => element.Attributes())
+            .Select(attribute => attribute.Value)
+            .ToArray();
+
+        Assert.Contains(values, value => value.Contains(
+            "commander name and the complete JSON data",
+            StringComparison.Ordinal));
+        Assert.Contains(values, value => value.Contains(
+            "does not submit this data to EDDN",
+            StringComparison.Ordinal));
+        Assert.Contains(values, value => value.Contains(
+            "worldwide, non-exclusive, royalty-free license",
+            StringComparison.Ordinal));
+        Assert.Contains(values, value => value.Contains(
+            "Copyright © 2023 Sven Ziereis",
+            StringComparison.Ordinal));
+        Assert.Contains("Privacy policy", values);
+        Assert.Contains("Terms of service", values);
+        Assert.Contains("Plugin source", values);
     }
 
     [Fact]

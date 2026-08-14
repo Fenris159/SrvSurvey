@@ -72,6 +72,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
     private readonly IEddnPublisher eddnPublisher;
+    private readonly IVoxStellarPublisher voxStellarPublisher;
     private readonly IInaraPublisher inaraPublisher;
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
@@ -228,6 +229,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var canonnHumanSiteClient = options.CanonnHumanSiteClient;
         var canonnHumanSitePublisher = options.CanonnHumanSitePublisher;
         var resolvedEddnPublisher = options.EddnPublisher;
+        var resolvedVoxStellarPublisher = options.VoxStellarPublisher;
         var resolvedSystemBodyDataClient = options.SystemBodyDataClient;
         var resolvedInaraPublisher = options.InaraPublisher;
         var frontierProfile = options.FrontierProfile;
@@ -394,6 +396,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             log: message => resolvedApplicationLogService?.Append(message));
         NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
         this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
+        this.voxStellarPublisher = resolvedVoxStellarPublisher
+            ?? new VoxStellarPublisher(
+                (typeof(MainWindowViewModel).Assembly.GetName().Version
+                    ?? new Version(0, 0)).ToString(),
+                VoxStellarSharedKeyProvider.GetSharedKey(),
+                log: message => resolvedApplicationLogService?.Append(message));
+        VoxStellar = new VoxStellarSharingViewModel(
+            new VoxStellarSettingsStore(AppDataPaths.UiSettingsPath),
+            this.voxStellarPublisher.IsConfigured);
+        VoxStellar.UploadEnabledChanged += OnVoxStellarUploadEnabledChanged;
+        this.voxStellarPublisher.SetEnabled(
+            VoxStellar.JournalUploadEnabled);
         this.greenGasGiantPublicationCoordinator =
             resolvedGreenGasGiantPublicationCoordinator
                 ?? new GreenGasGiantPublicationCoordinator(
@@ -765,6 +779,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public GalaxyMapOverlayViewModel GalaxyMap { get; }
 
     public NetworkPrivacyViewModel NetworkPrivacy { get; }
+
+    public VoxStellarSharingViewModel VoxStellar { get; }
 
     public InaraSettingsViewModel Inara { get; }
 
@@ -2719,6 +2735,33 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         try
         {
+            var voxStellarResult = await voxStellarPublisher.ApplyAsync(
+                new VoxStellarApplyRequest
+                {
+                    JournalEvents = update.JournalEvents,
+                    CommanderName = activeProfileCommanderName
+                        ?? journalState.CommanderName,
+                    Enabled = VoxStellar.JournalUploadEnabled,
+                    AllowPublishing = !update.IsBootstrapRead
+                        && !CommanderInstances.HasMultipleGameWindows,
+                },
+                CancellationToken.None);
+            VoxStellar.ReportPublicationResult(voxStellarResult);
+            foreach (var warning in voxStellarResult.Warnings)
+            {
+                applicationLogService?.Append(warning);
+            }
+        }
+        catch (Exception exception) when (
+            exception is not OperationCanceledException)
+        {
+            applicationLogService?.Append(
+                "VoxStellar processing was isolated from journal tracking: "
+                    + exception.Message);
+        }
+
+        try
+        {
             var inaraResult = await inaraPublisher.ApplyAsync(
                 new InaraPublicationUpdate(
                     update.JournalEvents,
@@ -4336,6 +4379,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         inaraPublisher.CancelPendingPublication();
     }
 
+    private void OnVoxStellarUploadEnabledChanged(bool enabled)
+    {
+        voxStellarPublisher.SetEnabled(enabled);
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -4367,6 +4415,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         if (eddnPublisher is IDisposable disposableEddnPublisher)
         {
             disposableEddnPublisher.Dispose();
+        }
+        VoxStellar.UploadEnabledChanged -= OnVoxStellarUploadEnabledChanged;
+        if (voxStellarPublisher is IDisposable disposableVoxStellarPublisher)
+        {
+            disposableVoxStellarPublisher.Dispose();
         }
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();

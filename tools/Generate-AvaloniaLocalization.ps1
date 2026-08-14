@@ -10,7 +10,7 @@ $ErrorActionPreference = "Stop"
 $script:TechnicalTokenPattern = [regex]::new(
     '(?i)(?:\b(?:Alt|Ctrl|Shift)(?:\s*\+\s*[A-Z0-9]+)+' +
     '|\b[A-Za-z0-9_-]+\.(?:json|zip|txt|csv|png|jpe?g|gif|exe|dll|axaml|xml)\b' +
-    '|\b(?:SrvSurvey|Spansh|EDSM|Canonn|Bioforge|Inara|Raven Colonial|Frontier|Elite Dangerous|Discord)\b)',
+    '|\b(?:SrvSurvey|Spansh|EDSM|Canonn|Bioforge|Inara|Raven Colonial|Frontier|Elite Dangerous|Discord|VoxStellar|EDMC|EDDN|HMAC-SHA256|GPL-3\.0)\b)',
     [Text.RegularExpressions.RegexOptions]::CultureInvariant)
 
 function Invoke-Generation {

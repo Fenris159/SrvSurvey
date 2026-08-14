@@ -21,6 +21,9 @@ exploration workflow. The changes below are the delta from `2.1.3.0-rc.22`.
   startup and making displayed system names and id64 values separately copyable.
 - Adds a dedicated Boxel guide covering procedural naming, bounded surveys,
   hierarchy navigation, completion rules, saved projects, and audit behavior.
+- Adds an explicit opt-in VoxStellar integration to the Boxel workspace for
+  signed live exploration-journal uploads, with visible data-use, service-term,
+  privacy, and EDMC-VoxStellar MIT-license information.
 - Corrects Guardian origin/Ram Tah layout, Overview identity and exploration
   metrics, Guide step markers, and nullable UI bindings that previously wrote
   harmless but noisy null-path errors to the application log.

@@ -450,6 +450,72 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task VoxStellarReceivesOnlyNewLiveJournalEventsAfterOptIn()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-voxstellar-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-08-13T120000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-08-13T12:00:00Z\",\"event\":\"Fileheader\",\"gameversion\":\"4.1\",\"build\":\"r1\"}\n"
+                    + "{\"timestamp\":\"2026-08-13T12:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"FID\":\"F123\",\"Odyssey\":true}\n"
+                    + "{\"timestamp\":\"2026-08-13T12:00:02Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            new VoxStellarSettingsStore(paths.UiSettingsPath).Save(
+                new VoxStellarPreferences(true));
+            var publisher = new RecordingVoxStellarPublisher();
+            using var viewModel = new MainWindowViewModel(journals,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = paths,
+                    VoxStellarPublisher = publisher,
+                });
+
+            await viewModel.RefreshAsync();
+
+            var bootstrap = Assert.Single(publisher.Calls);
+            Assert.False(bootstrap.AllowPublishing);
+            Assert.True(bootstrap.Enabled);
+            Assert.Equal("Test Cmdr", bootstrap.CommanderName);
+            Assert.Equal(3, bootstrap.Events.Count);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-08-13T12:01:00Z\",\"event\":\"Scan\",\"BodyName\":\"Test A 1\",\"BodyID\":1}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(2, publisher.Calls.Count);
+            var live = publisher.Calls[1];
+            Assert.True(live.AllowPublishing);
+            Assert.Equal("Scan", Assert.Single(live.Events).EventName);
+            Assert.Contains(
+                "Queued Scan for VoxStellar",
+                viewModel.VoxStellar.StatusMessage);
+
+            viewModel.VoxStellar.JournalUploadEnabled = false;
+            Assert.False(publisher.EnabledStates[^1]);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task InaraReceivesCommanderProfileAndMultiboxSafetyContext()
     {
         var root = Path.Combine(
@@ -3478,6 +3544,44 @@ public sealed class MainWindowViewModelTests
             SuspensionStates.Add(suspended);
         }
     }
+
+    private sealed class RecordingVoxStellarPublisher : IVoxStellarPublisher
+    {
+        public bool IsConfigured => true;
+
+        public List<VoxStellarCall> Calls { get; } = [];
+
+        public List<bool> EnabledStates { get; } = [];
+
+        public Task<VoxStellarPublicationResult> ApplyAsync(
+            VoxStellarApplyRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            Calls.Add(new VoxStellarCall(
+                request.JournalEvents.ToArray(),
+                request.CommanderName,
+                request.Enabled,
+                request.AllowPublishing));
+            IReadOnlyList<string> queued = request.Enabled
+                && request.AllowPublishing
+                    ? request.JournalEvents
+                        .Select(journalEvent => journalEvent.EventName)
+                        .ToArray()
+                    : [];
+            return Task.FromResult(new VoxStellarPublicationResult(queued, []));
+        }
+
+        public void SetEnabled(bool enabled)
+        {
+            EnabledStates.Add(enabled);
+        }
+    }
+
+    private sealed record VoxStellarCall(
+        IReadOnlyList<JournalEventEnvelope> Events,
+        string? CommanderName,
+        bool Enabled,
+        bool AllowPublishing);
 
     private sealed record EddnCall(
         IReadOnlyList<JournalEventEnvelope> Events,
