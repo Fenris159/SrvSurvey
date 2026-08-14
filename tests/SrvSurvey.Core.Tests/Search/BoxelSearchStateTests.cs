@@ -6,6 +6,97 @@ namespace SrvSurvey.Core.Tests.Search;
 public sealed class BoxelSearchStateTests
 {
     [Fact]
+    public void SnapshotRestoresManualSystemCompletionAndAllBoxelCounts()
+    {
+        var state = new BoxelSearchState();
+        var top = BoxelAddress.Parse("Praea Euq RS-U d2-0");
+        Assert.True(state.TryActivate(
+            new BoxelSearchActivationRequest
+            {
+                TopBoxel = top,
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.UtcNow,
+            },
+            out _));
+        state.SetExpectedSystemCount(3);
+        state.MergeSpanshSystems(
+        [
+            new BoxelSystemObservation(
+                top.WithSystemNumber(0),
+                null,
+                null,
+                null,
+                true),
+            new BoxelSystemObservation(
+                top.WithSystemNumber(1),
+                null,
+                null,
+                null,
+                true),
+        ]);
+        Assert.True(state.TrySetSystemComplete(top.WithSystemNumber(0).Name, true, out _));
+        var child = top.Children[0];
+        Assert.True(state.TrySetCurrent(child, out _));
+        state.SetExpectedSystemCount(5);
+
+        var restored = new BoxelSearchState(state.CreateSnapshot());
+        Assert.True(restored.TrySetCurrent(top, out _));
+        restored.MergeSpanshSystems(
+        [
+            new BoxelSystemObservation(
+                top.WithSystemNumber(0),
+                null,
+                null,
+                null,
+                true),
+            new BoxelSystemObservation(
+                top.WithSystemNumber(1),
+                null,
+                null,
+                null,
+                true),
+        ]);
+
+        Assert.True(restored.Systems[0].IsComplete);
+        Assert.False(restored.Systems[1].IsComplete);
+        Assert.Equal(8, restored.TotalKnownSystemCount);
+        Assert.Equal(1, restored.TotalCompletedSystemCount);
+    }
+
+    [Fact]
+    public void LegacyCompletedPrefixKeepsItsSystemsCompleteAfterRefresh()
+    {
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var state = new BoxelSearchState(new BoxelSearchSnapshot
+        {
+            Active = true,
+            TopBoxel = top,
+            Current = top,
+            CurrentCount = 2,
+            CompletedPrefixes = [top.Prefix],
+        });
+
+        state.MergeSpanshSystems(
+        [
+            new BoxelSystemObservation(
+                top.WithSystemNumber(0),
+                null,
+                null,
+                null,
+                true),
+            new BoxelSystemObservation(
+                top.WithSystemNumber(1),
+                null,
+                null,
+                null,
+                true),
+        ]);
+
+        Assert.All(state.Systems, system => Assert.True(system.IsComplete));
+        Assert.Equal(2, state.TotalCompletedSystemCount);
+    }
+
+    [Fact]
     public void ActivateBuildsChildProgressAndRejectsMassCodeH()
     {
         var state = new BoxelSearchState();
@@ -85,7 +176,7 @@ public sealed class BoxelSearchStateTests
     }
 
     [Fact]
-    public void EnterSystemModeCompletesFsdJumpAndSelectsNextDescendingSystem()
+    public void EnterSystemModeCompletesFsdJumpAndSelectsFirstIncompleteSystem()
     {
         var state = CreateActiveState(BoxelCompletionMode.EnterSystem);
         state.MergeSpanshSystems(
@@ -100,8 +191,41 @@ public sealed class BoxelSearchStateTests
 
         Assert.True(handled);
         Assert.Equal(1, state.CompletedSystemCount);
-        Assert.Equal("Praea Euq IL-P c5-1", state.NextSystem);
+        Assert.Equal("Praea Euq IL-P c5-0", state.NextSystem);
         Assert.Equal(new GalacticCoordinate(1, 2, 3), state.Systems[2].Position);
+    }
+
+    [Fact]
+    public void NextSystemUsesLowestIncompleteSuffixInLargeBoxel()
+    {
+        var top = BoxelAddress.Parse("Leamae UK-D d13-0");
+        var state = new BoxelSearchState(new BoxelSearchSnapshot
+        {
+            Active = true,
+            TopBoxel = top,
+            Current = top,
+            CurrentCount = 893,
+            LowMassCode = 'd',
+            CompletedSystems =
+            [
+                "Leamae UK-D d13-0",
+                "Leamae UK-D d13-3",
+                "Leamae UK-D d13-890",
+            ],
+            ProgressByPrefix = new Dictionary<string, int>
+            {
+                [top.Prefix] = 893,
+            },
+        });
+        state.MergeSpanshSystems(Enumerable.Range(0, 893).Select(number =>
+            new BoxelSystemObservation(
+                top.WithSystemNumber(number),
+                null,
+                null,
+                null,
+                true)));
+
+        Assert.Equal("Leamae UK-D d13-1", state.NextSystem);
     }
 
     [Fact]

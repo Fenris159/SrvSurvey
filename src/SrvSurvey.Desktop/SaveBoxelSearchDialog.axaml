@@ -1,0 +1,48 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SrvSurvey.Desktop.SaveBoxelSearchDialog"
+        Width="560"
+        Height="430"
+        MinWidth="480"
+        MinHeight="380"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        Title="Save Boxel Search Progress">
+  <Grid RowDefinitions="Auto,*,Auto" Margin="24">
+    <StackPanel Spacing="5">
+      <TextBlock Classes="eyebrow" Text="BOXEL SEARCH" />
+      <TextBlock Classes="page-title" FontSize="24" Text="Save progress" />
+      <TextBlock Classes="muted"
+                 Text="Name this search so you can resume it later."
+                 TextWrapping="Wrap" />
+    </StackPanel>
+
+    <StackPanel Grid.Row="1" Margin="0,22,0,0" Spacing="14">
+      <StackPanel Spacing="6">
+        <TextBlock Classes="table-heading" Text="NAME" />
+        <TextBox x:Name="SearchNameBox" MaxLength="120" />
+      </StackPanel>
+      <StackPanel Spacing="6">
+        <TextBlock Classes="table-heading" Text="NOTES" />
+        <TextBox x:Name="NotesBox"
+                 Height="150"
+                 AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 PlaceholderText="Optional notes about this boxel search" />
+      </StackPanel>
+      <TextBlock x:Name="ValidationText"
+                 Foreground="{DynamicResource RavenDangerBrush}"
+                 IsVisible="False"
+                 Text="Enter a name for this saved search." />
+    </StackPanel>
+
+    <StackPanel Grid.Row="2"
+                Margin="0,20,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="10">
+      <Button Classes="secondary" Click="Cancel_Click" Content="Cancel" />
+      <Button Classes="primary" Click="Confirm_Click" Content="Save progress" />
+    </StackPanel>
+  </Grid>
+</Window>

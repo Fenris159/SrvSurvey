@@ -101,6 +101,7 @@
       <views:ExplorationView IsVisible="{Binding IsExplorationSelected}" />
       <views:ExobiologyView IsVisible="{Binding IsExobiologySelected}" />
       <views:TravelView IsVisible="{Binding IsTravelSelected}" />
+      <views:BoxelView IsVisible="{Binding IsBoxelSelected}" />
       <views:SearchView IsVisible="{Binding IsSearchSelected}" />
       <views:GuardianView IsVisible="{Binding IsGuardianSelected}" />
       <views:QuestView IsVisible="{Binding IsQuestsSelected}" />

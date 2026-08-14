@@ -2,14 +2,15 @@ param(
     [string]$RepositoryRoot = (Split-Path -Parent $PSScriptRoot),
     [switch]$TranslateMissing,
     [switch]$RegenerateAll,
-    [switch]$Verify
+    [switch]$Verify,
+    [string[]]$RefreshSourceFiles = @()
 )
 
 $ErrorActionPreference = "Stop"
 $script:TechnicalTokenPattern = [regex]::new(
     '(?i)(?:\b(?:Alt|Ctrl|Shift)(?:\s*\+\s*[A-Z0-9]+)+' +
     '|\b[A-Za-z0-9_-]+\.(?:json|zip|txt|csv|png|jpe?g|gif|exe|dll|axaml|xml)\b' +
-    '|\b(?:SrvSurvey|Spansh|EDSM|Canonn|Bioforge|Inara|Raven Colonial|Frontier|Elite Dangerous|Discord)\b)',
+    '|\b(?:SrvSurvey|Spansh|EDSM|Canonn|Bioforge|Inara|Raven Colonial|Frontier|Elite Dangerous|Discord|VoxStellar|EDMC|EDDN|HMAC-SHA256|GPL-3\.0)\b)',
     [Text.RegularExpressions.RegexOptions]::CultureInvariant)
 
 function Invoke-Generation {
@@ -53,9 +54,34 @@ function Invoke-SourceExtraction {
     param($Paths, [string]$TemporarySource)
 
     dotnet run --project $Paths.ToolProject --configuration Release -- `
-        $RepositoryRoot $TemporarySource
+        $RepositoryRoot $TemporarySource | Out-Host
     if ($LASTEXITCODE -ne 0) {
         throw "The localization source extractor failed."
+    }
+
+    if ($RefreshSourceFiles.Count -gt 0 -and
+        (Test-Path -LiteralPath $Paths.SourcePath)) {
+        $temporaryMergedSource = [IO.Path]::GetTempFileName()
+        try {
+            dotnet run --project $Paths.ToolProject --configuration Release -- `
+                merge-source `
+                $Paths.SourcePath `
+                $TemporarySource `
+                $temporaryMergedSource `
+                $RefreshSourceFiles | Out-Host
+            if ($LASTEXITCODE -ne 0) {
+                throw "The targeted localization source merge failed."
+            }
+
+            return [IO.File]::ReadAllText(
+                $temporaryMergedSource,
+                [Text.Encoding]::UTF8)
+        }
+        finally {
+            Remove-Item -LiteralPath $temporaryMergedSource `
+                -Force `
+                -ErrorAction SilentlyContinue
+        }
     }
 
     return [IO.File]::ReadAllText($TemporarySource, [Text.Encoding]::UTF8)
@@ -89,7 +115,7 @@ function Get-ExistingCatalog {
     }
 
     dotnet run --project $Paths.ToolProject --configuration Release -- `
-        normalize-catalog $Paths.OutputPath $TemporaryCatalog
+        normalize-catalog $Paths.OutputPath $TemporaryCatalog | Out-Host
     if ($LASTEXITCODE -ne 0) {
         throw "The localization catalog normalizer failed."
     }
@@ -199,7 +225,7 @@ function Fill-MissingTranslations {
         throw "$Language is missing $($missing.Count) translation(s). Run with -TranslateMissing."
     }
 
-    Write-Output "Translating $($missing.Count) missing $Language strings..."
+    Write-Host "Translating $($missing.Count) missing $Language strings..."
     $translated = Invoke-GoogleTranslationBatch `
         -Sources $missing.Text `
         -TargetLanguage $TargetLanguage

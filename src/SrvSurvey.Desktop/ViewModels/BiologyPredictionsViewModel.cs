@@ -110,10 +110,16 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
             if (SetField(ref systemAddress, value))
             {
                 OnPropertyChanged(nameof(HasSystem));
+                OnPropertyChanged(nameof(HasSystemAddress));
+                OnPropertyChanged(nameof(SystemAddressText));
                 RaiseCommands();
             }
         }
     }
+
+    public bool HasSystemAddress => SystemAddress is > 0;
+
+    public string SystemAddressText => SystemAddressFormatter.Format(SystemAddress);
 
     public string ScanProgress
     {

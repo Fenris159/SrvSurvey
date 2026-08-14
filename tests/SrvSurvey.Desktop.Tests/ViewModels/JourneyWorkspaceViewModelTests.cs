@@ -144,8 +144,10 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
             "Current");
 
         Assert.Equal("Sol", viewModel.SelectedSystemName);
-        Assert.Equal("System address 42", viewModel.SelectedSystemAddressText);
+        Assert.Equal("42", viewModel.SelectedSystemAddress);
+        Assert.Equal("id64 42", viewModel.SelectedSystemAddressText);
         Assert.Contains(nameof(viewModel.SelectedSystemName), changed);
+        Assert.Contains(nameof(viewModel.SelectedSystemAddress), changed);
         Assert.Contains(nameof(viewModel.SelectedSystemAddressText), changed);
     }
 

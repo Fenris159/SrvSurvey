@@ -33,6 +33,11 @@ public static class WellKnownUris
     public static Uri EdGalaxyVisitedStars => RequireUri("EdGalaxyVisitedStars");
     public static Uri FrontierOAuthRedirect => RequireUri("FrontierOAuthRedirect");
     public static Uri DesktopLogoAsset => RequireUri("DesktopLogoAsset");
+    public static Uri VoxStellarWebsite => RequireUri("VoxStellarWebsite");
+    public static Uri VoxStellarWebhook => RequireUri("VoxStellarWebhook");
+    public static Uri VoxStellarPrivacyPolicy => RequireUri("VoxStellarPrivacyPolicy");
+    public static Uri VoxStellarTermsOfService => RequireUri("VoxStellarTermsOfService");
+    public static Uri VoxStellarPluginSource => RequireUri("VoxStellarPluginSource");
 
     public static string CanonnSignalsSystemPrefix => Require("CanonnSignalsSystem");
     public static string CanonnCodexRegionsEntryPrefix => Require("CanonnCodexRegionsEntry");

@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.Views.GuardianView"
@@ -57,22 +58,34 @@
       </Border>
 
       <Border Classes="card">
-        <Grid ColumnDefinitions="2*,3*" ColumnSpacing="24">
+        <Grid x:Name="GuardianOriginAndCatalog"
+              ColumnDefinitions="*,*"
+              ColumnSpacing="24">
           <StackPanel Spacing="8">
-            <TextBlock Classes="muted" Text="DISTANCE ORIGIN" />
-            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-              <TextBox Text="{Binding Guardian.OriginSystemName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                       PlaceholderText="Star-system name" />
-              <Button Grid.Column="1"
-                      Classes="secondary"
-                      Command="{Binding Guardian.LookupOriginCommand}"
-                      Content="{Binding Guardian.OriginLookupButtonText}" />
-              <Button Grid.Column="2"
-                      Classes="secondary"
-                      IsVisible="{Binding Guardian.HasCustomOrigin}"
-                      Command="{Binding Guardian.ClearOriginCommand}"
-                      Content="Use current" />
+            <Grid x:Name="GuardianOriginHeader"
+                  ColumnDefinitions="Auto,*"
+                  ColumnSpacing="12">
+              <TextBlock Classes="muted"
+                         VerticalAlignment="Center"
+                         Text="DISTANCE ORIGIN" />
+              <StackPanel x:Name="GuardianOriginActions"
+                          Grid.Column="1"
+                          HorizontalAlignment="Right"
+                          Orientation="Horizontal"
+                          Spacing="8">
+                <Button Classes="secondary"
+                        Command="{Binding Guardian.LookupOriginCommand}"
+                        Content="{Binding Guardian.OriginLookupButtonText}" />
+                <Button Classes="secondary"
+                        IsVisible="{Binding Guardian.HasCustomOrigin}"
+                        Command="{Binding Guardian.ClearOriginCommand}"
+                        Content="Use current" />
+              </StackPanel>
             </Grid>
+            <controls:SystemNameEntry
+                HorizontalAlignment="Stretch"
+                Text="{Binding Guardian.OriginSystemName, Mode=TwoWay}"
+                PlaceholderText="System name or id64" />
             <TextBlock Classes="muted"
                        FontSize="11"
                        TextWrapping="Wrap"
@@ -81,15 +94,17 @@
 
           <StackPanel Grid.Column="1" Spacing="8">
             <TextBlock Classes="muted" Text="RAM TAH CATALOG DATA" />
-            <WrapPanel>
-              <CheckBox Margin="0,0,18,6"
+            <StackPanel x:Name="GuardianRamTahOptions"
+                        Orientation="Vertical"
+                        Spacing="6">
+              <CheckBox
                         IsChecked="{Binding Guardian.IncludeRamTahLogs, Mode=TwoWay}"
                         Content="Show logs available at each site" />
-              <CheckBox Margin="0,0,0,6"
+              <CheckBox
                         IsEnabled="{Binding Guardian.IncludeRamTahLogs}"
                         IsChecked="{Binding Guardian.ShowOnlyNeededRamTahLogs, Mode=TwoWay}"
                         Content="Show only logs still needed" />
-            </WrapPanel>
+            </StackPanel>
             <TextBlock Classes="muted"
                        FontSize="11"
                        TextWrapping="Wrap"
@@ -253,7 +268,11 @@
                   <StackPanel Spacing="15">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                       <StackPanel Spacing="3">
-                        <TextBlock Classes="card-title" Text="{Binding Reference.SystemName}" />
+                        <Button Classes="link" HorizontalAlignment="Left"
+                                behaviors:ClipboardCopyBehavior.Text="{Binding Reference.SystemName}">
+                          <TextBlock Classes="card-title"
+                                     Text="{Binding Reference.SystemName}" />
+                        </Button>
                         <TextBlock Classes="muted" Text="{Binding Reference.BodyName}" />
                       </StackPanel>
                       <Border Grid.Column="1" Classes="badge" VerticalAlignment="Top">
@@ -265,7 +284,11 @@
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
                       <StackPanel Spacing="4">
                         <TextBlock Classes="muted" Text="SYSTEM ADDRESS" />
-                        <TextBlock Classes="monospace" Text="{Binding Reference.SystemAddress}" />
+                        <Button Classes="link" HorizontalAlignment="Left"
+                                behaviors:ClipboardCopyBehavior.Text="{Binding Reference.SystemAddress}">
+                          <TextBlock Classes="monospace"
+                                     Text="{Binding Reference.SystemAddress, StringFormat='id64 {0}'}" />
+                        </Button>
                       </StackPanel>
                       <StackPanel Grid.Column="1" Spacing="4">
                         <TextBlock Classes="muted" Text="ARRIVAL DISTANCE" />

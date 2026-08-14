@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+reviews:
+  path_filters:
+    # These catalogs are generated and verified by the localization pipeline.
+    - "!src/SrvSurvey.Desktop/Resources/avalonia-localization-source.json"
+    - "!src/SrvSurvey.Desktop/Resources/avalonia-localization.json"
+    # Read this file as configuration without spending a review-file slot on it.
+    - "!.coderabbit.yaml"
+  auto_review:
+    enabled: true
+    base_branches:
+      - ".*"
+    drafts: true

@@ -29,6 +29,7 @@ public sealed partial class OverlaySettingsView : UserControl
         OpenVrOverlayCard.IsVisible = isGlobal;
 
         GalaxyMapCard.IsVisible = category == OverlaySettingsCategory.Exploration;
+        BoxelOverlayCard.IsVisible = category == OverlaySettingsCategory.Boxel;
         CombatOverlayCard.IsVisible = category == OverlaySettingsCategory.Quests;
         GuardianOverlayCard.IsVisible = category == OverlaySettingsCategory.Guardian;
         StationInformationCard.IsVisible = category == OverlaySettingsCategory.Travel;

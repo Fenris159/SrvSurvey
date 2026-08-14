@@ -10,7 +10,12 @@ public sealed class GuidesViewModelTests
     {
         var categories = GuideCatalog.Create();
 
-        Assert.Equal(12, categories.Count);
+        Assert.Equal(13, categories.Count);
+        Assert.Equal(
+            Enumerable.Range(1, 13)
+                .Select(number => number.ToString("00"))
+                .ToArray(),
+            categories.Select(category => category.Number).ToArray());
         Assert.Equal(
             categories.Count,
             categories.Select(category => category.Key).Distinct().Count());
@@ -163,6 +168,8 @@ public sealed class GuidesViewModelTests
     [InlineData("rocky body route", "Rocky body")]
     [InlineData("fuel scoop", "Fuel-scoop stop")]
     [InlineData("checksum manifest", "Import an original SrvSurvey profile")]
+    [InlineData("boxel hierarchy", "Navigate the boxel hierarchy")]
+    [InlineData("FSSAllBodiesFound", "Survey the current boxel")]
     public void SearchFindsWorkflowAndGlossaryContent(
         string query,
         string expectedTitle)
@@ -177,6 +184,40 @@ public sealed class GuidesViewModelTests
         Assert.Contains(
             viewModel.SearchResults,
             result => result.Title == expectedTitle);
+    }
+
+    [Fact]
+    public void BoxelGuideMatchesTheImplementedProjectWorkflow()
+    {
+        var categories = GuideCatalog.Create();
+        var travel = categories.Single(
+            category => category.Key == "travel-search");
+        var boxel = categories.Single(category => category.Key == "boxel");
+        var guardian = categories.Single(category => category.Key == "guardian");
+        var boxelSections = boxel.Sections.ToArray();
+        var instructions = string.Join(
+            ' ',
+            boxelSections.SelectMany(section =>
+                new[] { section.Summary }
+                    .Concat(section.Steps)
+                    .Concat(section.Details)));
+
+        Assert.Equal("Boxel", boxel.Title);
+        Assert.Equal("06", boxel.Number);
+        Assert.Equal(
+            categories.ToList().IndexOf(boxel) + 1,
+            categories.ToList().IndexOf(guardian));
+        Assert.DoesNotContain(travel.Sections, section =>
+            section.Title.Contains("boxel", StringComparison.OrdinalIgnoreCase));
+        Assert.True(boxelSections.Length >= 5);
+        Assert.Contains("Lowest mass code", instructions, StringComparison.Ordinal);
+        Assert.Contains("lowest incomplete suffix", instructions, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("FSSAllBodiesFound", instructions, StringComparison.Ordinal);
+        Assert.Contains("mutually exclusive", instructions, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Resume Search", instructions, StringComparison.Ordinal);
+        Assert.Contains("last modified date", instructions, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("more than 1,000 requests", instructions, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Marx's Guide to Boxels", instructions, StringComparison.Ordinal);
     }
 
     [Fact]

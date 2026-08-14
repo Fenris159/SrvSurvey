@@ -1,0 +1,298 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.BoxelSearchLibraryWindow"
+        x:DataType="vm:BoxelSearchLibraryViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="1240"
+        d:DesignHeight="760"
+        Width="1240"
+        Height="760"
+        MinWidth="980"
+        MinHeight="560"
+        WindowStartupLocation="CenterOwner"
+        Title="Saved Boxel Searches">
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Escape" Command="{Binding CancelDialogCommand}" />
+  </Window.KeyBindings>
+  <Grid RowDefinitions="Auto,*,Auto">
+    <Border Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="24,18"
+            IsEnabled="{Binding !IsDialogVisible}">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="BOXEL" />
+          <TextBlock Classes="page-title" FontSize="24" Text="Saved boxel searches" />
+          <TextBlock Classes="muted"
+                     Text="Resume an older search or organize searches you want to revisit." />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Classes="secondary"
+                VerticalAlignment="Center"
+                Click="Close_Click"
+                Content="Close" />
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="1"
+            Margin="20"
+            Classes="card"
+            Padding="0"
+            IsEnabled="{Binding !IsDialogVisible}">
+      <Grid RowDefinitions="Auto,Auto,*">
+        <Grid Margin="18" ColumnDefinitions="*,Auto" ColumnSpacing="14">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Classes="primary"
+                    Command="{Binding OpenSelectedCommand}"
+                    Content="Open Selected" />
+            <Button Classes="secondary compact-danger"
+                    Width="44"
+                    Height="38"
+                    AutomationProperties.Name="Delete selected saved search"
+                    Command="{Binding RequestDeleteCommand}"
+                    ToolTip.Tip="Delete selected saved search">
+              <Path Width="17"
+                    Height="17"
+                    Data="M 3,5 L 17,5 M 7,5 L 7,3 L 13,3 L 13,5 M 5,5 L 6,18 L 14,18 L 15,5 M 8,8 L 8.5,15 M 12,8 L 11.5,15"
+                    Stroke="{DynamicResource RavenDangerBrush}"
+                    StrokeLineCap="Round"
+                    StrokeThickness="1.7"
+                    Stretch="Uniform" />
+            </Button>
+            <Button Classes="secondary"
+                    Command="{Binding RefreshCommand}"
+                    Content="Refresh" />
+          </StackPanel>
+          <StackPanel Grid.Column="1"
+                      Orientation="Horizontal"
+                      VerticalAlignment="Center"
+                      Spacing="10">
+            <CheckBox IsChecked="{Binding FavoritesFirst, Mode=TwoWay}"
+                      Content="Favorites first" />
+            <TextBlock Classes="muted"
+                       VerticalAlignment="Center"
+                       Text="{Binding SelectionSummary}" />
+          </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1"
+                Background="{DynamicResource RavenRaisedSurfaceBrush}"
+                BorderBrush="{DynamicResource RavenBorderBrush}"
+                BorderThickness="0,1"
+                Padding="12,9">
+          <Grid ColumnDefinitions="46,52,1.4*,145,145,190,1.4*,78"
+                ColumnSpacing="10">
+            <TextBlock Classes="table-heading"
+                       HorizontalAlignment="Center"
+                       Text="SELECT" />
+            <TextBlock Grid.Column="1"
+                       Classes="table-heading"
+                       HorizontalAlignment="Center"
+                       Text="&#x2605;" />
+            <Button Grid.Column="2"
+                    Classes="link"
+                    HorizontalAlignment="Left"
+                    Padding="0"
+                    Command="{Binding SortNameCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Classes="table-heading" Text="NAME" />
+                <TextBlock Classes="table-heading" Text="{Binding NameSortIndicator}" />
+              </StackPanel>
+            </Button>
+            <Button Grid.Column="3"
+                    Classes="link"
+                    HorizontalAlignment="Left"
+                    Padding="0"
+                    Command="{Binding SortDateCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Classes="table-heading" Text="DATE CREATED" />
+                <TextBlock Classes="table-heading" Text="{Binding DateSortIndicator}" />
+              </StackPanel>
+            </Button>
+            <Button Grid.Column="4"
+                    Classes="link"
+                    HorizontalAlignment="Left"
+                    Padding="0"
+                    Command="{Binding SortModifiedCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Classes="table-heading" Text="LAST MODIFIED" />
+                <TextBlock Classes="table-heading" Text="{Binding ModifiedSortIndicator}" />
+              </StackPanel>
+            </Button>
+            <Button Grid.Column="5"
+                    Classes="link"
+                    HorizontalAlignment="Left"
+                    Padding="0"
+                    Command="{Binding SortProgressCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Classes="table-heading" Text="PROGRESS COMPLETED" />
+                <TextBlock Classes="table-heading" Text="{Binding ProgressSortIndicator}" />
+              </StackPanel>
+            </Button>
+            <TextBlock Grid.Column="6" Classes="table-heading" Text="NOTES" />
+            <TextBlock Grid.Column="7"
+                       Classes="table-heading"
+                       HorizontalAlignment="Center"
+                       Text="EDIT" />
+          </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" MinHeight="260">
+          <StackPanel HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Spacing="6"
+                      IsVisible="{Binding !HasSearches}">
+            <TextBlock Classes="card-title" Text="No saved boxel searches" />
+            <TextBlock Classes="muted"
+                       Text="Start a search, then choose Save Progress to add it here." />
+          </StackPanel>
+
+          <ScrollViewer IsVisible="{Binding HasSearches}"
+                        HorizontalScrollBarVisibility="Auto"
+                        VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Searches}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:BoxelSearchLibraryItemViewModel">
+                  <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                          BorderThickness="0,0,0,1"
+                          Padding="12,11">
+                    <Grid ColumnDefinitions="46,52,1.4*,145,145,190,1.4*,78"
+                          ColumnSpacing="10">
+                      <CheckBox HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                      <Button Grid.Column="1"
+                              Classes="favorite-star"
+                              Width="42"
+                              Height="42"
+                              AutomationProperties.Name="Add or remove saved search favorite"
+                              Command="{Binding ToggleFavoriteCommand}"
+                              ToolTip.Tip="Add or remove favorite">
+                        <TextBlock FontSize="31" Text="{Binding FavoriteGlyph}" />
+                      </Button>
+                      <Grid Grid.Column="2" ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                        <TextBlock FontWeight="SemiBold"
+                                   Text="{Binding Name}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <Button Grid.Column="1"
+                                Classes="link"
+                                Width="28"
+                                Height="28"
+                                Padding="5"
+                                AutomationProperties.Name="Rename saved search"
+                                Command="{Binding RenameCommand}"
+                                ToolTip.Tip="Rename saved search">
+                          <Path Data="M 3,15 L 4,11 L 12,3 L 15,6 L 7,14 Z M 11,4 L 14,7"
+                                Stroke="{DynamicResource RavenTextBrush}"
+                                StrokeLineCap="Round"
+                                StrokeThickness="1.5"
+                                Stretch="Uniform" />
+                        </Button>
+                      </Grid>
+                      <TextBlock Grid.Column="3"
+                                 Classes="muted"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding CreatedAtText}" />
+                      <TextBlock Grid.Column="4"
+                                 Classes="muted"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding UpdatedAtText}" />
+                      <TextBlock Grid.Column="5"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding ProgressText}"
+                                 TextWrapping="Wrap" />
+                      <TextBlock Grid.Column="6"
+                                 Classes="muted"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding NotesDisplay}"
+                                 TextTrimming="CharacterEllipsis" />
+                      <Button Grid.Column="7"
+                              Classes="secondary"
+                              HorizontalAlignment="Center"
+                              Command="{Binding EditNotesCommand}"
+                              Content="Notes" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Grid>
+    </Border>
+
+    <TextBlock Grid.Row="2"
+               Margin="20,0,20,16"
+               Classes="muted"
+               IsEnabled="{Binding !IsDialogVisible}"
+               Text="{Binding StatusMessage}"
+               TextWrapping="Wrap" />
+
+    <Border Grid.RowSpan="3"
+            Background="#99000000"
+            IsVisible="{Binding IsDialogVisible}">
+      <Grid>
+        <Border Width="520"
+                Padding="24"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Classes="card raised"
+                IsVisible="{Binding IsRenameVisible}">
+          <StackPanel Spacing="14">
+            <TextBlock Classes="page-title" FontSize="21" Text="Rename saved search" />
+            <TextBox x:Name="RenameTextBox"
+                     Text="{Binding RenameDraft, Mode=TwoWay}"
+                     MaxLength="120" />
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="10">
+              <Button Classes="secondary" Command="{Binding CancelDialogCommand}" Content="Cancel" />
+              <Button Classes="primary" Command="{Binding SaveRenameCommand}" Content="Save name" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <Border Width="620"
+                Padding="24"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Classes="card raised"
+                IsVisible="{Binding IsNotesVisible}">
+          <StackPanel Spacing="14">
+            <TextBlock Classes="page-title" FontSize="21" Text="Edit notes" />
+            <TextBlock Classes="muted" Text="{Binding EditingSearchName}" />
+            <TextBox x:Name="NotesTextBox"
+                     Height="190"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     Text="{Binding NotesDraft, Mode=TwoWay}" />
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="10">
+              <Button Classes="secondary" Command="{Binding CancelDialogCommand}" Content="Cancel" />
+              <Button Classes="primary" Command="{Binding SaveNotesCommand}" Content="Save notes" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <Border Width="520"
+                Padding="24"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Classes="card raised"
+                IsVisible="{Binding IsDeleteConfirmationVisible}">
+          <StackPanel Spacing="14">
+            <TextBlock Classes="page-title" FontSize="21" Text="Delete saved search?" />
+            <TextBlock Text="{Binding DeleteConfirmationText}" TextWrapping="Wrap" />
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="10">
+              <Button Classes="secondary" Command="{Binding CancelDialogCommand}" Content="Cancel" />
+              <Button Classes="secondary compact-danger"
+                      Command="{Binding ConfirmDeleteCommand}"
+                      Content="Delete" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

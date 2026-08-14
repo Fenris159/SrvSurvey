@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         x:Class="SrvSurvey.Desktop.RouteWindow"
         x:DataType="vm:RouteWorkspaceViewModel"
@@ -56,11 +57,18 @@
             <Border Classes="card raised" Padding="18">
               <StackPanel Spacing="11">
                 <TextBlock Classes="muted" FontSize="10" Text="NEXT SYSTEM" />
-                <TextBlock FontSize="22"
-                           FontWeight="SemiBold"
-                           Foreground="{DynamicResource RavenAccentBrush}"
-                           Text="{Binding NextHopName}"
-                           TextWrapping="Wrap" />
+                <Button Classes="link" HorizontalAlignment="Left"
+                        behaviors:ClipboardCopyBehavior.Text="{Binding NextHopName}">
+                  <TextBlock FontSize="22" FontWeight="SemiBold"
+                             Text="{Binding NextHopName}"
+                             TextWrapping="Wrap" />
+                </Button>
+                <Button Classes="link" HorizontalAlignment="Left"
+                        IsVisible="{Binding HasNextHopSystemAddress}"
+                        behaviors:ClipboardCopyBehavior.Text="{Binding NextHopSystemAddress}">
+                  <TextBlock Classes="muted monospace"
+                             Text="{Binding NextHopSystemAddressText}" />
+                </Button>
                 <TextBlock Classes="muted"
                            Text="{Binding ProgressSummary}"
                            TextWrapping="Wrap" />
@@ -110,7 +118,10 @@
 
             <StackPanel Spacing="4">
               <TextBlock Classes="muted" FontSize="10" Text="COMMANDER CONTEXT" />
-              <TextBlock FontWeight="SemiBold" Text="{Binding CurrentSystem}" />
+              <Button Classes="link" HorizontalAlignment="Left"
+                      behaviors:ClipboardCopyBehavior.Text="{Binding CurrentSystem}">
+                <TextBlock FontWeight="SemiBold" Text="{Binding CurrentSystem}" />
+              </Button>
               <TextBlock Classes="muted"
                          FontSize="11"
                          Text="{Binding RouteFileName}" />
@@ -189,10 +200,20 @@
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
                           <TextBlock Classes="muted"
                                      Text="{Binding Number, StringFormat='#{0}'}" />
-                          <TextBlock Grid.Column="1"
-                                     FontWeight="SemiBold"
-                                     Text="{Binding Name}"
-                                     TextTrimming="CharacterEllipsis" />
+                          <StackPanel Grid.Column="1" Spacing="2">
+                            <Button Classes="link" HorizontalAlignment="Left"
+                                    behaviors:ClipboardCopyBehavior.Text="{Binding Name}">
+                              <TextBlock FontWeight="SemiBold"
+                                         Text="{Binding Name}"
+                                         TextTrimming="CharacterEllipsis" />
+                            </Button>
+                            <Button Classes="link" HorizontalAlignment="Left"
+                                    IsVisible="{Binding HasSystemAddress}"
+                                    behaviors:ClipboardCopyBehavior.Text="{Binding Hop.SystemAddress}">
+                              <TextBlock Classes="muted monospace" FontSize="9"
+                                         Text="{Binding SystemAddressText}" />
+                            </Button>
+                          </StackPanel>
                         </Grid>
                         <Border Classes="badge"
                                 HorizontalAlignment="Left"
@@ -383,10 +404,20 @@
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
                           <TextBlock Classes="muted"
                                      Text="{Binding Number, StringFormat='#{0}'}" />
-                          <TextBlock Grid.Column="1"
-                                     FontWeight="SemiBold"
-                                     Text="{Binding Name}"
-                                     TextTrimming="CharacterEllipsis" />
+                          <StackPanel Grid.Column="1" Spacing="2">
+                            <Button Classes="link" HorizontalAlignment="Left"
+                                    behaviors:ClipboardCopyBehavior.Text="{Binding Name}">
+                              <TextBlock FontWeight="SemiBold"
+                                         Text="{Binding Name}"
+                                         TextTrimming="CharacterEllipsis" />
+                            </Button>
+                            <Button Classes="link" HorizontalAlignment="Left"
+                                    IsVisible="{Binding HasSystemAddress}"
+                                    behaviors:ClipboardCopyBehavior.Text="{Binding Hop.SystemAddress}">
+                              <TextBlock Classes="muted monospace" FontSize="9"
+                                         Text="{Binding SystemAddressText}" />
+                            </Button>
+                          </StackPanel>
                         </Grid>
                         <Border Classes="badge"
                                 HorizontalAlignment="Left"

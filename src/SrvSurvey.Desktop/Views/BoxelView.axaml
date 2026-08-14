@@ -1,0 +1,589 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:search="using:SrvSurvey.Core.Search"
+             x:Class="SrvSurvey.Desktop.Views.BoxelView"
+             x:DataType="vm:MainWindowViewModel"
+             mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="Border.boxel-hierarchy-current">
+      <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="MinWidth" Value="300" />
+      <Setter Property="Padding" Value="16" />
+    </Style>
+    <Style Selector="Button.boxel-hierarchy-target">
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="MinHeight" Value="72" />
+      <Setter Property="MinWidth" Value="250" />
+      <Setter Property="Padding" Value="14,11" />
+    </Style>
+    <Style Selector="Button.boxel-child-row">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="Margin" Value="0,0,0,6" />
+    </Style>
+    <Style Selector="Button.voxstellar-info">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+      <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="Button.voxstellar-info:pointerover">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentHoverBrush}" />
+    </Style>
+    <Style Selector="Button.voxstellar-info Path">
+      <Setter Property="Fill" Value="{Binding $parent[Button].Foreground}" />
+    </Style>
+  </UserControl.Styles>
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="32" Spacing="24" MaxWidth="1300">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="eyebrow" Text="BOXEL" />
+          <TextBlock Classes="page-title" Text="Boxel search" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Search procedural boxels, track every generated system, and choose what counts as complete." />
+        </StackPanel>
+        <StackPanel Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    MaxWidth="390"
+                    Spacing="7">
+          <Grid HorizontalAlignment="Right"
+                ColumnDefinitions="Auto,Auto"
+                ColumnSpacing="8">
+            <Button Classes="secondary"
+                    Height="46"
+                    VerticalAlignment="Center"
+                    Click="VoxStellar_Click">
+              <StackPanel Orientation="Horizontal" Spacing="9">
+                <Image Width="30"
+                       Height="30"
+                       Stretch="UniformToFill"
+                       Source="avares://SrvSurvey.Desktop/Assets/VoxStellar/voxstellar.png" />
+                <TextBlock VerticalAlignment="Center"
+                           FontWeight="SemiBold"
+                           Text="VoxStellar" />
+              </StackPanel>
+            </Button>
+            <Button Grid.Column="1"
+                    Classes="voxstellar-info"
+                    Width="40"
+                    Height="46"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="VoxStellar data use and licensing"
+                    Click="VoxStellarInfo_Click"
+                    ToolTip.Tip="VoxStellar data use and licensing">
+              <Viewbox Width="32"
+                       Height="32"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Stretch="Uniform">
+                <Path Width="24"
+                      Height="24"
+                      Data="M11,17 L13,17 L13,11 L11,11 Z M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z M11,9 L13,9 L13,7 L11,7 Z" />
+              </Viewbox>
+            </Button>
+          </Grid>
+          <CheckBox HorizontalAlignment="Right"
+                    IsChecked="{Binding VoxStellar.JournalUploadEnabled, Mode=TwoWay}"
+                    IsEnabled="{Binding VoxStellar.CanChangeUploadPreference}">
+            <TextBlock TextWrapping="Wrap"
+                       Text="Send Journal to VoxStellar for boxel surveying" />
+          </CheckBox>
+          <TextBlock Classes="muted"
+                     FontSize="10"
+                     IsVisible="{Binding VoxStellar.HasStatusMessage}"
+                     TextAlignment="Right"
+                     TextWrapping="Wrap"
+                     Text="{Binding VoxStellar.StatusMessage}" />
+        </StackPanel>
+      </Grid>
+
+      <Border Classes="card raised" Padding="0">
+        <Grid ColumnDefinitions="6,*">
+          <Border Classes="accent-line" CornerRadius="12,0,0,12" />
+          <Grid Grid.Column="1"
+                Margin="28"
+                ColumnDefinitions="2*,2*,*,Auto"
+                ColumnSpacing="24">
+            <StackPanel Spacing="5">
+              <TextBlock Classes="muted" Text="CURRENT BOXEL PREFIX" />
+              <Button Classes="link" HorizontalAlignment="Left"
+                      behaviors:ClipboardCopyBehavior.Text="{Binding BoxelSearch.CurrentBoxelName}">
+                <TextBlock FontSize="24" FontWeight="SemiBold"
+                           TextWrapping="Wrap"
+                           Text="{Binding BoxelSearch.CurrentBoxelName}" />
+              </Button>
+              <TextBlock Classes="muted"
+                         FontSize="10"
+                         TextWrapping="Wrap"
+                         Text="{Binding BoxelSearch.CurrentBoxelDescription}" />
+              <TextBlock Classes="muted" Text="{Binding BoxelSearch.SystemProgress}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="5">
+              <TextBlock Classes="muted" Text="NEXT INCOMPLETE SYSTEM" />
+              <Button Classes="link" HorizontalAlignment="Left"
+                      behaviors:ClipboardCopyBehavior.Text="{Binding BoxelSearch.NextSystem}">
+                <TextBlock Classes="card-title monospace"
+                           TextWrapping="Wrap"
+                           Text="{Binding BoxelSearch.NextSystem}" />
+              </Button>
+              <TextBlock Classes="muted" Text="{Binding BoxelSearch.BoxelProgress}" />
+              <TextBlock Classes="muted"
+                         FontSize="10"
+                         Text="Lowest incomplete suffix in the current boxel." />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="5">
+              <TextBlock Classes="muted" Text="CURRENT SYSTEM" />
+              <Button Classes="link" HorizontalAlignment="Left"
+                      behaviors:ClipboardCopyBehavior.Text="{Binding BoxelSearch.CurrentSystemName}">
+                <TextBlock FontWeight="SemiBold" TextWrapping="Wrap"
+                           Text="{Binding BoxelSearch.CurrentSystemName}" />
+              </Button>
+              <Button Classes="link" HorizontalAlignment="Left"
+                      IsVisible="{Binding BoxelSearch.HasCurrentSystemAddress}"
+                      behaviors:ClipboardCopyBehavior.Text="{Binding BoxelSearch.CurrentSystemAddress}">
+                <TextBlock Classes="muted monospace"
+                           Text="{Binding BoxelSearch.CurrentSystemAddressText}" />
+              </Button>
+            </StackPanel>
+            <Border Grid.Column="3"
+                    Classes="badge"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top">
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         FontSize="11"
+                         Text="{Binding BoxelSearch.StatusLabel}" />
+            </Border>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="3*,2*" ColumnSpacing="18">
+        <Border Classes="card">
+          <StackPanel Spacing="16">
+            <TextBlock Classes="card-title" Text="Configure boxel search" />
+            <StackPanel Spacing="6">
+              <TextBlock Classes="muted" Text="TOP BOXEL OR GENERATED SYSTEM" />
+              <TextBox x:Name="TopBoxelTextBox"
+                       Text="{Binding BoxelSearch.TopBoxelText, Mode=TwoWay}"
+                       KeyDown="TopBoxelTextBox_KeyDown"
+                       PlaceholderText="Praea Euq IL-P c5-0" />
+              <Border Background="{DynamicResource RavenRaisedSurfaceBrush}"
+                      BorderBrush="{DynamicResource RavenBorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      IsVisible="{Binding BoxelSearch.HasSystemNameSuggestions}"
+                      Padding="4">
+                <ListBox MaxHeight="260"
+                         ItemsSource="{Binding BoxelSearch.SystemNameSuggestions}"
+                         SelectedIndex="{Binding BoxelSearch.SelectedSystemSuggestionIndex, Mode=TwoWay}">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="search:SystemNameSuggestion">
+                      <Button Classes="commander-card"
+                              Click="SystemSuggestion_Click"
+                              HorizontalContentAlignment="Stretch"
+                              Padding="10,8">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                          <TextBlock Classes="monospace"
+                                     FontWeight="SemiBold"
+                                     TextWrapping="Wrap"
+                                     Text="{Binding Name}" />
+                          <StackPanel Grid.Column="1"
+                                      HorizontalAlignment="Right"
+                                      Orientation="Horizontal"
+                                      Spacing="6">
+                            <TextBlock Classes="eyebrow" Text="{Binding Source}" />
+                            <TextBlock Classes="muted monospace"
+                                       Text="{Binding SystemAddress}" />
+                          </StackPanel>
+                        </Grid>
+                      </Button>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </Border>
+              <TextBlock Classes="muted"
+                         FontSize="10"
+                         TextWrapping="Wrap"
+                         Text="{Binding BoxelSearch.SystemSuggestionStatus}" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding BoxelSearch.SearchSize}" />
+            </StackPanel>
+            <Grid ColumnDefinitions="*,2*" ColumnSpacing="12">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="muted" Text="LOWEST MASS CODE" />
+                <ComboBox ItemsSource="{Binding BoxelSearch.MassCodes}"
+                          SelectedItem="{Binding BoxelSearch.LowMassCode, Mode=TwoWay}" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="6">
+                <TextBlock Classes="muted" Text="SEARCH START DATE" />
+                <DatePicker SelectedDate="{Binding BoxelSearch.StartedOn, Mode=TwoWay}" />
+              </StackPanel>
+            </Grid>
+            <CheckBox IsChecked="{Binding BoxelSearch.SkipAlreadyVisited, Mode=TwoWay}"
+                      Content="Treat systems visited before the start date as complete" />
+            <CheckBox IsChecked="{Binding BoxelSearch.SkipKnownToSpansh, Mode=TwoWay}"
+                      Content="Treat systems whose Spansh body data predates the start date as complete" />
+            <CheckBox IsChecked="{Binding BoxelSearch.CompleteOnFssAllBodies, Mode=TwoWay}"
+                      Content="Require FSS to report all bodies before completion" />
+            <WrapPanel Orientation="Horizontal">
+              <Button Classes="primary"
+                      Margin="0,0,10,10"
+                      Command="{Binding BoxelSearch.ActivateCommand}"
+                      Content="Start search" />
+              <Button Classes="secondary"
+                      Margin="0,0,0,10"
+                      Command="{Binding BoxelSearch.DisableCommand}"
+                      Content="Stop search" />
+            </WrapPanel>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Button Classes="secondary"
+                      IsEnabled="{Binding BoxelSearch.CanSaveProgress}"
+                      Click="SaveProgress_Click"
+                      Content="Save Progress" />
+              <Button Classes="secondary"
+                      Click="ResumeSearch_Click"
+                      Content="Resume Search" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Classes="card">
+          <StackPanel Spacing="16">
+            <TextBlock Classes="card-title" Text="Current boxel controls" />
+            <StackPanel Spacing="5">
+              <CheckBox IsChecked="{Binding BoxelSearch.AutoCopy, Mode=TwoWay}"
+                        Content="Auto-copy next system in Galaxy Map" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Route Manager, FC Routes, and Boxel auto-copy are mutually exclusive." />
+            </StackPanel>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <StackPanel Spacing="6">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <TextBlock Classes="muted"
+                             VerticalAlignment="Center"
+                             Text="EXPECTED SYSTEMS" />
+                  <Button Classes="link"
+                          Width="18"
+                          Height="18"
+                          Padding="2"
+                          VerticalAlignment="Center"
+                          AutomationProperties.Name="Explain expected systems"
+                          Click="ExpectedSystemsInfo_Click"
+                          ToolTip.Tip="Explain expected systems">
+                    <PathIcon Width="14"
+                              Height="14"
+                              Data="{StaticResource question_circle_regular}" />
+                  </Button>
+                </StackPanel>
+                <TextBox Text="{Binding BoxelSearch.ExpectedSystemCount, Mode=TwoWay}" />
+              </StackPanel>
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      VerticalAlignment="Bottom"
+                      Command="{Binding BoxelSearch.ApplyExpectedCountCommand}"
+                      Content="Apply" />
+            </Grid>
+            <WrapPanel Orientation="Horizontal">
+              <Button Classes="primary"
+                      Margin="0,0,10,10"
+                      Command="{Binding BoxelSearch.CopyNextCommand}"
+                      Content="Copy next" />
+              <Button Classes="secondary"
+                      Margin="0,0,10,10"
+                      Command="{Binding BoxelSearch.RefreshCommand}"
+                      Content="{Binding BoxelSearch.RefreshButtonText}" />
+              <Button Classes="secondary"
+                      Margin="0,0,0,10"
+                      Command="{Binding BoxelSearch.ToggleEmptyCommand}"
+                      Content="{Binding BoxelSearch.EmptyButtonText}" />
+            </WrapPanel>
+            <Separator />
+            <StackPanel Spacing="8">
+              <TextBlock Classes="card-title" Text="Full-area completion audit" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding BoxelSearch.AuditDescription}" />
+              <ProgressBar Height="6"
+                           IsVisible="{Binding BoxelSearch.IsAuditing}"
+                           Maximum="{Binding BoxelSearch.AuditTotal}"
+                           Value="{Binding BoxelSearch.AuditProcessed}" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding BoxelSearch.AuditProgress}" />
+              <CheckBox IsChecked="{Binding BoxelSearch.ConfirmLargeAudit, Mode=TwoWay}"
+                        IsVisible="{Binding BoxelSearch.ShowLargeAuditConfirmation}"
+                        Content="I understand this audit can make more than 1,000 Spansh requests" />
+              <WrapPanel Orientation="Horizontal">
+                <Button Classes="secondary"
+                        Margin="0,0,10,0"
+                        Command="{Binding BoxelSearch.AuditAllCommand}"
+                        Content="{Binding BoxelSearch.AuditButtonText}" />
+                <Button Classes="secondary"
+                        Command="{Binding BoxelSearch.CancelAuditCommand}"
+                        Content="Cancel audit" />
+              </WrapPanel>
+            </StackPanel>
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding BoxelSearch.StatusMessage}" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Border Classes="card"
+              IsVisible="{Binding BoxelSearch.CanNavigateSearchTree}">
+        <StackPanel Spacing="18">
+          <TextBlock Classes="card-title" Text="Boxel hierarchy" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="See your path from the search root, move between boxels at the same level, or open a smaller child boxel. This does not move between systems in the table." />
+
+          <StackPanel Spacing="8">
+            <TextBlock Classes="eyebrow" Text="LOCATION IN SEARCH" />
+            <ItemsControl ItemsSource="{Binding BoxelSearch.BreadcrumbBoxels}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:BoxelNavigationOptionViewModel">
+                  <StackPanel Margin="0,0,8,6"
+                              Orientation="Horizontal"
+                              Spacing="8">
+                    <Button Classes="link"
+                            IsVisible="{Binding CanNavigate}"
+                            Command="{Binding NavigateCommand}"
+                            ToolTip.Tip="Open this ancestor boxel">
+                      <TextBlock Classes="monospace" Text="{Binding Label}" />
+                    </Button>
+                    <Border Classes="badge" IsVisible="{Binding IsCurrent}">
+                      <TextBlock Classes="monospace"
+                                 FontWeight="SemiBold"
+                                 Text="{Binding Label}" />
+                    </Border>
+                    <TextBlock Classes="muted"
+                               IsVisible="{Binding CanNavigate}"
+                               VerticalAlignment="Center"
+                               Text="›" />
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+
+          <Button Classes="secondary"
+                  HorizontalAlignment="Left"
+                  HorizontalContentAlignment="Left"
+                  IsVisible="{Binding BoxelSearch.CanNavigateParent}"
+                  Command="{Binding BoxelSearch.NavigateParentCommand}"
+                  ToolTip.Tip="Return one level toward the search root">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         FontSize="18"
+                         Text="↑" />
+              <StackPanel>
+                <TextBlock Classes="eyebrow" Text="UP ONE LEVEL" />
+                <TextBlock Classes="monospace"
+                           Text="{Binding BoxelSearch.ParentBoxelLabel}" />
+              </StackPanel>
+            </StackPanel>
+          </Button>
+
+          <Grid HorizontalAlignment="Center"
+                ColumnDefinitions="Auto,Auto,Auto"
+                ColumnSpacing="12">
+            <Button Classes="secondary boxel-hierarchy-target"
+                    IsVisible="{Binding BoxelSearch.CanNavigatePreviousSibling}"
+                    Command="{Binding BoxelSearch.NavigatePreviousCommand}"
+                    ToolTip.Tip="Open the previous boxel at this level">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="eyebrow" Text="← PREVIOUS AT THIS LEVEL" />
+                <TextBlock Classes="monospace"
+                           FontWeight="SemiBold"
+                           TextWrapping="Wrap"
+                           Text="{Binding BoxelSearch.PreviousSiblingBoxelLabel}" />
+              </StackPanel>
+            </Button>
+
+            <Border Grid.Column="1" Classes="boxel-hierarchy-current">
+              <StackPanel HorizontalAlignment="Center" Spacing="5">
+                <TextBlock Classes="eyebrow"
+                           HorizontalAlignment="Center"
+                           Text="CURRENT BOXEL" />
+                <TextBlock Classes="card-title monospace"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           Text="{Binding BoxelSearch.CurrentHierarchyBoxelLabel}" />
+                <TextBlock Classes="muted"
+                           HorizontalAlignment="Center"
+                           Text="{Binding BoxelSearch.SiblingPosition}" />
+                <TextBlock Classes="muted"
+                           HorizontalAlignment="Center"
+                           Text="{Binding BoxelSearch.CurrentHierarchyBoxelProgressLabel}" />
+              </StackPanel>
+            </Border>
+
+            <Button Grid.Column="2"
+                    Classes="secondary boxel-hierarchy-target"
+                    IsVisible="{Binding BoxelSearch.CanNavigateNextSibling}"
+                    Command="{Binding BoxelSearch.NavigateNextCommand}"
+                    ToolTip.Tip="Open the next boxel at this level">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="eyebrow"
+                           HorizontalAlignment="Right"
+                           Text="NEXT AT THIS LEVEL →" />
+                <TextBlock Classes="monospace"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Right"
+                           TextAlignment="Right"
+                           TextWrapping="Wrap"
+                           Text="{Binding BoxelSearch.NextSiblingBoxelLabel}" />
+              </StackPanel>
+            </Button>
+          </Grid>
+
+          <StackPanel Spacing="8" IsVisible="{Binding BoxelSearch.HasChildBoxels}">
+            <TextBlock Classes="eyebrow" Text="CHILD BOXELS · ONE LEVEL SMALLER" />
+            <ItemsControl ItemsSource="{Binding BoxelSearch.ChildBoxels}">
+              <ItemsControl.Styles>
+                <Style Selector="ContentPresenter">
+                  <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+              </ItemsControl.Styles>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:BoxelNavigationOptionViewModel">
+                  <Button Classes="commander-card boxel-child-row"
+                          Command="{Binding NavigateCommand}"
+                          ToolTip.Tip="Open this child boxel">
+                    <Grid ColumnDefinitions="2*,*,120" ColumnSpacing="18">
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                   FontSize="18"
+                                   Text="↳" />
+                        <TextBlock Classes="monospace"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding Label}" />
+                      </StackPanel>
+                      <TextBlock Grid.Column="1"
+                                 Classes="muted"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding ProgressLabel}" />
+                      <Border Grid.Column="2"
+                              Classes="badge"
+                              MinWidth="94"
+                              VerticalAlignment="Center">
+                        <TextBlock HorizontalAlignment="Center"
+                                   FontSize="10"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding StatusLabel}" />
+                      </Border>
+                    </Grid>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card" IsVisible="{Binding BoxelSearch.IsActive}">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Systems in current boxel" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding BoxelSearch.SystemListNote}" />
+            </StackPanel>
+            <TextBlock Grid.Column="1"
+                       Classes="muted"
+                       VerticalAlignment="Center"
+                       Text="{Binding BoxelSearch.SystemProgress}" />
+          </Grid>
+          <Border Background="{DynamicResource RavenSurfaceBrush}"
+                  CornerRadius="8"
+                  Padding="12,8">
+            <Grid ColumnDefinitions="2.2*,0.8*,1.15*,1.15*,110,110"
+                  ColumnSpacing="12">
+              <TextBlock Classes="muted" Text="SYSTEM" />
+              <TextBlock Grid.Column="1" Classes="muted" Text="DISTANCE" />
+              <TextBlock Grid.Column="2" Classes="muted" Text="LAST VISITED" />
+              <TextBlock Grid.Column="3" Classes="muted" Text="SPANSH UPDATED" />
+              <TextBlock Grid.Column="4" Classes="muted" Text="STATE" />
+              <TextBlock Grid.Column="5" Classes="muted" Text="ACTION" />
+            </Grid>
+          </Border>
+          <ItemsControl ItemsSource="{Binding BoxelSearch.Systems}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:BoxelSystemRowViewModel">
+                <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="12,10">
+                  <Grid ColumnDefinitions="2.2*,0.8*,1.15*,1.15*,110,110"
+                        ColumnSpacing="12">
+                    <StackPanel Spacing="2">
+                      <TextBlock Classes="monospace"
+                                 FontWeight="SemiBold"
+                                 Text="{Binding Name}" />
+                      <TextBlock Classes="muted"
+                                 FontSize="10"
+                                 IsVisible="{Binding IsCurrent}"
+                                 Text="CURRENT SYSTEM" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1"
+                               Classes="muted"
+                               VerticalAlignment="Center"
+                               Text="{Binding Distance}" />
+                    <TextBlock Grid.Column="2"
+                               Classes="muted"
+                               VerticalAlignment="Center"
+                               Text="{Binding VisitedAt}" />
+                    <TextBlock Grid.Column="3"
+                               Classes="muted"
+                               VerticalAlignment="Center"
+                               Text="{Binding SpanshUpdatedAt}" />
+                    <Border Grid.Column="4"
+                            Classes="badge"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center">
+                        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                   FontSize="10"
+                                   Text="{Binding Status}" />
+                    </Border>
+                    <Button Grid.Column="5"
+                              Classes="secondary"
+                              HorizontalAlignment="Stretch"
+                              Command="{Binding ToggleCommand}"
+                              Content="{Binding ToggleButtonText}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Classes="muted"
+                     HorizontalAlignment="Center"
+                     IsVisible="{Binding BoxelSearch.IsCurrentEmpty}"
+                     Text="This boxel is recorded as empty." />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

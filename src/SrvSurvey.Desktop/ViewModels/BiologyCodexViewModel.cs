@@ -82,6 +82,10 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
     public long? SystemAddress => survey.Snapshot.SystemAddress;
 
+    public bool HasSystemAddress => SystemAddress is > 0;
+
+    public string SystemAddressText => SystemAddressFormatter.Format(SystemAddress);
+
     public IReadOnlyList<BiologyCodexBodyViewModel> Bodies
     {
         get => bodies;
@@ -322,6 +326,8 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         Bodies = nextBodies;
         OnPropertyChanged(nameof(SystemName));
         OnPropertyChanged(nameof(SystemAddress));
+        OnPropertyChanged(nameof(HasSystemAddress));
+        OnPropertyChanged(nameof(SystemAddressText));
 
         var preferredBodyId = previousBodyId ?? ResolveCurrentBodyId(snapshot);
         var nextBody = nextBodies.FirstOrDefault(body =>

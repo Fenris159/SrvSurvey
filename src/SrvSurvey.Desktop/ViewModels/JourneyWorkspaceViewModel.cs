@@ -264,6 +264,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             }
 
             OnPropertyChanged(nameof(SelectedSystemName));
+            OnPropertyChanged(nameof(SelectedSystemAddress));
             OnPropertyChanged(nameof(SelectedSystemAddressText));
         }
     }
@@ -272,9 +273,10 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public string SelectedSystemName => SelectedSystem?.Name ?? string.Empty;
 
-    public string SelectedSystemAddressText => SelectedSystem is null
-        ? string.Empty
-        : $"System address {SelectedSystem.Address}";
+    public string SelectedSystemAddress => SelectedSystem?.Address ?? string.Empty;
+
+    public string SelectedSystemAddressText => SystemAddressFormatter.Format(
+        SelectedSystem?.Visit.StarSystem.SystemAddress);
 
     public string SelectedSystemNotes
     {

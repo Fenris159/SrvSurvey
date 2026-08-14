@@ -26,6 +26,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         CultureInfo.CurrentCulture);
     private string statusMessage = "Waiting for a commander profile.";
     private string currentSystemName = Unavailable;
+    private long? currentSystemAddress;
     private GalacticCoordinate? currentPosition;
     private string centerPosition = Unavailable;
     private string distanceToCenter = Unavailable;
@@ -116,6 +117,9 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
             if (SetField(ref selectedCenterSystem, value))
             {
                 enableCommand.RaiseCanExecuteChanged();
+                OnPropertyChanged(nameof(CenterSystemAddress));
+                OnPropertyChanged(nameof(CenterSystemAddressText));
+                OnPropertyChanged(nameof(HasCenterSystemAddress));
                 UpdateDisplay();
             }
         }
@@ -135,9 +139,25 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     public string CurrentPosition => currentPosition?.ToString() ?? Unavailable;
 
+    public bool HasCurrentSystemAddress => currentSystemAddress is > 0;
+
+    public long? CurrentSystemAddress => currentSystemAddress;
+
+    public string CurrentSystemAddressText => SystemAddressFormatter.Format(
+        currentSystemAddress);
+
     public string CenterSystemName => selectedCenterSystem?.Name
         ?? state.CenterSystemName
         ?? Unavailable;
+
+    public bool HasCenterSystemAddress => selectedCenterSystem?.SystemAddress is > 0;
+
+    public long? CenterSystemAddress => selectedCenterSystem?.SystemAddress is > 0
+        ? selectedCenterSystem.SystemAddress
+        : null;
+
+    public string CenterSystemAddressText => SystemAddressFormatter.Format(
+        selectedCenterSystem?.SystemAddress);
 
     public string CenterPosition
     {
@@ -245,8 +265,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
             && state.CenterSystemName is { } centerName)
         {
             var savedCenter = new StarSystemReference(centerName, 0, center);
-            Query = centerName;
-            SearchResults = [savedCenter];
+            Query = string.Empty;
             SelectedCenterSystem = savedCenter;
         }
         else
@@ -282,23 +301,30 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     public void UpdateCurrentSystem(
         string? systemName,
-        GalacticCoordinate? position)
+        GalacticCoordinate? position,
+        long? systemAddress = null)
     {
         var nextSystemName = string.IsNullOrWhiteSpace(systemName)
             ? Unavailable
             : systemName;
+        var nextSystemAddress = systemAddress is > 0 ? systemAddress : null;
         if (string.Equals(
                 currentSystemName,
                 nextSystemName,
                 StringComparison.OrdinalIgnoreCase)
-            && currentPosition == position)
+            && currentPosition == position
+            && currentSystemAddress == nextSystemAddress)
         {
             return;
         }
 
         CurrentSystemName = nextSystemName;
         currentPosition = position;
+        currentSystemAddress = nextSystemAddress;
         OnPropertyChanged(nameof(CurrentPosition));
+        OnPropertyChanged(nameof(HasCurrentSystemAddress));
+        OnPropertyChanged(nameof(CurrentSystemAddress));
+        OnPropertyChanged(nameof(CurrentSystemAddressText));
         UpdateDisplay();
     }
 

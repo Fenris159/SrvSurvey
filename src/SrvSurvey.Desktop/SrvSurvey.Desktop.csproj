@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SrvSurvey.Desktop</RootNamespace>
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
-    <Version>2.1.3.0-rc.22</Version>
+    <Version>2.1.3.0-rc.23</Version>
     <FileVersion>2.1.3.0</FileVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -51,6 +51,13 @@
     </AssemblyAttribute>
   </ItemGroup>
 
+  <ItemGroup Condition="'$(VoxStellarSharedKey)' != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SrvSurvey.VoxStellar.SharedKey</_Parameter1>
+      <_Parameter2>$(VoxStellarSharedKey)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
   <ItemGroup>
     <Content Include="Resources\plotters.json"
              Link="plotters.json"
@@ -62,6 +69,7 @@
     <AvaloniaResource Include="Assets\GuardianMaps\*-background.png" />
     <AvaloniaResource Include="Assets\GuardianGuidance\*.png" />
     <AvaloniaResource Include="Assets\SettingsVisualAids\*.png" />
+    <AvaloniaResource Include="Assets\VoxStellar\*.png" />
     <AvaloniaResource Include="Assets\Fonts\**\*.ttf" />
     <Content Include="Assets\Fonts\**\OFL.txt"
              CopyToOutputDirectory="PreserveNewest" />

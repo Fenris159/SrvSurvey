@@ -27,5 +27,10 @@
   "ColonisationWiki": "https://github.com/njthomson/SrvSurvey/wiki/Colonisation-System-Update-Tool",
   "EdGalaxyVisitedStars": "https://edgalaxy.net/visitedstars",
   "FrontierOAuthRedirect": "srvsurvey://frontier-auth",
-  "DesktopLogoAsset": "avares://SrvSurvey.Desktop/Assets/logo.ico"
+  "DesktopLogoAsset": "avares://SrvSurvey.Desktop/Assets/logo.ico",
+  "VoxStellarWebsite": "https://voxstellar.com/",
+  "VoxStellarWebhook": "https://voxstellar.com/webhooks/v1/system",
+  "VoxStellarPrivacyPolicy": "https://voxstellar.com/privacy-policy",
+  "VoxStellarTermsOfService": "https://voxstellar.com/terms-of-service",
+  "VoxStellarPluginSource": "https://github.com/SvenSapphire/EDMC-VoxStellar"
 }

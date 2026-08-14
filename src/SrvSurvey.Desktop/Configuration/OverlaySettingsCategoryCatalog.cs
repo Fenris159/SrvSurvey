@@ -23,6 +23,12 @@ public static class OverlaySettingsCategoryCatalog
             "TRAVEL",
             "Configure next-jump and station-information overlays."),
         new(
+            OverlaySettingsCategory.Boxel,
+            "boxel",
+            "Boxel",
+            "BOXEL",
+            "Configure Galaxy Map boxel guidance and completion notifications."),
+        new(
             OverlaySettingsCategory.Guardian,
             "guardian",
             "Guardian",
@@ -60,6 +66,7 @@ public enum OverlaySettingsCategory
     Exploration,
     Exobiology,
     Travel,
+    Boxel,
     Guardian,
     Quests,
     Colonization,

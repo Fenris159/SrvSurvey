@@ -35,6 +35,8 @@ public sealed class MainWindowViewModelOptions
 
     public IBoxelSystemResolver? BoxelSystemResolver { get; init; }
 
+    public ISystemNameSuggestionClient? SystemNameSuggestionClient { get; init; }
+
     public GlobalInputSettingsViewModel? InputSettings { get; init; }
 
     public ColonizationViewModel? Colonization { get; init; }
@@ -174,6 +176,8 @@ public sealed class MainWindowViewModelOptions
     public ICanonnHumanSitePublisher? CanonnHumanSitePublisher { get; init; }
 
     public IEddnPublisher? EddnPublisher { get; init; }
+
+    public IVoxStellarPublisher? VoxStellarPublisher { get; init; }
 
     public ISystemBodyDataClient? SystemBodyDataClient { get; init; }
 

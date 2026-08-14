@@ -81,16 +81,16 @@
                                     ItemsSource="{Binding Steps}">
                         <ItemsControl.ItemTemplate>
                           <DataTemplate>
-                            <Grid Margin="0,3" ColumnDefinitions="22,*">
-                              <Border Width="18" Height="18"
+                            <Grid Margin="0,3" ColumnDefinitions="26,*">
+                              <Border Width="22" Height="22"
                                       Background="{DynamicResource RavenAccentMutedBrush}"
-                                      CornerRadius="9">
+                                      CornerRadius="11">
                                 <TextBlock HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
-                                           FontSize="10"
+                                           FontSize="17"
                                            FontWeight="Bold"
                                            Foreground="{DynamicResource RavenAccentBrush}"
-                                           Text="›" />
+                                           Text="❯" />
                               </Border>
                               <TextBlock Grid.Column="1"
                                          TextWrapping="Wrap"

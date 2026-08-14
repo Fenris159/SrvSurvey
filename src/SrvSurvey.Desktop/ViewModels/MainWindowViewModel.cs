@@ -72,6 +72,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
     private readonly IEddnPublisher eddnPublisher;
+    private readonly IVoxStellarPublisher voxStellarPublisher;
     private readonly IInaraPublisher inaraPublisher;
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
@@ -97,6 +98,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private string gameDescription = Unavailable;
     private string gameMode = Unavailable;
     private string systemDescription = Unavailable;
+    private string overviewSystemName = Unavailable;
+    private long? overviewSystemAddress;
     private string bodyName = Unavailable;
     private string sessionState = "Waiting for journal";
     private string lastUpdated = string.Empty;
@@ -167,6 +170,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var exobiologyCatalog = options.ExobiologyCatalog;
         var starSystemResolver = options.StarSystemResolver;
         var boxelSystemResolver = options.BoxelSystemResolver;
+        var systemNameSuggestionClient = options.SystemNameSuggestionClient;
         var inputSettings = options.InputSettings;
         var colonization = options.Colonization;
         var nearestSystemsClient = options.NearestSystemsClient;
@@ -225,6 +229,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var canonnHumanSiteClient = options.CanonnHumanSiteClient;
         var canonnHumanSitePublisher = options.CanonnHumanSitePublisher;
         var resolvedEddnPublisher = options.EddnPublisher;
+        var resolvedVoxStellarPublisher = options.VoxStellarPublisher;
         var resolvedSystemBodyDataClient = options.SystemBodyDataClient;
         var resolvedInaraPublisher = options.InaraPublisher;
         var frontierProfile = options.FrontierProfile;
@@ -391,6 +396,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             log: message => resolvedApplicationLogService?.Append(message));
         NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
         this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
+        this.voxStellarPublisher = resolvedVoxStellarPublisher
+            ?? new VoxStellarPublisher(
+                (typeof(MainWindowViewModel).Assembly.GetName().Version
+                    ?? new Version(0, 0)).ToString(),
+                VoxStellarSharedKeyProvider.GetSharedKey(),
+                log: message => resolvedApplicationLogService?.Append(message));
+        VoxStellar = new VoxStellarSharingViewModel(
+            new VoxStellarSettingsStore(AppDataPaths.UiSettingsPath),
+            this.voxStellarPublisher.IsConfigured);
+        VoxStellar.UploadEnabledChanged += OnVoxStellarUploadEnabledChanged;
+        this.voxStellarPublisher.SetEnabled(
+            VoxStellar.JournalUploadEnabled);
         this.greenGasGiantPublicationCoordinator =
             resolvedGreenGasGiantPublicationCoordinator
                 ?? new GreenGasGiantPublicationCoordinator(
@@ -438,7 +455,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             new LegacySystemDataReader(AppDataPaths.DataDirectory),
             new EmptyBoxelStore(AppDataPaths.DataDirectory),
             boxelSystemResolver ?? new SpanshBoxelClient(),
-            knownSystems: knownSystems);
+            knownSystems: knownSystems,
+            systemNameSuggestionClient: systemNameSuggestionClient
+                ?? new FallbackSystemNameSuggestionClient(
+                    new EdsmSystemNameSuggestionClient(),
+                    new ArdentSystemNameSuggestionClient()));
         GroundTarget = new GroundTargetViewModel(
             new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
         SystemNotes = new SystemNotesViewModel(
@@ -473,7 +494,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             FleetCarrierRoute);
         routeAutoCopyCoordinator = new RouteAutoCopyCoordinator(
             Route,
-            FleetCarrierRoute);
+            FleetCarrierRoute,
+            BoxelSearch);
         var sharedJumpInfoSettingsStore = jumpInfoSettingsStore
             ?? new JumpInfoSettingsStore(AppDataPaths.UiSettingsPath);
         var sharedSystemSummaryClient = systemSummaryClient
@@ -693,7 +715,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             new("exploration", "Exploration", "Trip totals and body scans", true),
             new("exobiology", "Exobiology", "Organic scans and unclaimed rewards", true),
             new("travel", "Travel", "Ground targets, journeys, and routes", true),
-            new("search", "Search", "Spherical and boxel searches"),
+            new("boxel", "Boxel", "Procedural boxel searches and completion tracking", true),
+            new("search", "Search", "Spherical limits and nearby biology"),
             new("guardian", "Guardian", "Sites, maps, and Ram Tah", true),
             new("quests", "Quests", "Communications and active objectives", true),
             new("colonisation", "Colonization", "Raven Colonial projects", true),
@@ -756,6 +779,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public GalaxyMapOverlayViewModel GalaxyMap { get; }
 
     public NetworkPrivacyViewModel NetworkPrivacy { get; }
+
+    public VoxStellarSharingViewModel VoxStellar { get; }
 
     public InaraSettingsViewModel Inara { get; }
 
@@ -1013,6 +1038,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public bool IsTravelSelected => SelectedNavigation?.Key == "travel"
         && !IsProfileSelected;
 
+    public bool IsBoxelSelected => SelectedNavigation?.Key == "boxel"
+        && !IsProfileSelected;
+
     public bool IsSearchSelected => SelectedNavigation?.Key == "search"
         && !IsProfileSelected;
 
@@ -1054,6 +1082,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(IsExplorationSelected));
         OnPropertyChanged(nameof(IsExobiologySelected));
         OnPropertyChanged(nameof(IsTravelSelected));
+        OnPropertyChanged(nameof(IsBoxelSelected));
         OnPropertyChanged(nameof(IsSearchSelected));
         OnPropertyChanged(nameof(IsGuardianSelected));
         OnPropertyChanged(nameof(IsQuestsSelected));
@@ -1195,6 +1224,30 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         get => systemDescription;
         private set => SetField(ref systemDescription, value);
     }
+
+    public string OverviewSystemName
+    {
+        get => overviewSystemName;
+        private set => SetField(ref overviewSystemName, value);
+    }
+
+    public long? OverviewSystemAddress
+    {
+        get => overviewSystemAddress;
+        private set
+        {
+            if (SetField(ref overviewSystemAddress, value))
+            {
+                OnPropertyChanged(nameof(HasOverviewSystemAddress));
+                OnPropertyChanged(nameof(OverviewSystemAddressText));
+            }
+        }
+    }
+
+    public bool HasOverviewSystemAddress => OverviewSystemAddress is > 0;
+
+    public string OverviewSystemAddressText => SystemAddressFormatter.Format(
+        OverviewSystemAddress);
 
     public string BodyName
     {
@@ -1796,6 +1849,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         SystemDescription = snapshot.SystemAddress is null
             ? Display(snapshot.SystemName)
             : $"{Display(snapshot.SystemName)} ({snapshot.SystemAddress})";
+        OverviewSystemName = Display(snapshot.SystemName);
+        OverviewSystemAddress = snapshot.SystemAddress is > 0
+            ? snapshot.SystemAddress
+            : null;
         BodyName = Display(snapshot.BodyName);
         SessionState = snapshot.IsShutdown ? "Session closed" : "Session active";
 
@@ -2336,11 +2393,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     {
         Search.UpdateCurrentSystem(
             journalState.SystemName,
-            journalState.StarPosition);
+            journalState.StarPosition,
+            journalState.SystemAddress);
         NearestSystems.UpdateContext(
             journalState.SystemName,
             journalState.StarPosition,
-            journalState.CommanderName);
+            journalState.CommanderName,
+            journalState.SystemAddress);
         await CodexBingo.UpdateContextAsync(
             journalState.FrontierId,
             journalState.CommanderName,
@@ -2355,7 +2414,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             journalState.StarPosition);
         BoxelSearch.UpdateCurrentSystem(
             journalState.SystemName,
-            journalState.StarPosition);
+            journalState.StarPosition,
+            journalState.SystemAddress);
         Guardian.UpdateCurrentSystem(
             journalState.SystemName,
             journalState.StarPosition);
@@ -2385,6 +2445,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             journalState.StarPosition);
         await FleetCarrierRouteManager.UpdateContextAsync(
             journalState.FrontierId);
+        await routeAutoCopyCoordinator.ReconcileAsync();
         if (update.IsBootstrapRead)
         {
             FleetCarrierRoute.ApplyFleetCarrierJumpEvents(
@@ -2668,6 +2729,33 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             applicationLogService?.Append(
                 "EDDN processing was isolated from journal tracking: "
+                    + exception.Message);
+        }
+
+        try
+        {
+            var voxStellarResult = await voxStellarPublisher.ApplyAsync(
+                new VoxStellarApplyRequest
+                {
+                    JournalEvents = update.JournalEvents,
+                    CommanderName = activeProfileCommanderName
+                        ?? journalState.CommanderName,
+                    Enabled = VoxStellar.JournalUploadEnabled,
+                    AllowPublishing = !update.IsBootstrapRead
+                        && !CommanderInstances.HasMultipleGameWindows,
+                },
+                CancellationToken.None);
+            VoxStellar.ReportPublicationResult(voxStellarResult);
+            foreach (var warning in voxStellarResult.Warnings)
+            {
+                applicationLogService?.Append(warning);
+            }
+        }
+        catch (Exception exception) when (
+            exception is not OperationCanceledException)
+        {
+            applicationLogService?.Append(
+                "VoxStellar processing was isolated from journal tracking: "
                     + exception.Message);
         }
 
@@ -4290,6 +4378,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         inaraPublisher.CancelPendingPublication();
     }
 
+    private void OnVoxStellarUploadEnabledChanged(bool enabled)
+    {
+        voxStellarPublisher.SetEnabled(enabled);
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -4321,6 +4414,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         if (eddnPublisher is IDisposable disposableEddnPublisher)
         {
             disposableEddnPublisher.Dispose();
+        }
+        VoxStellar.UploadEnabledChanged -= OnVoxStellarUploadEnabledChanged;
+        if (voxStellarPublisher is IDisposable disposableVoxStellarPublisher)
+        {
+            disposableVoxStellarPublisher.Dispose();
         }
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();

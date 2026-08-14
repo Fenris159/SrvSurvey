@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.Views.TravelView"
              x:DataType="vm:MainWindowViewModel"
@@ -58,10 +59,18 @@
                         ColumnSpacing="18">
                     <StackPanel x:Name="NextSystemReadout" Spacing="4">
                       <TextBlock Classes="muted" Text="NEXT SYSTEM" />
-                      <TextBlock FontWeight="SemiBold"
-                                 Foreground="{DynamicResource RavenAccentBrush}"
-                                 Text="{Binding Route.NextHopName}"
-                                 TextTrimming="CharacterEllipsis" />
+                      <Button Classes="link" HorizontalAlignment="Left"
+                              behaviors:ClipboardCopyBehavior.Text="{Binding Route.NextHopName}">
+                        <TextBlock FontWeight="SemiBold"
+                                   Text="{Binding Route.NextHopName}"
+                                   TextTrimming="CharacterEllipsis" />
+                      </Button>
+                      <Button Classes="link" HorizontalAlignment="Left"
+                              IsVisible="{Binding Route.HasNextHopSystemAddress}"
+                              behaviors:ClipboardCopyBehavior.Text="{Binding Route.NextHopSystemAddress}">
+                        <TextBlock Classes="muted monospace" FontSize="9"
+                                   Text="{Binding Route.NextHopSystemAddressText}" />
+                      </Button>
                       <TextBlock Classes="muted"
                                  Text="{Binding Route.ProgressSummary}"
                                  TextWrapping="Wrap" />
@@ -461,10 +470,18 @@
                             Grid.Column="1"
                             Spacing="4">
                     <TextBlock Classes="muted" Text="NEXT SYSTEM" />
-                    <TextBlock FontWeight="SemiBold"
-                               Foreground="{DynamicResource RavenAccentBrush}"
-                               Text="{Binding FleetCarrierRoute.NextHopName}"
-                               TextTrimming="CharacterEllipsis" />
+                    <Button Classes="link" HorizontalAlignment="Left"
+                            behaviors:ClipboardCopyBehavior.Text="{Binding FleetCarrierRoute.NextHopName}">
+                      <TextBlock FontWeight="SemiBold"
+                                 Text="{Binding FleetCarrierRoute.NextHopName}"
+                                 TextTrimming="CharacterEllipsis" />
+                    </Button>
+                  <Button Classes="link" HorizontalAlignment="Left"
+                          IsVisible="{Binding FleetCarrierRoute.HasNextHopSystemAddress}"
+                          behaviors:ClipboardCopyBehavior.Text="{Binding FleetCarrierRoute.NextHopSystemAddress}">
+                      <TextBlock Classes="muted monospace" FontSize="9"
+                                 Text="{Binding FleetCarrierRoute.NextHopSystemAddressText}" />
+                    </Button>
                     <TextBlock Classes="muted"
                                Text="{Binding FleetCarrierRoute.ProgressSummary}"
                                TextWrapping="Wrap" />
@@ -740,7 +757,15 @@
             <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
               <StackPanel Spacing="4">
                 <TextBlock Classes="card-title" Text="System notes" />
-                <TextBlock Classes="muted" Text="{Binding SystemNotes.SystemName}" />
+                <Button Classes="link" HorizontalAlignment="Left"
+                        behaviors:ClipboardCopyBehavior.Text="{Binding SystemNotes.SystemName}">
+                  <TextBlock Classes="muted" Text="{Binding SystemNotes.SystemName}" />
+                </Button>
+                <Button Classes="link" HorizontalAlignment="Left"
+                        behaviors:ClipboardCopyBehavior.Text="{Binding SystemNotes.SystemAddress}">
+                  <TextBlock Classes="muted monospace"
+                             Text="{Binding SystemNotes.SystemAddress, StringFormat='id64 {0}'}" />
+                </Button>
               </StackPanel>
               <TextBlock Grid.Row="1"
                          Classes="muted"

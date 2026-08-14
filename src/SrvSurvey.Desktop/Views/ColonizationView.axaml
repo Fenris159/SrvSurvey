@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              xmlns:colonization="using:SrvSurvey.Core.Colonization"
              x:Class="SrvSurvey.Desktop.Views.ColonizationView"
@@ -400,10 +401,20 @@
                                VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis"
                                Text="{Binding TypeDescription}" />
-                    <TextBlock Grid.Column="4"
-                               VerticalAlignment="Center"
-                               TextTrimming="CharacterEllipsis"
-                               Text="{Binding SystemName}" />
+                    <StackPanel Grid.Column="4"
+                                VerticalAlignment="Center"
+                                Spacing="2">
+                      <Button Classes="link" HorizontalAlignment="Left"
+                              behaviors:ClipboardCopyBehavior.Text="{Binding SystemName}">
+                        <TextBlock TextTrimming="CharacterEllipsis"
+                                   Text="{Binding SystemName}" />
+                      </Button>
+                      <Button Classes="link" HorizontalAlignment="Left"
+                              behaviors:ClipboardCopyBehavior.Text="{Binding Project.SystemAddress}">
+                        <TextBlock Classes="muted monospace" FontSize="9"
+                                   Text="{Binding SystemAddressText}" />
+                      </Button>
+                    </StackPanel>
                     <Button Grid.Column="5"
                             Classes="secondary"
                             MinWidth="110"

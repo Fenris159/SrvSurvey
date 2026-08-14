@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         x:Class="SrvSurvey.Desktop.SystemNotesWindow"
         x:DataType="vm:SystemNotesViewModel"
@@ -23,12 +24,20 @@
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
         <StackPanel Spacing="4">
           <TextBlock Classes="eyebrow" Text="SYSTEM NOTES" />
-          <TextBlock Classes="page-title"
-                     FontSize="24"
-                     Text="{Binding SystemName}"
-                     TextTrimming="CharacterEllipsis" />
-          <TextBlock Classes="muted"
-                     Text="{Binding SystemAddress, StringFormat='System address: {0}'}" />
+          <Button Classes="link"
+                  HorizontalAlignment="Left"
+                  behaviors:ClipboardCopyBehavior.Text="{Binding SystemName}">
+            <TextBlock Classes="page-title"
+                       FontSize="24"
+                       Text="{Binding SystemName}"
+                       TextTrimming="CharacterEllipsis" />
+          </Button>
+          <Button Classes="link"
+                  HorizontalAlignment="Left"
+                  behaviors:ClipboardCopyBehavior.Text="{Binding SystemAddress}">
+            <TextBlock Classes="muted monospace"
+                       Text="{Binding SystemAddress, StringFormat='id64 {0}'}" />
+          </Button>
         </StackPanel>
         <CheckBox x:Name="AlwaysOnTopCheckBox"
                   Grid.Column="1"

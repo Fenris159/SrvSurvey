@@ -40,15 +40,42 @@
                       Content="Screenshot taken" />
           </StackPanel>
           <StackPanel Grid.Column="1" Spacing="10">
-            <CheckBox IsChecked="{Binding Notifications.CurrentBoxelSearchStatus, Mode=TwoWay}"
-                      Content="Boxel search status" />
-            <CheckBox IsChecked="{Binding Notifications.ShowNextBoxelToSearch, Mode=TwoWay}"
-                      Content="Next boxel to search" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="Successful Green Gas Giant uploads and the screenshot-banner shortcut use this overlay when it is enabled." />
           </StackPanel>
         </Grid>
+        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                   IsVisible="{Binding Notifications.HasSettingsStatus}"
+                   TextWrapping="Wrap"
+                   Text="{Binding Notifications.SettingsStatus}" />
+      </StackPanel>
+    </Border>
+
+    <Border x:Name="BoxelOverlayCard" Classes="card raised">
+      <StackPanel Spacing="14">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="card-title" Text="Galaxy Map boxel guidance" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state." />
+        </StackPanel>
+        <CheckBox IsChecked="{Binding BoxelSearch.AutoCopy, Mode=TwoWay}"
+                  Content="Auto-copy next system in Galaxy Map" />
+        <TextBlock Classes="muted"
+                   TextWrapping="Wrap"
+                   Text="Auto-copy is mutually exclusive with Route Manager and FC Routes so only one Galaxy Map destination source can control the clipboard." />
+        <Separator />
+        <StackPanel Spacing="4">
+          <TextBlock Classes="card-title" Text="Boxel completion notifications" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings." />
+        </StackPanel>
+        <CheckBox IsChecked="{Binding Notifications.CurrentBoxelSearchStatus, Mode=TwoWay}"
+                  Content="Show current boxel completion percentage" />
+        <CheckBox IsChecked="{Binding Notifications.ShowNextBoxelToSearch, Mode=TwoWay}"
+                  Content="Show the next boxel when the current one is complete" />
         <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                    IsVisible="{Binding Notifications.HasSettingsStatus}"
                    TextWrapping="Wrap"

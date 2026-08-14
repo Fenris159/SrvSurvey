@@ -18,7 +18,6 @@ public sealed partial class SearchView : UserControl
     {
         if (DataContext is MainWindowViewModel viewModel)
         {
-            viewModel.BoxelSearch.SetClipboardWriter(WriteClipboardAsync);
             viewModel.NearestSystems.SetPlatformServices(
                 WriteClipboardAsync,
                 LaunchUriAsync);
@@ -29,7 +28,6 @@ public sealed partial class SearchView : UserControl
     {
         if (DataContext is MainWindowViewModel viewModel)
         {
-            viewModel.BoxelSearch.SetClipboardWriter(null);
             viewModel.NearestSystems.SetPlatformServices(null, null);
         }
     }
