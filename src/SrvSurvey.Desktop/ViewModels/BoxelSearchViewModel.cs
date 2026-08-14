@@ -881,7 +881,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
         if (state.SavedSearchFileName is { } linkedFileName)
         {
-            if (await savedSearchStore.ExistsAsync(frontierId, linkedFileName))
+            if (await savedSearchStore.ExistsAsync(
+                    frontierId,
+                    linkedFileName,
+                    CancellationToken.None))
             {
                 await SaveAsync("Saved the current boxel search progress.");
                 return SaveBoxelProgressResult.Saved;

@@ -335,7 +335,9 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         lifetimeCancellation.Cancel();
         try
         {
-            workerTask?.Wait(TimeSpan.FromSeconds(2));
+            workerTask?.Wait(
+                TimeSpan.FromSeconds(2),
+                CancellationToken.None);
         }
         catch (AggregateException exception)
             when (exception.InnerExceptions.All(inner =>

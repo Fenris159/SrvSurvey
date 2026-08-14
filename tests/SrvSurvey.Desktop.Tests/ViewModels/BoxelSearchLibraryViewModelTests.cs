@@ -46,6 +46,310 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
         Assert.Same(library.Searches[1], library.SelectedSearch);
     }
 
+    [Fact]
+    public async Task LibraryCommandsManageSavedSearchesAndKeepStateConsistent()
+    {
+        var (store, boxel, library) = await CreateLibraryAsync(
+            ("Zulu", null, 1, 4),
+            ("Alpha", "Original notes", 3, 4));
+        var propertyChanges = new List<string?>();
+        library.PropertyChanged += (_, eventArgs) =>
+            propertyChanges.Add(eventArgs.PropertyName);
+
+        Assert.True(library.HasSearches);
+        Assert.False(library.HasSelection);
+        Assert.Equal("2 saved searches", library.SelectionSummary);
+        Assert.Equal("▲", library.NameSortIndicator);
+        Assert.Empty(library.DateSortIndicator);
+        Assert.Empty(library.ModifiedSortIndicator);
+        Assert.Empty(library.ProgressSortIndicator);
+        Assert.False(library.OpenSelectedCommand.CanExecute(null));
+        Assert.False(library.RequestDeleteCommand.CanExecute(null));
+
+        library.Searches[0].IsSelected = true;
+        var selected = Assert.IsType<BoxelSearchLibraryItemViewModel>(
+            library.SelectedSearch);
+        Assert.True(library.HasSelection);
+        Assert.Contains(selected.Name, library.DeleteConfirmationText);
+        Assert.True(library.OpenSelectedCommand.CanExecute(null));
+        Assert.True(library.RequestDeleteCommand.CanExecute(null));
+
+        await ExecuteAndWaitAsync(
+            selected.ToggleFavoriteCommand,
+            () => library.StatusMessage.StartsWith("Added ", StringComparison.Ordinal));
+        Assert.True(selected.IsFavorite);
+        Assert.Equal("★", selected.FavoriteGlyph);
+        Assert.True(selected.UpdatedAt >= selected.CreatedAt);
+
+        selected.RenameCommand.Execute(null);
+        Assert.True(library.IsRenameVisible);
+        Assert.True(library.IsDialogVisible);
+        Assert.Same(selected, library.EditingSearch);
+        Assert.Equal(selected.Name, library.EditingSearchName);
+        Assert.False(library.OpenSelectedCommand.CanExecute(null));
+        library.RenameDraft = "Renamed search";
+        Assert.True(library.SaveRenameCommand.CanExecute(null));
+        await ExecuteAndWaitAsync(
+            library.SaveRenameCommand,
+            () => string.Equals(
+                library.StatusMessage,
+                "Renamed saved search to Renamed search.",
+                StringComparison.Ordinal));
+        Assert.Equal("Renamed search", selected.Name);
+        Assert.False(library.IsDialogVisible);
+        Assert.Null(library.EditingSearch);
+        Assert.Empty(library.EditingSearchName);
+
+        selected.EditNotesCommand.Execute(null);
+        Assert.True(library.IsNotesVisible);
+        Assert.Equal("Original notes", library.NotesDraft);
+        library.NotesDraft = "Updated notes";
+        Assert.True(library.SaveNotesCommand.CanExecute(null));
+        await ExecuteAndWaitAsync(
+            library.SaveNotesCommand,
+            () => string.Equals(
+                library.StatusMessage,
+                "Saved notes for Renamed search.",
+                StringComparison.Ordinal));
+        Assert.Equal("Updated notes", selected.Notes);
+        Assert.Equal("Updated notes", selected.NotesDisplay);
+
+        selected.EditNotesCommand.Execute(null);
+        Assert.True(library.CancelDialogCommand.CanExecute(null));
+        library.CancelDialogCommand.Execute(null);
+        Assert.False(library.IsDialogVisible);
+        Assert.Empty(library.NotesDraft);
+
+        library.SortDateCommand.Execute(null);
+        Assert.Equal("▼", library.DateSortIndicator);
+        library.SortDateCommand.Execute(null);
+        Assert.Equal("▲", library.DateSortIndicator);
+        library.SortModifiedCommand.Execute(null);
+        Assert.Equal("▼", library.ModifiedSortIndicator);
+        library.SortProgressCommand.Execute(null);
+        Assert.Equal("▼", library.ProgressSortIndicator);
+        Assert.Equal(3, library.Searches[0].CompletedSystems);
+        library.SortNameCommand.Execute(null);
+        Assert.Equal("▲", library.NameSortIndicator);
+        library.SortNameCommand.Execute(null);
+        Assert.Equal("▼", library.NameSortIndicator);
+        library.FavoritesFirst = false;
+        Assert.False(library.FavoritesFirst);
+
+        var opened = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        library.SearchOpened += (_, _) => opened.TrySetResult();
+        await ExecuteAndWaitAsync(
+            library.OpenSelectedCommand,
+            () => opened.Task.IsCompleted);
+        await opened.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.Equal("Opened Renamed search.", library.StatusMessage);
+
+        var toDelete = library.Searches.Single(search =>
+            !ReferenceEquals(search, selected));
+        toDelete.IsSelected = true;
+        library.RequestDeleteCommand.Execute(null);
+        Assert.True(library.IsDeleteConfirmationVisible);
+        Assert.True(library.ConfirmDeleteCommand.CanExecute(null));
+        await ExecuteAndWaitAsync(
+            library.ConfirmDeleteCommand,
+            () => library.Searches.Count == 1);
+        Assert.Equal("Moved Zulu to recovery storage.", library.StatusMessage);
+        Assert.Equal("1 saved search", library.SelectionSummary);
+        Assert.Single(await store.ListAsync("F123"));
+
+        Assert.Contains(nameof(library.HasSearches), propertyChanges);
+        Assert.Contains(nameof(library.SelectedSearch), propertyChanges);
+        Assert.Contains(nameof(library.IsDialogVisible), propertyChanges);
+    }
+
+    [Fact]
+    public async Task EmptyLibraryAndLibraryItemDisplayValuesAreExplicit()
+    {
+        var (_, _, library) = await CreateLibraryAsync();
+
+        Assert.False(library.HasSearches);
+        Assert.Equal("0 saved searches", library.SelectionSummary);
+        Assert.Equal("No saved boxel searches yet.", library.StatusMessage);
+        Assert.Equal(
+            "Delete the selected saved search?",
+            library.DeleteConfirmationText);
+
+        var entry = new SavedBoxelSearchCatalogEntry(
+            "Empty",
+            null,
+            false,
+            DateTimeOffset.UtcNow,
+            DateTimeOffset.UtcNow,
+            0,
+            0,
+            true,
+            "empty.json",
+            "C:\\empty.json");
+        var selectedCount = 0;
+        var item = new BoxelSearchLibraryItemViewModel(
+            entry,
+            _ => selectedCount++,
+            _ => Task.CompletedTask,
+            _ => { },
+            _ => { });
+        var changed = new List<string?>();
+        item.PropertyChanged += (_, eventArgs) => changed.Add(eventArgs.PropertyName);
+
+        Assert.Equal("No notes", item.NotesDisplay);
+        Assert.Equal("☆", item.FavoriteGlyph);
+        Assert.Equal(0, item.ProgressFraction);
+        Assert.Contains("audit for the full total", item.ProgressText);
+        Assert.NotEmpty(item.CreatedAtText);
+        Assert.NotEmpty(item.UpdatedAtText);
+        item.IsSelected = true;
+        item.IsSelected = true;
+        item.SetFavorite(true);
+        item.SetNotes("Notes");
+        item.SetName("Changed");
+        item.SetUpdatedAt(item.UpdatedAt.AddMinutes(1));
+        item.SetSelected(false);
+        item.RaiseCanExecuteChanged();
+
+        Assert.Equal(1, selectedCount);
+        Assert.Equal("Changed", item.Name);
+        Assert.Equal("Notes", item.NotesDisplay);
+        Assert.Equal("★", item.FavoriteGlyph);
+        Assert.Contains(nameof(item.NotesDisplay), changed);
+        Assert.Contains(nameof(item.UpdatedAtText), changed);
+
+        Assert.Throws<ArgumentNullException>(() =>
+            new BoxelSearchLibraryViewModel(null!));
+        Assert.Throws<ArgumentNullException>(() =>
+            new BoxelSearchLibraryItemViewModel(
+                null!,
+                _ => { },
+                _ => Task.CompletedTask,
+                _ => { },
+                _ => { }));
+    }
+
+    [Fact]
+    public async Task MissingSavedFilesReportEachLibraryOperationWithoutCrashing()
+    {
+        var (_, _, library) = await CreateLibraryAsync(
+            ("Open", null, 0, 1),
+            ("Favorite", null, 0, 1),
+            ("Rename", null, 0, 1),
+            ("Notes", null, 0, 1),
+            ("Delete", null, 0, 1));
+
+        var open = library.Searches.Single(search => search.Name == "Open");
+        open.IsSelected = true;
+        File.Delete(open.FilePath);
+        await ExecuteAndWaitAsync(
+            library.OpenSelectedCommand,
+            () => library.StatusMessage.Contains(
+                "could not be opened",
+                StringComparison.Ordinal));
+
+        var favorite = library.Searches.Single(search => search.Name == "Favorite");
+        File.Delete(favorite.FilePath);
+        await ExecuteAndWaitAsync(
+            favorite.ToggleFavoriteCommand,
+            () => library.StatusMessage.Contains(
+                "favorite could not be updated",
+                StringComparison.Ordinal));
+
+        var rename = library.Searches.Single(search => search.Name == "Rename");
+        rename.RenameCommand.Execute(null);
+        library.RenameDraft = "Replacement";
+        File.Delete(rename.FilePath);
+        await ExecuteAndWaitAsync(
+            library.SaveRenameCommand,
+            () => library.StatusMessage.Contains(
+                "could not be renamed",
+                StringComparison.Ordinal));
+        Assert.True(library.IsRenameVisible);
+        library.CancelDialogCommand.Execute(null);
+
+        var notes = library.Searches.Single(search => search.Name == "Notes");
+        notes.EditNotesCommand.Execute(null);
+        library.NotesDraft = "Replacement notes";
+        File.Delete(notes.FilePath);
+        await ExecuteAndWaitAsync(
+            library.SaveNotesCommand,
+            () => library.StatusMessage.Contains(
+                "notes could not be saved",
+                StringComparison.Ordinal));
+        Assert.True(library.IsNotesVisible);
+        library.CancelDialogCommand.Execute(null);
+
+        var delete = library.Searches.Single(search => search.Name == "Delete");
+        delete.IsSelected = true;
+        library.RequestDeleteCommand.Execute(null);
+        File.Delete(delete.FilePath);
+        await ExecuteAndWaitAsync(
+            library.ConfirmDeleteCommand,
+            () => library.StatusMessage.Contains(
+                "could not be deleted",
+                StringComparison.Ordinal));
+        Assert.Contains(delete, library.Searches);
+    }
+
+    private async Task<(
+        SavedBoxelSearchStore Store,
+        BoxelSearchViewModel Boxel,
+        BoxelSearchLibraryViewModel Library)> CreateLibraryAsync(
+        params (string Name, string? Notes, int Completed, int Total)[] searches)
+    {
+        var store = new SavedBoxelSearchStore(temporaryDirectory);
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        foreach (var search in searches)
+        {
+            var snapshot = new BoxelSearchSnapshot
+            {
+                Active = true,
+                TopBoxel = top,
+                Current = top,
+                CurrentCount = search.Total,
+                ProgressByPrefix = new Dictionary<string, int>
+                {
+                    [top.Prefix] = search.Total,
+                },
+                CompletedSystems = Enumerable.Range(0, search.Completed)
+                    .Select(index => $"{top.Prefix}{index}")
+                    .ToArray(),
+            };
+            await store.CreateAsync("F123", search.Name, search.Notes, snapshot);
+        }
+
+        var boxel = new BoxelSearchViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new LegacySystemDataReader(temporaryDirectory),
+            new EmptyBoxelStore(temporaryDirectory),
+            new EmptyResolver(),
+            savedSearchStore: store);
+        await boxel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        var library = new BoxelSearchLibraryViewModel(boxel);
+        await library.RefreshAsync();
+        return (store, boxel, library);
+    }
+
+    private static async Task ExecuteAndWaitAsync(
+        System.Windows.Input.ICommand command,
+        Func<bool> completed)
+    {
+        Assert.True(command.CanExecute(null));
+        command.Execute(null);
+        var timeout = DateTimeOffset.UtcNow.AddSeconds(2);
+        while (!completed() && DateTimeOffset.UtcNow < timeout)
+        {
+            await Task.Delay(10);
+        }
+
+        Assert.True(completed());
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
