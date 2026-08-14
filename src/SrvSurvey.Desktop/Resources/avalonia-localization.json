@@ -3685,6 +3685,10 @@
                    "translation":  "Bestätigen Sie die Importanforderung für externe Stellen?"
                },
                {
+                   "source":  "Confirm the final generated system before applying the expected count.",
+                   "translation":  "Bestätigen Sie das endgültig generierte System, bevor Sie die erwartete Anzahl anwenden."
+               },
+               {
                    "source":  "Confirm the guarded update installation first. No files were changed.",
                    "translation":  "Bestätigen Sie zunächst die geschützte Update-Installation. Es wurden keine Dateien geändert."
                },
@@ -5433,6 +5437,14 @@
                    "translation":  "Erwartete Systemanzahl aktualisiert auf {0}."
                },
                {
+                   "source":  "Expected systems",
+                   "translation":  "Erwartete Systeme"
+               },
+               {
+                   "source":  "Expected systems help",
+                   "translation":  "Erwartete Systemhilfe"
+               },
+               {
                    "source":  "Expected systems must be a whole number from 1 to 100,000.",
                    "translation":  "Erwartete Systeme müssen eine ganze Zahl von 1 bis 100.000 sein."
                },
@@ -6047,6 +6059,10 @@
                {
                    "source":  "For an active sample, warning color inside the radius means you are too close; success color outside the radius means the next sample is valid.",
                    "translation":  "Bei einer aktiven Probe bedeutet die Warnfarbe innerhalb des Radius, dass Sie sich zu nahe befinden. Eine Erfolgsfarbe außerhalb des Radius bedeutet, dass die nächste Probe gültig ist."
+               },
+               {
+                   "source":  "For example the end system of the {0} boxel is: {1} so you would enter 7641 and choose APPLY",
+                   "translation":  "Das Endsystem des Boxels {0} lautet beispielsweise: {1}, Sie würden also 7641 eingeben und ANWENDEN wählen"
                },
                {
                    "source":  "Former ship location",
@@ -10907,6 +10923,14 @@
                {
                    "source":  "Personal progress restored from local journals · recorded {0}",
                    "translation":  "Persönlicher Fortschritt aus lokalen Zeitschriften wiederhergestellt · aufgezeichnet {0}"
+               },
+               {
+                   "source":  "Phimbee AA-A d0",
+                   "translation":  "Phimbee AA-A d0"
+               },
+               {
+                   "source":  "Phimbee AA-A d7640",
+                   "translation":  "Phimbee AA-A d7640"
                },
                {
                    "source":  "Pin this SrvSurvey instance to one commander\u0027s stable Frontier ID, or follow the newest active journal automatically.",
@@ -16671,6 +16695,10 @@
                {
                    "source":  "The next system could not be copied: {0}",
                    "translation":  "Das nächste System konnte nicht kopiert werden: {0}"
+               },
+               {
+                   "source":  "The number produced is an estimate. You need to manually \"bruteforce\" the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Then add 1 to that number to include the starting system.",
+                   "translation":  "Bei der produzierten Zahl handelt es sich um eine Schätzung. Um sicherzugehen, müssen Sie das letzte System des Boxels in der Galaxienkartensuche manuell „bruteforce“ durchführen. Beginnen Sie mit einer hohen Zahl und verringern Sie diese, bis Sie das letzte vorhandene System finden. Fügen Sie dann 1 zu dieser Zahl hinzu, um das Startsystem einzubeziehen."
                },
                {
                    "source":  "The numbered navigation follows the major activities in SrvSurvey. Guides remains available even when Elite is not running.",
@@ -24975,6 +25003,10 @@
                    "translation":  "¿Confirmar la solicitud de importación de cuerpo externo?"
                },
                {
+                   "source":  "Confirm the final generated system before applying the expected count.",
+                   "translation":  "Confirme el sistema final generado antes de aplicar el recuento esperado."
+               },
+               {
                    "source":  "Confirm the guarded update installation first. No files were changed.",
                    "translation":  "Primero confirme la instalación de la actualización protegida. No se cambiaron archivos."
                },
@@ -26723,6 +26755,14 @@
                    "translation":  "El recuento esperado del sistema se actualizó a {0}."
                },
                {
+                   "source":  "Expected systems",
+                   "translation":  "Sistemas esperados"
+               },
+               {
+                   "source":  "Expected systems help",
+                   "translation":  "Ayuda esperada de los sistemas"
+               },
+               {
                    "source":  "Expected systems must be a whole number from 1 to 100,000.",
                    "translation":  "Los sistemas esperados deben ser un número entero del 1 al 100.000."
                },
@@ -27337,6 +27377,10 @@
                {
                    "source":  "For an active sample, warning color inside the radius means you are too close; success color outside the radius means the next sample is valid.",
                    "translation":  "Para una muestra activa, el color de advertencia dentro del radio significa que está demasiado cerca; El color exitoso fuera del radio significa que la siguiente muestra es válida."
+               },
+               {
+                   "source":  "For example the end system of the {0} boxel is: {1} so you would enter 7641 and choose APPLY",
+                   "translation":  "Por ejemplo el sistema final del cuadro {0} es: {1} por lo que ingresarías 7641 y elegirías APLICAR"
                },
                {
                    "source":  "Former ship location",
@@ -32197,6 +32241,14 @@
                {
                    "source":  "Personal progress restored from local journals · recorded {0}",
                    "translation":  "Progreso personal restaurado de las revistas locales · registrado {0}"
+               },
+               {
+                   "source":  "Phimbee AA-A d0",
+                   "translation":  "Phimbee AA-A d0"
+               },
+               {
+                   "source":  "Phimbee AA-A d7640",
+                   "translation":  "Phimbee AA-A d7640"
                },
                {
                    "source":  "Pin this SrvSurvey instance to one commander\u0027s stable Frontier ID, or follow the newest active journal automatically.",
@@ -37961,6 +38013,10 @@
                {
                    "source":  "The next system could not be copied: {0}",
                    "translation":  "No se pudo copiar el siguiente sistema: {0}"
+               },
+               {
+                   "source":  "The number produced is an estimate. You need to manually \"bruteforce\" the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Then add 1 to that number to include the starting system.",
+                   "translation":  "El número producido es una estimación. Para estar seguro, debes aplicar \"fuerza bruta\" manualmente al último sistema del cuadro en la búsqueda del mapa de galaxias. Comience con un número alto y disminuya hasta encontrar el último sistema existente. Luego agregue 1 a ese número para incluir el sistema inicial."
                },
                {
                    "source":  "The numbered navigation follows the major activities in SrvSurvey. Guides remains available even when Elite is not running.",
@@ -46265,6 +46321,10 @@
                    "translation":  "Confirmer la demande d\u0027importation d\u0027organisme externe ?"
                },
                {
+                   "source":  "Confirm the final generated system before applying the expected count.",
+                   "translation":  "Confirmez le système généré final avant d\u0027appliquer le décompte attendu."
+               },
+               {
                    "source":  "Confirm the guarded update installation first. No files were changed.",
                    "translation":  "Confirmez d’abord l’installation de la mise à jour protégée. Aucun fichier n\u0027a été modifié."
                },
@@ -48013,6 +48073,14 @@
                    "translation":  "Le nombre de systèmes attendu a été mis à jour sur {0}."
                },
                {
+                   "source":  "Expected systems",
+                   "translation":  "Systèmes attendus"
+               },
+               {
+                   "source":  "Expected systems help",
+                   "translation":  "Aide attendue des systèmes"
+               },
+               {
                    "source":  "Expected systems must be a whole number from 1 to 100,000.",
                    "translation":  "Les systèmes attendus doivent être un nombre entier compris entre 1 et 100 000."
                },
@@ -48627,6 +48695,10 @@
                {
                    "source":  "For an active sample, warning color inside the radius means you are too close; success color outside the radius means the next sample is valid.",
                    "translation":  "Pour un échantillon actif, la couleur d\u0027avertissement à l\u0027intérieur du rayon signifie que vous êtes trop près ; la couleur du succès en dehors du rayon signifie que l’échantillon suivant est valide."
+               },
+               {
+                   "source":  "For example the end system of the {0} boxel is: {1} so you would enter 7641 and choose APPLY",
+                   "translation":  "Par exemple, le système final de la boîte {0} est : {1}, vous devez donc saisir 7641 et choisir APPLIQUER."
                },
                {
                    "source":  "Former ship location",
@@ -53487,6 +53559,14 @@
                {
                    "source":  "Personal progress restored from local journals · recorded {0}",
                    "translation":  "Progrès personnel restauré à partir des journaux locaux · enregistré {0}"
+               },
+               {
+                   "source":  "Phimbee AA-A d0",
+                   "translation":  "Phimbee AA-A d0"
+               },
+               {
+                   "source":  "Phimbee AA-A d7640",
+                   "translation":  "Phimbee AA-A d7640"
                },
                {
                    "source":  "Pin this SrvSurvey instance to one commander\u0027s stable Frontier ID, or follow the newest active journal automatically.",
@@ -59251,6 +59331,10 @@
                {
                    "source":  "The next system could not be copied: {0}",
                    "translation":  "Le système suivant n\u0027a pas pu être copié : {0}"
+               },
+               {
+                   "source":  "The number produced is an estimate. You need to manually \"bruteforce\" the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Then add 1 to that number to include the starting system.",
+                   "translation":  "Le nombre produit est une estimation. Vous devez manuellement \"bruteforce\" le dernier système du boxel dans la recherche sur la carte de la galaxie pour en être certain. Commencez par un nombre élevé et diminuez-le jusqu\u0027à ce que vous trouviez le dernier système existant. Ajoutez ensuite 1 à ce nombre pour inclure le système de démarrage."
                },
                {
                    "source":  "The numbered navigation follows the major activities in SrvSurvey. Guides remains available even when Elite is not running.",
@@ -67555,6 +67639,10 @@
                       "translation":  "Confirmar a solicitação de importação de corpo externo?"
                   },
                   {
+                      "source":  "Confirm the final generated system before applying the expected count.",
+                      "translation":  "Confirme o sistema final gerado antes de aplicar a contagem esperada."
+                  },
+                  {
                       "source":  "Confirm the guarded update installation first. No files were changed.",
                       "translation":  "Confirme primeiro a instalação da atualização protegida. Nenhum arquivo foi alterado."
                   },
@@ -69303,6 +69391,14 @@
                       "translation":  "Contagem esperada do sistema atualizada para {0}."
                   },
                   {
+                      "source":  "Expected systems",
+                      "translation":  "Sistemas esperados"
+                  },
+                  {
+                      "source":  "Expected systems help",
+                      "translation":  "Ajuda esperada dos sistemas"
+                  },
+                  {
                       "source":  "Expected systems must be a whole number from 1 to 100,000.",
                       "translation":  "Os sistemas esperados devem ser um número inteiro de 1 a 100.000."
                   },
@@ -69917,6 +70013,10 @@
                   {
                       "source":  "For an active sample, warning color inside the radius means you are too close; success color outside the radius means the next sample is valid.",
                       "translation":  "Para uma amostra ativa, a cor de aviso dentro do raio significa que você está muito próximo; cor de sucesso fora do raio significa que a próxima amostra é válida."
+                  },
+                  {
+                      "source":  "For example the end system of the {0} boxel is: {1} so you would enter 7641 and choose APPLY",
+                      "translation":  "Por exemplo, o sistema final do boxel {0} é: {1} então você digitaria 7641 e escolheria APLICAR"
                   },
                   {
                       "source":  "Former ship location",
@@ -74777,6 +74877,14 @@
                   {
                       "source":  "Personal progress restored from local journals · recorded {0}",
                       "translation":  "Progresso pessoal restaurado de diários locais · registrado {0}"
+                  },
+                  {
+                      "source":  "Phimbee AA-A d0",
+                      "translation":  "Phimbee AA-A d0"
+                  },
+                  {
+                      "source":  "Phimbee AA-A d7640",
+                      "translation":  "Phimbee AA-A d7640"
                   },
                   {
                       "source":  "Pin this SrvSurvey instance to one commander\u0027s stable Frontier ID, or follow the newest active journal automatically.",
@@ -80541,6 +80649,10 @@
                   {
                       "source":  "The next system could not be copied: {0}",
                       "translation":  "O próximo sistema não pôde ser copiado: {0}"
+                  },
+                  {
+                      "source":  "The number produced is an estimate. You need to manually \"bruteforce\" the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Then add 1 to that number to include the starting system.",
+                      "translation":  "O número produzido é uma estimativa. Você precisa fazer \"força bruta\" manualmente no último sistema do boxel na pesquisa do mapa da galáxia para ter certeza. Comece com um número alto e vá diminuindo até encontrar o último sistema existente. Em seguida, adicione 1 a esse número para incluir o sistema inicial."
                   },
                   {
                       "source":  "The numbered navigation follows the major activities in SrvSurvey. Guides remains available even when Elite is not running.",
@@ -88845,6 +88957,10 @@
                    "translation":  "Подтвердить запрос на импорт внешнего тела?"
                },
                {
+                   "source":  "Confirm the final generated system before applying the expected count.",
+                   "translation":  "Подтвердите окончательную сгенерированную систему, прежде чем применять ожидаемый счетчик."
+               },
+               {
                    "source":  "Confirm the guarded update installation first. No files were changed.",
                    "translation":  "Сначала подтвердите установку защищенного обновления. Никакие файлы не были изменены."
                },
@@ -90593,6 +90709,14 @@
                    "translation":  "Ожидаемое количество систем обновлено до {0}."
                },
                {
+                   "source":  "Expected systems",
+                   "translation":  "Ожидаемые системы"
+               },
+               {
+                   "source":  "Expected systems help",
+                   "translation":  "Ожидаемая помощь систем"
+               },
+               {
                    "source":  "Expected systems must be a whole number from 1 to 100,000.",
                    "translation":  "Ожидаемые системы должны представлять собой целое число от 1 до 100 000."
                },
@@ -91207,6 +91331,10 @@
                {
                    "source":  "For an active sample, warning color inside the radius means you are too close; success color outside the radius means the next sample is valid.",
                    "translation":  "Для активного образца цвет предупреждения внутри радиуса означает, что вы находитесь слишком близко; Цвет успеха за пределами радиуса означает, что следующая выборка действительна."
+               },
+               {
+                   "source":  "For example the end system of the {0} boxel is: {1} so you would enter 7641 and choose APPLY",
+                   "translation":  "Например, конечная система бокселя {0}: {1} поэтому введите 7641 и выберите ПРИМЕНИТЬ."
                },
                {
                    "source":  "Former ship location",
@@ -96067,6 +96195,14 @@
                {
                    "source":  "Personal progress restored from local journals · recorded {0}",
                    "translation":  "Личный прогресс восстановлен из локальных журналов · записан {0}"
+               },
+               {
+                   "source":  "Phimbee AA-A d0",
+                   "translation":  "Фимби АА-А d0"
+               },
+               {
+                   "source":  "Phimbee AA-A d7640",
+                   "translation":  "Фимби АА-А d7640"
                },
                {
                    "source":  "Pin this SrvSurvey instance to one commander\u0027s stable Frontier ID, or follow the newest active journal automatically.",
@@ -101831,6 +101967,10 @@
                {
                    "source":  "The next system could not be copied: {0}",
                    "translation":  "Не удалось скопировать следующую систему: {0}"
+               },
+               {
+                   "source":  "The number produced is an estimate. You need to manually \"bruteforce\" the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Then add 1 to that number to include the starting system.",
+                   "translation":  "Произведенное количество является приблизительным. Чтобы быть уверенным, вам нужно вручную «перебрать» последнюю систему бокселя в поиске по карте галактики. Начните с большого числа и уменьшайте его, пока не найдете последнюю существующую систему. Затем добавьте 1 к этому числу, чтобы включить стартовую систему."
                },
                {
                    "source":  "The numbered navigation follows the major activities in SrvSurvey. Guides remains available even when Elite is not running.",
@@ -110135,6 +110275,10 @@
                         "translation":  "确认外部机构导入请求吗？"
                     },
                     {
+                        "source":  "Confirm the final generated system before applying the expected count.",
+                        "translation":  "在应用预期计数之前确认最终生成的系统。"
+                    },
+                    {
                         "source":  "Confirm the guarded update installation first. No files were changed.",
                         "translation":  "首先确认受保护的更新安装。没有更改任何文件。"
                     },
@@ -111883,6 +112027,14 @@
                         "translation":  "预期系统计数已更新为 {0}。"
                     },
                     {
+                        "source":  "Expected systems",
+                        "translation":  "预期系统"
+                    },
+                    {
+                        "source":  "Expected systems help",
+                        "translation":  "预期系统帮助"
+                    },
+                    {
                         "source":  "Expected systems must be a whole number from 1 to 100,000.",
                         "translation":  "预期系统必须是 1 到 100,000 之间的整数。"
                     },
@@ -112497,6 +112649,10 @@
                     {
                         "source":  "For an active sample, warning color inside the radius means you are too close; success color outside the radius means the next sample is valid.",
                         "translation":  "对于活动样本，半径内的警告颜色表示您距离太近；半径外的成功颜色表示下一个样本有效。"
+                    },
+                    {
+                        "source":  "For example the end system of the {0} boxel is: {1} so you would enter 7641 and choose APPLY",
+                        "translation":  "例如，{0} boxel 的终端系统是：{1}，因此您将输入 7641 并选择 APPLY"
                     },
                     {
                         "source":  "Former ship location",
@@ -117357,6 +117513,14 @@
                     {
                         "source":  "Personal progress restored from local journals · recorded {0}",
                         "translation":  "从本地期刊恢复个人进展 · 已记录 {0}"
+                    },
+                    {
+                        "source":  "Phimbee AA-A d0",
+                        "translation":  "菲姆比 AA-A d0"
+                    },
+                    {
+                        "source":  "Phimbee AA-A d7640",
+                        "translation":  "菲姆比 AA-A d7640"
                     },
                     {
                         "source":  "Pin this SrvSurvey instance to one commander\u0027s stable Frontier ID, or follow the newest active journal automatically.",
@@ -123121,6 +123285,10 @@
                     {
                         "source":  "The next system could not be copied: {0}",
                         "translation":  "无法复制下一个系统：{0}"
+                    },
+                    {
+                        "source":  "The number produced is an estimate. You need to manually \"bruteforce\" the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Then add 1 to that number to include the starting system.",
+                        "translation":  "产生的数字是估计值。您需要手动“暴力破解”星系图搜索中 boxel 的最后一个系统才能确定。从一个较大的数字开始，然后逐渐减少，直到找到最后一个现有系统。然后将该数字加 1 以包含启动系统。"
                     },
                     {
                         "source":  "The numbered navigation follows the major activities in SrvSurvey. Guides remains available even when Elite is not running.",
@@ -131425,6 +131593,10 @@
                    "translation":  "* CONFIRM THE EXTERNAL BODY IMPORT REQUEST? \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Confirm the final generated system before applying the expected count.",
+                   "translation":  "* CONFIRM THE FINAL GENERATED SYSTEM BEFORE APPLYING THE EXPECTED COUNT. \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Confirm the guarded update installation first. No files were changed.",
                    "translation":  "* CONFIRM THE GUARDED UPDATE INSTALLATION FIRST. NO FILES WERE CHANGED. \u003e\u003e\u003e!"
                },
@@ -133173,6 +133345,14 @@
                    "translation":  "* EXPECTED SYSTEM COUNT UPDATED TO {0}. \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Expected systems",
+                   "translation":  "* EXPECTED SYSTEMS \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Expected systems help",
+                   "translation":  "* EXPECTED SYSTEMS HELP \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Expected systems must be a whole number from 1 to 100,000.",
                    "translation":  "* EXPECTED SYSTEMS MUST BE A WHOLE NUMBER FROM 1 TO 100,000. \u003e\u003e\u003e!"
                },
@@ -133787,6 +133967,10 @@
                {
                    "source":  "For an active sample, warning color inside the radius means you are too close; success color outside the radius means the next sample is valid.",
                    "translation":  "* FOR AN ACTIVE SAMPLE, WARNING COLOR INSIDE THE RADIUS MEANS YOU ARE TOO CLOSE; SUCCESS COLOR OUTSIDE THE RADIUS MEANS THE NEXT SAMPLE IS VALID. \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "For example the end system of the {0} boxel is: {1} so you would enter 7641 and choose APPLY",
+                   "translation":  "* FOR EXAMPLE THE END SYSTEM OF THE {0} BOXEL IS: {1} SO YOU WOULD ENTER 7641 AND CHOOSE APPLY \u003e\u003e\u003e!"
                },
                {
                    "source":  "Former ship location",
@@ -138647,6 +138831,14 @@
                {
                    "source":  "Personal progress restored from local journals · recorded {0}",
                    "translation":  "* PERSONAL PROGRESS RESTORED FROM LOCAL JOURNALS · RECORDED {0} \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Phimbee AA-A d0",
+                   "translation":  "* PHIMBEE AA-A D0 \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Phimbee AA-A d7640",
+                   "translation":  "* PHIMBEE AA-A D7640 \u003e\u003e\u003e!"
                },
                {
                    "source":  "Pin this SrvSurvey instance to one commander\u0027s stable Frontier ID, or follow the newest active journal automatically.",
@@ -144411,6 +144603,10 @@
                {
                    "source":  "The next system could not be copied: {0}",
                    "translation":  "* THE NEXT SYSTEM COULD NOT BE COPIED: {0} \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "The number produced is an estimate. You need to manually \"bruteforce\" the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Then add 1 to that number to include the starting system.",
+                   "translation":  "* THE NUMBER PRODUCED IS AN ESTIMATE. YOU NEED TO MANUALLY \"BRUTEFORCE\" THE LAST SYSTEM OF THE BOXEL IN THE GALAXY MAP SEARCH TO BE CERTAIN. BEGIN WITH A HIGH NUMBER AND DECREASE IT UNTIL YOU FIND THE LAST EXISTING SYSTEM. THEN ADD 1 TO THAT NUMBER TO INCLUDE THE STARTING SYSTEM. \u003e\u003e\u003e!"
                },
                {
                    "source":  "The numbered navigation follows the major activities in SrvSurvey. Guides remains available even when Elite is not running.",

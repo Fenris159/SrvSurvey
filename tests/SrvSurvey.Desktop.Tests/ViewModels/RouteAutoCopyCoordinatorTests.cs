@@ -128,6 +128,11 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
 
         boxel.AutoCopy = true;
         await WaitUntilAsync(() => !standard.AutoCopy && !carrier.AutoCopy);
+        await coordinator.ClaimAsync(boxel);
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        await WaitUntilAsync(async () =>
+            (await profileStore.LoadAsync("F123", true))
+                .Data?.BoxelSearch.AutoCopy == true);
 
         Assert.True(boxel.AutoCopy);
         var standardSaved = await new FollowRouteStore(temporaryDirectory)
@@ -238,6 +243,15 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         while (!condition())
+        {
+            await Task.Delay(10, timeout.Token);
+        }
+    }
+
+    private static async Task WaitUntilAsync(Func<Task<bool>> condition)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (!await condition())
         {
             await Task.Delay(10, timeout.Token);
         }

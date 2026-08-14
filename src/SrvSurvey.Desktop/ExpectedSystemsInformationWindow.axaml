@@ -24,25 +24,8 @@
         <StackPanel Spacing="14">
           <TextBlock TextWrapping="Wrap"
                      Text="The number produced is an estimate. You need to manually &quot;bruteforce&quot; the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Then add 1 to that number to include the starting system." />
-          <WrapPanel x:Name="ExpectedSystemsExample">
-            <TextBlock Text="For example the end system of the " />
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Text="&quot;" />
-              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                         FontWeight="SemiBold"
-                         Text="Phimbee AA-A d0" />
-              <TextBlock Text="&quot;" />
-            </StackPanel>
-            <TextBlock Text=" boxel is: " />
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Text="&quot;" />
-              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                         FontWeight="SemiBold"
-                         Text="Phimbee AA-A d7640" />
-              <TextBlock Text="&quot;" />
-            </StackPanel>
-            <TextBlock Text=" so you would enter 7641 and choose APPLY" />
-          </WrapPanel>
+          <TextBlock x:Name="ExpectedSystemsExample"
+                     TextWrapping="Wrap" />
         </StackPanel>
       </Border>
     </ScrollViewer>

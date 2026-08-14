@@ -3902,7 +3902,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml"
   },
   {
     "Text": "BUILD TYPE",
@@ -7381,6 +7381,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Confirm the final generated system before applying the expected count.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml"
   },
   {
     "Text": "Confirm the guarded update installation first. No files were changed.",
@@ -10888,6 +10896,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "Expected systems",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml"
+  },
+  {
+    "Text": "Expected systems help",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml"
+  },
+  {
     "Text": "Expected systems must be a whole number from 1 to 100,000.",
     "IsFormat": false,
     "SourceKinds": [
@@ -12122,6 +12146,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "For example the end system of the {0} boxel is: {1} so you would enter 7641 and choose APPLY",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml.cs"
   },
   {
     "Text": "Former ship location",
@@ -21867,6 +21899,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Phimbee AA-A d0",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml.cs"
+  },
+  {
+    "Text": "Phimbee AA-A d7640",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml.cs"
   },
   {
     "Text": "Pin this SrvSurvey instance to one commander\u0027s stable Frontier ID, or follow the newest active journal automatically.",
@@ -33417,6 +33465,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "The number produced is an estimate. You need to manually \u0022bruteforce\u0022 the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Then add 1 to that number to include the starting system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml"
   },
   {
     "Text": "The numbered navigation follows the major activities in SrvSurvey. Guides remains available even when Elite is not running.",
