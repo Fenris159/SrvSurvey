@@ -453,6 +453,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             sharedSystemResolver);
         boxelSurveyStats = new BoxelSurveyStatsCoordinator(
             new BoxelSurveyStatsStore(AppDataPaths.DataDirectory));
+        boxelSurveyStats.State.TreatNavBeaconAsFullyScanned =
+            new BoxelSurveyStatsSettingsStore(AppDataPaths.UiSettingsPath)
+                .Load()
+                .TreatNavBeaconAsFullyScanned;
         BoxelSearch = new BoxelSearchViewModel(
             commanderProfileStore,
             new LegacySystemDataReader(AppDataPaths.DataDirectory),

@@ -59,9 +59,20 @@
                     MaxWidth="390"
                     Spacing="7">
           <Grid HorizontalAlignment="Right"
-                ColumnDefinitions="Auto,Auto"
+                ColumnDefinitions="Auto,Auto,Auto"
                 ColumnSpacing="8">
             <Button Classes="secondary"
+                    Height="46"
+                    VerticalAlignment="Center"
+                    Click="BoxelStats_Click">
+              <StackPanel Orientation="Horizontal" Spacing="9">
+                <TextBlock VerticalAlignment="Center"
+                           FontWeight="SemiBold"
+                           Text="Boxel Stats" />
+              </StackPanel>
+            </Button>
+            <Button Grid.Column="1"
+                    Classes="secondary"
                     Height="46"
                     VerticalAlignment="Center"
                     Click="VoxStellar_Click">
@@ -75,7 +86,7 @@
                            Text="VoxStellar" />
               </StackPanel>
             </Button>
-            <Button Grid.Column="1"
+            <Button Grid.Column="2"
                     Classes="voxstellar-info"
                     Width="40"
                     Height="46"
@@ -129,6 +140,16 @@
                          TextWrapping="Wrap"
                          Text="{Binding BoxelSearch.CurrentBoxelDescription}" />
               <TextBlock Classes="muted" Text="{Binding BoxelSearch.SystemProgress}" />
+              <StackPanel Orientation="Horizontal"
+                          Spacing="10"
+                          IsVisible="{Binding BoxelSearch.HasStatsGlance}">
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="{Binding BoxelSearch.StatsGlanceText}" />
+                <Button Classes="link"
+                        Click="BoxelStats_Click"
+                        Content="Open stats" />
+              </StackPanel>
             </StackPanel>
             <StackPanel Grid.Column="1" Spacing="5">
               <TextBlock Classes="muted" Text="NEXT INCOMPLETE SYSTEM" />

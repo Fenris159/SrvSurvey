@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Avalonia.Threading;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
@@ -97,6 +98,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private string? lastCopiedSystemName;
     private Func<string, Task>? clipboardWriter;
     private CancellationTokenSource? auditCancellation;
+    private string statsGlanceText = string.Empty;
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Maintainability",
@@ -123,6 +125,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         this.systemResolver = systemResolver
             ?? throw new ArgumentNullException(nameof(systemResolver));
         this.surveyStats = surveyStats;
+        if (this.surveyStats is not null)
+        {
+            this.surveyStats.Changed += OnSurveyStatsChanged;
+        }
+
         this.systemNameSuggestionClient = systemNameSuggestionClient;
         this.systemSuggestionDelay = systemSuggestionDelay
             ?? TimeSpan.FromMilliseconds(450);
@@ -337,6 +344,25 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public bool IsActive => state.IsActive;
 
     public BoxelSurveyStatsCoordinator? SurveyStats => surveyStats;
+
+    public IReadOnlyList<string> SearchPrefixes
+        => state.Boxels.Select(boxel => boxel.Prefix).ToArray();
+
+    public char SearchLowMassCode => state.LowMassCode;
+
+    public string StatsGlanceText
+    {
+        get => statsGlanceText;
+        private set
+        {
+            if (SetField(ref statsGlanceText, value))
+            {
+                OnPropertyChanged(nameof(HasStatsGlance));
+            }
+        }
+    }
+
+    public bool HasStatsGlance => !string.IsNullOrWhiteSpace(StatsGlanceText);
 
     public BoxelSearchNotificationState CreateNotificationState()
     {
@@ -1323,6 +1349,36 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public void CancelPendingOperations()
     {
         auditCancellation?.Cancel();
+    }
+
+    private void OnSurveyStatsChanged(object? sender, EventArgs eventArgs)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            UpdateStatsGlance();
+            return;
+        }
+
+        Dispatcher.UIThread.Post(UpdateStatsGlance);
+    }
+
+    private void UpdateStatsGlance()
+    {
+        var snapshot = surveyStats?.Current;
+        if (snapshot is null || string.IsNullOrWhiteSpace(snapshot.Prefix))
+        {
+            StatsGlanceText = string.Empty;
+            return;
+        }
+
+        var helium = snapshot.MinHeliumPercent is null && snapshot.MaxHeliumPercent is null
+            ? Unavailable
+            : string.Create(
+                CultureInfo.CurrentCulture,
+                $"HE {snapshot.MinHeliumPercent ?? snapshot.MaxHeliumPercent:0.#}–{snapshot.MaxHeliumPercent ?? snapshot.MinHeliumPercent:0.#}%");
+        StatsGlanceText = string.Create(
+            CultureInfo.CurrentCulture,
+            $"{snapshot.Prefix}  ·  {snapshot.Visited} / {snapshot.ImpliedPopulation}  ·  {helium}");
     }
 
     public async Task ApplyExpectedSystemCountAsync()

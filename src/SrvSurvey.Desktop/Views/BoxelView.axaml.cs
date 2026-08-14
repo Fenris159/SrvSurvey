@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
@@ -12,6 +13,7 @@ namespace SrvSurvey.Desktop.Views;
 public sealed partial class BoxelView : UserControl
 {
     private BoxelSearchLibraryWindow? boxelSearchLibraryWindow;
+    private BoxelStatsWindow? boxelStatsWindow;
     private ExpectedSystemsInformationWindow? expectedSystemsInformationWindow;
 
     public BoxelView()
@@ -148,6 +150,35 @@ public sealed partial class BoxelView : UserControl
         boxelSearchLibraryWindow.Closed += (_, _) =>
             boxelSearchLibraryWindow = null;
         boxelSearchLibraryWindow.Show(owner);
+    }
+
+    internal async void BoxelStats_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is not MainWindowViewModel viewModel
+            || TopLevel.GetTopLevel(this) is not Window owner)
+        {
+            return;
+        }
+
+        if (boxelStatsWindow is not null)
+        {
+            boxelStatsWindow.Activate();
+            return;
+        }
+
+        var stats = new BoxelSurveyStatsViewModel(
+            viewModel.BoxelSurveyStats,
+            new BoxelSurveyStatsSettingsStore(viewModel.AppDataPaths.UiSettingsPath),
+            viewModel.BoxelSearch);
+        await stats.InitializeAsync();
+        boxelStatsWindow = new BoxelStatsWindow
+        {
+            DataContext = stats,
+        };
+        boxelStatsWindow.Closed += (_, _) => boxelStatsWindow = null;
+        boxelStatsWindow.Show(owner);
     }
 
     private async void VoxStellar_Click(

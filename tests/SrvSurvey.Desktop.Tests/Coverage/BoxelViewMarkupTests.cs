@@ -24,6 +24,10 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("{Binding BoxelSearch.Systems}", boxelBindings);
         Assert.Contains("Save Progress", boxelBindings);
         Assert.Contains("Resume Search", boxelBindings);
+        Assert.Contains("Boxel Stats", boxelBindings);
+        Assert.Contains("BoxelStats_Click", boxelBindings);
+        Assert.Contains("Open stats", boxelBindings);
+        Assert.Contains("{Binding BoxelSearch.StatsGlanceText}", boxelBindings);
         Assert.Contains("VoxStellar", boxelBindings);
         Assert.Contains(
             "Send Journal to VoxStellar for boxel surveying",
@@ -91,7 +95,8 @@ public sealed class BoxelViewMarkupTests
             boxelBindings);
         var centeredHierarchyControls = boxel.Descendants().Single(element =>
             element.Name.LocalName == "Grid"
-            && element.Attribute("ColumnDefinitions")?.Value == "Auto,Auto,Auto");
+            && element.Attribute("ColumnDefinitions")?.Value == "Auto,Auto,Auto"
+            && element.Attribute("HorizontalAlignment")?.Value == "Center");
         Assert.Equal(
             "Center",
             centeredHierarchyControls.Attribute("HorizontalAlignment")?.Value);

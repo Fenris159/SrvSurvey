@@ -1,0 +1,181 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.BoxelStatsWindow"
+        x:DataType="vm:BoxelSurveyStatsViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="1100"
+        d:DesignHeight="760"
+        Width="1100"
+        Height="760"
+        MinWidth="860"
+        MinHeight="520"
+        WindowStartupLocation="CenterOwner"
+        Title="Boxel statistics">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <Border Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="24,18">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="BOXEL" />
+          <TextBlock Classes="page-title" FontSize="24" Text="Boxel statistics" />
+          <TextBlock Classes="muted"
+                     Text="Browse visited cubes by mass code, then open a cube for helium, body classes, and value." />
+        </StackPanel>
+        <StackPanel Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="8"
+                    VerticalAlignment="Center">
+          <Button Classes="secondary"
+                  Command="{Binding RefreshCommand}"
+                  Content="Refresh" />
+          <Button Classes="secondary"
+                  Click="Close_Click"
+                  Content="Close" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" Margin="20" ColumnDefinitions="320,*" ColumnSpacing="16">
+      <Border Classes="card" Padding="14">
+        <Grid RowDefinitions="Auto,Auto,*">
+          <TextBlock Classes="muted" Text="MASS CODE" />
+          <ItemsControl Grid.Row="1" Margin="0,8,0,12" ItemsSource="{Binding MassCodes}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:BoxelSurveyMassCodeOption">
+                <Button Classes="secondary"
+                        MinWidth="36"
+                        Height="34"
+                        Margin="0,0,6,6"
+                        Command="{Binding $parent[Window].((vm:BoxelSurveyStatsViewModel)DataContext).SelectMassCodeCommand}"
+                        CommandParameter="{Binding MassCode}"
+                        Content="{Binding Label}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <ListBox Grid.Row="2"
+                   ItemsSource="{Binding BrowserRows}"
+                   DoubleTapped="BrowserRow_DoubleTapped">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:BoxelSurveyBrowserRowViewModel">
+                <Button Classes="link"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        Margin="{Binding IndentMargin}"
+                        Click="BrowserRow_Click">
+                  <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                    <TextBlock FontWeight="SemiBold"
+                               TextWrapping="Wrap"
+                               Text="{Binding Prefix}" />
+                    <TextBlock Grid.Column="1"
+                               Classes="muted"
+                               Text="{Binding Glance}" />
+                    <TextBlock Grid.Column="2"
+                               Classes="muted"
+                               Text="{Binding Helium}" />
+                  </Grid>
+                </Button>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </Border>
+
+      <Border Grid.Column="1" Classes="card" Padding="18">
+        <Grid RowDefinitions="Auto,*">
+          <StackPanel Spacing="8" IsVisible="{Binding IsBrowserVisible}">
+            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Select a boxel" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Known cubes at this mass code appear on the left. Unvisited children still show so the tree matches the search hierarchy." />
+          </StackPanel>
+          <ScrollViewer Grid.Row="1" IsVisible="{Binding IsDetailVisible}">
+            <StackPanel Spacing="14">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="4">
+                  <TextBlock FontSize="22" FontWeight="SemiBold" Text="{Binding DetailTitle}" />
+                  <TextBlock Text="{Binding HeliumText}" />
+                  <TextBlock Classes="muted" Text="{Binding VisitedText}" />
+                  <TextBlock Classes="muted" Text="{Binding CompletenessText}" />
+                  <TextBlock Text="{Binding ValueText}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="8">
+                  <Button Classes="secondary"
+                          Command="{Binding BackCommand}"
+                          Content="Back to browser" />
+                  <Button Classes="secondary"
+                          Command="{Binding ExportCommand}"
+                          Content="Export" />
+                  <Button Classes="secondary"
+                          Command="{Binding RebuildCommand}"
+                          Content="Rebuild" />
+                </StackPanel>
+              </Grid>
+              <CheckBox IsVisible="{Binding CanShowSearchRollup}"
+                        IsChecked="{Binding ShowSearchRollup, Mode=TwoWay}"
+                        Content="Entire saved search" />
+              <Grid ColumnDefinitions="80,*,70,90,60,60,60" Margin="0,0,0,4">
+                <TextBlock Classes="muted" Text="Type" />
+                <TextBlock Grid.Column="1" Classes="muted" Text="Name" />
+                <TextBlock Grid.Column="2" Classes="muted" Text="Count" />
+                <TextBlock Grid.Column="3" Classes="muted" Text="Average" />
+                <TextBlock Grid.Column="4" Classes="muted" Text="TF" />
+                <TextBlock Grid.Column="5" Classes="muted" Text="Land" />
+                <TextBlock Grid.Column="6" Classes="muted" Text="Atmo" />
+              </Grid>
+              <ItemsControl ItemsSource="{Binding ClassRows}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:BoxelSurveyClassRowViewModel">
+                    <Grid ColumnDefinitions="80,*,70,90,60,60,60" Margin="0,0,0,4">
+                      <TextBlock FontWeight="SemiBold" Text="{Binding Code}" />
+                      <TextBlock Grid.Column="1" Text="{Binding DisplayName}" />
+                      <TextBlock Grid.Column="2" Text="{Binding Count}" />
+                      <TextBlock Grid.Column="3" Text="{Binding Average}" />
+                      <TextBlock Grid.Column="4" Text="{Binding Terraformable}" />
+                      <TextBlock Grid.Column="5" Text="{Binding Landable}" />
+                      <TextBlock Grid.Column="6" Text="{Binding Atmospheric}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <Border Grid.Row="2"
+            Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="20,10">
+      <Expander Header="Statistics settings">
+        <StackPanel Margin="0,10,0,0" Spacing="10" MaxWidth="520" HorizontalAlignment="Left">
+          <CheckBox IsChecked="{Binding TreatNavBeaconAsFullyScanned, Mode=TwoWay}"
+                    Content="Treat Nav Beacon as fully scanned" />
+          <Grid ColumnDefinitions="220,*" ColumnSpacing="12">
+            <TextBlock VerticalAlignment="Center" Text="Minimum systems for averages" />
+            <TextBox Grid.Column="1" Text="{Binding MinAveragesText, Mode=TwoWay}" />
+          </Grid>
+          <Grid ColumnDefinitions="220,*" ColumnSpacing="12">
+            <TextBlock VerticalAlignment="Center" Text="Minimum systems for export" />
+            <TextBox Grid.Column="1" Text="{Binding MinExportText, Mode=TwoWay}" />
+          </Grid>
+          <TextBlock Classes="muted"
+                     IsVisible="{Binding HasStatusMessage}"
+                     TextWrapping="Wrap"
+                     Text="{Binding StatusMessage}" />
+        </StackPanel>
+      </Expander>
+    </Border>
+  </Grid>
+</Window>
