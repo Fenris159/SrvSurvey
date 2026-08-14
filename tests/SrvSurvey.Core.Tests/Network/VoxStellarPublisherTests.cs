@@ -16,7 +16,7 @@ public sealed class VoxStellarPublisherTests
         var handler = new RecordingHandler();
         using var client = new HttpClient(handler);
         using var publisher = new VoxStellarPublisher(
-            "2.1.3.0-rc.23",
+            "2.1.3.0",
             sharedKey,
             client);
         publisher.SetEnabled(true);
@@ -40,7 +40,7 @@ public sealed class VoxStellarPublisherTests
         Assert.Equal(HttpMethod.Post, request.Method);
         Assert.Equal(WellKnownUris.VoxStellarWebhook, request.Uri);
         Assert.Equal("application/json", request.ContentType);
-        Assert.Equal("SrvSurvey-XP/2.1.3.0-rc.23", request.UserAgent);
+        Assert.Equal("SrvSurvey-XP/2.1.3.0", request.UserAgent);
 
         using var document = JsonDocument.Parse(request.Body);
         Assert.Equal(
