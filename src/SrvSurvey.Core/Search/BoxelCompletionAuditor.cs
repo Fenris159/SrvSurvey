@@ -113,6 +113,7 @@ public sealed class BoxelCompletionAuditor
         catch (Exception exception) when (
             exception is HttpRequestException
                 or TaskCanceledException
+                or InvalidDataException
                 or JsonException)
         {
             errors.Add($"Spansh audit failed for {boxel.Prefix}: {exception.Message}");

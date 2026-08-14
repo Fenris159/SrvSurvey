@@ -11,6 +11,8 @@ public sealed class BoxelSearchState
     private readonly Dictionary<string, BoxelSystemState> systems = new(
         StringComparer.Ordinal);
     private readonly HashSet<string> completed = new(StringComparer.Ordinal);
+    private readonly HashSet<string> retainedCompleted = new(StringComparer.Ordinal);
+    private readonly HashSet<string> completedSystems = new(StringComparer.Ordinal);
     private int projectionVersion = -1;
     private IReadOnlyList<BoxelSystemState> systemProjection = [];
     private IReadOnlyList<BoxelAddress> boxelProjection = [];
@@ -44,6 +46,8 @@ public sealed class BoxelSearchState
 
     public BoxelCompletionMode CompletionMode { get; private set; }
 
+    public string? SavedSearchFileName { get; private set; }
+
     public char LowMassCode { get; private set; }
 
     public bool CurrentIsEmpty { get; private set; }
@@ -60,9 +64,51 @@ public sealed class BoxelSearchState
 
     public int CompletedSystemCount => systems.Values.Count(system => system.IsComplete);
 
+    public int TotalKnownSystemCount => progress.Values.Where(count => count > 0).Sum();
+
+    public int TotalCompletedSystemCount
+    {
+        get
+        {
+            var completedByPrefix = completed.Sum(prefix =>
+                Math.Max(0, progress.GetValueOrDefault(prefix)));
+            var partial = completedSystems.Count(systemName =>
+                BoxelAddress.TryParse(systemName, out var boxel)
+                && boxel is not null
+                && !completed.Contains(boxel.Prefix));
+            return completedByPrefix + partial;
+        }
+    }
+
     public int CompletedBoxelCount => completed.Count;
 
     public int TotalBoxelCount => progress.Count;
+
+    public BoxelProgress GetProgress(BoxelAddress boxel)
+    {
+        ArgumentNullException.ThrowIfNull(boxel);
+        if (!progress.TryGetValue(boxel.Prefix, out var expectedSystemCount))
+        {
+            return BoxelProgress.Unknown;
+        }
+
+        var isEmpty = expectedSystemCount < 0;
+        var normalizedExpectedCount = Math.Max(0, expectedSystemCount);
+        var completedSystemCount = completed.Contains(boxel.Prefix)
+            ? normalizedExpectedCount
+            : completedSystems.Count(systemName =>
+                BoxelAddress.TryParse(systemName, out var completedSystem)
+                && completedSystem is not null
+                && string.Equals(
+                    completedSystem.Prefix,
+                    boxel.Prefix,
+                    StringComparison.Ordinal));
+        return new BoxelProgress(
+            normalizedExpectedCount,
+            Math.Min(completedSystemCount, normalizedExpectedCount),
+            completed.Contains(boxel.Prefix),
+            isEmpty);
+    }
 
     public bool CurrentSystemsComplete => systems.Count > 0
         && systems.Values.All(system => system.IsComplete);
@@ -130,11 +176,16 @@ public sealed class BoxelSearchState
         SkipAlreadyVisited = seed.SkipAlreadyVisited;
         SkipKnownToSpansh = seed.SkipKnownToSpansh;
         CompletionMode = seed.CompletionMode;
+        SavedSearchFileName = NormalizeSavedSearchFileName(seed.SavedSearchFileName);
         LowMassCode = BoxelAddress.IsValidMassCode(seed.LowMassCode)
             ? seed.LowMassCode
             : 'c';
         completed.Clear();
         completed.UnionWith(seed.CompletedPrefixes);
+        retainedCompleted.Clear();
+        retainedCompleted.UnionWith(seed.CompletedPrefixes);
+        completedSystems.Clear();
+        completedSystems.UnionWith(seed.CompletedSystems);
         systems.Clear();
         CurrentIsEmpty = false;
 
@@ -152,6 +203,21 @@ public sealed class BoxelSearchState
             }
 
             InitializeProgress();
+            foreach (var entry in seed.ProgressByPrefix)
+            {
+                if (progress.ContainsKey(entry.Key))
+                {
+                    progress[entry.Key] = Math.Max(-1, entry.Value);
+                }
+            }
+
+            if (Current is not null)
+            {
+                CurrentCount = Math.Max(
+                    CurrentCount,
+                    Math.Max(0, progress.GetValueOrDefault(Current.Prefix)));
+                CurrentIsEmpty = progress.GetValueOrDefault(Current.Prefix) == -1;
+            }
         }
         else
         {
@@ -208,6 +274,7 @@ public sealed class BoxelSearchState
         CurrentIsEmpty = false;
         systems.Clear();
         IsActive = true;
+        SavedSearchFileName = null;
         InitializeProgress();
         SetNextSystem();
         Version++;
@@ -237,6 +304,12 @@ public sealed class BoxelSearchState
         Version++;
     }
 
+    public void SetSavedSearchFileName(string? fileName)
+    {
+        SavedSearchFileName = NormalizeSavedSearchFileName(fileName);
+        Version++;
+    }
+
     public void ApplyEmptyBoxels(IEnumerable<string> emptyBoxelIds)
     {
         ArgumentNullException.ThrowIfNull(emptyBoxelIds);
@@ -252,6 +325,12 @@ public sealed class BoxelSearchState
             }
 
             progress[entry.Value] = shouldBeEmpty ? -1 : 0;
+            if (shouldBeEmpty)
+            {
+                completed.Remove(entry.Value);
+                retainedCompleted.Remove(entry.Value);
+                RemoveCompletedSystems(entry.Value);
+            }
             changed = true;
         }
 
@@ -324,6 +403,16 @@ public sealed class BoxelSearchState
         }
 
         systems[entry.Key] = entry.Value with { IsComplete = isComplete };
+        if (isComplete)
+        {
+            completedSystems.Add(entry.Key);
+        }
+        else
+        {
+            completedSystems.Remove(entry.Key);
+            retainedCompleted.Remove(entry.Value.Boxel.Prefix);
+        }
+
         UpdateCurrentCompletion();
         SetNextSystem();
         Version++;
@@ -342,6 +431,9 @@ public sealed class BoxelSearchState
         if (isEmpty)
         {
             progress[Current.Prefix] = -1;
+            completed.Remove(Current.Prefix);
+            retainedCompleted.Remove(Current.Prefix);
+            RemoveCompletedSystems(Current.Prefix);
             systems.Clear();
         }
         else
@@ -373,9 +465,16 @@ public sealed class BoxelSearchState
                 changed = true;
             }
 
-            changed |= entry.IsComplete
-                ? completed.Add(entry.Boxel.Prefix)
-                : completed.Remove(entry.Boxel.Prefix);
+            if (entry.IsComplete)
+            {
+                changed |= completed.Add(entry.Boxel.Prefix);
+                retainedCompleted.Add(entry.Boxel.Prefix);
+            }
+            else
+            {
+                changed |= completed.Remove(entry.Boxel.Prefix);
+                retainedCompleted.Remove(entry.Boxel.Prefix);
+            }
         }
 
         if (changed)
@@ -429,12 +528,25 @@ public sealed class BoxelSearchState
             CurrentCount = CurrentCount,
             LowMassCode = LowMassCode,
             CompletedPrefixes = completed.Order(StringComparer.Ordinal).ToArray(),
+            CompletedSystems = completedSystems.Order(StringComparer.Ordinal).ToArray(),
+            ProgressByPrefix = progress.ToDictionary(
+                entry => entry.Key,
+                entry => entry.Value,
+                StringComparer.Ordinal),
             AutoCopy = AutoCopy,
             Collapsed = Collapsed,
             SkipAlreadyVisited = SkipAlreadyVisited,
             SkipKnownToSpansh = SkipKnownToSpansh,
-            CompletionMode = CompletionMode
+            CompletionMode = CompletionMode,
+            SavedSearchFileName = SavedSearchFileName
         };
+    }
+
+    private static string? NormalizeSavedSearchFileName(string? fileName)
+    {
+        return string.IsNullOrWhiteSpace(fileName)
+            ? null
+            : Path.GetFileName(fileName.Trim());
     }
 
     private bool ApplyVisitedSystem(
@@ -471,6 +583,7 @@ public sealed class BoxelSearchState
         {
             var system = systems[boxel.GeneratedName];
             systems[boxel.GeneratedName] = system with { IsComplete = true };
+            completedSystems.Add(boxel.GeneratedName);
         }
 
         UpdateCurrentCompletion();
@@ -514,7 +627,9 @@ public sealed class BoxelSearchState
         }
 
         systems.TryGetValue(observation.Boxel.GeneratedName, out var existing);
-        var isComplete = existing?.IsComplete ?? false;
+        var isComplete = existing?.IsComplete == true
+            || completedSystems.Contains(observation.Boxel.GeneratedName)
+            || retainedCompleted.Contains(observation.Boxel.Prefix);
         if (source == BoxelObservationSource.LocalProfile)
         {
             isComplete |= CompletionMode == BoxelCompletionMode.FssAllBodies
@@ -548,6 +663,10 @@ public sealed class BoxelSearchState
             Max(existing?.VisitedAt, observation.VisitedAt),
             Max(existing?.SpanshUpdatedAt, observation.SpanshUpdatedAt),
             observation.HasKnownBodies || existing?.HasKnownBodies == true);
+        if (isComplete)
+        {
+            completedSystems.Add(observation.Boxel.GeneratedName);
+        }
         CurrentCount = Math.Max(CurrentCount, observation.Boxel.N2 + 1);
         SetProgress(Current, observation.Boxel.N2 + 1);
         return true;
@@ -605,6 +724,14 @@ public sealed class BoxelSearchState
         }
     }
 
+    private void RemoveCompletedSystems(string prefix)
+    {
+        completedSystems.RemoveWhere(systemName =>
+            BoxelAddress.TryParse(systemName, out var boxel)
+            && boxel is not null
+            && string.Equals(boxel.Prefix, prefix, StringComparison.Ordinal));
+    }
+
     private void SetNextSystem()
     {
         if (Current is null)
@@ -614,26 +741,22 @@ public sealed class BoxelSearchState
         }
 
         string? next = null;
-        if (!CurrentIsEmpty
-            && systems.Count > 0
-            && systems.Values.All(system => !system.IsComplete))
-        {
-            next = Current.Prefix;
-        }
-
-        if (!CurrentIsEmpty && next is null)
+        if (!CurrentIsEmpty)
         {
             var maximum = Math.Max(CurrentMaximumSystemNumber, CurrentCount);
-            for (var number = maximum - 1; number >= 0; number--)
+            for (var number = 0; number < maximum; number++)
             {
+                var generated = Current.WithSystemNumber(number);
                 var system = systems.Values.FirstOrDefault(
                     candidate => candidate.Boxel.N2 == number);
-                if (system?.IsComplete == true)
+                if (system?.IsComplete == true
+                    || completedSystems.Contains(generated.GeneratedName))
                 {
                     continue;
                 }
 
-                next = system?.Boxel.Name ?? Current.WithSystemNumber(number).Name;
+                next = system?.Boxel.Name
+                    ?? generated.Name;
                 break;
             }
         }
@@ -744,6 +867,11 @@ public sealed record BoxelSearchSnapshot
 
     public IReadOnlyList<string> CompletedPrefixes { get; init; } = [];
 
+    public IReadOnlyList<string> CompletedSystems { get; init; } = [];
+
+    public IReadOnlyDictionary<string, int> ProgressByPrefix { get; init; } =
+        new Dictionary<string, int>(StringComparer.Ordinal);
+
     public bool AutoCopy { get; init; }
 
     public bool Collapsed { get; init; }
@@ -754,6 +882,8 @@ public sealed record BoxelSearchSnapshot
 
     public BoxelCompletionMode CompletionMode { get; init; } =
         BoxelCompletionMode.EnterSystem;
+
+    public string? SavedSearchFileName { get; init; }
 
     public static BoxelSearchSnapshot Empty { get; } = new();
 }
@@ -773,3 +903,12 @@ public sealed record BoxelSystemState(
     DateTimeOffset? VisitedAt,
     DateTimeOffset? SpanshUpdatedAt,
     bool HasKnownBodies);
+
+public readonly record struct BoxelProgress(
+    int ExpectedSystemCount,
+    int CompletedSystemCount,
+    bool IsComplete,
+    bool IsEmpty)
+{
+    public static BoxelProgress Unknown { get; } = new(0, 0, false, false);
+}

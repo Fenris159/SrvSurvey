@@ -41,7 +41,8 @@ public sealed class NearestSystemsViewModelTests
         viewModel.UpdateContext(
             "Reference",
             new GalacticCoordinate(10, 20, 30),
-            "Cmdr Test");
+            "Cmdr Test",
+            10477373803);
         viewModel.BiologicalSignal = "Stratum";
 
         await viewModel.SearchAsync();
@@ -51,6 +52,7 @@ public sealed class NearestSystemsViewModelTests
         Assert.Equal("Stratum", client.CanonnSignal);
         Assert.Equal("Cmdr Test", client.CommanderName);
         Assert.Equal(new GalacticCoordinate(10, 20, 30), client.Reference);
+        Assert.Equal("id64 10477373803", viewModel.ReferenceSystemAddressText);
         Assert.Equal("Test A", viewModel.SelectedResult?.SystemName);
         Assert.Equal("Test A", copied);
         Assert.Equal(

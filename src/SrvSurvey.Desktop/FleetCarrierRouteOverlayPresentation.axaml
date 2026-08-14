@@ -3,6 +3,7 @@
              x:Class="SrvSurvey.Desktop.FleetCarrierRouteOverlayPresentation"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:FleetCarrierRouteOverlayViewModel"
              mc:Ignorable="d"
@@ -24,6 +25,7 @@
       </Grid>
 
       <TextBlock Classes="overlay-title"
+                 behaviors:ClipboardCopyBehavior.Text="{Binding SystemName}"
                  Foreground="{DynamicResource RavenAccentBrush}"
                  Text="{Binding SystemName}"
                  TextWrapping="Wrap" />

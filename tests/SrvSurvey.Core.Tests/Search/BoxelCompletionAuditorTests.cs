@@ -130,6 +130,39 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
     }
 
     [Fact]
+    public async Task AuditContinuesAfterInvalidSpanshResponse()
+    {
+        var top = BoxelAddress.Parse("Praea Euq RS-U d2-0");
+        var invalidBoxel = top.Children[0];
+        var validBoxel = top.Children[1];
+        var auditor = new BoxelCompletionAuditor(
+            new LegacySystemDataReader(temporaryDirectory),
+            new StubResolver(boxel =>
+                boxel.Prefix == invalidBoxel.Prefix
+                    ? throw new InvalidDataException("response exceeded the limit")
+                    : [Observation(boxel.WithSystemNumber(2))]));
+
+        var result = await auditor.AuditAsync(new BoxelCompletionAuditRequest(
+            "F123",
+            [invalidBoxel, validBoxel],
+            new HashSet<string>(StringComparer.Ordinal),
+            null,
+            DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+            false,
+            false,
+            BoxelCompletionMode.EnterSystem,
+            []));
+
+        Assert.Equal(2, result.Processed);
+        Assert.Equal(2, result.Entries.Count);
+        Assert.Equal(3, Assert.Single(result.Entries, entry =>
+            entry.Boxel.Prefix == validBoxel.Prefix).SystemCount);
+        Assert.Contains(
+            result.Errors,
+            error => error.Contains("response exceeded the limit", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task FssAuditRequiresAllBodiesAfterSearchStart()
     {
         var top = BoxelAddress.Parse("Praea Euq RS-U d2-0");

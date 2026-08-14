@@ -808,6 +808,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "A blue neutron-star marker identifies a route waypoint that uses or approaches a neutron-star FSD boost.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "A body row can contain more prediction PIPs than its reported biological-signal count when several genera remain plausible. Those additional hatched PIPs are alternative candidates, not extra signals or additive rewards.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "A boxel is a cubic subsector of procedurally generated space. Systems in one boxel share the same generated-name prefix and use a numeric suffix as their sequence within that boxel.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "A cache-write failure does not repeat a successful server mutation in the same session.",
     "IsFormat": false,
     "SourceKinds": [
@@ -832,14 +856,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "A circle in the configured empty-state color identifies a surveyed artifact puddle with no object present.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "A circle with a heading stalk shows the Commander\u0027s position and facing on the settlement map.",
     "IsFormat": false,
     "SourceKinds": [
@@ -849,14 +865,6 @@
   },
   {
     "Text": "A circle with a lightning stroke marks a power post.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "A circular point represents an Orb, Casket, Tablet, Totem, or Urn. The map legend and point label distinguish the artifact type.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -912,14 +920,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "A crossed X identifies a broken obelisk.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "A current journal system is required, or search for a prior system.",
     "IsFormat": false,
     "SourceKinds": [
@@ -936,12 +936,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "A cyan obelisk with a 90-degree radial glow is active. The glow center is cyan when its log is needed for the active Ram Tah mission, orange when scanned, and light gray when active but neither needed nor scanned.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "A dashed dark-red line through site center is the recorded site alignment heading and rotates with the live Commander view.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "A default Codex image cache directory is required.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/CodexImageSettingsStore.cs"
+  },
+  {
+    "Text": "A dimmed PIP means that organism has already been analyzed for the current body. Its reward band remains visible for reference, but it is no longer an outstanding sample.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "A dot and radius mark one of the eight reusable tracked surface locations. Inactive bookmarks are dimmed.",
@@ -968,6 +992,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "A filled flag marks a Commander first, an outline flag marks a Commander regional first, and a sun marks a potential Galactic-region first from external candidate data.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "A first-discovery flag means the body was not previously discovered according to the journal data.",
     "IsFormat": false,
     "SourceKinds": [
@@ -984,7 +1016,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "A gold/empty-color diagonal stroke is the recorded relic-tower heading.",
+    "Text": "A gold-filled, yellow-edged circle identifies a surveyed artifact puddle with no object present.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -1000,7 +1032,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "A hatched reward PIP is a prediction. A solid PIP is a confirmed organism. A question mark means no reliable reward band is known yet.",
+    "Text": "A hatched reward PIP is a prediction. A solid PIP is a confirmed organism. A trailing question mark means that organism is still predicted rather than identified; hover it for the exact state.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -1104,6 +1136,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
   },
   {
+    "Text": "A parent contains eight child cubes at the next lower mass code. This nested layout explains why systems with different prefixes can be close together and systems sharing a large high-mass boxel can be far apart.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "A passive overlay is click-through. The live-interaction shortcut temporarily makes existing live overlays draggable without opening the full position editor.",
     "IsFormat": false,
     "SourceKinds": [
@@ -1128,7 +1168,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "A question mark in the PIP frame means no dependable reward band can be calculated yet.",
+    "Text": "A question mark inside the unknown-color frame means there is not enough dependable organism or reward data to calculate a band yet.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -1200,14 +1240,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceSurveyViewModel.cs"
   },
   {
-    "Text": "A secondary-color diagonal stroke is the site alignment heading used by the projected layout.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "A short filled bar marks a secure door. Green, cyan, gold, and danger colors correspond to increasing security levels.",
     "IsFormat": false,
     "SourceKinds": [
@@ -1240,7 +1272,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "A square identifies a component tower or destructible panel. Small lime, cyan, and orange-red dots identify Power Cell, Power Conduit, and Technology Component material states.",
+    "Text": "A standalone question mark means the signal, organism, site detail, or reward cannot yet be identified reliably from current data.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -1264,6 +1296,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "A trailing question mark means the body criteria predict the colored species, but a DSS or organic scan has not confirmed it. Hover the marker in the overlay for its state description.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "A translucent blue line through site center is the general relic-tower heading. A wider, fainter line through one relic records that tower\u0027s individual heading.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "A triangle marks the current ship. A dim triangle marks a former ship position.",
     "IsFormat": false,
     "SourceKinds": [
@@ -1272,23 +1320,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "A triangle represents a relic tower. Filled versus outline state reports whether the surveyed point is present.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "A triangle with a center stroke is an obelisk. An extra ring marks active/target state and success fill marks scanned state.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "A visual reference for text symbols, biology reward PIPs, surface-radar markers, Guardian points, and human-settlement map icons.",
+    "Text": "A visual reference for route and body artwork, text symbols, biology reward PIPs, surface-radar markers, Guardian points, and human-settlement map icons.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -1823,6 +1855,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Active Guardian obelisk",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Active genetic sampler",
@@ -2465,7 +2505,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "An outlined diamond identifies an energy pylon.",
+    "Text": "An open chevron points toward a near or standard target. A double chevron marks a target beyond its defined far threshold; markers without one use 1 km.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "An orange star containing a fuel droplet marks a route waypoint where the ship should refuel by fuel scooping.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -2495,6 +2543,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayDispatcherTimer.cs"
+  },
+  {
+    "Text": "An unhatched PIP means the organism and its reward are confirmed. Each filled segment clears one reward threshold; black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -2535,6 +2591,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "Analyzed reward PIPs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Analyzed {0} matching journal(s) and {1} event(s).{2}{3}{4}{5}{6}",
@@ -2750,7 +2814,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Apply JSON",
@@ -3110,7 +3174,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Auto-copy the next hop",
@@ -4186,6 +4250,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
   },
   {
+    "Text": "Biology body predictions",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Biology predictions - SrvSurvey",
     "IsFormat": false,
     "SourceKinds": [
@@ -4219,6 +4291,30 @@
   },
   {
     "Text": "Biology system and Codex overlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Biology system and body predictions",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Biology system and body-detail overlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Biology system and prediction overlays",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -4540,36 +4636,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "Boxel and nearby-system searches",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Boxel results can skip known or empty ranges and retain progress in the Commander profile.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Boxel search disabled; its progress was retained.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
-    "Text": "Boxel search walks procedural-name ranges; Nearby systems resolves close alternatives around a known system.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Breached",
@@ -4741,14 +4813,6 @@
   },
   {
     "Text": "CENTER SYSTEM",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
-    "Text": "CHILD BOXELS",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -5084,7 +5148,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "CURRENT COORDINATES",
@@ -5149,7 +5213,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "CURRENT TIER",
@@ -5197,7 +5261,15 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Cancel audit safely retains the partial work already applied. Save again after reviewing the result so the saved library entry records the newest progress and modified date.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Cancel overlay position and opacity changes",
@@ -5393,6 +5465,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
+    "Text": "Canonn-known signals",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Capacity",
@@ -5738,6 +5818,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Choose Lowest mass code. Keeping it equal to the top system\u0027s mass code searches only that boxel; choosing a lower letter includes every nested child down to that level. Check the displayed boxel count before continuing.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Choose Make primary on the intended project before focusing the shopping plan.",
@@ -6413,28 +6501,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
-    "Text": "Colonisation",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Colonisation projects",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
-    "Text": "Colonisation shopping",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "ColonisationBeaconDeployed",
@@ -6483,6 +6555,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "Colonization shopping",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Color",
@@ -6718,6 +6798,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Commander first",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Commander journeys",
     "IsFormat": false,
     "SourceKinds": [
@@ -6822,12 +6910,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Commander regional first",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Commander survey states and raw POIs are overlaid on the reference map.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Commander-first and regional-first PIPs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Commander: {0}",
@@ -6966,14 +7070,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "Complete only after FSS reports all bodies",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
     "Text": "Complete or sufficient",
     "IsFormat": false,
     "SourceKinds": [
@@ -7075,7 +7171,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Configure the commander-scoped Raven credential and opt-in Market.json publishing.",
@@ -7293,6 +7389,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
+  },
+  {
+    "Text": "Confirmed reward PIPs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Confirmed; 5x reward applies",
@@ -7724,7 +7828,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Copy next boxel system",
@@ -7733,14 +7837,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
-  },
-  {
-    "Text": "Copy next boxel system and Paste Galaxy Map target reduce retyping while the map is open.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Copy next hop",
@@ -8133,7 +8229,15 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Current boxel prefix identifies the sequence being worked; Next incomplete system is the lowest known or expected suffix in that sequence that has not met your completion rule.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Current boxel {0}% searched.",
@@ -8714,7 +8818,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
-    "Text": "Define a spherical boundary, work a generated boxel, or find nearby biology.",
+    "Text": "Define a spherical boundary or find nearby biological systems.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -9195,7 +9299,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Diagonal hatching means the organism and reward are predicted. Dark potential segments cover the possible upper end of a reward range.",
+    "Text": "Diagonal hatching marks a predicted organism or reward. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body\u0027s reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -9906,7 +10010,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "EXPLORATION",
@@ -9931,6 +10035,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Controls/HumanSiteMapControl.cs"
+  },
+  {
+    "Text": "Each PIP has the legacy translucent dotted outer frame plus a solid outline around every filled or possible-reward segment. Both border layers follow the PIP state and are independently configurable in Overlay appearance.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
@@ -10230,6 +10342,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Enable Require FSS to report all bodies when entering a system is not enough and you want completion to wait for a full FSS identification.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
     "IsFormat": false,
     "SourceKinds": [
@@ -10349,6 +10469,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
+    "Text": "Enter a generated system name, ordinary system name, or id64 in Top boxel or generated system. Select an EDSM suggestion when one appears so SrvSurvey retains the authoritative id64.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Enter a generated system name.",
@@ -10583,6 +10711,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
+    "Text": "Every lower level multiplies the work: one boxel has eight direct children, and selecting several levels can create a very large search tree.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Exact criteria evaluated for {0} biological {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -10717,7 +10853,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
     "Text": "Exploration \u0026 navigation",
@@ -10776,7 +10912,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
   },
   {
-    "Text": "Exploration, Exobiology, Travel, Search, Guardian, Quests, and Colonisation contain activity-specific tools.",
+    "Text": "Exploration, Exobiology, Travel, Search, Guardian, Quests, and Colonization contain activity-specific tools.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -10905,6 +11041,14 @@
   },
   {
     "Text": "External system resolution is clearly reported when a lookup service is unavailable or disabled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "External timestamps describe when a community service last received data, not guaranteed first-discovery or current in-game completeness. Treat skip rules as workflow filters rather than proof that a system has nothing left to discover.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -11315,7 +11459,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
-    "Text": "FSS, body information, quests, colonisation",
+    "Text": "FSS, body information, quests, colonization",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -11546,14 +11690,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
-  },
-  {
-    "Text": "First discovery",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "First footfall confirmed",
@@ -11796,7 +11932,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
-    "Text": "Flight warning, search, travel, colonisation",
+    "Text": "Flight warning, search, travel, colonization",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -12010,14 +12146,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
-  },
-  {
-    "Text": "Four vertical segments classify a confirmed biological reward against the thresholds configured in Settings. More filled segments mean a higher reward band.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Frame Shift Drive",
@@ -12324,12 +12452,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
+    "Text": "Fuel-scoop stop",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Full-area completion audit",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Fully scanned \u00B7 {0} bodies",
@@ -12522,6 +12658,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+  },
+  {
+    "Text": "Galactic-region candidate PIPs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Galaxy Map and next jump",
@@ -13053,7 +13197,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "Guardian artifact point",
+    "Text": "Guardian artifact points",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -13325,6 +13469,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Guardian survey states",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Guardian system",
     "IsFormat": false,
     "SourceKinds": [
@@ -13501,14 +13653,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
-  },
-  {
-    "Text": "Hatched reward PIPs",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Heading",
@@ -13766,6 +13910,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "Hierarchy controls move between nested cubes, not between systems in the current table.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "High Tech | Industrial",
@@ -14090,14 +14242,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
-    "Text": "I understand this large audit can make thousands of Spansh requests",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
     "Text": "ID",
     "IsFormat": false,
     "SourceKinds": [
@@ -14202,6 +14346,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Identifies an imported route destination classified as {0}. The marker appears immediately before the body name.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Identifies construction/build context; the exact row color reports whether the item is actionable, satisfied, or unavailable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -14235,6 +14387,14 @@
   },
   {
     "Text": "If no Commander appears, use Diagnostics to inspect the selected folder and newest Journal file.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -14620,6 +14780,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
+    "Text": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "In a ship or SRV, cycle the fire group to choose Alpha, Beta, Gamma, Present, Absent, or Empty; then toggle the configured Guardian confirmation control twice.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "In flight",
     "IsFormat": false,
     "SourceKinds": [
@@ -14787,6 +14963,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Inline system suggestions come from EDSM with an Ardent fallback; the resolved center and coordinates still come from Spansh. Saving updates only the compatible sphereLimit fields.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
     "Text": "InlineFleetCarrierCargo",
@@ -15628,7 +15812,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "LT",
@@ -15886,6 +16070,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderInstancesViewModel.cs"
+  },
+  {
+    "Text": "Legacy POI colors identify present artifacts: orange Orb, green Casket, pale-blue Tablet, blue-violet Totem, and magenta Urn.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Legacy UI settings migration was skipped: {0}",
@@ -17265,7 +17457,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
-    "Text": "Marks a stellar/body context or an unresolved biological signal depending on the row title.",
+    "Text": "Mass code correlates with the system\u0027s original mass allocation, but it does not guarantee a particular present-day star class, planet, or biological species.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Mass codes a through h describe nested cube sizes from 10 to 1,280 light-years per side. A higher letter means a larger parent cube; each supported level contains eight children one mass code lower.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Mass-code h searches are intentionally unavailable because reliable empty-boxel tracking is not practical at the full 1,280-light-year sector scale.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -18101,12 +18309,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Navigate the search tree",
+    "Text": "Navigate the boxel hierarchy",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Navigation",
@@ -18126,6 +18334,30 @@
   },
   {
     "Text": "Near a site, the live map projects the published layout around your current position and heading.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Near and far bearing chevrons",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Nearby systems resolves biological search results around a known reference system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Nearby-system searches",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -18197,6 +18429,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Nested triangular outlines identify a component tower. The three fixed screen-facing dots are lime Power Cell, cyan Power Conduit, and orange-red Technology Component; a small square uses the same materials for a destructible panel.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Network publication",
     "IsFormat": false,
     "SourceKinds": [
@@ -18227,6 +18467,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+  },
+  {
+    "Text": "Neutron boost stop",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "New",
@@ -18347,14 +18595,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Next sibling",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
     "Text": "Next site",
@@ -20073,7 +20313,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
-    "Text": "Open Colonisation and refresh projects. Rejected or mismatched credentials do not replace the stored Commander profile.",
+    "Text": "Open Colonization and refresh projects. Rejected or mismatched credentials do not replace the stored Commander profile.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -20216,6 +20456,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Open a child row to move one mass code lower into a smaller cube. Its progress and state indicate whether it is unknown, in progress, empty, or complete.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Open categorized previews without starting Elite. Changes are saved only with \u2713.",
@@ -20713,6 +20961,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+  },
+  {
+    "Text": "Outside the body-prediction discovery markers, this symbol identifies a stellar/body context or an unresolved biological signal according to the row title.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Overlay",
@@ -21349,14 +21605,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "Parent",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
     "Text": "Parents",
     "IsFormat": false,
     "SourceKinds": [
@@ -21726,14 +21974,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Points toward a tracked surface item that is outside the current compact view or emphasizes its bearing.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Polonium 0.8% | Tellurium 1.2%",
     "IsFormat": false,
     "SourceKinds": [
@@ -21804,6 +22044,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Potential Galactic-region first",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Pov",
@@ -21981,7 +22229,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "PreDownload",
@@ -21990,6 +22238,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/CodexImageSettingsStore.cs"
+  },
+  {
+    "Text": "Predicted organism",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Predicted reward PIPs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Prediction",
@@ -22208,6 +22472,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Previous at this level and Next at this level move between sibling boxels that share the same parent. The center card always shows the current boxel and its progress.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Previous entry",
     "IsFormat": false,
     "SourceKinds": [
@@ -22230,14 +22502,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
-  },
-  {
-    "Text": "Previous sibling",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
     "Text": "Previous theme backup: {0}",
@@ -24082,6 +24346,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "Read Location in search as a breadcrumb from the search root to the boxel currently being inspected. Select an ancestor to jump back to it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Read transmissions, follow active objectives, and manage commander adventures.",
     "IsFormat": false,
     "SourceKinds": [
@@ -24579,14 +24851,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
-    "Text": "Regional first",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Regional firsts in {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -24617,14 +24881,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
-  },
-  {
-    "Text": "Relative bearing marker",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Relative to settlement origin: {0}",
@@ -25460,6 +25716,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "Route Workspace and next-jump overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Route Workspace and route-bodies overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Route and destination intelligence",
     "IsFormat": false,
     "SourceKinds": [
@@ -25841,7 +26113,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "SEARCH TYPE",
@@ -26019,14 +26291,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "SPANSH",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
     "Text": "SPECIES",
@@ -26500,6 +26764,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
+  },
+  {
+    "Text": "Save, resume, and audit a boxel project",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "SaveDiagnosticImages",
@@ -27145,6 +27417,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
   },
   {
+    "Text": "Select Resume Search to browse one saved search at a time by favorite, name, creation date, last modified date, completion, and notes. Open Selected restores its tree, options, and completed systems.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Select Save Progress. The first save asks for a name and notes, preloading the top system as the name. Later saves update that same entry directly.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Select Start search. SrvSurvey opens the top boxel, merges local Commander history with available Spansh observations, and chooses the lowest incomplete suffix.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Select a Codex category or entry",
     "IsFormat": false,
     "SourceKinds": [
@@ -27411,6 +27707,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Set Search start date, then decide whether earlier Commander visits and older Spansh body records should count as already complete.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Set a target to begin guidance",
     "IsFormat": false,
     "SourceKinds": [
@@ -27443,7 +27747,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
-    "Text": "Set surface targets, record journeys, follow routes, and search the galaxy by sphere, boxel, or nearby-system criteria.",
+    "Text": "Set surface targets, record journeys, follow routes, and search the galaxy by sphere or nearby-system criteria.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -28837,22 +29141,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Skip systems known to Spansh before the start date",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
-    "Text": "Skip systems visited before the start date",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
     "Text": "SkipAnalyzedCompositionScans",
     "IsFormat": false,
     "SourceKinds": [
@@ -28939,22 +29227,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Sol, Colonia, or another system",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
-    "Text": "Solid reward PIPs",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Some Canonn settlement data was ignored: {0}",
@@ -29631,6 +29903,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml.cs"
   },
   {
+    "Text": "SrvSurvey.Desktop",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "SrvSurvey.Inara.ReadKey",
     "IsFormat": false,
     "SourceKinds": [
@@ -29759,6 +30039,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianTemplateAuthoringViewModel.cs"
   },
   {
+    "Text": "Start a boxel search",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Start a journey to track systems, scans, notes, screenshots, and rewards.",
     "IsFormat": false,
     "SourceKinds": [
@@ -29836,7 +30124,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Start template draft",
@@ -30061,7 +30349,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Stopping after the current journal operation...",
@@ -30368,12 +30656,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/GuardianSiteMapControl.cs"
   },
   {
+    "Text": "Survey the current boxel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Survey totals",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationView.axaml"
+  },
+  {
+    "Text": "Surveying a complete sequence gives an explorer a bounded, repeatable area to study. It is useful for finding regional formation patterns, checking nearby systems after an interesting discovery, and keeping a long project organized.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Swap complete. Restart Elite Dangerous when ready. Original backup: {0}",
@@ -30471,6 +30775,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "System biology overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "System completion updated.",
@@ -30633,14 +30945,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
-    "Text": "System suggestions and coordinates come from Spansh. Saving updates only the compatible sphereLimit fields.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
     "Text": "System survey and biology overlays",
     "IsFormat": false,
     "SourceKinds": [
@@ -30734,7 +31038,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Systems visited",
@@ -30838,7 +31142,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "TRAVEL",
@@ -31595,6 +31899,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemNotesViewModel.cs"
   },
   {
+    "Text": "The asymmetric narrow three-sided legacy outline identifies a broken obelisk; it is not a generic X.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The audit finished for a profile that is no longer active; its results were not applied.",
     "IsFormat": false,
     "SourceKinds": [
@@ -31635,14 +31947,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "The body or organism is new to the current Commander/discovery context. On compact FSS rows it marks an undiscovered body.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "The boxel refresh could not be completed: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -31665,6 +31969,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "The bright yellow or theme-highlight PIP marks an organism that is new to the current Commander, or new to this Commander in the current Codex region when regional highlighting is enabled. Hatching still means the organism and reward are predicted.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "The calibration file has no parent directory.",
@@ -32163,6 +32475,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The external regional candidate catalog has no reported discovery for this predicted organism in the current Galactic region. This is advisory until an in-game CodexEntry confirms the result.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The fallback marker used when imported route data does not provide a body subtype that SrvSurvey can identify.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The favorite could not be updated: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -32331,7 +32659,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "The inner arrow is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.",
+    "Text": "The inner ringed pointer is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -32635,6 +32963,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
   },
   {
+    "Text": "The narrow dark-cyan, three-sided legacy glyph identifies an inactive obelisk and rotates with the template geometry. A dotted lime ring identifies the nearest or targeted point.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The native Windows overlay handle is not available.",
     "IsFormat": false,
     "SourceKinds": [
@@ -32787,7 +33123,31 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
-    "Text": "The organism is new for the current Codex region. Optional highlighting can promote this marker.",
+    "Text": "The organism is a first discovery for the current Commander. The same filled flag on compact FSS rows marks an undiscovered body.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The organism is new to this Commander in the current Codex region. The optional regional-first setting promotes the outline flag and its reward PIP to the highlight color.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The original Canonn Research logo means external Canonn data contains known biological signals for this body. It appears immediately beside the reward PIPs when external data and automatic prior-scan loading are enabled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The original blue-filled, cyan-edged triangle is a confirmed relic tower. It rotates to its recorded heading; a translucent blue line through the tower means that tower has an individual heading measurement.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -33163,6 +33523,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The route could not be deleted: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -33531,14 +33899,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "The signal, organism, site detail, or reward cannot yet be identified reliably from current data.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "The site name \u0027{0}\u0027 is duplicated.",
     "IsFormat": true,
     "SourceKinds": [
@@ -33739,12 +34099,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "The systems table is ordered by numeric suffix and separates distance, last Commander visit, last Spansh update, state, and the manual action.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The target changed for this session but could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GroundTargetViewModel.cs"
+  },
+  {
+    "Text": "The terminology and naming model follow community research documented by Elite Dangerous Astrometrics, Marx\u0027s Guide to Boxels, and the IGAU system-identifier notes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "The text could not be copied: {0}",
@@ -33769,6 +34145,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/ControllerChordTracker.cs"
+  },
+  {
+    "Text": "The top Current system is where the Commander actually is; it is not the first system in the sequence. Next incomplete system is the next work item calculated from saved completion state.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "The unhealthy replacement process did not exit for rollback.",
@@ -33817,6 +34201,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "The white or separately themed PIP means external candidate data has no reported discovery for this predicted organism in the current Galactic region. It is advisory until an in-game journal event confirms the result; hatching remains because the organism is predicted.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "The written overlay theme did not verify.",
@@ -33960,7 +34352,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "This construction site is not in the active project list.",
@@ -34667,7 +35059,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Travel, search, Guardian, colonisation, messages",
+    "Text": "Travel, search, Guardian, colonization, messages",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -34710,6 +35102,7 @@
     "Text": "Tussock",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
@@ -34924,6 +35317,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
   },
   {
+    "Text": "Understand procedural boxels, run bounded system surveys, navigate nested search trees, and preserve multiple research projects.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Understand the live Commander state, multi-Commander selection, and the difference between current-session and historical data.",
     "IsFormat": false,
     "SourceKinds": [
@@ -35131,6 +35532,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Unknown points use the cyan dotted survey treatment, absent points use translucent gray, present points use their POI-specific legacy color, and empty puddles use gold with a yellow edge.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Unknown response",
@@ -35501,7 +35910,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use Audit all boxels when you need every branch refreshed against local history and Spansh rather than only the current boxel. Large audits require explicit confirmation because they can make more than 1,000 requests.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Use Clear primary only when you intentionally want aggregate planning across visible projects.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Boxel, Route Manager, and FC Route auto-copy are mutually exclusive.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -35525,7 +35950,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use Mark current empty only when the selected boxel has no systems to survey. The marker is retained and the search advances to the next incomplete boxel.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Use Next Elite window when several game clients are open and an overlay needs to follow a different window.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use Refresh boxel to merge systems from the local Commander profile, the active route, and Spansh. Community databases contain only submitted observations, so an unknown system is not proof that it does not exist.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -35555,6 +35996,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Use Stop search when you want the live Boxel workflow inactive while retaining its current profile state. Save Progress is the clearer choice when you intend to switch among several named projects.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Use Track location 1 through 8 shortcuts to toggle reusable surface bookmarks.",
@@ -35597,6 +36046,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "Use current restores the active Commander system as the distance origin.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Use external biology confirmations",
     "IsFormat": false,
     "SourceKinds": [
@@ -35635,6 +36092,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Use the Boxel workspace after choosing a procedurally generated system whose surrounding sequence you want to survey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Use the Composition Scanner to identify organisms.",
@@ -36622,6 +37087,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "What a boxel is and why survey one",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "What happened just before?",
     "IsFormat": false,
     "SourceKinds": [
@@ -36639,6 +37112,14 @@
   },
   {
     "Text": "What this field manual covers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, the system completes after Elite writes FSSAllBodiesFound. Use Complete or Reopen for a manual correction.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -37055,6 +37536,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "active scanned needed glow wedge",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "alliance",
     "IsFormat": false,
     "SourceKinds": [
@@ -37231,7 +37720,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/FrontierAssetImageConverter.cs"
   },
   {
-    "Text": "bars pips",
+    "Text": "bars pips confirmed solid filled empty border",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -37239,7 +37728,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "bars pips confirmed solid",
+    "Text": "bars pips dim analyzed complete scanned",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -37247,7 +37736,31 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "bars pips estimate range",
+    "Text": "bars pips estimate range hatched potential alternative genus overflow dotted frame",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "bars pips gold yellow highlighted commander first discovery regional",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "bars pips question mark unknown unresolved",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "bars pips white galactic region potential candidate first discovery",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -37351,6 +37864,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyPredictionsViewModel.cs"
   },
   {
+    "Text": "body planet stellar route {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "body.",
     "IsFormat": false,
     "SourceKinds": [
@@ -37447,6 +37968,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "canonn external known signals pips prior scans",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "canvas",
     "IsFormat": false,
     "SourceKinds": [
@@ -37500,7 +38029,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
     "Text": "colonise.deficit",
@@ -37900,7 +38429,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
     "Text": "exploration",
@@ -38111,6 +38640,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "fuel scoop refuel star route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "fueltank",
     "IsFormat": false,
     "SourceKinds": [
@@ -38183,6 +38720,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "global regional first discovery biology",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "goal:{0}:{1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -38236,7 +38781,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
     "Text": "guides",
@@ -38839,6 +39384,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "neutron boost fsd star route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "news",
     "IsFormat": false,
     "SourceKinds": [
@@ -38959,7 +39512,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
-    "Text": "orb casket tablet totem urn",
+    "Text": "orb casket tablet totem urn colors",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -39148,7 +39701,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
     "Text": "radar",
@@ -39181,6 +39734,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "relative bearing direction near far distance",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "repeat",
@@ -39887,6 +40448,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "uncertain predicted species subtype",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "undiscovered Codex map",
     "IsFormat": false,
     "SourceKinds": [
@@ -39901,6 +40470,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ErrorReportWindowCoordinator.cs"
+  },
+  {
+    "Text": "unknown absent present empty colors",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "unknown layout",

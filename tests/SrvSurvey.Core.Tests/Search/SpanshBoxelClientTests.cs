@@ -19,7 +19,7 @@ public sealed class SpanshBoxelClientTests
                   "x": {{number}},
                   "y": 2,
                   "z": 3,
-                  "updated_at": "2026-07-01T12:00:00Z",
+                  "updated_at": "2026-07-01 12:00:00+00",
                   "bodies": [{}]
                 }
                 """));
@@ -62,6 +62,9 @@ public sealed class SpanshBoxelClientTests
         Assert.Equal(1000, systems[0].Boxel.SystemAddress);
         Assert.Equal(new GalacticCoordinate(0, 2, 3), systems[0].Position);
         Assert.True(systems[0].HasKnownBodies);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-01T12:00:00Z"),
+            systems[0].SpanshUpdatedAt);
         Assert.False(systems[^1].HasKnownBodies);
         Assert.Equal(2, handler.Requests.Count);
         Assert.All(
@@ -96,11 +99,61 @@ public sealed class SpanshBoxelClientTests
     public async Task SearchRejectsHttpFailures()
     {
         var client = new SpanshBoxelClient(
-            new HttpClient(new QueueHandler(HttpStatusCode.ServiceUnavailable, "{}")),
-            new Uri("https://example.test/api/"));
+            new HttpClient(new QueueHandler(
+                (HttpStatusCode.ServiceUnavailable, "{}"),
+                (HttpStatusCode.ServiceUnavailable, "{}"),
+                (HttpStatusCode.ServiceUnavailable, "{}"))),
+            new Uri("https://example.test/api/"),
+            static (_, _) => Task.CompletedTask);
 
         await Assert.ThrowsAsync<HttpRequestException>(
             () => client.SearchAsync(BoxelAddress.Parse("Praea Euq IL-P c5-0")));
+    }
+
+    [Fact]
+    public async Task SearchRetriesTransientPageFailureWithoutSkippingResults()
+    {
+        var handler = new QueueHandler(
+            (HttpStatusCode.TooManyRequests, "{}"),
+            (HttpStatusCode.OK, """
+                {
+                  "count": 1,
+                  "from": 0,
+                  "size": 1,
+                  "results": [
+                    {
+                      "id64": 1000,
+                      "name": "Praea Euq IL-P c5-0",
+                      "x": 1,
+                      "y": 2,
+                      "z": 3,
+                      "updated_at": "2026-07-01T12:00:00Z",
+                      "bodies": [{}]
+                    }
+                  ]
+                }
+                """));
+        var delays = new List<TimeSpan>();
+        var client = new SpanshBoxelClient(
+            new HttpClient(handler),
+            new Uri("https://example.test/api/"),
+            (delay, _) =>
+            {
+                delays.Add(delay);
+                return Task.CompletedTask;
+            });
+
+        var systems = await client.SearchAsync(
+            BoxelAddress.Parse("Praea Euq IL-P c5-0"));
+
+        Assert.Single(systems);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal([TimeSpan.FromMilliseconds(250)], delays);
+        using var first = JsonDocument.Parse(handler.Requests[0].Content);
+        using var retry = JsonDocument.Parse(handler.Requests[1].Content);
+        Assert.Equal(
+            first.RootElement.GetRawText(),
+            retry.RootElement.GetRawText());
     }
 
     private sealed class QueueHandler : HttpMessageHandler
@@ -117,7 +170,7 @@ public sealed class SpanshBoxelClientTests
         {
         }
 
-        private QueueHandler(
+        public QueueHandler(
             params (HttpStatusCode StatusCode, string Content)[] responses)
         {
             this.responses = new Queue<(HttpStatusCode, string)>(responses);

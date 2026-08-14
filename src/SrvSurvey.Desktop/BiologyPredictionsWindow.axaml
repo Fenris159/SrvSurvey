@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
         xmlns:controls="using:SrvSurvey.Desktop.Controls"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         x:Class="SrvSurvey.Desktop.BiologyPredictionsWindow"
@@ -23,10 +24,21 @@
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
         <StackPanel Spacing="3">
           <TextBlock Classes="eyebrow" Text="BIOLOGY PREDICTIONS" />
-          <TextBlock Classes="page-title"
-                     FontSize="24"
-                     Text="{Binding SystemName}"
-                     TextTrimming="CharacterEllipsis" />
+          <Button Classes="link"
+                  HorizontalAlignment="Left"
+                  behaviors:ClipboardCopyBehavior.Text="{Binding SystemName}">
+            <TextBlock Classes="page-title"
+                       FontSize="24"
+                       Text="{Binding SystemName}"
+                       TextTrimming="CharacterEllipsis" />
+          </Button>
+          <Button Classes="link"
+                  HorizontalAlignment="Left"
+                  IsVisible="{Binding HasSystemAddress}"
+                  behaviors:ClipboardCopyBehavior.Text="{Binding SystemAddress}">
+            <TextBlock Classes="muted monospace"
+                       Text="{Binding SystemAddressText}" />
+          </Button>
           <TextBlock Classes="muted"
                      Text="{Binding ScanProgress}" />
         </StackPanel>

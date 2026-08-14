@@ -784,6 +784,40 @@ public sealed class OverlayPresentationContractTests
     }
 
     [Fact]
+    public void ExplorationTripMetricsUseLeftAlignedTwentyFortyFortyColumns()
+    {
+        var document = XDocument.Load(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "Views",
+            "OverviewView.axaml"));
+        var metrics = document.Descendants().Single(element =>
+            element.Attributes().Any(attribute =>
+                attribute.Name.LocalName == "Name"
+                && attribute.Value == "ExplorationTripMetrics"));
+        var columns = metrics.Elements()
+            .Where(element => element.Name.LocalName == "StackPanel")
+            .ToArray();
+
+        Assert.Equal("1*,2*,2*", metrics.Attribute("ColumnDefinitions")?.Value);
+        Assert.Equal(3, columns.Length);
+        Assert.All(columns, column =>
+            Assert.Equal(
+                "Stretch",
+                column.Attribute("HorizontalAlignment")?.Value));
+        Assert.All(
+            columns.SelectMany(column => column.Elements()),
+            text => Assert.Equal("Left", text.Attribute("TextAlignment")?.Value));
+        Assert.All(
+            columns.SelectMany(column => column.Elements())
+                .Where(text => text.Attribute("Classes")?.Value == "metric"),
+            metric => Assert.Equal(
+                "CharacterEllipsis",
+                metric.Attribute("TextTrimming")?.Value));
+    }
+
+    [Fact]
     public void OverlaySettingsPlaceLongNumericEditorsBelowTheirLabels()
     {
         var root = FindRepositoryRoot();

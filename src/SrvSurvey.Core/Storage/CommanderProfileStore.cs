@@ -419,13 +419,16 @@ public sealed class CommanderProfileStore(string profileDirectory)
             CurrentCount = GetInt32(boxelSearch, "currentCount") ?? 0,
             LowMassCode = lowMassCode,
             CompletedPrefixes = ReadStringArray(boxelSearch, "completed"),
+            CompletedSystems = ReadStringArray(boxelSearch, "completedSystems"),
+            ProgressByPrefix = ReadBoxelProgress(boxelSearch),
             AutoCopy = GetBoolean(boxelSearch, "autoCopy") ?? false,
             Collapsed = GetBoolean(boxelSearch, "collapsed") ?? false,
             SkipAlreadyVisited = GetBoolean(boxelSearch, "skipAlreadyVisited") ?? false,
             SkipKnownToSpansh = GetBoolean(boxelSearch, "skipKnownToSpansh") ?? false,
             CompletionMode = GetBoolean(boxelSearch, "completeOnFssAllBodies") == true
                 ? BoxelCompletionMode.FssAllBodies
-                : BoxelCompletionMode.EnterSystem
+                : BoxelCompletionMode.EnterSystem,
+            SavedSearchFileName = GetString(boxelSearch, "savedSearchFileName")
         };
     }
 
@@ -549,12 +552,53 @@ public sealed class CommanderProfileStore(string profileDirectory)
         }
 
         node["completed"] = completed;
+        var completedSystems = new JsonArray();
+        foreach (var systemName in boxelSearch.CompletedSystems
+                     .Where(systemName => !string.IsNullOrWhiteSpace(systemName))
+                     .Distinct(StringComparer.Ordinal)
+                     .Order(StringComparer.Ordinal))
+        {
+            completedSystems.Add(systemName);
+        }
+
+        node["completedSystems"] = completedSystems;
+        var progress = new JsonObject();
+        foreach (var entry in boxelSearch.ProgressByPrefix
+                     .OrderBy(entry => entry.Key, StringComparer.Ordinal))
+        {
+            progress[entry.Key] = entry.Value;
+        }
+
+        node["progress"] = progress;
         node["autoCopy"] = boxelSearch.AutoCopy;
         node["collapsed"] = boxelSearch.Collapsed;
         node["skipAlreadyVisited"] = boxelSearch.SkipAlreadyVisited;
         node["skipKnownToSpansh"] = boxelSearch.SkipKnownToSpansh;
         node["completeOnFssAllBodies"] =
             boxelSearch.CompletionMode == BoxelCompletionMode.FssAllBodies;
+        node["savedSearchFileName"] = boxelSearch.SavedSearchFileName;
+    }
+
+    private static IReadOnlyDictionary<string, int> ReadBoxelProgress(
+        JsonObject boxelSearch)
+    {
+        if (boxelSearch["progress"] is not JsonObject progress)
+        {
+            return new Dictionary<string, int>(StringComparer.Ordinal);
+        }
+
+        var result = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var entry in progress)
+        {
+            if (!string.IsNullOrWhiteSpace(entry.Key)
+                && entry.Value is JsonValue value
+                && value.TryGetValue<int>(out var count))
+            {
+                result[entry.Key] = count;
+            }
+        }
+
+        return result;
     }
 
     private static void WriteRamTah(JsonObject root, RamTahSnapshot ramTah)

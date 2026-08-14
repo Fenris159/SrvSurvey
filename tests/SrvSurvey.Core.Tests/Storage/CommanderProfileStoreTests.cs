@@ -532,6 +532,43 @@ public sealed class CommanderProfileStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task BoxelSearchRoundTripPreservesSystemAndAreaProgress()
+    {
+        var store = new CommanderProfileStore(temporaryDirectory);
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        await store.SaveBoxelSearchAsync(
+            "F123",
+            "Drew",
+            true,
+            new BoxelSearchSnapshot
+            {
+                Active = true,
+                TopBoxel = top,
+                Current = top,
+                CurrentCount = 4,
+                CompletedSystems =
+                [
+                    "Praea Euq IL-P c5-0",
+                    "Praea Euq IL-P c5-2",
+                ],
+                ProgressByPrefix = new Dictionary<string, int>
+                {
+                    [top.Prefix] = 4,
+                },
+                SavedSearchFileName = "saved-search.json",
+            });
+
+        var loaded = await store.LoadAsync("F123", true);
+
+        Assert.NotNull(loaded.Data);
+        Assert.Equal(2, loaded.Data.BoxelSearch.CompletedSystems.Count);
+        Assert.Equal(4, loaded.Data.BoxelSearch.ProgressByPrefix[top.Prefix]);
+        Assert.Equal(
+            "saved-search.json",
+            loaded.Data.BoxelSearch.SavedSearchFileName);
+    }
+
+    [Fact]
     public async Task LoadAndSavePreserveLegacyRamTahFields()
     {
         Directory.CreateDirectory(temporaryDirectory);

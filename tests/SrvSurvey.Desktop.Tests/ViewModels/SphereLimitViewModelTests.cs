@@ -34,7 +34,8 @@ public sealed class SphereLimitViewModelTests : IDisposable
             SphereLimitSnapshot.Empty);
         viewModel.UpdateCurrentSystem(
             "Alpha Centauri",
-            new GalacticCoordinate(3.03125, -0.09375, 3.15625));
+            new GalacticCoordinate(3.03125, -0.09375, 3.15625),
+            7267750625368);
         viewModel.Query = "Sol";
 
         await viewModel.SearchSystemsAsync();
@@ -42,6 +43,9 @@ public sealed class SphereLimitViewModelTests : IDisposable
         await viewModel.EnableAsync();
 
         Assert.Equal("Sol", viewModel.SelectedCenterSystem?.Name);
+        Assert.True(viewModel.HasCurrentSystemAddress);
+        Assert.Equal("id64 7267750625368", viewModel.CurrentSystemAddressText);
+        Assert.Equal("id64 10477373803", viewModel.CenterSystemAddressText);
         Assert.True(viewModel.IsActive);
         Assert.Contains("inside", viewModel.CurrentSystemResult);
         var loaded = await store.LoadAsync("F123", true);
@@ -65,6 +69,11 @@ public sealed class SphereLimitViewModelTests : IDisposable
             250);
         var viewModel = new SphereLimitViewModel(store, new StubResolver([]));
         viewModel.LoadProfile("F123", "Drew", true, snapshot);
+
+        Assert.Equal(string.Empty, viewModel.Query);
+        Assert.Empty(viewModel.SearchResults);
+        Assert.False(viewModel.HasSearchResults);
+        Assert.Equal("Sol", viewModel.SelectedCenterSystem?.Name);
 
         await viewModel.DisableAsync();
 

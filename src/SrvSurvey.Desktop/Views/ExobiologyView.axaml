@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.Views.ExobiologyView"
              x:DataType="vm:MainWindowViewModel"
@@ -179,9 +180,17 @@
         <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
           <StackPanel Spacing="6">
             <TextBlock Classes="card-title" Text="System predictions" />
-            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                       FontWeight="SemiBold"
-                       Text="{Binding BiologyPredictions.SystemName}" />
+            <Button Classes="link" HorizontalAlignment="Left"
+                    behaviors:ClipboardCopyBehavior.Text="{Binding BiologyPredictions.SystemName}">
+              <TextBlock FontWeight="SemiBold"
+                         Text="{Binding BiologyPredictions.SystemName}" />
+            </Button>
+            <Button Classes="link" HorizontalAlignment="Left"
+                    IsVisible="{Binding BiologyPredictions.HasSystemAddress}"
+                    behaviors:ClipboardCopyBehavior.Text="{Binding BiologyPredictions.SystemAddress}">
+              <TextBlock Classes="muted monospace"
+                         Text="{Binding BiologyPredictions.SystemAddressText}" />
+            </Button>
             <TextBlock Classes="muted"
                        Text="{Binding BiologyPredictions.StatusMessage}"
                        TextWrapping="Wrap" />

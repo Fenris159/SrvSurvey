@@ -2665,6 +2665,8 @@ public sealed class ColonizationProjectRowViewModel
 
     public string SystemName => Project.SystemName;
 
+    public string SystemAddressText => $"id64 {Project.SystemAddress}";
+
     public string TypeDescription { get; }
 
     public bool IsPrimary { get; }

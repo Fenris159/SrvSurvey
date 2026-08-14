@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.Views.OverviewView"
              x:DataType="vm:MainWindowViewModel"
@@ -74,9 +75,18 @@
                   ColumnSpacing="28">
               <StackPanel Spacing="4">
                 <TextBlock Classes="muted" FontSize="12" Text="LOCATION" />
-                <TextBlock Classes="card-title"
-                           TextWrapping="Wrap"
-                           Text="{Binding SystemDescription}" />
+                <Button Classes="link" HorizontalAlignment="Left"
+                        behaviors:ClipboardCopyBehavior.Text="{Binding OverviewSystemName}">
+                  <TextBlock Classes="card-title"
+                             TextWrapping="Wrap"
+                             Text="{Binding OverviewSystemName}" />
+                </Button>
+                <Button Classes="link" HorizontalAlignment="Left"
+                        IsVisible="{Binding HasOverviewSystemAddress}"
+                        behaviors:ClipboardCopyBehavior.Text="{Binding OverviewSystemAddress}">
+                  <TextBlock Classes="muted monospace"
+                             Text="{Binding OverviewSystemAddressText}" />
+                </Button>
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="4">
                 <TextBlock Classes="muted" FontSize="12" Text="BODY" />
@@ -104,18 +114,42 @@
                            Text="LIVE" />
               </Border>
             </Grid>
-            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18">
-              <StackPanel Spacing="3">
-                <TextBlock Classes="metric" Text="{Binding ExplorationJumps}" />
-                <TextBlock Classes="muted" FontSize="12" Text="Jumps" />
+            <Grid x:Name="ExplorationTripMetrics"
+                  ColumnDefinitions="1*,2*,2*"
+                  ColumnSpacing="18">
+              <StackPanel HorizontalAlignment="Stretch" Spacing="3">
+                <TextBlock Classes="metric"
+                           TextAlignment="Left"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding ExplorationJumps}" />
+                <TextBlock Classes="muted"
+                           FontSize="12"
+                           TextAlignment="Left"
+                           Text="Jumps" />
               </StackPanel>
-              <StackPanel Grid.Column="1" Spacing="3">
-                <TextBlock Classes="metric" Text="{Binding ExplorationDistance}" />
-                <TextBlock Classes="muted" FontSize="12" Text="Distance" />
+              <StackPanel Grid.Column="1"
+                          HorizontalAlignment="Stretch"
+                          Spacing="3">
+                <TextBlock Classes="metric"
+                           TextAlignment="Left"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding ExplorationDistance}" />
+                <TextBlock Classes="muted"
+                           FontSize="12"
+                           TextAlignment="Left"
+                           Text="Distance" />
               </StackPanel>
-              <StackPanel Grid.Column="2" Spacing="3">
-                <TextBlock Classes="metric" Text="{Binding EstimatedExplorationValue}" />
-                <TextBlock Classes="muted" FontSize="12" Text="Estimated" />
+              <StackPanel Grid.Column="2"
+                          HorizontalAlignment="Stretch"
+                          Spacing="3">
+                <TextBlock Classes="metric"
+                           TextAlignment="Left"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding EstimatedExplorationValue}" />
+                <TextBlock Classes="muted"
+                           FontSize="12"
+                           TextAlignment="Left"
+                           Text="Estimated" />
               </StackPanel>
             </Grid>
             <TextBlock Classes="muted"

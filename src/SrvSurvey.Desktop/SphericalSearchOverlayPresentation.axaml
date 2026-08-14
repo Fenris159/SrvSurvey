@@ -3,6 +3,7 @@
              x:Class="SrvSurvey.Desktop.SphericalSearchOverlayPresentation"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:SphericalSearchOverlayViewModel"
              mc:Ignorable="d"
@@ -41,10 +42,12 @@
                 ColumnSpacing="5" RowSpacing="5">
             <TextBlock Classes="muted" Text="FROM" />
             <TextBlock Grid.Column="1"
+                       behaviors:ClipboardCopyBehavior.Text="{Binding SphereCenterSystemName}"
                        Text="{Binding SphereCenterSystemName}"
                        TextTrimming="CharacterEllipsis" />
             <TextBlock Grid.Row="1" Classes="muted" Text="TO" />
             <TextBlock Grid.Row="1" Grid.Column="1"
+                       behaviors:ClipboardCopyBehavior.Text="{Binding SphereDestinationSystemName}"
                        Foreground="{DynamicResource RavenAccentBrush}"
                        FontWeight="SemiBold"
                        Text="{Binding SphereDestinationSystemName}"
@@ -80,6 +83,7 @@
                 ColumnSpacing="5" RowSpacing="5">
             <TextBlock Classes="muted" Text="BOXEL" />
             <TextBlock Grid.Column="1"
+                       behaviors:ClipboardCopyBehavior.Text="{Binding Boxel.CurrentBoxelName}"
                        Text="{Binding Boxel.CurrentBoxelName}"
                        TextTrimming="CharacterEllipsis" />
             <TextBlock Grid.Row="1" Classes="muted" Text="VISITED" />
@@ -88,6 +92,7 @@
                        Text="{Binding Boxel.SystemProgress}" />
             <TextBlock Grid.Row="2" Classes="muted" Text="NEXT" />
             <TextBlock Grid.Row="2" Grid.Column="1"
+                       behaviors:ClipboardCopyBehavior.Text="{Binding BoxelNextSystem}"
                        Foreground="{DynamicResource RavenAccentBrush}"
                        FontSize="13"
                        FontWeight="SemiBold"
@@ -123,6 +128,7 @@
                        Text="{Binding Route.ProgressSummary}" />
           </Grid>
           <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     behaviors:ClipboardCopyBehavior.Text="{Binding RouteNextHopName}"
                      FontSize="13"
                      FontWeight="SemiBold"
                      Text="{Binding RouteNextHopName}"

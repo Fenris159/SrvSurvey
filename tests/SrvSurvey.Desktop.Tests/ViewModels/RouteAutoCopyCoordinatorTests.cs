@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -15,7 +16,11 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
     {
         var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
         var carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
-        using var coordinator = new RouteAutoCopyCoordinator(standard, carrier);
+        var boxel = CreateInactiveBoxel();
+        using var coordinator = new RouteAutoCopyCoordinator(
+            standard,
+            carrier,
+            boxel);
 
         Assert.True(standard.ShouldAutoCopyNextHop);
         Assert.True(carrier.ShouldAutoCopyNextHop);
@@ -41,19 +46,22 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
     }
 
     [Fact]
-    public async Task InactiveRouteDoesNotTakeOwnershipFromActiveRoute()
+    public async Task InactiveRouteSelectionStillOwnsTheAutoCopySetting()
     {
         var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
         var carrier = await CreateWorkspaceAsync(
             FollowRouteKind.FleetCarrier,
             isActive: false);
-        using var coordinator = new RouteAutoCopyCoordinator(standard, carrier);
+        using var coordinator = new RouteAutoCopyCoordinator(
+            standard,
+            carrier,
+            CreateInactiveBoxel());
 
         await coordinator.ClaimAsync(carrier);
 
-        Assert.True(standard.ShouldAutoCopyNextHop);
+        Assert.False(standard.ShouldAutoCopyNextHop);
         Assert.False(carrier.ShouldAutoCopyNextHop);
-        Assert.True(standard.AutoCopy);
+        Assert.False(standard.AutoCopy);
         Assert.True(carrier.AutoCopy);
     }
 
@@ -62,13 +70,90 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
     {
         var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
         var carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
-        var coordinator = new RouteAutoCopyCoordinator(standard, carrier);
+        var coordinator = new RouteAutoCopyCoordinator(
+            standard,
+            carrier,
+            CreateInactiveBoxel());
         coordinator.Dispose();
 
         await coordinator.ClaimAfterPropertyChangeAsync(standard);
 
         Assert.True(standard.AutoCopy);
         Assert.True(carrier.AutoCopy);
+    }
+
+    [Fact]
+    public async Task BoxelAndBothRouteTypesShareOneAutoCopyOwner()
+    {
+        var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        var carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
+        var boxel = await CreateConfiguredBoxelAsync(autoCopy: true);
+        using var coordinator = new RouteAutoCopyCoordinator(
+            standard,
+            carrier,
+            boxel);
+
+        await coordinator.ReconcileAsync();
+
+        Assert.True(boxel.AutoCopy);
+        Assert.False(standard.AutoCopy);
+        Assert.False(carrier.AutoCopy);
+
+        await standard.SetAutoCopyAsync(true);
+        await WaitUntilAsync(() => !boxel.AutoCopy);
+
+        Assert.True(standard.AutoCopy);
+        Assert.False(carrier.AutoCopy);
+        Assert.False(boxel.AutoCopy);
+        var savedProfile = await new CommanderProfileStore(temporaryDirectory)
+            .LoadAsync("F123", true);
+        Assert.False(savedProfile.Data!.BoxelSearch.AutoCopy);
+    }
+
+    [Fact]
+    public async Task SelectingBoxelAutoCopyAutomaticallyClearsBothRouteSelections()
+    {
+        var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        var carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
+        var boxel = await CreateConfiguredBoxelAsync(autoCopy: false);
+        using var coordinator = new RouteAutoCopyCoordinator(
+            standard,
+            carrier,
+            boxel);
+        await coordinator.ClaimAsync(standard);
+
+        boxel.AutoCopy = true;
+        await WaitUntilAsync(() => !standard.AutoCopy && !carrier.AutoCopy);
+
+        Assert.True(boxel.AutoCopy);
+        var standardSaved = await new FollowRouteStore(temporaryDirectory)
+            .LoadAsync("F123");
+        var carrierSaved = await new FollowRouteStore(
+            temporaryDirectory,
+            FollowRouteKind.FleetCarrier).LoadAsync("F123");
+        Assert.False(standardSaved.Route!.AutoCopy);
+        Assert.False(carrierSaved.Route!.AutoCopy);
+    }
+
+    [Fact]
+    public async Task ReconcileClearsImplicitSelectionsWithoutSavedRoutes()
+    {
+        var standard = await CreateUnsavedWorkspaceAsync(FollowRouteKind.Standard);
+        var carrier = await CreateUnsavedWorkspaceAsync(FollowRouteKind.FleetCarrier);
+        using var coordinator = new RouteAutoCopyCoordinator(
+            standard,
+            carrier,
+            CreateInactiveBoxel());
+
+        Assert.True(standard.AutoCopy);
+        Assert.True(carrier.AutoCopy);
+
+        await coordinator.ReconcileAsync();
+
+        Assert.False(standard.AutoCopy);
+        Assert.False(carrier.AutoCopy);
+        Assert.False(standard.IsDirty);
+        Assert.False(carrier.IsDirty);
     }
 
     private async Task<RouteWorkspaceViewModel> CreateWorkspaceAsync(
@@ -100,6 +185,60 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
         return workspace;
     }
 
+    private async Task<RouteWorkspaceViewModel> CreateUnsavedWorkspaceAsync(
+        FollowRouteKind kind)
+    {
+        var store = new FollowRouteStore(temporaryDirectory, kind);
+        var workspace = new RouteWorkspaceViewModel(
+            new FollowRouteService(store),
+            new RouteNameImporter(new EmptyResolver()),
+            new EmptySpanshClient(),
+            kind);
+        await workspace.UpdateContextAsync("F123", "Sol", 1, null);
+        return workspace;
+    }
+
+    private BoxelSearchViewModel CreateInactiveBoxel()
+    {
+        return new BoxelSearchViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new LegacySystemDataReader(temporaryDirectory),
+            new EmptyBoxelStore(temporaryDirectory),
+            new EmptyBoxelResolver());
+    }
+
+    private async Task<BoxelSearchViewModel> CreateConfiguredBoxelAsync(
+        bool autoCopy,
+        bool active = false)
+    {
+        var boxel = CreateInactiveBoxel();
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        await boxel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            new BoxelSearchSnapshot
+            {
+                Active = active,
+                TopBoxel = top,
+                Current = top,
+                StartedOn = DateTimeOffset.Parse("2026-08-01T00:00:00Z"),
+                CurrentCount = 1,
+                LowMassCode = 'c',
+                AutoCopy = autoCopy,
+            });
+        return boxel;
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (!condition())
+        {
+            await Task.Delay(10, timeout.Token);
+        }
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -125,6 +264,16 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult<IReadOnlyList<FollowRouteHop>>([]);
+        }
+    }
+
+    private sealed class EmptyBoxelResolver : IBoxelSystemResolver
+    {
+        public Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
+            BoxelAddress boxel,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<BoxelSystemObservation>>([]);
         }
     }
 }

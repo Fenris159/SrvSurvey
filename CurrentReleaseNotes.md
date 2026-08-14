@@ -1,25 +1,37 @@
-# SrvSurvey-XP 2.1.3.0-rc.22
+# SrvSurvey-XP 2.1.3.0-rc.23
 
-This release candidate improves the Next-jump information overlay. The changes
-below are the delta from `2.1.3.0-rc.21`.
+This release candidate expands Boxel searching into a complete, resumable
+exploration workflow. The changes below are the delta from `2.1.3.0-rc.22`.
 
-## What's improved since 2.1.3.0-rc.21
+## What's improved since 2.1.3.0-rc.22
 
-- Holds the active jump information until the overlay closes, then presents
-  the latest queued target when the overlay next appears.
-- Keeps followed-route progress resumable across any number of off-route jumps.
-- Preserves the destination star class throughout witchspace instead of
-  changing known information to `UNKNOWN` before arrival.
-- Marks K, G, B, F, O, A, and M stars with an icon-free `SCOOPABLE` pill that
-  uses the displayed star-class color.
+- Moves Boxel search into its own workspace and overlay-settings category, with
+  a visible breadcrumb, parent/child/sibling navigation, aligned system data,
+  and clearer current-boxel and next-incomplete-system context.
+- Adds named saved Boxel projects with notes, favorites, creation and modified
+  dates, completion totals, single-selection resume, deletion, and full-area
+  auditing so several surveys can be paused and resumed independently.
+- Preserves completed systems and empty boxels across restarts, restores
+  automatic FSD/FSS completion behavior, and hardens Spansh refreshes against
+  nullable or malformed community timestamps.
+- Makes Boxel, Route Manager, and Fleet Carrier Route Galaxy Map auto-copy
+  mutually exclusive so enabling any one safely disables the other two.
+- Adds EDSM-first system-name and id64 suggestions with an Ardent fallback to
+  applicable system entry fields, while keeping saved editor queries empty on
+  startup and making displayed system names and id64 values separately copyable.
+- Adds a dedicated Boxel guide covering procedural naming, bounded surveys,
+  hierarchy navigation, completion rules, saved projects, and audit behavior.
+- Corrects Guardian origin/Ram Tah layout, Overview identity and exploration
+  metrics, Guide step markers, and nullable UI bindings that previously wrote
+  harmless but noisy null-path errors to the application log.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.22`
-- Tag: `xp-v2.1.3.0-rc.22`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.22-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.22-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.22-x86_64.AppImage`
+- Version: `2.1.3.0-rc.23`
+- Tag: `xp-v2.1.3.0-rc.23`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.23-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.23-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.23-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.

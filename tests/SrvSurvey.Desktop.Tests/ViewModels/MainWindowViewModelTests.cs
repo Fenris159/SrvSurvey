@@ -28,13 +28,14 @@ public sealed class MainWindowViewModelTests
         var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
-        Assert.Equal(11, viewModel.NavigationItems.Count);
+        Assert.Equal(12, viewModel.NavigationItems.Count);
         Assert.Equal(
             [
                 "Overview",
                 "Exploration",
                 "Exobiology",
                 "Travel",
+                "Boxel",
                 "Search",
                 "Guardian",
                 "Quests",
@@ -49,6 +50,7 @@ public sealed class MainWindowViewModelTests
                 "exploration",
                 "exobiology",
                 "travel",
+                "boxel",
                 "guardian",
                 "quests",
                 "colonisation",
@@ -73,6 +75,11 @@ public sealed class MainWindowViewModelTests
             item => item.Key == "travel");
 
         Assert.True(viewModel.IsTravelSelected);
+
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
+            item => item.Key == "boxel");
+
+        Assert.True(viewModel.IsBoxelSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "search");
@@ -1140,6 +1147,12 @@ public sealed class MainWindowViewModelTests
 
             Assert.Equal("Drew", viewModel.CommanderName);
             Assert.Contains("Sol", viewModel.SystemDescription);
+            Assert.Equal("Sol", viewModel.OverviewSystemName);
+            Assert.Equal(10477373803, viewModel.OverviewSystemAddress);
+            Assert.True(viewModel.HasOverviewSystemAddress);
+            Assert.Equal(
+                "id64 10477373803",
+                viewModel.OverviewSystemAddressText);
             Assert.Equal("Earth", viewModel.BodyName);
             Assert.Equal("SRV", viewModel.VehicleState);
             Assert.Equal("12.500000, -44.250000", viewModel.SurfacePosition);

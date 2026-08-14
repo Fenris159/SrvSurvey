@@ -16,6 +16,8 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Network/EddnTransport.cs",
         "src/SrvSurvey.Core/Quests/RavenQuestClient.cs",
         "src/SrvSurvey.Core/Routes/SpanshRouteClient.cs",
+        "src/SrvSurvey.Core/Search/ArdentSystemNameSuggestionClient.cs",
+        "src/SrvSurvey.Core/Search/EdsmSystemNameSuggestionClient.cs",
         "src/SrvSurvey.Core/Search/NearestSystemsClient.cs",
         "src/SrvSurvey.Core/Search/SpanshBoxelClient.cs",
         "src/SrvSurvey.Core/Search/SpanshStarSystemResolver.cs",
@@ -64,12 +66,17 @@ public sealed class NetworkSurfaceCoverageTests
         new(
             "system-lookup-and-enrichment",
             [
+                "src/SrvSurvey.Core/Search/ArdentSystemNameSuggestionClient.cs",
+                "src/SrvSurvey.Core/Search/EdsmSystemNameSuggestionClient.cs",
                 "src/SrvSurvey.Core/Exploration/SystemBodyDataClient.cs",
                 "src/SrvSurvey.Core/Navigation/SystemSummaryClient.cs",
                 "src/SrvSurvey.Core/Exobiology/CodexDiscoveryLocationClient.cs",
                 "src/SrvSurvey.Core/Search/SpanshStarSystemResolver.cs",
             ],
             [
+                "tests/SrvSurvey.Core.Tests/Search/ArdentSystemNameSuggestionClientTests.cs",
+                "tests/SrvSurvey.Core.Tests/Search/EdsmSystemNameSuggestionClientTests.cs",
+                "tests/SrvSurvey.Core.Tests/Search/FallbackSystemNameSuggestionClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exploration/SystemBodyDataClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Navigation/SystemSummaryClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exobiology/CodexDiscoveryLocationClientTests.cs",

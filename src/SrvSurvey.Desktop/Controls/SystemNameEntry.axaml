@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:search="using:SrvSurvey.Core.Search"
+             x:Class="SrvSurvey.Desktop.Controls.SystemNameEntry"
+             x:Name="Root">
+  <StackPanel Spacing="5">
+    <TextBox x:Name="InputBox"
+             Text="{Binding Text, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+             PlaceholderText="{Binding PlaceholderText, ElementName=Root}"
+             KeyDown="InputBox_KeyDown" />
+    <Border Background="{DynamicResource RavenRaisedSurfaceBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            IsVisible="{Binding HasSuggestions, ElementName=Root}"
+            Padding="4">
+      <ListBox MaxHeight="260"
+               ItemsSource="{Binding Suggestions, ElementName=Root}"
+               SelectedIndex="{Binding SelectedIndex, ElementName=Root, Mode=TwoWay}">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="search:SystemNameSuggestion">
+            <Button Classes="commander-card"
+                    Click="Suggestion_Click"
+                    HorizontalContentAlignment="Stretch"
+                    Padding="10,8">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBlock FontWeight="SemiBold"
+                           Text="{Binding Name}"
+                           TextWrapping="Wrap" />
+                <StackPanel Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal"
+                            Spacing="6">
+                  <TextBlock Classes="eyebrow" Text="{Binding Source}" />
+                  <TextBlock Classes="muted monospace"
+                             Text="{Binding SystemAddress}" />
+                </StackPanel>
+              </Grid>
+            </Button>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Border>
+    <TextBlock Classes="muted"
+               FontSize="10"
+               IsVisible="{Binding HasStatus, ElementName=Root}"
+               Text="{Binding Status, ElementName=Root}"
+               TextWrapping="Wrap" />
+  </StackPanel>
+</UserControl>

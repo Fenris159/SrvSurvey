@@ -3,6 +3,7 @@
              x:Class="SrvSurvey.Desktop.RouteBioOverlayPresentation"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:RouteBioOverlayViewModel"
@@ -22,6 +23,7 @@
                    Foreground="{DynamicResource RavenWarningBrush}"
                    Text="Route bodies" />
         <TextBlock Foreground="{DynamicResource RavenTextBrush}"
+                   behaviors:ClipboardCopyBehavior.Text="{Binding SystemName}"
                    Classes="overlay-body"
                    FontWeight="SemiBold"
                    Text="{Binding SystemName}"

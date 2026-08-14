@@ -7,6 +7,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SrvSurvey.LocalizationTool;
 
+if (args.Length >= 5
+    && string.Equals(args[0], "merge-source", StringComparison.Ordinal))
+{
+    await MergeSourcesAsync(args[1], args[2], args[3], args[4..]);
+    return 0;
+}
+
 if (args.Length == 3
     && string.Equals(args[0], "normalize-catalog", StringComparison.Ordinal))
 {
@@ -34,6 +41,47 @@ await File.WriteAllTextAsync(
         new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine);
 Console.WriteLine($"Extracted {entries.Count:N0} localizable strings to {outputPath}.");
 return 0;
+
+static async Task MergeSourcesAsync(
+    string baselinePath,
+    string freshPath,
+    string outputPath,
+    IReadOnlyList<string> refreshedFiles)
+{
+    var options = new JsonSerializerOptions { WriteIndented = true };
+    var baseline = JsonSerializer.Deserialize<LocalizationSourceEntry[]>(
+            await File.ReadAllTextAsync(Path.GetFullPath(baselinePath)),
+            options)
+        ?? [];
+    var fresh = JsonSerializer.Deserialize<LocalizationSourceEntry[]>(
+            await File.ReadAllTextAsync(Path.GetFullPath(freshPath)),
+            options)
+        ?? [];
+    var normalizedFiles = refreshedFiles
+        .Select(path => path.Replace('\\', '/'))
+        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    var affectedTexts = baseline
+        .Concat(fresh)
+        .Where(entry => normalizedFiles.Contains(entry.FirstSource))
+        .Select(entry => entry.Text)
+        .ToHashSet(StringComparer.Ordinal);
+    var freshByText = fresh.ToDictionary(entry => entry.Text, StringComparer.Ordinal);
+    var merged = baseline
+        .Where(entry => !affectedTexts.Contains(entry.Text))
+        .Concat(affectedTexts
+            .Where(freshByText.ContainsKey)
+            .Select(text => freshByText[text]))
+        .OrderBy(entry => entry.Text, StringComparer.Ordinal)
+        .ToArray();
+
+    await File.WriteAllTextAsync(
+        Path.GetFullPath(outputPath),
+        JsonSerializer.Serialize(merged, options) + Environment.NewLine,
+        new UTF8Encoding(false));
+    Console.WriteLine(
+        $"Merged {affectedTexts.Count:N0} targeted strings into "
+        + $"{merged.Length:N0} localization sources.");
+}
 
 static async Task NormalizeCatalogAsync(string inputPath, string outputPath)
 {

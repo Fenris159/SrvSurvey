@@ -62,7 +62,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private IReadOnlyList<RouteHopItemViewModel> hops = [];
     private int lastReachedIndex = -1;
     private bool isActive;
-    private bool autoCopy = true;
+    private bool autoCopy;
     private bool isBusy;
     private EliteStatus? status;
     private string? musicTrack;
@@ -138,6 +138,8 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public event EventHandler? CatalogChanged;
+
+    internal event EventHandler? AutoCopySelected;
 
     public FollowRouteKind RouteKind => routeKind;
 
@@ -395,6 +397,16 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 true => "Route paused",
                 false => "No route loaded"
             });
+
+    public bool HasNextHopSystemAddress => NextHop?.SystemAddress is > 0;
+
+    public long? NextHopSystemAddress => NextHop?.SystemAddress is > 0
+        ? NextHop.SystemAddress
+        : null;
+
+    public string NextHopSystemAddressText => NextHop?.SystemAddress is > 0
+        ? $"id64 {NextHop.SystemAddress.Value}"
+        : string.Empty;
 
     public string ProgressSummary
     {
@@ -713,7 +725,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             SavedRoutes = [];
             SelectedSavedRoute = null;
             draftNotes = null;
-            ApplyDraft([], -1, false, true);
+            ApplyDraft([], -1, false, false);
             StatusMessage = "Waiting for a commander profile.";
             return true;
         }
@@ -1174,7 +1186,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     IsActive = IsActive,
                     AutoCopy = AutoCopy,
                 });
-            ApplyDocument(saved);
+            ApplyDocument(saved, requestAutoCopyOwnership: true);
             StatusMessage = saved.IsComplete
                 ? "Route progress saved as complete."
                 : (saved.IsActive) switch
@@ -1217,7 +1229,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 return;
             }
 
-            ApplyDocument(result.Route);
+            ApplyDocument(result.Route, requestAutoCopyOwnership: true);
             StatusMessage = "Changes were undone to the route's last saved state.";
         }
         catch (Exception exception) when (IsExpectedException(exception))
@@ -1315,7 +1327,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             IsBusy = true;
             var saved = await routeService.SaveAsAsync(snapshot, SaveAsName);
             HasSavedRoute = true;
-            ApplyDocument(saved);
+            ApplyDocument(saved, requestAutoCopyOwnership: true);
             CloseDialogs();
             await RefreshCatalogAsync();
             SelectCatalogPath(saved.FilePath);
@@ -1426,7 +1438,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             }
 
             HasSavedRoute = true;
-            ApplyDocument(result.Route);
+            ApplyDocument(result.Route, requestAutoCopyOwnership: true);
             SelectCatalogPath(result.Path);
             StatusMessage =
                 $"Loaded {result.Route.Hops.Count:N0} systems from "
@@ -1490,7 +1502,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 isActive: true,
                 currentSystemAddress: currentSystemAddress);
             HasSavedRoute = true;
-            ApplyDocument(activated);
+            ApplyDocument(activated, requestAutoCopyOwnership: true);
             SelectCatalogPath(result.Path);
             if (activated.IsActive)
             {
@@ -1606,7 +1618,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     IsActive = IsActive,
                     AutoCopy = enabled,
                 });
-            ApplyDocument(saved);
+            ApplyDocument(saved, requestAutoCopyOwnership: true);
             StatusMessage = enabled
                 ? "Next-hop auto-copy enabled for this route."
                 : "Next-hop auto-copy disabled for this route.";
@@ -1638,9 +1650,14 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             || HasDefinitionChanges
             || HasNotesChanges)
         {
+            if (!HasSavedRoute && loadedRoute is not null)
+            {
+                loadedRoute = loadedRoute with { AutoCopy = false };
+            }
+
             AutoCopy = false;
             StatusMessage =
-                "Next-hop auto-copy moved to the other active route workspace.";
+                "Next-hop auto-copy was disabled because another Galaxy Map auto-copy setting was selected.";
             return;
         }
 
@@ -1656,7 +1673,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 });
             ApplyDocument(saved);
             StatusMessage =
-                "Next-hop auto-copy moved to the other active route workspace.";
+                "Next-hop auto-copy was disabled because another Galaxy Map auto-copy setting was selected.";
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
@@ -1708,7 +1725,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             {
                 loadedRoute = null;
                 HasSavedRoute = false;
-                ApplyDraft([], -1, false, true);
+                ApplyDraft([], -1, false, false);
                 await RefreshCatalogAsync();
                 StatusMessage = result.Error ?? "The route could not be loaded.";
                 return;
@@ -1771,7 +1788,9 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             AutoCopy);
     }
 
-    private void ApplyDocument(FollowRouteDocument route)
+    private void ApplyDocument(
+        FollowRouteDocument route,
+        bool requestAutoCopyOwnership = false)
     {
         loadedRoute = route;
         draftNotes = route.Notes;
@@ -1781,6 +1800,10 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             route.IsActive && !route.IsComplete,
             route.AutoCopy);
         RaiseRouteMetadataProperties();
+        if (requestAutoCopyOwnership && HasSavedRoute && AutoCopy)
+        {
+            AutoCopySelected?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private async Task RefreshCatalogAsync()
@@ -1866,6 +1889,9 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ReachedCount));
         OnPropertyChanged(nameof(NextHop));
         OnPropertyChanged(nameof(NextHopName));
+        OnPropertyChanged(nameof(HasNextHopSystemAddress));
+        OnPropertyChanged(nameof(NextHopSystemAddress));
+        OnPropertyChanged(nameof(NextHopSystemAddressText));
         OnPropertyChanged(nameof(ProgressSummary));
         OnPropertyChanged(nameof(AutoCopySummary));
         OnPropertyChanged(nameof(ShouldAutoCopyNextHop));
@@ -2290,6 +2316,12 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
 
     public string Name => Hop.Name;
 
+    public bool HasSystemAddress => Hop.SystemAddress is > 0;
+
+    public string SystemAddressText => Hop.SystemAddress is > 0
+        ? $"id64 {Hop.SystemAddress.Value}"
+        : string.Empty;
+
     public string Distance => distance;
 
     public string CarrierDistance
@@ -2414,6 +2446,12 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
             PropertyChanged?.Invoke(
                 this,
                 new PropertyChangedEventArgs(nameof(Name)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(HasSystemAddress)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(SystemAddressText)));
             PropertyChanged?.Invoke(
                 this,
                 new PropertyChangedEventArgs(nameof(HasNotes)));

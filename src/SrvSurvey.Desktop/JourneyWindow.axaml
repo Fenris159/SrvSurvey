@@ -2,6 +2,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+        xmlns:controls="using:SrvSurvey.Desktop.Controls"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         x:Class="SrvSurvey.Desktop.JourneyWindow"
         x:DataType="vm:JourneyWorkspaceViewModel"
@@ -207,11 +209,19 @@
                   <StackPanel Spacing="16" IsVisible="{Binding HasSelectedSystem}">
                     <StackPanel Spacing="3">
                       <TextBlock Classes="eyebrow" Text="SELECTED SYSTEM" />
-                      <TextBlock Classes="page-title"
-                                 FontSize="23"
-                                 Text="{Binding SelectedSystemName}" />
-                      <TextBlock Classes="muted"
-                                 Text="{Binding SelectedSystemAddressText}" />
+                      <Button Classes="link"
+                              HorizontalAlignment="Left"
+                              behaviors:ClipboardCopyBehavior.Text="{Binding SelectedSystemName}">
+                        <TextBlock Classes="page-title"
+                                   FontSize="23"
+                                   Text="{Binding SelectedSystemName}" />
+                      </Button>
+                      <Button Classes="link"
+                              HorizontalAlignment="Left"
+                              behaviors:ClipboardCopyBehavior.Text="{Binding SelectedSystemAddress}">
+                        <TextBlock Classes="muted monospace"
+                                   Text="{Binding SelectedSystemAddressText}" />
+                      </Button>
                     </StackPanel>
 
                     <Border Classes="card raised">
@@ -345,8 +355,9 @@
                             Spacing="8"
                             IsVisible="{Binding !UseCurrentStart}">
                   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                    <TextBox Text="{Binding StartSystemQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             PlaceholderText="Search by system name" />
+                    <controls:SystemNameEntry
+                        Text="{Binding StartSystemQuery, Mode=TwoWay}"
+                        PlaceholderText="System name or id64" />
                     <Button Grid.Column="1"
                             Classes="secondary"
                             Command="{Binding SearchSystemsCommand}"

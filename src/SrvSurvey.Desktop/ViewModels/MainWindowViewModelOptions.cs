@@ -35,6 +35,8 @@ public sealed class MainWindowViewModelOptions
 
     public IBoxelSystemResolver? BoxelSystemResolver { get; init; }
 
+    public ISystemNameSuggestionClient? SystemNameSuggestionClient { get; init; }
+
     public GlobalInputSettingsViewModel? InputSettings { get; init; }
 
     public ColonizationViewModel? Colonization { get; init; }

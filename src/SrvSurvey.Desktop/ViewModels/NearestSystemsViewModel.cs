@@ -24,6 +24,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
     private string species = string.Empty;
     private string variantColors = string.Empty;
     private string referenceSystemName = Unavailable;
+    private long? referenceSystemAddress;
     private GalacticCoordinate? referencePosition;
     private string commanderName = string.Empty;
     private bool isSearching;
@@ -162,6 +163,14 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
     public string ReferencePosition => referencePosition?.ToString()
         ?? Unavailable;
 
+    public bool HasReferenceSystemAddress => referenceSystemAddress is > 0;
+
+    public long? ReferenceSystemAddress => referenceSystemAddress;
+
+    public string ReferenceSystemAddressText => referenceSystemAddress is > 0
+        ? $"id64 {referenceSystemAddress.Value}"
+        : string.Empty;
+
     public string ReferenceSummary => referencePosition is null
         ? "Waiting for current-system coordinates"
         : $"Searching from {ReferenceSystemName}";
@@ -243,17 +252,20 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
     public void UpdateContext(
         string? systemName,
         GalacticCoordinate? position,
-        string? currentCommanderName)
+        string? currentCommanderName,
+        long? systemAddress = null)
     {
         var nextSystemName = string.IsNullOrWhiteSpace(systemName)
             ? Unavailable
             : systemName;
+        var nextSystemAddress = systemAddress is > 0 ? systemAddress : null;
         var nextCommanderName = currentCommanderName?.Trim() ?? string.Empty;
         if (string.Equals(
                 referenceSystemName,
                 nextSystemName,
                 StringComparison.OrdinalIgnoreCase)
             && referencePosition == position
+            && referenceSystemAddress == nextSystemAddress
             && string.Equals(
                 commanderName,
                 nextCommanderName,
@@ -264,8 +276,12 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
 
         ReferenceSystemName = nextSystemName;
         referencePosition = position;
+        referenceSystemAddress = nextSystemAddress;
         commanderName = nextCommanderName;
         OnPropertyChanged(nameof(ReferencePosition));
+        OnPropertyChanged(nameof(HasReferenceSystemAddress));
+        OnPropertyChanged(nameof(ReferenceSystemAddress));
+        OnPropertyChanged(nameof(ReferenceSystemAddressText));
         OnPropertyChanged(nameof(ReferenceSummary));
         searchCommand.RaiseCanExecuteChanged();
     }
@@ -639,6 +655,12 @@ public sealed class NearestSystemRowViewModel
     public GalacticCoordinate Coordinate { get; }
 
     public long? SystemAddress { get; }
+
+    public bool HasSystemAddress => SystemAddress is > 0;
+
+    public string SystemAddressText => SystemAddress is > 0
+        ? $"id64 {SystemAddress.Value}"
+        : string.Empty;
 
     public string Source { get; }
 }

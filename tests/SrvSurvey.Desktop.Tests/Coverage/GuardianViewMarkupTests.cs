@@ -5,6 +5,41 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 public sealed class GuardianViewMarkupTests
 {
     [Fact]
+    public void DistanceOriginActionsLeaveTheAutocompleteFullWidth()
+    {
+        var document = LoadGuardianView();
+        var layout = FindNamedElement(document, "GuardianOriginAndCatalog");
+        var header = FindNamedElement(document, "GuardianOriginHeader");
+        var actions = FindNamedElement(document, "GuardianOriginActions");
+        var ramTahOptions = FindNamedElement(document, "GuardianRamTahOptions");
+        var entry = document.Descendants().Single(element =>
+            element.Name.LocalName == "SystemNameEntry"
+            && element.Attribute("Text")?.Value ==
+                "{Binding Guardian.OriginSystemName, Mode=TwoWay}");
+        var buttons = header.Descendants()
+            .Where(element => element.Name.LocalName == "Button")
+            .ToArray();
+
+        Assert.Equal("*,*", layout.Attribute("ColumnDefinitions")?.Value);
+        Assert.Equal("Auto,*", header.Attribute("ColumnDefinitions")?.Value);
+        Assert.Equal("Right", actions.Attribute("HorizontalAlignment")?.Value);
+        Assert.Equal("Horizontal", actions.Attribute("Orientation")?.Value);
+        Assert.Equal(2, buttons.Length);
+        Assert.Equal("Stretch", entry.Attribute("HorizontalAlignment")?.Value);
+        Assert.Equal("Vertical", ramTahOptions.Attribute("Orientation")?.Value);
+        Assert.Equal(
+            2,
+            ramTahOptions.Elements().Count(element =>
+                element.Name.LocalName == "CheckBox"));
+        Assert.DoesNotContain(
+            entry.Parent!.Descendants(),
+            element => element.Name.LocalName == "Grid"
+                && element.Descendants().Contains(entry)
+                && element.Descendants().Any(candidate =>
+                    candidate.Name.LocalName == "Button"));
+    }
+
+    [Fact]
     public void SurveyMapKeepsContextCardsBesideMapInRequestedOrder()
     {
         var document = LoadGuardianView();

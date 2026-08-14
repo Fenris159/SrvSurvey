@@ -207,7 +207,7 @@ public static class GuideCatalog
                 "travel-search",
                 "05",
                 "Travel and search",
-                "Set surface targets, record journeys, follow routes, and search the galaxy by sphere, boxel, or nearby-system criteria.",
+                "Set surface targets, record journeys, follow routes, and search the galaxy by sphere or nearby-system criteria.",
                 [
                     Section(
                         "Ground targets",
@@ -239,18 +239,89 @@ public static class GuideCatalog
                         ],
                         []),
                     Section(
-                        "Boxel and nearby-system searches",
-                        "Boxel search walks procedural-name ranges; Nearby systems resolves close alternatives around a known system.",
+                        "Nearby-system searches",
+                        "Nearby systems resolves biological search results around a known reference system.",
                         [],
                         [
-                            "Boxel results can skip known or empty ranges and retain progress in the Commander profile.",
-                            "Copy next boxel system and Paste Galaxy Map target reduce retyping while the map is open.",
+                            "Choose the search mode, enter a system name or id64 for the distance origin, and select an EDSM suggestion before using that origin.",
+                            "Use current restores the active Commander system as the distance origin.",
                             "External system resolution is clearly reported when a lookup service is unavailable or disabled.",
                         ]),
                 ]),
             Category(
-                "guardian",
+                "boxel",
                 "06",
+                "Boxel",
+                "Understand procedural boxels, run bounded system surveys, navigate nested search trees, and preserve multiple research projects.",
+                [
+                    Section(
+                        "What a boxel is and why survey one",
+                        "A boxel is a cubic subsector of procedurally generated space. Systems in one boxel share the same generated-name prefix and use a numeric suffix as their sequence within that boxel.",
+                        [],
+                        [
+                            "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
+                            "Mass codes a through h describe nested cube sizes from 10 to 1,280 light-years per side. A higher letter means a larger parent cube; each supported level contains eight children one mass code lower.",
+                            "Mass code correlates with the system's original mass allocation, but it does not guarantee a particular present-day star class, planet, or biological species.",
+                            "Surveying a complete sequence gives an explorer a bounded, repeatable area to study. It is useful for finding regional formation patterns, checking nearby systems after an interesting discovery, and keeping a long project organized.",
+                            "The terminology and naming model follow community research documented by Elite Dangerous Astrometrics, Marx's Guide to Boxels, and the IGAU system-identifier notes.",
+                        ]),
+                    Section(
+                        "Start a boxel search",
+                        "Use the Boxel workspace after choosing a procedurally generated system whose surrounding sequence you want to survey.",
+                        [
+                            "Enter a generated system name, ordinary system name, or id64 in Top boxel or generated system. Select an EDSM suggestion when one appears so SrvSurvey retains the authoritative id64.",
+                            "Choose Lowest mass code. Keeping it equal to the top system's mass code searches only that boxel; choosing a lower letter includes every nested child down to that level. Check the displayed boxel count before continuing.",
+                            "Set Search start date, then decide whether earlier Commander visits and older Spansh body records should count as already complete.",
+                            "Enable Require FSS to report all bodies when entering a system is not enough and you want completion to wait for a full FSS identification.",
+                            "Select Start search. SrvSurvey opens the top boxel, merges local Commander history with available Spansh observations, and chooses the lowest incomplete suffix.",
+                        ],
+                        [
+                            "Mass-code h searches are intentionally unavailable because reliable empty-boxel tracking is not practical at the full 1,280-light-year sector scale.",
+                            "Every lower level multiplies the work: one boxel has eight direct children, and selecting several levels can create a very large search tree.",
+                        ]),
+                    Section(
+                        "Survey the current boxel",
+                        "Current boxel prefix identifies the sequence being worked; Next incomplete system is the lowest known or expected suffix in that sequence that has not met your completion rule.",
+                        [
+                            "Use Refresh boxel to merge systems from the local Commander profile, the active route, and Spansh. Community databases contain only submitted observations, so an unknown system is not proof that it does not exist.",
+                            "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
+                            "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Boxel, Route Manager, and FC Route auto-copy are mutually exclusive.",
+                            "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, the system completes after Elite writes FSSAllBodiesFound. Use Complete or Reopen for a manual correction.",
+                            "Use Mark current empty only when the selected boxel has no systems to survey. The marker is retained and the search advances to the next incomplete boxel.",
+                        ],
+                        [
+                            "The systems table is ordered by numeric suffix and separates distance, last Commander visit, last Spansh update, state, and the manual action.",
+                            "The top Current system is where the Commander actually is; it is not the first system in the sequence. Next incomplete system is the next work item calculated from saved completion state.",
+                        ]),
+                    Section(
+                        "Navigate the boxel hierarchy",
+                        "Hierarchy controls move between nested cubes, not between systems in the current table.",
+                        [
+                            "Read Location in search as a breadcrumb from the search root to the boxel currently being inspected. Select an ancestor to jump back to it.",
+                            "Previous at this level and Next at this level move between sibling boxels that share the same parent. The center card always shows the current boxel and its progress.",
+                            "Open a child row to move one mass code lower into a smaller cube. Its progress and state indicate whether it is unknown, in progress, empty, or complete.",
+                            "Use Up one level to return to the parent. Navigation preserves the same search and does not discard progress from another branch.",
+                        ],
+                        [
+                            "A parent contains eight child cubes at the next lower mass code. This nested layout explains why systems with different prefixes can be close together and systems sharing a large high-mass boxel can be far apart.",
+                        ]),
+                    Section(
+                        "Save, resume, and audit a boxel project",
+                        "Saved searches let one Commander pause several independent boxel surveys and return to each without replacing its progress.",
+                        [
+                            "Select Save Progress. The first save asks for a name and notes, preloading the top system as the name. Later saves update that same entry directly.",
+                            "Select Resume Search to browse one saved search at a time by favorite, name, creation date, last modified date, completion, and notes. Open Selected restores its tree, options, and completed systems.",
+                            "Use Stop search when you want the live Boxel workflow inactive while retaining its current profile state. Save Progress is the clearer choice when you intend to switch among several named projects.",
+                            "Use Audit all boxels when you need every branch refreshed against local history and Spansh rather than only the current boxel. Large audits require explicit confirmation because they can make more than 1,000 requests.",
+                            "Cancel audit safely retains the partial work already applied. Save again after reviewing the result so the saved library entry records the newest progress and modified date.",
+                        ],
+                        [
+                            "External timestamps describe when a community service last received data, not guaranteed first-discovery or current in-game completeness. Treat skip rules as workflow filters rather than proof that a system has nothing left to discover.",
+                        ]),
+                ]),
+            Category(
+                "guardian",
+                "07",
                 "Guardian sites",
                 "Locate Guardian sites, align maps, survey points of interest, track Ram Tah progress, and share non-destructive survey packages.",
                 [
@@ -297,7 +368,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "quests",
-                "07",
+                "08",
                 "Quests",
                 "Follow communications, objectives, settlement routes, massacre progress, and optional developer-authored quest chapters.",
                 [
@@ -330,7 +401,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "colonisation",
-                "08",
+                "09",
                 "Colonization",
                 "Connect Raven Colonial, manage construction projects safely, plan cargo, repair completed build-site records, and reconcile system data.",
                 [
@@ -411,7 +482,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "overlays",
-                "09",
+                "10",
                 "Overlays and controls",
                 "Control when overlays appear, edit their positions safely, customize their independent palette, and configure keyboard or controller actions.",
                 [
@@ -470,7 +541,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "settings-migration",
-                "10",
+                "11",
                 "Settings and migration",
                 "Keep application and overlay appearance separate, import an original profile without corruption, and understand every network/privacy gate.",
                 [
@@ -527,7 +598,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "diagnostics",
-                "11",
+                "12",
                 "Diagnostics and troubleshooting",
                 "Inspect current inputs, application logs, journal events, updates, caches, crash reports, and safe recovery tools.",
                 [
@@ -575,7 +646,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "icons",
-                "12",
+                "13",
                 "Overlay icon glossary",
                 "A visual reference for route and body artwork, text symbols, biology reward PIPs, surface-radar markers, Guardian points, and human-settlement map icons.",
                 [
