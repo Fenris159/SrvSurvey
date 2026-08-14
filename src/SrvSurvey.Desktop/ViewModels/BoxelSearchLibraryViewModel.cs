@@ -171,21 +171,17 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
         ? $"Delete '{selected.Name}'? It will be moved to recovery storage."
         : "Delete the selected saved search?";
 
-    public string NameSortIndicator => sortColumn == BoxelSearchLibrarySortColumn.Name
-        ? (sortAscending ? "▲" : "▼")
-        : string.Empty;
+    public string NameSortIndicator => GetSortIndicator(
+        BoxelSearchLibrarySortColumn.Name);
 
-    public string DateSortIndicator => sortColumn == BoxelSearchLibrarySortColumn.Created
-        ? (sortAscending ? "▲" : "▼")
-        : string.Empty;
+    public string DateSortIndicator => GetSortIndicator(
+        BoxelSearchLibrarySortColumn.Created);
 
-    public string ModifiedSortIndicator => sortColumn == BoxelSearchLibrarySortColumn.Modified
-        ? (sortAscending ? "▲" : "▼")
-        : string.Empty;
+    public string ModifiedSortIndicator => GetSortIndicator(
+        BoxelSearchLibrarySortColumn.Modified);
 
-    public string ProgressSortIndicator => sortColumn == BoxelSearchLibrarySortColumn.Progress
-        ? (sortAscending ? "▲" : "▼")
-        : string.Empty;
+    public string ProgressSortIndicator => GetSortIndicator(
+        BoxelSearchLibrarySortColumn.Progress);
 
     public ICommand RefreshCommand => refreshCommand;
 
@@ -227,9 +223,7 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
             }
 
             Reorder();
-            StatusMessage = Searches.Count == 0
-                ? "No saved boxel searches yet."
-                : $"Loaded {Searches.Count:N0} saved boxel search{(Searches.Count == 1 ? string.Empty : "es")}.";
+            StatusMessage = GetLoadedSearchStatus(Searches.Count);
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
@@ -452,6 +446,27 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ModifiedSortIndicator));
         OnPropertyChanged(nameof(ProgressSortIndicator));
         Reorder();
+    }
+
+    private string GetSortIndicator(BoxelSearchLibrarySortColumn column)
+    {
+        if (sortColumn != column)
+        {
+            return string.Empty;
+        }
+
+        return sortAscending ? "▲" : "▼";
+    }
+
+    private static string GetLoadedSearchStatus(int count)
+    {
+        if (count == 0)
+        {
+            return "No saved boxel searches yet.";
+        }
+
+        var pluralSuffix = count == 1 ? string.Empty : "es";
+        return $"Loaded {count:N0} saved boxel search{pluralSuffix}.";
     }
 
     private void Reorder()

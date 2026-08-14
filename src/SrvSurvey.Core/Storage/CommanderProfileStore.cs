@@ -579,7 +579,7 @@ public sealed class CommanderProfileStore(string profileDirectory)
         node["savedSearchFileName"] = boxelSearch.SavedSearchFileName;
     }
 
-    private static IReadOnlyDictionary<string, int> ReadBoxelProgress(
+    private static Dictionary<string, int> ReadBoxelProgress(
         JsonObject boxelSearch)
     {
         if (boxelSearch["progress"] is not JsonObject progress)

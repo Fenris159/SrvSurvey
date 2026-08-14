@@ -248,7 +248,7 @@ public sealed class SavedBoxelSearchStore
         }
     }
 
-    private async Task<SavedBoxelSearchDocument> LoadFromPathAsync(
+    private static async Task<SavedBoxelSearchDocument> LoadFromPathAsync(
         string frontierId,
         string path,
         CancellationToken cancellationToken)
@@ -478,7 +478,18 @@ public sealed class SavedBoxelSearchStore
 
     private static void ValidateFileName(string value, string parameterName)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
+        if (value is null)
+        {
+            throw new ArgumentNullException(parameterName);
+        }
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException(
+                "The value cannot be an empty string or composed entirely of whitespace.",
+                parameterName);
+        }
+
         if (!string.Equals(value, Path.GetFileName(value), StringComparison.Ordinal)
             || value.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
         {
@@ -534,7 +545,7 @@ public sealed class SavedBoxelSearchStore
         return array;
     }
 
-    private static IReadOnlyList<string> ReadStringArray(
+    private static string[] ReadStringArray(
         JsonObject root,
         string propertyName)
     {
@@ -565,7 +576,7 @@ public sealed class SavedBoxelSearchStore
         return node;
     }
 
-    private static IReadOnlyDictionary<string, int> ReadProgress(JsonObject root)
+    private static Dictionary<string, int> ReadProgress(JsonObject root)
     {
         if (root["progress"] is not JsonObject progress)
         {

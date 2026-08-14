@@ -97,6 +97,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private Func<string, Task>? clipboardWriter;
     private CancellationTokenSource? auditCancellation;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Maintainability",
+        "S107:Methods should not have too many parameters",
+        Justification = "The constructor composes independent optional services; grouping them would only move the same dependencies into a parameter object.")]
     public BoxelSearchViewModel(
         CommanderProfileStore profileStore,
         LegacySystemDataReader localSystemReader,
@@ -1935,7 +1939,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         return option;
     }
 
-    private static IReadOnlyList<BoxelAddress> GetBreadcrumbPath(
+    private static List<BoxelAddress> GetBreadcrumbPath(
         BoxelAddress topBoxel,
         BoxelAddress current)
     {
@@ -2048,12 +2052,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         string query,
         CancellationTokenSource cancellation)
     {
+        var suggestionClient = systemNameSuggestionClient;
+        if (suggestionClient is null)
+        {
+            return;
+        }
+
         try
         {
             IsSearchingSystemSuggestions = true;
             SystemSuggestionStatus = "Searching for system suggestions…";
             await Task.Delay(systemSuggestionDelay, cancellation.Token);
-            var suggestions = await systemNameSuggestionClient!.SearchAsync(
+            var suggestions = await suggestionClient.SearchAsync(
                 query,
                 cancellation.Token);
             if (!ReferenceEquals(systemSuggestionCancellation, cancellation)
@@ -2067,12 +2077,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
             SystemNameSuggestions = suggestions;
             SelectedSystemSuggestionIndex = suggestions.Count > 0 ? 0 : -1;
-            var source = suggestions.FirstOrDefault()?.Source;
-            SystemSuggestionStatus = suggestions.Count > 0
-                ? $"{suggestions.Count:N0} system suggestion"
-                    + (suggestions.Count == 1 ? string.Empty : "s")
-                    + $" from {source}."
-                : "No matching systems found.";
+            SystemSuggestionStatus = BuildSystemSuggestionStatus(suggestions);
         }
         catch (OperationCanceledException)
         {
@@ -2101,6 +2106,19 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
             cancellation.Dispose();
         }
+    }
+
+    private static string BuildSystemSuggestionStatus(
+        IReadOnlyList<SystemNameSuggestion> suggestions)
+    {
+        if (suggestions.Count == 0)
+        {
+            return "No matching systems found.";
+        }
+
+        var pluralSuffix = suggestions.Count == 1 ? string.Empty : "s";
+        return $"{suggestions.Count:N0} system suggestion{pluralSuffix} "
+            + $"from {suggestions[0].Source}.";
     }
 
     private void CancelSystemSuggestions()

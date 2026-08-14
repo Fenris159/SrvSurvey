@@ -226,6 +226,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         catch (OperationCanceledException)
             when (lifetimeCancellation.IsCancellationRequested)
         {
+            // Cancellation is the expected worker result during shutdown.
         }
     }
 
@@ -312,8 +313,9 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         {
             log(message);
         }
-        catch
+        catch (Exception)
         {
+            // Logging is best-effort; reporting this failure through the same sink would recurse.
         }
     }
 
@@ -343,6 +345,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             when (exception.InnerExceptions.All(inner =>
                 inner is OperationCanceledException))
         {
+            // Cancellation is the expected worker result during disposal.
         }
 
         lifetimeCancellation.Dispose();

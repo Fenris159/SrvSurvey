@@ -150,10 +150,10 @@ public sealed partial class SystemNameEntry : UserControl
     public bool HasStatus => !string.IsNullOrWhiteSpace(Status);
 
     protected override void OnDetachedFromVisualTree(
-        VisualTreeAttachmentEventArgs eventArgs)
+        VisualTreeAttachmentEventArgs e)
     {
         CancelSuggestions();
-        base.OnDetachedFromVisualTree(eventArgs);
+        base.OnDetachedFromVisualTree(e);
     }
 
     private void OnTextChanged(string? value)
@@ -210,11 +210,7 @@ public sealed partial class SystemNameEntry : UserControl
 
             Suggestions = results;
             SelectedIndex = results.Count > 0 ? 0 : -1;
-            Status = results.Count > 0
-                ? $"{results.Count:N0} suggestion"
-                    + (results.Count == 1 ? string.Empty : "s")
-                    + $" from {results[0].Source}."
-                : "No matching systems found.";
+            Status = BuildSuggestionStatus(results);
         }
         catch (OperationCanceledException)
         {
@@ -241,6 +237,18 @@ public sealed partial class SystemNameEntry : UserControl
 
             cancellation.Dispose();
         }
+    }
+
+    private static string BuildSuggestionStatus(
+        IReadOnlyList<SystemNameSuggestion> results)
+    {
+        if (results.Count == 0)
+        {
+            return "No matching systems found.";
+        }
+
+        var pluralSuffix = results.Count == 1 ? string.Empty : "s";
+        return $"{results.Count:N0} suggestion{pluralSuffix} from {results[0].Source}.";
     }
 
     private void InputBox_KeyDown(object? sender, KeyEventArgs eventArgs)
