@@ -1,0 +1,42 @@
+name: Gemini PR review
+
+on:
+  pull_request:
+    branches:
+      - SrvSurvey-Avalonia
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: gemini-pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Review pull request
+    if: >-
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run PR-Agent review with Gemini
+        uses: The-PR-Agent/pr-agent@20bc0fe8ae7c1494c0be580f7ceb35a1c45e5741
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOOGLE_AI_STUDIO.GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          config.model: gemini/gemini-2.5-flash
+          config.fallback_models: '["gemini/gemini-2.5-flash-lite"]'
+          github_action_config.auto_review: "true"
+          github_action_config.auto_describe: "false"
+          github_action_config.auto_improve: "false"
+          github_action_config.pr_actions: >-
+            ["opened", "reopened", "ready_for_review", "synchronize"]
