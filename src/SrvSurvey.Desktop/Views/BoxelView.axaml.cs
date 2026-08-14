@@ -143,9 +143,14 @@ public sealed partial class BoxelView : UserControl
             return;
         }
 
+        var library = new BoxelSearchLibraryViewModel(viewModel.BoxelSearch);
+        library.StatisticsRequested += async (_, request) =>
+        {
+            await OpenStatisticsAsync(viewModel, owner, request);
+        };
         boxelSearchLibraryWindow = new BoxelSearchLibraryWindow
         {
-            DataContext = new BoxelSearchLibraryViewModel(viewModel.BoxelSearch)
+            DataContext = library
         };
         boxelSearchLibraryWindow.Closed += (_, _) =>
             boxelSearchLibraryWindow = null;
@@ -173,6 +178,31 @@ public sealed partial class BoxelView : UserControl
             new BoxelSurveyStatsSettingsStore(viewModel.AppDataPaths.UiSettingsPath),
             viewModel.BoxelSearch);
         await stats.InitializeAsync();
+        boxelStatsWindow = new BoxelStatsWindow
+        {
+            DataContext = stats,
+        };
+        boxelStatsWindow.Closed += (_, _) => boxelStatsWindow = null;
+        boxelStatsWindow.Show(owner);
+    }
+
+    private async Task OpenStatisticsAsync(
+        MainWindowViewModel viewModel,
+        Window owner,
+        BoxelSurveyStatsFocusRequest request)
+    {
+        if (boxelStatsWindow?.DataContext is BoxelSurveyStatsViewModel existing)
+        {
+            await existing.FocusPrefixesAsync(request.Prefixes, request.LowMassCode);
+            boxelStatsWindow.Activate();
+            return;
+        }
+
+        var stats = new BoxelSurveyStatsViewModel(
+            viewModel.BoxelSurveyStats,
+            new BoxelSurveyStatsSettingsStore(viewModel.AppDataPaths.UiSettingsPath),
+            viewModel.BoxelSearch);
+        await stats.FocusPrefixesAsync(request.Prefixes, request.LowMassCode);
         boxelStatsWindow = new BoxelStatsWindow
         {
             DataContext = stats,

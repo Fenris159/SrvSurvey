@@ -314,6 +314,13 @@ public sealed class SavedBoxelSearchStore
         SavedBoxelSearchDocument document)
     {
         var progress = CalculateProgress(document.Search);
+        var prefixes = new List<string>();
+        if (!string.IsNullOrWhiteSpace(document.Search.TopBoxel?.Prefix))
+        {
+            prefixes.Add(document.Search.TopBoxel.Prefix);
+        }
+
+        prefixes.AddRange(document.Search.ProgressByPrefix.Keys);
         return new SavedBoxelSearchCatalogEntry(
             document.Name,
             document.Notes,
@@ -324,7 +331,13 @@ public sealed class SavedBoxelSearchStore
             progress.Total,
             document.Search.ProgressByPrefix.Values.Any(count => count == 0),
             document.FileName,
-            document.FilePath);
+            document.FilePath,
+            document.Search.TopBoxel?.Prefix,
+            document.Search.LowMassCode,
+            prefixes
+                .Where(prefix => !string.IsNullOrWhiteSpace(prefix))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray());
     }
 
     public static (int Completed, int Total) CalculateProgress(
@@ -656,4 +669,11 @@ public sealed record SavedBoxelSearchCatalogEntry(
     int TotalSystems,
     bool HasUncountedBoxels,
     string FileName,
-    string FilePath);
+    string FilePath,
+    string? TopBoxelPrefix = null,
+    char LowMassCode = 'c',
+    IReadOnlyList<string>? MatchingPrefixes = null)
+{
+    public IReadOnlyList<string> Prefixes => MatchingPrefixes
+        ?? (string.IsNullOrWhiteSpace(TopBoxelPrefix) ? [] : [TopBoxelPrefix]);
+}

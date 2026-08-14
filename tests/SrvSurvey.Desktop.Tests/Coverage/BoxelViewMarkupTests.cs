@@ -213,7 +213,11 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("LAST MODIFIED", values);
         Assert.Contains("PROGRESS COMPLETED", values);
         Assert.Contains("NOTES", values);
+        Assert.Contains("STATS", values);
         Assert.Contains("EDIT", values);
+        Assert.Contains("Open boxel statistics", values);
+        Assert.Contains("{StaticResource data_pie_regular}", values);
+        Assert.Contains("{Binding OpenStatisticsCommand}", values);
         Assert.Contains("{Binding IsSelected, Mode=TwoWay}", values);
         Assert.DoesNotContain("Select all", values);
         Assert.Contains("Delete selected saved search", values);

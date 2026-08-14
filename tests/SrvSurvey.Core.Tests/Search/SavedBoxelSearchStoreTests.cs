@@ -70,6 +70,9 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
         Assert.True(entry.IsFavorite);
         Assert.Equal(2, entry.CompletedSystems);
         Assert.Equal(3, entry.TotalSystems);
+        Assert.Equal(top.Prefix, entry.TopBoxelPrefix);
+        Assert.Equal('c', entry.LowMassCode);
+        Assert.Contains(top.Prefix, entry.Prefixes);
         Assert.Equal(created.CreatedAt, loaded.CreatedAt);
         Assert.Equal(created.FileName, loaded.Search.SavedSearchFileName);
 
