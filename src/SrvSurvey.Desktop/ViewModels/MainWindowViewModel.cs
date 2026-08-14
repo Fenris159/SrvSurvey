@@ -293,9 +293,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             SystemNicknameCatalog.Load(AppDataPaths.DataDirectory),
             new SystemNicknameSettingsStore(AppDataPaths.UiSettingsPath));
         DiagnosticsLog = new DiagnosticsLogViewModel(resolvedApplicationLogService);
+        var currentReleaseVersion = ReleaseVersion.FromAssembly(
+            typeof(MainWindowViewModel).Assembly);
         ReleaseUpdates = releaseUpdates ?? new ReleaseUpdateViewModel(
             new ReleaseUpdateService(),
-            ReleaseVersion.FromAssembly(typeof(MainWindowViewModel).Assembly),
+            currentReleaseVersion,
             new ReleaseUpdateSettingsStore(AppDataPaths.UiSettingsPath));
         JournalInspector = new JournalInspectorViewModel(
             ReplayQuestJournalEventAsync);
@@ -398,8 +400,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
         this.voxStellarPublisher = resolvedVoxStellarPublisher
             ?? new VoxStellarPublisher(
-                (typeof(MainWindowViewModel).Assembly.GetName().Version
-                    ?? new Version(0, 0)).ToString(),
+                currentReleaseVersion.ToString(),
                 VoxStellarSharedKeyProvider.GetSharedKey(),
                 log: message => resolvedApplicationLogService?.Append(message));
         VoxStellar = new VoxStellarSharingViewModel(
