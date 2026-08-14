@@ -2485,11 +2485,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         if (!skipPersistedBootstrapEvents)
         {
             await BoxelSearch.ApplyJournalEventsAsync(update.JournalEvents);
-            await boxelSurveyStats.ApplyJournalEventsAsync(update.JournalEvents);
+            await boxelSurveyStats.ApplyJournalEventsAsync(
+                update.JournalEvents,
+                CancellationToken.None);
         }
         else
         {
-            await boxelSurveyStats.ApplyBootstrapContextAsync(update.JournalEvents);
+            await boxelSurveyStats.ApplyBootstrapContextAsync(
+                update.JournalEvents,
+                CancellationToken.None);
         }
     }
 
@@ -2544,7 +2548,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         await LoadCurrentSystemHistoryAsync();
-        await boxelSurveyStats.IngestSnapshotAsync(SystemSurvey.Snapshot);
+        if (exobiologyChanged || update.JournalEvents.Count > 0)
+        {
+            await boxelSurveyStats.IngestSnapshotAsync(
+                SystemSurvey.Snapshot,
+                cancellationToken: CancellationToken.None);
+        }
         PendingSystemBodyDataLoad = LoadCurrentSystemBodyDataAsync();
         if (!update.IsBootstrapRead
             && await ApplyFirstFootfallTextCommandsAsync(update.JournalEvents) > 0)
@@ -3021,7 +3030,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         if (result.Data is null)
         {
-            await boxelSurveyStats.SwitchCommanderAsync(journalState.FrontierId);
+            await boxelSurveyStats.SwitchCommanderAsync(
+                journalState.FrontierId,
+                CancellationToken.None);
             activeProfileRavenApiKey = null;
             Inara.SetCommanderProfile(
                 null,
@@ -3075,7 +3086,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             activeProfileCommanderName,
             result.Data.IsOdyssey,
             result.Data.BoxelSearch);
-        await boxelSurveyStats.SwitchCommanderAsync(result.Data.FrontierId);
+        await boxelSurveyStats.SwitchCommanderAsync(
+            result.Data.FrontierId,
+            CancellationToken.None);
         await Guardian.LoadProfileAsync(
             result.Data.FrontierId,
             result.Data.IsOdyssey,

@@ -1,3 +1,4 @@
+using System.Globalization;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
@@ -262,10 +263,10 @@ public sealed class BoxelSurveyStatsStateTests
         var snapshot = Snapshot(SystemA, SystemAAddress, [body], expectedBodyCount: 3);
         Assert.True(state.IngestSnapshot(snapshot));
         var version = state.Version;
-        var dirty = state.DirtyPrefixes.Count;
+        var dirty = state.GetDirtyPrefixes().Count;
         Assert.True(state.IngestSnapshot(snapshot));
         Assert.Equal(version, state.Version);
-        Assert.Equal(dirty, state.DirtyPrefixes.Count);
+        Assert.Equal(dirty, state.GetDirtyPrefixes().Count);
     }
 
     [Fact]
@@ -282,10 +283,10 @@ public sealed class BoxelSurveyStatsStateTests
             allBodiesFound: true);
         Assert.True(state.IngestSnapshot(snapshot));
         var version = state.Version;
-        var dirty = state.DirtyPrefixes.Count;
+        var dirty = state.GetDirtyPrefixes().Count;
         Assert.True(state.IngestSnapshot(snapshot));
         Assert.Equal(version, state.Version);
-        Assert.Equal(dirty, state.DirtyPrefixes.Count);
+        Assert.Equal(dirty, state.GetDirtyPrefixes().Count);
         Assert.True(state.TryGet(Prefix(SystemA), out var stored));
         Assert.Equal(1, stored.CountsOf(BoxelPlanetClass.Icy).Count);
     }
@@ -296,23 +297,25 @@ public sealed class BoxelSurveyStatsStateTests
         var state = new BoxelSurveyStatsState();
         Jump(state, SystemA, SystemAAddress);
         var efficient = BoxelSurveyValueCalculator.Calculate(
-            "Rocky body",
-            terraformable: false,
-            0.2,
-            wasDiscovered: false,
-            wasMapped: false,
-            dssComplete: true,
-            dssEfficiencyBonus: true,
-            isOdyssey: true);
+            new BoxelSurveyValueRequest(
+                "Rocky body",
+                Terraformable: false,
+                0.2,
+                WasDiscovered: false,
+                WasMapped: false,
+                DssComplete: true,
+                DssEfficiencyBonus: true,
+                IsOdyssey: true));
         var inefficient = BoxelSurveyValueCalculator.Calculate(
-            "Rocky body",
-            terraformable: false,
-            0.2,
-            wasDiscovered: false,
-            wasMapped: false,
-            dssComplete: true,
-            dssEfficiencyBonus: false,
-            isOdyssey: true);
+            new BoxelSurveyValueRequest(
+                "Rocky body",
+                Terraformable: false,
+                0.2,
+                WasDiscovered: false,
+                WasMapped: false,
+                DssComplete: true,
+                DssEfficiencyBonus: false,
+                IsOdyssey: true));
         Assert.True(efficient.Current > inefficient.Current);
         var body = PlanetBody(
             3,
@@ -363,7 +366,7 @@ public sealed class BoxelSurveyStatsStateTests
             {"event":"SAAScanComplete","SystemAddress":{{SystemAAddress}},"BodyID":8,"ProbesUsed":4,"EfficiencyTarget":6}
             """)));
         Assert.True(state.TryGet(Prefix(SystemA), out var before));
-        Assert.Equal(0, before.Visited == 0 ? 0 : before.CountsOf(BoxelPlanetClass.HighMetalContent).Count);
+        Assert.Equal(0, before.CountsOf(BoxelPlanetClass.HighMetalContent).Count);
         Assert.Single(Assert.Single(before.Systems).Bodies);
 
         ScanPlanet(state, SystemAAddress, 8, "High metal content body", mass: 0.4);
@@ -398,14 +401,15 @@ public sealed class BoxelSurveyStatsStateTests
     {
         var state = new BoxelSurveyStatsState();
         var expected = BoxelSurveyValueCalculator.Calculate(
-            "Water world",
-            terraformable: true,
-            1,
-            wasDiscovered: false,
-            wasMapped: false,
-            dssComplete: true,
-            dssEfficiencyBonus: false,
-            isOdyssey: true);
+            new BoxelSurveyValueRequest(
+                "Water world",
+                Terraformable: true,
+                1,
+                WasDiscovered: false,
+                WasMapped: false,
+                DssComplete: true,
+                DssEfficiencyBonus: false,
+                IsOdyssey: true));
         var body = PlanetBody(
             1,
             "Water world",
@@ -417,7 +421,7 @@ public sealed class BoxelSurveyStatsStateTests
             dssComplete: true);
         Assert.True(state.IngestSystemFile(
             Snapshot(SystemA, SystemAAddress, [body], allBodiesFound: true),
-            DateTimeOffset.Parse("2026-07-10T12:00:00Z")));
+            DateTimeOffset.Parse("2026-07-10T12:00:00Z", CultureInfo.InvariantCulture)));
 
         Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
         Assert.Equal(expected.Scan, snapshot.ScanValue);
@@ -526,47 +530,47 @@ public sealed class BoxelSurveyStatsStateTests
         }
 
         return new SystemScanBodySnapshot(
-            bodyId,
-            $"Body {bodyId}",
-            $"{bodyId}",
-            SystemBodyKind.Planet,
-            null,
-            planetClass,
-            landable,
-            terraformable,
-            true,
-            dssComplete,
-            false,
-            false,
-            null,
-            false,
-            false,
-            null,
-            mass,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            null,
-            helium is null ? "None" : "Helium",
-            null,
-            0,
-            0,
-            0,
-            0,
-            scanValue,
-            mappedValue,
-            currentValue,
-            0,
-            composition,
-            new Dictionary<string, double>(),
-            [],
-            [],
-            [],
-            []);
+            BodyId: bodyId,
+            Name: $"Body {bodyId}",
+            ShortName: $"{bodyId}",
+            Kind: SystemBodyKind.Planet,
+            StarClass: null,
+            PlanetClass: planetClass,
+            IsLandable: landable,
+            IsTerraformable: terraformable,
+            IsScanned: true,
+            IsDssComplete: dssComplete,
+            WasDiscovered: false,
+            WasMapped: false,
+            WasFootfalled: null,
+            IsFirstFootfall: false,
+            HasRingParent: false,
+            TidalLock: null,
+            Mass: mass,
+            DistanceFromArrivalLs: 0,
+            RadiusMeters: 0,
+            SurfaceGravity: 0,
+            SurfaceTemperature: 0,
+            SurfacePressure: 0,
+            SemiMajorAxis: 0,
+            AbsoluteMagnitude: 0,
+            Atmosphere: null,
+            AtmosphereType: helium is null ? "None" : "Helium",
+            Volcanism: null,
+            BiologicalSignalCount: 0,
+            AnalyzedBiologicalSignalCount: 0,
+            GeologicalSignalCount: 0,
+            AnalyzedGeologicalSignalCount: 0,
+            ScanValue: scanValue,
+            EstimatedMappedValue: mappedValue,
+            CurrentScanValue: currentValue,
+            ScanSequence: 0,
+            AtmosphereComposition: composition,
+            Materials: new Dictionary<string, double>(),
+            Rings: [],
+            Parents: [],
+            Organisms: [],
+            AnalyzedGeologicalSignals: []);
     }
 
     private static string Prefix(string generatedName)

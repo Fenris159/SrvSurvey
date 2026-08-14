@@ -30,7 +30,10 @@ public sealed class BoxelSurveyStatsExporterTests
 
         Assert.Contains("Praea Euq IL-P c5-", json, StringComparison.Ordinal);
         Assert.Contains("28.5", json, StringComparison.Ordinal);
-        Assert.Contains("\"class\": 7", json, StringComparison.Ordinal);
+        Assert.Contains(
+            $"\"class\": {(int)BoxelPlanetClass.WaterWorld}",
+            json,
+            StringComparison.Ordinal);
         Assert.Contains("Prefix,Praea Euq IL-P c5-", csv, StringComparison.Ordinal);
         Assert.Contains("WaterWorld", csv, StringComparison.Ordinal);
         Assert.Contains("Visited,ImpliedPopulation", index, StringComparison.Ordinal);

@@ -30,6 +30,8 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
 
     public event EventHandler? Changed;
 
+    public event EventHandler<Exception>? PersistenceFailed;
+
     public BoxelSurveyStatsState State => state;
 
     public string? FrontierId => frontierId;
@@ -42,7 +44,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
         {
             lock (gate)
             {
-                return state.Index;
+                return state.GetIndex();
             }
         }
     }
@@ -208,7 +210,10 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
                 .ConfigureAwait(false);
             if (list.Length > MaximumRetainedDocuments)
             {
-                retainPrefixes.Add(prefix);
+                lock (gate)
+                {
+                    retainPrefixes.Add(prefix);
+                }
             }
         }
 
@@ -272,7 +277,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
         {
             epoch = state.Version;
             pending = [];
-            foreach (var prefix in state.DirtyPrefixes)
+            foreach (var prefix in state.GetDirtyPrefixes())
             {
                 if (state.TryCreateDocument(prefix, out var document))
                 {
@@ -296,6 +301,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
                     or UnauthorizedAccessException
                     or InvalidDataException)
             {
+                PersistenceFailed?.Invoke(this, exception);
                 break;
             }
         }
@@ -317,12 +323,15 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
     public void SetRetainPrefixes(IEnumerable<string> prefixes)
     {
         ArgumentNullException.ThrowIfNull(prefixes);
-        retainPrefixes.Clear();
-        foreach (var prefix in prefixes)
+        lock (gate)
         {
-            if (!string.IsNullOrWhiteSpace(prefix))
+            retainPrefixes.Clear();
+            foreach (var prefix in prefixes)
             {
-                retainPrefixes.Add(prefix);
+                if (!string.IsNullOrWhiteSpace(prefix))
+                {
+                    retainPrefixes.Add(prefix);
+                }
             }
         }
     }
@@ -332,7 +341,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
         IReadOnlyList<BoxelSurveyIndexEntry> index;
         lock (gate)
         {
-            index = state.Index;
+            index = state.GetIndex();
         }
 
         var byPrefix = index.ToDictionary(
@@ -389,8 +398,43 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
         }
 
         disposed = true;
-        FlushAsync().GetAwaiter().GetResult();
         CancelScheduledFlush();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        try
+        {
+            FlushAsync(timeout.Token).GetAwaiter().GetResult();
+        }
+        catch (Exception exception) when (
+            exception is OperationCanceledException
+                or IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or AggregateException)
+        {
+            // Shutdown must not throw or wait indefinitely on file I/O.
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        CancelScheduledFlush();
+        try
+        {
+            await FlushAsync(CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            PersistenceFailed?.Invoke(this, exception);
+        }
     }
 
     private async Task EnsureLoadedForEventAsync(
@@ -415,15 +459,17 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
         string prefix,
         CancellationToken cancellationToken)
     {
+        string? commanderId;
         lock (gate)
         {
-            if (state.HasLoadedDocument(prefix) || string.IsNullOrWhiteSpace(frontierId))
+            commanderId = frontierId;
+            if (state.HasLoadedDocument(prefix) || string.IsNullOrWhiteSpace(commanderId))
             {
                 return;
             }
         }
 
-        var document = await store.LoadBoxelAsync(frontierId, prefix, cancellationToken)
+        var document = await store.LoadBoxelAsync(commanderId, prefix, cancellationToken)
             .ConfigureAwait(false);
         if (document is null)
         {
@@ -442,10 +488,11 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
     private Task EvictUnretainedAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var keep = new HashSet<string>(retainPrefixes, StringComparer.Ordinal);
+        HashSet<string> keep;
         IReadOnlyList<BoxelSurveyIndexEntry> index;
         lock (gate)
         {
+            keep = new HashSet<string>(retainPrefixes, StringComparer.Ordinal);
             if (state.Current?.Prefix is { } current)
             {
                 keep.Add(current);
@@ -456,12 +503,12 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
                 keep.Add(prefix);
             }
 
-            foreach (var prefix in state.DirtyPrefixes)
+            foreach (var prefix in state.GetDirtyPrefixes())
             {
                 keep.Add(prefix);
             }
 
-            index = state.Index;
+            index = state.GetIndex();
         }
 
         foreach (var entry in index)
@@ -499,7 +546,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
 
     private void ScheduleFlush()
     {
-        if (string.IsNullOrWhiteSpace(frontierId) || state.DirtyPrefixes.Count == 0)
+        if (string.IsNullOrWhiteSpace(frontierId) || state.GetDirtyPrefixes().Count == 0)
         {
             return;
         }
@@ -525,14 +572,14 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
 
     private void CancelScheduledFlush()
     {
-        if (flushCancellation is null)
+        var scheduled = Interlocked.Exchange(ref flushCancellation, null);
+        if (scheduled is null)
         {
             return;
         }
 
-        flushCancellation.Cancel();
-        flushCancellation.Dispose();
-        flushCancellation = null;
+        scheduled.Cancel();
+        scheduled.Dispose();
     }
 
     private void RaiseChanged() => Changed?.Invoke(this, EventArgs.Empty);

@@ -3,11 +3,12 @@ using System.Globalization;
 namespace SrvSurvey.Core.Search;
 
 public readonly record struct BoxelSurveyAverageFormat(
-    int MinSystemsForAverages = 10);
+    int MinSystemsForAverages = BoxelSurveyAverageFormatter.DefaultMinSystemsForAverages);
 
 public static class BoxelSurveyAverageFormatter
 {
     public const string Placeholder = "\u2014";
+    public const int DefaultMinSystemsForAverages = 10;
 
     public static string Format(
         int? count,
@@ -15,7 +16,7 @@ public static class BoxelSurveyAverageFormatter
         BoxelSurveyAverageFormat format = default)
     {
         var minSystems = format.MinSystemsForAverages <= 0
-            ? 10
+            ? DefaultMinSystemsForAverages
             : format.MinSystemsForAverages;
         if (count is null || count.Value == 0)
         {

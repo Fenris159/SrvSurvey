@@ -116,6 +116,10 @@ public sealed class BoxelPlanetClassifierTests
         Assert.False(BoxelPlanetClassifier.TryGetHeliumPercent(
             new Dictionary<string, double>(),
             out _));
+        Assert.False(BoxelPlanetClassifier.TryGetHeliumPercent(
+            new Dictionary<string, double> { ["Helium"] = 150 },
+            out var overflow));
+        Assert.Equal(0, overflow);
     }
 
     [Theory]

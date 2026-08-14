@@ -2,6 +2,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
+using static SrvSurvey.Desktop.Tests.JournalEventEnvelopeTestParser;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -413,14 +414,6 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
         {
             Directory.Delete(temporaryDirectory, recursive: true);
         }
-    }
-
-    private static JournalEventEnvelope Parse(string json)
-    {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
-        return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
 
     private sealed class EmptyResolver : IBoxelSystemResolver

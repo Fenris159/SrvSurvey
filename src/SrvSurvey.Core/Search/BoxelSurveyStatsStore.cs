@@ -115,12 +115,22 @@ public sealed class BoxelSurveyStatsStore
             Directory.CreateDirectory(directory);
             var catalog = await LoadCatalogAsync(frontierId, cancellationToken)
                 .ConfigureAwait(false);
+            var previousPath = ResolveExistingBoxelPath(
+                frontierId,
+                document.Prefix,
+                catalog);
             var path = ResolveBoxelPath(frontierId, document.Prefix, catalog);
             await WriteJsonAsync(
                     path,
                     WriteDocument(frontierId, document),
                     cancellationToken)
                 .ConfigureAwait(false);
+            if (previousPath is not null
+                && !string.Equals(previousPath, path, StringComparison.OrdinalIgnoreCase)
+                && File.Exists(previousPath))
+            {
+                File.Delete(previousPath);
+            }
 
             var snapshot = CreateSnapshot(document);
             var entries = catalog.Index
@@ -242,10 +252,48 @@ public sealed class BoxelSurveyStatsStore
                 && boxel is not null
                 && boxel.WithSystemNumber(0).TryGetSystemAddress(out var encoded)
                     ? encoded
-                    : 0);
+                    : null);
+        if (suffix is null or 0)
+        {
+            suffix = StablePrefixHash(prefix);
+        }
+
         return Path.Combine(
             directory,
-            $"{SanitizePrefix(prefix)}-{suffix.ToString("x", CultureInfo.InvariantCulture)}.json");
+            $"{SanitizePrefix(prefix)}-{suffix.Value.ToString("x", CultureInfo.InvariantCulture)}.json");
+    }
+
+    private string? ResolveExistingBoxelPath(
+        string frontierId,
+        string prefix,
+        BoxelSurveyStatsCatalog catalog)
+    {
+        var directory = GetCommanderDirectory(frontierId);
+        var preferred = Path.Combine(directory, SanitizePrefix(prefix) + ".json");
+        if (File.Exists(preferred))
+        {
+            return preferred;
+        }
+
+        var resolved = ResolveBoxelPath(frontierId, prefix, catalog);
+        return File.Exists(resolved) ? resolved : null;
+    }
+
+    private static long StablePrefixHash(string prefix)
+    {
+        const uint offset = 2166136261;
+        const uint prime = 16777619;
+        unchecked
+        {
+            var hash = offset;
+            foreach (var character in prefix)
+            {
+                hash ^= character;
+                hash *= prime;
+            }
+
+            return hash == 0 ? 1 : hash;
+        }
     }
 
     private static BoxelSurveyBoxelSnapshot CreateSnapshot(
@@ -389,7 +437,7 @@ public sealed class BoxelSurveyStatsStore
             }
 
             var classified = GetInt32(node, "class") is { } raw
-                && Enum.IsDefined(typeof(BoxelPlanetClass), raw)
+                && Enum.IsDefined((BoxelPlanetClass)raw)
                     ? (BoxelPlanetClass)raw
                     : BoxelPlanetClass.Unknown;
             bodies.Add(new BoxelSurveyBodyContribution(
@@ -558,7 +606,7 @@ public sealed class BoxelSurveyStatsStore
         }
     }
 
-    private static void ValidateFileName(string value, string parameterName)
+    internal static void ValidateFileName(string value, string parameterName)
     {
         if (value is null)
         {
@@ -572,8 +620,11 @@ public sealed class BoxelSurveyStatsStore
                 parameterName);
         }
 
-        if (!string.Equals(value, Path.GetFileName(value), StringComparison.Ordinal)
-            || value.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+        if (value is "." or ".."
+            || value.Any(char.IsControl)
+            || value.IndexOfAny(InvalidFileNameCharacters) >= 0
+            || value.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
+            || !string.Equals(value, Path.GetFileName(value), StringComparison.Ordinal))
         {
             throw new ArgumentException("The file name is invalid.", parameterName);
         }
@@ -601,9 +652,13 @@ public sealed class BoxelSurveyStatsStore
             return number;
         }
 
-        return value.TryGetValue<long>(out var wider)
-            ? (int)wider
-            : null;
+        if (value.TryGetValue<long>(out var wider)
+            && wider is >= int.MinValue and <= int.MaxValue)
+        {
+            return (int)wider;
+        }
+
+        return null;
     }
 
     private static long? GetInt64(JsonObject root, string propertyName)

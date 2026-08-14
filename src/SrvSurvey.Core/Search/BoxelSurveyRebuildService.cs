@@ -62,6 +62,7 @@ public sealed class BoxelSurveyRebuildService
         List<string> warnings,
         CancellationToken cancellationToken)
     {
+        BoxelSurveyStatsStore.ValidateFileName(frontierId, nameof(frontierId));
         var directory = Path.Combine(dataDirectory, "systems", frontierId);
         if (!Directory.Exists(directory))
         {

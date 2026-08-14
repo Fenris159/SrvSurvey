@@ -87,6 +87,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private BoxelNavigationOptionViewModel? nextSiblingBoxel;
     private string siblingPosition = "Search root";
     private string? frontierId;
+    private IReadOnlyList<string> searchPrefixes = [];
+    private bool surveyStatsUnsubscribed;
     private string? commanderName;
     private bool isOdyssey = true;
     private NavRouteSnapshot? latestRoute;
@@ -345,8 +347,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public BoxelSurveyStatsCoordinator? SurveyStats => surveyStats;
 
-    public IReadOnlyList<string> SearchPrefixes
-        => state.Boxels.Select(boxel => boxel.Prefix).ToArray();
+    public IReadOnlyList<string> SearchPrefixes => searchPrefixes;
 
     public char SearchLowMassCode => state.LowMassCode;
 
@@ -1349,6 +1350,13 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public void CancelPendingOperations()
     {
         auditCancellation?.Cancel();
+        if (surveyStatsUnsubscribed || surveyStats is null)
+        {
+            return;
+        }
+
+        surveyStats.Changed -= OnSurveyStatsChanged;
+        surveyStatsUnsubscribed = true;
     }
 
     private void OnSurveyStatsChanged(object? sender, EventArgs eventArgs)
@@ -1740,6 +1748,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private void UpdateDisplay()
     {
+        searchPrefixes = state.Boxels.Select(boxel => boxel.Prefix).ToArray();
+        OnPropertyChanged(nameof(SearchPrefixes));
         OnPropertyChanged(nameof(CanSaveProgress));
         OnPropertyChanged(nameof(SuggestedSaveName));
         CurrentBoxelName = state.Current?.Prefix ?? Unavailable;

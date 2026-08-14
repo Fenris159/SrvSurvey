@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        xmlns:pres="using:SrvSurvey.Desktop.Presentation"
         xmlns:search="using:SrvSurvey.Core.Search"
         x:Class="SrvSurvey.Desktop.BoxelStatsWindow"
         x:DataType="vm:BoxelSurveyStatsViewModel"
@@ -15,6 +16,9 @@
         MinHeight="520"
         WindowStartupLocation="CenterOwner"
         Title="Boxel statistics">
+  <Window.Resources>
+    <pres:BoxelSurveyIndentMarginConverter x:Key="IndentMarginConverter" />
+  </Window.Resources>
   <Grid RowDefinitions="Auto,*,Auto">
     <Border Background="{DynamicResource RavenSidebarBrush}"
             BorderBrush="{DynamicResource RavenBorderBrush}"
@@ -90,7 +94,7 @@
                 <Button Classes="link"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Stretch"
-                        Margin="{Binding IndentMargin}"
+                        Margin="{Binding Indent, Converter={StaticResource IndentMarginConverter}}"
                         Click="BrowserRow_Click">
                   <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                     <TextBlock FontWeight="SemiBold"

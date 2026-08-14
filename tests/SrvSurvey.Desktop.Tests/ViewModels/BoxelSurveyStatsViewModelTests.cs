@@ -2,6 +2,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
+using static SrvSurvey.Desktop.Tests.JournalEventEnvelopeTestParser;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -14,7 +15,7 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     [Fact]
     public async Task MassCodeFilterListsKnownPrefixesAndUnvisitedChildren()
     {
-        var coordinator = await CreateCoordinatorWithSystemAsync();
+        using var coordinator = await CreateCoordinatorWithSystemAsync();
         using var viewModel = CreateViewModel(coordinator);
         viewModel.SelectedMassCode = 'c';
         await viewModel.RefreshAsync();
@@ -28,7 +29,7 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     [Fact]
     public async Task DetailShowsHeliumClassesAndAverages()
     {
-        var coordinator = await CreateCoordinatorWithSystemAsync();
+        using var coordinator = await CreateCoordinatorWithSystemAsync();
         using var viewModel = CreateViewModel(coordinator);
         await viewModel.OpenPrefixAsync("Praea Euq IL-P c5-");
 
@@ -46,7 +47,7 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     [Fact]
     public async Task AverageAppearsOnceMinimumVisitedIsReached()
     {
-        var coordinator = await CreateCoordinatorWithSystemAsync();
+        using var coordinator = await CreateCoordinatorWithSystemAsync();
         using var viewModel = CreateViewModel(coordinator);
         viewModel.MinAveragesText = "1";
         await viewModel.OpenPrefixAsync("Praea Euq IL-P c5-");
@@ -58,7 +59,7 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     [Fact]
     public async Task SearchRollupUsesFocusedPrefixes()
     {
-        var coordinator = await CreateCoordinatorWithSystemAsync();
+        using var coordinator = await CreateCoordinatorWithSystemAsync();
         using var viewModel = CreateViewModel(coordinator);
         await viewModel.FocusPrefixesAsync(
             ["Praea Euq IL-P c5-", "Wregoe BU-Y b2-"],
@@ -73,7 +74,7 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     [Fact]
     public async Task ExportSkipsBelowMinimumAndWritesWhenLowered()
     {
-        var coordinator = await CreateCoordinatorWithSystemAsync();
+        using var coordinator = await CreateCoordinatorWithSystemAsync();
         using var viewModel = CreateViewModel(coordinator);
         await viewModel.OpenPrefixAsync("Praea Euq IL-P c5-");
         await viewModel.ExportAsync();
@@ -124,11 +125,4 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
         return coordinator;
     }
 
-    private static JournalEventEnvelope Parse(string json)
-    {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
-        return Assert.IsType<JournalEventEnvelope>(journalEvent);
-    }
 }

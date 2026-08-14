@@ -34,7 +34,7 @@ public static class BoxelPlanetClassifier
         => isLandable && HasAtmosphere(atmosphereType);
 
     public static bool TryGetHeliumPercent(
-        IReadOnlyDictionary<string, double> atmosphereComposition,
+        IReadOnlyDictionary<string, double>? atmosphereComposition,
         out double percent)
     {
         percent = 0;
@@ -46,10 +46,17 @@ public static class BoxelPlanetClassifier
         if (!atmosphereComposition.TryGetValue("Helium", out percent)
             && !TryGetHeliumIgnoreCase(atmosphereComposition, out percent))
         {
+            percent = 0;
             return false;
         }
 
-        return percent > 0 && percent <= 100;
+        if (percent > 0 && percent <= 100)
+        {
+            return true;
+        }
+
+        percent = 0;
+        return false;
     }
 
     public static bool ShowsTerraformableColumn(BoxelPlanetClass classified)

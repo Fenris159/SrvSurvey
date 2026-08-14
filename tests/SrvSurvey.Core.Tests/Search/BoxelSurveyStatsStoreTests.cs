@@ -87,6 +87,20 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
         Assert.Empty(await store.ListIndexAsync("F123"));
     }
 
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    [InlineData("../escape")]
+    [InlineData("a/b")]
+    public async Task RejectsInvalidFrontierId(string frontierId)
+    {
+        var store = new BoxelSurveyStatsStore(temporaryDirectory);
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => store.ListIndexAsync(frontierId));
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => store.LoadBoxelAsync(frontierId, "Praea Euq IL-P c5-"));
+    }
+
     [Fact]
     public void SanitizeKeepsTrailingHyphenAndReplacesIllegalCharacters()
     {

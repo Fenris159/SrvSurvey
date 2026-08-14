@@ -58,11 +58,10 @@
                     HorizontalAlignment="Right"
                     MaxWidth="390"
                     Spacing="7">
-          <Grid HorizontalAlignment="Right"
-                ColumnDefinitions="Auto,Auto,Auto"
-                ColumnSpacing="8">
+          <WrapPanel HorizontalAlignment="Right">
             <Button Classes="secondary"
                     Height="46"
+                    Margin="0,0,8,8"
                     VerticalAlignment="Center"
                     Click="BoxelStats_Click">
               <StackPanel Orientation="Horizontal" Spacing="9">
@@ -71,9 +70,9 @@
                            Text="Boxel Stats" />
               </StackPanel>
             </Button>
-            <Button Grid.Column="1"
-                    Classes="secondary"
+            <Button Classes="secondary"
                     Height="46"
+                    Margin="0,0,8,8"
                     VerticalAlignment="Center"
                     Click="VoxStellar_Click">
               <StackPanel Orientation="Horizontal" Spacing="9">
@@ -86,8 +85,8 @@
                            Text="VoxStellar" />
               </StackPanel>
             </Button>
-            <Button Grid.Column="2"
-                    Classes="voxstellar-info"
+            <Button Classes="voxstellar-info"
+                    Margin="0,0,0,8"
                     Width="40"
                     Height="46"
                     VerticalAlignment="Center"
@@ -104,7 +103,7 @@
                       Data="M11,17 L13,17 L13,11 L11,11 Z M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z M11,9 L13,9 L13,7 L11,7 Z" />
               </Viewbox>
             </Button>
-          </Grid>
+          </WrapPanel>
           <CheckBox HorizontalAlignment="Right"
                     IsChecked="{Binding VoxStellar.JournalUploadEnabled, Mode=TwoWay}"
                     IsEnabled="{Binding VoxStellar.CanChangeUploadPreference}">

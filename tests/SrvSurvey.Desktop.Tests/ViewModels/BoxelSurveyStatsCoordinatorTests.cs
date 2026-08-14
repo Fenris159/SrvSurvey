@@ -3,6 +3,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
+using static SrvSurvey.Desktop.Tests.JournalEventEnvelopeTestParser;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -98,7 +99,7 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IDisposable
     [Fact]
     public async Task SearchViewModelReceivesTheSameCoordinator()
     {
-        var coordinator = new BoxelSurveyStatsCoordinator(
+        using var coordinator = new BoxelSurveyStatsCoordinator(
             new BoxelSurveyStatsStore(temporaryDirectory));
         var viewModel = new BoxelSearchViewModel(
             new CommanderProfileStore(temporaryDirectory),
@@ -107,7 +108,6 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IDisposable
             new NullResolver(),
             surveyStats: coordinator);
         Assert.Same(coordinator, viewModel.SurveyStats);
-        coordinator.Dispose();
     }
 
     public void Dispose()
@@ -190,14 +190,6 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IDisposable
             [],
             [],
             []);
-    }
-
-    private static JournalEventEnvelope Parse(string json)
-    {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
-        return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
 
     private sealed class NullResolver : IBoxelSystemResolver

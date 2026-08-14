@@ -31,56 +31,48 @@ public sealed class BoxelSurveyAverageFormatterTests
     [Fact]
     public void InverseFrequencyUsesOneDecimalWhenRarerThanOnePerSystem()
     {
-        var previous = CultureInfo.CurrentCulture;
-        try
-        {
-            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
-            Assert.Equal("1 in 10", BoxelSurveyAverageFormatter.Format(1, 10));
-            Assert.Equal("1 in 3.3", BoxelSurveyAverageFormatter.Format(3, 10));
-        }
-        finally
-        {
-            CultureInfo.CurrentCulture = previous;
-        }
+        using var _ = new CultureScope("en-US");
+        Assert.Equal("1 in 10", BoxelSurveyAverageFormatter.Format(1, 10));
+        Assert.Equal("1 in 3.3", BoxelSurveyAverageFormatter.Format(3, 10));
     }
 
     [Fact]
     public void BodiesPerSystemUsesTwoDecimalsWhenMoreCommonThanOnePerSystem()
     {
-        var previous = CultureInfo.CurrentCulture;
-        try
-        {
-            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
-            Assert.Equal("2.5", BoxelSurveyAverageFormatter.Format(25, 10));
-            Assert.Equal("1.25", BoxelSurveyAverageFormatter.Format(15, 12));
-        }
-        finally
-        {
-            CultureInfo.CurrentCulture = previous;
-        }
+        using var _ = new CultureScope("en-US");
+        Assert.Equal("2.5", BoxelSurveyAverageFormatter.Format(25, 10));
+        Assert.Equal("1.25", BoxelSurveyAverageFormatter.Format(15, 12));
     }
 
     [Fact]
     public void HonorsCustomMinimumAndCurrentCulture()
     {
-        var previous = CultureInfo.CurrentCulture;
-        try
+        using var _ = new CultureScope("de-DE");
+        Assert.Equal(
+            BoxelSurveyAverageFormatter.Placeholder,
+            BoxelSurveyAverageFormatter.Format(
+                1,
+                4,
+                new BoxelSurveyAverageFormat(5)));
+        Assert.Equal(
+            "2,5",
+            BoxelSurveyAverageFormatter.Format(
+                25,
+                10,
+                new BoxelSurveyAverageFormat(5)));
+    }
+
+    private sealed class CultureScope : IDisposable
+    {
+        private readonly CultureInfo previous;
+
+        public CultureScope(string cultureName)
         {
-            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-            Assert.Equal(
-                BoxelSurveyAverageFormatter.Placeholder,
-                BoxelSurveyAverageFormatter.Format(
-                    1,
-                    4,
-                    new BoxelSurveyAverageFormat(5)));
-            Assert.Equal(
-                "2,5",
-                BoxelSurveyAverageFormatter.Format(
-                    25,
-                    10,
-                    new BoxelSurveyAverageFormat(5)));
+            previous = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
         }
-        finally
+
+        public void Dispose()
         {
             CultureInfo.CurrentCulture = previous;
         }

@@ -31,13 +31,13 @@ public sealed class BoxelSurveyStatsState
             ? snapshot
             : null;
 
-    public IReadOnlyList<BoxelSurveyIndexEntry> Index
+    public IReadOnlyList<BoxelSurveyIndexEntry> GetIndex()
         => boxels.Values
             .Select(boxel => CreateSnapshot(boxel).ToIndexEntry())
             .OrderBy(entry => entry.Prefix, StringComparer.Ordinal)
             .ToArray();
 
-    public IReadOnlyList<string> DirtyPrefixes
+    public IReadOnlyList<string> GetDirtyPrefixes()
         => dirtyPrefixes.Order(StringComparer.Ordinal).ToArray();
 
     public bool Apply(JournalEventEnvelope journalEvent)
@@ -181,8 +181,12 @@ public sealed class BoxelSurveyStatsState
                 continue;
             }
 
-            firstPrefix ??= part.Prefix;
-            massCode = part.MassCode;
+            if (firstPrefix is null)
+            {
+                firstPrefix = part.Prefix;
+                massCode = part.MassCode;
+            }
+
             boxelId64 ??= part.BoxelId64;
             visited += part.Visited;
             implied += part.ImpliedPopulation;
@@ -236,7 +240,7 @@ public sealed class BoxelSurveyStatsState
             frontierId,
             BoxelSurveyStatsCatalog.CurrentSchemaVersion,
             DateTimeOffset.UtcNow,
-            Index);
+            GetIndex());
 
     public void Reset(BoxelSurveyStatsCatalog? seed = null)
     {
@@ -357,14 +361,15 @@ public sealed class BoxelSurveyStatsState
         var dssComplete = existing?.DssComplete ?? false;
         var dssEfficiency = existing?.DssEfficiencyBonus ?? false;
         var values = BoxelSurveyValueCalculator.Calculate(
-            BoxelPlanetClassifier.ToPlanetClassString(classified),
-            terraformable,
-            mass,
-            wasDiscovered,
-            wasMapped,
-            dssComplete,
-            dssEfficiency,
-            isOdyssey);
+            new BoxelSurveyValueRequest(
+                BoxelPlanetClassifier.ToPlanetClassString(classified),
+                terraformable,
+                mass,
+                wasDiscovered,
+                wasMapped,
+                dssComplete,
+                dssEfficiency,
+                isOdyssey));
         system.Bodies[bodyId.Value] = new WorkingBody
         {
             BodyId = bodyId.Value,
@@ -415,14 +420,15 @@ public sealed class BoxelSurveyStatsState
         if (body.Class != BoxelPlanetClass.Unknown)
         {
             var values = BoxelSurveyValueCalculator.Calculate(
-                BoxelPlanetClassifier.ToPlanetClassString(body.Class),
-                body.Terraformable,
-                body.MassEm,
-                body.WasDiscovered,
-                body.WasMapped,
-                dssComplete: true,
-                efficiency,
-                isOdyssey);
+                new BoxelSurveyValueRequest(
+                    BoxelPlanetClassifier.ToPlanetClassString(body.Class),
+                    body.Terraformable,
+                    body.MassEm,
+                    body.WasDiscovered,
+                    body.WasMapped,
+                    DssComplete: true,
+                    DssEfficiencyBonus: efficiency,
+                    IsOdyssey: isOdyssey));
             body.ScanValue = values.Scan;
             body.CurrentValue = values.Current;
             body.MappedPotentialValue = values.Mapped;
@@ -552,14 +558,15 @@ public sealed class BoxelSurveyStatsState
                 : InferDssEfficiency(source, existing);
             var values = recomputeValues
                 ? BoxelSurveyValueCalculator.Calculate(
-                    BoxelPlanetClassifier.ToPlanetClassString(classified),
-                    source.IsTerraformable,
-                    source.Mass,
-                    source.WasDiscovered,
-                    source.WasMapped,
-                    source.IsDssComplete,
-                    dssEfficiency,
-                    isOdyssey)
+                    new BoxelSurveyValueRequest(
+                        BoxelPlanetClassifier.ToPlanetClassString(classified),
+                        source.IsTerraformable,
+                        source.Mass,
+                        source.WasDiscovered,
+                        source.WasMapped,
+                        source.IsDssComplete,
+                        dssEfficiency,
+                        isOdyssey))
                 : (source.ScanValue, source.CurrentScanValue, source.EstimatedMappedValue);
             snapshotBodies[source.BodyId] = new WorkingBody
             {
@@ -748,59 +755,88 @@ public sealed class BoxelSurveyStatsState
             return boxel.ToIndexSnapshot();
         }
 
-        var systems = boxel.Systems.Values
-            .OrderBy(system => system.N2)
-            .ThenBy(system => system.GeneratedName, StringComparer.Ordinal)
-            .Select(system => system.ToContribution())
-            .ToArray();
+        var systems = new List<BoxelSurveySystemContribution>(boxel.Systems.Count);
         var classes = new Dictionary<BoxelPlanetClass, BoxelSurveyClassCounts>();
         var otherTf = 0;
-        foreach (var system in boxel.Systems.Values)
+        var fssComplete = 0;
+        var navBeacon = 0;
+        var fssBodies = 0;
+        long scanValue = 0;
+        long currentValue = 0;
+        long mappedValue = 0;
+        var maxN2 = 0;
+        foreach (var system in boxel.Systems.Values
+                     .OrderBy(candidate => candidate.N2)
+                     .ThenBy(candidate => candidate.GeneratedName, StringComparer.Ordinal))
         {
-            foreach (var body in system.Bodies.Values)
+            systems.Add(system.ToContribution());
+            if (system.N2 > maxN2)
             {
-                if (body.Class == BoxelPlanetClass.Unknown)
-                {
-                    continue;
-                }
-
-                classes[body.Class] = classes.TryGetValue(body.Class, out var counts)
-                    ? counts.AddBody(body.Terraformable, body.Landable, body.Atmospheric)
-                    : BoxelSurveyClassCounts.Zero.AddBody(
-                        body.Terraformable,
-                        body.Landable,
-                        body.Atmospheric);
-                if (body.Terraformable
-                    && !BoxelPlanetClassifier.ShowsTerraformableColumn(body.Class))
-                {
-                    otherTf++;
-                }
+                maxN2 = system.N2;
             }
+
+            if (system.AllBodiesFound
+                || (TreatNavBeaconAsFullyScanned && system.NavBeaconScanned))
+            {
+                fssComplete++;
+            }
+
+            if (system.NavBeaconScanned)
+            {
+                navBeacon++;
+            }
+
+            fssBodies += system.FssDiscoveryBodyCount;
+            scanValue += system.ScanValue;
+            currentValue += system.CurrentValue;
+            mappedValue += system.MappedPotentialValue;
+            AccumulateClassCounts(system, classes, ref otherTf);
         }
 
-        var fssComplete = boxel.Systems.Values.Count(system =>
-            system.AllBodiesFound
-            || (TreatNavBeaconAsFullyScanned && system.NavBeaconScanned));
         return new BoxelSurveyBoxelSnapshot(
             boxel.Prefix,
             boxel.MassCode,
             boxel.BoxelId64,
             boxel.LastVisited,
             boxel.Systems.Count,
-            boxel.Systems.Count == 0
-                ? 0
-                : boxel.Systems.Values.Max(system => system.N2) + 1,
+            boxel.Systems.Count == 0 ? 0 : maxN2 + 1,
             fssComplete,
-            boxel.Systems.Values.Count(system => system.NavBeaconScanned),
-            boxel.Systems.Values.Sum(system => system.FssDiscoveryBodyCount),
+            navBeacon,
+            fssBodies,
             boxel.MinHeliumPercent,
             boxel.MaxHeliumPercent,
-            boxel.Systems.Values.Sum(system => system.ScanValue),
-            boxel.Systems.Values.Sum(system => system.CurrentValue),
-            boxel.Systems.Values.Sum(system => system.MappedPotentialValue),
+            scanValue,
+            currentValue,
+            mappedValue,
             otherTf,
             classes,
             systems);
+    }
+
+    private static void AccumulateClassCounts(
+        WorkingSystem system,
+        Dictionary<BoxelPlanetClass, BoxelSurveyClassCounts> classes,
+        ref int otherTf)
+    {
+        foreach (var body in system.Bodies.Values)
+        {
+            if (body.Class == BoxelPlanetClass.Unknown)
+            {
+                continue;
+            }
+
+            classes[body.Class] = classes.TryGetValue(body.Class, out var counts)
+                ? counts.AddBody(body.Terraformable, body.Landable, body.Atmospheric)
+                : BoxelSurveyClassCounts.Zero.AddBody(
+                    body.Terraformable,
+                    body.Landable,
+                    body.Atmospheric);
+            if (body.Terraformable
+                && !BoxelPlanetClassifier.ShowsTerraformableColumn(body.Class))
+            {
+                otherTf++;
+            }
+        }
     }
 
     private void Touch(WorkingBoxel boxel)

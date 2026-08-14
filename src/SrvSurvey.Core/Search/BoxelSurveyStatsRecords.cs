@@ -160,56 +160,59 @@ public sealed record BoxelSurveyBoxelSnapshot(
             MappedPotentialValue);
 }
 
+internal sealed record BoxelSurveyValueRequest(
+    string PlanetClass,
+    bool Terraformable,
+    double MassEm,
+    bool WasDiscovered,
+    bool WasMapped,
+    bool DssComplete,
+    bool DssEfficiencyBonus,
+    bool IsOdyssey);
+
 internal static class BoxelSurveyValueCalculator
 {
     public static (int Scan, int Current, int Mapped) Calculate(
-        string planetClass,
-        bool terraformable,
-        double massEm,
-        bool wasDiscovered,
-        bool wasMapped,
-        bool dssComplete,
-        bool dssEfficiencyBonus,
-        bool isOdyssey)
+        BoxelSurveyValueRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        var shared = new ExplorationValueRequest
+        {
+            BodyClass = request.PlanetClass,
+            IsTerraformable = request.Terraformable,
+            Mass = request.MassEm,
+            IsFirstDiscoverer = !request.WasDiscovered,
+            IsFirstMapped = !request.WasMapped,
+            IsOdyssey = request.IsOdyssey,
+        };
         var scan = ExplorationValueCalculator.Calculate(
-            new ExplorationValueRequest
-            {
-                BodyClass = planetClass,
-                IsTerraformable = terraformable,
-                Mass = massEm,
-                IsFirstDiscoverer = !wasDiscovered,
-                IsMapped = false,
-                IsFirstMapped = !wasMapped,
-                IsOdyssey = isOdyssey,
-                WithEfficiencyBonus = false,
-            });
+            CloneValueRequest(shared, isMapped: false, withEfficiencyBonus: false));
         var mapped = ExplorationValueCalculator.Calculate(
-            new ExplorationValueRequest
-            {
-                BodyClass = planetClass,
-                IsTerraformable = terraformable,
-                Mass = massEm,
-                IsFirstDiscoverer = !wasDiscovered,
-                IsMapped = true,
-                IsFirstMapped = !wasMapped,
-                IsOdyssey = isOdyssey,
-                WithEfficiencyBonus = true,
-            });
-        var current = dssComplete
+            CloneValueRequest(shared, isMapped: true, withEfficiencyBonus: true));
+        var current = request.DssComplete
             ? ExplorationValueCalculator.Calculate(
-                new ExplorationValueRequest
-                {
-                    BodyClass = planetClass,
-                    IsTerraformable = terraformable,
-                    Mass = massEm,
-                    IsFirstDiscoverer = !wasDiscovered,
-                    IsMapped = true,
-                    IsFirstMapped = !wasMapped,
-                    IsOdyssey = isOdyssey,
-                    WithEfficiencyBonus = dssEfficiencyBonus,
-                })
+                CloneValueRequest(
+                    shared,
+                    isMapped: true,
+                    withEfficiencyBonus: request.DssEfficiencyBonus))
             : scan;
         return (scan, current, mapped);
     }
+
+    private static ExplorationValueRequest CloneValueRequest(
+        ExplorationValueRequest shared,
+        bool isMapped,
+        bool withEfficiencyBonus)
+        => new()
+        {
+            BodyClass = shared.BodyClass,
+            IsTerraformable = shared.IsTerraformable,
+            Mass = shared.Mass,
+            IsFirstDiscoverer = shared.IsFirstDiscoverer,
+            IsMapped = isMapped,
+            IsFirstMapped = shared.IsFirstMapped,
+            IsOdyssey = shared.IsOdyssey,
+            WithEfficiencyBonus = withEfficiencyBonus,
+            IsFleetCarrierSale = shared.IsFleetCarrierSale,
+        };
 }

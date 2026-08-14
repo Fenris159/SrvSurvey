@@ -146,7 +146,17 @@ public sealed partial class BoxelView : UserControl
         var library = new BoxelSearchLibraryViewModel(viewModel.BoxelSearch);
         library.StatisticsRequested += async (_, request) =>
         {
-            await OpenStatisticsAsync(viewModel, owner, request);
+            try
+            {
+                await OpenStatisticsAsync(viewModel, owner, request);
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or InvalidDataException)
+            {
+                ReportStatsFailure(exception);
+            }
         };
         boxelSearchLibraryWindow = new BoxelSearchLibraryWindow
         {
@@ -167,38 +177,38 @@ public sealed partial class BoxelView : UserControl
             return;
         }
 
-        if (boxelStatsWindow is not null)
+        try
         {
-            if (boxelStatsWindow.DataContext is BoxelSurveyStatsViewModel existing)
+            if (boxelStatsWindow is not null)
             {
-                var prefix = viewModel.BoxelSurveyStats.Current?.Prefix;
-                if (!string.IsNullOrWhiteSpace(prefix))
+                if (boxelStatsWindow.DataContext is BoxelSurveyStatsViewModel existing)
                 {
-                    await existing.OpenPrefixAsync(prefix);
+                    var prefix = viewModel.BoxelSurveyStats.Current?.Prefix;
+                    if (!string.IsNullOrWhiteSpace(prefix))
+                    {
+                        await existing.OpenPrefixAsync(prefix);
+                    }
+                    else
+                    {
+                        await existing.InitializeAsync();
+                    }
                 }
-                else
-                {
-                    await existing.InitializeAsync();
-                }
+
+                boxelStatsWindow.Activate();
+                return;
             }
 
-            boxelStatsWindow.Activate();
-            return;
+            var (stats, window) = CreateStatsWindow(viewModel, owner);
+            await stats.InitializeAsync();
+            window.Show(owner);
         }
-
-        var stats = new BoxelSurveyStatsViewModel(
-            viewModel.BoxelSurveyStats,
-            new BoxelSurveyStatsSettingsStore(viewModel.AppDataPaths.UiSettingsPath),
-            viewModel.BoxelSearch,
-            viewModel.JournalFolderPath,
-            () => viewModel.CurrentJournalPath);
-        await stats.InitializeAsync();
-        boxelStatsWindow = new BoxelStatsWindow
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
         {
-            DataContext = stats,
-        };
-        boxelStatsWindow.Closed += (_, _) => boxelStatsWindow = null;
-        boxelStatsWindow.Show(owner);
+            ReportStatsFailure(exception);
+        }
     }
 
     private async Task OpenStatisticsAsync(
@@ -213,19 +223,44 @@ public sealed partial class BoxelView : UserControl
             return;
         }
 
+        var (stats, window) = CreateStatsWindow(viewModel, owner);
+        await stats.FocusPrefixesAsync(request.Prefixes, request.LowMassCode);
+        window.Show(owner);
+    }
+
+    private (BoxelSurveyStatsViewModel Stats, BoxelStatsWindow Window) CreateStatsWindow(
+        MainWindowViewModel viewModel,
+        Window owner)
+    {
+        ArgumentNullException.ThrowIfNull(owner);
         var stats = new BoxelSurveyStatsViewModel(
             viewModel.BoxelSurveyStats,
             new BoxelSurveyStatsSettingsStore(viewModel.AppDataPaths.UiSettingsPath),
             viewModel.BoxelSearch,
             viewModel.JournalFolderPath,
             () => viewModel.CurrentJournalPath);
-        await stats.FocusPrefixesAsync(request.Prefixes, request.LowMassCode);
-        boxelStatsWindow = new BoxelStatsWindow
+        var window = new BoxelStatsWindow
         {
             DataContext = stats,
         };
-        boxelStatsWindow.Closed += (_, _) => boxelStatsWindow = null;
-        boxelStatsWindow.Show(owner);
+        window.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(boxelStatsWindow, window))
+            {
+                boxelStatsWindow = null;
+            }
+        };
+        boxelStatsWindow = window;
+        return (stats, window);
+    }
+
+    private void ReportStatsFailure(Exception exception)
+    {
+        if (boxelStatsWindow?.DataContext is BoxelSurveyStatsViewModel stats)
+        {
+            stats.ReportStatus(
+                "Could not open boxel statistics: " + exception.Message);
+        }
     }
 
     private async void VoxStellar_Click(
