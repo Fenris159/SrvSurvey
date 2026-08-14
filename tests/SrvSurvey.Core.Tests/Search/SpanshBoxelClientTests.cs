@@ -186,7 +186,9 @@ public sealed class SpanshBoxelClientTests
                 ? string.Empty
                 : await request.Content.ReadAsStringAsync(cancellationToken);
             Requests.Add(new CapturedRequest(request.RequestUri!, content));
-            var response = responses.Dequeue();
+            var response = responses.Count > 1
+                ? responses.Dequeue()
+                : responses.Peek();
             return new HttpResponseMessage(response.StatusCode)
             {
                 Content = new StringContent(

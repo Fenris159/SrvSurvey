@@ -1246,9 +1246,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public bool HasOverviewSystemAddress => OverviewSystemAddress is > 0;
 
-    public string OverviewSystemAddressText => OverviewSystemAddress is > 0
-        ? $"id64 {OverviewSystemAddress.Value}"
-        : string.Empty;
+    public string OverviewSystemAddressText => SystemAddressFormatter.Format(
+        OverviewSystemAddress);
 
     public string BodyName
     {

@@ -167,9 +167,8 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
 
     public long? ReferenceSystemAddress => referenceSystemAddress;
 
-    public string ReferenceSystemAddressText => referenceSystemAddress is > 0
-        ? $"id64 {referenceSystemAddress.Value}"
-        : string.Empty;
+    public string ReferenceSystemAddressText => SystemAddressFormatter.Format(
+        referenceSystemAddress);
 
     public string ReferenceSummary => referencePosition is null
         ? "Waiting for current-system coordinates"
@@ -658,9 +657,24 @@ public sealed class NearestSystemRowViewModel
 
     public bool HasSystemAddress => SystemAddress is > 0;
 
-    public string SystemAddressText => SystemAddress is > 0
-        ? $"id64 {SystemAddress.Value}"
-        : string.Empty;
+    public string SystemAddressText => SystemAddressFormatter.Format(SystemAddress);
 
     public string Source { get; }
+}
+
+internal static class SystemAddressFormatter
+{
+    public static string Format(long? systemAddress)
+    {
+        var value = FormatValue(systemAddress);
+        return value.Length == 0 ? string.Empty : "id64 " + value;
+    }
+
+    public static string FormatValue(long? systemAddress)
+    {
+        return systemAddress is > 0
+            ? systemAddress.Value.ToString(
+                System.Globalization.CultureInfo.InvariantCulture)
+            : string.Empty;
+    }
 }

@@ -150,7 +150,7 @@ public sealed class SystemIdentityMarkupTests
     }
 
     [Fact]
-    public void InteractiveOverlaysCopySystemIdentityWithoutChangingLayoutControls()
+    public void OverlaysKeepSystemIdentityDisplayOnly()
     {
         var documents = new[]
         {
@@ -160,10 +160,9 @@ public sealed class SystemIdentityMarkupTests
         };
 
         Assert.All(documents, document =>
-            Assert.Contains(
+            Assert.DoesNotContain(
                 document.Descendants(),
-                element => element.Name.LocalName == "TextBlock"
-                    && HasCopyBehavior(element)));
+                HasCopyBehavior));
     }
 
     private static void AssertEntry(XDocument document, string textBinding)

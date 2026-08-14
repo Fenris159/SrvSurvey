@@ -11,6 +11,8 @@ namespace SrvSurvey.Desktop.Views;
 
 public sealed partial class BoxelView : UserControl
 {
+    private BoxelSearchLibraryWindow? boxelSearchLibraryWindow;
+
     public BoxelView()
     {
         InitializeComponent();
@@ -97,21 +99,28 @@ public sealed partial class BoxelView : UserControl
             return;
         }
 
-        var result = await viewModel.BoxelSearch.SaveProgressAsync();
-        if (result != SaveBoxelProgressResult.RequiresDetails
-            || TopLevel.GetTopLevel(this) is not Window owner)
+        try
         {
-            return;
-        }
+            var result = await viewModel.BoxelSearch.SaveProgressAsync();
+            if (result != SaveBoxelProgressResult.RequiresDetails
+                || TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return;
+            }
 
-        var dialog = new SaveBoxelSearchDialog(
-            viewModel.BoxelSearch.SuggestedSaveName);
-        var details = await dialog.ShowDialog<BoxelSearchSaveDialogResult?>(owner);
-        if (details is not null)
+            var dialog = new SaveBoxelSearchDialog(
+                viewModel.BoxelSearch.SuggestedSaveName);
+            var details = await dialog.ShowDialog<BoxelSearchSaveDialogResult?>(owner);
+            if (details is not null)
+            {
+                await viewModel.BoxelSearch.SaveProgressAsync(
+                    details.Name,
+                    details.Notes);
+            }
+        }
+        catch (Exception exception)
         {
-            await viewModel.BoxelSearch.SaveProgressAsync(
-                details.Name,
-                details.Notes);
+            viewModel.BoxelSearch.ReportSaveProgressFailure(exception.Message);
         }
     }
 
@@ -125,11 +134,19 @@ public sealed partial class BoxelView : UserControl
             return;
         }
 
-        var window = new BoxelSearchLibraryWindow
+        if (boxelSearchLibraryWindow is not null)
+        {
+            boxelSearchLibraryWindow.Activate();
+            return;
+        }
+
+        boxelSearchLibraryWindow = new BoxelSearchLibraryWindow
         {
             DataContext = new BoxelSearchLibraryViewModel(viewModel.BoxelSearch)
         };
-        window.Show(owner);
+        boxelSearchLibraryWindow.Closed += (_, _) =>
+            boxelSearchLibraryWindow = null;
+        boxelSearchLibraryWindow.Show(owner);
     }
 
     private async void VoxStellar_Click(

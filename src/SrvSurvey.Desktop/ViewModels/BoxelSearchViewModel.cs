@@ -451,9 +451,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public long? CurrentSystemAddress => currentSystemAddress;
 
-    public string CurrentSystemAddressText => currentSystemAddress is > 0
-        ? $"id64 {currentSystemAddress.Value}"
-        : string.Empty;
+    public string CurrentSystemAddressText => SystemAddressFormatter.Format(
+        currentSystemAddress);
 
     public IReadOnlyList<BoxelSystemRowViewModel> Systems
     {
@@ -692,8 +691,14 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         auditCancellation?.Cancel();
         frontierId = null;
         state.Reset();
+        navigationOptions.Clear();
         StatusMessage = message;
         UpdateDisplay();
+    }
+
+    public void ReportSaveProgressFailure(string message)
+    {
+        StatusMessage = "The boxel search could not be saved: " + message;
     }
 
     public void UpdateCurrentSystem(
@@ -1003,6 +1008,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private async Task ApplySnapshotAsync(BoxelSearchSnapshot snapshot)
     {
         state.Reset(snapshot);
+        navigationOptions.Clear();
         ConfirmLargeAudit = false;
         AuditProcessed = 0;
         AuditProgress = "No full-area audit has run in this session.";
@@ -1010,7 +1016,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         try
         {
             DismissSystemSuggestions();
-            TopBoxelText = string.Empty;
+            selectedSystemName = snapshot.TopBoxel?.Name;
+            selectedSystemAddress = snapshot.TopBoxel?.SystemAddress > 0
+                ? snapshot.TopBoxel.SystemAddress
+                : 0;
+            TopBoxelText = selectedSystemName ?? string.Empty;
             LowMassCode = snapshot.LowMassCode.ToString();
             StartedOn = snapshot.StartedOn == DateTimeOffset.MinValue
                 ? new DateTimeOffset(DateTime.Today)
@@ -1926,6 +1936,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         BoxelAddress topBoxel,
         BoxelAddress current)
     {
+        if (!topBoxel.Contains(current))
+        {
+            return [topBoxel];
+        }
+
         var path = new List<BoxelAddress> { current };
         var cursor = current;
         while (!string.Equals(
@@ -1933,8 +1948,17 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             topBoxel.Prefix,
             StringComparison.Ordinal))
         {
-            cursor = cursor.Parent;
-            path.Add(cursor);
+            var parent = cursor.Parent;
+            if (string.Equals(
+                parent.Prefix,
+                cursor.Prefix,
+                StringComparison.Ordinal))
+            {
+                break;
+            }
+
+            cursor = parent;
+            path.Add(parent);
         }
 
         path.Reverse();
@@ -1998,11 +2022,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         var query = value?.Trim() ?? string.Empty;
         if (systemNameSuggestionClient is null
             || query.Length < 3
-            || (selectedSystemAddress > 0
-                && string.Equals(
-                    query,
-                    selectedSystemName,
-                    StringComparison.OrdinalIgnoreCase)))
+            || string.Equals(
+                query,
+                selectedSystemName,
+                StringComparison.OrdinalIgnoreCase))
         {
             SystemNameSuggestions = [];
             SelectedSystemSuggestionIndex = -1;
@@ -2025,7 +2048,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         try
         {
             IsSearchingSystemSuggestions = true;
-            SystemSuggestionStatus = "Searching EDSM for systems...";
+            SystemSuggestionStatus = "Searching for system suggestions…";
             await Task.Delay(systemSuggestionDelay, cancellation.Token);
             var suggestions = await systemNameSuggestionClient!.SearchAsync(
                 query,

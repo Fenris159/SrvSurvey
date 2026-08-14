@@ -84,9 +84,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
     public bool HasSystemAddress => SystemAddress is > 0;
 
-    public string SystemAddressText => SystemAddress is > 0
-        ? $"id64 {SystemAddress.Value}"
-        : string.Empty;
+    public string SystemAddressText => SystemAddressFormatter.Format(SystemAddress);
 
     public IReadOnlyList<BiologyCodexBodyViewModel> Bodies
     {

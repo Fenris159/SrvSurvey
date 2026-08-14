@@ -2665,7 +2665,8 @@ public sealed class ColonizationProjectRowViewModel
 
     public string SystemName => Project.SystemName;
 
-    public string SystemAddressText => $"id64 {Project.SystemAddress}";
+    public string SystemAddressText => SystemAddressFormatter.Format(
+        Project.SystemAddress);
 
     public string TypeDescription { get; }
 

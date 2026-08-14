@@ -31,9 +31,13 @@ public sealed class GuardianViewMarkupTests
             2,
             ramTahOptions.Elements().Count(element =>
                 element.Name.LocalName == "CheckBox"));
+        var originSection = layout.Elements().Single(element =>
+            element.Descendants().Contains(entry));
         Assert.DoesNotContain(
-            entry.Parent!.Descendants(),
+            entry.Ancestors().TakeWhile(ancestor => ancestor != layout),
             element => element.Name.LocalName == "Grid"
+                && (element == originSection
+                    || originSection.Descendants().Contains(element))
                 && element.Descendants().Contains(entry)
                 && element.Descendants().Any(candidate =>
                     candidate.Name.LocalName == "Button"));

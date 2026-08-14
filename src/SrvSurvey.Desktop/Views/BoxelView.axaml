@@ -60,11 +60,12 @@
               </StackPanel>
             </Button>
             <Button Classes="secondary"
-                    Width="46"
-                    Height="46"
-                    Padding="0"
-                    CornerRadius="23"
-                    Click="VoxStellarInfo_Click"
+                     Width="46"
+                     Height="46"
+                     Padding="0"
+                     CornerRadius="23"
+                    AutomationProperties.Name="VoxStellar data use and licensing"
+                     Click="VoxStellarInfo_Click"
                     ToolTip.Tip="VoxStellar data use and licensing">
               <TextBlock FontSize="25"
                          FontWeight="SemiBold"

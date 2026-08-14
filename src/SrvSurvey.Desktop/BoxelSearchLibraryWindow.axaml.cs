@@ -1,5 +1,7 @@
+using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
@@ -30,6 +32,7 @@ public sealed partial class BoxelSearchLibraryWindow : Window
         if (connectedViewModel is not null)
         {
             connectedViewModel.SearchOpened += OnSearchOpened;
+            connectedViewModel.PropertyChanged += OnViewModelPropertyChanged;
         }
     }
 
@@ -38,8 +41,34 @@ public sealed partial class BoxelSearchLibraryWindow : Window
         if (connectedViewModel is not null)
         {
             connectedViewModel.SearchOpened -= OnSearchOpened;
+            connectedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
             connectedViewModel = null;
         }
+    }
+
+    private void OnViewModelPropertyChanged(
+        object? sender,
+        PropertyChangedEventArgs eventArgs)
+    {
+        if (eventArgs.PropertyName != nameof(BoxelSearchLibraryViewModel.IsDialogVisible)
+            || sender is not BoxelSearchLibraryViewModel viewModel
+            || !viewModel.IsDialogVisible)
+        {
+            return;
+        }
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (viewModel.IsRenameVisible)
+            {
+                RenameTextBox.Focus();
+                RenameTextBox.SelectAll();
+            }
+            else if (viewModel.IsNotesVisible)
+            {
+                NotesTextBox.Focus();
+            }
+        });
     }
 
     private void OnSearchOpened(object? sender, EventArgs eventArgs)

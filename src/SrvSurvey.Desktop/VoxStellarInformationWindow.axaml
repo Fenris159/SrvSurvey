@@ -8,7 +8,7 @@
         CanResize="True"
         WindowStartupLocation="CenterOwner"
         Title="VoxStellar data use and licensing">
-  <Grid RowDefinitions="Auto,*,Auto" Margin="26">
+  <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="26">
     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
       <Image Width="52"
              Height="52"
@@ -70,7 +70,14 @@
       </StackPanel>
     </ScrollViewer>
 
-    <Grid Grid.Row="2"
+    <TextBlock x:Name="LinkFailureMessage"
+               Grid.Row="2"
+               Margin="0,16,0,0"
+               Foreground="{DynamicResource RavenWarningBrush}"
+               IsVisible="False"
+               TextWrapping="Wrap" />
+
+    <Grid Grid.Row="3"
           Margin="0,20,0,0"
           ColumnDefinitions="*,Auto"
           ColumnSpacing="12">

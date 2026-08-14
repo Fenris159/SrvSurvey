@@ -34,10 +34,26 @@ public sealed partial class VoxStellarInformationWindow : Window
 
     private async Task LaunchAsync(Uri uri)
     {
-        var launcher = Launcher
-            ?? throw new InvalidOperationException(
-                "The desktop link launcher is not available.");
-        await launcher.LaunchUriAsync(uri);
+        try
+        {
+            var launcher = Launcher
+                ?? throw new InvalidOperationException(
+                    "The desktop link launcher is not available.");
+            if (!await launcher.LaunchUriAsync(uri))
+            {
+                throw new InvalidOperationException(
+                    "The default browser declined the request.");
+            }
+
+            LinkFailureMessage.IsVisible = false;
+            LinkFailureMessage.Text = string.Empty;
+        }
+        catch (Exception exception)
+        {
+            LinkFailureMessage.Text = "The link could not be opened: "
+                + exception.Message;
+            LinkFailureMessage.IsVisible = true;
+        }
     }
 
     private void Close_Click(object? sender, RoutedEventArgs eventArgs)

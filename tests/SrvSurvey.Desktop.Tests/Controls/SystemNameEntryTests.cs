@@ -9,6 +9,15 @@ namespace SrvSurvey.Desktop.Tests.Controls;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class SystemNameEntryTests
 {
+    [Fact]
+    public void ConstructorRejectsInvalidDependenciesBeforeInitialization()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            new SystemNameEntry(null!, TimeSpan.Zero));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new SystemNameEntry(new StubClient([]), TimeSpan.FromMilliseconds(-1)));
+    }
+
     [AvaloniaFact]
     public async Task SelectionReplacesId64WithResolvedNameAndRetainsAddress()
     {

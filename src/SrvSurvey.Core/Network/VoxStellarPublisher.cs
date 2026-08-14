@@ -205,11 +205,6 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             await foreach (var upload in uploads.Reader.ReadAllAsync(
                                lifetimeCancellation.Token))
             {
-                if (!MaySend(upload.ConsentGeneration))
-                {
-                    continue;
-                }
-
                 try
                 {
                     await SendAsync(upload, lifetimeCancellation.Token);
@@ -234,16 +229,6 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         }
     }
 
-    private bool MaySend(long generation)
-    {
-        lock (sync)
-        {
-            return !disposed
-                && enabled
-                && consentGeneration == generation;
-        }
-    }
-
     private async Task SendAsync(
         QueuedUpload upload,
         CancellationToken cancellationToken)
@@ -262,10 +247,23 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         request.Headers.ConnectionClose = true;
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
 
-        using var response = await client.SendAsync(
-            request,
-            HttpCompletionOption.ResponseHeadersRead,
-            cancellationToken);
+        Task<HttpResponseMessage> sendTask;
+        lock (sync)
+        {
+            if (disposed
+                || !enabled
+                || consentGeneration != upload.ConsentGeneration)
+            {
+                return;
+            }
+
+            sendTask = client.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+        }
+
+        using var response = await sendTask;
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
             WriteLog($"VoxStellar accepted {upload.EventName}.");

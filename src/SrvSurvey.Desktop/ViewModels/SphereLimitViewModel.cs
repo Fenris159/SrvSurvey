@@ -143,9 +143,8 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     public long? CurrentSystemAddress => currentSystemAddress;
 
-    public string CurrentSystemAddressText => currentSystemAddress is > 0
-        ? $"id64 {currentSystemAddress.Value}"
-        : string.Empty;
+    public string CurrentSystemAddressText => SystemAddressFormatter.Format(
+        currentSystemAddress);
 
     public string CenterSystemName => selectedCenterSystem?.Name
         ?? state.CenterSystemName
@@ -157,9 +156,8 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         ? selectedCenterSystem.SystemAddress
         : null;
 
-    public string CenterSystemAddressText => selectedCenterSystem?.SystemAddress is > 0
-        ? $"id64 {selectedCenterSystem.SystemAddress}"
-        : string.Empty;
+    public string CenterSystemAddressText => SystemAddressFormatter.Format(
+        selectedCenterSystem?.SystemAddress);
 
     public string CenterPosition
     {

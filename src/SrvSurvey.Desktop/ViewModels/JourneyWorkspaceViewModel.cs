@@ -275,9 +275,8 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public string SelectedSystemAddress => SelectedSystem?.Address ?? string.Empty;
 
-    public string SelectedSystemAddressText => SelectedSystem is null
-        ? string.Empty
-        : $"id64 {SelectedSystem.Address}";
+    public string SelectedSystemAddressText => SystemAddressFormatter.Format(
+        SelectedSystem?.Visit.StarSystem.SystemAddress);
 
     public string SelectedSystemNotes
     {

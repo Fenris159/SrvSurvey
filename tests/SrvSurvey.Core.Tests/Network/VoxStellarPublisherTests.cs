@@ -122,6 +122,48 @@ public sealed class VoxStellarPublisherTests
     }
 
     [Fact]
+    public async Task DisablingConsentWaitsUntilAuthorizedTransportHasStarted()
+    {
+        var handler = new TransportStartBlockingHandler();
+        using var client = new HttpClient(handler);
+        using var publisher = new VoxStellarPublisher(
+            "1.0.0",
+            "test-key",
+            client);
+        publisher.SetEnabled(true);
+
+        await publisher.ApplyAsync(new VoxStellarApplyRequest
+        {
+            JournalEvents = [Parse("""{"event":"Scan","BodyName":"Test A 1"}""")],
+            CommanderName = "Test Cmdr",
+            Enabled = true,
+            AllowPublishing = true,
+        });
+        await handler.TransportStartEntered.Task.WaitAsync(
+            TimeSpan.FromSeconds(2));
+
+        var disableStarted = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var disableTask = Task.Run(() =>
+        {
+            disableStarted.TrySetResult();
+            publisher.SetEnabled(false);
+        });
+        try
+        {
+            await disableStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+            await Task.Delay(50);
+            Assert.False(disableTask.IsCompleted);
+        }
+        finally
+        {
+            handler.AllowTransportStart.Set();
+        }
+
+        await disableTask.WaitAsync(TimeSpan.FromSeconds(2));
+    }
+
+    [Fact]
     public async Task MissingBuildKeyReportsConfigurationWithoutSending()
     {
         var handler = new RecordingHandler();
@@ -210,6 +252,23 @@ public sealed class VoxStellarPublisherTests
             FirstRequestStarted.TrySetResult();
             await ReleaseFirstRequest.Task.WaitAsync(cancellationToken);
             return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+    }
+
+    private sealed class TransportStartBlockingHandler : HttpMessageHandler
+    {
+        public TaskCompletionSource TransportStartEntered { get; } = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public ManualResetEventSlim AllowTransportStart { get; } = new(false);
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            TransportStartEntered.TrySetResult();
+            AllowTransportStart.Wait(cancellationToken);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
         }
     }
 }

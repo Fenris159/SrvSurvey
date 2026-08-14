@@ -402,6 +402,18 @@ public sealed class BoxelSearchViewModelTests : IDisposable
 
         Assert.Equal(rootChildren[3].Label, viewModel.CurrentHierarchyBoxel?.Label);
         Assert.Equal("4 of 8 at this level", viewModel.SiblingPosition);
+
+        viewModel.SetProfileError("Profile unavailable.");
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq RS-U d2-0";
+        viewModel.LowMassCode = "b";
+        await viewModel.ActivateAsync();
+
+        Assert.NotSame(root, viewModel.CurrentHierarchyBoxel);
     }
 
     [Fact]
@@ -578,7 +590,8 @@ public sealed class BoxelSearchViewModelTests : IDisposable
                 """{"timestamp":"2026-07-24T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-1","SystemAddress":101,"StarPos":[1,2,3]}"""),
         ]);
         var saved = await profileStore.LoadAsync("F123", true);
-        var restarted = CreateViewModel(profileStore, resolver);
+        var suggestions = new CountingSuggestionClient();
+        var restarted = CreateViewModel(profileStore, resolver, suggestions);
 
         await restarted.LoadProfileAsync(
             "F123",
@@ -586,9 +599,10 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             true,
             Assert.IsType<BoxelSearchSnapshot>(saved.Data?.BoxelSearch));
 
-        Assert.Equal(string.Empty, restarted.TopBoxelText);
+        Assert.Equal("Praea Euq IL-P c5-0", restarted.TopBoxelText);
         Assert.False(restarted.HasSystemNameSuggestions);
         Assert.Equal(string.Empty, restarted.SystemSuggestionStatus);
+        Assert.Equal(0, suggestions.CallCount);
         Assert.False(restarted.Systems[0].IsComplete);
         Assert.True(restarted.Systems[1].IsComplete);
     }
@@ -603,13 +617,16 @@ public sealed class BoxelSearchViewModelTests : IDisposable
 
     private BoxelSearchViewModel CreateViewModel(
         CommanderProfileStore store,
-        IBoxelSystemResolver resolver)
+        IBoxelSystemResolver resolver,
+        ISystemNameSuggestionClient? suggestionClient = null)
     {
         return new BoxelSearchViewModel(
             store,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
-            resolver);
+            resolver,
+            systemNameSuggestionClient: suggestionClient,
+            systemSuggestionDelay: TimeSpan.Zero);
     }
 
     private static BoxelSystemObservation Observation(string name, long address)
@@ -628,6 +645,19 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
             error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
+    }
+
+    private sealed class CountingSuggestionClient : ISystemNameSuggestionClient
+    {
+        public int CallCount { get; private set; }
+
+        public Task<IReadOnlyList<SystemNameSuggestion>> SearchAsync(
+            string query,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return Task.FromResult<IReadOnlyList<SystemNameSuggestion>>([]);
+        }
     }
 
     private static async Task WaitUntilAsync(Func<bool> condition)

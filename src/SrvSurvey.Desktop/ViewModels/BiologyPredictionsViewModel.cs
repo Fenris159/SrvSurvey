@@ -119,9 +119,7 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
 
     public bool HasSystemAddress => SystemAddress is > 0;
 
-    public string SystemAddressText => SystemAddress is > 0
-        ? $"id64 {SystemAddress.Value}"
-        : string.Empty;
+    public string SystemAddressText => SystemAddressFormatter.Format(SystemAddress);
 
     public string ScanProgress
     {

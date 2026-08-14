@@ -74,7 +74,7 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
     public ObservableCollection<BoxelSearchLibraryItemViewModel> Searches { get; } = [];
 
     public BoxelSearchLibraryItemViewModel? SelectedSearch =>
-        Searches.SingleOrDefault(search => search.IsSelected);
+        Searches.FirstOrDefault(search => search.IsSelected);
 
     public bool HasSearches => Searches.Count > 0;
 

@@ -158,6 +158,13 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("EDIT", values);
         Assert.Contains("{Binding IsSelected, Mode=TwoWay}", values);
         Assert.DoesNotContain("Select all", values);
+        Assert.Contains("Delete selected saved search", values);
+        Assert.Contains("Add or remove saved search favorite", values);
+        Assert.Contains("Rename saved search", values);
+        Assert.Contains("Escape", values);
+        Assert.Contains("{Binding !IsDialogVisible}", values);
+        Assert.Contains("RenameTextBox", values);
+        Assert.Contains("NotesTextBox", values);
     }
 
     [Fact]

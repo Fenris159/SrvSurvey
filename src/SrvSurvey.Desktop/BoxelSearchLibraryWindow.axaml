@@ -14,11 +14,15 @@
         MinHeight="560"
         WindowStartupLocation="CenterOwner"
         Title="Saved Boxel Searches">
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Escape" Command="{Binding CancelDialogCommand}" />
+  </Window.KeyBindings>
   <Grid RowDefinitions="Auto,*,Auto">
     <Border Background="{DynamicResource RavenSidebarBrush}"
             BorderBrush="{DynamicResource RavenBorderBrush}"
             BorderThickness="0,0,0,1"
-            Padding="24,18">
+            Padding="24,18"
+            IsEnabled="{Binding !IsDialogVisible}">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
         <StackPanel Spacing="3">
           <TextBlock Classes="eyebrow" Text="BOXEL" />
@@ -34,7 +38,11 @@
       </Grid>
     </Border>
 
-    <Border Grid.Row="1" Margin="20" Classes="card" Padding="0">
+    <Border Grid.Row="1"
+            Margin="20"
+            Classes="card"
+            Padding="0"
+            IsEnabled="{Binding !IsDialogVisible}">
       <Grid RowDefinitions="Auto,Auto,*">
         <Grid Margin="18" ColumnDefinitions="*,Auto" ColumnSpacing="14">
           <StackPanel Orientation="Horizontal" Spacing="8">
@@ -44,6 +52,7 @@
             <Button Classes="secondary compact-danger"
                     Width="44"
                     Height="38"
+                    AutomationProperties.Name="Delete selected saved search"
                     Command="{Binding RequestDeleteCommand}"
                     ToolTip.Tip="Delete selected saved search">
               <Path Width="17"
@@ -160,6 +169,7 @@
                               Classes="favorite-star"
                               Width="42"
                               Height="42"
+                              AutomationProperties.Name="Add or remove saved search favorite"
                               Command="{Binding ToggleFavoriteCommand}"
                               ToolTip.Tip="Add or remove favorite">
                         <TextBlock FontSize="31" Text="{Binding FavoriteGlyph}" />
@@ -173,6 +183,7 @@
                                 Width="28"
                                 Height="28"
                                 Padding="5"
+                                AutomationProperties.Name="Rename saved search"
                                 Command="{Binding RenameCommand}"
                                 ToolTip.Tip="Rename saved search">
                           <Path Data="M 3,15 L 4,11 L 12,3 L 15,6 L 7,14 Z M 11,4 L 14,7"
@@ -217,6 +228,7 @@
     <TextBlock Grid.Row="2"
                Margin="20,0,20,16"
                Classes="muted"
+               IsEnabled="{Binding !IsDialogVisible}"
                Text="{Binding StatusMessage}"
                TextWrapping="Wrap" />
 
@@ -232,7 +244,9 @@
                 IsVisible="{Binding IsRenameVisible}">
           <StackPanel Spacing="14">
             <TextBlock Classes="page-title" FontSize="21" Text="Rename saved search" />
-            <TextBox Text="{Binding RenameDraft, Mode=TwoWay}" MaxLength="120" />
+            <TextBox x:Name="RenameTextBox"
+                     Text="{Binding RenameDraft, Mode=TwoWay}"
+                     MaxLength="120" />
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="10">
               <Button Classes="secondary" Command="{Binding CancelDialogCommand}" Content="Cancel" />
               <Button Classes="primary" Command="{Binding SaveRenameCommand}" Content="Save name" />
@@ -249,7 +263,8 @@
           <StackPanel Spacing="14">
             <TextBlock Classes="page-title" FontSize="21" Text="Edit notes" />
             <TextBlock Classes="muted" Text="{Binding EditingSearchName}" />
-            <TextBox Height="190"
+            <TextBox x:Name="NotesTextBox"
+                     Height="190"
                      AcceptsReturn="True"
                      TextWrapping="Wrap"
                      Text="{Binding NotesDraft, Mode=TwoWay}" />

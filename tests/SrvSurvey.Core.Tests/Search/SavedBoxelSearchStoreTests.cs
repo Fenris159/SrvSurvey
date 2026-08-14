@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Tests.Search;
@@ -105,6 +106,31 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
         var entry = Assert.Single(await store.ListAsync("F123"));
 
         Assert.Equal("Valid", entry.Name);
+    }
+
+    [Fact]
+    public async Task LoadFallsBackToTopBoxelWhenCurrentIsOutsideSearch()
+    {
+        var store = new SavedBoxelSearchStore(temporaryDirectory);
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var created = await store.CreateAsync(
+            "F123",
+            "Corrupted current",
+            null,
+            new BoxelSearchSnapshot
+            {
+                TopBoxel = top,
+                Current = top,
+                CurrentCount = 1,
+            });
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(created.FilePath))!
+            .AsObject();
+        root["search"]!["currentBoxel"] = "Sol";
+        await File.WriteAllTextAsync(created.FilePath, root.ToJsonString());
+
+        var loaded = await store.LoadAsync("F123", created.FileName);
+
+        Assert.Equal(top.Prefix, loaded.Search.Current?.Prefix);
     }
 
     public void Dispose()

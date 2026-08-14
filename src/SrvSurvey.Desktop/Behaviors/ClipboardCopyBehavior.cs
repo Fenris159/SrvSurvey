@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -80,7 +81,8 @@ public static class ClipboardCopyBehavior
 
     private static async Task CopyTextAsync(Control control)
     {
-        if (string.IsNullOrWhiteSpace(GetText(control)?.ToString())
+        var text = GetText(control)?.ToString()?.Trim();
+        if (string.IsNullOrWhiteSpace(text)
             || TopLevel.GetTopLevel(control)?.Clipboard is not { } clipboard)
         {
             return;
@@ -88,11 +90,13 @@ public static class ClipboardCopyBehavior
 
         try
         {
-            await clipboard.SetTextAsync(GetText(control)!.ToString()!.Trim());
+            await clipboard.SetTextAsync(text);
         }
         catch (Exception exception) when (
             exception is InvalidOperationException
-                or NotSupportedException)
+                or NotSupportedException
+                or COMException
+                or UnauthorizedAccessException)
         {
             // Clipboard availability is platform-owned; copying is best effort.
         }

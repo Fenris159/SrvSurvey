@@ -404,9 +404,8 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         ? NextHop.SystemAddress
         : null;
 
-    public string NextHopSystemAddressText => NextHop?.SystemAddress is > 0
-        ? $"id64 {NextHop.SystemAddress.Value}"
-        : string.Empty;
+    public string NextHopSystemAddressText => SystemAddressFormatter.Format(
+        NextHop?.SystemAddress);
 
     public string ProgressSummary
     {
@@ -2318,9 +2317,8 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
 
     public bool HasSystemAddress => Hop.SystemAddress is > 0;
 
-    public string SystemAddressText => Hop.SystemAddress is > 0
-        ? $"id64 {Hop.SystemAddress.Value}"
-        : string.Empty;
+    public string SystemAddressText => SystemAddressFormatter.Format(
+        Hop.SystemAddress);
 
     public string Distance => distance;
 

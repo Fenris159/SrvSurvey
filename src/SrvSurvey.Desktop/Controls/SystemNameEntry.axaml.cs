@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Controls;
 
@@ -73,11 +74,12 @@ public sealed partial class SystemNameEntry : UserControl
         ISystemNameSuggestionClient suggestionClient,
         TimeSpan suggestionDelay)
     {
-        this.suggestionClient = suggestionClient;
-        this.suggestionDelay = suggestionDelay;
+        ArgumentNullException.ThrowIfNull(suggestionClient);
         ArgumentOutOfRangeException.ThrowIfLessThan(
             suggestionDelay,
             TimeSpan.Zero);
+        this.suggestionClient = suggestionClient;
+        this.suggestionDelay = suggestionDelay;
         InitializeComponent();
     }
 
@@ -195,7 +197,7 @@ public sealed partial class SystemNameEntry : UserControl
     {
         try
         {
-            Status = "Searching EDSM...";
+            Status = "Searching for system suggestions…";
             await Task.Delay(suggestionDelay, cancellation.Token);
             var results = await suggestionClient.SearchAsync(
                 query,
@@ -293,7 +295,9 @@ public sealed partial class SystemNameEntry : UserControl
         Text = selectedSystemName;
         Suggestions = [];
         SelectedIndex = -1;
-        Status = $"Selected {selectedSystemName} · id64 {suggestion.SystemAddress}.";
+        Status = $"Selected {selectedSystemName} · "
+            + SystemAddressFormatter.Format(suggestion.SystemAddress)
+            + ".";
         return true;
     }
 

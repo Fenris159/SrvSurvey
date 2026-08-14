@@ -354,6 +354,12 @@ public sealed class SavedBoxelSearchStore
     {
         _ = BoxelAddress.TryParse(GetString(node, "topBoxel"), out var topBoxel);
         _ = BoxelAddress.TryParse(GetString(node, "currentBoxel"), out var current);
+        if (topBoxel is not null
+            && (current is null || !topBoxel.Contains(current)))
+        {
+            current = topBoxel;
+        }
+
         var lowMassCodeText = GetString(node, "lowMassCode");
         return new BoxelSearchSnapshot
         {
