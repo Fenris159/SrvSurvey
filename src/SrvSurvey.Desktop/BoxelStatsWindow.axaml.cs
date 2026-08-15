@@ -116,10 +116,10 @@ public sealed partial class BoxelStatsWindow : Window
 
         var version = Interlocked.Increment(ref activationVersion);
         using var cancellation = new CancellationTokenSource();
-        ReplaceActivation(cancellation);
+        await ReplaceActivationAsync(cancellation);
         if (isClosed)
         {
-            cancellation.Cancel();
+            await cancellation.CancelAsync();
         }
 
         try
@@ -150,10 +150,13 @@ public sealed partial class BoxelStatsWindow : Window
         }
     }
 
-    private void ReplaceActivation(CancellationTokenSource next)
+    private async Task ReplaceActivationAsync(CancellationTokenSource next)
     {
         var previous = Interlocked.Exchange(ref activationCancellation, next);
-        previous?.Cancel();
+        if (previous is not null)
+        {
+            await previous.CancelAsync();
+        }
     }
 
     private void CancelActivation()

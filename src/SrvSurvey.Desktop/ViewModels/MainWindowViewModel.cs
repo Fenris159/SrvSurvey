@@ -4432,7 +4432,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     public void Dispose()
     {
-        Task.Run(() => DisposeAsync().AsTask()).GetAwaiter().GetResult();
+        Task.Run(() => DisposeAsync().AsTask(), CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
     }
 
     public async ValueTask DisposeAsync()
@@ -4448,7 +4450,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         BoxelSearch.CancelPendingOperations();
         JournalPostProcessor.Cancel();
         CancelSystemBodyDataRequest();
-        firstFootfallInferenceCancellation.Cancel();
+        await firstFootfallInferenceCancellation.CancelAsync();
         firstFootfallInferenceService.Dispose();
         firstFootfallInferenceCancellation.Dispose();
         Colonization.Dispose();

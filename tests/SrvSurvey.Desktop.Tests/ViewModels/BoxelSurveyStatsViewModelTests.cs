@@ -289,8 +289,9 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
             nameof(BoxelSurveyStatsCoordinator.Changed),
             System.Reflection.BindingFlags.Instance
                 | System.Reflection.BindingFlags.NonPublic);
-        var before = Assert.IsAssignableFrom<MulticastDelegate>(
-            eventField?.GetValue(coordinator));
+        var before = Assert.IsType<MulticastDelegate>(
+            eventField?.GetValue(coordinator),
+            exactMatch: false);
         Assert.Contains(
             before.GetInvocationList(),
             handler => ReferenceEquals(handler.Target, viewModel));
