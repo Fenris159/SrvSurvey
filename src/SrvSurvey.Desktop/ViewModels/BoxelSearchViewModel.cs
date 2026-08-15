@@ -1342,7 +1342,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public Task CancelAuditAsync()
     {
-        CancelPendingOperations();
+        auditCancellation?.Cancel();
         StatusMessage = "Cancelling the full-area audit after the current request\u2026";
         return Task.CompletedTask;
     }
@@ -1357,6 +1357,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
         surveyStats.Changed -= OnSurveyStatsChanged;
         surveyStatsUnsubscribed = true;
+    }
+
+    public void ReportStatisticsFailure(string message)
+    {
+        StatusMessage = "Could not open boxel statistics: " + message;
     }
 
     private void OnSurveyStatsChanged(object? sender, EventArgs eventArgs)

@@ -155,7 +155,7 @@ public sealed partial class BoxelView : UserControl
                     or UnauthorizedAccessException
                     or InvalidDataException)
             {
-                ReportStatsFailure(exception);
+                ReportStatsFailure(viewModel, exception);
             }
         };
         boxelSearchLibraryWindow = new BoxelSearchLibraryWindow
@@ -199,7 +199,7 @@ public sealed partial class BoxelView : UserControl
                 or UnauthorizedAccessException
                 or InvalidDataException)
         {
-            ReportStatsFailure(exception);
+            ReportStatsFailure(viewModel, exception);
         }
     }
 
@@ -270,13 +270,18 @@ public sealed partial class BoxelView : UserControl
         boxelStatsWindow = window;
     }
 
-    private void ReportStatsFailure(Exception exception)
+    private void ReportStatsFailure(
+        MainWindowViewModel viewModel,
+        Exception exception)
     {
         if (boxelStatsWindow?.DataContext is BoxelSurveyStatsViewModel stats)
         {
             stats.ReportStatus(
                 "Could not open boxel statistics: " + exception.Message);
+            return;
         }
+
+        viewModel.BoxelSearch.ReportStatisticsFailure(exception.Message);
     }
 
     private async void VoxStellar_Click(

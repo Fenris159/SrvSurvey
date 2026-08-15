@@ -1,3 +1,4 @@
+using Avalonia.Headless.XUnit;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
@@ -5,6 +6,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class BoxelSearchViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
@@ -25,6 +27,43 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             BoxelSearchSnapshot.Empty);
 
         Assert.False(viewModel.AutoCopy);
+    }
+
+    [AvaloniaFact]
+    public async Task CancellingAuditKeepsSurveyStatisticsUpdatesSubscribed()
+    {
+        using var coordinator = new BoxelSurveyStatsCoordinator(
+            new BoxelSurveyStatsStore(temporaryDirectory),
+            TimeSpan.FromHours(1));
+        await coordinator.SwitchCommanderAsync("F123");
+        var viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([]),
+            surveyStats: coordinator);
+
+        await viewModel.CancelAuditAsync();
+        await coordinator.ApplyJournalEventsAsync(
+        [
+            Parse(
+                """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""),
+        ]);
+
+        Assert.Contains("Praea Euq IL-P c5-", viewModel.StatsGlanceText, StringComparison.Ordinal);
+        viewModel.CancelPendingOperations();
+    }
+
+    [Fact]
+    public void StatisticsStartupFailureAppearsInTheBoxelStatus()
+    {
+        var viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([]));
+
+        viewModel.ReportStatisticsFailure("Access denied.");
+
+        Assert.Equal(
+            "Could not open boxel statistics: Access denied.",
+            viewModel.StatusMessage);
     }
 
     [Fact]
@@ -618,7 +657,8 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     private BoxelSearchViewModel CreateViewModel(
         CommanderProfileStore store,
         IBoxelSystemResolver resolver,
-        ISystemNameSuggestionClient? suggestionClient = null)
+        ISystemNameSuggestionClient? suggestionClient = null,
+        BoxelSurveyStatsCoordinator? surveyStats = null)
     {
         return new BoxelSearchViewModel(
             store,
@@ -626,7 +666,8 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             new EmptyBoxelStore(temporaryDirectory),
             resolver,
             systemNameSuggestionClient: suggestionClient,
-            systemSuggestionDelay: TimeSpan.Zero);
+            systemSuggestionDelay: TimeSpan.Zero,
+            surveyStats: surveyStats);
     }
 
     private static BoxelSystemObservation Observation(string name, long address)
