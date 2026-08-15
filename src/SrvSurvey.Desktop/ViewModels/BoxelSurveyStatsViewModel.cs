@@ -1212,38 +1212,13 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
         try
         {
-            await Task.Delay(CoordinatorRefreshDebounceDelay).ConfigureAwait(false);
-            while (!disposed
-                && Interlocked.Exchange(ref coordinatorRefreshPending, 0) != 0)
-            {
-                try
-                {
-                    await RunOnUiThreadAsync(RefreshAsync).ConfigureAwait(false);
-                }
-                catch (Exception exception)
-                {
-                    if (!disposed)
-                    {
-                        await RunOnUiThreadAsync(() => ReportStatus(
-                            "Could not refresh boxel statistics: " + exception.Message))
-                            .ConfigureAwait(false);
-                    }
-                }
-            }
+            await Task.Delay(CoordinatorRefreshDebounceDelay, CancellationToken.None)
+                .ConfigureAwait(false);
+            await ProcessPendingCoordinatorRefreshesAsync().ConfigureAwait(false);
         }
         catch (Exception exception)
         {
-            if (!disposed)
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    if (!disposed)
-                    {
-                        ReportStatus(
-                            "Could not refresh boxel statistics: " + exception.Message);
-                    }
-                });
-            }
+            ReportCoordinatorRefreshFailure(exception);
         }
         finally
         {
@@ -1253,6 +1228,34 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
                 OnCoordinatorChanged(sender, eventArgs);
             }
         }
+    }
+
+    private async Task ProcessPendingCoordinatorRefreshesAsync()
+    {
+        while (!disposed
+            && Interlocked.Exchange(ref coordinatorRefreshPending, 0) != 0)
+        {
+            try
+            {
+                await RunOnUiThreadAsync(RefreshAsync).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                ReportCoordinatorRefreshFailure(exception);
+            }
+        }
+    }
+
+    private void ReportCoordinatorRefreshFailure(Exception exception)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (!disposed)
+            {
+                ReportStatus(
+                    "Could not refresh boxel statistics: " + exception.Message);
+            }
+        });
     }
 
     private void OnPersistenceFailed(object? sender, Exception exception)
