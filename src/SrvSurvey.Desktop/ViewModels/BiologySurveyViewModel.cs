@@ -1005,6 +1005,11 @@ public sealed class BiologySurveyViewModel
         var current = allowRetainedCurrentBody
             ? ResolveCurrentBody(snapshot, status)
             : null;
+        if (current?.BiologicalSignalCount is not > 0)
+        {
+            current = null;
+        }
+
         var destination = status?.Destination is { } target
             && target.System == snapshot.SystemAddress
                 ? biologicalBodies.FirstOrDefault(body =>
