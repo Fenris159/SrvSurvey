@@ -22,6 +22,7 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
             CurrentCount = 3,
             LowMassCode = 'c',
             CompletedSystems = ["Praea Euq IL-P c5-0"],
+            EmptySystems = ["Praea Euq IL-P c5-2"],
             ProgressByPrefix = new Dictionary<string, int>
             {
                 [top.Prefix] = 3,
@@ -64,16 +65,18 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
         Assert.Equal("Updated notes", noted.Notes);
         Assert.True(favorite.IsFavorite);
         Assert.Equal(2, updated.Search.CompletedSystems.Count);
+        Assert.Equal(["Praea Euq IL-P c5-2"], updated.Search.EmptySystems);
         var entry = Assert.Single(entries);
         Assert.Equal("Return later", entry.Name);
         Assert.Equal("Updated notes", entry.Notes);
         Assert.True(entry.IsFavorite);
-        Assert.Equal(2, entry.CompletedSystems);
+        Assert.Equal(3, entry.CompletedSystems);
         Assert.Equal(3, entry.TotalSystems);
         Assert.Equal(top.Prefix, entry.TopBoxelPrefix);
         Assert.Equal('c', entry.LowMassCode);
         Assert.Contains(top.Prefix, entry.Prefixes);
         Assert.Equal(created.CreatedAt, loaded.CreatedAt);
+        Assert.Equal(["Praea Euq IL-P c5-2"], loaded.Search.EmptySystems);
         Assert.Equal(created.FileName, loaded.Search.SavedSearchFileName);
 
         var trashPath = await store.DeleteAsync("F123", created.FileName);

@@ -1,0 +1,95 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SrvSurvey.Desktop.BoxelAverageHelpDialog"
+        Width="700"
+        Height="650"
+        MinWidth="560"
+        MinHeight="500"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        Title="How are averages calculated?">
+  <Grid RowDefinitions="Auto,*,Auto" Margin="24">
+    <StackPanel Spacing="5">
+      <TextBlock Classes="eyebrow" Text="BOXEL STATISTICS" />
+      <TextBlock Classes="page-title"
+                 FontSize="24"
+                 Text="How are averages calculated?" />
+      <TextBlock Classes="muted"
+                 Text="The Average column describes how often each body type appears in the recorded statistics."
+                 TextWrapping="Wrap" />
+    </StackPanel>
+
+    <ScrollViewer Grid.Row="1" Margin="0,22,0,0">
+      <StackPanel Spacing="18">
+        <Border Classes="card" Padding="16">
+          <StackPanel Spacing="8">
+            <TextBlock FontSize="18" FontWeight="SemiBold" Text="The formula" />
+            <TextBlock FontWeight="SemiBold"
+                       Text="Body count for that type &#247; systems recorded"
+                       TextWrapping="Wrap" />
+            <TextBlock Text="The calculation uses systems with recorded statistics. It does not use the configured search size, highest recorded suffix, or expected number of systems."
+                       TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+
+        <StackPanel Spacing="10">
+          <TextBlock FontSize="18" FontWeight="SemiBold" Text="How the result is displayed" />
+          <Grid ColumnDefinitions="22,*">
+            <TextBlock Text="&#8226;" />
+            <TextBlock Grid.Column="1"
+                       Text="If fewer systems are recorded than the 'Recorded systems required for averages' setting, the table displays &#8212;."
+                       TextWrapping="Wrap" />
+          </Grid>
+          <Grid ColumnDefinitions="22,*">
+            <TextBlock Text="&#8226;" />
+            <TextBlock Grid.Column="1"
+                       Text="If a body type occurs no more than once per system, the result is shown as a frequency. Example: 3 water worlds across 10 systems displays '1 in 3.3'."
+                       TextWrapping="Wrap" />
+          </Grid>
+          <Grid ColumnDefinitions="22,*">
+            <TextBlock Text="&#8226;" />
+            <TextBlock Grid.Column="1"
+                       Text="If multiple bodies of that type occur per system, the result is shown as bodies per system. Example: 25 high-metal-content worlds across 10 systems displays '2.5'."
+                       TextWrapping="Wrap" />
+          </Grid>
+          <Grid ColumnDefinitions="22,*">
+            <TextBlock Text="&#8226;" />
+            <TextBlock Grid.Column="1"
+                       Text="A body count of zero displays &#8212;. Changing the minimum setting re-formats the current results immediately."
+                       TextWrapping="Wrap" />
+          </Grid>
+        </StackPanel>
+
+        <StackPanel Spacing="10">
+          <TextBlock FontSize="18" FontWeight="SemiBold" Text="Which systems are included?" />
+          <Grid ColumnDefinitions="22,*">
+            <TextBlock Text="&#8226;" />
+            <TextBlock Grid.Column="1"
+                       Text="Selected boxel uses only the recorded systems and bodies in the boxel currently open."
+                       TextWrapping="Wrap" />
+          </Grid>
+          <Grid ColumnDefinitions="22,*">
+            <TextBlock Text="&#8226;" />
+            <TextBlock Grid.Column="1"
+                       Text="Entire saved search combines recorded systems and bodies from every boxel in that saved search before calculating the average."
+                       TextWrapping="Wrap" />
+          </Grid>
+        </StackPanel>
+
+        <Border Background="{DynamicResource RavenSurfaceBrush}"
+                CornerRadius="8"
+                Padding="14">
+          <TextBlock Text="These are bodies per recorded system, not the percentage of systems containing that body. A system containing four high-metal-content worlds adds four to the body count. The Nav Beacon setting affects only FSS-complete statistics and does not change averages."
+                     TextWrapping="Wrap" />
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Button Grid.Row="2"
+            Margin="0,20,0,0"
+            HorizontalAlignment="Right"
+            Classes="primary"
+            Click="Close_Click"
+            Content="Close" />
+  </Grid>
+</Window>

@@ -816,6 +816,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "A body count of zero displays \u2014. Changing the minimum setting re-formats the current results immediately.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
     "Text": "A body row can contain more prediction PIPs than its reported biological-signal count when several genera remain plausible. Those additional hatched PIPs are alternative candidates, not extra signals or additive rewards.",
     "IsFormat": false,
     "SourceKinds": [
@@ -902,6 +910,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RamTahViewModel.cs"
+  },
+  {
+    "Text": "A commander profile must be loaded first.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "A compatible live construction depot is ready.",
@@ -1743,6 +1759,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
+  },
+  {
+    "Text": "AW",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Absent",
@@ -3057,6 +3081,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Atmo",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
     "Text": "Atmos",
     "IsFormat": false,
     "SourceKinds": [
@@ -3489,6 +3521,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Average",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
     "Text": "A{0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -3905,6 +3945,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml"
   },
   {
+    "Text": "BOXEL STATISTICS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
+    "Text": "BOXELS \u00B7 MASS CODE C",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "BOXELS \u00B7 MASS CODE {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "BUILD TYPE",
     "IsFormat": false,
     "SourceKinds": [
@@ -3919,6 +3983,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
+  },
+  {
+    "Text": "Back to browser",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
     "Text": "Back up and replace Elite\u0027s VisitedStarsCache.dat with the 3,500 closest known systems from EDGalaxy.",
@@ -4500,6 +4572,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyStatusViewModel.cs"
   },
   {
+    "Text": "Body count for that type \u00F7 systems recorded",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
     "Text": "Body import cancelled; Raven Colonial was not changed.",
     "IsFormat": false,
     "SourceKinds": [
@@ -4644,6 +4724,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Boxel Stats",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Boxel auto-copy was disabled because another Galaxy Map auto-copy setting was selected.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Boxel hierarchy",
     "IsFormat": false,
     "SourceKinds": [
@@ -4666,6 +4762,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Boxel statistics",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Boxel statistics operation failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Breached",
@@ -4706,6 +4818,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+  },
+  {
+    "Text": "Browse visited cubes by mass code, then open a cube for helium, body classes, and value.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
     "Text": "BucketOneMillions",
@@ -4842,6 +4962,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+  },
+  {
+    "Text": "CHILD BOXELS \u00B7 MASS CODE {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "CHILD BOXELS \u00B7 ONE LEVEL SMALLER",
@@ -5251,9 +5379,18 @@
     "Text": "CURRENT SYSTEM",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "CURRENT SYSTEM \u00B7 NEXT INCOMPLETE SYSTEM",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "CURRENT TIER",
@@ -5732,6 +5869,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
     "Text": "Changes preview live in OpenVR. Save is atomic and preserves desktop placement plus unknown overlays.",
     "IsFormat": false,
     "SourceKinds": [
@@ -5836,7 +5981,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
-    "Text": "Checks local history and Spansh for all {0} boxels, one request at a time. You can cancel safely and keep partial progress.",
+    "Text": "Checks saved system history, the current NavRoute, empty-boxel records, and Spansh across all {0} boxels. Network requests run sequentially; cancellation keeps completed audit progress.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -5898,6 +6043,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
+  },
+  {
+    "Text": "Choose a folder, then save both the JSON detail and CSV summary there.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
     "Text": "Choose a journey from the history list or begin a new one.",
@@ -6130,6 +6283,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Choose where to export boxel statistics",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml.cs"
   },
   {
     "Text": "Circle radius",
@@ -6725,6 +6886,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
   },
   {
+    "Text": "Combines recorded statistics from every boxel belonging to this saved search. Boxels without recorded data add nothing to the totals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Combines recorded totals and averages from every boxel in this saved search. Configured system counts and highest suffixes are per-boxel and cannot be combined. If only one boxel has recorded data, the totals will match that boxel.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "Comfortable",
     "IsFormat": false,
     "SourceKinds": [
@@ -7238,6 +7415,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
+    "Text": "Configured search systems: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "Configured search systems: \u2014 (per-boxel only)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "Confirm",
     "IsFormat": false,
     "SourceKinds": [
@@ -7383,7 +7576,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "Confirm the final generated system before applying the expected count.",
+    "Text": "Confirm the final generated system before applying the last available system.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -7967,6 +8160,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
+    "Text": "Could not choose an export folder: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml.cs"
+  },
+  {
     "Text": "Could not copy the Elite Dangerous window.",
     "IsFormat": false,
     "SourceKinds": [
@@ -7989,6 +8190,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VoxStellarSharingViewModel.cs"
+  },
+  {
+    "Text": "Could not open boxel statistics: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml.cs"
   },
   {
     "Text": "Could not open the desktop surface.",
@@ -8047,12 +8256,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayThemeStateStore.cs"
   },
   {
+    "Text": "Could not refresh boxel statistics: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "Could not render {0} for VR: {1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "Could not save boxel survey statistics: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Could not select the FSS capture buffer.",
@@ -8066,9 +8291,18 @@
     "Text": "Count",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Count Nav Beacon scans as FSS complete (statistics only)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
     "Text": "Covas",
@@ -10013,6 +10247,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyPredictionsWindow.axaml"
   },
   {
+    "Text": "ELW",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "EMPTY",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "ENDED",
     "IsFormat": false,
     "SourceKinds": [
@@ -10067,14 +10317,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml"
-  },
-  {
-    "Text": "EXPECTED SYSTEMS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "EXPLORATION",
@@ -10671,6 +10913,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GameTextInputService.cs"
   },
   {
+    "Text": "Entire saved search (not available)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "Entire saved search ({0} boxel{1})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "Entire saved search combines recorded systems and bodies from every boxel in that saved search before calculating the average.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
     "Text": "Entries remain visible in this session, but the log file could not be updated: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -10888,38 +11154,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyStatusViewModel.cs"
   },
   {
-    "Text": "Expected system count updated to {0}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
-    "Text": "Expected systems",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml"
-  },
-  {
-    "Text": "Expected systems help",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml"
-  },
-  {
-    "Text": "Expected systems must be a whole number from 1 to 100,000.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "Expedition name",
     "IsFormat": false,
     "SourceKinds": [
@@ -10934,6 +11168,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+  },
+  {
+    "Text": "Explain last system available",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Exploration",
@@ -11008,6 +11250,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Explore child boxels",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "Explore child boxels (mass code {0})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "Explore sites, review surveys, and track both Ram Tah research missions.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11030,6 +11288,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml.cs"
+  },
+  {
+    "Text": "Export JSON \u002B CSV\u2026",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Export failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Export selected fleet-carrier routes",
@@ -11096,12 +11370,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteTemplateAuthoringViewModel.cs"
   },
   {
+    "Text": "Exported to {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "Exported {0} route file{1} to {2}.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
+    "Text": "Exports only boxels with at least this many recorded systems. Counts and stored data do not change.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
     "Text": "Expressway to Exomastery targets",
@@ -11433,6 +11723,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "FSS complete {0} FSS bodies {1} ({2})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "FSS information",
@@ -12148,7 +12446,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "For example the end system of the {0} boxel is: {1} so you would enter 7641 and choose APPLY",
+    "Text": "For example the end system of the {0} boxel is: {1} so you would enter 7640 and choose APPLY",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -12644,6 +12942,62 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "GG1",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "GG2",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "GG3",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "GG4",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "GG5",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "GGAL",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "GGWL",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "GLOBAL PROGRESS",
     "IsFormat": false,
     "SourceKinds": [
@@ -12906,6 +13260,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Gas giant with ammonia life",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "Gas giant with water life",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "General",
@@ -13663,6 +14033,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
   },
   {
+    "Text": "HE {0}\u2013{1}%",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "HEADING 074 DEGREES",
     "IsFormat": false,
     "SourceKinds": [
@@ -13687,6 +14065,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PriorScansOverlayViewModel.cs"
   },
   {
+    "Text": "HGG",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "HIGH-GRAVITY APPROACH",
     "IsFormat": false,
     "SourceKinds": [
@@ -13703,12 +14089,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "HMC",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "HMC world | BIO 6 | GEO 2",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "HRGG",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "HTML colour \u0027{0}\u0027 must use #RRGGBB or #RRGGBBAA.",
@@ -13814,6 +14216,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Helium gas giant",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "Helium-rich gas giant",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Help documentation and overlay icon glossary",
@@ -14032,6 +14450,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "High metal content",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "High metal content world",
     "IsFormat": false,
     "SourceKinds": [
@@ -14062,6 +14488,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "Highest recorded suffix: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "Highest recorded suffix: \u2014",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "Highest recorded suffix: \u2014 (per-boxel only)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Highlight",
@@ -14225,12 +14675,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
+    "Text": "How are Averages Calculated?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "How are averages calculated?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
     "Text": "How the interface is organized",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "How the result is displayed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
   },
   {
     "Text": "How to read color",
@@ -14354,6 +14828,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "IB",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "ID",
     "IsFormat": false,
     "SourceKinds": [
@@ -14392,6 +14874,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
+  },
+  {
+    "Text": "IN PROGRESS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "INACTIVE",
@@ -14490,12 +14980,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
   },
   {
+    "Text": "If a body type occurs no more than once per system, the result is shown as a frequency. Example: 3 water worlds across 10 systems displays \u00271 in 3.3\u0027.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
     "Text": "If an existing first site has no stable ID, or no API key is available to protect it, creation is refused before any project is posted.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "If fewer systems are recorded than the \u0027Recorded systems required for averages\u0027 setting, the table displays \u2014.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
+    "Text": "If multiple bodies of that type occur per system, the result is shown as bodies per system. Example: 25 high-metal-content worlds across 10 systems displays \u00272.5\u0027.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
   },
   {
     "Text": "If no Commander appears, use Diagnostics to inspect the selected folder and newest Journal file.",
@@ -15831,6 +16345,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "LAST SYSTEM AVAILABLE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "LAST VISITED",
     "IsFormat": false,
     "SourceKinds": [
@@ -15975,6 +16497,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
+    "Text": "Land",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
     "Text": "Land or stand near the centre of a landing pad so SrvSurvey can identify the layout and align the map.",
     "IsFormat": false,
     "SourceKinds": [
@@ -16110,6 +16640,38 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Last system available",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml"
+  },
+  {
+    "Text": "Last system available help",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml"
+  },
+  {
+    "Text": "Last system available must be a whole number from 0 to 99,999.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Last system available updated to {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "Last update: {0}",
@@ -17136,6 +17698,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "MASS CODE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
     "Text": "MASSACRE MISSIONS",
     "IsFormat": false,
     "SourceKinds": [
@@ -17230,6 +17800,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierShipyardTabView.axaml"
+  },
+  {
+    "Text": "MR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Main ship",
@@ -17416,20 +17994,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
-    "Text": "Mark as not empty",
+    "Text": "Mark Next Empty",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
-    "Text": "Mark current empty",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Mark not scanned",
@@ -17464,6 +18034,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "Marked empty",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Marked {0} as previously scanned.",
     "IsFormat": true,
     "SourceKinds": [
@@ -17488,7 +18066,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
-    "Text": "Marked {0} empty and advanced to {1}.",
+    "Text": "Marked {0} empty. Next incomplete system: {1}.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -17496,7 +18074,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
-    "Text": "Marked {0} empty.",
+    "Text": "Marked {0} empty. No incomplete systems remain.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -17801,6 +18379,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
+  },
+  {
+    "Text": "Metal rich",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Microsoft Store profile ({0} files)",
@@ -18327,6 +18913,7 @@
     "Text": "NEXT INCOMPLETE SYSTEM",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
@@ -18381,6 +18968,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "NOT STARTED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "NOTES",
     "IsFormat": false,
     "SourceKinds": [
@@ -18400,9 +18995,10 @@
     "Text": "Name",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
     "Text": "Name this overlay theme state",
@@ -18755,6 +19351,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Next page",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Next site",
@@ -19179,6 +19783,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "No child boxel statistics are recorded inside {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "No commander loaded",
@@ -19894,6 +20506,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
   },
   {
+    "Text": "No statistics recorded at mass code C.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "No statistics recorded at mass code {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "No system files required activation.",
     "IsFormat": false,
     "SourceKinds": [
@@ -20086,6 +20714,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "Not searched",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Not started",
     "IsFormat": false,
     "SourceKinds": [
@@ -20133,6 +20769,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemNotesViewModel.cs"
+  },
+  {
+    "Text": "Nothing met the export minimum.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Notification preferences changed for this session but could not be saved: {0}",
@@ -20736,6 +21380,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/SystemNotesWindow.axaml"
+  },
+  {
+    "Text": "Open stats",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Open survey",
@@ -21773,6 +22425,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Page 1 of 1",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Page {0} of {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Paid",
     "IsFormat": false,
     "SourceKinds": [
@@ -22720,6 +23388,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Previous page",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "Previous settings backup: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -23529,6 +24205,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
   },
   {
+    "Text": "RB",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "READ",
     "IsFormat": false,
     "SourceKinds": [
@@ -23544,6 +24228,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "RECENTLY RECORDED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
     "Text": "REFERENCE SYSTEM",
@@ -23608,6 +24300,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
+    "Text": "RIB",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "RINGS",
@@ -24690,6 +25390,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Rebuild",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
     "Text": "Rebuild Codex firsts",
     "IsFormat": false,
     "SourceKinds": [
@@ -24698,12 +25406,44 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Rebuild failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "Rebuild needs a journal folder.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "Rebuild needs an active commander.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "Rebuild systems",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "Rebuilt {0} system files and {1} journals.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Received",
@@ -24760,6 +25500,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Recorded systems required for averages",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Recorded systems required for export",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Recorded systems:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
     "Text": "Recorded the live Guardian site in {0}.",
@@ -25331,14 +26095,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianTemplateAuthoringViewModel.cs"
   },
   {
-    "Text": "Removed the empty marker from {0}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "Removed the last building from the local draft.",
     "IsFormat": false,
     "SourceKinds": [
@@ -25715,6 +26471,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
   },
   {
+    "Text": "Restore",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Restore automatic map scaling.",
     "IsFormat": false,
     "SourceKinds": [
@@ -25747,6 +26511,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "Restored {0} to the search.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Resume Search",
     "IsFormat": false,
     "SourceKinds": [
@@ -25761,6 +26533,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
+  },
+  {
+    "Text": "Resumed saved boxel search {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "Resurrect",
@@ -26260,6 +27040,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "SAVED SEARCH BOXELS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "SCALE",
     "IsFormat": false,
     "SourceKinds": [
@@ -26652,6 +27440,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/StationInfoOverlayWindow.axaml"
+  },
+  {
+    "Text": "STATISTICS SCOPE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
     "Text": "STATUS",
@@ -27118,6 +27914,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
   },
   {
+    "Text": "Saved boxel search as {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Saved development state could not be reloaded: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -27196,6 +28000,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
+  },
+  {
+    "Text": "Saved the current boxel search progress.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "Saved {0} ({1}).{2}",
@@ -27609,6 +28421,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "Search root",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Searching for {0}\u2026",
     "IsFormat": true,
     "SourceKinds": [
@@ -27785,6 +28605,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Select a boxel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "Select a commander and confirm the all-history Codex merge first.",
     "IsFormat": false,
     "SourceKinds": [
@@ -27841,6 +28669,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
+    "Text": "Select a recorded boxel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
     "Text": "Select a result first.",
     "IsFormat": false,
     "SourceKinds": [
@@ -27890,6 +28726,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml.cs"
   },
   {
+    "Text": "Selected boxel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Selected boxel uses only the recorded systems and bodies in the boxel currently open.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
     "Text": "Selected folder",
     "IsFormat": false,
     "SourceKinds": [
@@ -27920,6 +28772,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/GalaxyMapOverlayWindow.axaml"
+  },
+  {
+    "Text": "Selected {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "SelectedWeapon: {0} / {1}",
@@ -28129,6 +28989,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Settings apply immediately. Rebuild is only needed to import historical journals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
     "Text": "Settings controls application behavior, overlays, input bindings, privacy, profile migration, screenshots, and appearance.",
@@ -28707,6 +29575,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Show all mass code {0} boxels",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Show at the surface in analysis mode",
@@ -29333,12 +30209,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
-    "Text": "Showing the first {0} rows plus all known systems from {1} expected systems.",
+    "Text": "Showing systems {0}\u2013{1} of {2}.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Showing the selected boxel. Open statistics from Saved boxel searches to view or combine every boxel in a saved search.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "Showing the selected boxel. This saved search contains only one boxel, so an entire-search total would be identical.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Showing {0} with simulated game data. Drag the previews, then use \u2713 to save or \u2715 to cancel.",
@@ -29349,12 +30241,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Shows averages only after this many systems have recorded statistics. Counts and stored data do not change.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
     "Text": "Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Shows statistics and per-boxel fields for only the boxel currently open above.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Shows statistics for the selected boxel only, including its configured system count and highest recorded suffix.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Shows tower loadouts and destructible panels and preserves the original component survey format.",
@@ -30407,6 +31323,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Start a boxel search before saving its progress.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Start a journey to track systems, scans, notes, screenshots, and rewards.",
     "IsFormat": false,
     "SourceKinds": [
@@ -30630,6 +31554,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Statistics settings",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
     "Text": "Status \u0026 utilities",
@@ -31305,6 +32237,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
+    "Text": "System suggestions are temporarily unavailable; you can still enter a system name manually.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "System survey and biology overlays",
     "IsFormat": false,
     "SourceKinds": [
@@ -31353,6 +32293,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
+    "Text": "System-name range: {0} through {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "System: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -31399,6 +32347,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Systems recorded: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Systems visited",
@@ -31471,6 +32427,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
+  },
+  {
+    "Text": "TF",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "TF (other)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "TF\u002B",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "TO",
@@ -31744,6 +32724,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "The Average column describes how often each body type appears in the recorded statistics.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
   },
   {
     "Text": "The BGRA buffer length does not match its dimensions.",
@@ -32347,12 +33335,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "The boxel search could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "The bright yellow or theme-highlight PIP marks an organism that is new to the current Commander, or new to this Commander in the current Codex region when regional highlighting is enabled. Hatching still means the organism and reward are predicted.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The calculation uses systems with recorded statistics. It does not use the configured search size, highest recorded suffix, or expected number of systems.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
   },
   {
     "Text": "The calibration file has no parent directory.",
@@ -32827,8 +33831,16 @@
     "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
   },
   {
-    "Text": "The empty-boxel marker was not changed: {0}",
+    "Text": "The empty-system marker was not changed: {0}",
     "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "The empty-system marker was not removed.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -32881,6 +33893,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The formula",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
   },
   {
     "Text": "The four vertical PIP segments use configurable reward thresholds. More filled segments indicate a higher expected reward band, not sample completion.",
@@ -33315,6 +34335,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "The mass-code filter lists only boxels with recorded statistics at that exact mass code. Open a boxel to explore its recorded children.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
     "Text": "The measured point is too close to {0}; no raw point was added.",
     "IsFormat": true,
     "SourceKinds": [
@@ -33459,6 +34487,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "The next incomplete system was not marked empty.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "The next system could not be copied: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -33467,7 +34503,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
-    "Text": "The number produced is an estimate. You need to manually \u0022bruteforce\u0022 the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Then add 1 to that number to include the starting system.",
+    "Text": "The number produced is an estimate. You need to manually \u0022bruteforce\u0022 the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Enter that final system number exactly as shown; SrvSurvey includes system 0 when it calculates the total.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -34171,6 +35207,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "The selected export folder is not available as a local filesystem path.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml.cs"
+  },
+  {
     "Text": "The selected legacy profile folder does not exist or is unavailable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -34707,6 +35751,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "These are bodies per recorded system, not the percentage of systems containing that body. A system containing four high-metal-content worlds adds four to the body count. The Nav Beacon setting affects only FSS-complete statistics and does not change averages.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
     "Text": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
     "IsFormat": false,
     "SourceKinds": [
@@ -34801,6 +35853,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CombinedOverlayPresentationController.cs"
+  },
+  {
+    "Text": "This platform does not provide a folder picker for exports.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml.cs"
   },
   {
     "Text": "This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonisation projects are active.",
@@ -35541,6 +36601,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Type",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
     "Text": "Type .add followed by a valid Guardian point type while at the point.",
     "IsFormat": false,
     "SourceKinds": [
@@ -35571,6 +36639,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Type at least 3 characters for system suggestions.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "Type more words to narrow the results",
@@ -36374,7 +37450,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Use Mark current empty only when the selected boxel has no systems to survey. The marker is retained and the search advances to the next incomplete boxel.",
+    "Text": "Use Mark Next Empty only when the Galaxy Map confirms that the next incomplete system does not exist. The marker is retained and the search skips to the following target.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -37184,6 +38260,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "WG",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "WG Life",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "WINDOW SIZE",
     "IsFormat": false,
     "SourceKinds": [
@@ -37206,6 +38298,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml"
+  },
+  {
+    "Text": "WW",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "Wait for SrvSurvey to detect the active journal commander before connecting Frontier.",
@@ -37536,6 +38636,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "Water giant with life",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "Water purifiers",
     "IsFormat": false,
     "SourceKinds": [
@@ -37686,6 +38794,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Which systems are included?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
   },
   {
     "Text": "While a polygon is active, toggling ship shields captures the current point just like the original builder.",
@@ -38977,6 +40093,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
   },
   {
+    "Text": "exports",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "facilitator",
     "IsFormat": false,
     "SourceKinds": [
@@ -39945,6 +41069,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderPreferenceSettingsStore.cs"
   },
   {
+    "Text": "no recorded systems",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "none",
     "IsFormat": false,
     "SourceKinds": [
@@ -40374,7 +41506,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "searchandrescue",
@@ -41298,6 +42430,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
+    "Text": "{0} / sys",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "{0} / {1} BODIES COMPLETE",
     "IsFormat": true,
     "SourceKinds": [
@@ -41514,6 +42654,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
   },
   {
+    "Text": "{0} as scanned \u00B7 {1} if mapped",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "{0} available",
     "IsFormat": true,
     "SourceKinds": [
@@ -41576,6 +42724,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
+  },
+  {
+    "Text": "{0} boxels have recorded statistics in this saved search.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "{0} boxel{1} from mass code {2} through {3}.",
@@ -42002,6 +43158,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyStatusViewModel.cs"
   },
   {
+    "Text": "{0} of {1} at this level",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "{0} of {1} biological signals analyzed",
     "IsFormat": true,
     "SourceKinds": [
@@ -42019,14 +43183,6 @@
   },
   {
     "Text": "{0} of {1} boxels complete",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
-    "Text": "{0} of {1} complete",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -42096,6 +43252,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "{0} recorded boxels at mass code {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "{0} recorded child boxels inside {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "{0} recorded \u00B7 suffix {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
     "Text": "{0} remaining",
@@ -42250,6 +43430,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "{0} system suggestion{1} from {2}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "{0} t",
     "IsFormat": true,
     "SourceKinds": [
@@ -42362,6 +43550,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "{0} \u00B7 entire saved search",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "{0} \u00B7 mass code too low",
     "IsFormat": true,
     "SourceKinds": [
@@ -42408,6 +43604,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
+  },
+  {
+    "Text": "{0} \u00B7 {1} recorded \u00B7 highest suffix {2} \u00B7 {3}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "{0} \u00B7 {1} ships \u00B7 {2} modules \u00B7 updated {3}",
@@ -42632,6 +43836,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml.cs"
+  },
+  {
+    "Text": "\u00B7 highest suffix",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
     "Text": "\u00B7 pending paths",

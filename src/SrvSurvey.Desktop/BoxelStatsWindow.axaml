@@ -50,7 +50,7 @@
 
     <Grid Grid.Row="1" Margin="20" ColumnDefinitions="320,*" ColumnSpacing="16">
       <Border Classes="card" Padding="14">
-        <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*">
           <TextBlock Classes="muted" Text="MASS CODE" />
           <ItemsControl Grid.Row="1" Margin="0,8,0,12" ItemsSource="{Binding MassCodes}">
             <ItemsControl.ItemsPanel>
@@ -61,35 +61,62 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:BoxelSurveyMassCodeOption">
                 <Button Classes="secondary"
-                        MinWidth="36"
-                        Height="34"
+                        MinWidth="42"
+                        MinHeight="42"
                         Margin="0,0,6,6"
+                        Padding="12,6,12,8"
+                        VerticalContentAlignment="Center"
                         Command="{Binding $parent[Window].((vm:BoxelSurveyStatsViewModel)DataContext).SelectMassCodeCommand}"
-                        CommandParameter="{Binding MassCode}"
-                        Content="{Binding Label}" />
+                        CommandParameter="{Binding MassCode}">
+                  <TextBlock LineHeight="22"
+                             VerticalAlignment="Center"
+                             Text="{Binding Label}" />
+                </Button>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          <TextBlock Grid.Row="2" Classes="muted" Margin="0,4,0,6" Text="RECENTLY VISITED" />
-          <ItemsControl Grid.Row="3" Margin="0,0,0,10" ItemsSource="{Binding RecentEntries}">
+          <TextBlock Grid.Row="2"
+                     Classes="muted"
+                     Margin="0,4,0,6"
+                     IsVisible="{Binding HasRecentEntries}"
+                     Text="RECENTLY RECORDED" />
+          <ItemsControl Grid.Row="3"
+                        Margin="0,0,0,10"
+                        IsVisible="{Binding HasRecentEntries}"
+                        ItemsSource="{Binding RecentEntries}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="search:BoxelSurveyIndexEntry">
                 <Button Classes="link"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Left"
                         Click="RecentRow_Click">
-                  <TextBlock TextWrapping="Wrap">
-                    <Run Text="{Binding Prefix}" />
-                    <Run Text="  " />
-                    <Run Text="{Binding VisitedSystemCount}" />
-                    <Run Text="/" />
-                    <Run Text="{Binding ImpliedPopulation}" />
-                  </TextBlock>
+                  <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding Prefix}" TextWrapping="Wrap" />
+                    <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap">
+                      <Run Text="Recorded systems: " />
+                      <Run Text="{Binding VisitedSystemCount}" />
+                      <Run Text=" · highest suffix " />
+                      <Run Text="{Binding HighestRecordedSuffix}" />
+                    </TextBlock>
+                  </StackPanel>
                 </Button>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          <ListBox Grid.Row="4"
+          <Separator Grid.Row="4" Margin="0,2,0,10" />
+          <StackPanel Grid.Row="5" Margin="0,0,0,8" Spacing="4">
+            <TextBlock Classes="muted" Text="{Binding BrowserTitle}" />
+            <TextBlock Classes="muted"
+                       FontSize="11"
+                       Text="{Binding BrowserDescription}"
+                       TextWrapping="Wrap" />
+            <Button Classes="link"
+                    HorizontalAlignment="Left"
+                    IsVisible="{Binding IsBrowsingChildren}"
+                    Command="{Binding ShowAllMassCodeCommand}"
+                    Content="{Binding ShowAllMassCodeText}" />
+          </StackPanel>
+          <ListBox Grid.Row="6"
                    ItemsSource="{Binding BrowserRows}"
                    DoubleTapped="BrowserRow_DoubleTapped">
             <ListBox.ItemTemplate>
@@ -120,10 +147,10 @@
       <Border Grid.Column="1" Classes="card" Padding="18">
         <Grid RowDefinitions="Auto,*">
           <StackPanel Spacing="8" IsVisible="{Binding IsBrowserVisible}">
-            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Select a boxel" />
+            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Select a recorded boxel" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Known cubes at this mass code appear on the left. Unvisited children still show so the tree matches the search hierarchy." />
+                       Text="The mass-code filter lists only boxels with recorded statistics at that exact mass code. Open a boxel to explore its recorded children." />
           </StackPanel>
           <ScrollViewer Grid.Row="1" IsVisible="{Binding IsDetailVisible}">
             <StackPanel Spacing="14">
@@ -132,6 +159,10 @@
                   <TextBlock FontSize="22" FontWeight="SemiBold" Text="{Binding DetailTitle}" />
                   <TextBlock Text="{Binding HeliumText}" />
                   <TextBlock Classes="muted" Text="{Binding VisitedText}" />
+                  <TextBlock Classes="muted"
+                             IsVisible="{Binding HasConfiguredSystemsText}"
+                             Text="{Binding ConfiguredSystemsText}" />
+                  <TextBlock Classes="muted" Text="{Binding HighestRecordedSuffixText}" />
                   <TextBlock Classes="muted" Text="{Binding CompletenessText}" />
                   <TextBlock Text="{Binding ValueText}" />
                 </StackPanel>
@@ -140,13 +171,38 @@
                           Command="{Binding BackCommand}"
                           Content="Back to browser" />
                   <Button Classes="secondary"
-                          Command="{Binding ExportCommand}"
-                          Content="Export" />
+                          Click="Export_Click"
+                          IsEnabled="{Binding !IsBusy}"
+                          Content="Export JSON + CSV…"
+                          ToolTip.Tip="Choose a folder, then save both the JSON detail and CSV summary there." />
+                  <Button Classes="secondary"
+                          IsVisible="{Binding CanExploreChildren}"
+                          Command="{Binding ExploreChildrenCommand}"
+                          Content="{Binding ExploreChildrenText}" />
                 </StackPanel>
               </Grid>
-              <CheckBox IsVisible="{Binding CanShowSearchRollup}"
-                        IsChecked="{Binding ShowSearchRollup, Mode=TwoWay}"
-                        Content="Entire saved search" />
+              <Border Background="{DynamicResource RavenSurfaceBrush}"
+                      CornerRadius="8"
+                      Padding="12">
+                <StackPanel Spacing="8">
+                  <TextBlock Classes="muted" Text="STATISTICS SCOPE" />
+                  <StackPanel Orientation="Horizontal" Spacing="20">
+                    <RadioButton GroupName="StatisticsScope"
+                                 IsChecked="{Binding IsSelectedBoxelScope, Mode=TwoWay}"
+                                 Content="Selected boxel"
+                                 ToolTip.Tip="Shows statistics and per-boxel fields for only the boxel currently open above." />
+                    <RadioButton GroupName="StatisticsScope"
+                                 IsEnabled="{Binding CanShowSearchRollup}"
+                                 IsChecked="{Binding IsEntireSavedSearchScope, Mode=TwoWay}"
+                                 Content="{Binding EntireSavedSearchScopeText}"
+                                 ToolTip.Tip="Combines recorded statistics from every boxel belonging to this saved search. Boxels without recorded data add nothing to the totals." />
+                  </StackPanel>
+                  <TextBlock Classes="muted"
+                             MaxWidth="720"
+                             Text="{Binding StatisticsScopeDescription}"
+                             TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
               <Grid ColumnDefinitions="80,*,70,90,60,60,60" Margin="0,0,0,4">
                 <TextBlock Classes="muted" Text="Type" />
                 <TextBlock Grid.Column="1" Classes="muted" Text="Name" />
@@ -182,24 +238,56 @@
             BorderBrush="{DynamicResource RavenBorderBrush}"
             BorderThickness="0,1,0,0"
             Padding="20,10">
-      <Expander Header="Statistics settings">
-        <StackPanel Margin="0,10,0,0" Spacing="10" MaxWidth="520" HorizontalAlignment="Left">
-          <CheckBox IsChecked="{Binding TreatNavBeaconAsFullyScanned, Mode=TwoWay}"
-                    Content="Treat Nav Beacon as fully scanned" />
-          <Grid ColumnDefinitions="220,*" ColumnSpacing="12">
-            <TextBlock VerticalAlignment="Center" Text="Minimum systems for averages" />
-            <TextBox Grid.Column="1" Text="{Binding MinAveragesText, Mode=TwoWay}" />
-          </Grid>
-          <Grid ColumnDefinitions="220,*" ColumnSpacing="12">
-            <TextBlock VerticalAlignment="Center" Text="Minimum systems for export" />
-            <TextBox Grid.Column="1" Text="{Binding MinExportText, Mode=TwoWay}" />
-          </Grid>
-          <TextBlock Classes="muted"
-                     IsVisible="{Binding HasStatusMessage}"
-                     TextWrapping="Wrap"
-                     Text="{Binding StatusMessage}" />
-        </StackPanel>
-      </Expander>
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <Expander Header="Statistics settings">
+          <StackPanel Margin="0,10,0,0" Spacing="10" MaxWidth="620" HorizontalAlignment="Left">
+            <CheckBox IsChecked="{Binding TreatNavBeaconAsFullyScanned, Mode=TwoWay}"
+                      ToolTip.Tip="Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.">
+              <TextBlock Text="Count Nav Beacon scans as FSS complete (statistics only)"
+                         TextWrapping="Wrap" />
+            </CheckBox>
+            <Grid ColumnDefinitions="*,110"
+                  ColumnSpacing="12"
+                  ToolTip.Tip="Shows averages only after this many systems have recorded statistics. Counts and stored data do not change.">
+              <TextBlock VerticalAlignment="Center"
+                         Text="Recorded systems required for averages"
+                         TextWrapping="Wrap" />
+              <NumericUpDown Grid.Column="1"
+                             Minimum="1"
+                             Maximum="1000"
+                             Increment="1"
+                             FormatString="0"
+                             Value="{Binding MinSystemsForAverages, Mode=TwoWay}" />
+            </Grid>
+            <Grid ColumnDefinitions="*,110"
+                  ColumnSpacing="12"
+                  ToolTip.Tip="Exports only boxels with at least this many recorded systems. Counts and stored data do not change.">
+              <TextBlock VerticalAlignment="Center"
+                         Text="Recorded systems required for export"
+                         TextWrapping="Wrap" />
+              <NumericUpDown Grid.Column="1"
+                             Minimum="1"
+                             Maximum="1000"
+                             Increment="1"
+                             FormatString="0"
+                             Value="{Binding MinSystemsForExport, Mode=TwoWay}" />
+            </Grid>
+            <TextBlock Classes="muted"
+                       Text="Settings apply immediately. Rebuild is only needed to import historical journals."
+                       TextWrapping="Wrap" />
+            <TextBlock Classes="muted"
+                       IsVisible="{Binding HasStatusMessage}"
+                       TextWrapping="Wrap"
+                       Text="{Binding StatusMessage}" />
+          </StackPanel>
+        </Expander>
+        <Button Grid.Column="1"
+                Classes="link"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Click="AverageHelp_Click"
+                Content="How are Averages Calculated?" />
+      </Grid>
     </Border>
   </Grid>
 </Window>

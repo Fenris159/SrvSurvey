@@ -420,6 +420,7 @@ public sealed class CommanderProfileStore(string profileDirectory)
             LowMassCode = lowMassCode,
             CompletedPrefixes = ReadStringArray(boxelSearch, "completed"),
             CompletedSystems = ReadStringArray(boxelSearch, "completedSystems"),
+            EmptySystems = ReadStringArray(boxelSearch, "emptySystems"),
             ProgressByPrefix = ReadBoxelProgress(boxelSearch),
             AutoCopy = GetBoolean(boxelSearch, "autoCopy") ?? false,
             Collapsed = GetBoolean(boxelSearch, "collapsed") ?? false,
@@ -562,6 +563,16 @@ public sealed class CommanderProfileStore(string profileDirectory)
         }
 
         node["completedSystems"] = completedSystems;
+        var emptySystems = new JsonArray();
+        foreach (var systemName in boxelSearch.EmptySystems
+                     .Where(systemName => !string.IsNullOrWhiteSpace(systemName))
+                     .Distinct(StringComparer.Ordinal)
+                     .Order(StringComparer.Ordinal))
+        {
+            emptySystems.Add(systemName);
+        }
+
+        node["emptySystems"] = emptySystems;
         var progress = new JsonObject();
         foreach (var entry in boxelSearch.ProgressByPrefix
                      .OrderBy(entry => entry.Key, StringComparer.Ordinal))

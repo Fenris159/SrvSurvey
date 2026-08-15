@@ -65,6 +65,9 @@
                     VerticalAlignment="Center"
                     Click="BoxelStats_Click">
               <StackPanel Orientation="Horizontal" Spacing="9">
+                <PathIcon Width="30"
+                          Height="30"
+                          Data="{StaticResource data_pie_regular}" />
                 <TextBlock VerticalAlignment="Center"
                            FontWeight="SemiBold"
                            Text="Boxel Stats" />
@@ -295,26 +298,26 @@
                 <StackPanel Orientation="Horizontal" Spacing="4">
                   <TextBlock Classes="muted"
                              VerticalAlignment="Center"
-                             Text="EXPECTED SYSTEMS" />
+                             Text="LAST SYSTEM AVAILABLE" />
                   <Button Classes="link"
                           Width="18"
                           Height="18"
                           Padding="2"
                           VerticalAlignment="Center"
-                          AutomationProperties.Name="Explain expected systems"
+                          AutomationProperties.Name="Explain last system available"
                           Click="ExpectedSystemsInfo_Click"
-                          ToolTip.Tip="Explain expected systems">
+                          ToolTip.Tip="Explain last system available">
                     <PathIcon Width="14"
                               Height="14"
                               Data="{StaticResource question_circle_regular}" />
                   </Button>
                 </StackPanel>
-                <TextBox Text="{Binding BoxelSearch.ExpectedSystemCount, Mode=TwoWay}" />
+                <TextBox Text="{Binding BoxelSearch.LastSystemAvailable, Mode=TwoWay}" />
               </StackPanel>
               <Button Grid.Column="1"
                       Classes="secondary"
                       VerticalAlignment="Bottom"
-                      Command="{Binding BoxelSearch.ApplyExpectedCountCommand}"
+                      Command="{Binding BoxelSearch.ApplyLastSystemAvailableCommand}"
                       Content="Apply" />
             </Grid>
             <WrapPanel Orientation="Horizontal">
@@ -328,8 +331,8 @@
                       Content="{Binding BoxelSearch.RefreshButtonText}" />
               <Button Classes="secondary"
                       Margin="0,0,0,10"
-                      Command="{Binding BoxelSearch.ToggleEmptyCommand}"
-                      Content="{Binding BoxelSearch.EmptyButtonText}" />
+                      Command="{Binding BoxelSearch.MarkNextEmptyCommand}"
+                      Content="Mark Next Empty" />
             </WrapPanel>
             <Separator />
             <StackPanel Spacing="8">
@@ -555,49 +558,78 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:BoxelSystemRowViewModel">
                 <Border BorderBrush="{DynamicResource RavenBorderBrush}"
-                        BorderThickness="0,0,0,1"
-                        Padding="12,10">
-                  <Grid ColumnDefinitions="2.2*,0.8*,1.15*,1.15*,110,110"
-                        ColumnSpacing="12">
-                    <StackPanel Spacing="2">
-                      <TextBlock Classes="monospace"
-                                 FontWeight="SemiBold"
-                                 Text="{Binding Name}" />
-                      <TextBlock Classes="muted"
-                                 FontSize="10"
-                                 IsVisible="{Binding IsCurrent}"
-                                 Text="CURRENT SYSTEM" />
-                    </StackPanel>
-                    <TextBlock Grid.Column="1"
-                               Classes="muted"
-                               VerticalAlignment="Center"
-                               Text="{Binding Distance}" />
-                    <TextBlock Grid.Column="2"
-                               Classes="muted"
-                               VerticalAlignment="Center"
-                               Text="{Binding VisitedAt}" />
-                    <TextBlock Grid.Column="3"
-                               Classes="muted"
-                               VerticalAlignment="Center"
-                               Text="{Binding SpanshUpdatedAt}" />
-                    <Border Grid.Column="4"
-                            Classes="badge"
+                        BorderThickness="0,0,0,1">
+                  <Grid>
+                    <Border Background="{DynamicResource RavenAccentBrush}"
+                            IsVisible="{Binding ShowNextIncompleteHighlight}"
+                            Opacity="0.14" />
+                    <Border Background="{DynamicResource RavenSuccessBrush}"
+                            IsVisible="{Binding ShowCurrentNextHighlight}"
+                            Opacity="0.18" />
+                    <Border Width="3"
                             HorizontalAlignment="Left"
-                            VerticalAlignment="Center">
+                            Background="{DynamicResource RavenSuccessBrush}"
+                            IsVisible="{Binding ShowCurrentNextHighlight}"
+                            Opacity="0.8" />
+                    <Grid ColumnDefinitions="2.2*,0.8*,1.15*,1.15*,110,110"
+                          ColumnSpacing="12"
+                          Margin="12,10">
+                      <StackPanel Spacing="2">
+                        <TextBlock Classes="monospace"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding Name}" />
+                        <TextBlock Classes="muted"
+                                   FontSize="10"
+                                   IsVisible="{Binding HasRowIndicator}"
+                                   Text="{Binding RowIndicator}" />
+                      </StackPanel>
+                      <TextBlock Grid.Column="1"
+                                 Classes="muted"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding Distance}" />
+                      <TextBlock Grid.Column="2"
+                                 Classes="muted"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding VisitedAt}" />
+                      <TextBlock Grid.Column="3"
+                                 Classes="muted"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding SpanshUpdatedAt}" />
+                      <Border Grid.Column="4"
+                              Classes="badge"
+                              HorizontalAlignment="Left"
+                              VerticalAlignment="Center">
                         <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                                    FontSize="10"
                                    Text="{Binding Status}" />
-                    </Border>
-                    <Button Grid.Column="5"
+                      </Border>
+                      <Button Grid.Column="5"
                               Classes="secondary"
                               HorizontalAlignment="Stretch"
                               Command="{Binding ToggleCommand}"
                               Content="{Binding ToggleButtonText}" />
+                    </Grid>
                   </Grid>
                 </Border>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
+          <Grid ColumnDefinitions="Auto,Auto,Auto"
+                ColumnSpacing="12"
+                HorizontalAlignment="Center"
+                IsVisible="{Binding BoxelSearch.HasSystems}">
+            <Button Classes="secondary"
+                    Command="{Binding BoxelSearch.PreviousSystemPageCommand}"
+                    Content="Previous page" />
+            <TextBlock Grid.Column="1"
+                       Classes="muted"
+                       VerticalAlignment="Center"
+                       Text="{Binding BoxelSearch.SystemPageText}" />
+            <Button Grid.Column="2"
+                    Classes="secondary"
+                    Command="{Binding BoxelSearch.NextSystemPageCommand}"
+                    Content="Next page" />
+          </Grid>
           <TextBlock Classes="muted"
                      HorizontalAlignment="Center"
                      IsVisible="{Binding BoxelSearch.IsCurrentEmpty}"

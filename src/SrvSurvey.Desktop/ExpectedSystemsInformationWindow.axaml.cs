@@ -12,7 +12,7 @@ public sealed partial class ExpectedSystemsInformationWindow : Window
 {
     private const string RavenAccentBrush = nameof(RavenAccentBrush);
     private const string ExampleTemplate =
-        "For example the end system of the {0} boxel is: {1} so you would enter 7641 and choose APPLY";
+        "For example the end system of the {0} boxel is: {1} so you would enter 7640 and choose APPLY";
     private static readonly string[] ExampleSystemNames =
         ["Phimbee AA-A d0", "Phimbee AA-A d7640"];
     private static readonly Regex ExamplePlaceholderPattern = new(

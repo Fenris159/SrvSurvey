@@ -54,7 +54,10 @@ public sealed class ErrorReportViewModelTests : IDisposable
         var decodedQuery = WebUtility.UrlDecode(uri.Query);
 
         Assert.Equal("github.com", uri.Host);
-        Assert.Equal("/njthomson/SrvSurvey/issues/new", uri.AbsolutePath);
+        Assert.Equal("/Fenris159/SrvSurvey/issues/new", uri.AbsolutePath);
+        Assert.Equal(
+            "https://github.com/Fenris159/SrvSurvey/issues",
+            ErrorReportViewModel.IssuesUri.AbsoluteUri.TrimEnd('/'));
         Assert.Contains("template=crash-report.yml", decodedQuery);
         Assert.Contains("what-happened=Jumped to Sol & opened the map", decodedQuery);
         Assert.Contains("version=2.0.0", decodedQuery);

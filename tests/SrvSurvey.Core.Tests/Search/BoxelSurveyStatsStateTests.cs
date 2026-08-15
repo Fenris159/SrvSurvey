@@ -177,6 +177,7 @@ public sealed class BoxelSurveyStatsStateTests
         Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
         Assert.Equal(2, snapshot.Visited);
         Assert.Equal(5, snapshot.ImpliedPopulation);
+        Assert.Equal(4, snapshot.HighestRecordedSuffix);
     }
 
     [Fact]

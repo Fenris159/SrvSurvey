@@ -49,6 +49,9 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         ]);
 
         Assert.Contains("Praea Euq IL-P c5-", viewModel.StatsGlanceText, StringComparison.Ordinal);
+        Assert.Contains("1 recorded", viewModel.StatsGlanceText, StringComparison.Ordinal);
+        Assert.Contains("highest suffix 0", viewModel.StatsGlanceText, StringComparison.Ordinal);
+        Assert.DoesNotContain("1 / 1", viewModel.StatsGlanceText, StringComparison.Ordinal);
         viewModel.CancelPendingOperations();
     }
 
@@ -108,7 +111,9 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal("Praea Euq IL-P c5-1", viewModel.NextSystem);
         Assert.Equal(3, viewModel.Systems.Count);
         Assert.True(viewModel.Systems[0].IsComplete);
-        Assert.Equal("3", viewModel.ExpectedSystemCount);
+        Assert.Equal("2", viewModel.LastSystemAvailable);
+        Assert.True(viewModel.Systems[1].ShowNextIncompleteHighlight);
+        Assert.Equal("NEXT INCOMPLETE SYSTEM", viewModel.Systems[1].RowIndicator);
         var saved = await profileStore.LoadAsync("F123", true);
         Assert.True(saved.Data?.BoxelSearch.Active);
         Assert.Equal('c', saved.Data?.BoxelSearch.LowMassCode);
@@ -131,6 +136,73 @@ public sealed class BoxelSearchViewModelTests : IDisposable
 
         Assert.Same(rows, viewModel.Systems);
         Assert.Empty(notifications);
+
+        viewModel.UpdateCurrentSystem(
+            "Praea Euq IL-P c5-1",
+            new GalacticCoordinate(1, 2, 3),
+            101);
+        var currentNext = Assert.Single(viewModel.Systems, row => row.IsCurrent);
+        Assert.True(currentNext.ShowCurrentNextHighlight);
+        Assert.False(currentNext.ShowNextIncompleteHighlight);
+        Assert.Equal(
+            "CURRENT SYSTEM · NEXT INCOMPLETE SYSTEM",
+            currentNext.RowIndicator);
+    }
+
+    [Fact]
+    public async Task LastSystemAvailableIncludesSystemZeroInTheTotalCount()
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        var viewModel = CreateViewModel(
+            profileStore,
+            new StubResolver(
+            [
+                Observation("Praea Euq IL-P c5-0", 100),
+                Observation("Praea Euq IL-P c5-1", 101),
+                Observation("Praea Euq IL-P c5-2", 102),
+            ]));
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        viewModel.LowMassCode = "c";
+        await viewModel.ActivateAsync();
+
+        viewModel.LastSystemAvailable = "348";
+        await viewModel.ApplyLastSystemAvailableAsync();
+
+        Assert.Equal("348", viewModel.LastSystemAvailable);
+        Assert.Equal(10, viewModel.Systems.Count);
+        Assert.EndsWith("c5-0", viewModel.Systems[0].Name, StringComparison.Ordinal);
+        Assert.EndsWith("c5-9", viewModel.Systems[^1].Name, StringComparison.Ordinal);
+        Assert.Equal("Showing systems 0–9 of 349.", viewModel.SystemListNote);
+        Assert.Equal("Page 1 of 35", viewModel.SystemPageText);
+        Assert.Equal(1, viewModel.SystemPageNumber);
+        Assert.Equal(35, viewModel.SystemPageCount);
+        Assert.False(viewModel.PreviousSystemPageCommand.CanExecute(null));
+
+        for (var page = 1; page < viewModel.SystemPageCount; page++)
+        {
+            Assert.True(viewModel.NextSystemPageCommand.CanExecute(null));
+            viewModel.NextSystemPageCommand.Execute(null);
+        }
+
+        Assert.Equal(9, viewModel.Systems.Count);
+        Assert.EndsWith("c5-340", viewModel.Systems[0].Name, StringComparison.Ordinal);
+        Assert.EndsWith("c5-348", viewModel.Systems[^1].Name, StringComparison.Ordinal);
+        Assert.Equal("Showing systems 340–348 of 349.", viewModel.SystemListNote);
+        Assert.Equal("Page 35 of 35", viewModel.SystemPageText);
+        Assert.False(viewModel.NextSystemPageCommand.CanExecute(null));
+        Assert.True(viewModel.PreviousSystemPageCommand.CanExecute(null));
+        Assert.EndsWith(
+            "of 349 systems complete",
+            viewModel.SystemProgress,
+            StringComparison.Ordinal);
+        Assert.Equal("Last system available updated to 348.", viewModel.StatusMessage);
+        var saved = await profileStore.LoadAsync("F123", true);
+        Assert.Equal(349, saved.Data?.BoxelSearch.CurrentCount);
     }
 
     [Fact]
@@ -362,7 +434,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task EmptyMarkerUsesLegacyStoreAndAdvancesToTheNextChild()
+    public async Task MarkNextEmptySkipsAndPersistsOnlyTheNextIncompleteSystem()
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
@@ -385,15 +457,58 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         viewModel.LowMassCode = "c";
         viewModel.AutoCopy = true;
         await viewModel.ActivateAsync();
+        viewModel.LastSystemAvailable = "2";
+        await viewModel.ApplyLastSystemAvailableAsync();
 
-        await viewModel.ToggleCurrentEmptyAsync();
+        await viewModel.MarkNextEmptyAsync();
 
         var top = BoxelAddress.Parse("Praea Euq RS-U d2-0");
-        Assert.True(await new EmptyBoxelStore(temporaryDirectory).IsEmptyAsync(top));
-        Assert.NotEqual(top.Prefix, viewModel.CurrentBoxelName);
+        Assert.False(await new EmptyBoxelStore(temporaryDirectory).IsEmptyAsync(top));
+        Assert.Equal(top.Prefix, viewModel.CurrentBoxelName);
+        Assert.Equal("Praea Euq RS-U d2-1", viewModel.NextSystem);
+        Assert.Equal("EMPTY", viewModel.Systems[0].Status);
+        Assert.Equal("Restore", viewModel.Systems[0].ToggleButtonText);
         Assert.Single(copied);
+        Assert.Equal("Praea Euq RS-U d2-1", copied[0]);
         var saved = await profileStore.LoadAsync("F123", true);
-        Assert.NotEqual(top.Prefix, saved.Data?.BoxelSearch.Current?.Prefix);
+        Assert.Equal(top.Prefix, saved.Data?.BoxelSearch.Current?.Prefix);
+        Assert.Equal(
+            ["Praea Euq RS-U d2-0"],
+            saved.Data?.BoxelSearch.EmptySystems);
+    }
+
+    [Fact]
+    public async Task MarkingNextEmptyAdvancesToThePageContainingTheNextTarget()
+    {
+        var viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([]));
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq RS-U d2-0";
+        viewModel.LowMassCode = "c";
+        await viewModel.ActivateAsync();
+        viewModel.LastSystemAvailable = "10";
+        await viewModel.ApplyLastSystemAvailableAsync();
+
+        for (var suffix = 0; suffix < 10; suffix++)
+        {
+            Assert.EndsWith(
+                $"d2-{suffix}",
+                viewModel.NextSystem,
+                StringComparison.Ordinal);
+            await viewModel.MarkNextEmptyAsync();
+        }
+
+        Assert.Equal(2, viewModel.SystemPageNumber);
+        Assert.Equal("Page 2 of 2", viewModel.SystemPageText);
+        Assert.Single(viewModel.Systems);
+        Assert.EndsWith("d2-10", viewModel.Systems[0].Name, StringComparison.Ordinal);
+        Assert.True(viewModel.Systems[0].IsNextIncomplete);
+        Assert.True(viewModel.Systems[0].ShowNextIncompleteHighlight);
     }
 
     [Fact]

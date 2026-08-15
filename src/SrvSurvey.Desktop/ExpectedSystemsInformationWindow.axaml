@@ -7,23 +7,23 @@
         MinHeight="340"
         CanResize="True"
         WindowStartupLocation="CenterOwner"
-        Title="Expected systems help">
+        Title="Last system available help">
   <Grid RowDefinitions="Auto,*,Auto" Margin="26">
     <StackPanel Spacing="4">
       <TextBlock Classes="eyebrow" Text="BOXEL SEARCH" />
       <TextBlock Classes="page-title"
                  FontSize="25"
-                 Text="Expected systems" />
+                 Text="Last system available" />
       <TextBlock Classes="muted"
                  TextWrapping="Wrap"
-                 Text="Confirm the final generated system before applying the expected count." />
+                 Text="Confirm the final generated system before applying the last available system." />
     </StackPanel>
 
     <ScrollViewer Grid.Row="1" Margin="0,22,0,0">
       <Border Classes="card raised">
         <StackPanel Spacing="14">
           <TextBlock TextWrapping="Wrap"
-                     Text="The number produced is an estimate. You need to manually &quot;bruteforce&quot; the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Then add 1 to that number to include the starting system." />
+                     Text="The number produced is an estimate. You need to manually &quot;bruteforce&quot; the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Enter that final system number exactly as shown; SrvSurvey includes system 0 when it calculates the total." />
           <TextBlock x:Name="ExpectedSystemsExample"
                      TextWrapping="Wrap" />
         </StackPanel>

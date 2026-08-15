@@ -315,6 +315,78 @@ public sealed class BoxelSearchStateTests
     }
 
     [Fact]
+    public void MarkingNextSystemEmptySkipsOnlyThatSystemAndCanBeRestored()
+    {
+        var state = new BoxelSearchState();
+        state.TryActivate(
+            new BoxelSearchActivationRequest
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = false,
+                CompletionMode = BoxelCompletionMode.EnterSystem,
+                AutoCopy = false,
+            },
+            out _);
+        state.SetExpectedSystemCount(3);
+
+        Assert.True(state.TryMarkNextSystemEmpty(out var marked, out var error));
+
+        Assert.Null(error);
+        Assert.Equal("Praea Euq IL-P c5-0", marked);
+        var markedSystem = Assert.IsType<string>(marked);
+        Assert.Equal("Praea Euq IL-P c5-1", state.NextSystem);
+        Assert.Contains("Praea Euq IL-P c5-0", state.EmptySystems);
+        Assert.Equal(1, state.CompletedSystemCount);
+        Assert.False(state.CurrentIsEmpty);
+
+        var observed = new BoxelSearchState(state.CreateSnapshot());
+        Assert.True(observed.MergeSpanshSystems([
+            Observation("Praea Euq IL-P c5-0")
+        ]));
+        Assert.DoesNotContain("Praea Euq IL-P c5-0", observed.EmptySystems);
+        Assert.Equal("Praea Euq IL-P c5-0", observed.NextSystem);
+
+        var restored = new BoxelSearchState(state.CreateSnapshot());
+        Assert.Equal("Praea Euq IL-P c5-1", restored.NextSystem);
+        Assert.True(restored.TrySetSystemEmpty(markedSystem, false, out error));
+        Assert.Null(error);
+        Assert.Equal("Praea Euq IL-P c5-0", restored.NextSystem);
+    }
+
+    [Fact]
+    public void ObservingPersistedEmptySystemReopensCompletedBoxel()
+    {
+        var state = new BoxelSearchState();
+        state.TryActivate(
+            new BoxelSearchActivationRequest
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = false,
+                CompletionMode = BoxelCompletionMode.EnterSystem,
+                AutoCopy = false,
+            },
+            out _);
+
+        Assert.True(state.TryMarkNextSystemEmpty(out _, out _));
+        Assert.True(state.CurrentSystemsComplete);
+
+        var restored = new BoxelSearchState(state.CreateSnapshot());
+        Assert.True(restored.MergeSpanshSystems([
+            Observation("Praea Euq IL-P c5-0")
+        ]));
+
+        Assert.Empty(restored.EmptySystems);
+        Assert.False(restored.CurrentSystemsComplete);
+        Assert.Equal("Praea Euq IL-P c5-0", restored.NextSystem);
+    }
+
+    [Fact]
     public void LegacyEmptyIdsAreAppliedAcrossTheWholeSearchTree()
     {
         var state = new BoxelSearchState();

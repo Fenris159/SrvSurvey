@@ -358,6 +358,12 @@ public sealed class SavedBoxelSearchStore
             BoxelAddress.TryParse(systemName, out var boxel)
             && boxel is not null
             && !completedPrefixes.Contains(boxel.Prefix));
+        var completedSystems = search.CompletedSystems.ToHashSet(StringComparer.Ordinal);
+        completed += search.EmptySystems.Count(systemName =>
+            !completedSystems.Contains(systemName)
+            && BoxelAddress.TryParse(systemName, out var boxel)
+            && boxel is not null
+            && !completedPrefixes.Contains(boxel.Prefix));
         return (Math.Min(completed, total), total);
     }
 
@@ -387,6 +393,7 @@ public sealed class SavedBoxelSearchStore
                 : char.ToLowerInvariant(lowMassCodeText[0]),
             CompletedPrefixes = ReadStringArray(node, "completedPrefixes"),
             CompletedSystems = ReadStringArray(node, "completedSystems"),
+            EmptySystems = ReadStringArray(node, "emptySystems"),
             ProgressByPrefix = ReadProgress(node),
             AutoCopy = GetBoolean(node, "autoCopy") ?? false,
             Collapsed = GetBoolean(node, "collapsed") ?? false,
@@ -457,6 +464,7 @@ public sealed class SavedBoxelSearchStore
             ["lowMassCode"] = search.LowMassCode.ToString(),
             ["completedPrefixes"] = WriteStringArray(search.CompletedPrefixes),
             ["completedSystems"] = WriteStringArray(search.CompletedSystems),
+            ["emptySystems"] = WriteStringArray(search.EmptySystems),
             ["progress"] = WriteProgress(search.ProgressByPrefix),
             ["autoCopy"] = search.AutoCopy,
             ["collapsed"] = search.Collapsed,

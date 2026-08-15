@@ -26,7 +26,12 @@ public sealed record BoxelSurveyIndexEntry(
     double? MinHeliumPercent,
     double? MaxHeliumPercent,
     long CurrentValue,
-    long MappedPotentialValue);
+    long MappedPotentialValue)
+{
+    public int? HighestRecordedSuffix => VisitedSystemCount > 0
+        ? Math.Max(0, ImpliedPopulation - 1)
+        : null;
+}
 
 public sealed record BoxelSurveyBoxelDocument(
     string Prefix,
@@ -134,6 +139,10 @@ public sealed record BoxelSurveyBoxelSnapshot(
     public double? BodyAverage => Visited <= 0
         ? null
         : FssDiscoveryBodyCountSum / (double)Visited;
+
+    public int? HighestRecordedSuffix => Visited > 0
+        ? Math.Max(0, ImpliedPopulation - 1)
+        : null;
 
     public double? ValuePerSystem => Visited <= 0
         ? null

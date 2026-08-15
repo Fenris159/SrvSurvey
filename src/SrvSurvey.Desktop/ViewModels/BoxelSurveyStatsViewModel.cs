@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Avalonia.Threading;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
 
@@ -49,15 +50,19 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     private string detailTitle = "Select a boxel";
     private string heliumText = BoxelSurveyAverageFormatter.Placeholder;
     private string visitedText = BoxelSurveyAverageFormatter.Placeholder;
+    private string configuredSystemsText = string.Empty;
+    private string highestRecordedSuffixText = BoxelSurveyAverageFormatter.Placeholder;
     private string completenessText = BoxelSurveyAverageFormatter.Placeholder;
     private string valueText = BoxelSurveyAverageFormatter.Placeholder;
-    private string minAveragesText = "10";
-    private string minExportText = "5";
+    private string browserTitle = "BOXELS · MASS CODE C";
+    private string browserDescription = "No statistics recorded at mass code C.";
+    private string? browserParentPrefix;
     private IReadOnlyList<BoxelSurveyBrowserRowViewModel> browserRows = [];
     private IReadOnlyList<BoxelSurveyClassRowViewModel> classRows = [];
     private BoxelSurveyBoxelSnapshot? detail;
     private string? lastExportDirectory;
     private int detailRequestVersion;
+    private CancellationTokenSource? detailRefreshCancellation;
     private bool disposed;
 
     public BoxelSurveyStatsViewModel(
@@ -76,10 +81,6 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         this.currentJournalPath = currentJournalPath;
         preferences = settingsStore.Load();
         ApplyPreferences();
-        minAveragesText = preferences.MinSystemsForAverages.ToString(
-            CultureInfo.CurrentCulture);
-        minExportText = preferences.MinSystemsForExport.ToString(
-            CultureInfo.CurrentCulture);
         MassCodes = CreateMassCodes();
         SelectMassCodeCommand = new RelayCommand(parameter =>
         {
@@ -98,6 +99,12 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             IsDetailVisible = false;
             RefreshBrowser();
         });
+        ExploreChildrenCommand = new RelayCommand(_ => ExploreChildren());
+        ShowAllMassCodeCommand = new RelayCommand(_ =>
+        {
+            browserParentPrefix = null;
+            RefreshBrowser();
+        });
         RefreshCommand = new AsyncCommand(
             RefreshAsync,
             () => !IsBusy,
@@ -107,7 +114,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             () => !IsBusy,
             ReportCommandFailure);
         ExportCommand = new AsyncCommand(
-            ExportAsync,
+            () => ExportAsync(),
             () => !IsBusy,
             ReportCommandFailure);
         coordinator.Changed += OnCoordinatorChanged;
@@ -123,6 +130,10 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     public ICommand SelectMassCodeCommand { get; }
 
     public ICommand BackCommand { get; }
+
+    public ICommand ExploreChildrenCommand { get; }
+
+    public ICommand ShowAllMassCodeCommand { get; }
 
     public ICommand RefreshCommand { get; }
 
@@ -147,6 +158,26 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     public IReadOnlyList<BoxelSurveyIndexEntry> RecentEntries
         => coordinator.RecentEntries();
 
+    public bool HasRecentEntries => RecentEntries.Count > 0;
+
+    public string BrowserTitle
+    {
+        get => browserTitle;
+        private set => SetField(ref browserTitle, value);
+    }
+
+    public string BrowserDescription
+    {
+        get => browserDescription;
+        private set => SetField(ref browserDescription, value);
+    }
+
+    public bool IsBrowsingChildren => !string.IsNullOrWhiteSpace(browserParentPrefix);
+
+    public string ShowAllMassCodeText => string.Create(
+        CultureInfo.CurrentCulture,
+        $"Show all mass code {char.ToUpperInvariant(selectedMassCode)} boxels");
+
     public char SelectedMassCode
     {
         get => selectedMassCode;
@@ -159,7 +190,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
                 return;
             }
 
-            focusedPrefixes.Clear();
+            ClearFocusedPrefixes();
             RefreshMassCodes();
             RefreshBrowser();
         }
@@ -179,21 +210,80 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     public bool IsBrowserVisible => !IsDetailVisible;
 
-    public bool CanShowSearchRollup =>
-        (focusedPrefixes.Count > 1
-            || (search?.IsActive == true && search.SearchPrefixes.Count > 0));
+    public bool CanShowSearchRollup => SavedSearchBoxelCount > 1;
+
+    private bool HasSavedSearchScope => focusedPrefixes.Count > 0
+        || (search?.IsActive == true && search.SearchPrefixes.Count > 0);
+
+    private int SavedSearchBoxelCount => focusedPrefixes.Count > 0
+        ? focusedPrefixes.Count
+        : search?.IsActive == true
+            ? search.SearchPrefixes.Count
+            : 0;
 
     public bool ShowSearchRollup
     {
         get => showSearchRollup;
         set
         {
+            if (value && !CanShowSearchRollup)
+            {
+                return;
+            }
+
             if (SetField(ref showSearchRollup, value))
             {
-                _ = RefreshDetailAsync();
+                OnPropertyChanged(nameof(IsSelectedBoxelScope));
+                OnPropertyChanged(nameof(IsEntireSavedSearchScope));
+                OnPropertyChanged(nameof(EntireSavedSearchScopeText));
+                OnPropertyChanged(nameof(StatisticsScopeDescription));
+                QueueDetailRefresh();
             }
         }
     }
+
+    public bool IsSelectedBoxelScope
+    {
+        get => !ShowSearchRollup;
+        set
+        {
+            if (value)
+            {
+                ShowSearchRollup = false;
+            }
+        }
+    }
+
+    public bool IsEntireSavedSearchScope
+    {
+        get => ShowSearchRollup;
+        set
+        {
+            if (value && CanShowSearchRollup)
+            {
+                ShowSearchRollup = true;
+            }
+        }
+    }
+
+    public string EntireSavedSearchScopeText => !HasSavedSearchScope
+        ? "Entire saved search (not available)"
+        : string.Create(
+            CultureInfo.CurrentCulture,
+            $"Entire saved search ({SavedSearchBoxelCount:N0} boxel{(SavedSearchBoxelCount == 1 ? string.Empty : "s")})");
+
+    public string StatisticsScopeDescription => ShowSearchRollup
+        ? "Combines recorded totals and averages from every boxel in this saved search. "
+            + "Configured system counts and highest suffixes are per-boxel and cannot be combined. "
+            + "If only one boxel has recorded data, the totals will match that boxel."
+        : !HasSavedSearchScope
+            ? "Showing the selected boxel. Open statistics from Saved boxel searches to view "
+                + "or combine every boxel in a saved search."
+            : SavedSearchBoxelCount == 1
+                ? "Showing the selected boxel. This saved search contains only one boxel, so "
+                    + "an entire-search total would be identical."
+                : "Shows statistics for the selected boxel only, including its configured system "
+                    + "count and highest recorded suffix.";
 
     public bool TreatNavBeaconAsFullyScanned
     {
@@ -207,54 +297,50 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
             preferences = preferences with { TreatNavBeaconAsFullyScanned = value };
             SavePreferences();
-            _ = RefreshDetailAsync();
+            QueueDetailRefresh();
         }
     }
 
-    public string MinAveragesText
+    public int MinSystemsForAverages
     {
-        get => minAveragesText;
+        get => preferences.MinSystemsForAverages;
         set
         {
-            if (!SetField(ref minAveragesText, value)
-                || !int.TryParse(
-                    value,
-                    NumberStyles.Integer,
-                    CultureInfo.CurrentCulture,
-                    out var parsed))
+            var normalized = Math.Clamp(value, 1, 1000);
+            if (preferences.MinSystemsForAverages == normalized)
             {
                 return;
             }
 
             preferences = preferences with
             {
-                MinSystemsForAverages = Math.Clamp(parsed, 1, 1000),
+                MinSystemsForAverages = normalized,
             };
+            OnPropertyChanged();
             SavePreferences();
-            _ = RefreshDetailAsync();
+            RefreshFormattedDetail();
+            ReportStatus(string.Empty);
         }
     }
 
-    public string MinExportText
+    public int MinSystemsForExport
     {
-        get => minExportText;
+        get => preferences.MinSystemsForExport;
         set
         {
-            if (!SetField(ref minExportText, value)
-                || !int.TryParse(
-                    value,
-                    NumberStyles.Integer,
-                    CultureInfo.CurrentCulture,
-                    out var parsed))
+            var normalized = Math.Clamp(value, 1, 1000);
+            if (preferences.MinSystemsForExport == normalized)
             {
                 return;
             }
 
             preferences = preferences with
             {
-                MinSystemsForExport = Math.Clamp(parsed, 1, 1000),
+                MinSystemsForExport = normalized,
             };
+            OnPropertyChanged();
             SavePreferences();
+            ReportStatus(string.Empty);
         }
     }
 
@@ -299,6 +385,36 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         get => visitedText;
         private set => SetField(ref visitedText, value);
     }
+
+    public string ConfiguredSystemsText
+    {
+        get => configuredSystemsText;
+        private set
+        {
+            if (SetField(ref configuredSystemsText, value))
+            {
+                OnPropertyChanged(nameof(HasConfiguredSystemsText));
+            }
+        }
+    }
+
+    public bool HasConfiguredSystemsText => !string.IsNullOrWhiteSpace(ConfiguredSystemsText);
+
+    public string HighestRecordedSuffixText
+    {
+        get => highestRecordedSuffixText;
+        private set => SetField(ref highestRecordedSuffixText, value);
+    }
+
+    public bool CanExploreChildren => detail is not null
+        && !string.IsNullOrWhiteSpace(detail.Prefix)
+        && detail.MassCode > BoxelAddress.MinimumMassCode;
+
+    public string ExploreChildrenText => detail is not null && CanExploreChildren
+        ? string.Create(
+            CultureInfo.CurrentCulture,
+            $"Explore child boxels (mass code {(char)(detail.MassCode - 1)})")
+        : "Explore child boxels";
 
     public string CompletenessText
     {
@@ -347,6 +463,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     {
         ArgumentNullException.ThrowIfNull(prefixes);
         focusedPrefixes.Clear();
+        browserParentPrefix = null;
         focusedPrefixes.AddRange(
             prefixes.Where(prefix => !string.IsNullOrWhiteSpace(prefix))
                 .Distinct(StringComparer.Ordinal));
@@ -355,6 +472,9 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         {
             showSearchRollup = false;
             OnPropertyChanged(nameof(ShowSearchRollup));
+            OnPropertyChanged(nameof(IsSelectedBoxelScope));
+            OnPropertyChanged(nameof(IsEntireSavedSearchScope));
+            OnPropertyChanged(nameof(StatisticsScopeDescription));
         }
 
         if (massCode is { } code && BoxelAddress.IsValidMassCode(code))
@@ -364,6 +484,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         }
 
         OnPropertyChanged(nameof(CanShowSearchRollup));
+        OnPropertyChanged(nameof(EntireSavedSearchScopeText));
+        OnPropertyChanged(nameof(StatisticsScopeDescription));
         var first = focusedPrefixes.FirstOrDefault();
         if (first is not null)
         {
@@ -393,8 +515,11 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             await RefreshDetailAsync().ConfigureAwait(false);
         }
 
-        RefreshBrowser();
-        OnPropertyChanged(nameof(RecentEntries));
+        await RunOnUiThreadAsync(() =>
+        {
+            RefreshBrowser();
+            OnPropertyChanged(nameof(RecentEntries));
+        }).ConfigureAwait(false);
     }
 
     public async Task RebuildAsync()
@@ -446,9 +571,10 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         }
     }
 
-    public async Task ExportAsync()
+    public async Task ExportAsync(string? destinationDirectory = null)
     {
         ExportRequested?.Invoke(this, EventArgs.Empty);
+        IsBusy = true;
         try
         {
             var snapshots = await SelectExportSnapshotsAsync().ConfigureAwait(true);
@@ -458,11 +584,13 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
                 return;
             }
 
-            var directory = Path.Combine(
-                coordinator.StoreDataDirectory,
-                BoxelSurveyStatsStore.StoreDirectoryName,
-                coordinator.FrontierId ?? "unknown",
-                "exports");
+            var directory = string.IsNullOrWhiteSpace(destinationDirectory)
+                ? Path.Combine(
+                    coordinator.StoreDataDirectory,
+                    BoxelSurveyStatsStore.StoreDirectoryName,
+                    coordinator.FrontierId ?? "unknown",
+                    "exports")
+                : Path.GetFullPath(destinationDirectory);
             Directory.CreateDirectory(directory);
             var stamp = DateTimeOffset.UtcNow.ToString(
                 "yyyyMMddHHmmss",
@@ -494,11 +622,16 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             ReportStatus($"Exported to {directory}.");
         }
         catch (Exception exception) when (
-            exception is IOException
+            exception is ArgumentException
+                or IOException
                 or UnauthorizedAccessException
                 or DirectoryNotFoundException)
         {
             ReportStatus("Export failed: " + exception.Message);
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 
@@ -517,63 +650,109 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
         disposed = true;
         Interlocked.Increment(ref detailRequestVersion);
+        var cancellation = Interlocked.Exchange(ref detailRefreshCancellation, null);
+        if (cancellation is not null)
+        {
+            cancellation.Cancel();
+            cancellation.Dispose();
+        }
+
         coordinator.Changed -= OnCoordinatorChanged;
         coordinator.PersistenceFailed -= OnPersistenceFailed;
     }
 
     private async Task RefreshDetailAsync(CancellationToken cancellationToken = default)
     {
-        var prefix = selectedPrefix;
-        if (disposed || string.IsNullOrWhiteSpace(prefix))
+        DetailRefreshRequest? request = null;
+        await RunOnUiThreadAsync(() =>
         {
-            return;
-        }
-
-        var requestVersion = Interlocked.Increment(ref detailRequestVersion);
-        var useRollup = showSearchRollup;
-        var rollupPrefixes = useRollup ? RollupPrefixes().ToArray() : [];
-        IsBusy = true;
-        try
-        {
-            var snapshot = useRollup
-                ? await coordinator.RollupAsync(rollupPrefixes, cancellationToken)
-                    .ConfigureAwait(false)
-                : await coordinator.GetAsync(prefix, cancellationToken)
-                    .ConfigureAwait(false)
-                    ?? BoxelSurveyBoxelSnapshot.Empty;
-            cancellationToken.ThrowIfCancellationRequested();
-            if (disposed
-                || requestVersion != detailRequestVersion
-                || !string.Equals(prefix, selectedPrefix, StringComparison.Ordinal)
-                || useRollup != showSearchRollup)
+            if (disposed || string.IsNullOrWhiteSpace(selectedPrefix))
             {
                 return;
             }
 
-            detail = snapshot;
-            var format = new BoxelSurveyAverageFormat(preferences.MinSystemsForAverages);
-            DetailTitle = useRollup
-                ? prefix + " · saved search"
-                : snapshot.Prefix;
-            HeliumText = FormatHelium(snapshot.MinHeliumPercent, snapshot.MaxHeliumPercent);
-            VisitedText = string.Create(
-                CultureInfo.CurrentCulture,
-                $"{snapshot.Visited} / {snapshot.ImpliedPopulation} visited");
-            CompletenessText = string.Create(
-                CultureInfo.CurrentCulture,
-                $"FSS complete {snapshot.FssCompleteCount}    FSS bodies {snapshot.FssDiscoveryBodyCountSum} ({FormatAverage(snapshot.BodyAverage)})");
-            ValueText = string.Create(
-                CultureInfo.CurrentCulture,
-                $"{FormatCredits(snapshot.CurrentValue)} as scanned   ·   {FormatCredits(snapshot.MappedPotentialValue)} if mapped");
-            ClassRows = BuildClassRows(snapshot, format);
+            request = new DetailRefreshRequest(
+                selectedPrefix,
+                Interlocked.Increment(ref detailRequestVersion),
+                showSearchRollup,
+                showSearchRollup ? RollupPrefixes().ToArray() : []);
+            IsBusy = true;
+        }).ConfigureAwait(false);
+        if (request is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var snapshot = request.UseRollup
+                ? await coordinator.RollupAsync(request.RollupPrefixes, cancellationToken)
+                    .ConfigureAwait(false)
+                : await coordinator.GetAsync(request.Prefix, cancellationToken)
+                    .ConfigureAwait(false)
+                    ?? BoxelSurveyBoxelSnapshot.Empty;
+            cancellationToken.ThrowIfCancellationRequested();
+            await RunOnUiThreadAsync(() => ApplyDetailSnapshot(request, snapshot))
+                .ConfigureAwait(false);
         }
         finally
         {
-            if (requestVersion == detailRequestVersion)
+            await RunOnUiThreadAsync(() =>
             {
-                IsBusy = false;
-            }
+                if (request.Version == detailRequestVersion)
+                {
+                    IsBusy = false;
+                }
+            }).ConfigureAwait(false);
         }
+    }
+
+    private void ApplyDetailSnapshot(
+        DetailRefreshRequest request,
+        BoxelSurveyBoxelSnapshot snapshot)
+    {
+        if (disposed
+            || request.Version != detailRequestVersion
+            || !string.Equals(request.Prefix, selectedPrefix, StringComparison.Ordinal)
+            || request.UseRollup != showSearchRollup)
+        {
+            return;
+        }
+
+        detail = snapshot;
+        var format = new BoxelSurveyAverageFormat(preferences.MinSystemsForAverages);
+        DetailTitle = request.UseRollup
+            ? request.Prefix + " · entire saved search"
+            : snapshot.Prefix;
+        HeliumText = FormatHelium(snapshot.MinHeliumPercent, snapshot.MaxHeliumPercent);
+        VisitedText = string.Create(
+            CultureInfo.CurrentCulture,
+            $"Systems recorded: {snapshot.Visited:N0}");
+        ConfiguredSystemsText = request.UseRollup
+            ? "Configured search systems: — (per-boxel only)"
+            : search?.IsActive == true
+            && search?.CurrentBoxelPrefix is { } currentPrefix
+            && string.Equals(currentPrefix, snapshot.Prefix, StringComparison.Ordinal)
+                ? string.Create(
+                    CultureInfo.CurrentCulture,
+                    $"Configured search systems: {search.CurrentExpectedSystemCount:N0}")
+                : string.Empty;
+        HighestRecordedSuffixText = request.UseRollup
+            ? "Highest recorded suffix: — (per-boxel only)"
+            : snapshot.HighestRecordedSuffix is { } suffix
+                ? string.Create(
+                    CultureInfo.CurrentCulture,
+                    $"Highest recorded suffix: {suffix:N0}")
+                : "Highest recorded suffix: —";
+        CompletenessText = string.Create(
+            CultureInfo.CurrentCulture,
+            $"FSS complete {snapshot.FssCompleteCount}    FSS bodies {snapshot.FssDiscoveryBodyCountSum} ({FormatAverage(snapshot.BodyAverage)})");
+        ValueText = string.Create(
+            CultureInfo.CurrentCulture,
+            $"{FormatCredits(snapshot.CurrentValue)} as scanned   ·   {FormatCredits(snapshot.MappedPotentialValue)} if mapped");
+        ClassRows = BuildClassRows(snapshot, format);
+        OnPropertyChanged(nameof(CanExploreChildren));
+        OnPropertyChanged(nameof(ExploreChildrenText));
     }
 
     private async Task<IReadOnlyList<BoxelSurveyBoxelSnapshot>> SelectExportSnapshotsAsync()
@@ -665,17 +844,100 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         return search?.SearchPrefixes ?? [selectedPrefix ?? string.Empty];
     }
 
+    private void RefreshFormattedDetail()
+    {
+        if (detail is null)
+        {
+            return;
+        }
+
+        ClassRows = BuildClassRows(
+            detail,
+            new BoxelSurveyAverageFormat(preferences.MinSystemsForAverages));
+    }
+
+    private void QueueDetailRefresh()
+    {
+        if (disposed || string.IsNullOrWhiteSpace(selectedPrefix))
+        {
+            return;
+        }
+
+        var next = new CancellationTokenSource();
+        var previous = Interlocked.Exchange(ref detailRefreshCancellation, next);
+        if (previous is not null)
+        {
+            previous.Cancel();
+            previous.Dispose();
+        }
+
+        _ = RefreshDetailSafelyAsync(next);
+    }
+
+    private async Task RefreshDetailSafelyAsync(CancellationTokenSource cancellation)
+    {
+        try
+        {
+            await RefreshDetailAsync(cancellation.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // A newer scope or setting change superseded this refresh.
+        }
+        catch (Exception exception)
+        {
+            await RunOnUiThreadAsync(() => ReportStatus(
+                "Could not refresh boxel statistics: " + exception.Message))
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            if (ReferenceEquals(
+                    Interlocked.CompareExchange(
+                        ref detailRefreshCancellation,
+                        null,
+                        cancellation),
+                    cancellation))
+            {
+                cancellation.Dispose();
+            }
+        }
+    }
+
     private void ClearFocusedPrefixes()
     {
         focusedPrefixes.Clear();
+        browserParentPrefix = null;
         coordinator.SetRetainPrefixes([]);
         if (showSearchRollup)
         {
             showSearchRollup = false;
             OnPropertyChanged(nameof(ShowSearchRollup));
+            OnPropertyChanged(nameof(IsSelectedBoxelScope));
+            OnPropertyChanged(nameof(IsEntireSavedSearchScope));
+            OnPropertyChanged(nameof(StatisticsScopeDescription));
         }
 
         OnPropertyChanged(nameof(CanShowSearchRollup));
+        OnPropertyChanged(nameof(EntireSavedSearchScopeText));
+        OnPropertyChanged(nameof(StatisticsScopeDescription));
+    }
+
+    private void ExploreChildren()
+    {
+        if (!CanExploreChildren
+            || selectedPrefix is null
+            || !TryParsePrefix(selectedPrefix, out var parent))
+        {
+            return;
+        }
+
+        ClearFocusedPrefixes();
+        browserParentPrefix = parent.Prefix;
+        selectedMassCode = (char)(parent.MassCode - 1);
+        IsDetailVisible = false;
+        RefreshMassCodes();
+        RefreshBrowser();
     }
 
     private void RefreshBrowser()
@@ -683,30 +945,62 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         var index = coordinator.Index.ToDictionary(
             entry => entry.Prefix,
             StringComparer.Ordinal);
-        var roots = focusedPrefixes.Count > 0
-            ? focusedPrefixes.ToArray()
-            : index.Values
+        string[] roots;
+        if (browserParentPrefix is not null
+            && TryParsePrefix(browserParentPrefix, out var parent))
+        {
+            var childPrefixes = parent.Children
+                .Select(child => child.Prefix)
+                .ToHashSet(StringComparer.Ordinal);
+            roots = index.Values
+                .Where(entry => entry.MassCode == selectedMassCode)
+                .Where(entry => childPrefixes.Contains(entry.Prefix))
+                .Select(entry => entry.Prefix)
+                .Order(StringComparer.Ordinal)
+                .ToArray();
+            BrowserTitle = string.Create(
+                CultureInfo.CurrentCulture,
+                $"CHILD BOXELS · MASS CODE {char.ToUpperInvariant(selectedMassCode)}");
+            BrowserDescription = roots.Length == 0
+                ? $"No child boxel statistics are recorded inside {parent.Prefix}."
+                : string.Create(
+                    CultureInfo.CurrentCulture,
+                    $"{roots.Length:N0} recorded child boxels inside {parent.Prefix}.");
+        }
+        else if (focusedPrefixes.Count > 0)
+        {
+            roots = focusedPrefixes
+                .Where(index.ContainsKey)
+                .Order(StringComparer.Ordinal)
+                .ToArray();
+            BrowserTitle = "SAVED SEARCH BOXELS";
+            BrowserDescription = string.Create(
+                CultureInfo.CurrentCulture,
+                $"{roots.Length:N0} boxels have recorded statistics in this saved search.");
+        }
+        else
+        {
+            roots = index.Values
                 .Where(entry => entry.MassCode == selectedMassCode)
                 .Select(entry => entry.Prefix)
                 .Order(StringComparer.Ordinal)
                 .ToArray();
-        var rows = new List<BoxelSurveyBrowserRowViewModel>();
-        foreach (var prefix in roots)
-        {
-            rows.Add(CreateRow(prefix, index, indent: 0));
-            if (!TryParsePrefix(prefix, out var boxel))
-            {
-                continue;
-            }
-
-            foreach (var child in boxel.Children)
-            {
-                rows.Add(CreateRow(child.Prefix, index, indent: 1));
-            }
+            var massCode = char.ToUpperInvariant(selectedMassCode);
+            BrowserTitle = $"BOXELS · MASS CODE {massCode}";
+            BrowserDescription = roots.Length == 0
+                ? $"No statistics recorded at mass code {massCode}."
+                : string.Create(
+                    CultureInfo.CurrentCulture,
+                    $"{roots.Length:N0} recorded boxels at mass code {massCode}.");
         }
 
-        BrowserRows = rows;
+        BrowserRows = roots
+            .Select(prefix => CreateRow(prefix, index, indent: 0))
+            .ToArray();
         OnPropertyChanged(nameof(RecentEntries));
+        OnPropertyChanged(nameof(HasRecentEntries));
+        OnPropertyChanged(nameof(IsBrowsingChildren));
+        OnPropertyChanged(nameof(ShowAllMassCodeText));
     }
 
     private BoxelSurveyBrowserRowViewModel CreateRow(
@@ -716,12 +1010,16 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     {
         index.TryGetValue(prefix, out var entry);
         var visited = entry?.VisitedSystemCount ?? 0;
-        var implied = entry?.ImpliedPopulation ?? 0;
         var helium = FormatHelium(entry?.MinHeliumPercent, entry?.MaxHeliumPercent);
-        var status = entry is null || visited == 0 ? "not visited" : string.Empty;
+        var status = visited == 0 ? "no recorded systems" : string.Empty;
+        var highestSuffix = entry?.HighestRecordedSuffix is { } suffix
+            ? suffix.ToString("N0", CultureInfo.CurrentCulture)
+            : BoxelSurveyAverageFormatter.Placeholder;
         return new BoxelSurveyBrowserRowViewModel(
             prefix,
-            string.Create(CultureInfo.CurrentCulture, $"{visited} / {implied}"),
+            string.Create(
+                CultureInfo.CurrentCulture,
+                $"{visited:N0} recorded · suffix {highestSuffix}"),
             helium,
             status,
             indent,
@@ -811,20 +1109,45 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     {
         try
         {
-            await RefreshAsync().ConfigureAwait(true);
+            await RunOnUiThreadAsync(RefreshAsync).ConfigureAwait(false);
         }
         catch (Exception exception) when (
             exception is IOException
                 or UnauthorizedAccessException
                 or InvalidDataException)
         {
-            ReportStatus("Could not refresh boxel statistics: " + exception.Message);
+            await RunOnUiThreadAsync(() => ReportStatus(
+                "Could not refresh boxel statistics: " + exception.Message))
+                .ConfigureAwait(false);
         }
     }
 
     private void OnPersistenceFailed(object? sender, Exception exception)
     {
-        ReportStatus("Could not save boxel survey statistics: " + exception.Message);
+        Dispatcher.UIThread.Post(() => ReportStatus(
+            "Could not save boxel survey statistics: " + exception.Message));
+    }
+
+    private static async Task RunOnUiThreadAsync(Action action)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            action();
+            return;
+        }
+
+        await Dispatcher.UIThread.InvokeAsync(action);
+    }
+
+    private static async Task RunOnUiThreadAsync(Func<Task> action)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            await action().ConfigureAwait(true);
+            return;
+        }
+
+        await Dispatcher.UIThread.InvokeAsync(action);
     }
 
     private static bool TryParsePrefix(string prefix, out BoxelAddress boxel)
@@ -908,6 +1231,12 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+    private sealed record DetailRefreshRequest(
+        string Prefix,
+        int Version,
+        bool UseRollup,
+        IReadOnlyList<string> RollupPrefixes);
 
     private sealed class RelayCommand(Action<object?> execute) : ICommand
     {

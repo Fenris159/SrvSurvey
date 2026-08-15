@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
@@ -25,6 +26,58 @@ public sealed partial class BoxelStatsWindow : Window
     private void Close_Click(object? sender, RoutedEventArgs eventArgs)
     {
         Close();
+    }
+
+    private async void AverageHelp_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        var dialog = new BoxelAverageHelpDialog();
+        await dialog.ShowDialog(this);
+    }
+
+    private async void Export_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (DataContext is not BoxelSurveyStatsViewModel viewModel)
+        {
+            return;
+        }
+
+        try
+        {
+            if (!StorageProvider.CanPickFolder)
+            {
+                viewModel.ReportStatus(
+                    "This platform does not provide a folder picker for exports.");
+                return;
+            }
+
+            var folders = await StorageProvider.OpenFolderPickerAsync(
+                new FolderPickerOpenOptions
+                {
+                    Title = "Choose where to export boxel statistics",
+                    AllowMultiple = false,
+                });
+            var directory = folders.Count > 0
+                ? folders[0].TryGetLocalPath()
+                : null;
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                await viewModel.ExportAsync(directory);
+            }
+            else if (folders.Count > 0)
+            {
+                viewModel.ReportStatus(
+                    "The selected export folder is not available as a local filesystem path.");
+            }
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or NotSupportedException
+                or InvalidOperationException)
+        {
+            viewModel.ReportStatus(
+                "Could not choose an export folder: " + exception.Message);
+        }
     }
 
     private async void BrowserRow_Click(object? sender, RoutedEventArgs eventArgs)
