@@ -1,6 +1,6 @@
 # Install SrvSurvey on Windows
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.24**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.25**.
 
 > [!IMPORTANT]
 > If RC4 or earlier is installed under a protected folder such as
@@ -23,8 +23,8 @@ Repository maintainers can build and publish a new release as follows:
 1. Open the repository's
    [Build and publish SrvSurvey-XP release workflow](https://github.com/Fenris159/SrvSurvey/actions/workflows/build-srvsurvey-xp.yml).
 2. Select **Run workflow**, choose the source branch/tag/commit and release
-   channel, then enter a three- or four-part base version. Development builds
-   also require an RC number.
+   channel. The workflow reads the complete version, including any RC suffix,
+   from the desktop project.
 3. After all builds and tests pass, the workflow creates an `xp-v<version>`
    release. Development builds append `-rc.<number>` and are GitHub
    pre-releases; stable builds use the base version and are explicitly not
