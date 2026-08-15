@@ -59,10 +59,13 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     private string? browserParentPrefix;
     private IReadOnlyList<BoxelSurveyBrowserRowViewModel> browserRows = [];
     private IReadOnlyList<BoxelSurveyClassRowViewModel> classRows = [];
+    private IReadOnlyList<BoxelSurveyIndexEntry> recentEntries = [];
     private BoxelSurveyBoxelSnapshot? detail;
     private string? lastExportDirectory;
     private int detailRequestVersion;
     private CancellationTokenSource? detailRefreshCancellation;
+    private int coordinatorRefreshPending;
+    private int coordinatorRefreshRunning;
     private bool disposed;
 
     public BoxelSurveyStatsViewModel(
@@ -143,20 +146,11 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     public IReadOnlyList<BoxelSurveyMassCodeOption> MassCodes { get; }
 
-    public IReadOnlyList<BoxelSurveyBrowserRowViewModel> BrowserRows
-    {
-        get => browserRows;
-        private set => SetField(ref browserRows, value);
-    }
+    public IReadOnlyList<BoxelSurveyBrowserRowViewModel> BrowserRows => browserRows;
 
-    public IReadOnlyList<BoxelSurveyClassRowViewModel> ClassRows
-    {
-        get => classRows;
-        private set => SetField(ref classRows, value);
-    }
+    public IReadOnlyList<BoxelSurveyClassRowViewModel> ClassRows => classRows;
 
-    public IReadOnlyList<BoxelSurveyIndexEntry> RecentEntries
-        => coordinator.RecentEntries();
+    public IReadOnlyList<BoxelSurveyIndexEntry> RecentEntries => recentEntries;
 
     public bool HasRecentEntries => RecentEntries.Count > 0;
 
@@ -545,6 +539,11 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     public async Task RefreshAsync()
     {
+        if (disposed)
+        {
+            return;
+        }
+
         if (IsDetailVisible)
         {
             await RefreshDetailAsync(CancellationToken.None).ConfigureAwait(false);
@@ -552,8 +551,12 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
         await RunOnUiThreadAsync(() =>
         {
+            if (disposed)
+            {
+                return;
+            }
+
             RefreshBrowser();
-            OnPropertyChanged(nameof(RecentEntries));
         }).ConfigureAwait(false);
     }
 
@@ -688,6 +691,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         }
 
         disposed = true;
+        Interlocked.Exchange(ref coordinatorRefreshPending, 0);
         Interlocked.Increment(ref detailRequestVersion);
         var cancellation = Interlocked.Exchange(ref detailRefreshCancellation, null);
         if (cancellation is not null)
@@ -804,7 +808,10 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         ValueText = string.Create(
             CultureInfo.CurrentCulture,
             $"{FormatCredits(snapshot.CurrentValue)} as scanned   ·   {FormatCredits(snapshot.MappedPotentialValue)} if mapped");
-        ClassRows = BuildClassRows(snapshot, format);
+        SetSequenceField(
+            ref classRows,
+            BuildClassRows(snapshot, format),
+            nameof(ClassRows));
         OnPropertyChanged(nameof(CanExploreChildren));
         OnPropertyChanged(nameof(ExploreChildrenText));
     }
@@ -917,9 +924,12 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             return;
         }
 
-        ClassRows = BuildClassRows(
-            detail,
-            new BoxelSurveyAverageFormat(preferences.MinSystemsForAverages));
+        SetSequenceField(
+            ref classRows,
+            BuildClassRows(
+                detail,
+                new BoxelSurveyAverageFormat(preferences.MinSystemsForAverages)),
+            nameof(ClassRows));
     }
 
     private void QueueDetailRefresh()
@@ -1061,11 +1071,23 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
                     $"{roots.Length:N0} recorded boxels at mass code {massCode}.");
         }
 
-        BrowserRows = roots
+        SetSequenceField(
+            ref browserRows,
+            roots
             .Select(prefix => CreateRow(prefix, index, indent: 0))
-            .ToArray();
-        OnPropertyChanged(nameof(RecentEntries));
-        OnPropertyChanged(nameof(HasRecentEntries));
+            .ToArray(),
+            nameof(BrowserRows));
+        var nextRecentEntries = coordinator.RecentEntries();
+        var hadRecentEntries = recentEntries.Count > 0;
+        if (SetSequenceField(
+                ref recentEntries,
+                nextRecentEntries,
+                nameof(RecentEntries))
+            && hadRecentEntries != (recentEntries.Count > 0))
+        {
+            OnPropertyChanged(nameof(HasRecentEntries));
+        }
+
         OnPropertyChanged(nameof(IsBrowsingChildren));
         OnPropertyChanged(nameof(ShowAllMassCodeText));
     }
@@ -1174,15 +1196,58 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     private async void OnCoordinatorChanged(object? sender, EventArgs eventArgs)
     {
+        if (disposed)
+        {
+            return;
+        }
+
+        Interlocked.Exchange(ref coordinatorRefreshPending, 1);
+        if (Interlocked.CompareExchange(ref coordinatorRefreshRunning, 1, 0) != 0)
+        {
+            return;
+        }
+
         try
         {
-            await RunOnUiThreadAsync(RefreshAsync).ConfigureAwait(false);
+            while (!disposed
+                && Interlocked.Exchange(ref coordinatorRefreshPending, 0) != 0)
+            {
+                try
+                {
+                    await RunOnUiThreadAsync(RefreshAsync).ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    if (!disposed)
+                    {
+                        await RunOnUiThreadAsync(() => ReportStatus(
+                            "Could not refresh boxel statistics: " + exception.Message))
+                            .ConfigureAwait(false);
+                    }
+                }
+            }
         }
         catch (Exception exception)
         {
-            await RunOnUiThreadAsync(() => ReportStatus(
-                "Could not refresh boxel statistics: " + exception.Message))
-                .ConfigureAwait(false);
+            if (!disposed)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (!disposed)
+                    {
+                        ReportStatus(
+                            "Could not refresh boxel statistics: " + exception.Message);
+                    }
+                });
+            }
+        }
+        finally
+        {
+            Interlocked.Exchange(ref coordinatorRefreshRunning, 0);
+            if (!disposed && Volatile.Read(ref coordinatorRefreshPending) != 0)
+            {
+                OnCoordinatorChanged(sender, eventArgs);
+            }
         }
     }
 
@@ -1294,6 +1359,21 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+
+        field = value;
+        OnPropertyChanged(propertyName);
+        return true;
+    }
+
+    private bool SetSequenceField<T>(
+        ref IReadOnlyList<T> field,
+        IReadOnlyList<T> value,
+        string propertyName)
+    {
+        if (field.SequenceEqual(value))
         {
             return false;
         }

@@ -184,6 +184,68 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task UnchangedRefreshKeepsExistingRowCollections()
+    {
+        using var coordinator = await CreateCoordinatorWithSystemAsync();
+        using var viewModel = CreateViewModel(coordinator);
+        await viewModel.OpenPrefixAsync("Praea Euq IL-P c5-");
+        var browserRows = viewModel.BrowserRows;
+        var classRows = viewModel.ClassRows;
+        var recentEntries = viewModel.RecentEntries;
+        var changes = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) => changes.Add(eventArgs.PropertyName);
+
+        await viewModel.RefreshAsync();
+
+        Assert.Same(browserRows, viewModel.BrowserRows);
+        Assert.Same(classRows, viewModel.ClassRows);
+        Assert.Same(recentEntries, viewModel.RecentEntries);
+        Assert.DoesNotContain(nameof(viewModel.BrowserRows), changes);
+        Assert.DoesNotContain(nameof(viewModel.ClassRows), changes);
+        Assert.DoesNotContain(nameof(viewModel.RecentEntries), changes);
+    }
+
+    [AvaloniaFact]
+    public async Task CoordinatorChangeBurstCoalescesUiRefreshes()
+    {
+        using var coordinator = await CreateCoordinatorWithSystemAsync();
+        using var viewModel = CreateViewModel(coordinator);
+        await viewModel.OpenPrefixAsync("Praea Euq IL-P c5-");
+        var busyTransitions = 0;
+        viewModel.PropertyChanged += (_, eventArgs) =>
+        {
+            if (eventArgs.PropertyName == nameof(viewModel.IsBusy))
+            {
+                busyTransitions++;
+            }
+        };
+        var raiseChanged = typeof(BoxelSurveyStatsCoordinator).GetMethod(
+            "RaiseChanged",
+            System.Reflection.BindingFlags.Instance
+                | System.Reflection.BindingFlags.NonPublic);
+        Assert.NotNull(raiseChanged);
+
+        Task.Run(() =>
+        {
+            for (var index = 0; index < 20; index++)
+            {
+                raiseChanged!.Invoke(coordinator, null);
+            }
+        }).GetAwaiter().GetResult();
+
+        for (var attempt = 0; attempt < 50 && busyTransitions < 2; attempt++)
+        {
+            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { });
+            await Task.Delay(10);
+        }
+
+        await Task.Delay(50);
+        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { });
+        Assert.InRange(busyTransitions, 2, 4);
+        Assert.False(viewModel.IsBusy);
+    }
+
+    [AvaloniaFact]
     public async Task ChildNavigationShowsOnlyRecordedDirectChildren()
     {
         using var coordinator = await CreateCoordinatorWithSystemAsync();
