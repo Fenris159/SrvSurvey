@@ -97,6 +97,47 @@ public sealed class BoxelSearchStateTests
     }
 
     [Fact]
+    public void HandledSystemCountUsesRecordedCollectionsAndDeduplicatesSystems()
+    {
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var state = new BoxelSearchState(new BoxelSearchSnapshot
+        {
+            Active = true,
+            TopBoxel = top,
+            Current = top,
+            CurrentCount = 2,
+            CompletionMode = BoxelCompletionMode.FssAllBodies,
+            CompletedSystems =
+            [
+                top.WithSystemNumber(500).GeneratedName,
+                top.WithSystemNumber(1).GeneratedName,
+            ],
+            EmptySystems =
+            [
+                top.WithSystemNumber(1).GeneratedName,
+                top.WithSystemNumber(600).GeneratedName,
+            ],
+        });
+
+        state.MergeSpanshSystems(
+        [
+            new BoxelSystemObservation(
+                top.WithSystemNumber(0),
+                null,
+                null,
+                null,
+                true,
+                true),
+        ]);
+
+        Assert.True(state.TrySetSystemComplete(top.GeneratedName, true, out _));
+        Assert.Single(state.Systems);
+        Assert.True(state.Systems[0].IsComplete);
+        Assert.Contains(top.WithSystemNumber(600).GeneratedName, state.EmptySystems);
+        Assert.Equal(4, state.CompletedSystemCount);
+    }
+
+    [Fact]
     public void ActivateBuildsChildProgressAndRejectsMassCodeH()
     {
         var state = new BoxelSearchState();
@@ -312,6 +353,78 @@ public sealed class BoxelSearchStateTests
 
         Assert.True(state.CurrentIsEmpty);
         Assert.Equal("Praea Euq IL-P c5-", state.NextSystem);
+    }
+
+    [Fact]
+    public void MarkingNextSystemEmptySkipsOnlyThatSystemAndCanBeRestored()
+    {
+        var state = new BoxelSearchState();
+        state.TryActivate(
+            new BoxelSearchActivationRequest
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = false,
+                CompletionMode = BoxelCompletionMode.EnterSystem,
+                AutoCopy = false,
+            },
+            out _);
+        state.SetExpectedSystemCount(3);
+
+        Assert.True(state.TryMarkNextSystemEmpty(out var marked, out var error));
+
+        Assert.Null(error);
+        Assert.Equal("Praea Euq IL-P c5-0", marked);
+        var markedSystem = Assert.IsType<string>(marked);
+        Assert.Equal("Praea Euq IL-P c5-1", state.NextSystem);
+        Assert.Contains("Praea Euq IL-P c5-0", state.EmptySystems);
+        Assert.Equal(1, state.CompletedSystemCount);
+        Assert.False(state.CurrentIsEmpty);
+
+        var observed = new BoxelSearchState(state.CreateSnapshot());
+        Assert.True(observed.MergeSpanshSystems([
+            Observation("Praea Euq IL-P c5-0")
+        ]));
+        Assert.DoesNotContain("Praea Euq IL-P c5-0", observed.EmptySystems);
+        Assert.Equal("Praea Euq IL-P c5-0", observed.NextSystem);
+
+        var restored = new BoxelSearchState(state.CreateSnapshot());
+        Assert.Equal("Praea Euq IL-P c5-1", restored.NextSystem);
+        Assert.True(restored.TrySetSystemEmpty(markedSystem, false, out error));
+        Assert.Null(error);
+        Assert.Equal("Praea Euq IL-P c5-0", restored.NextSystem);
+    }
+
+    [Fact]
+    public void ObservingPersistedEmptySystemReopensCompletedBoxel()
+    {
+        var state = new BoxelSearchState();
+        state.TryActivate(
+            new BoxelSearchActivationRequest
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = false,
+                CompletionMode = BoxelCompletionMode.EnterSystem,
+                AutoCopy = false,
+            },
+            out _);
+
+        Assert.True(state.TryMarkNextSystemEmpty(out _, out _));
+        Assert.True(state.CurrentSystemsComplete);
+
+        var restored = new BoxelSearchState(state.CreateSnapshot());
+        Assert.True(restored.MergeSpanshSystems([
+            Observation("Praea Euq IL-P c5-0")
+        ]));
+
+        Assert.Empty(restored.EmptySystems);
+        Assert.False(restored.CurrentSystemsComplete);
+        Assert.Equal("Praea Euq IL-P c5-0", restored.NextSystem);
     }
 
     [Fact]

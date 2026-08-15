@@ -84,7 +84,7 @@
                 BorderBrush="{DynamicResource RavenBorderBrush}"
                 BorderThickness="0,1"
                 Padding="12,9">
-          <Grid ColumnDefinitions="46,52,1.4*,145,145,190,1.4*,78"
+          <Grid ColumnDefinitions="46,52,1.4*,145,145,190,1.4*,78,44"
                 ColumnSpacing="10">
             <TextBlock Classes="table-heading"
                        HorizontalAlignment="Center"
@@ -138,6 +138,10 @@
                        Classes="table-heading"
                        HorizontalAlignment="Center"
                        Text="EDIT" />
+            <TextBlock Grid.Column="8"
+                       Classes="table-heading"
+                       HorizontalAlignment="Center"
+                       Text="STATS" />
           </Grid>
         </Border>
 
@@ -160,7 +164,7 @@
                   <Border BorderBrush="{DynamicResource RavenBorderBrush}"
                           BorderThickness="0,0,0,1"
                           Padding="12,11">
-                    <Grid ColumnDefinitions="46,52,1.4*,145,145,190,1.4*,78"
+                    <Grid ColumnDefinitions="46,52,1.4*,145,145,190,1.4*,78,44"
                           ColumnSpacing="10">
                       <CheckBox HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
@@ -215,6 +219,21 @@
                               HorizontalAlignment="Center"
                               Command="{Binding EditNotesCommand}"
                               Content="Notes" />
+                      <Button Grid.Column="8"
+                              Classes="link"
+                              Width="36"
+                              Height="36"
+                              Padding="6"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              AutomationProperties.Name="Open boxel statistics"
+                              Command="{Binding OpenStatisticsCommand}"
+                              IsEnabled="{Binding CanOpenStatistics}"
+                              ToolTip.Tip="Open boxel statistics">
+                        <PathIcon Width="16"
+                                  Height="16"
+                                  Data="{StaticResource data_pie_regular}" />
+                      </Button>
                     </Grid>
                   </Border>
                 </DataTemplate>

@@ -30,7 +30,7 @@ using SrvSurvey.Desktop.Theming;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
+public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, IAsyncDisposable
 {
     private static readonly TimeSpan IdleHousekeepingInterval =
         TimeSpan.FromSeconds(5);
@@ -69,6 +69,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         Justification = "The system-body worker disposes the captured source in its finally block.")]
     private CancellationTokenSource? systemBodyDataCancellation;
     private readonly RouteAutoCopyCoordinator routeAutoCopyCoordinator;
+    private readonly BoxelSurveyStatsCoordinator boxelSurveyStats;
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
     private readonly IEddnPublisher eddnPublisher;
@@ -450,6 +451,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         NearestSystems = new NearestSystemsViewModel(
             nearestSystemsClient ?? new NearestSystemsClient(),
             sharedSystemResolver);
+        boxelSurveyStats = new BoxelSurveyStatsCoordinator(
+            new BoxelSurveyStatsStore(AppDataPaths.DataDirectory));
+        boxelSurveyStats.TreatNavBeaconAsFullyScanned =
+            new BoxelSurveyStatsSettingsStore(AppDataPaths.UiSettingsPath)
+                .Load()
+                .TreatNavBeaconAsFullyScanned;
         BoxelSearch = new BoxelSearchViewModel(
             commanderProfileStore,
             new LegacySystemDataReader(AppDataPaths.DataDirectory),
@@ -459,7 +466,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             systemNameSuggestionClient: systemNameSuggestionClient
                 ?? new FallbackSystemNameSuggestionClient(
                     new EdsmSystemNameSuggestionClient(),
-                    new ArdentSystemNameSuggestionClient()));
+                    new ArdentSystemNameSuggestionClient()),
+            surveyStats: boxelSurveyStats);
         GroundTarget = new GroundTargetViewModel(
             new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
         SystemNotes = new SystemNotesViewModel(
@@ -855,6 +863,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public SphereLimitViewModel Search { get; }
 
     public BoxelSearchViewModel BoxelSearch { get; }
+
+    public BoxelSurveyStatsCoordinator BoxelSurveyStats => boxelSurveyStats;
 
     public NearestSystemsViewModel NearestSystems { get; }
 
@@ -2529,6 +2539,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         await LoadCurrentSystemHistoryAsync();
+        await ApplyBoxelSurveyStatsAsync(
+            update,
+            exobiologyChanged,
+            skipPersistedBootstrapEvents);
+
         PendingSystemBodyDataLoad = LoadCurrentSystemBodyDataAsync();
         if (!update.IsBootstrapRead
             && await ApplyFirstFootfallTextCommandsAsync(update.JournalEvents) > 0)
@@ -2583,6 +2598,32 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         return exobiologyAfter;
+    }
+
+    private async Task ApplyBoxelSurveyStatsAsync(
+        JournalMonitorUpdate update,
+        bool exobiologyChanged,
+        bool skipPersistedBootstrapEvents)
+    {
+        if (exobiologyChanged || update.JournalEvents.Count > 0)
+        {
+            await boxelSurveyStats.IngestSnapshotAsync(
+                SystemSurvey.Snapshot,
+                cancellationToken: CancellationToken.None);
+        }
+
+        if (!skipPersistedBootstrapEvents)
+        {
+            await boxelSurveyStats.ApplyJournalEventsAsync(
+                update.JournalEvents,
+                CancellationToken.None);
+        }
+        else
+        {
+            await boxelSurveyStats.ApplyBootstrapContextAsync(
+                update.JournalEvents,
+                CancellationToken.None);
+        }
     }
 
     private SurfaceSurveySessionContext? CreateSurfaceSurveySessionContext()
@@ -3005,6 +3046,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         if (result.Data is null)
         {
+            await boxelSurveyStats.SwitchCommanderAsync(
+                journalState.FrontierId,
+                CancellationToken.None);
             activeProfileRavenApiKey = null;
             Inara.SetCommanderProfile(
                 null,
@@ -3058,6 +3102,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             activeProfileCommanderName,
             result.Data.IsOdyssey,
             result.Data.BoxelSearch);
+        await boxelSurveyStats.SwitchCommanderAsync(
+            result.Data.FrontierId,
+            CancellationToken.None);
         await Guardian.LoadProfileAsync(
             result.Data.FrontierId,
             result.Data.IsOdyssey,
@@ -4385,6 +4432,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public void Dispose()
     {
+        Task.Run(() => DisposeAsync().AsTask(), CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
         if (disposed)
         {
             return;
@@ -4392,10 +4446,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         disposed = true;
         routeAutoCopyCoordinator.Dispose();
+        await boxelSurveyStats.DisposeAsync();
         BoxelSearch.CancelPendingOperations();
         JournalPostProcessor.Cancel();
         CancelSystemBodyDataRequest();
-        firstFootfallInferenceCancellation.Cancel();
+        await firstFootfallInferenceCancellation.CancelAsync();
         firstFootfallInferenceService.Dispose();
         firstFootfallInferenceCancellation.Dispose();
         Colonization.Dispose();
@@ -4421,7 +4476,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             disposableVoxStellarPublisher.Dispose();
         }
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
-        questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        await questRuntimeCoordinator.DisposeAsync();
     }
 
     private void OnEddnUploadEnabledChanged(bool enabled)

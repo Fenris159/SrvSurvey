@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Avalonia.Threading;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
@@ -15,7 +16,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 {
     private const string Unavailable = "\u2014";
-    private const int MaximumVisibleSystemRows = 500;
+    private const int SystemsPerPage = 10;
     private const int LargeAuditConfirmationThreshold = 1_000;
 
     private readonly CommanderProfileStore profileStore;
@@ -27,6 +28,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private readonly TimeSpan systemSuggestionDelay;
     private readonly KnownSystemAddressCatalog knownSystems;
     private readonly BoxelCompletionAuditor completionAuditor;
+    private readonly BoxelSurveyStatsCoordinator? surveyStats;
     private readonly BoxelSearchState state = new();
     private readonly Dictionary<string, BoxelNavigationOptionViewModel>
         navigationOptions = new(StringComparer.Ordinal);
@@ -35,8 +37,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private readonly AsyncCommand disableCommand;
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand copyNextCommand;
-    private readonly AsyncCommand toggleEmptyCommand;
-    private readonly AsyncCommand applyExpectedCountCommand;
+    private readonly AsyncCommand markNextEmptyCommand;
+    private readonly AsyncCommand applyLastSystemAvailableCommand;
+    private readonly AsyncCommand previousSystemPageCommand;
+    private readonly AsyncCommand nextSystemPageCommand;
     private readonly AsyncCommand navigateParentCommand;
     private readonly AsyncCommand navigatePreviousCommand;
     private readonly AsyncCommand navigateNextCommand;
@@ -64,13 +68,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private string currentBoxelName = Unavailable;
     private string currentBoxelDescription = string.Empty;
     private string nextSystem = Unavailable;
-    private string expectedSystemCount = "1";
+    private string lastSystemAvailable = "0";
+    private bool hasUnappliedLastSystemAvailableEdit;
     private string systemProgress = "0 of 0 complete";
     private string boxelProgress = "0 of 0 boxels complete";
     private string searchSize = "Enter a generated system name.";
     private string currentSystemName = Unavailable;
     private long? currentSystemAddress;
     private string systemListNote = string.Empty;
+    private string systemPageText = "Page 1 of 1";
+    private int systemPageIndex;
+    private string? systemPagePrefix;
+    private bool showNextSystemPageOnUpdate;
     private string auditDescription = "Activate a boxel search to audit its full area.";
     private string auditProgress = "No full-area audit has run in this session.";
     private int auditProcessed;
@@ -85,6 +94,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private BoxelNavigationOptionViewModel? nextSiblingBoxel;
     private string siblingPosition = "Search root";
     private string? frontierId;
+    private IReadOnlyList<string> searchPrefixes = [];
+    private bool surveyStatsUnsubscribed;
     private string? commanderName;
     private bool isOdyssey = true;
     private NavRouteSnapshot? latestRoute;
@@ -96,6 +107,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private string? lastCopiedSystemName;
     private Func<string, Task>? clipboardWriter;
     private CancellationTokenSource? auditCancellation;
+    private string statsGlanceText = string.Empty;
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Maintainability",
@@ -110,7 +122,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         KnownSystemAddressCatalog? knownSystems = null,
         SavedBoxelSearchStore? savedSearchStore = null,
         ISystemNameSuggestionClient? systemNameSuggestionClient = null,
-        TimeSpan? systemSuggestionDelay = null)
+        TimeSpan? systemSuggestionDelay = null,
+        BoxelSurveyStatsCoordinator? surveyStats = null)
     {
         this.profileStore = profileStore
             ?? throw new ArgumentNullException(nameof(profileStore));
@@ -120,6 +133,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             ?? throw new ArgumentNullException(nameof(emptyBoxelStore));
         this.systemResolver = systemResolver
             ?? throw new ArgumentNullException(nameof(systemResolver));
+        this.surveyStats = surveyStats;
+        if (this.surveyStats is not null)
+        {
+            this.surveyStats.Changed += OnSurveyStatsChanged;
+        }
+
         this.systemNameSuggestionClient = systemNameSuggestionClient;
         this.systemSuggestionDelay = systemSuggestionDelay
             ?? TimeSpan.FromMilliseconds(450);
@@ -142,14 +161,22 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         RefreshCommand = refreshCommand;
         copyNextCommand = new AsyncCommand(CopyNextSystemAsync, CanCopyNext);
         CopyNextCommand = copyNextCommand;
-        toggleEmptyCommand = new AsyncCommand(
-            ToggleCurrentEmptyAsync,
+        markNextEmptyCommand = new AsyncCommand(
+            MarkNextEmptyAsync,
             CanUseActiveSearch);
-        ToggleEmptyCommand = toggleEmptyCommand;
-        applyExpectedCountCommand = new AsyncCommand(
-            ApplyExpectedSystemCountAsync,
+        MarkNextEmptyCommand = markNextEmptyCommand;
+        applyLastSystemAvailableCommand = new AsyncCommand(
+            ApplyLastSystemAvailableAsync,
             CanUseActiveSearch);
-        ApplyExpectedCountCommand = applyExpectedCountCommand;
+        ApplyLastSystemAvailableCommand = applyLastSystemAvailableCommand;
+        previousSystemPageCommand = new AsyncCommand(
+            () => ChangeSystemPageAsync(-1),
+            () => !IsBusy && systemPageIndex > 0);
+        PreviousSystemPageCommand = previousSystemPageCommand;
+        nextSystemPageCommand = new AsyncCommand(
+            () => ChangeSystemPageAsync(1),
+            () => !IsBusy && systemPageIndex + 1 < SystemPageCount);
+        NextSystemPageCommand = nextSystemPageCommand;
         navigateParentCommand = new AsyncCommand(
             NavigateParentAsync,
             () => !IsBusy && GetParent() is not null);
@@ -333,6 +360,30 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public bool IsActive => state.IsActive;
 
+    public BoxelSurveyStatsCoordinator? SurveyStats => surveyStats;
+
+    public IReadOnlyList<string> SearchPrefixes => searchPrefixes;
+
+    public char SearchLowMassCode => state.LowMassCode;
+
+    public string? CurrentBoxelPrefix => state.Current?.Prefix;
+
+    public int CurrentExpectedSystemCount => state.CurrentCount;
+
+    public string StatsGlanceText
+    {
+        get => statsGlanceText;
+        private set
+        {
+            if (SetField(ref statsGlanceText, value))
+            {
+                OnPropertyChanged(nameof(HasStatsGlance));
+            }
+        }
+    }
+
+    public bool HasStatsGlance => !string.IsNullOrWhiteSpace(StatsGlanceText);
+
     public BoxelSearchNotificationState CreateNotificationState()
     {
         return new BoxelSearchNotificationState(
@@ -393,10 +444,6 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public bool ShowLargeAuditConfirmation => state.TotalBoxelCount
         > LargeAuditConfirmationThreshold;
 
-    public string EmptyButtonText => state.CurrentIsEmpty
-        ? "Mark as not empty"
-        : "Mark current empty";
-
     public string StatusMessage
     {
         get => statusMessage;
@@ -421,10 +468,16 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         private set => SetField(ref nextSystem, value);
     }
 
-    public string ExpectedSystemCount
+    public string LastSystemAvailable
     {
-        get => expectedSystemCount;
-        set => SetField(ref expectedSystemCount, value);
+        get => lastSystemAvailable;
+        set
+        {
+            if (SetField(ref lastSystemAvailable, value))
+            {
+                hasUnappliedLastSystemAvailableEdit = true;
+            }
+        }
     }
 
     public string SystemProgress
@@ -477,6 +530,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         get => systemListNote;
         private set => SetField(ref systemListNote, value);
     }
+
+    public string SystemPageText
+    {
+        get => systemPageText;
+        private set => SetField(ref systemPageText, value);
+    }
+
+    public int SystemPageNumber => systemPageIndex + 1;
+
+    public int SystemPageCount => Math.Max(
+        1,
+        (GetSystemRowCount() + SystemsPerPage - 1) / SystemsPerPage);
 
     public string AuditDescription
     {
@@ -584,9 +649,13 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public ICommand CopyNextCommand { get; }
 
-    public ICommand ToggleEmptyCommand { get; }
+    public ICommand MarkNextEmptyCommand { get; }
 
-    public ICommand ApplyExpectedCountCommand { get; }
+    public ICommand ApplyLastSystemAvailableCommand { get; }
+
+    public ICommand PreviousSystemPageCommand { get; }
+
+    public ICommand NextSystemPageCommand { get; }
 
     public ICommand NavigateParentCommand { get; }
 
@@ -1273,6 +1342,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             }
 
             state.ApplyCompletionAudit(result.Entries);
+            showNextSystemPageOnUpdate = true;
             UpdateDisplay();
             await SaveAsync();
         }
@@ -1310,7 +1380,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public Task CancelAuditAsync()
     {
-        CancelPendingOperations();
+        auditCancellation?.Cancel();
         StatusMessage = "Cancelling the full-area audit after the current request\u2026";
         return Task.CompletedTask;
     }
@@ -1318,30 +1388,77 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public void CancelPendingOperations()
     {
         auditCancellation?.Cancel();
-    }
-
-    public async Task ApplyExpectedSystemCountAsync()
-    {
-        if (!int.TryParse(
-                ExpectedSystemCount,
-                NumberStyles.Integer,
-                CultureInfo.CurrentCulture,
-                out var count)
-            || count < 1
-            || count > 100_000)
+        if (surveyStatsUnsubscribed || surveyStats is null)
         {
-            StatusMessage = "Expected systems must be a whole number from 1 to 100,000.";
             return;
         }
 
-        state.SetExpectedSystemCount(count);
-        UpdateDisplay();
-        await SaveAsync($"Expected system count updated to {state.CurrentCount:N0}.");
+        surveyStats.Changed -= OnSurveyStatsChanged;
+        surveyStatsUnsubscribed = true;
     }
 
-    public async Task ToggleCurrentEmptyAsync()
+    public void ReportStatisticsFailure(string message)
     {
-        if (state.Current is null)
+        StatusMessage = "Could not open boxel statistics: " + message;
+    }
+
+    private void OnSurveyStatsChanged(object? sender, EventArgs eventArgs)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            UpdateStatsGlance();
+            return;
+        }
+
+        Dispatcher.UIThread.Post(UpdateStatsGlance);
+    }
+
+    private void UpdateStatsGlance()
+    {
+        var snapshot = surveyStats?.Current;
+        if (snapshot is null || string.IsNullOrWhiteSpace(snapshot.Prefix))
+        {
+            StatsGlanceText = string.Empty;
+            return;
+        }
+
+        var helium = snapshot.MinHeliumPercent is null && snapshot.MaxHeliumPercent is null
+            ? Unavailable
+            : string.Create(
+                CultureInfo.CurrentCulture,
+                $"HE {snapshot.MinHeliumPercent ?? snapshot.MaxHeliumPercent:0.#}–{snapshot.MaxHeliumPercent ?? snapshot.MinHeliumPercent:0.#}%");
+        var highestSuffix = snapshot.HighestRecordedSuffix?.ToString(
+            "N0",
+            CultureInfo.CurrentCulture) ?? Unavailable;
+        StatsGlanceText = string.Create(
+            CultureInfo.CurrentCulture,
+            $"{snapshot.Prefix}  ·  {snapshot.Visited:N0} recorded  ·  highest suffix {highestSuffix}  ·  {helium}");
+    }
+
+    public async Task ApplyLastSystemAvailableAsync()
+    {
+        if (!int.TryParse(
+                LastSystemAvailable,
+                NumberStyles.Integer,
+                CultureInfo.CurrentCulture,
+                out var parsedLastSystemAvailable)
+            || parsedLastSystemAvailable < 0
+            || parsedLastSystemAvailable >= 100_000)
+        {
+            StatusMessage = "Last system available must be a whole number from 0 to 99,999.";
+            return;
+        }
+
+        state.SetExpectedSystemCount(parsedLastSystemAvailable + 1);
+        hasUnappliedLastSystemAvailableEdit = false;
+        showNextSystemPageOnUpdate = true;
+        UpdateDisplay();
+        await SaveAsync($"Last system available updated to {parsedLastSystemAvailable:N0}.");
+    }
+
+    public async Task MarkNextEmptyAsync()
+    {
+        if (!state.IsActive)
         {
             return;
         }
@@ -1350,43 +1467,21 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var original = state.Current;
-            var markEmpty = !state.CurrentIsEmpty;
-            await emptyBoxelStore.SetEmptyAsync(
-                original,
-                markEmpty,
-                CancellationToken.None);
-            state.SetCurrentEmpty(markEmpty);
-            var moved = false;
-            if (markEmpty
-                && TryParseBoxelInput(state.NextSystem, out var nextBoxel)
-                && nextBoxel is not null
-                && !string.Equals(
-                    nextBoxel.Prefix,
-                    original.Prefix,
-                    StringComparison.Ordinal))
+            if (!state.TryMarkNextSystemEmpty(out var markedSystem, out var error))
             {
-                moved = state.TrySetCurrent(nextBoxel, out _);
+                StatusMessage = error ?? "The next incomplete system was not marked empty.";
+                return;
             }
 
+            showNextSystemPageOnUpdate = true;
             UpdateDisplay();
-            await SaveAsync();
-            StatusMessage = markEmpty
-                ? (moved) switch
-                {
-                    true => $"Marked {original.Prefix} empty and advanced to "
-                        + state.Current?.Prefix
-                        + ".",
-                    false => $"Marked {original.Prefix} empty."
-                }
-                : $"Removed the empty marker from {original.Prefix}.";
-            if (moved)
+            var next = state.NextSystem;
+            await SaveAsync(string.IsNullOrWhiteSpace(next)
+                ? $"Marked {markedSystem} empty. No incomplete systems remain."
+                : $"Marked {markedSystem} empty. Next incomplete system: {next}.");
+            if (state.AutoCopy && !string.IsNullOrWhiteSpace(next))
             {
-                await RefreshCurrentWithoutLockAsync();
-                if (state.AutoCopy)
-                {
-                    await CopyNextSystemAsync();
-                }
+                await CopyNextSystemAsync();
             }
         }
         catch (Exception exception) when (
@@ -1394,7 +1489,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 or UnauthorizedAccessException
                 or InvalidDataException)
         {
-            StatusMessage = "The empty-boxel marker was not changed: "
+            StatusMessage = "The empty-system marker was not changed: "
                 + exception.Message;
         }
         finally
@@ -1467,6 +1562,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
+        showNextSystemPageOnUpdate = true;
         UpdateDisplay();
         await SaveAsync();
         await RefreshCurrentAsync();
@@ -1474,6 +1570,20 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private async Task ToggleSystemAsync(string systemName)
     {
+        if (state.IsSystemEmpty(systemName))
+        {
+            if (!state.TrySetSystemEmpty(systemName, false, out var emptyError))
+            {
+                StatusMessage = emptyError ?? "The empty-system marker was not removed.";
+                return;
+            }
+
+            showNextSystemPageOnUpdate = true;
+            UpdateDisplay();
+            await SaveAsync($"Restored {systemName} to the search.");
+            return;
+        }
+
         var current = state.Systems.FirstOrDefault(system =>
             string.Equals(system.Boxel.Name, systemName, StringComparison.Ordinal));
         if (!state.TrySetSystemComplete(
@@ -1485,47 +1595,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
+        showNextSystemPageOnUpdate = true;
         UpdateDisplay();
         await SaveAsync("System completion updated.");
-    }
-
-    private async Task RefreshCurrentWithoutLockAsync()
-    {
-        if (state.Current is null || state.CurrentIsEmpty)
-        {
-            return;
-        }
-
-        var local = await localSystemReader.ReadAsync(
-            frontierId!,
-            state.Current,
-            CancellationToken.None);
-        state.MergeLocalSystems(local.Systems);
-        if (latestRoute is not null)
-        {
-            state.MergeRoute(latestRoute.Route
-                .Select(entry => entry.ToBoxelObservation())
-                .OfType<BoxelSystemObservation>());
-        }
-
-        try
-        {
-            state.MergeSpanshSystems(await systemResolver.SearchAsync(
-                state.Current,
-                CancellationToken.None));
-        }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or TaskCanceledException
-                or InvalidDataException
-                or System.Text.Json.JsonException)
-        {
-            StatusMessage = "Advanced to the next boxel, but its Spansh refresh failed: "
-                + exception.Message;
-        }
-
-        UpdateDisplay();
-        await SaveAsync();
     }
 
     private BoxelAddress? GetParent()
@@ -1679,6 +1751,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private void UpdateDisplay()
     {
+        searchPrefixes = state.Boxels.Select(boxel => boxel.Prefix).ToArray();
+        OnPropertyChanged(nameof(SearchPrefixes));
         OnPropertyChanged(nameof(CanSaveProgress));
         OnPropertyChanged(nameof(SuggestedSaveName));
         CurrentBoxelName = state.Current?.Prefix ?? Unavailable;
@@ -1688,10 +1762,16 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 + state.Current.WithSystemNumber(
                     Math.Max(0, state.CurrentCount - 1)).Name;
         NextSystem = state.NextSystem ?? Unavailable;
-        ExpectedSystemCount = Math.Max(1, state.CurrentCount)
-            .ToString(CultureInfo.CurrentCulture);
+        if (!hasUnappliedLastSystemAvailableEdit)
+        {
+            SetField(
+                ref lastSystemAvailable,
+                Math.Max(0, state.CurrentCount - 1)
+                    .ToString(CultureInfo.CurrentCulture),
+                nameof(LastSystemAvailable));
+        }
         SystemProgress = $"{state.CompletedSystemCount:N0} of "
-            + $"{Math.Max(state.CurrentCount, state.Systems.Count):N0} complete";
+            + $"{Math.Max(state.CurrentCount, state.Systems.Count):N0} systems complete";
         BoxelProgress = $"{state.CompletedBoxelCount:N0} of "
             + $"{state.TotalBoxelCount:N0} boxels complete";
         AuditTotal = Math.Max(1, state.TotalBoxelCount);
@@ -1704,7 +1784,6 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         RaiseOverlayProperties();
         OnPropertyChanged(nameof(IsCurrentEmpty));
         OnPropertyChanged(nameof(StatusLabel));
-        OnPropertyChanged(nameof(EmptyButtonText));
         OnPropertyChanged(nameof(ShowLargeAuditConfirmation));
         OnPropertyChanged(nameof(CanNavigateSearchTree));
         OnPropertyChanged(nameof(CanNavigateParent));
@@ -1804,26 +1883,48 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         if (state.Current is null || state.CurrentIsEmpty)
         {
+            systemPageIndex = 0;
+            systemPagePrefix = state.Current?.Prefix;
+            showNextSystemPageOnUpdate = false;
+            SystemListNote = string.Empty;
+            SystemPageText = "Page 1 of 1";
             Systems = [];
+            RaiseSystemPageState();
             return;
         }
 
         var systemsByNumber = state.Systems.ToDictionary(
             system => system.Boxel.N2);
-        var rowCount = Math.Max(
-            state.CurrentCount,
-            state.CurrentMaximumSystemNumber + 1);
-        var rowNumbers = Enumerable.Range(
-                0,
-                Math.Min(Math.Max(1, rowCount), MaximumVisibleSystemRows))
-            .Concat(systemsByNumber.Keys)
-            .Distinct()
-            .Order()
-            .ToArray();
-        SystemListNote = rowCount > rowNumbers.Length
-            ? $"Showing the first {MaximumVisibleSystemRows:N0} rows plus all known systems "
-                + $"from {rowCount:N0} expected systems."
-            : string.Empty;
+        var rowCount = Math.Max(1, GetSystemRowCount());
+        if (!string.Equals(
+                systemPagePrefix,
+                state.Current.Prefix,
+                StringComparison.Ordinal)
+            || showNextSystemPageOnUpdate)
+        {
+            systemPageIndex = GetNextSystemPageIndex();
+        }
+
+        systemPagePrefix = state.Current.Prefix;
+        showNextSystemPageOnUpdate = false;
+        var pageCount = Math.Max(1, (rowCount + SystemsPerPage - 1) / SystemsPerPage);
+        systemPageIndex = Math.Clamp(systemPageIndex, 0, pageCount - 1);
+        var firstNumber = systemPageIndex * SystemsPerPage;
+        var rowsOnPage = Math.Min(SystemsPerPage, rowCount - firstNumber);
+        var lastNumber = firstNumber + rowsOnPage - 1;
+        var rowNumbers = Enumerable.Range(firstNumber, rowsOnPage);
+        SystemListNote = string.Create(
+            CultureInfo.CurrentCulture,
+            $"Showing systems {firstNumber:N0}\u2013{lastNumber:N0} of {rowCount:N0}.");
+        SystemPageText = string.Create(
+            CultureInfo.CurrentCulture,
+            $"Page {systemPageIndex + 1:N0} of {pageCount:N0}");
+        var resolvedCurrentSystemName = TryParseBoxelInput(
+                CurrentSystemName,
+                out var currentSystem)
+            ? currentSystem?.Name
+            : null;
+        var nextSystemName = state.NextSystem;
         Systems = rowNumbers
             .Select(number =>
             {
@@ -1833,20 +1934,22 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                     && currentPosition is { } from
                         ? $"{from.DistanceTo(position):N2} ly"
                         : Unavailable;
-                var isCurrent = TryParseBoxelInput(
-                        CurrentSystemName,
-                        out var currentSystem)
-                    && string.Equals(
-                        currentSystem?.Name,
-                        boxel.Name,
-                        StringComparison.Ordinal);
+                var isCurrent = string.Equals(
+                    resolvedCurrentSystemName,
+                    boxel.Name,
+                    StringComparison.Ordinal);
                 return new BoxelSystemRowViewModel(
                     new BoxelSystemRowOptions
                     {
                         Name = boxel.Name,
                         IsComplete = system?.IsComplete == true,
                         IsKnown = system is not null,
+                        IsEmpty = state.EmptySystems.Contains(boxel.GeneratedName),
                         IsCurrent = isCurrent,
+                        IsNextIncomplete = string.Equals(
+                            nextSystemName,
+                            boxel.Name,
+                            StringComparison.Ordinal),
                         Distance = distance,
                         VisitedAt = FormatDate(system?.VisitedAt),
                         SpanshUpdatedAt = FormatDate(system?.SpanshUpdatedAt),
@@ -1854,6 +1957,57 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                     });
             })
             .ToArray();
+        RaiseSystemPageState();
+    }
+
+    private int GetSystemRowCount()
+    {
+        return state.Current is null || state.CurrentIsEmpty
+            ? 0
+            : Math.Max(state.CurrentCount, state.CurrentMaximumSystemNumber + 1);
+    }
+
+    private int GetNextSystemPageIndex()
+    {
+        if (state.Current is null || string.IsNullOrWhiteSpace(state.NextSystem))
+        {
+            return 0;
+        }
+
+        var known = state.Systems.FirstOrDefault(system =>
+            string.Equals(system.Boxel.Name, state.NextSystem, StringComparison.Ordinal)
+            || string.Equals(
+                system.Boxel.GeneratedName,
+                state.NextSystem,
+                StringComparison.Ordinal));
+        if (known is not null)
+        {
+            return known.Boxel.N2 / SystemsPerPage;
+        }
+
+        return BoxelAddress.TryParse(state.NextSystem, out var next)
+            && next is not null
+            && string.Equals(next.Prefix, state.Current.Prefix, StringComparison.Ordinal)
+                ? next.N2 / SystemsPerPage
+                : 0;
+    }
+
+    private Task ChangeSystemPageAsync(int offset)
+    {
+        systemPageIndex = Math.Clamp(
+            systemPageIndex + offset,
+            0,
+            SystemPageCount - 1);
+        UpdateSystemRows();
+        return Task.CompletedTask;
+    }
+
+    private void RaiseSystemPageState()
+    {
+        OnPropertyChanged(nameof(SystemPageNumber));
+        OnPropertyChanged(nameof(SystemPageCount));
+        previousSystemPageCommand.RaiseCanExecuteChanged();
+        nextSystemPageCommand.RaiseCanExecuteChanged();
     }
 
     private void UpdateNavigation()
@@ -2137,11 +2291,13 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         disableCommand.RaiseCanExecuteChanged();
         refreshCommand.RaiseCanExecuteChanged();
         copyNextCommand.RaiseCanExecuteChanged();
-        toggleEmptyCommand.RaiseCanExecuteChanged();
-        applyExpectedCountCommand.RaiseCanExecuteChanged();
+        markNextEmptyCommand.RaiseCanExecuteChanged();
+        applyLastSystemAvailableCommand.RaiseCanExecuteChanged();
         navigateParentCommand.RaiseCanExecuteChanged();
         navigatePreviousCommand.RaiseCanExecuteChanged();
         navigateNextCommand.RaiseCanExecuteChanged();
+        previousSystemPageCommand.RaiseCanExecuteChanged();
+        nextSystemPageCommand.RaiseCanExecuteChanged();
         auditAllCommand.RaiseCanExecuteChanged();
         cancelAuditCommand.RaiseCanExecuteChanged();
     }
@@ -2242,11 +2398,17 @@ public sealed class BoxelSystemRowViewModel
         Name = options.Name;
         IsComplete = options.IsComplete;
         IsKnown = options.IsKnown;
+        IsEmpty = options.IsEmpty;
         IsCurrent = options.IsCurrent;
+        IsNextIncomplete = options.IsNextIncomplete;
         Distance = options.Distance;
         VisitedAt = options.VisitedAt;
         SpanshUpdatedAt = options.SpanshUpdatedAt;
-        if (options.IsComplete)
+        if (options.IsEmpty)
+        {
+            Status = "EMPTY";
+        }
+        else if (options.IsComplete)
         {
             Status = "COMPLETE";
         }
@@ -2258,7 +2420,9 @@ public sealed class BoxelSystemRowViewModel
         {
             Status = "UNKNOWN";
         }
-        ToggleCommand = new RowCommand(options.Toggle, () => options.IsKnown);
+        ToggleCommand = new RowCommand(
+            options.Toggle,
+            () => options.IsKnown || options.IsEmpty);
     }
 
     public string Name { get; }
@@ -2267,7 +2431,25 @@ public sealed class BoxelSystemRowViewModel
 
     public bool IsKnown { get; }
 
+    public bool IsEmpty { get; }
+
     public bool IsCurrent { get; }
+
+    public bool IsNextIncomplete { get; }
+
+    public bool ShowNextIncompleteHighlight => IsNextIncomplete && !IsCurrent;
+
+    public bool ShowCurrentNextHighlight => IsNextIncomplete && IsCurrent;
+
+    public bool HasRowIndicator => IsCurrent || IsNextIncomplete;
+
+    public string RowIndicator => (IsCurrent, IsNextIncomplete) switch
+    {
+        (true, true) => "CURRENT SYSTEM · NEXT INCOMPLETE SYSTEM",
+        (true, false) => "CURRENT SYSTEM",
+        (false, true) => "NEXT INCOMPLETE SYSTEM",
+        _ => string.Empty,
+    };
 
     public string Distance { get; }
 
@@ -2277,7 +2459,12 @@ public sealed class BoxelSystemRowViewModel
 
     public string Status { get; }
 
-    public string ToggleButtonText => IsComplete ? "Reopen" : "Complete";
+    public string ToggleButtonText => (IsEmpty, IsComplete) switch
+    {
+        (true, _) => "Restore",
+        (false, true) => "Reopen",
+        _ => "Complete",
+    };
 
     public ICommand ToggleCommand { get; }
 

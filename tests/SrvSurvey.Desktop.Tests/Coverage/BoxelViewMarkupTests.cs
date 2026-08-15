@@ -24,6 +24,10 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("{Binding BoxelSearch.Systems}", boxelBindings);
         Assert.Contains("Save Progress", boxelBindings);
         Assert.Contains("Resume Search", boxelBindings);
+        Assert.Contains("Boxel Stats", boxelBindings);
+        Assert.Contains("BoxelStats_Click", boxelBindings);
+        Assert.Contains("Open stats", boxelBindings);
+        Assert.Contains("{Binding BoxelSearch.StatsGlanceText}", boxelBindings);
         Assert.Contains("VoxStellar", boxelBindings);
         Assert.Contains(
             "Send Journal to VoxStellar for boxel surveying",
@@ -45,6 +49,18 @@ public sealed class BoxelViewMarkupTests
                 "VoxStellar",
                 StringComparison.Ordinal) == true);
         Assert.Equal("30", voxStellarImage.Attribute("Height")?.Value);
+        var boxelStatsButton = boxel.Descendants().Single(element =>
+            element.Name.LocalName == "Button"
+            && element.Attribute("Click")?.Value == "BoxelStats_Click"
+            && element.Descendants().Any(descendant =>
+                descendant.Attribute("Text")?.Value == "Boxel Stats"));
+        var boxelStatsIcon = Assert.Single(boxelStatsButton.Descendants(), element =>
+            element.Name.LocalName == "PathIcon");
+        Assert.Equal(
+            "{StaticResource data_pie_regular}",
+            boxelStatsIcon.Attribute("Data")?.Value);
+        Assert.Equal("30", boxelStatsIcon.Attribute("Width")?.Value);
+        Assert.Equal("30", boxelStatsIcon.Attribute("Height")?.Value);
         Assert.Contains(
             "{Binding BoxelSearch.SystemNameSuggestions}",
             boxelBindings);
@@ -55,9 +71,32 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("TopBoxelTextBox_KeyDown", boxelBindings);
         Assert.Contains("CURRENT BOXEL PREFIX", boxelBindings);
         Assert.Contains("NEXT INCOMPLETE SYSTEM", boxelBindings);
+        Assert.Contains("Mark Next Empty", boxelBindings);
+        Assert.Contains("{Binding BoxelSearch.MarkNextEmptyCommand}", boxelBindings);
+        Assert.Contains("LAST SYSTEM AVAILABLE", boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.LastSystemAvailable, Mode=TwoWay}",
+            boxelBindings);
+        Assert.Contains(
+            "{Binding ShowNextIncompleteHighlight}",
+            boxelBindings);
+        Assert.Contains(
+            "{Binding ShowCurrentNextHighlight}",
+            boxelBindings);
+        Assert.Contains("{Binding RowIndicator}", boxelBindings);
         Assert.Contains("ACTION", boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.PreviousSystemPageCommand}",
+            boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.NextSystemPageCommand}",
+            boxelBindings);
+        Assert.Contains("{Binding BoxelSearch.SystemPageText}", boxelBindings);
+        Assert.Contains("Previous page", boxelBindings);
+        Assert.Contains("Next page", boxelBindings);
+        Assert.DoesNotContain("500", boxelBindings);
         Assert.Contains("{StaticResource question_circle_regular}", boxelBindings);
-        Assert.Contains("Explain expected systems", boxelBindings);
+        Assert.Contains("Explain last system available", boxelBindings);
         Assert.Contains("ExpectedSystemsInfo_Click", boxelBindings);
         Assert.Contains(
             "{Binding BoxelSearch.CanNavigateSearchTree}",
@@ -91,7 +130,9 @@ public sealed class BoxelViewMarkupTests
             boxelBindings);
         var centeredHierarchyControls = boxel.Descendants().Single(element =>
             element.Name.LocalName == "Grid"
-            && element.Attribute("ColumnDefinitions")?.Value == "Auto,Auto,Auto");
+            && element.Attribute("ColumnDefinitions")?.Value == "Auto,Auto,Auto"
+            && element.Attribute("HorizontalAlignment")?.Value == "Center"
+            && element.Elements().Any(child => child.Name.LocalName == "Border"));
         Assert.Equal(
             "Center",
             centeredHierarchyControls.Attribute("HorizontalAlignment")?.Value);
@@ -134,10 +175,16 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains(values, value => value.Contains(
             "The number produced is an estimate.",
             StringComparison.Ordinal));
+        Assert.DoesNotContain(values, value => value.Contains(
+            "Then add 1 to that number",
+            StringComparison.Ordinal));
+        Assert.Contains(values, value => value.Contains(
+            "SrvSurvey includes system 0 when it calculates the total.",
+            StringComparison.Ordinal));
         Assert.Empty(example.Elements());
         Assert.Contains(
             "For example the end system of the {0} boxel is: {1} "
-                + "so you would enter 7641 and choose APPLY",
+                + "so you would enter 7640 and choose APPLY",
             codeBehind,
             StringComparison.Ordinal);
         Assert.Contains(
@@ -208,7 +255,11 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("LAST MODIFIED", values);
         Assert.Contains("PROGRESS COMPLETED", values);
         Assert.Contains("NOTES", values);
+        Assert.Contains("STATS", values);
         Assert.Contains("EDIT", values);
+        Assert.Contains("Open boxel statistics", values);
+        Assert.Contains("{StaticResource data_pie_regular}", values);
+        Assert.Contains("{Binding OpenStatisticsCommand}", values);
         Assert.Contains("{Binding IsSelected, Mode=TwoWay}", values);
         Assert.DoesNotContain("Select all", values);
         Assert.Contains("Delete selected saved search", values);
@@ -218,6 +269,159 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("{Binding !IsDialogVisible}", values);
         Assert.Contains("RenameTextBox", values);
         Assert.Contains("NotesTextBox", values);
+    }
+
+    [Fact]
+    public void BoxelStatisticsCanRebuildBeforeAnyBoxelIsSelected()
+    {
+        var window = XDocument.Load(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "BoxelStatsWindow.axaml"));
+        var header = window.Descendants().Single(element =>
+            element.Name.LocalName == "StackPanel"
+            && element.Attribute("Grid.Column")?.Value == "1"
+            && element.Attribute("Orientation")?.Value == "Horizontal");
+
+        Assert.Contains(header.Elements(), element =>
+            element.Attribute("Command")?.Value == "{Binding RebuildCommand}");
+    }
+
+    [Fact]
+    public void BoxelStatisticsMassCodeButtonsLeaveRoomForDescenders()
+    {
+        var window = XDocument.Load(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "BoxelStatsWindow.axaml"));
+        var button = window.Descendants().Single(element =>
+            element.Name.LocalName == "Button"
+            && element.Attribute("CommandParameter")?.Value == "{Binding MassCode}");
+        var label = Assert.Single(button.Elements(), element =>
+            element.Name.LocalName == "TextBlock");
+
+        Assert.Null(button.Attribute("Height"));
+        Assert.Equal("42", button.Attribute("MinHeight")?.Value);
+        Assert.Equal("12,6,12,8", button.Attribute("Padding")?.Value);
+        Assert.Equal("Center", button.Attribute("VerticalContentAlignment")?.Value);
+        Assert.Equal("22", label.Attribute("LineHeight")?.Value);
+    }
+
+    [Fact]
+    public void BoxelStatisticsOffersDedicatedAverageExplanation()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var window = XDocument.Load(Path.Combine(
+            repositoryRoot,
+            "src",
+            "SrvSurvey.Desktop",
+            "BoxelStatsWindow.axaml"));
+        var dialog = XDocument.Load(Path.Combine(
+            repositoryRoot,
+            "src",
+            "SrvSurvey.Desktop",
+            "BoxelAverageHelpDialog.axaml"));
+        var windowValues = window.Descendants()
+            .SelectMany(element => element.Attributes())
+            .Select(attribute => attribute.Value)
+            .ToArray();
+        var dialogValues = dialog.Descendants()
+            .SelectMany(element => element.Attributes())
+            .Select(attribute => attribute.Value)
+            .ToArray();
+
+        Assert.Contains("How are Averages Calculated?", windowValues);
+        Assert.Contains("AverageHelp_Click", windowValues);
+        Assert.Contains(
+            "Body count for that type \u00f7 systems recorded",
+            dialogValues);
+        Assert.Contains(dialogValues, value => value.Contains(
+            "Selected boxel uses only",
+            StringComparison.Ordinal));
+        Assert.Contains(dialogValues, value => value.Contains(
+            "Entire saved search combines",
+            StringComparison.Ordinal));
+        Assert.Contains(dialogValues, value => value.Contains(
+            "Nav Beacon setting affects only",
+            StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void BoxelStatisticsExplainsExactFilteringSettingsAndNativeExport()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var window = XDocument.Load(Path.Combine(
+            repositoryRoot,
+            "src",
+            "SrvSurvey.Desktop",
+            "BoxelStatsWindow.axaml"));
+        var codeBehind = File.ReadAllText(Path.Combine(
+            repositoryRoot,
+            "src",
+            "SrvSurvey.Desktop",
+            "BoxelStatsWindow.axaml.cs"));
+        var values = window.Descendants()
+            .SelectMany(element => element.Attributes())
+            .Select(attribute => attribute.Value)
+            .ToArray();
+
+        Assert.Contains("RECENTLY RECORDED", values);
+        Assert.Contains("{Binding BrowserTitle}", values);
+        Assert.Contains("{Binding BrowserDescription}", values);
+        Assert.Contains("{Binding ExploreChildrenCommand}", values);
+        Assert.Contains("{Binding HighestRecordedSuffixText}", values);
+        Assert.Contains("{Binding ConfiguredSystemsText}", values);
+        Assert.DoesNotContain(values, value => value.Contains(
+            "Unvisited children still show",
+            StringComparison.Ordinal));
+        Assert.Contains(
+            "Count Nav Beacon scans as FSS complete (statistics only)",
+            values);
+        Assert.Contains(values, value => value.Contains(
+            "does not affect boxel-search completion",
+            StringComparison.Ordinal));
+        Assert.Contains(values, value => value.Contains(
+            "Settings apply immediately",
+            StringComparison.Ordinal));
+        Assert.Contains("STATISTICS SCOPE", values);
+        Assert.Contains("Selected boxel", values);
+        Assert.Contains("{Binding EntireSavedSearchScopeText}", values);
+        Assert.Contains("{Binding StatisticsScopeDescription}", values);
+        Assert.Contains(
+            "{Binding IsSelectedBoxelScope, Mode=TwoWay}",
+            values);
+        Assert.Contains(
+            "{Binding IsEntireSavedSearchScope, Mode=TwoWay}",
+            values);
+        var scopeTitle = window.Descendants().Single(element =>
+            element.Attribute("Text")?.Value == "STATISTICS SCOPE");
+        var scopePanel = scopeTitle.Ancestors().First(element =>
+            element.Name.LocalName == "Border");
+        Assert.Null(scopePanel.Attribute("IsVisible"));
+        var entireSearchScope = scopePanel.Descendants().Single(element =>
+            element.Name.LocalName == "RadioButton"
+            && element.Attribute("Content")?.Value
+                == "{Binding EntireSavedSearchScopeText}");
+        Assert.Equal(
+            "{Binding CanShowSearchRollup}",
+            entireSearchScope.Attribute("IsEnabled")?.Value);
+        Assert.Contains(
+            "{Binding MinSystemsForAverages, Mode=TwoWay}",
+            values);
+        Assert.Contains(
+            "{Binding MinSystemsForExport, Mode=TwoWay}",
+            values);
+        Assert.Equal(
+            2,
+            window.Descendants().Count(element =>
+                element.Name.LocalName == "NumericUpDown"
+                && element.Attribute("Minimum")?.Value == "1"
+                && element.Attribute("Maximum")?.Value == "1000"));
+        Assert.Contains("Export_Click", values);
+        Assert.Contains("OpenFolderPickerAsync", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("TryGetLocalPath", codeBehind, StringComparison.Ordinal);
     }
 
     [Fact]

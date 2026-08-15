@@ -314,6 +314,13 @@ public sealed class SavedBoxelSearchStore
         SavedBoxelSearchDocument document)
     {
         var progress = CalculateProgress(document.Search);
+        var prefixes = new List<string>();
+        if (!string.IsNullOrWhiteSpace(document.Search.TopBoxel?.Prefix))
+        {
+            prefixes.Add(document.Search.TopBoxel.Prefix);
+        }
+
+        prefixes.AddRange(document.Search.ProgressByPrefix.Keys);
         return new SavedBoxelSearchCatalogEntry(
             document.Name,
             document.Notes,
@@ -324,7 +331,13 @@ public sealed class SavedBoxelSearchStore
             progress.Total,
             document.Search.ProgressByPrefix.Values.Any(count => count == 0),
             document.FileName,
-            document.FilePath);
+            document.FilePath,
+            document.Search.TopBoxel?.Prefix,
+            document.Search.LowMassCode,
+            prefixes
+                .Where(prefix => !string.IsNullOrWhiteSpace(prefix))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray());
     }
 
     public static (int Completed, int Total) CalculateProgress(
@@ -343,6 +356,12 @@ public sealed class SavedBoxelSearchStore
             Math.Max(0, search.ProgressByPrefix.GetValueOrDefault(prefix)));
         completed += search.CompletedSystems.Count(systemName =>
             BoxelAddress.TryParse(systemName, out var boxel)
+            && boxel is not null
+            && !completedPrefixes.Contains(boxel.Prefix));
+        var completedSystems = search.CompletedSystems.ToHashSet(StringComparer.Ordinal);
+        completed += search.EmptySystems.Count(systemName =>
+            !completedSystems.Contains(systemName)
+            && BoxelAddress.TryParse(systemName, out var boxel)
             && boxel is not null
             && !completedPrefixes.Contains(boxel.Prefix));
         return (Math.Min(completed, total), total);
@@ -374,6 +393,7 @@ public sealed class SavedBoxelSearchStore
                 : char.ToLowerInvariant(lowMassCodeText[0]),
             CompletedPrefixes = ReadStringArray(node, "completedPrefixes"),
             CompletedSystems = ReadStringArray(node, "completedSystems"),
+            EmptySystems = ReadStringArray(node, "emptySystems"),
             ProgressByPrefix = ReadProgress(node),
             AutoCopy = GetBoolean(node, "autoCopy") ?? false,
             Collapsed = GetBoolean(node, "collapsed") ?? false,
@@ -444,6 +464,7 @@ public sealed class SavedBoxelSearchStore
             ["lowMassCode"] = search.LowMassCode.ToString(),
             ["completedPrefixes"] = WriteStringArray(search.CompletedPrefixes),
             ["completedSystems"] = WriteStringArray(search.CompletedSystems),
+            ["emptySystems"] = WriteStringArray(search.EmptySystems),
             ["progress"] = WriteProgress(search.ProgressByPrefix),
             ["autoCopy"] = search.AutoCopy,
             ["collapsed"] = search.Collapsed,
@@ -656,4 +677,11 @@ public sealed record SavedBoxelSearchCatalogEntry(
     int TotalSystems,
     bool HasUncountedBoxels,
     string FileName,
-    string FilePath);
+    string FilePath,
+    string? TopBoxelPrefix = null,
+    char LowMassCode = 'c',
+    IReadOnlyList<string>? MatchingPrefixes = null)
+{
+    public IReadOnlyList<string> Prefixes => MatchingPrefixes
+        ?? (string.IsNullOrWhiteSpace(TopBoxelPrefix) ? [] : [TopBoxelPrefix]);
+}

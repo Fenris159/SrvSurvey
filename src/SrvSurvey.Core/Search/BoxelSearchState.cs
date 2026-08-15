@@ -13,6 +13,7 @@ public sealed class BoxelSearchState
     private readonly HashSet<string> completed = new(StringComparer.Ordinal);
     private readonly HashSet<string> retainedCompleted = new(StringComparer.Ordinal);
     private readonly HashSet<string> completedSystems = new(StringComparer.Ordinal);
+    private readonly HashSet<string> emptySystems = new(StringComparer.Ordinal);
     private readonly Dictionary<string, int> completedSystemCounts = new(
         StringComparer.Ordinal);
     private int projectionVersion = -1;
@@ -64,7 +65,7 @@ public sealed class BoxelSearchState
         ? 0
         : systems.Values.Max(system => system.Boxel.N2);
 
-    public int CompletedSystemCount => systems.Values.Count(system => system.IsComplete);
+    public int CompletedSystemCount => CountHandledSystems(Current?.Prefix);
 
     public int TotalKnownSystemCount => progress.Values.Where(count => count > 0).Sum();
 
@@ -77,7 +78,12 @@ public sealed class BoxelSearchState
             var partial = completedSystemCounts
                 .Where(entry => !completed.Contains(entry.Key))
                 .Sum(entry => entry.Value);
-            return completedByPrefix + partial;
+            var empty = emptySystems.Count(systemName =>
+                BoxelAddress.TryParse(systemName, out var boxel)
+                && boxel is not null
+                && !completed.Contains(boxel.Prefix)
+                && !completedSystems.Contains(systemName));
+            return completedByPrefix + partial + empty;
         }
     }
 
@@ -97,7 +103,8 @@ public sealed class BoxelSearchState
         var normalizedExpectedCount = Math.Max(0, expectedSystemCount);
         var completedSystemCount = completed.Contains(boxel.Prefix)
             ? normalizedExpectedCount
-            : completedSystemCounts.GetValueOrDefault(boxel.Prefix);
+            : completedSystemCounts.GetValueOrDefault(boxel.Prefix)
+                + CountEmptySystems(boxel.Prefix);
         return new BoxelProgress(
             normalizedExpectedCount,
             Math.Min(completedSystemCount, normalizedExpectedCount),
@@ -105,8 +112,11 @@ public sealed class BoxelSearchState
             isEmpty);
     }
 
-    public bool CurrentSystemsComplete => systems.Count > 0
-        && systems.Values.All(system => system.IsComplete);
+    public bool CurrentSystemsComplete => Current is not null
+        && CurrentCount > 0
+        && CountHandledSystems(Current.Prefix) >= CurrentCount;
+
+    public IReadOnlySet<string> EmptySystems => emptySystems;
 
     public IReadOnlyList<BoxelSystemState> Systems
     {
@@ -180,6 +190,11 @@ public sealed class BoxelSearchState
         foreach (var systemName in seed.CompletedSystems)
         {
             AddCompletedSystem(systemName);
+        }
+        emptySystems.Clear();
+        foreach (var systemName in seed.EmptySystems)
+        {
+            AddEmptySystem(systemName);
         }
         systems.Clear();
         CurrentIsEmpty = false;
@@ -337,6 +352,7 @@ public sealed class BoxelSearchState
                 completed.Remove(entry.Value);
                 retainedCompleted.Remove(entry.Value);
                 RemoveCompletedSystems(entry.Value);
+                RemoveEmptySystems(entry.Value);
             }
             changed = true;
         }
@@ -412,6 +428,7 @@ public sealed class BoxelSearchState
         systems[entry.Key] = entry.Value with { IsComplete = isComplete };
         if (isComplete)
         {
+            emptySystems.Remove(entry.Key);
             AddCompletedSystem(entry.Key);
         }
         else
@@ -425,6 +442,60 @@ public sealed class BoxelSearchState
         Version++;
         error = null;
         return true;
+    }
+
+    public bool TrySetSystemEmpty(
+        string systemName,
+        bool isEmpty,
+        out string? error)
+    {
+        if (!TryResolveCurrentSystem(systemName, out var boxel))
+        {
+            error = "Choose a numbered system in the current boxel.";
+            return false;
+        }
+
+        var generatedName = boxel!.GeneratedName;
+        var changed = isEmpty
+            ? emptySystems.Add(generatedName)
+            : emptySystems.Remove(generatedName);
+        if (!changed)
+        {
+            error = isEmpty
+                ? $"{boxel.Name} is already marked empty."
+                : $"{boxel.Name} is not marked empty.";
+            return false;
+        }
+
+        UpdateCurrentCompletion();
+        SetNextSystem();
+        Version++;
+        error = null;
+        return true;
+    }
+
+    public bool IsSystemEmpty(string systemName)
+    {
+        return TryResolveCurrentSystem(systemName, out var boxel)
+            && emptySystems.Contains(boxel!.GeneratedName);
+    }
+
+    public bool TryMarkNextSystemEmpty(out string? systemName, out string? error)
+    {
+        systemName = NextSystem;
+        if (string.IsNullOrWhiteSpace(systemName))
+        {
+            error = "There is no next incomplete system to mark empty.";
+            return false;
+        }
+
+        if (TrySetSystemEmpty(systemName, true, out error))
+        {
+            return true;
+        }
+
+        systemName = null;
+        return false;
     }
 
     public void SetCurrentEmpty(bool isEmpty)
@@ -441,6 +512,7 @@ public sealed class BoxelSearchState
             completed.Remove(Current.Prefix);
             retainedCompleted.Remove(Current.Prefix);
             RemoveCompletedSystems(Current.Prefix);
+            RemoveEmptySystems(Current.Prefix);
             systems.Clear();
         }
         else
@@ -536,6 +608,7 @@ public sealed class BoxelSearchState
             LowMassCode = LowMassCode,
             CompletedPrefixes = completed.Order(StringComparer.Ordinal).ToArray(),
             CompletedSystems = completedSystems.Order(StringComparer.Ordinal).ToArray(),
+            EmptySystems = emptySystems.Order(StringComparer.Ordinal).ToArray(),
             ProgressByPrefix = progress.ToDictionary(
                 entry => entry.Key,
                 entry => entry.Value,
@@ -634,6 +707,7 @@ public sealed class BoxelSearchState
         }
 
         systems.TryGetValue(observation.Boxel.GeneratedName, out var existing);
+        emptySystems.Remove(observation.Boxel.GeneratedName);
         var isComplete = IsObservationComplete(observation, source, existing);
         var observedBoxel = MergeObservedBoxel(observation.Boxel, existing);
         systems[observation.Boxel.GeneratedName] = new BoxelSystemState(
@@ -756,6 +830,88 @@ public sealed class BoxelSearchState
         }
     }
 
+    private void RemoveEmptySystems(string prefix)
+    {
+        emptySystems.RemoveWhere(systemName =>
+            BoxelAddress.TryParse(systemName, out var boxel)
+            && boxel is not null
+            && string.Equals(boxel.Prefix, prefix, StringComparison.Ordinal));
+    }
+
+    private void AddEmptySystem(string systemName)
+    {
+        if (BoxelAddress.TryParse(systemName, out var boxel) && boxel is not null)
+        {
+            emptySystems.Add(boxel.GeneratedName);
+            retainedCompleted.Remove(boxel.Prefix);
+        }
+    }
+
+    private bool TryResolveCurrentSystem(
+        string systemName,
+        out BoxelAddress? boxel)
+    {
+        boxel = systems.Values
+            .Select(system => system.Boxel)
+            .FirstOrDefault(candidate =>
+                string.Equals(candidate.Name, systemName, StringComparison.Ordinal)
+                || string.Equals(
+                    candidate.GeneratedName,
+                    systemName,
+                    StringComparison.Ordinal));
+        if (boxel is null)
+        {
+            if (!BoxelAddress.TryParse(systemName, out var parsed) || parsed is null)
+            {
+                return false;
+            }
+
+            boxel = parsed;
+        }
+
+        return Current is not null
+            && string.Equals(boxel.Prefix, Current.Prefix, StringComparison.Ordinal);
+    }
+
+    private int CountHandledSystems(string? prefix)
+    {
+        if (Current is null
+            || string.IsNullOrWhiteSpace(prefix)
+            || !string.Equals(Current.Prefix, prefix, StringComparison.Ordinal))
+        {
+            return 0;
+        }
+
+        var handled = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var system in systems.Values)
+        {
+            if (system.IsComplete
+                && string.Equals(system.Boxel.Prefix, prefix, StringComparison.Ordinal))
+            {
+                handled.Add(system.Boxel.GeneratedName);
+            }
+        }
+
+        foreach (var systemName in completedSystems.Concat(emptySystems))
+        {
+            if (TryResolveCurrentSystem(systemName, out var boxel) && boxel is not null)
+            {
+                handled.Add(boxel.GeneratedName);
+            }
+        }
+
+        return handled.Count;
+    }
+
+    private int CountEmptySystems(string prefix)
+    {
+        return emptySystems.Count(systemName =>
+            !completedSystems.Contains(systemName)
+            && BoxelAddress.TryParse(systemName, out var boxel)
+            && boxel is not null
+            && string.Equals(boxel.Prefix, prefix, StringComparison.Ordinal));
+    }
+
     private void AddCompletedSystem(string systemName)
     {
         if (!completedSystems.Add(systemName)
@@ -806,7 +962,8 @@ public sealed class BoxelSearchState
                 var generated = Current.WithSystemNumber(number);
                 systems.TryGetValue(generated.GeneratedName, out var system);
                 if (system?.IsComplete == true
-                    || completedSystems.Contains(generated.GeneratedName))
+                    || completedSystems.Contains(generated.GeneratedName)
+                    || emptySystems.Contains(generated.GeneratedName))
                 {
                     continue;
                 }
@@ -924,6 +1081,8 @@ public sealed record BoxelSearchSnapshot
     public IReadOnlyList<string> CompletedPrefixes { get; init; } = [];
 
     public IReadOnlyList<string> CompletedSystems { get; init; } = [];
+
+    public IReadOnlyList<string> EmptySystems { get; init; } = [];
 
     public IReadOnlyDictionary<string, int> ProgressByPrefix { get; init; } =
         new Dictionary<string, int>(StringComparer.Ordinal);

@@ -12,6 +12,9 @@ namespace SrvSurvey.Desktop;
 
 internal static class Program
 {
+    internal const string SoftwareRenderingEnvironmentVariable =
+        "SRVSURVEY_SOFTWARE_RENDERING";
+
     internal static string[] StartupArguments { get; private set; } = [];
 
     internal static ApplicationLogService? ApplicationLog { get; private set; }
@@ -90,6 +93,12 @@ internal static class Program
             $"Platform: {Environment.OSVersion.Platform} ({Environment.OSVersion.VersionString})");
         applicationLog.Append(
             $"Display host: {OverlayPlatformCapabilities.DetectCurrent().Host}");
+        var useSoftwareRendering = IsSoftwareRenderingRequested(
+            Environment.GetEnvironmentVariable(SoftwareRenderingEnvironmentVariable));
+        applicationLog.Append(
+            useSoftwareRendering
+                ? "Windows renderer: software (diagnostic override)."
+                : "Windows renderer: automatic.");
         using var traceListener = new ApplicationLogTraceListener(applicationLog);
         void HandleUnhandledException(
             object sender,
@@ -103,7 +112,8 @@ internal static class Program
         Trace.Listeners.Add(traceListener);
         try
         {
-            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            BuildAvaloniaApp(useSoftwareRendering)
+                .StartWithClassicDesktopLifetime(args);
         }
         catch (Exception exception)
         {
@@ -119,10 +129,28 @@ internal static class Program
     }
 
     public static AppBuilder BuildAvaloniaApp()
+        => BuildAvaloniaApp(useSoftwareRendering: false);
+
+    internal static bool IsSoftwareRenderingRequested(string? value)
+        => value is not null
+            && (string.Equals(value, "1", StringComparison.Ordinal)
+                || string.Equals(value, "true", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(value, "software", StringComparison.OrdinalIgnoreCase));
+
+    private static AppBuilder BuildAvaloniaApp(bool useSoftwareRendering)
     {
-        return AppBuilder
+        var builder = AppBuilder
             .Configure<App>()
-            .UsePlatformDetect()
+            .UsePlatformDetect();
+        if (useSoftwareRendering && OperatingSystem.IsWindows())
+        {
+            builder = builder.With(new Win32PlatformOptions
+            {
+                RenderingMode = [Win32RenderingMode.Software],
+            });
+        }
+
+        return builder
             .WithInterFont()
             .LogToTrace();
     }

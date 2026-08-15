@@ -60,7 +60,11 @@ public sealed class BoxelSystemRowOptions
 
     public required bool IsKnown { get; init; }
 
+    public required bool IsEmpty { get; init; }
+
     public required bool IsCurrent { get; init; }
+
+    public required bool IsNextIncomplete { get; init; }
 
     public required string Distance { get; init; }
 

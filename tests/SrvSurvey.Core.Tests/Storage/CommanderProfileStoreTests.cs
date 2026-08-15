@@ -551,6 +551,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
                     "Praea Euq IL-P c5-0",
                     "Praea Euq IL-P c5-2",
                 ],
+                EmptySystems = ["Praea Euq IL-P c5-1"],
                 ProgressByPrefix = new Dictionary<string, int>
                 {
                     [top.Prefix] = 4,
@@ -562,6 +563,9 @@ public sealed class CommanderProfileStoreTests : IDisposable
 
         Assert.NotNull(loaded.Data);
         Assert.Equal(2, loaded.Data.BoxelSearch.CompletedSystems.Count);
+        Assert.Equal(
+            ["Praea Euq IL-P c5-1"],
+            loaded.Data.BoxelSearch.EmptySystems);
         Assert.Equal(4, loaded.Data.BoxelSearch.ProgressByPrefix[top.Prefix]);
         Assert.Equal(
             "saved-search.json",

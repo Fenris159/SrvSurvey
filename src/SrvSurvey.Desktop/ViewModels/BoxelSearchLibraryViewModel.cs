@@ -71,6 +71,8 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
 
     public event EventHandler? SearchOpened;
 
+    public event EventHandler<BoxelSurveyStatsFocusRequest>? StatisticsRequested;
+
     public ObservableCollection<BoxelSearchLibraryItemViewModel> Searches { get; } = [];
 
     public BoxelSearchLibraryItemViewModel? SelectedSearch =>
@@ -211,15 +213,23 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             var entries = await boxelSearch.ListSavedSearchesAsync();
+            var knownPrefixes = boxelSearch.SurveyStats?.Index
+                .Select(entry => entry.Prefix)
+                .ToHashSet(StringComparer.Ordinal)
+                ?? [];
             Searches.Clear();
             foreach (var entry in entries)
             {
-                Searches.Add(new BoxelSearchLibraryItemViewModel(
+                var item = new BoxelSearchLibraryItemViewModel(
                     entry,
                     SelectOnly,
                     ToggleFavoriteAsync,
                     OpenRename,
-                    OpenNotes));
+                    OpenNotes,
+                    OpenStatistics);
+                item.SetCanOpenStatistics(
+                    entry.Prefixes.Any(knownPrefixes.Contains));
+                Searches.Add(item);
             }
 
             Reorder();
@@ -286,6 +296,18 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
         }
+    }
+
+    private void OpenStatistics(BoxelSearchLibraryItemViewModel search)
+    {
+        if (!search.CanOpenStatistics)
+        {
+            return;
+        }
+
+        StatisticsRequested?.Invoke(
+            this,
+            new BoxelSurveyStatsFocusRequest(search.Prefixes, search.LowMassCode));
     }
 
     private void OpenRename(BoxelSearchLibraryItemViewModel search)
@@ -646,13 +668,15 @@ public sealed class BoxelSearchLibraryItemViewModel : INotifyPropertyChanged
     private string? notes;
     private bool isFavorite;
     private DateTimeOffset updatedAt;
+    private bool canOpenStatistics;
 
     public BoxelSearchLibraryItemViewModel(
         SavedBoxelSearchCatalogEntry entry,
         Action<BoxelSearchLibraryItemViewModel> selectionChanged,
         Func<BoxelSearchLibraryItemViewModel, Task> toggleFavorite,
         Action<BoxelSearchLibraryItemViewModel> rename,
-        Action<BoxelSearchLibraryItemViewModel> editNotes)
+        Action<BoxelSearchLibraryItemViewModel> editNotes,
+        Action<BoxelSearchLibraryItemViewModel>? openStatistics = null)
     {
         ArgumentNullException.ThrowIfNull(entry);
         this.selectionChanged = selectionChanged;
@@ -666,9 +690,15 @@ public sealed class BoxelSearchLibraryItemViewModel : INotifyPropertyChanged
         HasUncountedBoxels = entry.HasUncountedBoxels;
         FileName = entry.FileName;
         FilePath = entry.FilePath;
+        TopBoxelPrefix = entry.TopBoxelPrefix;
+        LowMassCode = entry.LowMassCode;
+        Prefixes = entry.Prefixes;
         ToggleFavoriteCommand = new AsyncCommand(() => toggleFavorite(this));
         RenameCommand = new RelayCommand(() => rename(this));
         EditNotesCommand = new RelayCommand(() => editNotes(this));
+        OpenStatisticsCommand = new RelayCommand(
+            () => openStatistics?.Invoke(this),
+            () => canOpenStatistics);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -723,11 +753,21 @@ public sealed class BoxelSearchLibraryItemViewModel : INotifyPropertyChanged
 
     public string FilePath { get; }
 
+    public string? TopBoxelPrefix { get; }
+
+    public char LowMassCode { get; }
+
+    public IReadOnlyList<string> Prefixes { get; }
+
+    public bool CanOpenStatistics => canOpenStatistics;
+
     public ICommand ToggleFavoriteCommand { get; }
 
     public ICommand RenameCommand { get; }
 
     public ICommand EditNotesCommand { get; }
+
+    public ICommand OpenStatisticsCommand { get; }
 
     public void SetSelected(bool selected)
     {
@@ -763,11 +803,20 @@ public sealed class BoxelSearchLibraryItemViewModel : INotifyPropertyChanged
         }
     }
 
+    public void SetCanOpenStatistics(bool value)
+    {
+        if (SetField(ref canOpenStatistics, value, nameof(CanOpenStatistics)))
+        {
+            ((RelayCommand)OpenStatisticsCommand).RaiseCanExecuteChanged();
+        }
+    }
+
     public void RaiseCanExecuteChanged()
     {
         ((AsyncCommand)ToggleFavoriteCommand).RaiseCanExecuteChanged();
         ((RelayCommand)RenameCommand).RaiseCanExecuteChanged();
         ((RelayCommand)EditNotesCommand).RaiseCanExecuteChanged();
+        ((RelayCommand)OpenStatisticsCommand).RaiseCanExecuteChanged();
     }
 
     private bool SetField<T>(
@@ -824,13 +873,21 @@ public sealed class BoxelSearchLibraryItemViewModel : INotifyPropertyChanged
         }
     }
 
-    private sealed class RelayCommand(Action execute) : ICommand
+    private sealed class RelayCommand(
+        Action execute,
+        Func<bool>? canExecute = null) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
-        public bool CanExecute(object? parameter) => true;
+        public bool CanExecute(object? parameter) => canExecute?.Invoke() ?? true;
 
-        public void Execute(object? parameter) => execute();
+        public void Execute(object? parameter)
+        {
+            if (CanExecute(parameter))
+            {
+                execute();
+            }
+        }
 
         public void RaiseCanExecuteChanged()
         {
@@ -846,3 +903,7 @@ public enum BoxelSearchLibrarySortColumn
     Modified,
     Progress,
 }
+
+public sealed record BoxelSurveyStatsFocusRequest(
+    IReadOnlyList<string> Prefixes,
+    char LowMassCode);

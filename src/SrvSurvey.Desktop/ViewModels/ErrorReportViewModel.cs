@@ -8,11 +8,11 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class ErrorReportViewModel : INotifyPropertyChanged
 {
     public static readonly Uri IssuesUri = new(
-        "https://github.com/njthomson/SrvSurvey/issues");
+        "https://github.com/Fenris159/SrvSurvey/issues");
     public static readonly Uri DiscordUri = new(
         "https://discord.gg/QZsMu2SkSA");
     private const string NewIssueAddress =
-        "https://github.com/njthomson/SrvSurvey/issues/new";
+        "https://github.com/Fenris159/SrvSurvey/issues/new";
     private readonly Exception exception;
     private readonly string version;
     private string steps = string.Empty;

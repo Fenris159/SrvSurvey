@@ -64,4 +64,36 @@ public sealed class ExplorationValueCalculatorTests
         Assert.Equal(2700541, efficientMapping);
         Assert.Equal(2160433, inefficientMapping);
     }
+
+    [Fact]
+    public void MetalRichTerraformableUsesDedicatedBonusNotGenericFallback()
+    {
+        Assert.Equal(21790, ExplorationValueCalculator.GetPlanetBaseValue(
+            "Metal rich body",
+            isTerraformable: false));
+        Assert.Equal(127468, ExplorationValueCalculator.GetPlanetBaseValue(
+            "Metal rich body",
+            isTerraformable: true));
+        Assert.NotEqual(
+            ExplorationValueCalculator.GetPlanetBaseValue("Rocky body", true),
+            ExplorationValueCalculator.GetPlanetBaseValue("Metal rich body", true));
+    }
+
+    [Fact]
+    public void MetalRichTerraformableScanUsesCombinedBaseValue()
+    {
+        var value = ExplorationValueCalculator.Calculate(
+            new ExplorationValueRequest
+            {
+                BodyClass = "Metal rich body",
+                IsTerraformable = true,
+                Mass = 1,
+                IsFirstDiscoverer = true,
+                IsMapped = false,
+                IsFirstMapped = true,
+                IsOdyssey = true
+            });
+
+        Assert.Equal(518972, value);
+    }
 }

@@ -1,6 +1,8 @@
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
+using static SrvSurvey.Desktop.Tests.JournalEventEnvelopeTestParser;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -313,6 +315,62 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
                 "could not be deleted",
                 StringComparison.Ordinal));
         Assert.Contains(delete, library.Searches);
+    }
+
+    [Fact]
+    public async Task StatisticsShortcutEnablesWhenPrefixExistsInIndex()
+    {
+        var store = new SavedBoxelSearchStore(temporaryDirectory);
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        await store.CreateAsync(
+            "F123",
+            "Helium run",
+            null,
+            new BoxelSearchSnapshot
+            {
+                Active = true,
+                TopBoxel = top,
+                Current = top,
+                CurrentCount = 1,
+                LowMassCode = 'c',
+                ProgressByPrefix = new Dictionary<string, int>
+                {
+                    [top.Prefix] = 1,
+                },
+            });
+        using var coordinator = new BoxelSurveyStatsCoordinator(
+            new BoxelSurveyStatsStore(temporaryDirectory),
+            TimeSpan.FromHours(1));
+        await coordinator.SwitchCommanderAsync("F123");
+        await coordinator.ApplyJournalEventsAsync(
+        [
+            Parse(
+                """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""),
+        ]);
+        await coordinator.FlushAsync();
+
+        var boxel = new BoxelSearchViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new LegacySystemDataReader(temporaryDirectory),
+            new EmptyBoxelStore(temporaryDirectory),
+            new EmptyResolver(),
+            savedSearchStore: store,
+            surveyStats: coordinator);
+        await boxel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+        var library = new BoxelSearchLibraryViewModel(boxel);
+        BoxelSurveyStatsFocusRequest? requested = null;
+        library.StatisticsRequested += (_, request) => requested = request;
+        await library.RefreshAsync();
+
+        var item = Assert.Single(library.Searches);
+        Assert.Equal(top.Prefix, item.TopBoxelPrefix);
+        Assert.Equal('c', item.LowMassCode);
+        Assert.True(item.CanOpenStatistics);
+        Assert.True(item.OpenStatisticsCommand.CanExecute(null));
+        item.OpenStatisticsCommand.Execute(null);
+        Assert.NotNull(requested);
+        Assert.Contains(top.Prefix, requested!.Prefixes);
+        Assert.Equal('c', requested.LowMassCode);
     }
 
     private async Task<(
