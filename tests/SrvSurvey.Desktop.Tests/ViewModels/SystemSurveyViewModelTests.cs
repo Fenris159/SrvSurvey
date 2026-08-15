@@ -1206,6 +1206,69 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void BiologyBodyDetailIgnoresNearBodyWithoutBiologicalSignals()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+                Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"PlanetClass":"High metal content body","AtmosphereType":"CarbonDioxide","MassEM":0.1,"Landable":true}"""),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
+                BodyName = "Test 2",
+            });
+
+        var biology = Assert.IsType<BiologySurveyViewModel>(
+            viewModel.BiologySurvey);
+        Assert.True(biology.IsSystemOverview);
+        Assert.Equal(1, Assert.Single(biology.Bodies).BodyId);
+    }
+
+    [Fact]
+    public void DssCompletionIgnoresZeroSignalBodyAfterMultipleScans()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "zero-signal-dss-ui-settings.json")),
+            utcNow: () => now);
+        var zeroSignalBodyStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 2,
+                Name = "Test 2",
+            },
+        };
+
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"PlanetClass":"High metal content body","AtmosphereType":"CarbonDioxide","MassEM":0.1,"Landable":true}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}]}"""),
+                Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 3","BodyID":3,"PlanetClass":"Rocky body","AtmosphereType":"Ammonia","MassEM":0.2,"Landable":true}"""),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 3","BodyID":3,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":3}]}"""),
+                Parse("""{"timestamp":"2026-07-25T12:00:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 2","BodyID":2}"""),
+            ],
+            zeroSignalBodyStatus);
+
+        Assert.True(viewModel.IsWithinPostDssBiologyWindow);
+        var biology = Assert.IsType<BiologySurveyViewModel>(
+            viewModel.BiologySurvey);
+        Assert.True(biology.IsSystemOverview);
+        Assert.Equal([1, 3], biology.Bodies.Select(body => body.BodyId));
+        Assert.Equal("0 of 5 biological signals analyzed", biology.ProgressText);
+    }
+
+    [Fact]
     public void BiologyBodyDetailSurvivesDepartureOnlyForPostDssGraceWindow()
     {
         var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);

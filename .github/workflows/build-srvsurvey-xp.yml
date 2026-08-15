@@ -1,6 +1,6 @@
 name: Build and publish SrvSurvey-XP release
 
-run-name: SrvSurvey-XP ${{ inputs.version || github.ref_name }} from ${{ inputs.source_ref || github.ref_name }} (${{ inputs.release_channel || 'validation' }})
+run-name: SrvSurvey-XP from ${{ inputs.source_ref || github.ref_name }} (${{ inputs.release_channel || 'validation' }})
 
 on:
   push:
@@ -14,24 +14,14 @@ on:
         required: true
         type: string
         default: SrvSurvey-Avalonia
-      version:
-        description: Stable three- or four-part base version (for example, 2.1.4.0)
-        required: true
-        type: string
-        default: 2.1.3.0
       release_channel:
-        description: Stable publishes the base version; development appends -rc.N and creates a pre-release
+        description: Stable requires a base project Version; development requires -rc.N and creates a pre-release
         required: true
         type: choice
         options:
           - development
           - stable
         default: development
-      rc_number:
-        description: RC number used only for development releases
-        required: true
-        type: string
-        default: "3"
 
 permissions:
   contents: read
@@ -64,56 +54,40 @@ jobs:
         shell: pwsh
         env:
           RELEASE_CHANNEL: ${{ inputs.release_channel }}
-          RC_NUMBER: ${{ inputs.rc_number }}
-          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           $project = [xml](Get-Content src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj)
           $projectVersionText = ([string]$project.Project.PropertyGroup.Version).Trim()
           $fileVersionText = ([string]$project.Project.PropertyGroup.FileVersion).Trim()
+          if ($projectVersionText -notmatch '^\d+\.\d+\.\d+(\.\d+)?(-rc\.[1-9]\d*)?$') {
+            throw "Project Version '$projectVersionText' is not a supported XP release version."
+          }
+
+          $projectCoreVersion = $projectVersionText.Split('-', 2)[0]
+          $coreVersion = $null
+          $fileVersionValue = $null
+          if (-not [Version]::TryParse($projectCoreVersion, [ref]$coreVersion) -or
+              -not [Version]::TryParse($fileVersionText, [ref]$fileVersionValue) -or
+              $coreVersion -ne $fileVersionValue) {
+            throw "Project Version '$projectVersionText' and FileVersion '$fileVersionText' do not share the same numeric version."
+          }
+
           $isRelease = $env:GITHUB_EVENT_NAME -eq "workflow_dispatch"
           $channel = if ($isRelease) { $env:RELEASE_CHANNEL } else { "validation" }
-          $isPrerelease = $channel -eq "development"
           if ($isRelease -and $channel -notin @("stable", "development")) {
             throw "Release channel must be stable or development."
           }
 
-          if ($isRelease) {
-            $requestedVersion = $env:REQUESTED_VERSION.Trim()
-            $version = $null
-            if (-not [Version]::TryParse($requestedVersion, [ref]$version) -or
-                $version.Major -lt 0 -or
-                $version.Minor -lt 0 -or
-                $version.Build -lt 0) {
-              throw "'$requestedVersion' is not a valid three- or four-part release version."
-            }
-
-            $packageVersion = $version.ToString()
-            $fileVersion = $version.ToString()
-            if ($isPrerelease) {
-              $rc = 0
-              if (-not [int]::TryParse($env:RC_NUMBER, [ref]$rc) -or $rc -lt 1) {
-                throw "Development releases require an RC number of 1 or greater."
-              }
-              $packageVersion = "$packageVersion-rc.$rc"
-            }
-          } else {
-            if ($projectVersionText -notmatch '^\d+\.\d+\.\d+(\.\d+)?(-rc\.[1-9]\d*)?$') {
-              throw "Project Version '$projectVersionText' is not a supported XP release version."
-            }
-
-            $projectCoreVersion = $projectVersionText.Split('-', 2)[0]
-            $coreVersion = $null
-            $fileVersionValue = $null
-            if (-not [Version]::TryParse($projectCoreVersion, [ref]$coreVersion) -or
-                -not [Version]::TryParse($fileVersionText, [ref]$fileVersionValue) -or
-                $coreVersion -ne $fileVersionValue) {
-              throw "Project Version '$projectVersionText' and FileVersion '$fileVersionText' do not share the same numeric version."
-            }
-
-            $packageVersion = $projectVersionText
-            $fileVersion = $fileVersionValue.ToString()
+          $isPrerelease = $projectVersionText -match '-rc\.[1-9]\d*$'
+          if ($isRelease -and $channel -eq "development" -and -not $isPrerelease) {
+            throw "Development releases require the project Version to end in -rc.N."
           }
 
+          if ($isRelease -and $channel -eq "stable" -and $isPrerelease) {
+            throw "Stable releases require the project Version without an -rc.N suffix."
+          }
+
+          $packageVersion = $projectVersionText
+          $fileVersion = $fileVersionValue.ToString()
           $sourceSha = (git rev-parse HEAD).Trim()
           $releaseTag = "xp-v$packageVersion"
           "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
