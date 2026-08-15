@@ -252,6 +252,16 @@ public sealed partial class MainWindow : Window
             Program.ApplicationLog?.Append(
                 "Journal monitor shutdown failed: " + exception);
         }
+
+        try
+        {
+            await viewModel.DisposeAsync();
+        }
+        catch (Exception exception)
+        {
+            Program.ApplicationLog?.Append(
+                "Application service shutdown failed: " + exception);
+        }
         finally
         {
             closeReady = true;

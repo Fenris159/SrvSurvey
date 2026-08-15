@@ -97,6 +97,47 @@ public sealed class BoxelSearchStateTests
     }
 
     [Fact]
+    public void HandledSystemCountUsesRecordedCollectionsAndDeduplicatesSystems()
+    {
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var state = new BoxelSearchState(new BoxelSearchSnapshot
+        {
+            Active = true,
+            TopBoxel = top,
+            Current = top,
+            CurrentCount = 2,
+            CompletionMode = BoxelCompletionMode.FssAllBodies,
+            CompletedSystems =
+            [
+                top.WithSystemNumber(500).GeneratedName,
+                top.WithSystemNumber(1).GeneratedName,
+            ],
+            EmptySystems =
+            [
+                top.WithSystemNumber(1).GeneratedName,
+                top.WithSystemNumber(600).GeneratedName,
+            ],
+        });
+
+        state.MergeSpanshSystems(
+        [
+            new BoxelSystemObservation(
+                top.WithSystemNumber(0),
+                null,
+                null,
+                null,
+                true,
+                true),
+        ]);
+
+        Assert.True(state.TrySetSystemComplete(top.GeneratedName, true, out _));
+        Assert.Single(state.Systems);
+        Assert.True(state.Systems[0].IsComplete);
+        Assert.Contains(top.WithSystemNumber(600).GeneratedName, state.EmptySystems);
+        Assert.Equal(4, state.CompletedSystemCount);
+    }
+
+    [Fact]
     public void ActivateBuildsChildProgressAndRejectsMassCodeH()
     {
         var state = new BoxelSearchState();

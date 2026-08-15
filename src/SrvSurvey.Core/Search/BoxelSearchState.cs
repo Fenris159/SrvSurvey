@@ -882,20 +882,25 @@ public sealed class BoxelSearchState
             return 0;
         }
 
-        var count = 0;
-        for (var number = 0; number < CurrentCount; number++)
+        var handled = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var system in systems.Values)
         {
-            var generatedName = Current.WithSystemNumber(number).GeneratedName;
-            systems.TryGetValue(generatedName, out var system);
-            if (system?.IsComplete == true
-                || completedSystems.Contains(generatedName)
-                || emptySystems.Contains(generatedName))
+            if (system.IsComplete
+                && string.Equals(system.Boxel.Prefix, prefix, StringComparison.Ordinal))
             {
-                count++;
+                handled.Add(system.Boxel.GeneratedName);
             }
         }
 
-        return count;
+        foreach (var systemName in completedSystems.Concat(emptySystems))
+        {
+            if (TryResolveCurrentSystem(systemName, out var boxel) && boxel is not null)
+            {
+                handled.Add(boxel.GeneratedName);
+            }
+        }
+
+        return handled.Count;
     }
 
     private int CountEmptySystems(string prefix)

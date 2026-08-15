@@ -81,6 +81,29 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task RejectedStatisticsMinimumsNotifyBindingsToRestoreClampedValues()
+    {
+        using var coordinator = await CreateCoordinatorWithSystemAsync();
+        using var viewModel = CreateViewModel(coordinator);
+        var changes = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) => changes.Add(eventArgs.PropertyName);
+
+        viewModel.MinSystemsForAverages = 1;
+        changes.Clear();
+        viewModel.MinSystemsForAverages = 0;
+
+        Assert.Equal(1, viewModel.MinSystemsForAverages);
+        Assert.Contains(nameof(viewModel.MinSystemsForAverages), changes);
+
+        viewModel.MinSystemsForExport = 1000;
+        changes.Clear();
+        viewModel.MinSystemsForExport = 1001;
+
+        Assert.Equal(1000, viewModel.MinSystemsForExport);
+        Assert.Contains(nameof(viewModel.MinSystemsForExport), changes);
+    }
+
+    [AvaloniaFact]
     public async Task SearchRollupUsesFocusedPrefixes()
     {
         using var coordinator = await CreateCoordinatorWithSystemAsync();
@@ -175,12 +198,15 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
         await coordinator.FlushAsync();
         using var viewModel = CreateViewModel(coordinator);
         await viewModel.OpenPrefixAsync(parent.Prefix);
+        var changes = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) => changes.Add(eventArgs.PropertyName);
 
         viewModel.ExploreChildrenCommand.Execute(null);
 
         Assert.False(viewModel.IsDetailVisible);
         Assert.True(viewModel.IsBrowsingChildren);
         Assert.Equal((char)(parent.MassCode - 1), viewModel.SelectedMassCode);
+        Assert.Contains(nameof(viewModel.SelectedMassCode), changes);
         var row = Assert.Single(viewModel.BrowserRows);
         Assert.Equal(child.Prefix, row.Prefix);
         Assert.Equal(0, row.Indent);
@@ -226,6 +252,62 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
         Assert.NotEmpty(Directory.GetFiles(selectedDirectory, "*.csv"));
         Assert.NotEmpty(Directory.GetFiles(selectedDirectory, "*.json"));
         Assert.NotEmpty(viewModel.RecentEntries);
+    }
+
+    [AvaloniaFact]
+    public async Task PersistenceFailureIsReportedAsStatus()
+    {
+        using var coordinator = await CreateCoordinatorWithSystemAsync();
+        using var viewModel = CreateViewModel(coordinator);
+        var storeDirectory = Path.Combine(
+            temporaryDirectory,
+            BoxelSurveyStatsStore.StoreDirectoryName);
+        Directory.Delete(storeDirectory, recursive: true);
+        await File.WriteAllTextAsync(storeDirectory, "blocked");
+        await coordinator.ApplyJournalEventsAsync(
+        [
+            Parse(
+                """{"timestamp":"2026-07-10T13:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-1","SystemAddress":2002}"""),
+        ]);
+
+        await coordinator.FlushAsync();
+        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { });
+
+        Assert.Contains(
+            "Could not save boxel survey statistics",
+            viewModel.StatusMessage,
+            StringComparison.Ordinal);
+    }
+
+    [AvaloniaFact]
+    public async Task DisposeUnsubscribesFromCoordinatorChanges()
+    {
+        using var coordinator = await CreateCoordinatorWithSystemAsync();
+        var viewModel = CreateViewModel(coordinator);
+        viewModel.ReportStatus("unchanged");
+        var eventField = typeof(BoxelSurveyStatsCoordinator).GetField(
+            nameof(BoxelSurveyStatsCoordinator.Changed),
+            System.Reflection.BindingFlags.Instance
+                | System.Reflection.BindingFlags.NonPublic);
+        var before = Assert.IsAssignableFrom<MulticastDelegate>(
+            eventField?.GetValue(coordinator));
+        Assert.Contains(
+            before.GetInvocationList(),
+            handler => ReferenceEquals(handler.Target, viewModel));
+
+        viewModel.Dispose();
+        await coordinator.ApplyJournalEventsAsync(
+        [
+            Parse(
+                """{"timestamp":"2026-07-10T13:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-1","SystemAddress":2002}"""),
+        ]);
+        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { });
+        var after = eventField?.GetValue(coordinator) as MulticastDelegate;
+
+        Assert.DoesNotContain(
+            after?.GetInvocationList() ?? [],
+            handler => ReferenceEquals(handler.Target, viewModel));
+        Assert.Equal("unchanged", viewModel.StatusMessage);
     }
 
     public void Dispose()

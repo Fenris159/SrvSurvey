@@ -30,7 +30,7 @@ using SrvSurvey.Desktop.Theming;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
+public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, IAsyncDisposable
 {
     private static readonly TimeSpan IdleHousekeepingInterval =
         TimeSpan.FromSeconds(5);
@@ -4432,6 +4432,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public void Dispose()
     {
+        Task.Run(() => DisposeAsync().AsTask()).GetAwaiter().GetResult();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
         if (disposed)
         {
             return;
@@ -4439,7 +4444,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         disposed = true;
         routeAutoCopyCoordinator.Dispose();
-        boxelSurveyStats.Dispose();
+        await boxelSurveyStats.DisposeAsync();
         BoxelSearch.CancelPendingOperations();
         JournalPostProcessor.Cancel();
         CancelSystemBodyDataRequest();
@@ -4469,7 +4474,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             disposableVoxStellarPublisher.Dispose();
         }
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
-        questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        await questRuntimeCoordinator.DisposeAsync();
     }
 
     private void OnEddnUploadEnabledChanged(bool enabled)

@@ -3,6 +3,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
+using static SrvSurvey.Desktop.Tests.JournalEventEnvelopeTestParser;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -434,6 +435,34 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task RefreshDoesNotOverwriteUnappliedLastSystemAvailableEdit()
+    {
+        var viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([]));
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        viewModel.LowMassCode = "c";
+        await viewModel.ActivateAsync();
+
+        viewModel.LastSystemAvailable = "348";
+        await viewModel.RefreshCurrentAsync();
+
+        Assert.Equal("348", viewModel.LastSystemAvailable);
+
+        await viewModel.ApplyLastSystemAvailableAsync();
+
+        Assert.EndsWith(
+            "of 349 systems complete",
+            viewModel.SystemProgress,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task MarkNextEmptySkipsAndPersistsOnlyTheNextIncompleteSystem()
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
@@ -793,14 +822,6 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             null,
             DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
             true);
-    }
-
-    private static JournalEventEnvelope Parse(string json)
-    {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
-        return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
 
     private sealed class CountingSuggestionClient : ISystemNameSuggestionClient

@@ -544,35 +544,13 @@ public sealed class CommanderProfileStore(string profileDirectory)
         node["current"] = boxelSearch.Current?.ToStoredString();
         node["currentCount"] = boxelSearch.CurrentCount;
         node["lowMassCode"] = boxelSearch.LowMassCode.ToString();
-        var completed = new JsonArray();
-        foreach (var prefix in boxelSearch.CompletedPrefixes
-                     .Distinct(StringComparer.Ordinal)
-                     .Order(StringComparer.Ordinal))
-        {
-            completed.Add(prefix);
-        }
-
-        node["completed"] = completed;
-        var completedSystems = new JsonArray();
-        foreach (var systemName in boxelSearch.CompletedSystems
-                     .Where(systemName => !string.IsNullOrWhiteSpace(systemName))
-                     .Distinct(StringComparer.Ordinal)
-                     .Order(StringComparer.Ordinal))
-        {
-            completedSystems.Add(systemName);
-        }
-
-        node["completedSystems"] = completedSystems;
-        var emptySystems = new JsonArray();
-        foreach (var systemName in boxelSearch.EmptySystems
-                     .Where(systemName => !string.IsNullOrWhiteSpace(systemName))
-                     .Distinct(StringComparer.Ordinal)
-                     .Order(StringComparer.Ordinal))
-        {
-            emptySystems.Add(systemName);
-        }
-
-        node["emptySystems"] = emptySystems;
+        node["completed"] = WriteStringArray(boxelSearch.CompletedPrefixes);
+        node["completedSystems"] = WriteStringArray(
+            boxelSearch.CompletedSystems,
+            excludeBlankValues: true);
+        node["emptySystems"] = WriteStringArray(
+            boxelSearch.EmptySystems,
+            excludeBlankValues: true);
         var progress = new JsonObject();
         foreach (var entry in boxelSearch.ProgressByPrefix
                      .OrderBy(entry => entry.Key, StringComparer.Ordinal))
@@ -647,10 +625,14 @@ public sealed class CommanderProfileStore(string profileDirectory)
         root["trackMassacres"] = missions;
     }
 
-    private static JsonArray WriteStringArray(IEnumerable<string> values)
+    private static JsonArray WriteStringArray(
+        IEnumerable<string> values,
+        bool excludeBlankValues = false)
     {
         var array = new JsonArray();
         foreach (var value in values
+                     .Where(value => !excludeBlankValues
+                         || !string.IsNullOrWhiteSpace(value))
                      .Distinct(StringComparer.Ordinal)
                      .Order(StringComparer.Ordinal))
         {

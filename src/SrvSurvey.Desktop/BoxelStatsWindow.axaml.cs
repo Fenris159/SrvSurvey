@@ -9,12 +9,15 @@ public sealed partial class BoxelStatsWindow : Window
 {
     private CancellationTokenSource? activationCancellation;
     private int activationVersion;
+    private bool isClosed;
 
     public BoxelStatsWindow()
     {
         InitializeComponent();
         Closed += (_, _) =>
         {
+            isClosed = true;
+            Interlocked.Increment(ref activationVersion);
             CancelActivation();
             if (DataContext is BoxelSurveyStatsViewModel viewModel)
             {
@@ -36,7 +39,7 @@ public sealed partial class BoxelStatsWindow : Window
 
     private async void Export_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        if (DataContext is not BoxelSurveyStatsViewModel viewModel)
+        if (isClosed || DataContext is not BoxelSurveyStatsViewModel viewModel)
         {
             return;
         }
@@ -106,13 +109,19 @@ public sealed partial class BoxelStatsWindow : Window
 
     private async Task ActivatePrefixAsync(string prefix)
     {
-        if (DataContext is not BoxelSurveyStatsViewModel viewModel)
+        if (isClosed || DataContext is not BoxelSurveyStatsViewModel viewModel)
         {
             return;
         }
 
         var version = Interlocked.Increment(ref activationVersion);
-        var cancellation = ReplaceActivation();
+        using var cancellation = new CancellationTokenSource();
+        ReplaceActivation(cancellation);
+        if (isClosed)
+        {
+            cancellation.Cancel();
+        }
+
         try
         {
             await viewModel.OpenPrefixAsync(prefix, cancellation.Token);
@@ -126,25 +135,25 @@ public sealed partial class BoxelStatsWindow : Window
                 or UnauthorizedAccessException
                 or InvalidDataException)
         {
-            if (version == activationVersion)
+            if (!isClosed && version == activationVersion)
             {
                 viewModel.ReportStatus(
                     "Could not open boxel statistics: " + exception.Message);
             }
         }
+        finally
+        {
+            Interlocked.CompareExchange(
+                ref activationCancellation,
+                null,
+                cancellation);
+        }
     }
 
-    private CancellationTokenSource ReplaceActivation()
+    private void ReplaceActivation(CancellationTokenSource next)
     {
-        var next = new CancellationTokenSource();
         var previous = Interlocked.Exchange(ref activationCancellation, next);
-        if (previous is not null)
-        {
-            previous.Cancel();
-            previous.Dispose();
-        }
-
-        return next;
+        previous?.Cancel();
     }
 
     private void CancelActivation()
@@ -156,6 +165,5 @@ public sealed partial class BoxelStatsWindow : Window
         }
 
         scheduled.Cancel();
-        scheduled.Dispose();
     }
 }

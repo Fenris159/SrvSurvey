@@ -69,6 +69,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private string currentBoxelDescription = string.Empty;
     private string nextSystem = Unavailable;
     private string lastSystemAvailable = "0";
+    private bool hasUnappliedLastSystemAvailableEdit;
     private string systemProgress = "0 of 0 complete";
     private string boxelProgress = "0 of 0 boxels complete";
     private string searchSize = "Enter a generated system name.";
@@ -470,7 +471,13 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public string LastSystemAvailable
     {
         get => lastSystemAvailable;
-        set => SetField(ref lastSystemAvailable, value);
+        set
+        {
+            if (SetField(ref lastSystemAvailable, value))
+            {
+                hasUnappliedLastSystemAvailableEdit = true;
+            }
+        }
     }
 
     public string SystemProgress
@@ -1434,18 +1441,19 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 LastSystemAvailable,
                 NumberStyles.Integer,
                 CultureInfo.CurrentCulture,
-                out var lastSystemAvailable)
-            || lastSystemAvailable < 0
-            || lastSystemAvailable >= 100_000)
+                out var parsedLastSystemAvailable)
+            || parsedLastSystemAvailable < 0
+            || parsedLastSystemAvailable >= 100_000)
         {
             StatusMessage = "Last system available must be a whole number from 0 to 99,999.";
             return;
         }
 
-        state.SetExpectedSystemCount(lastSystemAvailable + 1);
+        state.SetExpectedSystemCount(parsedLastSystemAvailable + 1);
+        hasUnappliedLastSystemAvailableEdit = false;
         showNextSystemPageOnUpdate = true;
         UpdateDisplay();
-        await SaveAsync($"Last system available updated to {lastSystemAvailable:N0}.");
+        await SaveAsync($"Last system available updated to {parsedLastSystemAvailable:N0}.");
     }
 
     public async Task MarkNextEmptyAsync()
@@ -1590,45 +1598,6 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         showNextSystemPageOnUpdate = true;
         UpdateDisplay();
         await SaveAsync("System completion updated.");
-    }
-
-    private async Task RefreshCurrentWithoutLockAsync()
-    {
-        if (state.Current is null || state.CurrentIsEmpty)
-        {
-            return;
-        }
-
-        var local = await localSystemReader.ReadAsync(
-            frontierId!,
-            state.Current,
-            CancellationToken.None);
-        state.MergeLocalSystems(local.Systems);
-        if (latestRoute is not null)
-        {
-            state.MergeRoute(latestRoute.Route
-                .Select(entry => entry.ToBoxelObservation())
-                .OfType<BoxelSystemObservation>());
-        }
-
-        try
-        {
-            state.MergeSpanshSystems(await systemResolver.SearchAsync(
-                state.Current,
-                CancellationToken.None));
-        }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or TaskCanceledException
-                or InvalidDataException
-                or System.Text.Json.JsonException)
-        {
-            StatusMessage = "Advanced to the next boxel, but its Spansh refresh failed: "
-                + exception.Message;
-        }
-
-        UpdateDisplay();
-        await SaveAsync();
     }
 
     private BoxelAddress? GetParent()
@@ -1793,8 +1762,14 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 + state.Current.WithSystemNumber(
                     Math.Max(0, state.CurrentCount - 1)).Name;
         NextSystem = state.NextSystem ?? Unavailable;
-        LastSystemAvailable = Math.Max(0, state.CurrentCount - 1)
-            .ToString(CultureInfo.CurrentCulture);
+        if (!hasUnappliedLastSystemAvailableEdit)
+        {
+            SetField(
+                ref lastSystemAvailable,
+                Math.Max(0, state.CurrentCount - 1)
+                    .ToString(CultureInfo.CurrentCulture),
+                nameof(LastSystemAvailable));
+        }
         SystemProgress = $"{state.CompletedSystemCount:N0} of "
             + $"{Math.Max(state.CurrentCount, state.Systems.Count):N0} systems complete";
         BoxelProgress = $"{state.CompletedBoxelCount:N0} of "
@@ -1944,7 +1919,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         SystemPageText = string.Create(
             CultureInfo.CurrentCulture,
             $"Page {systemPageIndex + 1:N0} of {pageCount:N0}");
-        var currentSystemName = TryParseBoxelInput(
+        var resolvedCurrentSystemName = TryParseBoxelInput(
                 CurrentSystemName,
                 out var currentSystem)
             ? currentSystem?.Name
@@ -1960,7 +1935,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                         ? $"{from.DistanceTo(position):N2} ly"
                         : Unavailable;
                 var isCurrent = string.Equals(
-                    currentSystemName,
+                    resolvedCurrentSystemName,
                     boxel.Name,
                     StringComparison.Ordinal);
                 return new BoxelSystemRowViewModel(
@@ -2484,11 +2459,12 @@ public sealed class BoxelSystemRowViewModel
 
     public string Status { get; }
 
-    public string ToggleButtonText => IsEmpty
-        ? "Restore"
-        : IsComplete
-            ? "Reopen"
-            : "Complete";
+    public string ToggleButtonText => (IsEmpty, IsComplete) switch
+    {
+        (true, _) => "Restore",
+        (false, true) => "Reopen",
+        _ => "Complete",
+    };
 
     public ICommand ToggleCommand { get; }
 

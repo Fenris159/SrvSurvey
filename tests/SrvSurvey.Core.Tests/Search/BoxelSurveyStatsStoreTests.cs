@@ -115,6 +115,17 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
 
         Assert.Equal(first.Prefix, (await store.LoadBoxelAsync("F123", first.Prefix))?.Prefix);
         Assert.Equal(second.Prefix, (await store.LoadBoxelAsync("F123", second.Prefix))?.Prefix);
+        var commanderDirectory = Path.Combine(
+            temporaryDirectory,
+            BoxelSurveyStatsStore.StoreDirectoryName,
+            "F123");
+        var boxelFiles = Directory.EnumerateFiles(commanderDirectory, "*.json")
+            .Where(path => !string.Equals(
+                Path.GetFileName(path),
+                "index.json",
+                StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        Assert.Equal(2, boxelFiles.Length);
     }
 
     [Fact]

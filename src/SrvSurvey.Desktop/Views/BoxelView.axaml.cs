@@ -190,7 +190,7 @@ public sealed partial class BoxelView : UserControl
                 return;
             }
 
-            var (stats, window) = CreateStatsWindow(viewModel, owner);
+            var (stats, window) = CreateStatsWindow(viewModel);
             await InitializeStatsWindowAsync(stats, () => stats.InitializeAsync());
             ShowStatsWindow(window, owner);
         }
@@ -215,7 +215,7 @@ public sealed partial class BoxelView : UserControl
             return;
         }
 
-        var (stats, window) = CreateStatsWindow(viewModel, owner);
+        var (stats, window) = CreateStatsWindow(viewModel);
         await InitializeStatsWindowAsync(
             stats,
             () => stats.FocusPrefixesAsync(request.Prefixes, request.LowMassCode));
@@ -223,10 +223,8 @@ public sealed partial class BoxelView : UserControl
     }
 
     private (BoxelSurveyStatsViewModel Stats, BoxelStatsWindow Window) CreateStatsWindow(
-        MainWindowViewModel viewModel,
-        Window owner)
+        MainWindowViewModel viewModel)
     {
-        ArgumentNullException.ThrowIfNull(owner);
         var stats = new BoxelSurveyStatsViewModel(
             viewModel.BoxelSurveyStats,
             new BoxelSurveyStatsSettingsStore(viewModel.AppDataPaths.UiSettingsPath),

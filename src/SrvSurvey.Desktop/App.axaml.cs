@@ -367,7 +367,8 @@ public sealed partial class App : Application
             capabilities,
             viewModel,
             desktop);
-        desktop.Exit += (_, _) => HandleDesktopExit(viewModel, applicationLog);
+        desktop.Exit += async (_, _) =>
+            await HandleDesktopExitAsync(viewModel, applicationLog);
         ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
     }
 
@@ -563,7 +564,7 @@ public sealed partial class App : Application
         }
     }
 
-    private void HandleDesktopExit(
+    private async Task HandleDesktopExitAsync(
         MainWindowViewModel viewModel,
         ApplicationLogService applicationLog)
     {
@@ -582,14 +583,14 @@ public sealed partial class App : Application
         TaskScheduler.UnobservedTaskException -=
             HandleUnobservedTaskException;
         applicationLog.Append("Application exit");
-        DisposeDesktopServices(viewModel);
+        await DisposeDesktopServicesAsync(viewModel);
     }
 
-    private void DisposeDesktopServices(MainWindowViewModel viewModel)
+    private async Task DisposeDesktopServicesAsync(MainWindowViewModel viewModel)
     {
         multiGameCommanderOverlayCoordinator?.Dispose();
         multiGameCommanderOverlayCoordinator = null;
-        viewModel.Dispose();
+        await viewModel.DisposeAsync();
         errorReportWindowCoordinator?.Dispose();
         errorReportWindowCoordinator = null;
         viewModel.DiagnosticsLog.Dispose();

@@ -215,11 +215,18 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     private bool HasSavedSearchScope => focusedPrefixes.Count > 0
         || (search?.IsActive == true && search.SearchPrefixes.Count > 0);
 
-    private int SavedSearchBoxelCount => focusedPrefixes.Count > 0
-        ? focusedPrefixes.Count
-        : search?.IsActive == true
-            ? search.SearchPrefixes.Count
-            : 0;
+    private int SavedSearchBoxelCount
+    {
+        get
+        {
+            if (focusedPrefixes.Count > 0)
+            {
+                return focusedPrefixes.Count;
+            }
+
+            return search?.IsActive == true ? search.SearchPrefixes.Count : 0;
+        }
+    }
 
     public bool ShowSearchRollup
     {
@@ -266,24 +273,49 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         }
     }
 
-    public string EntireSavedSearchScopeText => !HasSavedSearchScope
-        ? "Entire saved search (not available)"
-        : string.Create(
-            CultureInfo.CurrentCulture,
-            $"Entire saved search ({SavedSearchBoxelCount:N0} boxel{(SavedSearchBoxelCount == 1 ? string.Empty : "s")})");
+    public string EntireSavedSearchScopeText
+    {
+        get
+        {
+            if (!HasSavedSearchScope)
+            {
+                return "Entire saved search (not available)";
+            }
 
-    public string StatisticsScopeDescription => ShowSearchRollup
-        ? "Combines recorded totals and averages from every boxel in this saved search. "
-            + "Configured system counts and highest suffixes are per-boxel and cannot be combined. "
-            + "If only one boxel has recorded data, the totals will match that boxel."
-        : !HasSavedSearchScope
-            ? "Showing the selected boxel. Open statistics from Saved boxel searches to view "
-                + "or combine every boxel in a saved search."
-            : SavedSearchBoxelCount == 1
-                ? "Showing the selected boxel. This saved search contains only one boxel, so "
-                    + "an entire-search total would be identical."
-                : "Shows statistics for the selected boxel only, including its configured system "
-                    + "count and highest recorded suffix.";
+            var boxelSuffix = SavedSearchBoxelCount == 1 ? string.Empty : "s";
+            return string.Create(
+                CultureInfo.CurrentCulture,
+                $"Entire saved search ({SavedSearchBoxelCount:N0} boxel{boxelSuffix})");
+        }
+    }
+
+    public string StatisticsScopeDescription
+    {
+        get
+        {
+            if (ShowSearchRollup)
+            {
+                return "Combines recorded totals and averages from every boxel in this saved search. "
+                    + "Configured system counts and highest suffixes are per-boxel and cannot be combined. "
+                    + "If only one boxel has recorded data, the totals will match that boxel.";
+            }
+
+            if (!HasSavedSearchScope)
+            {
+                return "Showing the selected boxel. Open statistics from Saved boxel searches to view "
+                    + "or combine every boxel in a saved search.";
+            }
+
+            if (SavedSearchBoxelCount == 1)
+            {
+                return "Showing the selected boxel. This saved search contains only one boxel, so "
+                    + "an entire-search total would be identical.";
+            }
+
+            return "Shows statistics for the selected boxel only, including its configured system "
+                + "count and highest recorded suffix.";
+        }
+    }
 
     public bool TreatNavBeaconAsFullyScanned
     {
@@ -309,6 +341,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             var normalized = Math.Clamp(value, 1, 1000);
             if (preferences.MinSystemsForAverages == normalized)
             {
+                OnPropertyChanged();
                 return;
             }
 
@@ -331,6 +364,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             var normalized = Math.Clamp(value, 1, 1000);
             if (preferences.MinSystemsForExport == normalized)
             {
+                OnPropertyChanged();
                 return;
             }
 
@@ -480,6 +514,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         if (massCode is { } code && BoxelAddress.IsValidMassCode(code))
         {
             selectedMassCode = char.ToLowerInvariant(code);
+            OnPropertyChanged(nameof(SelectedMassCode));
             RefreshMassCodes();
         }
 
@@ -512,7 +547,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     {
         if (IsDetailVisible)
         {
-            await RefreshDetailAsync().ConfigureAwait(false);
+            await RefreshDetailAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         await RunOnUiThreadAsync(() =>
@@ -543,7 +578,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             var result = await coordinator.RebuildAsync(
                     journalDirectory,
                     currentJournalPath?.Invoke(),
-                    progress)
+                    progress,
+                    CancellationToken.None)
                 .ConfigureAwait(true);
             if (result is null)
             {
@@ -601,7 +637,10 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             var csvPath = Path.Combine(directory, $"{stem}-{stamp}.csv");
             var format = new BoxelSurveyAverageFormat(preferences.MinSystemsForAverages);
             var document = snapshots.Count == 1
-                ? await coordinator.GetDocumentAsync(snapshots[0].Prefix).ConfigureAwait(true)
+                ? await coordinator.GetDocumentAsync(
+                        snapshots[0].Prefix,
+                        CancellationToken.None)
+                    .ConfigureAwait(true)
                 : null;
             if (document is not null)
             {
@@ -663,20 +702,20 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     private async Task RefreshDetailAsync(CancellationToken cancellationToken = default)
     {
-        DetailRefreshRequest? request = null;
-        await RunOnUiThreadAsync(() =>
+        var request = await RunOnUiThreadAsync<DetailRefreshRequest?>(() =>
         {
             if (disposed || string.IsNullOrWhiteSpace(selectedPrefix))
             {
-                return;
+                return null;
             }
 
-            request = new DetailRefreshRequest(
+            var next = new DetailRefreshRequest(
                 selectedPrefix,
                 Interlocked.Increment(ref detailRequestVersion),
                 showSearchRollup,
                 showSearchRollup ? RollupPrefixes().ToArray() : []);
             IsBusy = true;
+            return next;
         }).ConfigureAwait(false);
         if (request is null)
         {
@@ -728,22 +767,37 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         VisitedText = string.Create(
             CultureInfo.CurrentCulture,
             $"Systems recorded: {snapshot.Visited:N0}");
-        ConfiguredSystemsText = request.UseRollup
-            ? "Configured search systems: — (per-boxel only)"
-            : search?.IsActive == true
-            && search?.CurrentBoxelPrefix is { } currentPrefix
-            && string.Equals(currentPrefix, snapshot.Prefix, StringComparison.Ordinal)
-                ? string.Create(
-                    CultureInfo.CurrentCulture,
-                    $"Configured search systems: {search.CurrentExpectedSystemCount:N0}")
-                : string.Empty;
-        HighestRecordedSuffixText = request.UseRollup
-            ? "Highest recorded suffix: — (per-boxel only)"
-            : snapshot.HighestRecordedSuffix is { } suffix
-                ? string.Create(
-                    CultureInfo.CurrentCulture,
-                    $"Highest recorded suffix: {suffix:N0}")
-                : "Highest recorded suffix: —";
+        if (request.UseRollup)
+        {
+            ConfiguredSystemsText = "Configured search systems: — (per-boxel only)";
+        }
+        else if (search?.IsActive == true
+            && search.CurrentBoxelPrefix is { } currentPrefix
+            && string.Equals(currentPrefix, snapshot.Prefix, StringComparison.Ordinal))
+        {
+            ConfiguredSystemsText = string.Create(
+                CultureInfo.CurrentCulture,
+                $"Configured search systems: {search.CurrentExpectedSystemCount:N0}");
+        }
+        else
+        {
+            ConfiguredSystemsText = string.Empty;
+        }
+
+        if (request.UseRollup)
+        {
+            HighestRecordedSuffixText = "Highest recorded suffix: — (per-boxel only)";
+        }
+        else if (snapshot.HighestRecordedSuffix is { } suffix)
+        {
+            HighestRecordedSuffixText = string.Create(
+                CultureInfo.CurrentCulture,
+                $"Highest recorded suffix: {suffix:N0}");
+        }
+        else
+        {
+            HighestRecordedSuffixText = "Highest recorded suffix: —";
+        }
         CompletenessText = string.Create(
             CultureInfo.CurrentCulture,
             $"FSS complete {snapshot.FssCompleteCount}    FSS bodies {snapshot.FssDiscoveryBodyCountSum} ({FormatAverage(snapshot.BodyAverage)})");
@@ -763,7 +817,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             var exported = new List<BoxelSurveyBoxelSnapshot>();
             foreach (var prefix in RollupPrefixes())
             {
-                var snapshot = await coordinator.GetAsync(prefix).ConfigureAwait(true);
+                var snapshot = await coordinator.GetAsync(prefix, CancellationToken.None)
+                    .ConfigureAwait(true);
                 if (snapshot is not null
                     && BoxelSurveyStatsExporter.MeetsExportMinimum(snapshot, min))
                 {
@@ -790,11 +845,15 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         string csvPath,
         BoxelSurveyAverageFormat format)
     {
-        await File.WriteAllTextAsync(jsonPath, BoxelSurveyStatsExporter.ToJson(document))
+        await File.WriteAllTextAsync(
+                jsonPath,
+                BoxelSurveyStatsExporter.ToJson(document),
+                CancellationToken.None)
             .ConfigureAwait(true);
         await File.WriteAllTextAsync(
                 csvPath,
-                BoxelSurveyStatsExporter.ToDetailCsv(snapshot, format))
+                BoxelSurveyStatsExporter.ToDetailCsv(snapshot, format),
+                CancellationToken.None)
             .ConfigureAwait(true);
     }
 
@@ -806,7 +865,9 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         var documents = new List<BoxelSurveyBoxelDocument>();
         foreach (var snapshot in snapshots)
         {
-            var item = await coordinator.GetDocumentAsync(snapshot.Prefix)
+            var item = await coordinator.GetDocumentAsync(
+                    snapshot.Prefix,
+                    CancellationToken.None)
                 .ConfigureAwait(true);
             if (item is not null)
             {
@@ -827,10 +888,15 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         }
 
         bundle.Append(']');
-        await File.WriteAllTextAsync(jsonPath, bundle.ToString()).ConfigureAwait(true);
+        await File.WriteAllTextAsync(
+                jsonPath,
+                bundle.ToString(),
+                CancellationToken.None)
+            .ConfigureAwait(true);
         await File.WriteAllTextAsync(
                 csvPath,
-                BoxelSurveyStatsExporter.ToIndexCsv(snapshots))
+                BoxelSurveyStatsExporter.ToIndexCsv(snapshots),
+                CancellationToken.None)
             .ConfigureAwait(true);
     }
 
@@ -838,7 +904,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     {
         if (focusedPrefixes.Count > 0)
         {
-            return focusedPrefixes;
+            return focusedPrefixes.ToArray();
         }
 
         return search?.SearchPrefixes ?? [selectedPrefix ?? string.Empty];
@@ -935,6 +1001,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         ClearFocusedPrefixes();
         browserParentPrefix = parent.Prefix;
         selectedMassCode = (char)(parent.MassCode - 1);
+        OnPropertyChanged(nameof(SelectedMassCode));
         IsDetailVisible = false;
         RefreshMassCodes();
         RefreshBrowser();
@@ -1111,10 +1178,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         {
             await RunOnUiThreadAsync(RefreshAsync).ConfigureAwait(false);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
         {
             await RunOnUiThreadAsync(() => ReportStatus(
                 "Could not refresh boxel statistics: " + exception.Message))
@@ -1148,6 +1212,16 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         }
 
         await Dispatcher.UIThread.InvokeAsync(action);
+    }
+
+    private static async Task<T> RunOnUiThreadAsync<T>(Func<T> action)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            return action();
+        }
+
+        return await Dispatcher.UIThread.InvokeAsync(action);
     }
 
     private static bool TryParsePrefix(string prefix, out BoxelAddress boxel)

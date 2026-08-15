@@ -4,7 +4,7 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class BoxelSurveyStatsCoordinator : IDisposable
+public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
 {
     public static readonly TimeSpan DefaultFlushDelay = TimeSpan.FromMilliseconds(500);
     private const int MaximumRetainedDocuments = 256;
@@ -388,6 +388,8 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
 
     public async Task FlushAsync(CancellationToken cancellationToken = default)
     {
+        // Do not acquire operationLock here: callers may already hold this
+        // non-reentrant lock while awaiting a flush.
         CancelScheduledFlush();
         string? commanderId;
         List<(string Prefix, BoxelSurveyBoxelDocument Document)> pending;
