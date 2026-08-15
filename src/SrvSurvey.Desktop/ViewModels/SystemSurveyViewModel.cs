@@ -1039,7 +1039,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get
         {
             var scannedCount = snapshot.Bodies.Count(body =>
-                body.IsScanned && body.Kind != SystemBodyKind.Asteroid);
+                body.IsScanned && body.CountsTowardFss);
             var prefix = snapshot.AllBodiesFound
                 ? $"Scanned all {scannedCount:N0} bodies"
                 : $"Scanned {scannedCount:N0} bodies";
