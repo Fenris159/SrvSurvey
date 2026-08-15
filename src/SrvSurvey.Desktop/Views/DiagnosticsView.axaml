@@ -35,7 +35,8 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card">
+      <Border x:Name="ApplicationUpdatesSection"
+              Classes="card">
         <StackPanel Spacing="12">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Application updates" />
