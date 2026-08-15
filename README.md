@@ -1,6 +1,6 @@
 # SrvSurvey-XP Cross-Platform
 
-Current release candidate version: **2.1.3.0-rc.23**
+Current release candidate version: **2.1.3.0-rc.24**
 
 This build of SrvSurvey is a cross-platform version of the Elite Dangerous companion application
 for Windows and now Linux. It reads the game's journal and auxiliary files to drive
