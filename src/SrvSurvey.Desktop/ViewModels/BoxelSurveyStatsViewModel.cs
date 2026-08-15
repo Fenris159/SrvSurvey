@@ -11,6 +11,9 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposable
 {
+    private static readonly TimeSpan CoordinatorRefreshDebounceDelay =
+        TimeSpan.FromMilliseconds(50);
+
     private static readonly (BoxelPlanetClass Class, string Code, string DisplayName)[] DisplayOrder =
     [
         (BoxelPlanetClass.Earthlike, "ELW", "Earth-like world"),
@@ -1209,6 +1212,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
         try
         {
+            await Task.Delay(CoordinatorRefreshDebounceDelay).ConfigureAwait(false);
             while (!disposed
                 && Interlocked.Exchange(ref coordinatorRefreshPending, 0) != 0)
             {
