@@ -500,7 +500,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
-    public void ScanSummaryExcludesBarycentresRingsAndAsteroidClusters()
+    public void ScanSummaryCountsOnlyScannedFssBodies()
     {
         var viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
@@ -519,8 +519,21 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             ],
             new EliteStatus { GuiFocus = GuiFocus.Fss });
 
-        Assert.Equal(8, viewModel.Snapshot.Bodies.Count);
-        Assert.Equal(4, viewModel.Snapshot.FssBodyCount);
+        var knownUnscannedBody = viewModel.Snapshot.Bodies
+            .Single(body => body.BodyId == 3) with
+        {
+            BodyId = 8,
+            Name = "Test C 1",
+            ShortName = "C1",
+            IsScanned = false,
+        };
+        Assert.True(viewModel.MergeKnownSystemData(
+            viewModel.Snapshot with { Bodies = [knownUnscannedBody] }));
+
+        Assert.Equal(9, viewModel.Snapshot.Bodies.Count);
+        Assert.Equal(5, viewModel.Snapshot.FssBodyCount);
+        Assert.True(knownUnscannedBody.CountsTowardFss);
+        Assert.False(knownUnscannedBody.IsScanned);
         Assert.StartsWith(
             "Scanned all 4 bodies · ",
             viewModel.ScanSummary,
