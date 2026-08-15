@@ -317,9 +317,9 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
                 RenameDraft);
             search.SetName(saved.Name);
             search.SetUpdatedAt(saved.UpdatedAt);
-            StatusMessage = $"Renamed saved search to {saved.Name}.";
             CloseDialogs();
             Reorder();
+            StatusMessage = $"Renamed saved search to {saved.Name}.";
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
@@ -347,8 +347,8 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
                 NotesDraft);
             search.SetNotes(saved.Notes);
             search.SetUpdatedAt(saved.UpdatedAt);
-            StatusMessage = $"Saved notes for {search.Name}.";
             CloseDialogs();
+            StatusMessage = $"Saved notes for {search.Name}.";
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {

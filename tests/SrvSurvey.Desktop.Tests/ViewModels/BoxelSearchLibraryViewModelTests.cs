@@ -53,8 +53,29 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
             ("Zulu", null, 1, 4),
             ("Alpha", "Original notes", 3, 4));
         var propertyChanges = new List<string?>();
+        var renameDialogVisibleWhenCompleted = true;
+        var notesDialogVisibleWhenCompleted = true;
         library.PropertyChanged += (_, eventArgs) =>
+        {
             propertyChanges.Add(eventArgs.PropertyName);
+            if (eventArgs.PropertyName == nameof(library.StatusMessage))
+            {
+                if (string.Equals(
+                    library.StatusMessage,
+                    "Renamed saved search to Renamed search.",
+                    StringComparison.Ordinal))
+                {
+                    renameDialogVisibleWhenCompleted = library.IsDialogVisible;
+                }
+                else if (string.Equals(
+                    library.StatusMessage,
+                    "Saved notes for Renamed search.",
+                    StringComparison.Ordinal))
+                {
+                    notesDialogVisibleWhenCompleted = library.IsDialogVisible;
+                }
+            }
+        };
 
         Assert.True(library.HasSearches);
         Assert.False(library.HasSelection);
@@ -97,6 +118,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
                 StringComparison.Ordinal));
         Assert.Equal("Renamed search", selected.Name);
         Assert.False(library.IsDialogVisible);
+        Assert.False(renameDialogVisibleWhenCompleted);
         Assert.Null(library.EditingSearch);
         Assert.Empty(library.EditingSearchName);
 
@@ -113,6 +135,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
                 StringComparison.Ordinal));
         Assert.Equal("Updated notes", selected.Notes);
         Assert.Equal("Updated notes", selected.NotesDisplay);
+        Assert.False(notesDialogVisibleWhenCompleted);
 
         selected.EditNotesCommand.Execute(null);
         Assert.True(library.CancelDialogCommand.CanExecute(null));
