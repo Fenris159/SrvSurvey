@@ -229,10 +229,8 @@ public sealed class BoxelSurveyRebuildService
         BoxelSurveyStatsState state,
         CancellationToken cancellationToken)
     {
-        var context = new List<JournalEventEnvelope>();
+        var replay = new JournalReplayContext(frontierId);
         var malformed = 0;
-        var matchesCommander = false;
-        var includeEvents = false;
         await using var stream = new FileStream(
             path,
             FileMode.Open,
@@ -255,16 +253,13 @@ public sealed class BoxelSurveyRebuildService
 
             ReplayJournalEvent(
                 journalEvent,
-                frontierId,
                 scan,
                 state,
-                context,
-                ref matchesCommander,
-                ref includeEvents,
+                replay,
                 cancellationToken);
         }
 
-        return new JournalFileReplay(matchesCommander, malformed);
+        return new JournalFileReplay(replay.MatchesCommander, malformed);
     }
 
     private static JournalEventEnvelope? ParseJournalLine(string line, ref int malformed)
@@ -286,40 +281,37 @@ public sealed class BoxelSurveyRebuildService
 
     private static void ReplayJournalEvent(
         JournalEventEnvelope journalEvent,
-        string frontierId,
         SystemScanState scan,
         BoxelSurveyStatsState state,
-        List<JournalEventEnvelope> context,
-        ref bool matchesCommander,
-        ref bool includeEvents,
+        JournalReplayContext replay,
         CancellationToken cancellationToken)
     {
-        if (journalEvent.EventName == "Fileheader" && !matchesCommander)
+        if (journalEvent.EventName == "Fileheader" && !replay.MatchesCommander)
         {
-            context.Clear();
-            context.Add(journalEvent);
+            replay.Context.Clear();
+            replay.Context.Add(journalEvent);
         }
 
         if (journalEvent.EventName is "Commander" or "LoadGame"
             && GetString(journalEvent.Payload, "FID") is { } eventFrontierId)
         {
-            includeEvents = string.Equals(
+            replay.IncludeEvents = string.Equals(
                 eventFrontierId,
-                frontierId,
+                replay.FrontierId,
                 StringComparison.OrdinalIgnoreCase);
-            if (includeEvents && !matchesCommander)
+            if (replay.IncludeEvents && !replay.MatchesCommander)
             {
-                foreach (var contextEvent in context)
+                foreach (var contextEvent in replay.Context)
                 {
                     ReplayEvent(contextEvent, scan, state, cancellationToken);
                 }
 
-                context.Clear();
-                matchesCommander = true;
+                replay.Context.Clear();
+                replay.MatchesCommander = true;
             }
         }
 
-        if (includeEvents)
+        if (replay.IncludeEvents)
         {
             ReplayEvent(journalEvent, scan, state, cancellationToken);
         }
@@ -372,6 +364,17 @@ public sealed class BoxelSurveyRebuildService
     private sealed record JournalFileReplay(
         bool MatchesCommander,
         int MalformedLineCount);
+
+    private sealed class JournalReplayContext(string frontierId)
+    {
+        public string FrontierId { get; } = frontierId;
+
+        public List<JournalEventEnvelope> Context { get; } = [];
+
+        public bool MatchesCommander { get; set; }
+
+        public bool IncludeEvents { get; set; }
+    }
 }
 
 public sealed record BoxelSurveyRebuildProgress(
