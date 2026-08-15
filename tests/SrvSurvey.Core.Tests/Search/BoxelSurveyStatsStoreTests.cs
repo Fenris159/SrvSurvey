@@ -60,6 +60,21 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task BatchSaveWritesEveryDocumentIntoOneCatalog()
+    {
+        var store = new BoxelSurveyStatsStore(temporaryDirectory);
+        var first = CreateDocument("Praea Euq IL-P c5-", "Praea Euq IL-P c5-0", 2001);
+        var second = CreateDocument("Wregoe BU-Y b2-", "Wregoe BU-Y b2-0", 2002);
+
+        await store.SaveBoxelsAsync("F123", [first, second]);
+
+        var index = await store.ListIndexAsync("F123");
+        Assert.Equal(2, index.Count);
+        Assert.NotNull(await store.LoadBoxelAsync("F123", first.Prefix));
+        Assert.NotNull(await store.LoadBoxelAsync("F123", second.Prefix));
+    }
+
+    [Fact]
     public async Task DamagedBoxelFileDoesNotHideTheIndex()
     {
         var store = new BoxelSurveyStatsStore(temporaryDirectory);
@@ -77,6 +92,29 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
 
         var entry = Assert.Single(await store.ListIndexAsync("F123"));
         Assert.Equal("Praea Euq IL-P c5-", entry.Prefix);
+    }
+
+    [Fact]
+    public async Task CollidingSanitizedPrefixesRemainLoadableWhenEitherIsResaved()
+    {
+        var store = new BoxelSurveyStatsStore(temporaryDirectory);
+        var source = CreateDocument(
+            "Praea Euq IL-P c5-",
+            "Praea Euq IL-P c5-0",
+            2001);
+        var first = source with { Prefix = "Odd:name" };
+        var second = source with { Prefix = "Odd/name" };
+
+        await store.SaveBoxelAsync("F123", first);
+        await store.SaveBoxelAsync("F123", second);
+
+        Assert.Equal(first.Prefix, (await store.LoadBoxelAsync("F123", first.Prefix))?.Prefix);
+        Assert.Equal(second.Prefix, (await store.LoadBoxelAsync("F123", second.Prefix))?.Prefix);
+
+        await store.SaveBoxelAsync("F123", second);
+
+        Assert.Equal(first.Prefix, (await store.LoadBoxelAsync("F123", first.Prefix))?.Prefix);
+        Assert.Equal(second.Prefix, (await store.LoadBoxelAsync("F123", second.Prefix))?.Prefix);
     }
 
     [Fact]

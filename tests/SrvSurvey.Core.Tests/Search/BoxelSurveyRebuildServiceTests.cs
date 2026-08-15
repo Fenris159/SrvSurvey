@@ -79,6 +79,9 @@ public sealed class BoxelSurveyRebuildServiceTests : IDisposable
             {"timestamp":"2026-07-10T12:00:01Z","event":"Commander","FID":"F123","Name":"Drew"}
             {"timestamp":"2026-07-10T12:01:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}
             {"timestamp":"2026-07-10T12:02:00Z","event":"Scan","SystemAddress":2001,"BodyID":2,"PlanetClass":"Ammonia world","MassEM":0.8}
+            {"timestamp":"2026-07-10T12:03:00Z","event":"Commander","FID":"F-OTHER","Name":"Other"}
+            {"timestamp":"2026-07-10T12:04:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-9","SystemAddress":2099}
+            {"timestamp":"2026-07-10T12:05:00Z","event":"Commander","FID":"F123","Name":"Drew"}
 
             """);
         await File.WriteAllTextAsync(
@@ -113,6 +116,7 @@ public sealed class BoxelSurveyRebuildServiceTests : IDisposable
         Assert.Equal(2, result.JournalFilesSkipped);
         Assert.True(state.TryGet("Praea Euq IL-P c5-", out var cubeA));
         Assert.Equal(1, cubeA.CountsOf(BoxelPlanetClass.AmmoniaWorld).Count);
+        Assert.DoesNotContain(cubeA.Systems, system => system.N2 == 9);
         Assert.DoesNotContain(cubeA.Systems, system => system.N2 == 4);
         Assert.True(state.TryGet("Wregoe BU-Y b2-", out var cubeB));
         Assert.Equal(1, cubeB.CountsOf(BoxelPlanetClass.Icy).Count);

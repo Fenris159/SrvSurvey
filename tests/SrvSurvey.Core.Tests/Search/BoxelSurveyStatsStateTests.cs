@@ -104,6 +104,27 @@ public sealed class BoxelSurveyStatsStateTests
     }
 
     [Fact]
+    public void EmptySystemFileDoesNotWipeStoredBodies()
+    {
+        var state = new BoxelSurveyStatsState();
+        Jump(state, SystemA, SystemAAddress);
+        var body = PlanetBody(
+            1,
+            "Icy body",
+            scanValue: 100,
+            mappedValue: 200,
+            currentValue: 100);
+        Assert.True(state.IngestSnapshot(Snapshot(SystemA, SystemAAddress, [body])));
+
+        Assert.True(state.IngestSystemFile(
+            Snapshot(SystemA, SystemAAddress, [], allBodiesFound: true),
+            DateTimeOffset.UtcNow));
+
+        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.Icy).Count);
+    }
+
+    [Fact]
     public void SolColoniaAndPermitNamesDoNotOpenCubes()
     {
         var state = new BoxelSurveyStatsState();
@@ -443,6 +464,49 @@ public sealed class BoxelSurveyStatsStateTests
     }
 
     [Fact]
+    public void RollupKeepsAllIdentityFieldsFromTheFirstPrefix()
+    {
+        var state = new BoxelSurveyStatsState(new BoxelSurveyStatsCatalog(
+            "F123",
+            BoxelSurveyStatsCatalog.CurrentSchemaVersion,
+            DateTimeOffset.UtcNow,
+            [
+                new BoxelSurveyIndexEntry(
+                    "First prefix",
+                    'c',
+                    null,
+                    null,
+                    1,
+                    1,
+                    0,
+                    0,
+                    null,
+                    null,
+                    0,
+                    0),
+                new BoxelSurveyIndexEntry(
+                    "Second prefix",
+                    'd',
+                    42,
+                    null,
+                    1,
+                    1,
+                    0,
+                    0,
+                    null,
+                    null,
+                    0,
+                    0),
+            ]));
+
+        var rollup = state.Rollup(["First prefix", "Second prefix"]);
+
+        Assert.Equal("First prefix", rollup.Prefix);
+        Assert.Equal('c', rollup.MassCode);
+        Assert.Null(rollup.BoxelId64);
+    }
+
+    [Fact]
     public void ImportDocumentRoundTripsHydratedSystems()
     {
         var source = new BoxelSurveyStatsState();
@@ -487,7 +551,7 @@ public sealed class BoxelSurveyStatsStateTests
     private static SystemScanSnapshot Snapshot(
         string systemName,
         long address,
-        IReadOnlyList<SystemScanBodySnapshot> bodies,
+        SystemScanBodySnapshot[] bodies,
         int expectedBodyCount = 0,
         bool allBodiesFound = false,
         int fssBodyCount = 0)
@@ -501,7 +565,7 @@ public sealed class BoxelSurveyStatsStateTests
             expectedBodyCount > 0,
             allBodiesFound,
             fssBodyCount,
-            bodies.Count,
+            bodies.Length,
             bodies.Count(body => body.IsDssComplete),
             bodies.Sum(body => (long)body.CurrentScanValue),
             0,

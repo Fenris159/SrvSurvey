@@ -126,13 +126,12 @@ public static class BoxelPlanetClassifier
         IReadOnlyDictionary<string, double> atmosphereComposition,
         out double percent)
     {
-        foreach (var pair in atmosphereComposition)
+        var pair = atmosphereComposition.FirstOrDefault(pair =>
+            string.Equals(pair.Key, "Helium", StringComparison.OrdinalIgnoreCase));
+        if (pair.Key is not null)
         {
-            if (string.Equals(pair.Key, "Helium", StringComparison.OrdinalIgnoreCase))
-            {
-                percent = pair.Value;
-                return true;
-            }
+            percent = pair.Value;
+            return true;
         }
 
         percent = 0;

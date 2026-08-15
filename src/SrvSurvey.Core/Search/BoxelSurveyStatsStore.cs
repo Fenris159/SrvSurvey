@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -12,6 +13,14 @@ public sealed class BoxelSurveyStatsStore
 {
     public const string StoreDirectoryName = "boxelSurveyStats";
     private const string IndexFileName = "index.json";
+    private const string PrefixPropertyName = "prefix";
+    private const string BoxelId64PropertyName = "boxelId64";
+    private const string LastVisitedPropertyName = "lastVisited";
+    private const string MinHeliumPercentPropertyName = "minHeliumPercent";
+    private const string MaxHeliumPercentPropertyName = "maxHeliumPercent";
+    private const string ScanValuePropertyName = "scanValue";
+    private const string CurrentValuePropertyName = "currentValue";
+    private const string MappedPotentialValuePropertyName = "mappedPotentialValue";
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -19,6 +28,8 @@ public sealed class BoxelSurveyStatsStore
     };
 
     private static readonly char[] InvalidFileNameCharacters = ['<', '>', ':', '"', '/', '\\', '|', '?', '*'];
+    private static readonly SearchValues<char> InvalidFileNameSearchValues =
+        SearchValues.Create(InvalidFileNameCharacters);
 
     private readonly string rootDirectory;
     private readonly SemaphoreSlim writeLock = new(1, 1);
@@ -78,16 +89,24 @@ public sealed class BoxelSurveyStatsStore
         ValidateFileName(frontierId, nameof(frontierId));
         var catalog = await LoadCatalogAsync(frontierId, cancellationToken)
             .ConfigureAwait(false);
-        var path = ResolveBoxelPath(frontierId, prefix, catalog);
-        if (!File.Exists(path))
+        var path = await ResolveExistingBoxelPathAsync(
+                frontierId,
+                prefix,
+                catalog,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (path is null)
         {
             return null;
         }
 
         try
         {
-            return await ReadDocumentAsync(frontierId, path, cancellationToken)
+            var document = await ReadDocumentAsync(frontierId, path, cancellationToken)
                 .ConfigureAwait(false);
+            return string.Equals(document.Prefix, prefix, StringComparison.Ordinal)
+                ? document
+                : null;
         }
         catch (Exception exception) when (
             exception is IOException
@@ -105,8 +124,30 @@ public sealed class BoxelSurveyStatsStore
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(document);
-        ArgumentException.ThrowIfNullOrWhiteSpace(document.Prefix);
+        await SaveBoxelsAsync(frontierId, [document], cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task SaveBoxelsAsync(
+        string frontierId,
+        IReadOnlyCollection<BoxelSurveyBoxelDocument> documents,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(documents);
         ValidateFileName(frontierId, nameof(frontierId));
+        if (documents.Count == 0)
+        {
+            return;
+        }
+
+        var uniqueDocuments = new Dictionary<string, BoxelSurveyBoxelDocument>(
+            StringComparer.Ordinal);
+        foreach (var document in documents)
+        {
+            ArgumentNullException.ThrowIfNull(document);
+            ArgumentException.ThrowIfNullOrWhiteSpace(document.Prefix);
+            uniqueDocuments[document.Prefix] = document;
+        }
 
         await writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -115,30 +156,18 @@ public sealed class BoxelSurveyStatsStore
             Directory.CreateDirectory(directory);
             var catalog = await LoadCatalogAsync(frontierId, cancellationToken)
                 .ConfigureAwait(false);
-            var previousPath = ResolveExistingBoxelPath(
-                frontierId,
-                document.Prefix,
-                catalog);
-            var path = ResolveBoxelPath(frontierId, document.Prefix, catalog);
-            await WriteJsonAsync(
-                    path,
-                    WriteDocument(frontierId, document),
-                    cancellationToken)
-                .ConfigureAwait(false);
-            if (previousPath is not null
-                && !string.Equals(previousPath, path, StringComparison.OrdinalIgnoreCase)
-                && File.Exists(previousPath))
+            var entriesByPrefix = new Dictionary<string, BoxelSurveyIndexEntry>(
+                StringComparer.Ordinal);
+            foreach (var entry in catalog.Index)
             {
-                File.Delete(previousPath);
+                entriesByPrefix[entry.Prefix] = entry;
+            }
+            foreach (var document in uniqueDocuments.Values)
+            {
+                entriesByPrefix[document.Prefix] = CreateSnapshot(document).ToIndexEntry();
             }
 
-            var snapshot = CreateSnapshot(document);
-            var entries = catalog.Index
-                .Where(entry => !string.Equals(
-                    entry.Prefix,
-                    document.Prefix,
-                    StringComparison.Ordinal))
-                .Append(snapshot.ToIndexEntry())
+            var entries = entriesByPrefix.Values
                 .OrderBy(entry => entry.Prefix, StringComparer.Ordinal)
                 .ToArray();
             var updated = new BoxelSurveyStatsCatalog(
@@ -146,6 +175,29 @@ public sealed class BoxelSurveyStatsStore
                 BoxelSurveyStatsCatalog.CurrentSchemaVersion,
                 DateTimeOffset.UtcNow,
                 entries);
+            foreach (var document in uniqueDocuments.Values)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var previousPath = await ResolveExistingBoxelPathAsync(
+                        frontierId,
+                        document.Prefix,
+                        updated,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                var path = ResolveBoxelPath(frontierId, document.Prefix, updated);
+                await WriteJsonAsync(
+                        path,
+                        WriteDocument(frontierId, document),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                if (previousPath is not null
+                    && !string.Equals(previousPath, path, StringComparison.OrdinalIgnoreCase)
+                    && File.Exists(previousPath))
+                {
+                    File.Delete(previousPath);
+                }
+            }
+
             await WriteJsonAsync(
                     Path.Combine(directory, IndexFileName),
                     WriteCatalog(updated),
@@ -171,7 +223,7 @@ public sealed class BoxelSurveyStatsStore
         return string.IsNullOrWhiteSpace(safe) ? "boxel" : safe;
     }
 
-    private async Task<BoxelSurveyStatsCatalog> RecoverCatalogAsync(
+    private static async Task<BoxelSurveyStatsCatalog> RecoverCatalogAsync(
         string frontierId,
         string directory,
         CancellationToken cancellationToken)
@@ -245,44 +297,67 @@ public sealed class BoxelSurveyStatsStore
             return preferred;
         }
 
-        var identity = catalog.Index.FirstOrDefault(entry =>
-            string.Equals(entry.Prefix, prefix, StringComparison.Ordinal));
-        var suffix = identity?.BoxelId64
-            ?? (BoxelAddress.TryParse(prefix + "0", out var boxel)
-                && boxel is not null
-                && boxel.WithSystemNumber(0).TryGetSystemAddress(out var encoded)
-                    ? encoded
-                    : null);
-        if (suffix is null or 0)
-        {
-            suffix = StablePrefixHash(prefix);
-        }
-
         return Path.Combine(
             directory,
-            $"{SanitizePrefix(prefix)}-{suffix.Value.ToString("x", CultureInfo.InvariantCulture)}.json");
+            $"{SanitizePrefix(prefix)}-{StablePrefixHash(prefix).ToString("x16", CultureInfo.InvariantCulture)}.json");
     }
 
-    private string? ResolveExistingBoxelPath(
+    private async Task<string?> ResolveExistingBoxelPathAsync(
         string frontierId,
         string prefix,
-        BoxelSurveyStatsCatalog catalog)
+        BoxelSurveyStatsCatalog catalog,
+        CancellationToken cancellationToken)
     {
         var directory = GetCommanderDirectory(frontierId);
         var preferred = Path.Combine(directory, SanitizePrefix(prefix) + ".json");
-        if (File.Exists(preferred))
+        var resolved = ResolveBoxelPath(frontierId, prefix, catalog);
+        if (File.Exists(resolved))
         {
-            return preferred;
+            return resolved;
         }
 
-        var resolved = ResolveBoxelPath(frontierId, prefix, catalog);
-        return File.Exists(resolved) ? resolved : null;
+        var candidates = File.Exists(preferred)
+            ? new[] { preferred }.Concat(Directory.EnumerateFiles(
+                directory,
+                SanitizePrefix(prefix) + "-*.json",
+                SearchOption.TopDirectoryOnly))
+            : Directory.Exists(directory)
+                ? Directory.EnumerateFiles(
+                    directory,
+                    SanitizePrefix(prefix) + "-*.json",
+                    SearchOption.TopDirectoryOnly)
+                : [];
+        foreach (var candidate in candidates)
+        {
+            try
+            {
+                var root = await ReadObjectAsync(candidate, cancellationToken)
+                    .ConfigureAwait(false);
+                if (string.Equals(
+                        GetString(root, PrefixPropertyName),
+                        prefix,
+                        StringComparison.Ordinal))
+                {
+                    return candidate;
+                }
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or InvalidDataException
+                    or JsonException)
+            {
+                // Ignore a damaged or unrelated collision candidate.
+            }
+        }
+
+        return null;
     }
 
-    private static long StablePrefixHash(string prefix)
+    private static ulong StablePrefixHash(string prefix)
     {
-        const uint offset = 2166136261;
-        const uint prime = 16777619;
+        const ulong offset = 14695981039346656037;
+        const ulong prime = 1099511628211;
         unchecked
         {
             var hash = offset;
@@ -292,7 +367,7 @@ public sealed class BoxelSurveyStatsStore
                 hash *= prime;
             }
 
-            return hash == 0 ? 1 : hash;
+            return hash == 0 ? 1UL : hash;
         }
     }
 
@@ -328,7 +403,7 @@ public sealed class BoxelSurveyStatsStore
         {
             foreach (var node in array.OfType<JsonObject>())
             {
-                var prefix = GetString(node, "prefix");
+                var prefix = GetString(node, PrefixPropertyName);
                 if (string.IsNullOrWhiteSpace(prefix))
                 {
                     continue;
@@ -340,16 +415,16 @@ public sealed class BoxelSurveyStatsStore
                     string.IsNullOrWhiteSpace(massText)
                         ? BoxelAddress.MinimumMassCode
                         : char.ToLowerInvariant(massText[0]),
-                    GetInt64(node, "boxelId64"),
-                    GetDateTimeOffset(node, "lastVisited"),
+                    GetInt64(node, BoxelId64PropertyName),
+                    GetDateTimeOffset(node, LastVisitedPropertyName),
                     GetInt32(node, "visitedSystemCount") ?? 0,
                     GetInt32(node, "impliedPopulation") ?? 0,
                     GetInt32(node, "fssCompleteCount") ?? 0,
                     GetInt32(node, "navBeaconCount") ?? 0,
-                    GetDouble(node, "minHeliumPercent"),
-                    GetDouble(node, "maxHeliumPercent"),
-                    GetInt64(node, "currentValue") ?? 0,
-                    GetInt64(node, "mappedPotentialValue") ?? 0));
+                    GetDouble(node, MinHeliumPercentPropertyName),
+                    GetDouble(node, MaxHeliumPercentPropertyName),
+                    GetInt64(node, CurrentValuePropertyName) ?? 0,
+                    GetInt64(node, MappedPotentialValuePropertyName) ?? 0));
             }
         }
 
@@ -377,7 +452,7 @@ public sealed class BoxelSurveyStatsStore
                 "The boxel survey file belongs to a different commander profile.");
         }
 
-        var prefix = GetString(root, "prefix");
+        var prefix = GetString(root, PrefixPropertyName);
         if (string.IsNullOrWhiteSpace(prefix))
         {
             throw new InvalidDataException("The boxel survey file does not have a prefix.");
@@ -398,29 +473,29 @@ public sealed class BoxelSurveyStatsStore
                     generatedName,
                     GetInt64(node, "systemAddress") ?? 0,
                     GetInt32(node, "n2") ?? 0,
-                    GetDateTimeOffset(node, "lastVisited"),
+                    GetDateTimeOffset(node, LastVisitedPropertyName),
                     GetInt32(node, "fssDiscoveryBodyCount") ?? 0,
                     GetBoolean(node, "allBodiesFound") ?? false,
                     GetBoolean(node, "navBeaconScanned") ?? false,
-                    GetDouble(node, "minHeliumPercent"),
-                    GetDouble(node, "maxHeliumPercent"),
-                    GetInt64(node, "scanValue") ?? 0,
-                    GetInt64(node, "currentValue") ?? 0,
-                    GetInt64(node, "mappedPotentialValue") ?? 0,
+                    GetDouble(node, MinHeliumPercentPropertyName),
+                    GetDouble(node, MaxHeliumPercentPropertyName),
+                    GetInt64(node, ScanValuePropertyName) ?? 0,
+                    GetInt64(node, CurrentValuePropertyName) ?? 0,
+                    GetInt64(node, MappedPotentialValuePropertyName) ?? 0,
                     ReadBodies(node)));
             }
         }
 
         return new BoxelSurveyBoxelDocument(
             prefix,
-            GetInt64(root, "boxelId64"),
-            GetDateTimeOffset(root, "lastVisited"),
-            GetDouble(root, "minHeliumPercent"),
-            GetDouble(root, "maxHeliumPercent"),
+            GetInt64(root, BoxelId64PropertyName),
+            GetDateTimeOffset(root, LastVisitedPropertyName),
+            GetDouble(root, MinHeliumPercentPropertyName),
+            GetDouble(root, MaxHeliumPercentPropertyName),
             systems);
     }
 
-    private static IReadOnlyList<BoxelSurveyBodyContribution> ReadBodies(JsonObject system)
+    private static List<BoxelSurveyBodyContribution> ReadBodies(JsonObject system)
     {
         if (system["bodies"] is not JsonArray array)
         {
@@ -448,9 +523,9 @@ public sealed class BoxelSurveyStatsStore
                 GetBoolean(node, "atmospheric") ?? false,
                 GetDouble(node, "massEm") ?? 0,
                 GetDouble(node, "heliumPercent"),
-                GetInt32(node, "scanValue") ?? 0,
-                GetInt32(node, "currentValue") ?? 0,
-                GetInt32(node, "mappedPotentialValue") ?? 0,
+                GetInt32(node, ScanValuePropertyName) ?? 0,
+                GetInt32(node, CurrentValuePropertyName) ?? 0,
+                GetInt32(node, MappedPotentialValuePropertyName) ?? 0,
                 GetBoolean(node, "wasDiscovered") ?? false,
                 GetBoolean(node, "wasMapped") ?? false,
                 GetBoolean(node, "dssComplete") ?? false,
@@ -467,18 +542,18 @@ public sealed class BoxelSurveyStatsStore
         {
             entries.Add(new JsonObject
             {
-                ["prefix"] = entry.Prefix,
+                [PrefixPropertyName] = entry.Prefix,
                 ["massCode"] = entry.MassCode.ToString(),
-                ["boxelId64"] = entry.BoxelId64,
-                ["lastVisited"] = WriteDate(entry.LastVisited),
+                [BoxelId64PropertyName] = entry.BoxelId64,
+                [LastVisitedPropertyName] = WriteDate(entry.LastVisited),
                 ["visitedSystemCount"] = entry.VisitedSystemCount,
                 ["impliedPopulation"] = entry.ImpliedPopulation,
                 ["fssCompleteCount"] = entry.FssCompleteCount,
                 ["navBeaconCount"] = entry.NavBeaconCount,
-                ["minHeliumPercent"] = entry.MinHeliumPercent,
-                ["maxHeliumPercent"] = entry.MaxHeliumPercent,
-                ["currentValue"] = entry.CurrentValue,
-                ["mappedPotentialValue"] = entry.MappedPotentialValue,
+                [MinHeliumPercentPropertyName] = entry.MinHeliumPercent,
+                [MaxHeliumPercentPropertyName] = entry.MaxHeliumPercent,
+                [CurrentValuePropertyName] = entry.CurrentValue,
+                [MappedPotentialValuePropertyName] = entry.MappedPotentialValue,
             });
         }
 
@@ -510,9 +585,9 @@ public sealed class BoxelSurveyStatsStore
                     ["atmospheric"] = body.Atmospheric,
                     ["massEm"] = body.MassEm,
                     ["heliumPercent"] = body.HeliumPercent,
-                    ["scanValue"] = body.ScanValue,
-                    ["currentValue"] = body.CurrentValue,
-                    ["mappedPotentialValue"] = body.MappedPotentialValue,
+                    [ScanValuePropertyName] = body.ScanValue,
+                    [CurrentValuePropertyName] = body.CurrentValue,
+                    [MappedPotentialValuePropertyName] = body.MappedPotentialValue,
                     ["wasDiscovered"] = body.WasDiscovered,
                     ["wasMapped"] = body.WasMapped,
                     ["dssComplete"] = body.DssComplete,
@@ -525,15 +600,15 @@ public sealed class BoxelSurveyStatsStore
                 ["generatedName"] = system.GeneratedName,
                 ["systemAddress"] = system.SystemAddress,
                 ["n2"] = system.N2,
-                ["lastVisited"] = WriteDate(system.LastVisited),
+                [LastVisitedPropertyName] = WriteDate(system.LastVisited),
                 ["fssDiscoveryBodyCount"] = system.FssDiscoveryBodyCount,
                 ["allBodiesFound"] = system.AllBodiesFound,
                 ["navBeaconScanned"] = system.NavBeaconScanned,
-                ["minHeliumPercent"] = system.MinHeliumPercent,
-                ["maxHeliumPercent"] = system.MaxHeliumPercent,
-                ["scanValue"] = system.ScanValue,
-                ["currentValue"] = system.CurrentValue,
-                ["mappedPotentialValue"] = system.MappedPotentialValue,
+                [MinHeliumPercentPropertyName] = system.MinHeliumPercent,
+                [MaxHeliumPercentPropertyName] = system.MaxHeliumPercent,
+                [ScanValuePropertyName] = system.ScanValue,
+                [CurrentValuePropertyName] = system.CurrentValue,
+                [MappedPotentialValuePropertyName] = system.MappedPotentialValue,
                 ["bodies"] = bodies,
             });
         }
@@ -542,16 +617,16 @@ public sealed class BoxelSurveyStatsStore
         {
             ["version"] = BoxelSurveyStatsCatalog.CurrentSchemaVersion,
             ["frontierId"] = frontierId,
-            ["prefix"] = document.Prefix,
-            ["boxelId64"] = document.BoxelId64,
-            ["lastVisited"] = WriteDate(document.LastVisited),
-            ["minHeliumPercent"] = document.MinHeliumPercent,
-            ["maxHeliumPercent"] = document.MaxHeliumPercent,
+            [PrefixPropertyName] = document.Prefix,
+            [BoxelId64PropertyName] = document.BoxelId64,
+            [LastVisitedPropertyName] = WriteDate(document.LastVisited),
+            [MinHeliumPercentPropertyName] = document.MinHeliumPercent,
+            [MaxHeliumPercentPropertyName] = document.MaxHeliumPercent,
             ["systems"] = systems,
         };
     }
 
-    private static JsonNode? WriteDate(DateTimeOffset? value)
+    private static JsonValue? WriteDate(DateTimeOffset? value)
         => value is null ? null : JsonValue.Create(value.Value);
 
     private static async Task<JsonObject> ReadObjectAsync(
@@ -622,7 +697,7 @@ public sealed class BoxelSurveyStatsStore
 
         if (value is "." or ".."
             || value.Any(char.IsControl)
-            || value.IndexOfAny(InvalidFileNameCharacters) >= 0
+            || value.AsSpan().IndexOfAny(InvalidFileNameSearchValues) >= 0
             || value.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
             || !string.Equals(value, Path.GetFileName(value), StringComparison.Ordinal))
         {

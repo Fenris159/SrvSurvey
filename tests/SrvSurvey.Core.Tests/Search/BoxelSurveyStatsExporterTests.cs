@@ -1,3 +1,4 @@
+using System.Text.Json;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 
@@ -34,6 +35,19 @@ public sealed class BoxelSurveyStatsExporterTests
             $"\"class\": {(int)BoxelPlanetClass.WaterWorld}",
             json,
             StringComparison.Ordinal);
+        using var exported = JsonDocument.Parse(json);
+        var system = Assert.Single(exported.RootElement.GetProperty("systems").EnumerateArray());
+        var body = Assert.Single(system.GetProperty("bodies").EnumerateArray());
+        Assert.Equal("Water world", body.GetProperty("planetClass").GetString());
+        Assert.Equal(1, body.GetProperty("massEm").GetDouble());
+        Assert.False(body.GetProperty("wasDiscovered").GetBoolean());
+        Assert.False(body.GetProperty("wasMapped").GetBoolean());
+        Assert.False(body.GetProperty("dssComplete").GetBoolean());
+        Assert.False(body.GetProperty("dssEfficiencyBonus").GetBoolean());
+        Assert.Equal(
+            document.Systems[0].ScanValue,
+            system.GetProperty("scanValue").GetInt64());
+        Assert.NotEqual(JsonValueKind.Null, system.GetProperty("lastVisited").ValueKind);
         Assert.Contains("Prefix,Praea Euq IL-P c5-", csv, StringComparison.Ordinal);
         Assert.Contains("WaterWorld", csv, StringComparison.Ordinal);
         Assert.Contains("Visited,ImpliedPopulation", index, StringComparison.Ordinal);

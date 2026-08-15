@@ -151,10 +151,15 @@ public sealed class BoxelSurveyRebuildService
                 continue;
             }
 
-            JournalFileRead read;
+            JournalFileReplay replay;
             try
             {
-                read = await ReadJournalAsync(path, cancellationToken)
+                replay = await ReplayJournalAsync(
+                        path,
+                        frontierId,
+                        scan,
+                        state,
+                        cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception exception) when (
@@ -165,42 +170,34 @@ public sealed class BoxelSurveyRebuildService
                 continue;
             }
 
-            malformed += read.MalformedLineCount;
-            if (string.IsNullOrWhiteSpace(read.FrontierId)
-                || !string.Equals(
-                    read.FrontierId,
-                    frontierId,
-                    StringComparison.OrdinalIgnoreCase))
+            malformed += replay.MalformedLineCount;
+            if (!replay.MatchesCommander)
             {
                 skipped++;
                 continue;
             }
 
             processed++;
-            ReplayEvents(read.Events, scan, state, cancellationToken);
         }
 
         IngestCurrent(scan, state);
         return (processed, skipped, malformed);
     }
 
-    private static void ReplayEvents(
-        IReadOnlyList<JournalEventEnvelope> events,
+    private static void ReplayEvent(
+        JournalEventEnvelope journalEvent,
         SystemScanState scan,
         BoxelSurveyStatsState state,
         CancellationToken cancellationToken)
     {
-        foreach (var journalEvent in events)
+        cancellationToken.ThrowIfCancellationRequested();
+        if (IsSystemChange(journalEvent))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (IsSystemChange(journalEvent))
-            {
-                IngestCurrent(scan, state);
-            }
-
-            scan.Apply(journalEvent);
-            state.Apply(journalEvent);
+            IngestCurrent(scan, state);
         }
+
+        scan.Apply(journalEvent);
+        state.Apply(journalEvent);
     }
 
     private static void IngestCurrent(SystemScanState scan, BoxelSurveyStatsState state)
@@ -225,13 +222,17 @@ public sealed class BoxelSurveyRebuildService
             && address > 0;
     }
 
-    private static async Task<JournalFileRead> ReadJournalAsync(
+    private static async Task<JournalFileReplay> ReplayJournalAsync(
         string path,
+        string frontierId,
+        SystemScanState scan,
+        BoxelSurveyStatsState state,
         CancellationToken cancellationToken)
     {
-        var events = new List<JournalEventEnvelope>();
+        var context = new List<JournalEventEnvelope>();
         var malformed = 0;
-        string? frontierId = null;
+        var matchesCommander = false;
+        var includeEvents = false;
         await using var stream = new FileStream(
             path,
             FileMode.Open,
@@ -258,14 +259,38 @@ public sealed class BoxelSurveyRebuildService
                 continue;
             }
 
-            events.Add(journalEvent);
-            if (journalEvent.EventName is "Commander" or "LoadGame")
+            if (journalEvent.EventName == "Fileheader" && !matchesCommander)
             {
-                frontierId = GetString(journalEvent.Payload, "FID") ?? frontierId;
+                context.Clear();
+                context.Add(journalEvent);
+            }
+
+            if (journalEvent.EventName is "Commander" or "LoadGame"
+                && GetString(journalEvent.Payload, "FID") is { } eventFrontierId)
+            {
+                includeEvents = string.Equals(
+                    eventFrontierId,
+                    frontierId,
+                    StringComparison.OrdinalIgnoreCase);
+                if (includeEvents && !matchesCommander)
+                {
+                    foreach (var contextEvent in context)
+                    {
+                        ReplayEvent(contextEvent, scan, state, cancellationToken);
+                    }
+
+                    context.Clear();
+                    matchesCommander = true;
+                }
+            }
+
+            if (includeEvents)
+            {
+                ReplayEvent(journalEvent, scan, state, cancellationToken);
             }
         }
 
-        return new JournalFileRead(frontierId, events, malformed);
+        return new JournalFileReplay(matchesCommander, malformed);
     }
 
     private static async Task<JsonObject> ReadObjectAsync(
@@ -312,9 +337,8 @@ public sealed class BoxelSurveyRebuildService
                 ? value.GetString()
                 : null;
 
-    private sealed record JournalFileRead(
-        string? FrontierId,
-        IReadOnlyList<JournalEventEnvelope> Events,
+    private sealed record JournalFileReplay(
+        bool MatchesCommander,
         int MalformedLineCount);
 }
 

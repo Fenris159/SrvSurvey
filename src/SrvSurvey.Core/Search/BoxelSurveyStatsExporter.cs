@@ -33,13 +33,19 @@ public static class BoxelSurveyStatsExporter
                 {
                     ["bodyId"] = body.BodyId,
                     ["class"] = (int)body.Class,
+                    ["planetClass"] = BoxelPlanetClassifier.ToPlanetClassString(body.Class),
                     ["terraformable"] = body.Terraformable,
                     ["landable"] = body.Landable,
                     ["atmospheric"] = body.Atmospheric,
+                    ["massEm"] = body.MassEm,
                     ["heliumPercent"] = body.HeliumPercent,
                     ["scanValue"] = body.ScanValue,
                     ["currentValue"] = body.CurrentValue,
                     ["mappedPotentialValue"] = body.MappedPotentialValue,
+                    ["wasDiscovered"] = body.WasDiscovered,
+                    ["wasMapped"] = body.WasMapped,
+                    ["dssComplete"] = body.DssComplete,
+                    ["dssEfficiencyBonus"] = body.DssEfficiencyBonus,
                 });
             }
 
@@ -48,11 +54,13 @@ public static class BoxelSurveyStatsExporter
                 ["generatedName"] = system.GeneratedName,
                 ["systemAddress"] = system.SystemAddress,
                 ["n2"] = system.N2,
+                ["lastVisited"] = system.LastVisited,
                 ["fssDiscoveryBodyCount"] = system.FssDiscoveryBodyCount,
                 ["allBodiesFound"] = system.AllBodiesFound,
                 ["navBeaconScanned"] = system.NavBeaconScanned,
                 ["minHeliumPercent"] = system.MinHeliumPercent,
                 ["maxHeliumPercent"] = system.MaxHeliumPercent,
+                ["scanValue"] = system.ScanValue,
                 ["currentValue"] = system.CurrentValue,
                 ["mappedPotentialValue"] = system.MappedPotentialValue,
                 ["bodies"] = bodies,
