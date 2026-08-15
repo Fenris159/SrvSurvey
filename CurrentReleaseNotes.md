@@ -11,6 +11,9 @@ navigation. The changes below are the delta from `2.1.3.0-rc.24`.
 - Makes the update notification's Review action align the top of the
   Application updates card with the top of the Diagnostics viewport, even when
   that page was previously scrolled elsewhere.
+- Keeps saved Boxel rename and notes dialogs synchronized with their completion
+  status, so a successful operation is not reported while its dialog is still
+  open.
 
 ## Packaging
 
