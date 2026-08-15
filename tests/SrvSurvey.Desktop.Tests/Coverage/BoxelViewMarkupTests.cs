@@ -230,6 +230,23 @@ public sealed class BoxelViewMarkupTests
     }
 
     [Fact]
+    public void BoxelStatisticsCanRebuildBeforeAnyBoxelIsSelected()
+    {
+        var window = XDocument.Load(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "BoxelStatsWindow.axaml"));
+        var header = window.Descendants().Single(element =>
+            element.Name.LocalName == "StackPanel"
+            && element.Attribute("Grid.Column")?.Value == "1"
+            && element.Attribute("Orientation")?.Value == "Horizontal");
+
+        Assert.Contains(header.Elements(), element =>
+            element.Attribute("Command")?.Value == "{Binding RebuildCommand}");
+    }
+
+    [Fact]
     public void BoxelOverlaySettingsContainOnlyAccurateBoxelControls()
     {
         var settings = LoadView("OverlaySettingsView.axaml");

@@ -16,7 +16,16 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
     private readonly List<string> recents = [];
     private readonly HashSet<string> retainPrefixes = new(StringComparer.Ordinal);
     private readonly object gate = new();
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "SemaphoreSlim does not allocate a wait handle here and may still have shutdown waiters.")]
+    private readonly SemaphoreSlim operationLock = new(1, 1);
     private string? frontierId;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "Every scheduled source is atomically cancelled and disposed by CancelScheduledFlush.")]
     private CancellationTokenSource? flushCancellation;
     private bool disposed;
 
@@ -32,9 +41,16 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
 
     public event EventHandler<Exception>? PersistenceFailed;
 
-    public BoxelSurveyStatsState State => state;
-
-    public string? FrontierId => frontierId;
+    public string? FrontierId
+    {
+        get
+        {
+            lock (gate)
+            {
+                return frontierId;
+            }
+        }
+    }
 
     public string StoreDataDirectory => store.DataDirectory;
 
@@ -60,33 +76,63 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
         }
     }
 
+    public bool TreatNavBeaconAsFullyScanned
+    {
+        get
+        {
+            lock (gate)
+            {
+                return state.TreatNavBeaconAsFullyScanned;
+            }
+        }
+        set
+        {
+            lock (gate)
+            {
+                state.TreatNavBeaconAsFullyScanned = value;
+            }
+        }
+    }
+
     public async Task SwitchCommanderAsync(
         string? nextFrontierId,
         CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
-        var normalized = string.IsNullOrWhiteSpace(nextFrontierId)
-            ? null
-            : nextFrontierId.Trim();
-        if (string.Equals(frontierId, normalized, StringComparison.OrdinalIgnoreCase))
+        await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            return;
-        }
+            ObjectDisposedException.ThrowIf(disposed, this);
+            var normalized = string.IsNullOrWhiteSpace(nextFrontierId)
+                ? null
+                : nextFrontierId.Trim();
+            lock (gate)
+            {
+                if (string.Equals(frontierId, normalized, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+            }
 
-        await FlushAsync(cancellationToken).ConfigureAwait(false);
-        BoxelSurveyStatsCatalog? catalog = null;
-        if (normalized is not null)
-        {
-            catalog = await store.LoadCatalogAsync(normalized, cancellationToken)
-                .ConfigureAwait(false);
-        }
+            await FlushAsync(cancellationToken).ConfigureAwait(false);
+            BoxelSurveyStatsCatalog? catalog = null;
+            if (normalized is not null)
+            {
+                catalog = await store.LoadCatalogAsync(normalized, cancellationToken)
+                    .ConfigureAwait(false);
+            }
 
-        lock (gate)
+            lock (gate)
+            {
+                frontierId = normalized;
+                recents.Clear();
+                retainPrefixes.Clear();
+                state.Reset(catalog);
+            }
+        }
+        finally
         {
-            frontierId = normalized;
-            recents.Clear();
-            retainPrefixes.Clear();
-            state.Reset(catalog);
+            operationLock.Release();
         }
 
         RaiseChanged();
@@ -102,6 +148,53 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
             cancellationToken);
     }
 
+    public async Task ApplyJournalEventsAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        bool bootstrapContextOnly,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(journalEvents);
+        ObjectDisposedException.ThrowIf(disposed, this);
+        await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        var raiseChanged = false;
+        try
+        {
+            ObjectDisposedException.ThrowIf(disposed, this);
+            foreach (var journalEvent in journalEvents)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (bootstrapContextOnly
+                    && journalEvent.EventName is not ("Fileheader" or "LoadGame"))
+                {
+                    continue;
+                }
+
+                await EnsureLoadedForEventAsync(journalEvent, cancellationToken)
+                    .ConfigureAwait(false);
+                lock (gate)
+                {
+                    var version = state.Version;
+                    state.Apply(journalEvent);
+                    if (state.Version != version)
+                    {
+                        RememberCurrentUnlocked();
+                        ScheduleFlush();
+                        raiseChanged = true;
+                    }
+                }
+            }
+        }
+        finally
+        {
+            operationLock.Release();
+        }
+
+        if (raiseChanged)
+        {
+            RaiseChanged();
+        }
+    }
+
     public Task ApplyBootstrapContextAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         CancellationToken cancellationToken = default)
@@ -112,44 +205,6 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
             cancellationToken);
     }
 
-    public async Task ApplyJournalEventsAsync(
-        IReadOnlyList<JournalEventEnvelope> journalEvents,
-        bool bootstrapContextOnly,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(journalEvents);
-        ObjectDisposedException.ThrowIf(disposed, this);
-        var raiseChanged = false;
-        foreach (var journalEvent in journalEvents)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (bootstrapContextOnly
-                && journalEvent.EventName is not ("Fileheader" or "LoadGame"))
-            {
-                continue;
-            }
-
-            await EnsureLoadedForEventAsync(journalEvent, cancellationToken)
-                .ConfigureAwait(false);
-            lock (gate)
-            {
-                var version = state.Version;
-                state.Apply(journalEvent);
-                if (state.Version != version)
-                {
-                    RememberCurrentUnlocked();
-                    ScheduleFlush();
-                    raiseChanged = true;
-                }
-            }
-        }
-
-        if (raiseChanged)
-        {
-            RaiseChanged();
-        }
-    }
-
     public async Task IngestSnapshotAsync(
         SystemScanSnapshot snapshot,
         DateTimeOffset? visitedAt = null,
@@ -157,24 +212,33 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ObjectDisposedException.ThrowIf(disposed, this);
-        if (BoxelAddress.TryParse(snapshot.SystemName, out var boxel)
-            && boxel is not null)
-        {
-            await EnsurePrefixLoadedAsync(boxel.Prefix, cancellationToken)
-                .ConfigureAwait(false);
-        }
-
+        await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         var raiseChanged = false;
-        lock (gate)
+        try
         {
-            var version = state.Version;
-            if (state.IngestSnapshot(snapshot, visitedAt)
-                && state.Version != version)
+            ObjectDisposedException.ThrowIf(disposed, this);
+            if (BoxelAddress.TryParse(snapshot.SystemName, out var boxel)
+                && boxel is not null)
             {
-                RememberCurrentUnlocked();
-                ScheduleFlush();
-                raiseChanged = true;
+                await EnsurePrefixLoadedAsync(boxel.Prefix, cancellationToken)
+                    .ConfigureAwait(false);
             }
+
+            lock (gate)
+            {
+                var version = state.Version;
+                if (state.IngestSnapshot(snapshot, visitedAt)
+                    && state.Version != version)
+                {
+                    RememberCurrentUnlocked();
+                    ScheduleFlush();
+                    raiseChanged = true;
+                }
+            }
+        }
+        finally
+        {
+            operationLock.Release();
         }
 
         if (raiseChanged)
@@ -188,10 +252,44 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(prefix);
-        await EnsurePrefixLoadedAsync(prefix, cancellationToken).ConfigureAwait(false);
-        lock (gate)
+        ObjectDisposedException.ThrowIf(disposed, this);
+        await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            return state.TryGet(prefix, out var snapshot) ? snapshot : null;
+            ObjectDisposedException.ThrowIf(disposed, this);
+            await EnsurePrefixLoadedAsync(prefix, cancellationToken).ConfigureAwait(false);
+            lock (gate)
+            {
+                return state.TryGet(prefix, out var snapshot) ? snapshot : null;
+            }
+        }
+        finally
+        {
+            operationLock.Release();
+        }
+    }
+
+    public async Task<BoxelSurveyBoxelDocument?> GetDocumentAsync(
+        string prefix,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(prefix);
+        ObjectDisposedException.ThrowIf(disposed, this);
+        await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ObjectDisposedException.ThrowIf(disposed, this);
+            await EnsurePrefixLoadedAsync(prefix, cancellationToken).ConfigureAwait(false);
+            lock (gate)
+            {
+                return state.TryCreateDocument(prefix, out var document)
+                    ? document
+                    : null;
+            }
+        }
+        finally
+        {
+            operationLock.Release();
         }
     }
 
@@ -200,35 +298,38 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(prefixes);
-        var list = prefixes
-            .Where(prefix => !string.IsNullOrWhiteSpace(prefix))
-            .Distinct(StringComparer.Ordinal)
-            .ToArray();
-        foreach (var prefix in list)
+        ObjectDisposedException.ThrowIf(disposed, this);
+        await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            await EnsurePrefixLoadedAsync(prefix, cancellationToken)
-                .ConfigureAwait(false);
+            ObjectDisposedException.ThrowIf(disposed, this);
+            var list = prefixes
+                .Where(prefix => !string.IsNullOrWhiteSpace(prefix))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+            foreach (var prefix in list)
+            {
+                await EnsurePrefixLoadedAsync(prefix, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            BoxelSurveyBoxelSnapshot rollup;
+            lock (gate)
+            {
+                rollup = state.Rollup(list);
+            }
+
             if (list.Length > MaximumRetainedDocuments)
             {
-                lock (gate)
-                {
-                    retainPrefixes.Add(prefix);
-                }
+                EvictUnretained(cancellationToken);
             }
-        }
 
-        BoxelSurveyBoxelSnapshot rollup;
-        lock (gate)
+            return rollup;
+        }
+        finally
         {
-            rollup = state.Rollup(list);
+            operationLock.Release();
         }
-
-        if (list.Length > MaximumRetainedDocuments)
-        {
-            await EvictUnretainedAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        return rollup;
     }
 
     public async Task<BoxelSurveyRebuildResult?> RebuildAsync(
@@ -238,43 +339,68 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
         CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
-        if (string.IsNullOrWhiteSpace(frontierId))
+        await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            return null;
-        }
+            ObjectDisposedException.ThrowIf(disposed, this);
+            string commanderId;
+            BoxelSurveyStatsState rebuiltState;
+            lock (gate)
+            {
+                if (string.IsNullOrWhiteSpace(frontierId))
+                {
+                    return null;
+                }
 
-        var service = new BoxelSurveyRebuildService(
-            store.DataDirectory,
-            journalDirectory);
-        var result = await service.RebuildAsync(
-                frontierId,
-                state,
-                currentJournalPath,
-                progress,
-                cancellationToken)
-            .ConfigureAwait(false);
-        await FlushAsync(cancellationToken).ConfigureAwait(false);
-        RaiseChanged();
-        return result;
+                commanderId = frontierId;
+                rebuiltState = state.CreateWorkingCopy();
+            }
+
+            var service = new BoxelSurveyRebuildService(
+                store.DataDirectory,
+                journalDirectory);
+            var result = await service.RebuildAsync(
+                    commanderId,
+                    rebuiltState,
+                    currentJournalPath,
+                    progress,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            lock (gate)
+            {
+                if (!string.Equals(frontierId, commanderId, StringComparison.Ordinal))
+                {
+                    return null;
+                }
+
+                state.ReplaceWith(rebuiltState);
+            }
+
+            await FlushAsync(cancellationToken).ConfigureAwait(false);
+            RaiseChanged();
+            return result;
+        }
+        finally
+        {
+            operationLock.Release();
+        }
     }
 
     public async Task FlushAsync(CancellationToken cancellationToken = default)
     {
         CancelScheduledFlush();
-        if (string.IsNullOrWhiteSpace(frontierId))
-        {
-            lock (gate)
-            {
-                state.ClearDirty();
-            }
-
-            return;
-        }
-
+        string? commanderId;
         List<(string Prefix, BoxelSurveyBoxelDocument Document)> pending;
         int epoch;
         lock (gate)
         {
+            commanderId = frontierId;
+            if (string.IsNullOrWhiteSpace(commanderId))
+            {
+                state.ClearDirty();
+                return;
+            }
+
             epoch = state.Version;
             pending = [];
             foreach (var prefix in state.GetDirtyPrefixes())
@@ -287,28 +413,27 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
         }
 
         var saved = new List<string>();
-        foreach (var item in pending)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                await store.SaveBoxelAsync(frontierId, item.Document, cancellationToken)
-                    .ConfigureAwait(false);
-                saved.Add(item.Prefix);
-            }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or InvalidDataException)
-            {
-                PersistenceFailed?.Invoke(this, exception);
-                break;
-            }
+            await store.SaveBoxelsAsync(
+                    commanderId,
+                    pending.Select(item => item.Document).ToArray(),
+                    cancellationToken)
+                .ConfigureAwait(false);
+            saved.AddRange(pending.Select(item => item.Prefix));
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            PersistenceFailed?.Invoke(this, exception);
         }
 
         lock (gate)
         {
-            if (state.Version != epoch)
+            if (state.Version != epoch
+                || !string.Equals(frontierId, commanderId, StringComparison.Ordinal))
             {
                 return;
             }
@@ -326,13 +451,11 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
         lock (gate)
         {
             retainPrefixes.Clear();
-            foreach (var prefix in prefixes)
-            {
-                if (!string.IsNullOrWhiteSpace(prefix))
-                {
-                    retainPrefixes.Add(prefix);
-                }
-            }
+            retainPrefixes.UnionWith(
+                prefixes
+                    .Where(prefix => !string.IsNullOrWhiteSpace(prefix))
+                    .Distinct(StringComparer.Ordinal)
+                    .Take(MaximumRetainedDocuments));
         }
     }
 
@@ -478,21 +601,20 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
 
         lock (gate)
         {
-            if (!state.HasLoadedDocument(prefix))
+            if (string.Equals(frontierId, commanderId, StringComparison.Ordinal)
+                && !state.HasLoadedDocument(prefix))
             {
                 state.ImportDocument(document);
             }
         }
     }
 
-    private Task EvictUnretainedAsync(CancellationToken cancellationToken)
+    private void EvictUnretained(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        HashSet<string> keep;
-        IReadOnlyList<BoxelSurveyIndexEntry> index;
         lock (gate)
         {
-            keep = new HashSet<string>(retainPrefixes, StringComparer.Ordinal);
+            var keep = new HashSet<string>(retainPrefixes, StringComparer.Ordinal);
             if (state.Current?.Prefix is { } current)
             {
                 keep.Add(current);
@@ -508,23 +630,15 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
                 keep.Add(prefix);
             }
 
-            index = state.GetIndex();
-        }
-
-        foreach (var entry in index)
-        {
-            lock (gate)
+            foreach (var prefix in state.GetIndex()
+                         .Select(entry => entry.Prefix)
+                         .Where(prefix =>
+                             !keep.Contains(prefix)
+                             && state.HasLoadedDocument(prefix)))
             {
-                if (keep.Contains(entry.Prefix) || !state.HasLoadedDocument(entry.Prefix))
-                {
-                    continue;
-                }
-
-                state.UnloadDocument(entry.Prefix);
+                state.UnloadDocument(prefix);
             }
         }
-
-        return Task.CompletedTask;
     }
 
     private void RememberCurrentUnlocked()
@@ -551,9 +665,14 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable
             return;
         }
 
-        CancelScheduledFlush();
         var cancellation = new CancellationTokenSource();
-        flushCancellation = cancellation;
+        var previous = Interlocked.Exchange(ref flushCancellation, cancellation);
+        if (previous is not null)
+        {
+            previous.Cancel();
+            previous.Dispose();
+        }
+
         _ = FlushAfterDelayAsync(cancellation.Token);
     }
 

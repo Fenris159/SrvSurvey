@@ -72,6 +72,25 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task MainEntryClearsAnEarlierSavedSearchRollup()
+    {
+        using var coordinator = await CreateCoordinatorWithSystemAsync();
+        using var viewModel = CreateViewModel(coordinator);
+        await viewModel.FocusPrefixesAsync(
+            ["Praea Euq IL-P c5-", "Wregoe BU-Y b2-"],
+            'c');
+        viewModel.ShowSearchRollup = true;
+        await viewModel.RefreshAsync();
+        Assert.Contains("saved search", viewModel.DetailTitle, StringComparison.Ordinal);
+
+        await viewModel.InitializeAsync();
+
+        Assert.False(viewModel.CanShowSearchRollup);
+        Assert.False(viewModel.ShowSearchRollup);
+        Assert.DoesNotContain("saved search", viewModel.DetailTitle, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ExportSkipsBelowMinimumAndWritesWhenLowered()
     {
         using var coordinator = await CreateCoordinatorWithSystemAsync();

@@ -183,15 +183,7 @@ public sealed partial class BoxelView : UserControl
             {
                 if (boxelStatsWindow.DataContext is BoxelSurveyStatsViewModel existing)
                 {
-                    var prefix = viewModel.BoxelSurveyStats.Current?.Prefix;
-                    if (!string.IsNullOrWhiteSpace(prefix))
-                    {
-                        await existing.OpenPrefixAsync(prefix);
-                    }
-                    else
-                    {
-                        await existing.InitializeAsync();
-                    }
+                    await existing.InitializeAsync();
                 }
 
                 boxelStatsWindow.Activate();
@@ -199,8 +191,8 @@ public sealed partial class BoxelView : UserControl
             }
 
             var (stats, window) = CreateStatsWindow(viewModel, owner);
-            await stats.InitializeAsync();
-            window.Show(owner);
+            await InitializeStatsWindowAsync(stats, () => stats.InitializeAsync());
+            ShowStatsWindow(window, owner);
         }
         catch (Exception exception) when (
             exception is IOException
@@ -224,8 +216,10 @@ public sealed partial class BoxelView : UserControl
         }
 
         var (stats, window) = CreateStatsWindow(viewModel, owner);
-        await stats.FocusPrefixesAsync(request.Prefixes, request.LowMassCode);
-        window.Show(owner);
+        await InitializeStatsWindowAsync(
+            stats,
+            () => stats.FocusPrefixesAsync(request.Prefixes, request.LowMassCode));
+        ShowStatsWindow(window, owner);
     }
 
     private (BoxelSurveyStatsViewModel Stats, BoxelStatsWindow Window) CreateStatsWindow(
@@ -250,8 +244,30 @@ public sealed partial class BoxelView : UserControl
                 boxelStatsWindow = null;
             }
         };
-        boxelStatsWindow = window;
         return (stats, window);
+    }
+
+    private static async Task InitializeStatsWindowAsync(
+        BoxelSurveyStatsViewModel stats,
+        Func<Task> initialize)
+    {
+        try
+        {
+            await initialize();
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            stats.ReportStatus("Could not open boxel statistics: " + exception.Message);
+        }
+    }
+
+    private void ShowStatsWindow(BoxelStatsWindow window, Window owner)
+    {
+        window.Show(owner);
+        boxelStatsWindow = window;
     }
 
     private void ReportStatsFailure(Exception exception)

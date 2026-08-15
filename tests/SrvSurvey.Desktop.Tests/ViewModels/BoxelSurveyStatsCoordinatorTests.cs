@@ -83,14 +83,15 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IDisposable
                 """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""),
         ]);
 
-        Assert.Equal(0, coordinator.State.BoxelCount);
+        Assert.Empty(coordinator.Index);
+        await coordinator.IngestSnapshotAsync(
+            Snapshot("Praea Euq IL-P c5-0", 2001, []));
         await coordinator.ApplyJournalEventsAsync(
         [
-            Parse(
-                """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""),
             Parse("""{"event":"NavBeaconScan","SystemAddress":2001}"""),
         ]);
-        Assert.True(coordinator.State.TryGet("Praea Euq IL-P c5-", out var snapshot));
+        var snapshot = await coordinator.GetAsync("Praea Euq IL-P c5-");
+        Assert.NotNull(snapshot);
         Assert.Equal(1, snapshot.Visited);
         Assert.Equal(1, snapshot.NavBeaconCount);
         Assert.Equal(0, snapshot.FssCompleteCount);
@@ -121,7 +122,7 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IDisposable
     private static SystemScanSnapshot Snapshot(
         string name,
         long address,
-        IReadOnlyList<SystemScanBodySnapshot> bodies)
+        SystemScanBodySnapshot[] bodies)
     {
         return new SystemScanSnapshot(
             name,
@@ -131,8 +132,8 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IDisposable
             0,
             false,
             false,
-            bodies.Count,
-            bodies.Count,
+            bodies.Length,
+            bodies.Length,
             0,
             bodies.Sum(body => (long)body.CurrentScanValue),
             0,

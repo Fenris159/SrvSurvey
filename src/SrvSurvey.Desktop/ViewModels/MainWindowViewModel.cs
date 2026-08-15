@@ -453,7 +453,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             sharedSystemResolver);
         boxelSurveyStats = new BoxelSurveyStatsCoordinator(
             new BoxelSurveyStatsStore(AppDataPaths.DataDirectory));
-        boxelSurveyStats.State.TreatNavBeaconAsFullyScanned =
+        boxelSurveyStats.TreatNavBeaconAsFullyScanned =
             new BoxelSurveyStatsSettingsStore(AppDataPaths.UiSettingsPath)
                 .Load()
                 .TreatNavBeaconAsFullyScanned;
@@ -2485,15 +2485,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         if (!skipPersistedBootstrapEvents)
         {
             await BoxelSearch.ApplyJournalEventsAsync(update.JournalEvents);
-            await boxelSurveyStats.ApplyJournalEventsAsync(
-                update.JournalEvents,
-                CancellationToken.None);
-        }
-        else
-        {
-            await boxelSurveyStats.ApplyBootstrapContextAsync(
-                update.JournalEvents,
-                CancellationToken.None);
         }
     }
 
@@ -2554,6 +2545,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 SystemSurvey.Snapshot,
                 cancellationToken: CancellationToken.None);
         }
+
+        if (!skipPersistedBootstrapEvents)
+        {
+            await boxelSurveyStats.ApplyJournalEventsAsync(
+                update.JournalEvents,
+                CancellationToken.None);
+        }
+        else
+        {
+            await boxelSurveyStats.ApplyBootstrapContextAsync(
+                update.JournalEvents,
+                CancellationToken.None);
+        }
+
         PendingSystemBodyDataLoad = LoadCurrentSystemBodyDataAsync();
         if (!update.IsBootstrapRead
             && await ApplyFirstFootfallTextCommandsAsync(update.JournalEvents) > 0)

@@ -39,6 +39,9 @@
                   Command="{Binding RefreshCommand}"
                   Content="Refresh" />
           <Button Classes="secondary"
+                  Command="{Binding RebuildCommand}"
+                  Content="Rebuild" />
+          <Button Classes="secondary"
                   Click="Close_Click"
                   Content="Close" />
         </StackPanel>
@@ -139,9 +142,6 @@
                   <Button Classes="secondary"
                           Command="{Binding ExportCommand}"
                           Content="Export" />
-                  <Button Classes="secondary"
-                          Command="{Binding RebuildCommand}"
-                          Content="Rebuild" />
                 </StackPanel>
               </Grid>
               <CheckBox IsVisible="{Binding CanShowSearchRollup}"

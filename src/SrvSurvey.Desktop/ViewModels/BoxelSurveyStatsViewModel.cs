@@ -57,6 +57,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     private IReadOnlyList<BoxelSurveyClassRowViewModel> classRows = [];
     private BoxelSurveyBoxelSnapshot? detail;
     private string? lastExportDirectory;
+    private int detailRequestVersion;
+    private bool disposed;
 
     public BoxelSurveyStatsViewModel(
         BoxelSurveyStatsCoordinator coordinator,
@@ -96,9 +98,18 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             IsDetailVisible = false;
             RefreshBrowser();
         });
-        RefreshCommand = new AsyncCommand(RefreshAsync);
-        RebuildCommand = new AsyncCommand(RebuildAsync);
-        ExportCommand = new AsyncCommand(ExportAsync);
+        RefreshCommand = new AsyncCommand(
+            RefreshAsync,
+            () => !IsBusy,
+            ReportCommandFailure);
+        RebuildCommand = new AsyncCommand(
+            RebuildAsync,
+            () => !IsBusy,
+            ReportCommandFailure);
+        ExportCommand = new AsyncCommand(
+            ExportAsync,
+            () => !IsBusy,
+            ReportCommandFailure);
         coordinator.Changed += OnCoordinatorChanged;
         coordinator.PersistenceFailed += OnPersistenceFailed;
     }
@@ -258,7 +269,17 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     public bool IsBusy
     {
         get => isBusy;
-        private set => SetField(ref isBusy, value);
+        private set
+        {
+            if (!SetField(ref isBusy, value))
+            {
+                return;
+            }
+
+            RaiseAsyncCanExecuteChanged(RefreshCommand);
+            RaiseAsyncCanExecuteChanged(RebuildCommand);
+            RaiseAsyncCanExecuteChanged(ExportCommand);
+        }
     }
 
     public string DetailTitle
@@ -307,6 +328,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
+        ClearFocusedPrefixes();
         var current = coordinator.Current?.Prefix;
         if (!string.IsNullOrWhiteSpace(current))
         {
@@ -329,6 +351,12 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             prefixes.Where(prefix => !string.IsNullOrWhiteSpace(prefix))
                 .Distinct(StringComparer.Ordinal));
         coordinator.SetRetainPrefixes(focusedPrefixes);
+        if (focusedPrefixes.Count <= 1 && showSearchRollup)
+        {
+            showSearchRollup = false;
+            OnPropertyChanged(nameof(ShowSearchRollup));
+        }
+
         if (massCode is { } code && BoxelAddress.IsValidMassCode(code))
         {
             selectedMassCode = char.ToLowerInvariant(code);
@@ -444,8 +472,10 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             var jsonPath = Path.Combine(directory, $"{stem}-{stamp}.json");
             var csvPath = Path.Combine(directory, $"{stem}-{stamp}.csv");
             var format = new BoxelSurveyAverageFormat(preferences.MinSystemsForAverages);
-            if (snapshots.Count == 1
-                && coordinator.State.TryCreateDocument(snapshots[0].Prefix, out var document))
+            var document = snapshots.Count == 1
+                ? await coordinator.GetDocumentAsync(snapshots[0].Prefix).ConfigureAwait(true)
+                : null;
+            if (document is not null)
             {
                 await ExportSingleSnapshotAsync(
                         snapshots[0],
@@ -480,31 +510,50 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     public void Dispose()
     {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        Interlocked.Increment(ref detailRequestVersion);
         coordinator.Changed -= OnCoordinatorChanged;
         coordinator.PersistenceFailed -= OnPersistenceFailed;
     }
 
     private async Task RefreshDetailAsync(CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(selectedPrefix))
+        var prefix = selectedPrefix;
+        if (disposed || string.IsNullOrWhiteSpace(prefix))
         {
             return;
         }
 
+        var requestVersion = Interlocked.Increment(ref detailRequestVersion);
+        var useRollup = showSearchRollup;
+        var rollupPrefixes = useRollup ? RollupPrefixes().ToArray() : [];
         IsBusy = true;
         try
         {
-            var snapshot = showSearchRollup
-                ? await coordinator.RollupAsync(RollupPrefixes(), cancellationToken)
+            var snapshot = useRollup
+                ? await coordinator.RollupAsync(rollupPrefixes, cancellationToken)
                     .ConfigureAwait(false)
-                : await coordinator.GetAsync(selectedPrefix, cancellationToken)
+                : await coordinator.GetAsync(prefix, cancellationToken)
                     .ConfigureAwait(false)
                     ?? BoxelSurveyBoxelSnapshot.Empty;
             cancellationToken.ThrowIfCancellationRequested();
+            if (disposed
+                || requestVersion != detailRequestVersion
+                || !string.Equals(prefix, selectedPrefix, StringComparison.Ordinal)
+                || useRollup != showSearchRollup)
+            {
+                return;
+            }
+
             detail = snapshot;
             var format = new BoxelSurveyAverageFormat(preferences.MinSystemsForAverages);
-            DetailTitle = showSearchRollup
-                ? selectedPrefix + " · saved search"
+            DetailTitle = useRollup
+                ? prefix + " · saved search"
                 : snapshot.Prefix;
             HeliumText = FormatHelium(snapshot.MinHeliumPercent, snapshot.MaxHeliumPercent);
             VisitedText = string.Create(
@@ -520,7 +569,10 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         }
         finally
         {
-            IsBusy = false;
+            if (requestVersion == detailRequestVersion)
+            {
+                IsBusy = false;
+            }
         }
     }
 
@@ -575,7 +627,9 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         var documents = new List<BoxelSurveyBoxelDocument>();
         foreach (var snapshot in snapshots)
         {
-            if (coordinator.State.TryCreateDocument(snapshot.Prefix, out var item))
+            var item = await coordinator.GetDocumentAsync(snapshot.Prefix)
+                .ConfigureAwait(true);
+            if (item is not null)
             {
                 documents.Add(item);
             }
@@ -611,6 +665,19 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         return search?.SearchPrefixes ?? [selectedPrefix ?? string.Empty];
     }
 
+    private void ClearFocusedPrefixes()
+    {
+        focusedPrefixes.Clear();
+        coordinator.SetRetainPrefixes([]);
+        if (showSearchRollup)
+        {
+            showSearchRollup = false;
+            OnPropertyChanged(nameof(ShowSearchRollup));
+        }
+
+        OnPropertyChanged(nameof(CanShowSearchRollup));
+    }
+
     private void RefreshBrowser()
     {
         var index = coordinator.Index.ToDictionary(
@@ -644,7 +711,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     private BoxelSurveyBrowserRowViewModel CreateRow(
         string prefix,
-        IReadOnlyDictionary<string, BoxelSurveyIndexEntry> index,
+        Dictionary<string, BoxelSurveyIndexEntry> index,
         int indent)
     {
         index.TryGetValue(prefix, out var entry);
@@ -661,7 +728,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             string.Equals(prefix, selectedPrefix, StringComparison.Ordinal));
     }
 
-    private IReadOnlyList<BoxelSurveyClassRowViewModel> BuildClassRows(
+    private static List<BoxelSurveyClassRowViewModel> BuildClassRows(
         BoxelSurveyBoxelSnapshot snapshot,
         BoxelSurveyAverageFormat format)
     {
@@ -707,7 +774,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     private void ApplyPreferences()
     {
-        coordinator.State.TreatNavBeaconAsFullyScanned =
+        coordinator.TreatNavBeaconAsFullyScanned =
             preferences.TreatNavBeaconAsFullyScanned;
     }
 
@@ -725,7 +792,7 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         }
     }
 
-    private IReadOnlyList<BoxelSurveyMassCodeOption> CreateMassCodes()
+    private ObservableCollection<BoxelSurveyMassCodeOption> CreateMassCodes()
     {
         var options = new ObservableCollection<BoxelSurveyMassCodeOption>();
         for (var massCode = BoxelAddress.MinimumMassCode;
@@ -779,8 +846,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             return BoxelSurveyAverageFormatter.Placeholder;
         }
 
-        var low = min ?? max ?? 0;
-        var high = max ?? min ?? 0;
+        var low = min ?? max!.Value;
+        var high = max ?? min!.Value;
         return string.Create(CultureInfo.CurrentCulture, $"HE {low:0.#}–{high:0.#}%");
     }
 
@@ -806,6 +873,24 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             ? BoxelSurveyAverageFormatter.Placeholder
             : count.ToString(CultureInfo.CurrentCulture);
 
+    private void ReportCommandFailure(Exception exception)
+    {
+        if (exception is OperationCanceledException)
+        {
+            return;
+        }
+
+        ReportStatus("Boxel statistics operation failed: " + exception.Message);
+    }
+
+    private static void RaiseAsyncCanExecuteChanged(ICommand? command)
+    {
+        if (command is AsyncCommand asyncCommand)
+        {
+            asyncCommand.RaiseCanExecuteChanged();
+        }
+    }
+
     private bool SetField<T>(
         ref T field,
         T value,
@@ -826,28 +911,53 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     private sealed class RelayCommand(Action<object?> execute) : ICommand
     {
-        public event EventHandler? CanExecuteChanged
-        {
-            add { }
-            remove { }
-        }
+        public event EventHandler? CanExecuteChanged;
 
         public bool CanExecute(object? parameter) => true;
 
         public void Execute(object? parameter) => execute(parameter);
+
+        public void RaiseCanExecuteChanged()
+            => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private sealed class AsyncCommand(Func<Task> execute) : ICommand
+    private sealed class AsyncCommand(
+        Func<Task> execute,
+        Func<bool> canExecute,
+        Action<Exception> reportFailure) : ICommand
     {
-        public event EventHandler? CanExecuteChanged
+        private bool isExecuting;
+
+        public event EventHandler? CanExecuteChanged;
+
+        public bool CanExecute(object? parameter) => !isExecuting && canExecute();
+
+        public async void Execute(object? parameter)
         {
-            add { }
-            remove { }
+            if (!CanExecute(parameter))
+            {
+                return;
+            }
+
+            isExecuting = true;
+            RaiseCanExecuteChanged();
+            try
+            {
+                await execute().ConfigureAwait(true);
+            }
+            catch (Exception exception)
+            {
+                reportFailure(exception);
+            }
+            finally
+            {
+                isExecuting = false;
+                RaiseCanExecuteChanged();
+            }
         }
 
-        public bool CanExecute(object? parameter) => true;
-
-        public async void Execute(object? parameter) => await execute().ConfigureAwait(true);
+        public void RaiseCanExecuteChanged()
+            => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }
 
