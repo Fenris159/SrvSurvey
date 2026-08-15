@@ -1,7 +1,9 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -19,6 +21,35 @@ public sealed partial class DiagnosticsView : UserControl
         AttachedToVisualTree += (_, _) => ConnectPlatformServices();
         DetachedFromVisualTree += (_, _) => DisconnectPlatformServices();
         DataContextChanged += (_, _) => ConnectPlatformServices();
+    }
+
+    internal void ScrollToApplicationUpdates()
+    {
+        Dispatcher.UIThread.Post(
+            () =>
+            {
+                var origin = ApplicationUpdatesSection.TranslatePoint(
+                    default,
+                    DiagnosticsPageScroller);
+                if (origin is null)
+                {
+                    ApplicationUpdatesSection.BringIntoView();
+                    return;
+                }
+
+                var maximumOffset = Math.Max(
+                    0,
+                    DiagnosticsPageScroller.Extent.Height
+                        - DiagnosticsPageScroller.Viewport.Height);
+                var targetOffset = Math.Clamp(
+                    DiagnosticsPageScroller.Offset.Y + origin.Value.Y,
+                    0,
+                    maximumOffset);
+                DiagnosticsPageScroller.Offset = new Vector(
+                    DiagnosticsPageScroller.Offset.X,
+                    targetOffset);
+            },
+            DispatcherPriority.Loaded);
     }
 
     private void ConnectPlatformServices()

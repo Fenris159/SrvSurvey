@@ -43,7 +43,8 @@ public sealed partial class MainWindow : Window
         RefreshApplicationMonitors();
         ApplyApplicationWindowPreferences(
             viewModel.DesktopBehavior.LastApplicationWindowPosition);
-        viewModel.ReleaseUpdates.SetDiagnosticsNavigator(viewModel.ShowDiagnostics);
+        viewModel.ReleaseUpdates.SetDiagnosticsNavigator(
+            NavigateToReleaseUpdates);
         Opened += OnOpened;
         viewModel.ProfileImportPreparing += StopMonitorForProfileImportAsync;
         Activated += (_, _) => InputContext.SetActive(true);
@@ -98,6 +99,12 @@ public sealed partial class MainWindow : Window
             RunMonitorAsync,
             exception => Program.ApplicationLog?.Append(
                 "Journal monitor stopped unexpectedly: " + exception));
+    }
+
+    private void NavigateToReleaseUpdates()
+    {
+        viewModel.ShowDiagnostics();
+        DiagnosticsPage.ScrollToApplicationUpdates();
     }
 
     private void OnScreensChanged(object? sender, EventArgs eventArgs)

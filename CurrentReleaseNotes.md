@@ -1,23 +1,27 @@
-# SrvSurvey-XP 2.1.3.0-rc.24
+# SrvSurvey-XP 2.1.3.0-rc.25
 
-This release candidate corrects biology-overlay body selection. The changes
-below are the delta from `2.1.3.0-rc.23`.
+This release candidate corrects FSS Survey body totals and update-review
+navigation. The changes below are the delta from `2.1.3.0-rc.24`.
 
-## What's fixed since 2.1.3.0-rc.23
+## What's fixed since 2.1.3.0-rc.24
 
-- Prevents a DSS-complete or nearby body with zero biological signals from
-  appearing as "Identified Bio" when another body in the system has biological
-  signals. The overlay remains on the system overview and continues to include
-  every body that actually reported biological signals, regardless of scan
-  count or scan order.
+- Makes the FSS Survey scanned-body total use the same real-body definition as
+  the journal's FSS total. Barycentres, rings, and asteroid clusters no longer
+  inflate the completed count shown by that panel.
+- Makes the update notification's Review action align the top of the
+  Application updates card with the top of the Diagnostics viewport, even when
+  that page was previously scrolled elsewhere.
+- Keeps saved Boxel rename and notes dialogs synchronized with their completion
+  status, so a successful operation is not reported while its dialog is still
+  open.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.24`
-- Tag: `xp-v2.1.3.0-rc.24`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.24-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.24-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.24-x86_64.AppImage`
+- Version: `2.1.3.0-rc.25`
+- Tag: `xp-v2.1.3.0-rc.25`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.25-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.25-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.25-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.

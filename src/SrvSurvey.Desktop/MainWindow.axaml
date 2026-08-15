@@ -106,7 +106,8 @@
       <views:GuardianView IsVisible="{Binding IsGuardianSelected}" />
       <views:QuestView IsVisible="{Binding IsQuestsSelected}" />
       <views:ColonizationView IsVisible="{Binding IsColonizationSelected}" />
-      <views:DiagnosticsView IsVisible="{Binding IsDiagnosticsSelected}" />
+      <views:DiagnosticsView x:Name="DiagnosticsPage"
+                             IsVisible="{Binding IsDiagnosticsSelected}" />
       <views:SettingsView IsVisible="{Binding IsSettingsSelected}" />
       <views:GuidesView IsVisible="{Binding IsGuidesSelected}" />
     </Grid>
