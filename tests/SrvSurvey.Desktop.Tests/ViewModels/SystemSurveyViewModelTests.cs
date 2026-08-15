@@ -500,6 +500,34 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void ScanSummaryExcludesBarycentresRingsAndAsteroidClusters()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse("""{"event":"FSSDiscoveryScan","SystemAddress":42,"BodyCount":4}"""),
+                Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"K","StellarMass":1}"""),
+                Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test B","BodyID":1,"StarType":"M","StellarMass":0.5}"""),
+                Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A 1","BodyID":2,"PlanetClass":"Rocky body","MassEM":1}"""),
+                Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test B 1","BodyID":3,"PlanetClass":"Icy body","MassEM":1}"""),
+                Parse("""{"event":"ScanBaryCentre","StarSystem":"Test","SystemAddress":42,"BodyID":4}"""),
+                Parse("""{"event":"ScanBaryCentre","StarSystem":"Test","SystemAddress":42,"BodyID":5}"""),
+                Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A Belt Cluster 1","BodyID":6}"""),
+                Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A 1 A Ring","BodyID":7}"""),
+                Parse("""{"event":"FSSAllBodiesFound","SystemAddress":42,"Count":4}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.Fss });
+
+        Assert.Equal(8, viewModel.Snapshot.Bodies.Count);
+        Assert.Equal(4, viewModel.Snapshot.FssBodyCount);
+        Assert.StartsWith(
+            "Scanned all 4 bodies · ",
+            viewModel.ScanSummary,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void FssBodiesPutUnmappedBodiesFirstAndSortEachGroupNaturally()
     {
         var viewModel = CreateViewModel();
