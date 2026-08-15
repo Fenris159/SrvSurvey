@@ -911,14 +911,15 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     private sealed class RelayCommand(Action<object?> execute) : ICommand
     {
-        public event EventHandler? CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged
+        {
+            add => _ = value;
+            remove => _ = value;
+        }
 
         public bool CanExecute(object? parameter) => true;
 
         public void Execute(object? parameter) => execute(parameter);
-
-        public void RaiseCanExecuteChanged()
-            => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private sealed class AsyncCommand(

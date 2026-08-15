@@ -247,50 +247,82 @@ public sealed class BoxelSurveyRebuildService
         while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)
                is { } line)
         {
-            if (string.IsNullOrWhiteSpace(line))
+            var journalEvent = ParseJournalLine(line, ref malformed);
+            if (journalEvent is null)
             {
                 continue;
             }
 
-            if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _)
-                || journalEvent is null)
-            {
-                malformed++;
-                continue;
-            }
-
-            if (journalEvent.EventName == "Fileheader" && !matchesCommander)
-            {
-                context.Clear();
-                context.Add(journalEvent);
-            }
-
-            if (journalEvent.EventName is "Commander" or "LoadGame"
-                && GetString(journalEvent.Payload, "FID") is { } eventFrontierId)
-            {
-                includeEvents = string.Equals(
-                    eventFrontierId,
-                    frontierId,
-                    StringComparison.OrdinalIgnoreCase);
-                if (includeEvents && !matchesCommander)
-                {
-                    foreach (var contextEvent in context)
-                    {
-                        ReplayEvent(contextEvent, scan, state, cancellationToken);
-                    }
-
-                    context.Clear();
-                    matchesCommander = true;
-                }
-            }
-
-            if (includeEvents)
-            {
-                ReplayEvent(journalEvent, scan, state, cancellationToken);
-            }
+            ReplayJournalEvent(
+                journalEvent,
+                frontierId,
+                scan,
+                state,
+                context,
+                ref matchesCommander,
+                ref includeEvents,
+                cancellationToken);
         }
 
         return new JournalFileReplay(matchesCommander, malformed);
+    }
+
+    private static JournalEventEnvelope? ParseJournalLine(string line, ref int malformed)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return null;
+        }
+
+        if (JournalEventEnvelope.TryParse(line, out var journalEvent, out _)
+            && journalEvent is not null)
+        {
+            return journalEvent;
+        }
+
+        malformed++;
+        return null;
+    }
+
+    private static void ReplayJournalEvent(
+        JournalEventEnvelope journalEvent,
+        string frontierId,
+        SystemScanState scan,
+        BoxelSurveyStatsState state,
+        List<JournalEventEnvelope> context,
+        ref bool matchesCommander,
+        ref bool includeEvents,
+        CancellationToken cancellationToken)
+    {
+        if (journalEvent.EventName == "Fileheader" && !matchesCommander)
+        {
+            context.Clear();
+            context.Add(journalEvent);
+        }
+
+        if (journalEvent.EventName is "Commander" or "LoadGame"
+            && GetString(journalEvent.Payload, "FID") is { } eventFrontierId)
+        {
+            includeEvents = string.Equals(
+                eventFrontierId,
+                frontierId,
+                StringComparison.OrdinalIgnoreCase);
+            if (includeEvents && !matchesCommander)
+            {
+                foreach (var contextEvent in context)
+                {
+                    ReplayEvent(contextEvent, scan, state, cancellationToken);
+                }
+
+                context.Clear();
+                matchesCommander = true;
+            }
+        }
+
+        if (includeEvents)
+        {
+            ReplayEvent(journalEvent, scan, state, cancellationToken);
+        }
     }
 
     private static async Task<JsonObject> ReadObjectAsync(

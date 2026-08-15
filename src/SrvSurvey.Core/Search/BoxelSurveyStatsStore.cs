@@ -316,17 +316,26 @@ public sealed class BoxelSurveyStatsStore
             return resolved;
         }
 
-        var candidates = File.Exists(preferred)
-            ? new[] { preferred }.Concat(Directory.EnumerateFiles(
+        IEnumerable<string> candidates;
+        if (File.Exists(preferred))
+        {
+            candidates = new[] { preferred }.Concat(Directory.EnumerateFiles(
                 directory,
                 SanitizePrefix(prefix) + "-*.json",
-                SearchOption.TopDirectoryOnly))
-            : Directory.Exists(directory)
-                ? Directory.EnumerateFiles(
-                    directory,
-                    SanitizePrefix(prefix) + "-*.json",
-                    SearchOption.TopDirectoryOnly)
-                : [];
+                SearchOption.TopDirectoryOnly));
+        }
+        else if (Directory.Exists(directory))
+        {
+            candidates = Directory.EnumerateFiles(
+                directory,
+                SanitizePrefix(prefix) + "-*.json",
+                SearchOption.TopDirectoryOnly);
+        }
+        else
+        {
+            candidates = [];
+        }
+
         foreach (var candidate in candidates)
         {
             try

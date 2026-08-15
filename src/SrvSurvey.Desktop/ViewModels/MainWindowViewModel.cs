@@ -2539,25 +2539,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         await LoadCurrentSystemHistoryAsync();
-        if (exobiologyChanged || update.JournalEvents.Count > 0)
-        {
-            await boxelSurveyStats.IngestSnapshotAsync(
-                SystemSurvey.Snapshot,
-                cancellationToken: CancellationToken.None);
-        }
-
-        if (!skipPersistedBootstrapEvents)
-        {
-            await boxelSurveyStats.ApplyJournalEventsAsync(
-                update.JournalEvents,
-                CancellationToken.None);
-        }
-        else
-        {
-            await boxelSurveyStats.ApplyBootstrapContextAsync(
-                update.JournalEvents,
-                CancellationToken.None);
-        }
+        await ApplyBoxelSurveyStatsAsync(
+            update,
+            exobiologyChanged,
+            skipPersistedBootstrapEvents);
 
         PendingSystemBodyDataLoad = LoadCurrentSystemBodyDataAsync();
         if (!update.IsBootstrapRead
@@ -2613,6 +2598,32 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         return exobiologyAfter;
+    }
+
+    private async Task ApplyBoxelSurveyStatsAsync(
+        JournalMonitorUpdate update,
+        bool exobiologyChanged,
+        bool skipPersistedBootstrapEvents)
+    {
+        if (exobiologyChanged || update.JournalEvents.Count > 0)
+        {
+            await boxelSurveyStats.IngestSnapshotAsync(
+                SystemSurvey.Snapshot,
+                cancellationToken: CancellationToken.None);
+        }
+
+        if (!skipPersistedBootstrapEvents)
+        {
+            await boxelSurveyStats.ApplyJournalEventsAsync(
+                update.JournalEvents,
+                CancellationToken.None);
+        }
+        else
+        {
+            await boxelSurveyStats.ApplyBootstrapContextAsync(
+                update.JournalEvents,
+                CancellationToken.None);
+        }
     }
 
     private SurfaceSurveySessionContext? CreateSurfaceSurveySessionContext()
