@@ -100,9 +100,16 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("{Binding BoxelSearch.MarkNextEmptyCommand}", boxelBindings);
         Assert.Contains("LAST SYSTEM AVAILABLE", boxelBindings);
         Assert.Contains(
-            "{Binding BoxelSearch.LastSystemAvailable, Mode=TwoWay}",
+            "{Binding BoxelSearch.LastSystemAvailable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}",
+            boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.HasLastSystemAvailableError}",
+            boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.LastSystemAvailableValidationMessage}",
             boxelBindings);
         Assert.Contains("LastSystemAvailable_LostFocus", boxelBindings);
+        Assert.Contains("ApplyLastSystemAvailable_LostFocus", boxelBindings);
         Assert.Contains(
             "{Binding BoxelSearch.SortDescending, Mode=TwoWay}",
             boxelBindings);

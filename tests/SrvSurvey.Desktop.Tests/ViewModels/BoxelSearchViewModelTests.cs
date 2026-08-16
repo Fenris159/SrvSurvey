@@ -250,6 +250,61 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task LastSystemAvailableEditRequiresNumbersAndRestoresUntilApplied()
+    {
+        var viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver(
+            [
+                Observation("Praea Euq IL-P c5-0", 100),
+                Observation("Praea Euq IL-P c5-8", 108),
+            ]));
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        viewModel.LowMassCode = "c";
+        await viewModel.ActivateAsync();
+
+        Assert.Equal("8", viewModel.LastSystemAvailable);
+        Assert.False(viewModel.ApplyLastSystemAvailableCommand.CanExecute(null));
+
+        viewModel.LastSystemAvailable = "abc";
+
+        Assert.True(viewModel.HasLastSystemAvailableError);
+        Assert.Equal(
+            "Enter numbers only, from 0 to 99,999.",
+            viewModel.LastSystemAvailableValidationMessage);
+        Assert.False(viewModel.ApplyLastSystemAvailableCommand.CanExecute(null));
+
+        viewModel.RestoreLastSystemAvailable();
+
+        Assert.Equal("8", viewModel.LastSystemAvailable);
+        Assert.False(viewModel.HasLastSystemAvailableError);
+        Assert.False(viewModel.ApplyLastSystemAvailableCommand.CanExecute(null));
+
+        viewModel.LastSystemAvailable = "7";
+
+        Assert.True(viewModel.HasLastSystemAvailableError);
+        Assert.Equal(
+            "Enter 8 or higher; that suffix is already recorded.",
+            viewModel.LastSystemAvailableValidationMessage);
+        Assert.False(viewModel.ApplyLastSystemAvailableCommand.CanExecute(null));
+
+        viewModel.LastSystemAvailable = "12";
+
+        Assert.False(viewModel.HasLastSystemAvailableError);
+        Assert.True(viewModel.ApplyLastSystemAvailableCommand.CanExecute(null));
+
+        viewModel.RestoreLastSystemAvailable();
+
+        Assert.Equal("8", viewModel.LastSystemAvailable);
+        Assert.False(viewModel.ApplyLastSystemAvailableCommand.CanExecute(null));
+    }
+
+    [Fact]
     public async Task PagePickerWidthAccommodatesTheLastPageNumber()
     {
         var viewModel = CreateViewModel(
@@ -328,11 +383,15 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task BlankLastSystemRestoresAndStartRemainsDisabledUntilStop()
+    public async Task AbandonedLastSystemEditRestoresAndNewSearchUsesResolvedEstimate()
     {
         var viewModel = CreateViewModel(
             new CommanderProfileStore(temporaryDirectory),
-            new StubResolver([]));
+            new StubResolver(
+            [
+                Observation("Praea Euq RS-U d2-0", 200),
+                Observation("Praea Euq RS-U d2-17", 217),
+            ]));
         await viewModel.LoadProfileAsync(
             "F123",
             "Drew",
@@ -359,9 +418,18 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.True(viewModel.ActivateCommand.CanExecute(null));
 
         viewModel.TopBoxelText = "Praea Euq RS-U d2-0";
+        var displayedLastSystems = new List<string>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+        {
+            if (eventArgs.PropertyName == nameof(viewModel.LastSystemAvailable))
+            {
+                displayedLastSystems.Add(viewModel.LastSystemAvailable);
+            }
+        };
         await viewModel.ActivateAsync();
 
-        Assert.Equal("0", viewModel.LastSystemAvailable);
+        Assert.Equal("17", viewModel.LastSystemAvailable);
+        Assert.DoesNotContain("0", displayedLastSystems);
         Assert.False(viewModel.ActivateCommand.CanExecute(null));
     }
 

@@ -297,12 +297,13 @@ public sealed class BoxelSearchState
         CompletionMode = completionMode;
         AutoCopy = autoCopy;
         SortDescending = sortDescending;
-        CurrentCount = 1;
+        CurrentCount = Math.Max(1, topBoxel.N2 + 1);
         CurrentIsEmpty = false;
         systems.Clear();
         IsActive = true;
         SavedSearchFileName = null;
         InitializeProgress();
+        SetProgress(Current, CurrentCount);
         SetNextSystem();
         Version++;
         error = null;

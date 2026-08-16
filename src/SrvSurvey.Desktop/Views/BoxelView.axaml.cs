@@ -3,6 +3,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop;
@@ -45,9 +46,25 @@ public sealed partial class BoxelView : UserControl
         object? sender,
         RoutedEventArgs eventArgs)
     {
-        if (sender is TextBox { Text: var text }
-            && string.IsNullOrWhiteSpace(text)
-            && DataContext is MainWindowViewModel viewModel)
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    if (!ApplyLastSystemAvailableButton.IsFocused)
+                    {
+                        viewModel.BoxelSearch.RestoreLastSystemAvailable();
+                    }
+                },
+                DispatcherPriority.Background);
+        }
+    }
+
+    private void ApplyLastSystemAvailable_LostFocus(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
         {
             viewModel.BoxelSearch.RestoreLastSystemAvailable();
         }
