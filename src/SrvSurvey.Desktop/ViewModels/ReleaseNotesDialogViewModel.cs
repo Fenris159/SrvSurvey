@@ -38,7 +38,12 @@ public sealed record ReleaseNotesDialogViewModel(
                 [new ReleaseNoteChangeViewModel(RemoveInlineMarkdown(markdown.Trim()))]);
         }
 
-        var introductionStart = titleIndex >= 0 ? titleIndex + 1 : 0;
+        var introductionStart = titleIndex switch
+        {
+            < 0 => 0,
+            _ when titleIndex < changesIndex => titleIndex + 1,
+            _ => changesIndex,
+        };
         var introduction = JoinParagraphs(
             lines[introductionStart..changesIndex]);
         var heading = RemoveInlineMarkdown(lines[changesIndex].Trim()[3..]);
@@ -50,7 +55,7 @@ public sealed record ReleaseNotesDialogViewModel(
             changes);
     }
 
-    private static IReadOnlyList<ReleaseNoteChangeViewModel> ParseChanges(
+    private static List<ReleaseNoteChangeViewModel> ParseChanges(
         IReadOnlyList<string> lines)
     {
         var changes = new List<ReleaseNoteChangeViewModel>();
@@ -87,7 +92,7 @@ public sealed record ReleaseNotesDialogViewModel(
     }
 
     private static void AddChange(
-        ICollection<ReleaseNoteChangeViewModel> changes,
+        List<ReleaseNoteChangeViewModel> changes,
         List<string> lines)
     {
         if (lines.Count == 0)

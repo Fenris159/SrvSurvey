@@ -33,4 +33,45 @@ public sealed class ReleaseNotesDialogViewModelTests
                 change.Text),
             change => Assert.Equal("Displays 10 systems per page.", change.Text));
     }
+
+    [Fact]
+    public void CreateFallsBackToSingleChangeWithoutChangesHeading()
+    {
+        const string markdown = "A release note without a changes heading.";
+
+        var result = ReleaseNotesDialogViewModel.Create(
+            "Fallback title",
+            markdown);
+
+        Assert.Equal("Fallback title", result.Title);
+        Assert.Empty(result.Introduction);
+        Assert.Equal("What's changed", result.ChangesHeading);
+        var change = Assert.Single(result.Changes);
+        Assert.Equal(markdown, change.Text);
+    }
+
+    [Fact]
+    public void CreateDoesNotSliceBackwardsWhenTitleFollowsChangesHeading()
+    {
+        const string markdown = """
+            Intro before changes.
+
+            ## What's changed
+
+            - First change.
+
+            # Late title
+            """;
+
+        var result = ReleaseNotesDialogViewModel.Create(
+            "Fallback title",
+            markdown);
+
+        Assert.Equal("Late title", result.Title);
+        Assert.Empty(result.Introduction);
+        Assert.Equal("What's changed", result.ChangesHeading);
+        Assert.Collection(
+            result.Changes,
+            change => Assert.Equal("First change. # Late title", change.Text));
+    }
 }

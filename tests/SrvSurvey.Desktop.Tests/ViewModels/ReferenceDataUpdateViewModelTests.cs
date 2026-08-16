@@ -90,6 +90,12 @@ public sealed class ReferenceDataUpdateViewModelTests
         await viewModel.RefreshAsync();
 
         Assert.False(viewModel.IsRestartRequired);
+        Assert.Equal(
+            "Catalogs updated this session: None; refresh failed before activation.",
+            viewModel.UpdatedCatalogs);
+        Assert.Equal(
+            "Backup created this session: Not needed; existing reference data remains active.",
+            viewModel.BackupDirectory);
         Assert.Contains("failed safely", viewModel.StatusMessage);
         Assert.Contains("survey files were not changed", viewModel.StatusMessage);
         Assert.Single(log);

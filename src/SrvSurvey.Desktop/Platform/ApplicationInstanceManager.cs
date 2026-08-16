@@ -58,15 +58,12 @@ internal sealed class ApplicationInstanceManager
     {
         this.processSource = processSource
             ?? throw new ArgumentNullException(nameof(processSource));
-        if (gracefulExitTimeout < TimeSpan.Zero)
-        {
-            throw new ArgumentOutOfRangeException(nameof(gracefulExitTimeout));
-        }
-
-        if (forcedExitTimeout < TimeSpan.Zero)
-        {
-            throw new ArgumentOutOfRangeException(nameof(forcedExitTimeout));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(
+            gracefulExitTimeout,
+            TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThan(
+            forcedExitTimeout,
+            TimeSpan.Zero);
 
         this.gracefulExitTimeout = gracefulExitTimeout;
         this.forcedExitTimeout = forcedExitTimeout;
@@ -128,12 +125,11 @@ internal sealed class ApplicationInstanceManager
         IEnumerable<IApplicationInstanceProcess> instances)
     {
         var requested = new HashSet<int>();
-        foreach (var instance in instances.Where(instance => !instance.HasExited))
+        foreach (var instance in instances
+            .Where(instance => !instance.HasExited)
+            .Where(instance => instance.RequestGracefulExit()))
         {
-            if (instance.RequestGracefulExit())
-            {
-                requested.Add(instance.Id);
-            }
+            requested.Add(instance.Id);
         }
 
         return requested;
@@ -216,7 +212,7 @@ internal sealed class SystemApplicationInstanceProcessSource
         if (string.IsNullOrWhiteSpace(candidatePath)
             || string.IsNullOrWhiteSpace(currentPath))
         {
-            return true;
+            return false;
         }
 
         return string.Equals(
@@ -243,9 +239,8 @@ internal sealed class SystemApplicationInstanceProcessSource
                 or InvalidOperationException
                 or NotSupportedException)
         {
-            // The exact process name remains a safe fallback when the OS
-            // does not permit reading another instance's executable path.
-            return true;
+            // An inaccessible path cannot establish that this is our executable.
+            return false;
         }
     }
 }

@@ -42,4 +42,34 @@ public sealed class GitHubReleaseNotesTests
     {
         Assert.Empty(GitHubReleaseNotes.ExtractChanges(markdown));
     }
+
+    [Fact]
+    public void ExtractChangesExcludesSecondLevelSectionsBeforeChanges()
+    {
+        const string markdown = """
+            # SrvSurvey-XP 2.1.3.0-rc.27
+
+            Summary of this release.
+
+            ## Known issues
+
+            - Do not include this section.
+
+            ## What's changed since rc.26
+
+            - Include this change.
+
+            ## Packaging
+
+            - Do not include this section either.
+            """;
+
+        var result = GitHubReleaseNotes.ExtractChanges(markdown);
+
+        Assert.Contains("Summary of this release.", result);
+        Assert.Contains("Include this change.", result);
+        Assert.DoesNotContain("Known issues", result);
+        Assert.DoesNotContain("Do not include", result);
+        Assert.DoesNotContain("Packaging", result);
+    }
 }

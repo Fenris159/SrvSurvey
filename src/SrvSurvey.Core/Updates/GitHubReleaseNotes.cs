@@ -20,6 +20,12 @@ public static class GitHubReleaseNotes
             return string.Empty;
         }
 
+        var introductionEnd = Array.FindIndex(lines, IsSecondLevelHeading);
+        if (introductionEnd < 0)
+        {
+            introductionEnd = changesHeading;
+        }
+
         var end = lines.Length;
         for (var index = changesHeading + 1; index < lines.Length; index++)
         {
@@ -30,15 +36,19 @@ public static class GitHubReleaseNotes
             }
         }
 
-        var excerpt = string.Join('\n', lines[..end]).Trim();
+        var introduction = string.Join('\n', lines[..introductionEnd]).Trim();
+        var changes = string.Join('\n', lines[changesHeading..end]).Trim();
+        var excerpt = string.IsNullOrEmpty(introduction)
+            ? changes
+            : introduction + "\n\n" + changes;
         return excerpt.Length <= MaximumExcerptCharacters
             ? excerpt
             : excerpt[..MaximumExcerptCharacters].TrimEnd();
     }
 
-    private static int FindChangesHeading(IReadOnlyList<string> lines)
+    private static int FindChangesHeading(string[] lines)
     {
-        for (var index = 0; index < lines.Count; index++)
+        for (var index = 0; index < lines.Length; index++)
         {
             var line = lines[index].Trim();
             if (!IsSecondLevelHeading(line))
@@ -59,8 +69,6 @@ public static class GitHubReleaseNotes
 
     private static bool IsSecondLevelHeading(string line)
     {
-        var trimmed = line.TrimStart();
-        return trimmed.StartsWith("## ", StringComparison.Ordinal)
-            && !trimmed.StartsWith("### ", StringComparison.Ordinal);
+        return line.TrimStart().StartsWith("## ", StringComparison.Ordinal);
     }
 }

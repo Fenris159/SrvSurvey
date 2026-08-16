@@ -1,9 +1,39 @@
+using System.Diagnostics;
 using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
 public sealed class ApplicationInstanceManagerTests
 {
+    [Fact]
+    public async Task DefaultManagerCanInspectRunningProcesses()
+    {
+        var manager = new ApplicationInstanceManager();
+
+        var count = await manager.CountOtherInstancesAsync();
+
+        Assert.True(count >= 0);
+    }
+
+    [Fact]
+    public void ConstructorRejectsInvalidDependenciesAndTimeouts()
+    {
+        var source = new StubProcessSource([]);
+
+        Assert.Throws<ArgumentNullException>(() => new ApplicationInstanceManager(
+            null!,
+            TimeSpan.Zero,
+            TimeSpan.Zero));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ApplicationInstanceManager(
+            source,
+            TimeSpan.FromMilliseconds(-1),
+            TimeSpan.Zero));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ApplicationInstanceManager(
+            source,
+            TimeSpan.Zero,
+            TimeSpan.FromMilliseconds(-1)));
+    }
+
     [Fact]
     public async Task CountReturnsOtherInstancesAndDisposesHandles()
     {
@@ -77,10 +107,12 @@ public sealed class ApplicationInstanceManagerTests
     [InlineData("C:\\SrvSurvey\\SrvSurvey.Desktop.exe", "c:\\srvsurvey\\srvsurvey.desktop.exe", true, true)]
     [InlineData("/opt/SrvSurvey/SrvSurvey.Desktop", "/opt/srvsurvey/SrvSurvey.Desktop", false, false)]
     [InlineData("/opt/SrvSurvey/SrvSurvey.Desktop", "/opt/SrvSurvey/SrvSurvey.Desktop", false, true)]
-    [InlineData(null, "/opt/SrvSurvey/SrvSurvey.Desktop", false, true)]
+    [InlineData(null, "/opt/SrvSurvey/SrvSurvey.Desktop", false, false)]
+    [InlineData("/opt/SrvSurvey/SrvSurvey.Desktop", null, false, false)]
+    [InlineData("", "/opt/SrvSurvey/SrvSurvey.Desktop", false, false)]
     public void ExecutableMatchingUsesPlatformPathSemantics(
         string? candidate,
-        string current,
+        string? current,
         bool isWindows,
         bool expected)
     {
@@ -90,6 +122,31 @@ public sealed class ApplicationInstanceManagerTests
                 candidate,
                 current,
                 isWindows));
+    }
+
+    [Fact]
+    public async Task SystemProcessWrapperHandlesAnExitedProcess()
+    {
+        using var process = Process.Start(new ProcessStartInfo
+        {
+            FileName = OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh",
+            Arguments = OperatingSystem.IsWindows() ? "/c exit 0" : "-c true",
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        });
+        Assert.NotNull(process);
+        await process.WaitForExitAsync();
+        using var instance = new SystemApplicationInstanceProcess(process);
+
+        Assert.Equal(process.Id, instance.Id);
+        Assert.True(instance.HasExited);
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.False(instance.RequestGracefulExit());
+        }
+
+        instance.ForceTerminate();
+        await instance.WaitForExitAsync(CancellationToken.None);
     }
 
     private static ApplicationInstanceManager CreateManager(
