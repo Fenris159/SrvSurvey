@@ -6,6 +6,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using System.Runtime.InteropServices;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
@@ -28,6 +29,7 @@ namespace SrvSurvey.Desktop;
 public sealed partial class App : Application
 {
     private GuardianOverlayCoordinator? guardianOverlayCoordinator;
+    private PosixSignalRegistration? linuxTerminationRegistration;
     private ColonizationCommodityOverlayCoordinator?
         colonizationCommodityOverlayCoordinator;
     private SphericalSearchOverlayCoordinator? sphericalSearchOverlayCoordinator;
@@ -367,6 +369,7 @@ public sealed partial class App : Application
             capabilities,
             viewModel,
             desktop);
+        linuxTerminationRegistration = RegisterLinuxTermination(desktop);
         desktop.Exit += async (_, _) =>
             await HandleDesktopExitAsync(viewModel, applicationLog);
         ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
@@ -385,6 +388,11 @@ public sealed partial class App : Application
                 StagingService = new ReleasePackageStagingService(),
                 InstallationPreparer = new ReleaseInstallationPreparer(),
                 HandoffService = new ApplicationUpdateHandoffService(),
+                InstanceManager = new ApplicationInstanceManager(),
+                ConfirmMultipleInstances = otherCount =>
+                    ConfirmMultipleApplicationInstancesAsync(
+                        desktop,
+                        otherCount),
                 DataDirectory = appDataPaths.DataDirectory,
                 InstallationDirectory = AppContext.BaseDirectory,
                 StartupArguments = Program.StartupArguments,
@@ -395,6 +403,42 @@ public sealed partial class App : Application
                         ? null
                         : "This AppImage is mounted read-only and cannot replace itself; open the selected release and install its AppImage manually.",
                 IsAppImage = !string.IsNullOrWhiteSpace(appImagePath),
+            });
+    }
+
+    private static async Task<bool> ConfirmMultipleApplicationInstancesAsync(
+        IClassicDesktopStyleApplicationLifetime desktop,
+        int otherInstanceCount)
+    {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            throw new InvalidOperationException(
+                "The update confirmation must be displayed on the UI thread.");
+        }
+
+        if (desktop.MainWindow is not Window owner)
+        {
+            return false;
+        }
+
+        var dialog = new MultipleApplicationInstancesDialog(otherInstanceCount);
+        return await dialog.ShowDialog<bool>(owner);
+    }
+
+    private static PosixSignalRegistration? RegisterLinuxTermination(
+        IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return null;
+        }
+
+        return PosixSignalRegistration.Create(
+            PosixSignal.SIGTERM,
+            context =>
+            {
+                context.Cancel = true;
+                Dispatcher.UIThread.Post(() => desktop.Shutdown());
             });
     }
 
@@ -568,6 +612,8 @@ public sealed partial class App : Application
         MainWindowViewModel viewModel,
         ApplicationLogService applicationLog)
     {
+        linuxTerminationRegistration?.Dispose();
+        linuxTerminationRegistration = null;
         viewModel.SetJournalCommandPlatformServices(null, null, null);
         viewModel.ProfileImportCompleted -=
             RestartAfterProfileImportAsync;

@@ -15,7 +15,8 @@ public interface ICrossPlatformReleaseClient
 public sealed record CrossPlatformRelease(
     ReleaseVersion Version,
     Uri ReleaseUri,
-    CrossPlatformReleasePackage Package);
+    CrossPlatformReleasePackage Package,
+    string ReleaseNotes = "");
 
 public sealed record CrossPlatformReleasePackage(
     string RuntimeIdentifier,
@@ -148,7 +149,8 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         return new CrossPlatformRelease(
             candidate.Version,
             candidate.ReleaseUri,
-            package);
+            package,
+            candidate.ReleaseNotes);
     }
 
     public static string ResolveCurrentRuntimeIdentifier()
@@ -242,6 +244,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         }
 
         var releaseUri = ReadRequiredHttpsUri(element, "html_url");
+        var releaseNotes = ReadOptionalString(element, "body");
         if (!element.TryGetProperty("assets", out var assetsElement)
             || assetsElement.ValueKind != JsonValueKind.Array)
         {
@@ -279,7 +282,11 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
                 $"Release {version} has duplicate release index assets.");
         }
 
-        return new ReleaseCandidate(version, releaseUri, assets);
+        return new ReleaseCandidate(
+            version,
+            releaseUri,
+            assets,
+            GitHubReleaseNotes.ExtractChanges(releaseNotes));
     }
 
     private static CrossPlatformReleasePackage ParseReleaseIndex(
@@ -527,6 +534,21 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         return property.GetString()!;
     }
 
+    private static string ReadOptionalString(
+        JsonElement element,
+        string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var property)
+            || property.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+        {
+            return string.Empty;
+        }
+
+        return property.ValueKind == JsonValueKind.String
+            ? property.GetString() ?? string.Empty
+            : string.Empty;
+    }
+
     private static Uri ReadRequiredHttpsUri(
         JsonElement element,
         string propertyName)
@@ -568,7 +590,8 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
     private sealed record ReleaseCandidate(
         ReleaseVersion Version,
         Uri ReleaseUri,
-        IReadOnlyList<ReleaseAsset> Assets);
+        IReadOnlyList<ReleaseAsset> Assets,
+        string ReleaseNotes);
 
     private sealed record ReleaseAsset(
         string Name,

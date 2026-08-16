@@ -14,42 +14,82 @@ public sealed partial class DiagnosticsView : UserControl
     private DiagnosticsLogViewModel? connectedViewModel;
     private JournalInspectorViewModel? connectedInspector;
     private ReleaseUpdateViewModel? connectedReleaseUpdates;
+    private bool applicationUpdatesAlignmentPending;
+    private int applicationUpdatesAlignmentAttempts;
 
     public DiagnosticsView()
     {
         InitializeComponent();
         AttachedToVisualTree += (_, _) => ConnectPlatformServices();
-        DetachedFromVisualTree += (_, _) => DisconnectPlatformServices();
+        DetachedFromVisualTree += (_, _) =>
+        {
+            CancelApplicationUpdatesAlignment();
+            DisconnectPlatformServices();
+        };
         DataContextChanged += (_, _) => ConnectPlatformServices();
     }
 
     internal void ScrollToApplicationUpdates()
     {
+        applicationUpdatesAlignmentPending = true;
+        applicationUpdatesAlignmentAttempts = 0;
+        LayoutUpdated -= OnApplicationUpdatesLayoutUpdated;
+        LayoutUpdated += OnApplicationUpdatesLayoutUpdated;
         Dispatcher.UIThread.Post(
-            () =>
-            {
-                var origin = ApplicationUpdatesSection.TranslatePoint(
-                    default,
-                    DiagnosticsPageScroller);
-                if (origin is null)
-                {
-                    ApplicationUpdatesSection.BringIntoView();
-                    return;
-                }
-
-                var maximumOffset = Math.Max(
-                    0,
-                    DiagnosticsPageScroller.Extent.Height
-                        - DiagnosticsPageScroller.Viewport.Height);
-                var targetOffset = Math.Clamp(
-                    DiagnosticsPageScroller.Offset.Y + origin.Value.Y,
-                    0,
-                    maximumOffset);
-                DiagnosticsPageScroller.Offset = new Vector(
-                    DiagnosticsPageScroller.Offset.X,
-                    targetOffset);
-            },
+            TryAlignApplicationUpdates,
             DispatcherPriority.Loaded);
+    }
+
+    private void OnApplicationUpdatesLayoutUpdated(object? sender, EventArgs eventArgs)
+    {
+        TryAlignApplicationUpdates();
+    }
+
+    private void TryAlignApplicationUpdates()
+    {
+        if (!applicationUpdatesAlignmentPending
+            || !IsVisible
+            || DiagnosticsPageScroller.Viewport.Height <= 0)
+        {
+            return;
+        }
+
+        var origin = ApplicationUpdatesAnchor.TranslatePoint(
+            default,
+            DiagnosticsPageScroller);
+        if (origin is null)
+        {
+            return;
+        }
+
+        if (Math.Abs(origin.Value.Y) <= 0.5
+            || applicationUpdatesAlignmentAttempts >= 3)
+        {
+            CancelApplicationUpdatesAlignment();
+            return;
+        }
+
+        applicationUpdatesAlignmentAttempts++;
+        var maximumOffset = Math.Max(
+            0,
+            DiagnosticsPageScroller.Extent.Height
+                - DiagnosticsPageScroller.Viewport.Height);
+        var targetOffset = Math.Clamp(
+            DiagnosticsPageScroller.Offset.Y + origin.Value.Y,
+            0,
+            maximumOffset);
+        DiagnosticsPageScroller.Offset = new Vector(
+            DiagnosticsPageScroller.Offset.X,
+            targetOffset);
+        Dispatcher.UIThread.Post(
+            TryAlignApplicationUpdates,
+            DispatcherPriority.Background);
+    }
+
+    private void CancelApplicationUpdatesAlignment()
+    {
+        applicationUpdatesAlignmentPending = false;
+        LayoutUpdated -= OnApplicationUpdatesLayoutUpdated;
     }
 
     private void ConnectPlatformServices()
@@ -101,6 +141,23 @@ public sealed partial class DiagnosticsView : UserControl
             ?? throw new InvalidOperationException(
                 "The desktop launcher is not available.");
         return launcher.LaunchUriAsync(uri);
+    }
+
+    private async void ReleaseNotes_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is not MainWindowViewModel viewModel
+            || !viewModel.ReleaseUpdates.HasReleaseNotes
+            || TopLevel.GetTopLevel(this) is not Window owner)
+        {
+            return;
+        }
+
+        var dialog = new ReleaseNotesDialog(
+            $"SrvSurvey-XP {viewModel.ReleaseUpdates.LatestVersion}",
+            viewModel.ReleaseUpdates.ReleaseNotes);
+        await dialog.ShowDialog(owner);
     }
 
     private async void ChooseVisitedStarsCache_Click(

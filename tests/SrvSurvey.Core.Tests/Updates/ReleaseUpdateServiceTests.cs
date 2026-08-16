@@ -20,6 +20,7 @@ public sealed class ReleaseUpdateServiceTests
         Assert.True(result.IsUpdateAvailable);
         Assert.Equal(ReleaseVersion.Parse("2.0.95.23"), result.LatestVersion);
         Assert.Equal(release.Package, result.Package);
+        Assert.Equal(release.ReleaseNotes, result.ReleaseNotes);
         Assert.Equal(
             "https://example.test/releases/2.0.95.23",
             result.ReleaseUri.AbsoluteUri);
@@ -71,7 +72,8 @@ public sealed class ReleaseUpdateServiceTests
                 "zip",
                 1_024,
                 new string('a', 64),
-                new Uri("https://example.test/package.zip")));
+                new Uri("https://example.test/package.zip")),
+            "## What's changed\n\n- A useful change.");
     }
 
     private sealed class StubReleaseClient(CrossPlatformRelease? release)

@@ -20,7 +20,8 @@ public sealed record ReleaseUpdateResult(
     bool IsUpdateAvailable,
     Uri ReleaseUri,
     CrossPlatformReleasePackage? Package,
-    ReleaseChannel Channel);
+    ReleaseChannel Channel,
+    string ReleaseNotes = "");
 
 public sealed class ReleaseUpdateService : IReleaseUpdateService
 {
@@ -72,6 +73,7 @@ public sealed class ReleaseUpdateService : IReleaseUpdateService
             isUpdateAvailable,
             releaseUri,
             isUpdateAvailable ? release!.Package : null,
-            channel);
+            channel,
+            isUpdateAvailable ? release!.ReleaseNotes : string.Empty);
     }
 }

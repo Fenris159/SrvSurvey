@@ -1,0 +1,48 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SrvSurvey.Desktop.MultipleApplicationInstancesDialog"
+        Width="620"
+        SizeToContent="Height"
+        MinWidth="520"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Title="Multiple SrvSurvey instances">
+  <Grid RowDefinitions="Auto,Auto" Margin="24">
+    <StackPanel Spacing="16">
+      <StackPanel Spacing="5">
+        <TextBlock Classes="eyebrow" Text="APPLICATION UPDATE" />
+        <TextBlock Classes="page-title"
+                   FontSize="24"
+                   Text="More than one SrvSurvey instance is running"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+
+      <Border Classes="card" Padding="16">
+        <StackPanel Spacing="10">
+          <TextBlock x:Name="InstanceCountText"
+                     FontWeight="SemiBold"
+                     TextWrapping="Wrap" />
+          <TextBlock Text="Are you sure you want to proceed? Doing so will close all instances."
+                     TextWrapping="Wrap" />
+          <TextBlock Classes="muted"
+                     Text="The other instances will close before downloading begins. This instance will remain open until the verified update helper is ready, then close normally to complete the update."
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+
+    <StackPanel Grid.Row="1"
+                Margin="0,20,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="10">
+      <Button Classes="secondary"
+              Click="Cancel_Click"
+              Content="Cancel" />
+      <Button Classes="primary"
+              Click="Continue_Click"
+              Content="Close all and continue" />
+    </StackPanel>
+  </Grid>
+</Window>

@@ -18,6 +18,10 @@ public sealed class ReleaseInstallerConfiguration
 
     public required IApplicationUpdateHandoffService HandoffService { get; init; }
 
+    public required IApplicationInstanceManager InstanceManager { get; init; }
+
+    public required Func<int, Task<bool>> ConfirmMultipleInstances { get; init; }
+
     public required string DataDirectory { get; init; }
 
     public required string InstallationDirectory { get; init; }
@@ -47,6 +51,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
     private Uri? releaseUri;
     private CrossPlatformReleasePackage? releasePackage;
     private ReleaseVersion? releaseVersion;
+    private string releaseNotes = string.Empty;
     private ReleaseVersion? dismissedReleaseVersion;
     private string latestVersion = "Not checked";
     private string statusMessage = "Update status has not been checked.";
@@ -198,6 +203,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
                 OnPropertyChanged(nameof(ShowInstallUnavailable));
                 OnPropertyChanged(nameof(ShowGenericInstallUnavailable));
                 OnPropertyChanged(nameof(ShowAppImageManualInstall));
+                OnPropertyChanged(nameof(HasReleaseNotes));
                 RaiseNotificationPropertiesChanged();
                 openReleaseCommand.RaiseCanExecuteChanged();
                 installCommand.RaiseCanExecuteChanged();
@@ -272,6 +278,11 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
 
     public bool IsCurrent => !IsUpdateAvailable;
 
+    public string ReleaseNotes => releaseNotes;
+
+    public bool HasReleaseNotes => IsUpdateAvailable
+        && !string.IsNullOrWhiteSpace(ReleaseNotes);
+
     public bool ShouldShowUpdateNotification => IsUpdateAvailable
         && releaseVersion is { } available
         && dismissedReleaseVersion != available;
@@ -311,6 +322,8 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(configuration.StagingService);
         ArgumentNullException.ThrowIfNull(configuration.InstallationPreparer);
         ArgumentNullException.ThrowIfNull(configuration.HandoffService);
+        ArgumentNullException.ThrowIfNull(configuration.InstanceManager);
+        ArgumentNullException.ThrowIfNull(configuration.ConfirmMultipleInstances);
         ArgumentException.ThrowIfNullOrWhiteSpace(configuration.DataDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(configuration.InstallationDirectory);
         ArgumentNullException.ThrowIfNull(configuration.StartupArguments);
@@ -323,6 +336,8 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             StagingService = configuration.StagingService,
             InstallationPreparer = configuration.InstallationPreparer,
             HandoffService = configuration.HandoffService,
+            InstanceManager = configuration.InstanceManager,
+            ConfirmMultipleInstances = configuration.ConfirmMultipleInstances,
             DataDirectory = Path.GetFullPath(configuration.DataDirectory),
             InstallationDirectory = fullInstallationDirectory,
             StartupArguments = configuration.StartupArguments.ToArray(),
@@ -402,6 +417,11 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             releaseVersion = result.IsUpdateAvailable
                 ? result.LatestVersion
                 : null;
+            releaseNotes = result.IsUpdateAvailable
+                ? result.ReleaseNotes
+                : string.Empty;
+            OnPropertyChanged(nameof(ReleaseNotes));
+            OnPropertyChanged(nameof(HasReleaseNotes));
             InstallConfirmed = false;
             LatestVersion = result.LatestVersion?.ToString() ?? "N/A";
             IsUpdateAvailable = result.IsUpdateAvailable;
@@ -445,9 +465,8 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         IsInstalling = true;
         var targetVersion = releaseVersion.Value;
         InstallProgressPercent = 0;
-        InstallProgressText = "Starting verified package download...";
-        StatusMessage =
-            "Downloading into the update cache. The installation and profile are still untouched.";
+        InstallProgressText = "Checking for other running SrvSurvey instances...";
+        StatusMessage = "Checking whether another SrvSurvey instance must close before the update.";
         var handoffStarted = false;
         var progress = new GuardedProgress<ReleasePackageDownloadProgress>(value =>
         {
@@ -459,6 +478,15 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         });
         try
         {
+            if (!await CloseOtherInstancesBeforeUpdateAsync(installer))
+            {
+                InstallProgressText = "Update canceled before download.";
+                return;
+            }
+
+            InstallProgressText = "Starting verified package download...";
+            StatusMessage =
+                "Downloading into the update cache. The installation and profile are still untouched.";
             var download = await installer.DownloadService.DownloadAsync(
                 targetVersion,
                 releasePackage,
@@ -520,6 +548,36 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
                 IsInstalling = false;
             }
         }
+    }
+
+    private async Task<bool> CloseOtherInstancesBeforeUpdateAsync(
+        InstallerContext currentInstaller)
+    {
+        var otherCount = await currentInstaller.InstanceManager
+            .CountOtherInstancesAsync(CancellationToken.None);
+        if (otherCount == 0)
+        {
+            return true;
+        }
+
+        StatusMessage = otherCount == 1
+            ? "Another SrvSurvey instance is running. Confirm whether all instances should close before updating."
+            : $"{otherCount:N0} other SrvSurvey instances are running. Confirm whether all instances should close before updating.";
+        if (!await currentInstaller.ConfirmMultipleInstances(otherCount))
+        {
+            StatusMessage =
+                "Update canceled. The other SrvSurvey instances remain open and no files were changed.";
+            return false;
+        }
+
+        InstallProgressText = otherCount == 1
+            ? "Closing the other SrvSurvey instance..."
+            : $"Closing {otherCount:N0} other SrvSurvey instances...";
+        StatusMessage =
+            "Closing other SrvSurvey instances before downloading the update.";
+        await currentInstaller.InstanceManager
+            .CloseOtherInstancesAsync(CancellationToken.None);
+        return true;
     }
 
     private async Task OpenReleaseAsync()
@@ -584,6 +642,9 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         releaseUri = null;
         releasePackage = null;
         releaseVersion = null;
+        releaseNotes = string.Empty;
+        OnPropertyChanged(nameof(ReleaseNotes));
+        OnPropertyChanged(nameof(HasReleaseNotes));
         InstallConfirmed = false;
         IsUpdateAvailable = false;
         RaiseNotificationPropertiesChanged();
@@ -652,6 +713,10 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         public required IReleaseInstallationPreparer InstallationPreparer { get; init; }
 
         public required IApplicationUpdateHandoffService HandoffService { get; init; }
+
+        public required IApplicationInstanceManager InstanceManager { get; init; }
+
+        public required Func<int, Task<bool>> ConfirmMultipleInstances { get; init; }
 
         public required string DataDirectory { get; init; }
 
