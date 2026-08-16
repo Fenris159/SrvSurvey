@@ -423,6 +423,7 @@ public sealed class CommanderProfileStore(string profileDirectory)
             EmptySystems = ReadStringArray(boxelSearch, "emptySystems"),
             ProgressByPrefix = ReadBoxelProgress(boxelSearch),
             AutoCopy = GetBoolean(boxelSearch, "autoCopy") ?? false,
+            SortDescending = GetBoolean(boxelSearch, "sortDescending") ?? false,
             Collapsed = GetBoolean(boxelSearch, "collapsed") ?? false,
             SkipAlreadyVisited = GetBoolean(boxelSearch, "skipAlreadyVisited") ?? false,
             SkipKnownToSpansh = GetBoolean(boxelSearch, "skipKnownToSpansh") ?? false,
@@ -560,6 +561,7 @@ public sealed class CommanderProfileStore(string profileDirectory)
 
         node["progress"] = progress;
         node["autoCopy"] = boxelSearch.AutoCopy;
+        node["sortDescending"] = boxelSearch.SortDescending;
         node["collapsed"] = boxelSearch.Collapsed;
         node["skipAlreadyVisited"] = boxelSearch.SkipAlreadyVisited;
         node["skipKnownToSpansh"] = boxelSearch.SkipKnownToSpansh;

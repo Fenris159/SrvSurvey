@@ -28,7 +28,8 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
         LegacyOverlayLayout? overlayLayout = null,
-        SystemNicknameViewModel? systemNicknames = null)
+        SystemNicknameViewModel? systemNicknames = null,
+        GlobalInputSettingsViewModel? inputSettings = null)
     {
         this.sphere = sphere ?? throw new ArgumentNullException(nameof(sphere));
         this.boxel = boxel ?? throw new ArgumentNullException(nameof(boxel));
@@ -43,7 +44,8 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
             boxel,
             route,
             platform.Capabilities,
-            systemNicknames);
+            systemNicknames,
+            inputSettings);
         sphere.PropertyChanged += OnSearchPropertyChanged;
         boxel.PropertyChanged += OnSearchPropertyChanged;
         route.PropertyChanged += OnSearchPropertyChanged;

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -7,6 +8,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, IDisposable
 {
     private readonly SystemNicknameViewModel? systemNicknames;
+    private readonly GlobalInputSettingsViewModel? inputSettings;
     private string platformStatus;
     private string inputMode;
     private string? editorSphereCenter;
@@ -19,12 +21,14 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
         BoxelSearchViewModel boxel,
         RouteWorkspaceViewModel route,
         OverlayPlatformCapabilities capabilities,
-        SystemNicknameViewModel? systemNicknames = null)
+        SystemNicknameViewModel? systemNicknames = null,
+        GlobalInputSettingsViewModel? inputSettings = null)
     {
         Sphere = sphere ?? throw new ArgumentNullException(nameof(sphere));
         Boxel = boxel ?? throw new ArgumentNullException(nameof(boxel));
         Route = route ?? throw new ArgumentNullException(nameof(route));
         this.systemNicknames = systemNicknames;
+        this.inputSettings = inputSettings;
         ArgumentNullException.ThrowIfNull(capabilities);
         platformStatus = capabilities.StatusText;
         inputMode = capabilities.SupportsClickThrough
@@ -36,6 +40,11 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
         if (systemNicknames is not null)
         {
             systemNicknames.NamesChanged += OnNamesChanged;
+        }
+
+        if (inputSettings is not null)
+        {
+            inputSettings.SettingsChanged += OnInputSettingsChanged;
         }
     }
 
@@ -55,6 +64,10 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
 
     public string BoxelNextSystem =>
         editorBoxelNext ?? Resolve(Boxel.NextSystem);
+
+    public string BoxelClipboardStatus => Boxel.RequiresManualCopy
+        ? CreateManualCopyStatus()
+        : Boxel.NextSystemClipboardStatus;
 
     public string RouteNextHopName =>
         editorRouteNext ?? Resolve(Route.NextHopName);
@@ -106,6 +119,11 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
         {
             systemNicknames.NamesChanged -= OnNamesChanged;
         }
+
+        if (inputSettings is not null)
+        {
+            inputSettings.SettingsChanged -= OnInputSettingsChanged;
+        }
     }
 
     private string Resolve(string? value)
@@ -130,10 +148,18 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
                 RaiseNameChanged(nameof(SphereDestinationSystemName));
             }
         }
-        else if (ReferenceEquals(sender, Boxel)
-            && eventArgs.PropertyName == nameof(BoxelSearchViewModel.NextSystem))
+        else if (ReferenceEquals(sender, Boxel))
         {
-            RaiseNameChanged(nameof(BoxelNextSystem));
+            if (eventArgs.PropertyName == nameof(BoxelSearchViewModel.NextSystem))
+            {
+                RaiseNameChanged(nameof(BoxelNextSystem));
+            }
+
+            if (eventArgs.PropertyName
+                == nameof(BoxelSearchViewModel.NextSystemClipboardStatus))
+            {
+                RaiseNameChanged(nameof(BoxelClipboardStatus));
+            }
         }
         else if (ReferenceEquals(sender, Route)
             && eventArgs.PropertyName == nameof(RouteWorkspaceViewModel.NextHopName))
@@ -148,6 +174,23 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
         RaiseNameChanged(nameof(SphereDestinationSystemName));
         RaiseNameChanged(nameof(BoxelNextSystem));
         RaiseNameChanged(nameof(RouteNextHopName));
+    }
+
+    private void OnInputSettingsChanged(
+        object? sender,
+        GlobalInputSettingsChangedEventArgs eventArgs)
+    {
+        RaiseNameChanged(nameof(BoxelClipboardStatus));
+    }
+
+    private string CreateManualCopyStatus()
+    {
+        var shortcut = inputSettings?.CurrentSettings.Bindings.GetValueOrDefault(
+                GlobalInputAction.CopyNextBoxel)
+            ?? GlobalInputActionCatalog.Get(GlobalInputAction.CopyNextBoxel).DefaultChord;
+        return string.IsNullOrWhiteSpace(shortcut)
+            ? "MANUAL COPY - NOT SET"
+            : $"MANUAL COPY - {shortcut}";
     }
 
     private void RaiseNameChanged(string propertyName)

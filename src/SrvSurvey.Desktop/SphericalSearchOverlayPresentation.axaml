@@ -106,7 +106,7 @@
                      Foreground="{DynamicResource RavenSuccessBrush}"
                      FontSize="9"
                      FontWeight="Bold"
-                     Text="{Binding Boxel.NextSystemClipboardStatus}" />
+                     Text="{Binding BoxelClipboardStatus}" />
         </StackPanel>
       </Border>
 

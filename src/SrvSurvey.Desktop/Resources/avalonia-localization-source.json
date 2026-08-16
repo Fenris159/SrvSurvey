@@ -2201,14 +2201,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
-    "Text": "Advanced to the next boxel, but its Spansh refresh failed: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "Advanced tools can measure new layouts, edit points and groups, and package a survey for review.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11786,7 +11778,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"
   },
   {
     "Text": "FROM",
@@ -11794,7 +11786,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"
   },
   {
     "Text": "FRONTIER COMMANDER CONSOLE",
@@ -17850,6 +17842,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "MANUAL COPY - NOT SET",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphericalSearchOverlayViewModel.cs"
+  },
+  {
+    "Text": "MANUAL COPY - {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphericalSearchOverlayViewModel.cs"
+  },
+  {
     "Text": "MAP CONTENT",
     "IsFormat": false,
     "SourceKinds": [
@@ -19147,7 +19155,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"
   },
   {
     "Text": "NEXT AT THIS LEVEL \u2192",
@@ -27638,7 +27646,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"
   },
   {
     "Text": "SRV",
@@ -28650,7 +28658,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"
   },
   {
     "Text": "Search guides, settings, symbols, or workflows",
@@ -30457,6 +30465,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "Showing systems {0}\u2013{1} of {2} (descending).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Showing systems {0}\u2013{1} of {2}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -30743,6 +30759,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyPredictionsViewModel.cs"
+  },
+  {
+    "Text": "Sort (descending) for working results backwards.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Source folder watch stopped: {0}",
@@ -32730,7 +32754,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"
   },
   {
     "Text": "TO CENTER",
@@ -38200,7 +38224,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"
   },
   {
     "Text": "VOLCANISM",

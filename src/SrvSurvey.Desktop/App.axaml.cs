@@ -250,7 +250,8 @@ public sealed partial class App : Application
             overlayPresentation.CreatePlatformService(),
             CreateOverlayGameWindowTracker(),
             overlayLayout,
-            viewModel.SystemNicknames);
+            viewModel.SystemNicknames,
+            viewModel.InputSettings);
         guardianOverlayCoordinator = new GuardianOverlayCoordinator(
             viewModel.Guardian,
             overlayPresentation.CreatePlatformService(),

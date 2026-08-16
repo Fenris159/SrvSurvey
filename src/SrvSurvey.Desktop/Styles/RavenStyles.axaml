@@ -95,6 +95,17 @@
   <Style Selector="Button.secondary:pointerover">
     <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
   </Style>
+  <Style Selector="Button.danger">
+    <Setter Property="Background" Value="{DynamicResource RavenDangerBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenDangerBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.danger:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenDangerBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenDangerBrush}" />
+    <Setter Property="Opacity" Value="0.85" />
+  </Style>
   <Style Selector="Button.commander-card">
     <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />

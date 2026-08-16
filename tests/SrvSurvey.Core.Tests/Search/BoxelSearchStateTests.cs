@@ -270,6 +270,33 @@ public sealed class BoxelSearchStateTests
     }
 
     [Fact]
+    public void DescendingSearchUsesHighestIncompleteSuffixAndPersistsDirection()
+    {
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var state = new BoxelSearchState();
+        Assert.True(state.TryActivate(
+            new BoxelSearchActivationRequest
+            {
+                TopBoxel = top,
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SortDescending = true,
+            },
+            out _));
+        state.SetExpectedSystemCount(5);
+
+        Assert.Equal("Praea Euq IL-P c5-4", state.NextSystem);
+        Assert.True(state.TryMarkNextSystemEmpty(out var marked, out _));
+        Assert.Equal("Praea Euq IL-P c5-4", marked);
+        Assert.Equal("Praea Euq IL-P c5-3", state.NextSystem);
+
+        var restored = new BoxelSearchState(state.CreateSnapshot());
+
+        Assert.True(restored.SortDescending);
+        Assert.Equal("Praea Euq IL-P c5-3", restored.NextSystem);
+    }
+
+    [Fact]
     public void FssModeWaitsForAllBodiesEvent()
     {
         var state = CreateActiveState(BoxelCompletionMode.FssAllBodies);

@@ -21,6 +21,7 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
             Current = top,
             CurrentCount = 3,
             LowMassCode = 'c',
+            SortDescending = true,
             CompletedSystems = ["Praea Euq IL-P c5-0"],
             EmptySystems = ["Praea Euq IL-P c5-2"],
             ProgressByPrefix = new Dictionary<string, int>
@@ -78,6 +79,7 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
         Assert.Equal(created.CreatedAt, loaded.CreatedAt);
         Assert.Equal(["Praea Euq IL-P c5-2"], loaded.Search.EmptySystems);
         Assert.Equal(created.FileName, loaded.Search.SavedSearchFileName);
+        Assert.True(loaded.Search.SortDescending);
 
         var trashPath = await store.DeleteAsync("F123", created.FileName);
 

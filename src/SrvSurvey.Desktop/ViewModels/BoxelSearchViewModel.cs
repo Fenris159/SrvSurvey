@@ -60,6 +60,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private bool skipKnownToSpansh;
     private bool completeOnFssAllBodies;
     private bool autoCopy;
+    private bool sortDescending;
     private bool suppressOptionPersistence;
     private bool isBusy;
     private bool isAuditing;
@@ -315,6 +316,23 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool SortDescending
+    {
+        get => sortDescending;
+        set
+        {
+            if (!SetField(ref sortDescending, value) || suppressOptionPersistence)
+            {
+                return;
+            }
+
+            state.SetSortDescending(value);
+            showNextSystemPageOnUpdate = true;
+            UpdateDisplay();
+            _ = SaveAsync();
+        }
+    }
+
     public bool IsBusy
     {
         get => isBusy;
@@ -430,6 +448,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 true => "AUTO-COPY READY",
                 false => "MANUAL COPY"
             };
+
+    public bool RequiresManualCopy => !state.AutoCopy
+        && !string.Equals(
+            lastCopiedSystemName,
+            state.NextSystem,
+            StringComparison.Ordinal);
 
     public bool IsCurrentEmpty => state.CurrentIsEmpty;
 
@@ -763,6 +787,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         auditCancellation?.Cancel();
         frontierId = null;
+        hasUnappliedLastSystemAvailableEdit = false;
         state.Reset();
         navigationOptions.Clear();
         StatusMessage = message;
@@ -911,7 +936,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                     CompletionMode = CompleteOnFssAllBodies
                         ? BoxelCompletionMode.FssAllBodies
                         : BoxelCompletionMode.EnterSystem,
-                    AutoCopy = AutoCopy
+                    AutoCopy = AutoCopy,
+                    SortDescending = SortDescending
                 },
                 out var error))
         {
@@ -919,6 +945,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
+        hasUnappliedLastSystemAvailableEdit = false;
         try
         {
             state.ApplyEmptyBoxels(
@@ -938,6 +965,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public async Task DisableAsync()
     {
         state.Disable();
+        hasUnappliedLastSystemAvailableEdit = false;
         UpdateDisplay();
         await SaveAsync("Boxel search disabled; its progress was retained.");
     }
@@ -1083,6 +1111,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private async Task ApplySnapshotAsync(BoxelSearchSnapshot snapshot)
     {
+        hasUnappliedLastSystemAvailableEdit = false;
         state.Reset(snapshot);
         navigationOptions.Clear();
         ConfirmLargeAudit = false;
@@ -1106,6 +1135,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             CompleteOnFssAllBodies =
                 snapshot.CompletionMode == BoxelCompletionMode.FssAllBodies;
             AutoCopy = snapshot.AutoCopy;
+            SortDescending = snapshot.SortDescending;
             state.SetAutoCopy(AutoCopy);
         }
         finally
@@ -1456,6 +1486,15 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         await SaveAsync($"Last system available updated to {parsedLastSystemAvailable:N0}.");
     }
 
+    public void RestoreLastSystemAvailable()
+    {
+        hasUnappliedLastSystemAvailableEdit = false;
+        SetField(
+            ref lastSystemAvailable,
+            FormatLastSystemAvailable(),
+            nameof(LastSystemAvailable));
+    }
+
     public async Task MarkNextEmptyAsync()
     {
         if (!state.IsActive)
@@ -1650,6 +1689,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         return !IsBusy
             && frontierId is not null
+            && !state.IsActive
             && !string.IsNullOrWhiteSpace(TopBoxelText);
     }
 
@@ -1766,8 +1806,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         {
             SetField(
                 ref lastSystemAvailable,
-                Math.Max(0, state.CurrentCount - 1)
-                    .ToString(CultureInfo.CurrentCulture),
+                FormatLastSystemAvailable(),
                 nameof(LastSystemAvailable));
         }
         SystemProgress = $"{state.CompletedSystemCount:N0} of "
@@ -1909,13 +1948,24 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         showNextSystemPageOnUpdate = false;
         var pageCount = Math.Max(1, (rowCount + SystemsPerPage - 1) / SystemsPerPage);
         systemPageIndex = Math.Clamp(systemPageIndex, 0, pageCount - 1);
-        var firstNumber = systemPageIndex * SystemsPerPage;
-        var rowsOnPage = Math.Min(SystemsPerPage, rowCount - firstNumber);
-        var lastNumber = firstNumber + rowsOnPage - 1;
-        var rowNumbers = Enumerable.Range(firstNumber, rowsOnPage);
-        SystemListNote = string.Create(
-            CultureInfo.CurrentCulture,
-            $"Showing systems {firstNumber:N0}\u2013{lastNumber:N0} of {rowCount:N0}.");
+        var pageOffset = systemPageIndex * SystemsPerPage;
+        var rowsOnPage = Math.Min(SystemsPerPage, rowCount - pageOffset);
+        var firstNumber = SortDescending
+            ? rowCount - 1 - pageOffset
+            : pageOffset;
+        var lastNumber = SortDescending
+            ? firstNumber - rowsOnPage + 1
+            : firstNumber + rowsOnPage - 1;
+        var rowNumbers = SortDescending
+            ? Enumerable.Range(lastNumber, rowsOnPage).Reverse()
+            : Enumerable.Range(firstNumber, rowsOnPage);
+        SystemListNote = SortDescending
+            ? string.Create(
+                CultureInfo.CurrentCulture,
+                $"Showing systems {firstNumber:N0}\u2013{lastNumber:N0} of {rowCount:N0} (descending).")
+            : string.Create(
+                CultureInfo.CurrentCulture,
+                $"Showing systems {firstNumber:N0}\u2013{lastNumber:N0} of {rowCount:N0}.");
         SystemPageText = string.Create(
             CultureInfo.CurrentCulture,
             $"Page {systemPageIndex + 1:N0} of {pageCount:N0}");
@@ -1982,14 +2032,28 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 StringComparison.Ordinal));
         if (known is not null)
         {
-            return known.Boxel.N2 / SystemsPerPage;
+            return GetSystemPageIndex(known.Boxel.N2);
         }
 
         return BoxelAddress.TryParse(state.NextSystem, out var next)
             && next is not null
             && string.Equals(next.Prefix, state.Current.Prefix, StringComparison.Ordinal)
-                ? next.N2 / SystemsPerPage
+                ? GetSystemPageIndex(next.N2)
                 : 0;
+    }
+
+    private int GetSystemPageIndex(int systemNumber)
+    {
+        var offset = SortDescending
+            ? Math.Max(0, GetSystemRowCount() - 1 - systemNumber)
+            : systemNumber;
+        return offset / SystemsPerPage;
+    }
+
+    private string FormatLastSystemAvailable()
+    {
+        return Math.Max(0, state.CurrentCount - 1)
+            .ToString(CultureInfo.CurrentCulture);
     }
 
     private Task ChangeSystemPageAsync(int offset)

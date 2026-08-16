@@ -1,6 +1,7 @@
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -45,6 +46,61 @@ public sealed class SphericalSearchOverlayViewModelTests : IDisposable
 
         Assert.Equal("BLOCKED", viewModel.InputMode);
         Assert.Equal("Click-through was rejected.", viewModel.PlatformStatus);
+    }
+
+    [Fact]
+    public async Task ManualBoxelCopyGuidanceTracksTheConfiguredShortcut()
+    {
+        var capabilities = OverlayPlatformCapabilities.ForHost(
+            OverlayHostKind.Windows);
+        var inputSettings = new GlobalInputSettingsViewModel(
+            new GlobalInputSettingsStore(Path.Combine(
+                temporaryDirectory,
+                "ui-settings.json")),
+            capabilities);
+        var copyBinding = inputSettings.Bindings.Single(binding =>
+            binding.Definition.Action == GlobalInputAction.CopyNextBoxel);
+        copyBinding.Chord = "ALT X";
+        var sphere = new SphereLimitViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new EmptyStarResolver());
+        var boxel = new BoxelSearchViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new LegacySystemDataReader(temporaryDirectory),
+            new EmptyBoxelStore(temporaryDirectory),
+            new EmptyBoxelResolver());
+        await boxel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        boxel.TopBoxelText = "Praea Euq IL-P c5-0";
+        boxel.LowMassCode = "c";
+        await boxel.ActivateAsync();
+        var route = new RouteWorkspaceViewModel(
+            new FollowRouteService(new FollowRouteStore(temporaryDirectory)),
+            new RouteNameImporter(new EmptyStarResolver()),
+            new EmptyRouteClient());
+        using var viewModel = new SphericalSearchOverlayViewModel(
+            sphere,
+            boxel,
+            route,
+            capabilities,
+            inputSettings: inputSettings);
+        var notifications = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            notifications.Add(eventArgs.PropertyName);
+
+        Assert.Equal("MANUAL COPY - ALT X", viewModel.BoxelClipboardStatus);
+
+        copyBinding.Chord = "CTRL SHIFT X";
+
+        Assert.Equal("MANUAL COPY - CTRL SHIFT X", viewModel.BoxelClipboardStatus);
+        Assert.Contains(nameof(viewModel.BoxelClipboardStatus), notifications);
+
+        copyBinding.Chord = string.Empty;
+
+        Assert.Equal("MANUAL COPY - NOT SET", viewModel.BoxelClipboardStatus);
     }
 
     public void Dispose()
