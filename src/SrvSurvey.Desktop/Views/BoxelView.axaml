@@ -617,21 +617,49 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          <Grid ColumnDefinitions="Auto,Auto,Auto"
+          <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto"
                 ColumnSpacing="12"
                 HorizontalAlignment="Center"
                 IsVisible="{Binding BoxelSearch.HasSystems}">
             <Button Classes="secondary"
+                    Command="{Binding BoxelSearch.NextJumpPageCommand}"
+                    Content="Next Jump Page" />
+            <Button Grid.Column="1"
+                    Classes="secondary"
                     Command="{Binding BoxelSearch.PreviousSystemPageCommand}"
                     Content="Previous page" />
-            <TextBlock Grid.Column="1"
+            <TextBlock Grid.Column="2"
                        Classes="muted"
                        VerticalAlignment="Center"
                        Text="{Binding BoxelSearch.SystemPageText}" />
-            <Button Grid.Column="2"
+            <Button Grid.Column="3"
                     Classes="secondary"
                     Command="{Binding BoxelSearch.NextSystemPageCommand}"
                     Content="Next page" />
+            <Button x:Name="SystemPagePickerButton"
+                    Grid.Column="4"
+                    Classes="secondary"
+                    MinWidth="{Binding BoxelSearch.SystemPagePickerWidth}"
+                    Content="Select page">
+              <Button.Flyout>
+                <Flyout Placement="TopEdgeAlignedRight">
+                  <ListBox Classes="system-pages"
+                           MinWidth="{Binding BoxelSearch.SystemPagePickerWidth}"
+                           MaxHeight="362"
+                           ItemsSource="{Binding BoxelSearch.SystemPageNumbers}"
+                           SelectedIndex="{Binding BoxelSearch.SelectedSystemPageIndex, Mode=TwoWay}"
+                           SelectionChanged="SystemPageList_SelectionChanged"
+                           ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock HorizontalAlignment="Right"
+                                   Text="{Binding}" />
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </Flyout>
+              </Button.Flyout>
+            </Button>
           </Grid>
           <TextBlock Classes="muted"
                      HorizontalAlignment="Center"

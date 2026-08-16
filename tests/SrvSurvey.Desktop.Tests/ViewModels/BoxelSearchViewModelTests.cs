@@ -216,7 +216,16 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal("Page 1 of 35", viewModel.SystemPageText);
         Assert.Equal(1, viewModel.SystemPageNumber);
         Assert.Equal(35, viewModel.SystemPageCount);
+        Assert.Equal(Enumerable.Range(1, 35), viewModel.SystemPageNumbers);
+        Assert.Equal(120, viewModel.SystemPagePickerWidth);
         Assert.False(viewModel.PreviousSystemPageCommand.CanExecute(null));
+
+        viewModel.SelectedSystemPageIndex = 17;
+
+        Assert.Equal("Page 18 of 35", viewModel.SystemPageText);
+        Assert.EndsWith("c5-170", viewModel.Systems[0].Name, StringComparison.Ordinal);
+        Assert.EndsWith("c5-179", viewModel.Systems[^1].Name, StringComparison.Ordinal);
+        viewModel.SelectedSystemPageIndex = 0;
 
         for (var page = 1; page < viewModel.SystemPageCount; page++)
         {
@@ -238,6 +247,29 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal("Last system available updated to 348.", viewModel.StatusMessage);
         var saved = await profileStore.LoadAsync("F123", true);
         Assert.Equal(349, saved.Data?.BoxelSearch.CurrentCount);
+    }
+
+    [Fact]
+    public async Task PagePickerWidthAccommodatesTheLastPageNumber()
+    {
+        var viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([]));
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        viewModel.LowMassCode = "c";
+        await viewModel.ActivateAsync();
+        viewModel.LastSystemAvailable = "99999";
+
+        await viewModel.ApplyLastSystemAvailableAsync();
+
+        Assert.Equal(10_000, viewModel.SystemPageCount);
+        Assert.Equal(10_000, viewModel.SystemPageNumbers[^1]);
+        Assert.Equal(124, viewModel.SystemPagePickerWidth);
     }
 
     [Fact]
@@ -276,6 +308,16 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.EndsWith("c5-3", viewModel.Systems[^1].Name, StringComparison.Ordinal);
         Assert.Equal("Showing systems 12–3 of 13 (descending).", viewModel.SystemListNote);
         Assert.True(viewModel.Systems[0].IsNextIncomplete);
+
+        viewModel.SelectedSystemPageIndex = 1;
+
+        Assert.Equal("Page 2 of 2", viewModel.SystemPageText);
+        Assert.EndsWith("c5-2", viewModel.Systems[0].Name, StringComparison.Ordinal);
+        Assert.True(viewModel.NextJumpPageCommand.CanExecute(null));
+        viewModel.NextJumpPageCommand.Execute(null);
+        Assert.Equal("Page 1 of 2", viewModel.SystemPageText);
+        Assert.EndsWith("c5-12", viewModel.Systems[0].Name, StringComparison.Ordinal);
+        Assert.False(viewModel.NextJumpPageCommand.CanExecute(null));
 
         await viewModel.MarkNextEmptyAsync();
 

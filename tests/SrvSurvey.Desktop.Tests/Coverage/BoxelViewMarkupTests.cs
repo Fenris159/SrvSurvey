@@ -106,11 +106,38 @@ public sealed class BoxelViewMarkupTests
             "{Binding BoxelSearch.PreviousSystemPageCommand}",
             boxelBindings);
         Assert.Contains(
+            "{Binding BoxelSearch.NextJumpPageCommand}",
+            boxelBindings);
+        Assert.Contains(
             "{Binding BoxelSearch.NextSystemPageCommand}",
             boxelBindings);
         Assert.Contains("{Binding BoxelSearch.SystemPageText}", boxelBindings);
         Assert.Contains("Previous page", boxelBindings);
         Assert.Contains("Next page", boxelBindings);
+        Assert.Contains("Next Jump Page", boxelBindings);
+        Assert.Contains("Select page", boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.SystemPageNumbers}",
+            boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.SelectedSystemPageIndex, Mode=TwoWay}",
+            boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.SystemPagePickerWidth}",
+            boxelBindings);
+        var systemPageFlyout = boxel.Descendants().Single(element =>
+            element.Name.LocalName == "Flyout"
+            && element.Descendants().Any(descendant =>
+                descendant.Attribute("Classes")?.Value == "system-pages"));
+        Assert.Equal(
+            "TopEdgeAlignedRight",
+            systemPageFlyout.Attribute("Placement")?.Value);
+        var systemPageList = systemPageFlyout.Descendants().Single(element =>
+            element.Name.LocalName == "ListBox");
+        Assert.Equal("362", systemPageList.Attribute("MaxHeight")?.Value);
+        Assert.Equal(
+            "SystemPageList_SelectionChanged",
+            systemPageList.Attribute("SelectionChanged")?.Value);
         Assert.DoesNotContain("500", boxelBindings);
         Assert.Contains("{StaticResource question_circle_regular}", boxelBindings);
         Assert.Contains("Explain last system available", boxelBindings);

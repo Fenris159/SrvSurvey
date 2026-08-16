@@ -235,6 +235,24 @@
     <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
   </Style>
 
+  <Style Selector="ListBox.system-pages">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="ListBox.system-pages ListBoxItem">
+    <Setter Property="Height" Value="36" />
+    <Setter Property="Padding" Value="12,7" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="ListBox.system-pages ListBoxItem:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  </Style>
+  <Style Selector="ListBox.system-pages ListBoxItem:selected">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+  </Style>
+
   <Style Selector="TextBox.guide-search">
     <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />

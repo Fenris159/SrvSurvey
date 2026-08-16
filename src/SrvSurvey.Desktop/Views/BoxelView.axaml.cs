@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
@@ -49,6 +50,17 @@ public sealed partial class BoxelView : UserControl
             && DataContext is MainWindowViewModel viewModel)
         {
             viewModel.BoxelSearch.RestoreLastSystemAvailable();
+        }
+    }
+
+    private void SystemPageList_SelectionChanged(
+        object? sender,
+        SelectionChangedEventArgs eventArgs)
+    {
+        if (eventArgs.AddedItems.Count > 0
+            && SystemPagePickerButton.Flyout is PopupFlyoutBase flyout)
+        {
+            flyout.Hide();
         }
     }
 

@@ -9765,6 +9765,10 @@
                    "translation":  "Nächstes Elite-Fenster"
                },
                {
+                   "source":  "Next Jump Page",
+                   "translation":  "Nächste Sprungseite"
+               },
+               {
                    "source":  "Next boxel to search: {0}",
                    "translation":  "Nächstes zu durchsuchendes Feld: {0}"
                },
@@ -14455,6 +14459,10 @@
                {
                    "source":  "Select folder containing quest definition files",
                    "translation":  "Wählen Sie einen Ordner mit Questdefinitionsdateien aus"
+               },
+               {
+                   "source":  "Select page",
+                   "translation":  "Seite auswählen"
                },
                {
                    "source":  "Selected boxel",
@@ -31879,6 +31887,10 @@
                    "translation":  "Siguiente ventana Élite"
                },
                {
+                   "source":  "Next Jump Page",
+                   "translation":  "Siguiente página de salto"
+               },
+               {
                    "source":  "Next boxel to search: {0}",
                    "translation":  "Siguiente cuadro para buscar: {0}"
                },
@@ -36569,6 +36581,10 @@
                {
                    "source":  "Select folder containing quest definition files",
                    "translation":  "Seleccione la carpeta que contiene los archivos de definición de misiones."
+               },
+               {
+                   "source":  "Select page",
+                   "translation":  "Seleccionar página"
                },
                {
                    "source":  "Selected boxel",
@@ -53993,6 +54009,10 @@
                    "translation":  "Fenêtre Élite suivante"
                },
                {
+                   "source":  "Next Jump Page",
+                   "translation":  "Page de saut suivante"
+               },
+               {
                    "source":  "Next boxel to search: {0}",
                    "translation":  "Zone suivante dans laquelle rechercher : {0}"
                },
@@ -58683,6 +58703,10 @@
                {
                    "source":  "Select folder containing quest definition files",
                    "translation":  "Sélectionnez le dossier contenant les fichiers de définition de quête"
+               },
+               {
+                   "source":  "Select page",
+                   "translation":  "Sélectionner une page"
                },
                {
                    "source":  "Selected boxel",
@@ -76107,6 +76131,10 @@
                       "translation":  "Próxima janela Elite"
                   },
                   {
+                      "source":  "Next Jump Page",
+                      "translation":  "Próxima página de salto"
+                  },
+                  {
                       "source":  "Next boxel to search: {0}",
                       "translation":  "Próximo boxel a ser pesquisado: {0}"
                   },
@@ -80797,6 +80825,10 @@
                   {
                       "source":  "Select folder containing quest definition files",
                       "translation":  "Selecione a pasta que contém os arquivos de definição de missão"
+                  },
+                  {
+                      "source":  "Select page",
+                      "translation":  "Selecione a página"
                   },
                   {
                       "source":  "Selected boxel",
@@ -98221,6 +98253,10 @@
                    "translation":  "Следующее Элитное окно"
                },
                {
+                   "source":  "Next Jump Page",
+                   "translation":  "Следующая страница перехода"
+               },
+               {
                    "source":  "Next boxel to search: {0}",
                    "translation":  "Следующий бокс для поиска: {0}"
                },
@@ -102911,6 +102947,10 @@
                {
                    "source":  "Select folder containing quest definition files",
                    "translation":  "Выберите папку, содержащую файлы определений квестов."
+               },
+               {
+                   "source":  "Select page",
+                   "translation":  "Выбрать страницу"
                },
                {
                    "source":  "Selected boxel",
@@ -120335,6 +120375,10 @@
                         "translation":  "下一个精英窗口"
                     },
                     {
+                        "source":  "Next Jump Page",
+                        "translation":  "下一个跳转页"
+                    },
+                    {
                         "source":  "Next boxel to search: {0}",
                         "translation":  "要搜索的下一个框：{0}"
                     },
@@ -125025,6 +125069,10 @@
                     {
                         "source":  "Select folder containing quest definition files",
                         "translation":  "选择包含任务定义文件的文件夹"
+                    },
+                    {
+                        "source":  "Select page",
+                        "translation":  "选择页面"
                     },
                     {
                         "source":  "Selected boxel",
@@ -142449,6 +142497,10 @@
                    "translation":  "* NEXT ELITE WINDOW \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Next Jump Page",
+                   "translation":  "* NEXT JUMP PAGE \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Next boxel to search: {0}",
                    "translation":  "* NEXT BOXEL TO SEARCH: {0} \u003e\u003e\u003e!"
                },
@@ -147139,6 +147191,10 @@
                {
                    "source":  "Select folder containing quest definition files",
                    "translation":  "* SELECT FOLDER CONTAINING QUEST DEFINITION FILES \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Select page",
+                   "translation":  "* SELECT PAGE \u003e\u003e\u003e!"
                },
                {
                    "source":  "Selected boxel",

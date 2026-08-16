@@ -16,6 +16,9 @@ and clarifies manual Galaxy Map copying. The changes below are the delta from
 - Restores a cleared **Last system available** field to its stored value when
   focus leaves the field. Stopping, loading, or starting another search also
   clears stale edits so later estimates can populate normally.
+- Adds direct current-boxel table navigation: **Next Jump Page** returns to the
+  page containing the next incomplete target, while **Select page** opens an
+  upward, scrolling page list capped at ten visible entries.
 - Shows the live **Copy next boxel system** shortcut in Search guidance when
   auto-copy is off, for example **MANUAL COPY - CTRL C**. Changes made under
   Shortcut bindings appear immediately, and an unbound action is identified as
