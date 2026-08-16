@@ -108,6 +108,14 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains(
             "{Binding BoxelSearch.LastSystemAvailableValidationMessage}",
             boxelBindings);
+        var lastSystemAvailableTextBox = boxel.Descendants().Single(element =>
+            element.Name.LocalName == "TextBox"
+            && element.Attributes().Any(attribute =>
+                attribute.Name.LocalName == "Name"
+                && attribute.Value == "LastSystemAvailableTextBox"));
+        Assert.Equal(
+            "LastSystemAvailable_LostFocus",
+            lastSystemAvailableTextBox.Attribute("LostFocus")?.Value);
         Assert.Contains("LastSystemAvailable_LostFocus", boxelBindings);
         Assert.Contains("ApplyLastSystemAvailable_LostFocus", boxelBindings);
         Assert.Contains(

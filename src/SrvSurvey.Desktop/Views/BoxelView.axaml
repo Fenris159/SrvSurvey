@@ -318,7 +318,8 @@
                               Data="{StaticResource question_circle_regular}" />
                   </Button>
                 </StackPanel>
-                <TextBox Classes="last-system-available"
+                <TextBox x:Name="LastSystemAvailableTextBox"
+                         Classes="last-system-available"
                          Classes.invalid="{Binding BoxelSearch.HasLastSystemAvailableError}"
                          Text="{Binding BoxelSearch.LastSystemAvailable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          LostFocus="LastSystemAvailable_LostFocus"

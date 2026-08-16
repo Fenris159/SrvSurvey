@@ -66,7 +66,15 @@ public sealed partial class BoxelView : UserControl
     {
         if (DataContext is MainWindowViewModel viewModel)
         {
-            viewModel.BoxelSearch.RestoreLastSystemAvailable();
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    if (!LastSystemAvailableTextBox.IsFocused)
+                    {
+                        viewModel.BoxelSearch.RestoreLastSystemAvailable();
+                    }
+                },
+                DispatcherPriority.Background);
         }
     }
 
