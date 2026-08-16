@@ -5,6 +5,25 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 public sealed class BoxelViewMarkupTests
 {
     [Fact]
+    public void SelectedSystemPageUsesAccentForegroundForText()
+    {
+        var styles = LoadStyles().Descendants()
+            .Where(element => element.Name.LocalName == "Style")
+            .ToDictionary(
+                element => element.Attribute("Selector")?.Value ?? string.Empty,
+                StringComparer.Ordinal);
+        var selectedTextStyle = styles[
+            "ListBox.system-pages ListBoxItem:selected TextBlock"];
+
+        var foreground = Assert.Single(selectedTextStyle.Elements(), element =>
+            element.Name.LocalName == "Setter"
+            && element.Attribute("Property")?.Value == "Foreground");
+        Assert.Equal(
+            "{DynamicResource RavenAccentForegroundBrush}",
+            foreground.Attribute("Value")?.Value);
+    }
+
+    [Fact]
     public void DedicatedPageOwnsTheWholeBoxelWorkspace()
     {
         var boxel = LoadView("BoxelView.axaml");
@@ -499,6 +518,13 @@ public sealed class BoxelViewMarkupTests
         "SrvSurvey.Desktop",
         "Views",
         fileName));
+
+    private static XDocument LoadStyles() => XDocument.Load(Path.Combine(
+        FindRepositoryRoot(),
+        "src",
+        "SrvSurvey.Desktop",
+        "Styles",
+        "RavenStyles.axaml"));
 
     private static string FindRepositoryRoot()
     {

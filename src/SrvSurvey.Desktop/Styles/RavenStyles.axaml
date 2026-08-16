@@ -252,6 +252,9 @@
     <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
   </Style>
+  <Style Selector="ListBox.system-pages ListBoxItem:selected TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+  </Style>
 
   <Style Selector="TextBox.guide-search">
     <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
