@@ -70,8 +70,7 @@ public sealed class ReleaseNotesDialogViewModelTests
         Assert.Equal("Late title", result.Title);
         Assert.Empty(result.Introduction);
         Assert.Equal("What's changed", result.ChangesHeading);
-        Assert.Collection(
-            result.Changes,
-            change => Assert.Equal("First change. # Late title", change.Text));
+        var change = Assert.Single(result.Changes);
+        Assert.Equal("First change. # Late title", change.Text);
     }
 }
