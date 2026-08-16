@@ -40,6 +40,18 @@ public sealed partial class BoxelView : UserControl
         }
     }
 
+    private void LastSystemAvailable_LostFocus(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (sender is TextBox { Text: var text }
+            && string.IsNullOrWhiteSpace(text)
+            && DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.BoxelSearch.RestoreLastSystemAvailable();
+        }
+    }
+
     private async Task WriteClipboardAsync(string text)
     {
         var clipboard = TopLevel.GetTopLevel(this)?.Clipboard

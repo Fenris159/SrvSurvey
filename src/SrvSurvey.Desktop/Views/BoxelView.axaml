@@ -164,7 +164,7 @@
               <TextBlock Classes="muted" Text="{Binding BoxelSearch.BoxelProgress}" />
               <TextBlock Classes="muted"
                          FontSize="10"
-                         Text="Lowest incomplete suffix in the current boxel." />
+                         Text="Next incomplete suffix in the current boxel." />
             </StackPanel>
             <StackPanel Grid.Column="2" Spacing="5">
               <TextBlock Classes="muted" Text="CURRENT SYSTEM" />
@@ -261,15 +261,17 @@
                       Content="Treat systems whose Spansh body data predates the start date as complete" />
             <CheckBox IsChecked="{Binding BoxelSearch.CompleteOnFssAllBodies, Mode=TwoWay}"
                       Content="Require FSS to report all bodies before completion" />
+            <CheckBox IsChecked="{Binding BoxelSearch.SortDescending, Mode=TwoWay}"
+                      Content="Sort (descending) for working results backwards." />
             <WrapPanel Orientation="Horizontal">
               <Button Classes="primary"
                       Margin="0,0,10,10"
                       Command="{Binding BoxelSearch.ActivateCommand}"
                       Content="Start search" />
-              <Button Classes="secondary"
-                      Margin="0,0,0,10"
-                      Command="{Binding BoxelSearch.DisableCommand}"
-                      Content="Stop search" />
+              <Button Classes="danger"
+                       Margin="0,0,0,10"
+                       Command="{Binding BoxelSearch.DisableCommand}"
+                       Content="Stop search" />
             </WrapPanel>
             <StackPanel Orientation="Horizontal" Spacing="10">
               <Button Classes="secondary"
@@ -312,7 +314,8 @@
                               Data="{StaticResource question_circle_regular}" />
                   </Button>
                 </StackPanel>
-                <TextBox Text="{Binding BoxelSearch.LastSystemAvailable, Mode=TwoWay}" />
+                <TextBox Text="{Binding BoxelSearch.LastSystemAvailable, Mode=TwoWay}"
+                         LostFocus="LastSystemAvailable_LostFocus" />
               </StackPanel>
               <Button Grid.Column="1"
                       Classes="secondary"

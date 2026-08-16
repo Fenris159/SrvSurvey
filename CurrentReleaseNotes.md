@@ -1,33 +1,33 @@
-# SrvSurvey-XP 2.1.3.0-rc.27
+# SrvSurvey-XP 2.1.3.0-rc.28
 
-This release candidate improves the in-app update experience and makes
-reference-data status clearer. The changes below are the delta from
-`2.1.3.0-rc.26`.
+This release candidate makes Boxel searches safer to work in either direction
+and clarifies manual Galaxy Map copying. The changes below are the delta from
+`2.1.3.0-rc.27`.
 
-## What's changed since 2.1.3.0-rc.26
+## What's changed since 2.1.3.0-rc.27
 
-- Protects automatic updates when more than one SrvSurvey instance is running.
-  After confirmation, the app closes sibling instances before downloading the
-  update; cancellation leaves every instance running. Windows and Linux both
-  use a bounded graceful-close attempt before forcing a remaining process to
-  exit, and installation stops safely if an instance cannot be closed.
-- Adds a **Release notes** button beside the install action. It opens the
-  selected GitHub release's title, introduction, and **What's changed** section
-  inside SrvSurvey while omitting packaging and testing notices.
-- Makes the published reference-data message describe whether the local
-  catalog is already current and clarifies that no backup is expected until a
-  refresh actually replaces data.
-- Corrects **Review update** navigation so the Application updates panel is
-  aligned to the top of the Diagnostics view instead of landing partway down
-  the page.
+- Adds **Sort (descending) for working results backwards.** The current-boxel
+  table starts at the highest suffix, and the next incomplete target, empty
+  marker, highlight, and Galaxy Map auto-copy all advance downward together.
+  The direction is retained in commander profiles and saved searches.
+- Makes the active search controls harder to misuse: **Start search** remains
+  disabled until **Stop search** resets the active search, and the stop action
+  is shown in red.
+- Restores a cleared **Last system available** field to its stored value when
+  focus leaves the field. Stopping, loading, or starting another search also
+  clears stale edits so later estimates can populate normally.
+- Shows the live **Copy next boxel system** shortcut in Search guidance when
+  auto-copy is off, for example **MANUAL COPY - CTRL C**. Changes made under
+  Shortcut bindings appear immediately, and an unbound action is identified as
+  **MANUAL COPY - NOT SET**.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.27`
-- Tag: `xp-v2.1.3.0-rc.27`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.27-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.27-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.27-x86_64.AppImage`
+- Version: `2.1.3.0-rc.28`
+- Tag: `xp-v2.1.3.0-rc.28`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.28-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.28-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.28-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.

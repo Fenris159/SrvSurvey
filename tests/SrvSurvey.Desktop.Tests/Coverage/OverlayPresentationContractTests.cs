@@ -140,7 +140,7 @@ public sealed class OverlayPresentationContractTests
         ]),
         Contract("PlotSphericalSearch", ["src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml", "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"], [
             "SphereCenterSystemName", "SphereDestinationSystemName", "DestinationDistance", "DestinationResult",
-            "CurrentBoxelName", "SystemProgress", "BoxelNextSystem", "RouteNextHopName", "NextHopGuidance",
+            "CurrentBoxelName", "SystemProgress", "BoxelNextSystem", "BoxelClipboardStatus", "RouteNextHopName", "NextHopGuidance",
         ]),
         Contract("PlotSysStatus", [
             "src/SrvSurvey.Desktop/SystemStatusOverlayWindow.axaml",

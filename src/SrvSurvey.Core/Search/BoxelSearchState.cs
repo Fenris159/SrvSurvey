@@ -41,6 +41,8 @@ public sealed class BoxelSearchState
 
     public bool AutoCopy { get; private set; }
 
+    public bool SortDescending { get; private set; }
+
     public bool Collapsed { get; private set; }
 
     public bool SkipAlreadyVisited { get; private set; }
@@ -173,6 +175,7 @@ public sealed class BoxelSearchState
         StartedOn = NormalizeStartedOn(seed);
         CurrentCount = Math.Max(0, seed.CurrentCount);
         AutoCopy = seed.AutoCopy;
+        SortDescending = seed.SortDescending;
         Collapsed = seed.Collapsed;
         SkipAlreadyVisited = seed.SkipAlreadyVisited;
         SkipKnownToSpansh = seed.SkipKnownToSpansh;
@@ -264,6 +267,7 @@ public sealed class BoxelSearchState
         var skipKnownToSpansh = request.SkipKnownToSpansh;
         var completionMode = request.CompletionMode;
         var autoCopy = request.AutoCopy;
+        var sortDescending = request.SortDescending;
 
         if (topBoxel is null)
         {
@@ -292,6 +296,7 @@ public sealed class BoxelSearchState
         SkipKnownToSpansh = skipKnownToSpansh;
         CompletionMode = completionMode;
         AutoCopy = autoCopy;
+        SortDescending = sortDescending;
         CurrentCount = 1;
         CurrentIsEmpty = false;
         systems.Clear();
@@ -323,6 +328,18 @@ public sealed class BoxelSearchState
         }
 
         AutoCopy = enabled;
+        Version++;
+    }
+
+    public void SetSortDescending(bool enabled)
+    {
+        if (SortDescending == enabled)
+        {
+            return;
+        }
+
+        SortDescending = enabled;
+        SetNextSystem();
         Version++;
     }
 
@@ -614,6 +631,7 @@ public sealed class BoxelSearchState
                 entry => entry.Value,
                 StringComparer.Ordinal),
             AutoCopy = AutoCopy,
+            SortDescending = SortDescending,
             Collapsed = Collapsed,
             SkipAlreadyVisited = SkipAlreadyVisited,
             SkipKnownToSpansh = SkipKnownToSpansh,
@@ -957,7 +975,10 @@ public sealed class BoxelSearchState
         if (!CurrentIsEmpty)
         {
             var maximum = Math.Max(CurrentMaximumSystemNumber, CurrentCount);
-            for (var number = 0; number < maximum; number++)
+            var step = SortDescending ? -1 : 1;
+            for (var number = SortDescending ? maximum - 1 : 0;
+                 number >= 0 && number < maximum;
+                 number += step)
             {
                 var generated = Current.WithSystemNumber(number);
                 systems.TryGetValue(generated.GeneratedName, out var system);
@@ -1056,6 +1077,8 @@ public sealed class BoxelSearchActivationRequest
     public BoxelCompletionMode CompletionMode { get; init; }
 
     public bool AutoCopy { get; init; }
+
+    public bool SortDescending { get; init; }
 }
 
 public enum BoxelCompletionMode
@@ -1088,6 +1111,8 @@ public sealed record BoxelSearchSnapshot
         new Dictionary<string, int>(StringComparer.Ordinal);
 
     public bool AutoCopy { get; init; }
+
+    public bool SortDescending { get; init; }
 
     public bool Collapsed { get; init; }
 

@@ -71,12 +71,29 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("TopBoxelTextBox_KeyDown", boxelBindings);
         Assert.Contains("CURRENT BOXEL PREFIX", boxelBindings);
         Assert.Contains("NEXT INCOMPLETE SYSTEM", boxelBindings);
+        Assert.Contains(
+            "Next incomplete suffix in the current boxel.",
+            boxelBindings);
+        Assert.DoesNotContain(
+            "Lowest incomplete suffix in the current boxel.",
+            boxelBindings);
         Assert.Contains("Mark Next Empty", boxelBindings);
         Assert.Contains("{Binding BoxelSearch.MarkNextEmptyCommand}", boxelBindings);
         Assert.Contains("LAST SYSTEM AVAILABLE", boxelBindings);
         Assert.Contains(
             "{Binding BoxelSearch.LastSystemAvailable, Mode=TwoWay}",
             boxelBindings);
+        Assert.Contains("LastSystemAvailable_LostFocus", boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.SortDescending, Mode=TwoWay}",
+            boxelBindings);
+        Assert.Contains(
+            "Sort (descending) for working results backwards.",
+            boxelBindings);
+        var stopSearchButton = boxel.Descendants().Single(element =>
+            element.Name.LocalName == "Button"
+            && element.Attribute("Content")?.Value == "Stop search");
+        Assert.Equal("danger", stopSearchButton.Attribute("Classes")?.Value);
         Assert.Contains(
             "{Binding ShowNextIncompleteHighlight}",
             boxelBindings);

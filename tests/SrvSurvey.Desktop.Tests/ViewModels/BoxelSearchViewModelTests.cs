@@ -30,6 +30,40 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.False(viewModel.AutoCopy);
     }
 
+    [Fact]
+    public async Task AutoCopyNotifiesManualCopyGuidance()
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        var viewModel = CreateViewModel(
+            profileStore,
+            new StubResolver([]));
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        viewModel.LowMassCode = "c";
+        await viewModel.ActivateAsync();
+        var changedProperties = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            changedProperties.Add(eventArgs.PropertyName);
+
+        viewModel.AutoCopy = true;
+
+        Assert.Contains(
+            nameof(BoxelSearchViewModel.NextSystemClipboardStatus),
+            changedProperties);
+        Assert.Contains(
+            nameof(BoxelSearchViewModel.RequiresManualCopy),
+            changedProperties);
+        Assert.Equal("AUTO-COPY READY", viewModel.NextSystemClipboardStatus);
+        Assert.False(viewModel.RequiresManualCopy);
+        await WaitUntilAsync(async () =>
+            (await profileStore.LoadAsync("F123", true))
+                .Data?.BoxelSearch.AutoCopy == true);
+    }
+
     [AvaloniaFact]
     public async Task CancellingAuditKeepsSurveyStatisticsUpdatesSubscribed()
     {
@@ -204,6 +238,89 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal("Last system available updated to 348.", viewModel.StatusMessage);
         var saved = await profileStore.LoadAsync("F123", true);
         Assert.Equal(349, saved.Data?.BoxelSearch.CurrentCount);
+    }
+
+    [Fact]
+    public async Task DescendingSearchPagesAndCopiesFromHighestIncompleteSuffix()
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        var copied = new List<string>();
+        var viewModel = new BoxelSearchViewModel(
+            profileStore,
+            new LegacySystemDataReader(temporaryDirectory),
+            new EmptyBoxelStore(temporaryDirectory),
+            new StubResolver([]),
+            text =>
+            {
+                copied.Add(text);
+                return Task.CompletedTask;
+            });
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        viewModel.LowMassCode = "c";
+        viewModel.AutoCopy = true;
+        await viewModel.ActivateAsync();
+        viewModel.LastSystemAvailable = "12";
+
+        await viewModel.ApplyLastSystemAvailableAsync();
+        Assert.Equal("Praea Euq IL-P c5-0", viewModel.NextSystem);
+
+        viewModel.SortDescending = true;
+
+        Assert.Equal("Praea Euq IL-P c5-12", viewModel.NextSystem);
+        Assert.EndsWith("c5-12", viewModel.Systems[0].Name, StringComparison.Ordinal);
+        Assert.EndsWith("c5-3", viewModel.Systems[^1].Name, StringComparison.Ordinal);
+        Assert.Equal("Showing systems 12–3 of 13 (descending).", viewModel.SystemListNote);
+        Assert.True(viewModel.Systems[0].IsNextIncomplete);
+
+        await viewModel.MarkNextEmptyAsync();
+
+        Assert.Equal("Praea Euq IL-P c5-11", viewModel.NextSystem);
+        Assert.Equal(["Praea Euq IL-P c5-11"], copied);
+        var saved = await profileStore.LoadAsync("F123", true);
+        Assert.True(saved.Data?.BoxelSearch.SortDescending);
+    }
+
+    [Fact]
+    public async Task BlankLastSystemRestoresAndStartRemainsDisabledUntilStop()
+    {
+        var viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([]));
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        viewModel.LowMassCode = "c";
+
+        Assert.True(viewModel.ActivateCommand.CanExecute(null));
+        await viewModel.ActivateAsync();
+        viewModel.LastSystemAvailable = "8";
+        await viewModel.ApplyLastSystemAvailableAsync();
+        Assert.False(viewModel.ActivateCommand.CanExecute(null));
+
+        viewModel.LastSystemAvailable = string.Empty;
+        viewModel.RestoreLastSystemAvailable();
+
+        Assert.Equal("8", viewModel.LastSystemAvailable);
+
+        viewModel.LastSystemAvailable = string.Empty;
+        await viewModel.DisableAsync();
+
+        Assert.Equal("8", viewModel.LastSystemAvailable);
+        Assert.True(viewModel.ActivateCommand.CanExecute(null));
+
+        viewModel.TopBoxelText = "Praea Euq RS-U d2-0";
+        await viewModel.ActivateAsync();
+
+        Assert.Equal("0", viewModel.LastSystemAvailable);
+        Assert.False(viewModel.ActivateCommand.CanExecute(null));
     }
 
     [Fact]
@@ -846,6 +963,19 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         }
 
         Assert.True(condition(), "Timed out waiting for the asynchronous suggestion request.");
+    }
+
+    private static async Task WaitUntilAsync(Func<Task<bool>> condition)
+    {
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(2);
+        while (!await condition() && DateTimeOffset.UtcNow < deadline)
+        {
+            await Task.Delay(10);
+        }
+
+        Assert.True(
+            await condition(),
+            "Timed out waiting for asynchronous persistence.");
     }
 
     private sealed class StubSuggestionClient(

@@ -556,6 +556,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
                 {
                     [top.Prefix] = 4,
                 },
+                SortDescending = true,
                 SavedSearchFileName = "saved-search.json",
             });
 
@@ -567,6 +568,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
             ["Praea Euq IL-P c5-1"],
             loaded.Data.BoxelSearch.EmptySystems);
         Assert.Equal(4, loaded.Data.BoxelSearch.ProgressByPrefix[top.Prefix]);
+        Assert.True(loaded.Data.BoxelSearch.SortDescending);
         Assert.Equal(
             "saved-search.json",
             loaded.Data.BoxelSearch.SavedSearchFileName);

@@ -1101,10 +1101,6 @@
                    "translation":  "Der Justiermodus ist aktiv. Speichern erstellt ein verifiziertes plotters.json-Backup."
                },
                {
-                   "source":  "Advanced to the next boxel, but its Spansh refresh failed: {0}",
-                   "translation":  "Weiter zum nächsten Boxel, aber dessen Spansh Aktualisierung ist fehlgeschlagen: {0}"
-               },
-               {
                    "source":  "Advanced tools can measure new layouts, edit points and groups, and package a survey for review.",
                    "translation":  "Erweiterte Tools können neue Layouts messen, Punkte und Gruppen bearbeiten und eine Umfrage zur Überprüfung zusammenstellen."
                },
@@ -8889,10 +8885,6 @@
                    "translation":  "Körper mit geringem Wert können in den Einstellungen abgeblendet oder gefiltert werden, während Körper mit hohem Wert hervorgehoben bleiben."
                },
                {
-                   "source":  "Lowest incomplete suffix in the current boxel.",
-                   "translation":  "Niedrigstes unvollständiges Suffix im aktuellen Boxel."
-               },
-               {
                    "source":  "Lua debug code",
                    "translation":  "Lua-Debug-Code"
                },
@@ -8903,6 +8895,14 @@
                {
                    "source":  "MANUAL COPY",
                    "translation":  "MANUELLES KOPIEREN"
+               },
+               {
+                   "source":  "MANUAL COPY - NOT SET",
+                   "translation":  "MANUELLES KOPIEREN – NICHT EINGESTELLT"
+               },
+               {
+                   "source":  "MANUAL COPY - {0}",
+                   "translation":  "MANUELLES KOPIEREN – {0}"
                },
                {
                    "source":  "MAP CONTENT",
@@ -9771,6 +9771,10 @@
                {
                    "source":  "Next entry",
                    "translation":  "Nächster Eintrag"
+               },
+               {
+                   "source":  "Next incomplete suffix in the current boxel.",
+                   "translation":  "Nächstes unvollständiges Suffix im aktuellen Boxel."
                },
                {
                    "source":  "Next or active direction",
@@ -15193,6 +15197,10 @@
                    "translation":  "Es werden Körper im Wert von mindestens {0} sowie terraformbare und signaltragende Körper angezeigt."
                },
                {
+                   "source":  "Showing systems {0}–{1} of {2} (descending).",
+                   "translation":  "Zeigt die Systeme {0}–{1} von {2} (absteigend)."
+               },
+               {
                    "source":  "Showing systems {0}–{1} of {2}.",
                    "translation":  "Zeigt die Systeme {0}–{1} von {2}."
                },
@@ -15335,6 +15343,10 @@
                {
                    "source":  "Some bodies still need complete planet or parent-star scans.",
                    "translation":  "Einige Körper benötigen noch vollständige Planeten- oder Mutterstern-Scans."
+               },
+               {
+                   "source":  "Sort (descending) for working results backwards.",
+                   "translation":  "Sortieren (absteigend) für Arbeitsergebnisse rückwärts."
                },
                {
                    "source":  "Source folder watch stopped: {0}",
@@ -23203,10 +23215,6 @@
                    "translation":  "El modo de ajuste está activo. Guardar crea una copia de seguridad plotters.json verificada."
                },
                {
-                   "source":  "Advanced to the next boxel, but its Spansh refresh failed: {0}",
-                   "translation":  "Avancé al siguiente cuadro, pero falló su Spansh actualización: {0}"
-               },
-               {
                    "source":  "Advanced tools can measure new layouts, edit points and groups, and package a survey for review.",
                    "translation":  "Las herramientas avanzadas pueden medir nuevos diseños, editar puntos y grupos, y empaquetar una encuesta para su revisión."
                },
@@ -30991,10 +30999,6 @@
                    "translation":  "Los cuerpos de bajo valor se pueden atenuar o filtrar en Configuración, mientras que los cuerpos valiosos permanecen resaltados."
                },
                {
-                   "source":  "Lowest incomplete suffix in the current boxel.",
-                   "translation":  "Sufijo incompleto más bajo en el cuadro actual."
-               },
-               {
                    "source":  "Lua debug code",
                    "translation":  "código de depuración lua"
                },
@@ -31005,6 +31009,14 @@
                {
                    "source":  "MANUAL COPY",
                    "translation":  "COPIA MANUAL"
+               },
+               {
+                   "source":  "MANUAL COPY - NOT SET",
+                   "translation":  "COPIA MANUAL - NO ESTABLECIDA"
+               },
+               {
+                   "source":  "MANUAL COPY - {0}",
+                   "translation":  "COPIA MANUAL - {0}"
                },
                {
                    "source":  "MAP CONTENT",
@@ -31873,6 +31885,10 @@
                {
                    "source":  "Next entry",
                    "translation":  "Próxima entrada"
+               },
+               {
+                   "source":  "Next incomplete suffix in the current boxel.",
+                   "translation":  "Siguiente sufijo incompleto en el cuadro actual."
                },
                {
                    "source":  "Next or active direction",
@@ -37295,6 +37311,10 @@
                    "translation":  "Mostrando cuerpos que valen al menos {0}, además de cuerpos terraformables y portadores de señales."
                },
                {
+                   "source":  "Showing systems {0}–{1} of {2} (descending).",
+                   "translation":  "Mostrando los sistemas {0}–{1} de {2} (descendente)."
+               },
+               {
                    "source":  "Showing systems {0}–{1} of {2}.",
                    "translation":  "Mostrando los sistemas {0}–{1} de {2}."
                },
@@ -37437,6 +37457,10 @@
                {
                    "source":  "Some bodies still need complete planet or parent-star scans.",
                    "translation":  "Algunos cuerpos todavía necesitan escaneos completos de planetas o estrellas madre."
+               },
+               {
+                   "source":  "Sort (descending) for working results backwards.",
+                   "translation":  "Ordene (descendente) para trabajar los resultados al revés."
                },
                {
                    "source":  "Source folder watch stopped: {0}",
@@ -45305,10 +45329,6 @@
                    "translation":  "Le mode réglage est actif. L\u0027enregistrement crée une sauvegarde plotters.json vérifiée."
                },
                {
-                   "source":  "Advanced to the next boxel, but its Spansh refresh failed: {0}",
-                   "translation":  "Avancé vers le boxel suivant, mais son actualisation de Spansh a échoué : {0}"
-               },
-               {
                    "source":  "Advanced tools can measure new layouts, edit points and groups, and package a survey for review.",
                    "translation":  "Les outils avancés peuvent mesurer de nouvelles mises en page, modifier des points et des groupes et préparer une enquête pour examen."
                },
@@ -53093,10 +53113,6 @@
                    "translation":  "Les corps de faible valeur peuvent être grisés ou filtrés dans Paramètres tandis que les corps de valeur restent mis en surbrillance."
                },
                {
-                   "source":  "Lowest incomplete suffix in the current boxel.",
-                   "translation":  "Suffixe incomplet le plus bas dans le boxel actuel."
-               },
-               {
                    "source":  "Lua debug code",
                    "translation":  "Code de débogage Lua"
                },
@@ -53107,6 +53123,14 @@
                {
                    "source":  "MANUAL COPY",
                    "translation":  "COPIE MANUELLE"
+               },
+               {
+                   "source":  "MANUAL COPY - NOT SET",
+                   "translation":  "COPIE MANUELLE - NON RÉGLÉE"
+               },
+               {
+                   "source":  "MANUAL COPY - {0}",
+                   "translation":  "COPIE MANUELLE - {0}"
                },
                {
                    "source":  "MAP CONTENT",
@@ -53975,6 +53999,10 @@
                {
                    "source":  "Next entry",
                    "translation":  "Entrée suivante"
+               },
+               {
+                   "source":  "Next incomplete suffix in the current boxel.",
+                   "translation":  "Prochain suffixe incomplet dans le boxel actuel."
                },
                {
                    "source":  "Next or active direction",
@@ -59397,6 +59425,10 @@
                    "translation":  "Affichage des corps valant au moins {0}, ainsi que des corps terraformables et porteurs de signaux."
                },
                {
+                   "source":  "Showing systems {0}–{1} of {2} (descending).",
+                   "translation":  "Affichage des systèmes {0}–{1} de {2} (décroissant)."
+               },
+               {
                    "source":  "Showing systems {0}–{1} of {2}.",
                    "translation":  "Affichage des systèmes {0}–{1} de {2}."
                },
@@ -59539,6 +59571,10 @@
                {
                    "source":  "Some bodies still need complete planet or parent-star scans.",
                    "translation":  "Certains corps ont encore besoin d’analyses complètes de la planète ou de l’étoile mère."
+               },
+               {
+                   "source":  "Sort (descending) for working results backwards.",
+                   "translation":  "Trier (décroissant) pour travailler les résultats à rebours."
                },
                {
                    "source":  "Source folder watch stopped: {0}",
@@ -67407,10 +67443,6 @@
                       "translation":  "O modo de ajuste está ativo. Salvar cria um backup plotters.json verificado."
                   },
                   {
-                      "source":  "Advanced to the next boxel, but its Spansh refresh failed: {0}",
-                      "translation":  "Avançou para o próximo boxel, mas sua atualização Spansh falhou: {0}"
-                  },
-                  {
                       "source":  "Advanced tools can measure new layouts, edit points and groups, and package a survey for review.",
                       "translation":  "Ferramentas avançadas podem medir novos layouts, editar pontos e grupos e empacotar uma pesquisa para revisão."
                   },
@@ -75195,10 +75227,6 @@
                       "translation":  "Os corpos de baixo valor podem ser esmaecidos ou filtrados nas Configurações, enquanto os corpos valiosos permanecem destacados."
                   },
                   {
-                      "source":  "Lowest incomplete suffix in the current boxel.",
-                      "translation":  "Sufixo incompleto mais baixo no boxel atual."
-                  },
-                  {
                       "source":  "Lua debug code",
                       "translation":  "Código de depuração Lua"
                   },
@@ -75209,6 +75237,14 @@
                   {
                       "source":  "MANUAL COPY",
                       "translation":  "CÓPIA MANUAL"
+                  },
+                  {
+                      "source":  "MANUAL COPY - NOT SET",
+                      "translation":  "CÓPIA MANUAL - NÃO DEFINIDA"
+                  },
+                  {
+                      "source":  "MANUAL COPY - {0}",
+                      "translation":  "CÓPIA MANUAL - {0}"
                   },
                   {
                       "source":  "MAP CONTENT",
@@ -76077,6 +76113,10 @@
                   {
                       "source":  "Next entry",
                       "translation":  "Próxima entrada"
+                  },
+                  {
+                      "source":  "Next incomplete suffix in the current boxel.",
+                      "translation":  "Próximo sufixo incompleto no boxel atual."
                   },
                   {
                       "source":  "Next or active direction",
@@ -81499,6 +81539,10 @@
                       "translation":  "Mostrando corpos com valor de pelo menos {0}, além de corpos terraformáveis e portadores de sinais."
                   },
                   {
+                      "source":  "Showing systems {0}–{1} of {2} (descending).",
+                      "translation":  "Mostrando sistemas {0}–{1} de {2} (descendente)."
+                  },
+                  {
                       "source":  "Showing systems {0}–{1} of {2}.",
                       "translation":  "Mostrando sistemas {0}–{1} de {2}."
                   },
@@ -81641,6 +81685,10 @@
                   {
                       "source":  "Some bodies still need complete planet or parent-star scans.",
                       "translation":  "Alguns corpos ainda precisam de varreduras completas de planetas ou estrelas-mãe."
+                  },
+                  {
+                      "source":  "Sort (descending) for working results backwards.",
+                      "translation":  "Classifique (decrescente) para trabalhar os resultados de trás para frente."
                   },
                   {
                       "source":  "Source folder watch stopped: {0}",
@@ -89509,10 +89557,6 @@
                    "translation":  "Режим настройки активен. При сохранении создается проверенная резервная копия plotters.json."
                },
                {
-                   "source":  "Advanced to the next boxel, but its Spansh refresh failed: {0}",
-                   "translation":  "Перешел к следующему боксу, но его обновление Spansh не удалось: {0}"
-               },
-               {
                    "source":  "Advanced tools can measure new layouts, edit points and groups, and package a survey for review.",
                    "translation":  "Расширенные инструменты позволяют измерять новые макеты, редактировать точки и группы, а также упаковывать опрос для просмотра."
                },
@@ -97297,10 +97341,6 @@
                    "translation":  "Тела с низкой ценностью можно затемнить или отфильтровать в настройках, а ценные тела останутся выделенными."
                },
                {
-                   "source":  "Lowest incomplete suffix in the current boxel.",
-                   "translation":  "Самый низкий неполный суффикс в текущем боксе."
-               },
-               {
                    "source":  "Lua debug code",
                    "translation":  "Код отладки Lua"
                },
@@ -97311,6 +97351,14 @@
                {
                    "source":  "MANUAL COPY",
                    "translation":  "РУЧНОЕ КОПИРОВАНИЕ"
+               },
+               {
+                   "source":  "MANUAL COPY - NOT SET",
+                   "translation":  "РУЧНАЯ КОПИЯ - НЕ УСТАНОВЛЕНО"
+               },
+               {
+                   "source":  "MANUAL COPY - {0}",
+                   "translation":  "РУЧНАЯ КОПИЯ - {0}"
                },
                {
                    "source":  "MAP CONTENT",
@@ -98179,6 +98227,10 @@
                {
                    "source":  "Next entry",
                    "translation":  "Следующая запись"
+               },
+               {
+                   "source":  "Next incomplete suffix in the current boxel.",
+                   "translation":  "Следующий неполный суффикс в текущем боксе."
                },
                {
                    "source":  "Next or active direction",
@@ -103601,6 +103653,10 @@
                    "translation":  "Показаны тела стоимостью не менее {0}, а также терраформируемые и несущие сигналы тела."
                },
                {
+                   "source":  "Showing systems {0}–{1} of {2} (descending).",
+                   "translation":  "Показаны системы {0}–{1} из {2} (по убыванию)."
+               },
+               {
                    "source":  "Showing systems {0}–{1} of {2}.",
                    "translation":  "Показаны системы {0}–{1} из {2}."
                },
@@ -103743,6 +103799,10 @@
                {
                    "source":  "Some bodies still need complete planet or parent-star scans.",
                    "translation":  "Некоторым телам все еще требуется полное сканирование планет или родительских звезд."
+               },
+               {
+                   "source":  "Sort (descending) for working results backwards.",
+                   "translation":  "Сортировка (по убыванию) для обработки результатов в обратном направлении."
                },
                {
                    "source":  "Source folder watch stopped: {0}",
@@ -111611,10 +111671,6 @@
                         "translation":  "调整模式已激活。保存创建经过验证的 plotters.json 备份。"
                     },
                     {
-                        "source":  "Advanced to the next boxel, but its Spansh refresh failed: {0}",
-                        "translation":  "前进到下一个框，但其 Spansh 刷新失败：{0}"
-                    },
-                    {
                         "source":  "Advanced tools can measure new layouts, edit points and groups, and package a survey for review.",
                         "translation":  "高级工具可以测量新布局、编辑点和组，以及打包调查以供审核。"
                     },
@@ -119399,10 +119455,6 @@
                         "translation":  "低价值的尸体可以在“设置”中变暗或过滤，而有价值的尸体则保持突出显示。"
                     },
                     {
-                        "source":  "Lowest incomplete suffix in the current boxel.",
-                        "translation":  "当前 boxel 中最低的不完整后缀。"
-                    },
-                    {
                         "source":  "Lua debug code",
                         "translation":  "Lua调试代码"
                     },
@@ -119413,6 +119465,14 @@
                     {
                         "source":  "MANUAL COPY",
                         "translation":  "手动复印"
+                    },
+                    {
+                        "source":  "MANUAL COPY - NOT SET",
+                        "translation":  "手动复制 - 未设置"
+                    },
+                    {
+                        "source":  "MANUAL COPY - {0}",
+                        "translation":  "手动复制 - {0}"
                     },
                     {
                         "source":  "MAP CONTENT",
@@ -120281,6 +120341,10 @@
                     {
                         "source":  "Next entry",
                         "translation":  "下一个条目"
+                    },
+                    {
+                        "source":  "Next incomplete suffix in the current boxel.",
+                        "translation":  "当前 boxel 中的下一个不完整后缀。"
                     },
                     {
                         "source":  "Next or active direction",
@@ -125703,6 +125767,10 @@
                         "translation":  "显示至少价值 {0} 的物体，以及可地形改造和信号承载物体。"
                     },
                     {
+                        "source":  "Showing systems {0}–{1} of {2} (descending).",
+                        "translation":  "显示 {2} 的系统 {0}–{1}（降序）。"
+                    },
+                    {
                         "source":  "Showing systems {0}–{1} of {2}.",
                         "translation":  "显示 {2} 的系统 {0}–{1}。"
                     },
@@ -125845,6 +125913,10 @@
                     {
                         "source":  "Some bodies still need complete planet or parent-star scans.",
                         "translation":  "有些天体仍然需要完整的行星或母星扫描。"
+                    },
+                    {
+                        "source":  "Sort (descending) for working results backwards.",
+                        "translation":  "对工作结果进行向后排序（降序）。"
                     },
                     {
                         "source":  "Source folder watch stopped: {0}",
@@ -133713,10 +133785,6 @@
                    "translation":  "* ADJUSTMENT MODE IS ACTIVE. SAVE CREATES A VERIFIED PLOTTERS.JSON BACKUP. \u003e\u003e\u003e!"
                },
                {
-                   "source":  "Advanced to the next boxel, but its Spansh refresh failed: {0}",
-                   "translation":  "* ADVANCED TO THE NEXT BOXEL, BUT ITS SPANSH REFRESH FAILED: {0} \u003e\u003e\u003e!"
-               },
-               {
                    "source":  "Advanced tools can measure new layouts, edit points and groups, and package a survey for review.",
                    "translation":  "* ADVANCED TOOLS CAN MEASURE NEW LAYOUTS, EDIT POINTS AND GROUPS, AND PACKAGE A SURVEY FOR REVIEW. \u003e\u003e\u003e!"
                },
@@ -141501,10 +141569,6 @@
                    "translation":  "* LOW-VALUE BODIES CAN BE DIMMED OR FILTERED IN SETTINGS WHILE VALUABLE BODIES REMAIN HIGHLIGHTED. \u003e\u003e\u003e!"
                },
                {
-                   "source":  "Lowest incomplete suffix in the current boxel.",
-                   "translation":  "* LOWEST INCOMPLETE SUFFIX IN THE CURRENT BOXEL. \u003e\u003e\u003e!"
-               },
-               {
                    "source":  "Lua debug code",
                    "translation":  "* LUA DEBUG CODE \u003e\u003e\u003e!"
                },
@@ -141515,6 +141579,14 @@
                {
                    "source":  "MANUAL COPY",
                    "translation":  "* MANUAL COPY \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "MANUAL COPY - NOT SET",
+                   "translation":  "* MANUAL COPY - NOT SET \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "MANUAL COPY - {0}",
+                   "translation":  "* MANUAL COPY - {0} \u003e\u003e\u003e!"
                },
                {
                    "source":  "MAP CONTENT",
@@ -142383,6 +142455,10 @@
                {
                    "source":  "Next entry",
                    "translation":  "* NEXT ENTRY \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Next incomplete suffix in the current boxel.",
+                   "translation":  "* NEXT INCOMPLETE SUFFIX IN THE CURRENT BOXEL. \u003e\u003e\u003e!"
                },
                {
                    "source":  "Next or active direction",
@@ -147805,6 +147881,10 @@
                    "translation":  "* SHOWING BODIES WORTH AT LEAST {0}, PLUS TERRAFORMABLE AND SIGNAL-BEARING BODIES. \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Showing systems {0}–{1} of {2} (descending).",
+                   "translation":  "* SHOWING SYSTEMS {0}–{1} OF {2} (DESCENDING). \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Showing systems {0}–{1} of {2}.",
                    "translation":  "* SHOWING SYSTEMS {0}–{1} OF {2}. \u003e\u003e\u003e!"
                },
@@ -147947,6 +148027,10 @@
                {
                    "source":  "Some bodies still need complete planet or parent-star scans.",
                    "translation":  "* SOME BODIES STILL NEED COMPLETE PLANET OR PARENT-STAR SCANS. \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Sort (descending) for working results backwards.",
+                   "translation":  "* SORT (DESCENDING) FOR WORKING RESULTS BACKWARDS. \u003e\u003e\u003e!"
                },
                {
                    "source":  "Source folder watch stopped: {0}",
