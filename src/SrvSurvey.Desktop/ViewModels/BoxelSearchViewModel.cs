@@ -17,6 +17,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 {
     private const string Unavailable = "\u2014";
     private const int SystemsPerPage = 10;
+    private const int MaximumLastSystemAvailable = 99_999;
     private const int LargeAuditConfirmationThreshold = 1_000;
 
     private readonly CommanderProfileStore profileStore;
@@ -170,7 +171,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         MarkNextEmptyCommand = markNextEmptyCommand;
         applyLastSystemAvailableCommand = new AsyncCommand(
             ApplyLastSystemAvailableAsync,
-            CanUseActiveSearch);
+            CanApplyLastSystemAvailable);
         ApplyLastSystemAvailableCommand = applyLastSystemAvailableCommand;
         nextJumpPageCommand = new AsyncCommand(
             ShowNextJumpPageAsync,
@@ -507,10 +508,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         {
             if (SetField(ref lastSystemAvailable, value))
             {
-                hasUnappliedLastSystemAvailableEdit = true;
+                SetLastSystemAvailableEditState(true);
             }
         }
     }
+
+    public bool HasLastSystemAvailableError =>
+        hasUnappliedLastSystemAvailableEdit
+        && (!TryParseLastSystemAvailable(LastSystemAvailable, out var parsed)
+            || parsed < state.CurrentMaximumSystemNumber);
+
+    public string LastSystemAvailableValidationMessage =>
+        GetLastSystemAvailableValidationMessage();
 
     public string SystemProgress
     {
@@ -825,7 +834,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         auditCancellation?.Cancel();
         frontierId = null;
-        hasUnappliedLastSystemAvailableEdit = false;
+        SetLastSystemAvailableEditState(false);
         state.Reset();
         navigationOptions.Clear();
         StatusMessage = message;
@@ -983,27 +992,14 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        hasUnappliedLastSystemAvailableEdit = false;
-        try
-        {
-            state.ApplyEmptyBoxels(
-                await emptyBoxelStore.LoadGroupAsync(
-                    topBoxel!,
-                    CancellationToken.None));
-            UpdateDisplay();
-            await SaveAsync();
-            await RefreshCurrentAsync();
-        }
-        catch (InvalidDataException exception)
-        {
-            StatusMessage = exception.Message;
-        }
+        SetLastSystemAvailableEditState(false);
+        await RefreshCurrentAsync(preserveLastSystemAvailableEdit: false);
     }
 
     public async Task DisableAsync()
     {
         state.Disable();
-        hasUnappliedLastSystemAvailableEdit = false;
+        SetLastSystemAvailableEditState(false);
         UpdateDisplay();
         await SaveAsync("Boxel search disabled; its progress was retained.");
     }
@@ -1149,7 +1145,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private async Task ApplySnapshotAsync(BoxelSearchSnapshot snapshot)
     {
-        hasUnappliedLastSystemAvailableEdit = false;
+        SetLastSystemAvailableEditState(false);
         state.Reset(snapshot);
         navigationOptions.Clear();
         ConfirmLargeAudit = false;
@@ -1212,7 +1208,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             "Boxel auto-copy was disabled because another Galaxy Map auto-copy setting was selected.");
     }
 
-    public async Task RefreshCurrentAsync()
+    public Task RefreshCurrentAsync()
+    {
+        return RefreshCurrentAsync(preserveLastSystemAvailableEdit: true);
+    }
+
+    private async Task RefreshCurrentAsync(bool preserveLastSystemAvailableEdit)
     {
         if (!state.IsActive || state.Current is null)
         {
@@ -1268,6 +1269,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 {
                     warnings.Add("Spansh refresh failed: " + exception.Message);
                 }
+            }
+
+            if (!preserveLastSystemAvailableEdit)
+            {
+                SetLastSystemAvailableEditState(false);
             }
 
             UpdateDisplay();
@@ -1505,20 +1511,23 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public async Task ApplyLastSystemAvailableAsync()
     {
-        if (!int.TryParse(
+        if (!TryParseLastSystemAvailable(
                 LastSystemAvailable,
-                NumberStyles.Integer,
-                CultureInfo.CurrentCulture,
-                out var parsedLastSystemAvailable)
-            || parsedLastSystemAvailable < 0
-            || parsedLastSystemAvailable >= 100_000)
+                out var parsedLastSystemAvailable))
         {
             StatusMessage = "Last system available must be a whole number from 0 to 99,999.";
             return;
         }
 
+        if (parsedLastSystemAvailable < state.CurrentMaximumSystemNumber)
+        {
+            StatusMessage = $"Last system available cannot be below recorded suffix "
+                + $"{state.CurrentMaximumSystemNumber:N0}.";
+            return;
+        }
+
         state.SetExpectedSystemCount(parsedLastSystemAvailable + 1);
-        hasUnappliedLastSystemAvailableEdit = false;
+        SetLastSystemAvailableEditState(false);
         showNextSystemPageOnUpdate = true;
         UpdateDisplay();
         await SaveAsync($"Last system available updated to {parsedLastSystemAvailable:N0}.");
@@ -1526,7 +1535,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public void RestoreLastSystemAvailable()
     {
-        hasUnappliedLastSystemAvailableEdit = false;
+        if (!hasUnappliedLastSystemAvailableEdit)
+        {
+            return;
+        }
+
+        SetLastSystemAvailableEditState(false);
         SetField(
             ref lastSystemAvailable,
             FormatLastSystemAvailable(),
@@ -1741,6 +1755,16 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         return !IsBusy && frontierId is not null && state.IsActive;
     }
 
+    private bool CanApplyLastSystemAvailable()
+    {
+        return CanUseActiveSearch()
+            && TryParseLastSystemAvailable(
+                LastSystemAvailable,
+                out var parsedLastSystemAvailable)
+            && parsedLastSystemAvailable >= state.CurrentMaximumSystemNumber
+            && parsedLastSystemAvailable != Math.Max(0, state.CurrentCount - 1);
+    }
+
     private bool CanCopyNext()
     {
         return !IsBusy
@@ -1847,6 +1871,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 FormatLastSystemAvailable(),
                 nameof(LastSystemAvailable));
         }
+        SetLastSystemAvailableEditState(hasUnappliedLastSystemAvailableEdit);
         SystemProgress = $"{state.CompletedSystemCount:N0} of "
             + $"{Math.Max(state.CurrentCount, state.Systems.Count):N0} systems complete";
         BoxelProgress = $"{state.CompletedBoxelCount:N0} of "
@@ -2092,6 +2117,43 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         return Math.Max(0, state.CurrentCount - 1)
             .ToString(CultureInfo.CurrentCulture);
+    }
+
+    private static bool TryParseLastSystemAvailable(
+        string? value,
+        out int parsedLastSystemAvailable)
+    {
+        return int.TryParse(
+                value,
+                NumberStyles.None,
+                CultureInfo.CurrentCulture,
+                out parsedLastSystemAvailable)
+            && parsedLastSystemAvailable <= MaximumLastSystemAvailable;
+    }
+
+    private string GetLastSystemAvailableValidationMessage()
+    {
+        if (!hasUnappliedLastSystemAvailableEdit)
+        {
+            return string.Empty;
+        }
+
+        if (!TryParseLastSystemAvailable(LastSystemAvailable, out var parsed))
+        {
+            return "Enter numbers only, from 0 to 99,999.";
+        }
+
+        return parsed < state.CurrentMaximumSystemNumber
+            ? $"Enter {state.CurrentMaximumSystemNumber:N0} or higher; that suffix is already recorded."
+            : string.Empty;
+    }
+
+    private void SetLastSystemAvailableEditState(bool hasUnappliedEdit)
+    {
+        hasUnappliedLastSystemAvailableEdit = hasUnappliedEdit;
+        OnPropertyChanged(nameof(HasLastSystemAvailableError));
+        OnPropertyChanged(nameof(LastSystemAvailableValidationMessage));
+        applyLastSystemAvailableCommand.RaiseCanExecuteChanged();
     }
 
     private Task ChangeSystemPageAsync(int offset)

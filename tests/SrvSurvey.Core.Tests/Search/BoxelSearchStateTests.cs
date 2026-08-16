@@ -6,6 +6,75 @@ namespace SrvSurvey.Core.Tests.Search;
 public sealed class BoxelSearchStateTests
 {
     [Fact]
+    public void ActivationUsesEnteredSystemSuffixAsInitialExpectedCount()
+    {
+        var state = new BoxelSearchState();
+        var enteredSystem = BoxelAddress.Parse("Praea Euq IL-P c5-385");
+
+        Assert.True(state.TryActivate(
+            new BoxelSearchActivationRequest
+            {
+                TopBoxel = enteredSystem,
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.UtcNow,
+            },
+            out _));
+
+        Assert.Equal(386, state.CurrentCount);
+        Assert.Equal(386, state.CreateSnapshot().ProgressByPrefix[enteredSystem.Prefix]);
+        Assert.Equal(enteredSystem.WithSystemNumber(0).Name, state.NextSystem);
+    }
+
+    [Fact]
+    public void AutomaticSourcesOnlyRaiseTheHighestSuffixEstimate()
+    {
+        var state = new BoxelSearchState();
+        var enteredSystem = BoxelAddress.Parse("Praea Euq IL-P c5-385");
+        Assert.True(state.TryActivate(
+            new BoxelSearchActivationRequest
+            {
+                TopBoxel = enteredSystem,
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.UtcNow,
+            },
+            out _));
+
+        state.MergeLocalSystems(
+        [
+            Observation(enteredSystem.WithSystemNumber(12).Name),
+        ]);
+        state.MergeRoute(
+        [
+            Observation(enteredSystem.WithSystemNumber(240).Name),
+        ]);
+        state.MergeSpanshSystems(
+        [
+            Observation(enteredSystem.WithSystemNumber(384).Name),
+        ]);
+
+        Assert.Equal(386, state.CurrentCount);
+
+        state.MergeSpanshSystems(
+        [
+            Observation(enteredSystem.WithSystemNumber(410).Name),
+        ]);
+
+        Assert.Equal(411, state.CurrentCount);
+
+        state.SetExpectedSystemCount(400);
+
+        Assert.Equal(411, state.CurrentCount);
+
+        state.SetExpectedSystemCount(500);
+        state.MergeLocalSystems(
+        [
+            Observation(enteredSystem.WithSystemNumber(100).Name),
+        ]);
+
+        Assert.Equal(500, state.CurrentCount);
+    }
+
+    [Fact]
     public void SnapshotRestoresManualSystemCompletionAndAllBoxelCounts()
     {
         var state = new BoxelSearchState();

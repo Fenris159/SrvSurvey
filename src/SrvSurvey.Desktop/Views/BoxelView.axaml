@@ -9,6 +9,10 @@
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
   <UserControl.Styles>
+    <Style Selector="TextBox.last-system-available.invalid">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenDangerBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
     <Style Selector="Border.boxel-hierarchy-current">
       <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
@@ -314,13 +318,24 @@
                               Data="{StaticResource question_circle_regular}" />
                   </Button>
                 </StackPanel>
-                <TextBox Text="{Binding BoxelSearch.LastSystemAvailable, Mode=TwoWay}"
-                         LostFocus="LastSystemAvailable_LostFocus" />
+                <TextBox x:Name="LastSystemAvailableTextBox"
+                         Classes="last-system-available"
+                         Classes.invalid="{Binding BoxelSearch.HasLastSystemAvailableError}"
+                         Text="{Binding BoxelSearch.LastSystemAvailable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         LostFocus="LastSystemAvailable_LostFocus"
+                         ToolTip.Tip="{Binding BoxelSearch.LastSystemAvailableValidationMessage}" />
+                <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                           FontSize="11"
+                           IsVisible="{Binding BoxelSearch.HasLastSystemAvailableError}"
+                           Text="{Binding BoxelSearch.LastSystemAvailableValidationMessage}"
+                           TextWrapping="Wrap" />
               </StackPanel>
-              <Button Grid.Column="1"
+              <Button x:Name="ApplyLastSystemAvailableButton"
+                      Grid.Column="1"
                       Classes="secondary"
                       VerticalAlignment="Bottom"
                       Command="{Binding BoxelSearch.ApplyLastSystemAvailableCommand}"
+                      LostFocus="ApplyLastSystemAvailable_LostFocus"
                       Content="Apply" />
             </Grid>
             <WrapPanel Orientation="Horizontal">
