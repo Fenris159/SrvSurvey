@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.VisualTree;
+using SrvSurvey.Desktop.Behaviors;
 
 namespace SrvSurvey.Desktop.Tests.Presentation;
 
@@ -96,6 +97,56 @@ public sealed class ScrollViewerBehaviorTests
         };
 
         AssertWheelAtEndpointDoesNotScrollOuterPage(textBox);
+    }
+
+    [AvaloniaFact]
+    public void ListBoxSelectionDoesNotScrollOuterPage()
+    {
+        var listBox = new ListBox
+        {
+            Height = 120,
+            ItemsSource = Enumerable.Range(0, 30)
+                .Select(index => $"Event {index}")
+                .ToArray(),
+        };
+        var outer = new ScrollViewer
+        {
+            Content = new StackPanel
+            {
+                Children =
+                {
+                    new Border { Height = 400 },
+                    listBox,
+                    new Border { Height = 400 },
+                },
+            },
+        };
+        var window = new Window
+        {
+            Width = 320,
+            Height = 260,
+            Content = outer,
+        };
+
+        try
+        {
+            window.Show();
+            Assert.NotNull(window.CaptureRenderedFrame());
+            Assert.True(ListBoxBringIntoViewBehavior.GetContain(listBox));
+            var listScroller = listBox.GetVisualDescendants()
+                .OfType<ScrollViewer>()
+                .Single();
+
+            listBox.SelectedIndex = 29;
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            Assert.True(listScroller.Offset.Y > 0);
+            Assert.Equal(0, outer.Offset.Y);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     private static void AssertWheelAtEndpointDoesNotScrollOuterPage(

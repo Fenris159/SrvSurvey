@@ -1,5 +1,6 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
              xmlns:localization="using:SrvSurvey.Desktop.Localization"
              xmlns:presentation="using:SrvSurvey.Desktop.Presentation"
@@ -145,6 +146,7 @@
       <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
     </Style>
     <Style Selector="ListBox">
+      <Setter Property="behaviors:ListBoxBringIntoViewBehavior.Contain" Value="True" />
       <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
     </Style>
     <Style Selector="Window">
