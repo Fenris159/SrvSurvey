@@ -440,6 +440,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "2 SrvSurvey instances are currently running.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
+  },
+  {
     "Text": "2 commanders detected",
     "IsFormat": false,
     "SourceKinds": [
@@ -1657,6 +1665,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
   },
   {
+    "Text": "APPLICATION UPDATE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml"
+  },
+  {
     "Text": "APPROACH",
     "IsFormat": false,
     "SourceKinds": [
@@ -2713,6 +2729,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
+    "Text": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "AppImage manual update",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Appearance and application options",
     "IsFormat": false,
     "SourceKinds": [
@@ -2959,6 +2991,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Are you sure you want to proceed? Doing so will close all instances.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml"
   },
   {
     "Text": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
@@ -3505,6 +3545,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Automatic updates are supported only on Windows and Linux.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationInstanceManager.cs"
+  },
+  {
     "Text": "Automatic \u00B7 Journal: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -4031,6 +4079,46 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/InputChord.cs"
+  },
+  {
+    "Text": "Backup created this session: Not needed unless catalogs are replaced.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
+  },
+  {
+    "Text": "Backup created this session: Not needed; existing reference data remains active.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
+  },
+  {
+    "Text": "Backup created this session: Not needed; no catalogs were replaced.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
+  },
+  {
+    "Text": "Backup created this session: Not needed; no prior downloaded catalogs were replaced.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
+  },
+  {
+    "Text": "Backup created this session: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
   },
   {
     "Text": "Backups",
@@ -5853,6 +5941,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
   },
   {
+    "Text": "Catalogs updated this session: None needed; already current.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
+  },
+  {
+    "Text": "Catalogs updated this session: None yet; the automatic check is pending.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
+  },
+  {
+    "Text": "Catalogs updated this session: None; refresh failed before activation.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
+  },
+  {
+    "Text": "Catalogs updated this session: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
+  },
+  {
     "Text": "Category",
     "IsFormat": false,
     "SourceKinds": [
@@ -5949,6 +6069,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
   },
   {
+    "Text": "Checking for other running SrvSurvey instances...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Checking whether another SrvSurvey instance must close before the update.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
     "Text": "Checking {0} market cargo...",
     "IsFormat": true,
     "SourceKinds": [
@@ -5973,7 +6109,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
-    "Text": "Checks checksum-indexed Avalonia packages published from this cross-platform repository. The check never installs files or changes profile data.",
+    "Text": "Checks checksum-indexed SrvSurvey-XP packages. The check never installs files or changes profile data.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -6462,6 +6598,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
   },
   {
+    "Text": "Close all and continue",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml"
+  },
+  {
     "Text": "Close the categorized overlay position editor before enabling interaction with live overlays.",
     "IsFormat": false,
     "SourceKinds": [
@@ -6476,6 +6620,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Closing other SrvSurvey instances before downloading the update.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Closing the other SrvSurvey instance...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Closing {0} other SrvSurvey instances...",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
     "Text": "Cmdr: {0} - {1}",
@@ -8168,6 +8336,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml.cs"
   },
   {
+    "Text": "Could not close {0} other SrvSurvey instance(s). The update was not started.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationInstanceManager.cs"
+  },
+  {
     "Text": "Could not copy the Elite Dangerous window.",
     "IsFormat": false,
     "SourceKinds": [
@@ -9525,6 +9701,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestDeveloperViewModel.cs"
   },
   {
+    "Text": "Development releases are read from Fenris159/SrvSurvey, including RC builds.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
     "Text": "Development state could not be loaded: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -10079,6 +10263,14 @@
   },
   {
     "Text": "Download hash verified; validating archive files...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Download the AppImage from this release, make it executable, replace your existing AppImage file, and launch it again.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -17818,6 +18010,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Main view model is not ready.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
+  },
+  {
+    "Text": "Main window is not ready.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
+  },
+  {
     "Text": "MainMenu",
     "IsFormat": false,
     "SourceKinds": [
@@ -18661,6 +18869,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "More than one SrvSurvey instance is running",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml"
+  },
+  {
     "Text": "Most overlays appear only when their information is useful, then hide when that game context ends.",
     "IsFormat": false,
     "SourceKinds": [
@@ -18765,6 +18981,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Multiple SrvSurvey instances",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml"
+  },
+  {
     "Text": "Multiple commanders",
     "IsFormat": false,
     "SourceKinds": [
@@ -18819,6 +19043,30 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
+  },
+  {
+    "Text": "N/A",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "N/A: no SrvSurvey-XP development release is published in Fenris159/SrvSurvey yet.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "N/A: no stable SrvSurvey-XP release is published in njthomson/SrvSurvey yet.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
     "Text": "N0",
@@ -20257,28 +20505,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
-    "Text": "No prior downloaded reference files required a backup.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
-  },
-  {
     "Text": "No projects loaded.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
-    "Text": "No reference backup created this session.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
   },
   {
     "Text": "No reference image is available for this entry.",
@@ -20295,22 +20527,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/CodexImageCache.cs"
-  },
-  {
-    "Text": "No reference updates were activated.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
-  },
-  {
-    "Text": "No refreshed catalogs this session.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
   },
   {
     "Text": "No registered live overlay accepted interactive mode.",
@@ -21294,6 +21510,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "Open development release",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
     "Text": "Open folder",
     "IsFormat": false,
     "SourceKinds": [
@@ -21366,20 +21590,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExobiologyView.axaml"
   },
   {
-    "Text": "Open releases",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
-  },
-  {
     "Text": "Open screenshots",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/SystemNotesWindow.axaml"
+  },
+  {
+    "Text": "Open stable release",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
     "Text": "Open stats",
@@ -25903,6 +26127,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Release notes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ReleaseNotesDialog.axaml"
+  },
+  {
     "Text": "Relic 2 | Casket 1 | Orb 0",
     "IsFormat": false,
     "SourceKinds": [
@@ -26591,6 +26823,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
+    "Text": "Review manual update",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
     "Text": "Review passed, but a saved Raven API key is required before publishing.",
     "IsFormat": false,
     "SourceKinds": [
@@ -26653,6 +26893,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
+  },
+  {
+    "Text": "Review update",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
     "Text": "Review what SrvSurvey sends before opting in.",
@@ -30473,14 +30721,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
-    "Text": "Sol",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
-  },
-  {
     "Text": "Sol bubble radius (ly)",
     "IsFormat": false,
     "SourceKinds": [
@@ -31067,30 +31307,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
   },
   {
-    "Text": "SrvSurvey {0} is available. Confirm the guarded install when ready.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
-  },
-  {
-    "Text": "SrvSurvey {0} is available. {1}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
-  },
-  {
-    "Text": "SrvSurvey {0} is current with the published release index.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
-  },
-  {
     "Text": "SrvSurvey-BiologyCodex-Design",
     "IsFormat": false,
     "SourceKinds": [
@@ -31179,6 +31395,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml.cs"
   },
   {
+    "Text": "SrvSurvey-XP {0} is available on the {1} channel.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "SrvSurvey-XP {0} is available. Confirm the guarded install when ready.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "SrvSurvey-XP {0} is available. {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "SrvSurvey-XP {0} is current on the {1} channel.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
     "Text": "SrvSurvey.Desktop",
     "IsFormat": false,
     "SourceKinds": [
@@ -31217,6 +31465,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/HumanSiteSettingsStore.cs"
+  },
+  {
+    "Text": "Stable SrvSurvey-XP releases are read from njthomson/SrvSurvey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
     "Text": "Staging and verifying the Guardian template catalog...",
@@ -31441,6 +31697,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalControllerInputService.cs"
+  },
+  {
+    "Text": "Starting elevated update helper; approve the Windows prompt...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
     "Text": "Starting global keyboard input...",
@@ -32002,6 +32266,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "Switched to the {0} release channel; checking now.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
     "Text": "Sync current market",
@@ -34575,6 +34847,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The other instances will close before downloading begins. This instance will remain open until the verified update helper is ready, then close normally to complete the update.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml"
+  },
+  {
     "Text": "The overlay can focus a primary project, the docked build site, a local aggregate, or all visible projects depending on game context and settings.",
     "IsFormat": false,
     "SourceKinds": [
@@ -34831,14 +35111,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
-    "Text": "The prior live reference data remains active.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
-  },
-  {
     "Text": "The privacy preference changed for this session but could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -34869,6 +35141,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/CodexImageCache.cs"
+  },
+  {
+    "Text": "The release channel changed for this session but could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
     "Text": "The releases page could not be opened. No files were changed.",
@@ -35607,6 +35887,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "The update confirmation must be displayed on the UI thread.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
+  },
+  {
     "Text": "The update helper does not accept application arguments.",
     "IsFormat": false,
     "SourceKinds": [
@@ -35775,7 +36063,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "This AppImage is mounted read-only and cannot replace itself; use Open releases to download the new AppImage.",
+    "Text": "This AppImage is mounted read-only and cannot replace itself; open the selected release and install its AppImage manually.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -37146,6 +37434,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Update canceled before download.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Update canceled. The other SrvSurvey instances remain open and no files were changed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
     "Text": "Update health confirmation did not come from the installed replacement.",
     "IsFormat": false,
     "SourceKinds": [
@@ -37496,6 +37800,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Use SrvSurvey-XP development releases",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Use Stop search when you want the live Boxel workflow inactive while retaining its current profile state. Save Progress is the clearer choice when you intend to switch among several named projects.",
@@ -38732,6 +39044,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "What\u0027s changed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseNotesDialogViewModel.cs"
+  },
+  {
     "Text": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, the system completes after Elite writes FSSAllBodiesFound. Use Complete or Reopen for a manual correction.",
     "IsFormat": false,
     "SourceKinds": [
@@ -38827,6 +39147,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Windows administrator approval is required to update this protected installation. The player profile remains untouched.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
     "Text": "Windows overlay input pass-through could not be enabled.",
@@ -39867,6 +40195,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+  },
+  {
+    "Text": "development",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
     "Text": "diagnostics",
@@ -41685,6 +42021,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierOAuthCallback.cs"
   },
   {
+    "Text": "stable",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
     "Text": "star-cache",
     "IsFormat": false,
     "SourceKinds": [
@@ -42614,6 +42958,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
+    "Text": "{0} SrvSurvey instances are currently running.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
+  },
+  {
     "Text": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
     "IsFormat": true,
     "SourceKinds": [
@@ -43236,6 +43588,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "{0} other SrvSurvey instances are running. Confirm whether all instances should close before updating.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
     "Text": "{0} position preview",

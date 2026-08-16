@@ -1,0 +1,58 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.ReleaseNotesDialog"
+        x:DataType="vm:ReleaseNotesDialogViewModel"
+        Width="780"
+        Height="720"
+        MinWidth="560"
+        MinHeight="480"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        Title="Release notes">
+  <Grid RowDefinitions="Auto,*,Auto" Margin="24">
+    <StackPanel Spacing="5">
+      <TextBlock Classes="eyebrow" Text="APPLICATION UPDATE" />
+      <TextBlock Classes="page-title"
+                 FontSize="26"
+                 Text="{Binding Title}"
+                 TextWrapping="Wrap" />
+    </StackPanel>
+
+    <ScrollViewer Grid.Row="1" Margin="0,22,0,0">
+      <StackPanel Spacing="20">
+        <TextBlock FontSize="17"
+                   IsVisible="{Binding HasIntroduction}"
+                   Text="{Binding Introduction}"
+                   TextWrapping="Wrap" />
+
+        <StackPanel Spacing="12">
+          <TextBlock FontSize="22"
+                     FontWeight="SemiBold"
+                     Text="{Binding ChangesHeading}"
+                     TextWrapping="Wrap" />
+          <Separator />
+          <ItemsControl ItemsSource="{Binding Changes}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ReleaseNoteChangeViewModel">
+                <Grid ColumnDefinitions="22,*" Margin="0,5">
+                  <TextBlock Text="&#8226;" />
+                  <TextBlock Grid.Column="1"
+                             Text="{Binding Text}"
+                             TextWrapping="Wrap" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Button Grid.Row="2"
+            Margin="0,20,0,0"
+            HorizontalAlignment="Right"
+            Classes="primary"
+            Click="Close_Click"
+            Content="Close" />
+  </Grid>
+</Window>

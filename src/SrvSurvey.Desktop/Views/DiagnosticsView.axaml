@@ -35,7 +35,7 @@
         </StackPanel>
       </Border>
 
-      <Border x:Name="ApplicationUpdatesSection"
+      <Border x:Name="ApplicationUpdatesAnchor"
               Classes="card">
         <StackPanel Spacing="12">
           <StackPanel Spacing="4">
@@ -77,6 +77,11 @@
                     IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
                     Command="{Binding ReleaseUpdates.InstallCommand}"
                     Content="{Binding ReleaseUpdates.InstallButtonText}" />
+            <Button Classes="secondary"
+                    Margin="8,0,0,8"
+                    IsVisible="{Binding ReleaseUpdates.HasReleaseNotes}"
+                    Click="ReleaseNotes_Click"
+                    Content="Release notes" />
           </WrapPanel>
 
           <CheckBox IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
@@ -120,11 +125,11 @@
           <TextBlock Classes="monospace muted"
                      FontSize="11"
                      TextWrapping="Wrap"
-                     Text="{Binding ReferenceDataUpdates.UpdatedCatalogs, StringFormat=Updated: {0}}" />
+                     Text="{Binding ReferenceDataUpdates.UpdatedCatalogs}" />
           <TextBlock Classes="monospace muted"
                      FontSize="11"
                      TextWrapping="Wrap"
-                     Text="{Binding ReferenceDataUpdates.BackupDirectory, StringFormat=Backup: {0}}" />
+                     Text="{Binding ReferenceDataUpdates.BackupDirectory}" />
           <WrapPanel Orientation="Horizontal">
             <Button Classes="secondary"
                     Margin="0,0,8,0"

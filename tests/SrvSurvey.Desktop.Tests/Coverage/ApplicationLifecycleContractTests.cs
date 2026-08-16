@@ -30,6 +30,26 @@ public sealed class ApplicationLifecycleContractTests
             StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void LinuxTerminationSignalUsesOrderlyDesktopShutdown()
+    {
+        var source = File.ReadAllText(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "App.axaml.cs"));
+
+        Assert.Contains("PosixSignal.SIGTERM", source, StringComparison.Ordinal);
+        Assert.Contains(
+            "Dispatcher.UIThread.Post(() => desktop.Shutdown());",
+            source,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "linuxTerminationRegistration?.Dispose();",
+            source,
+            StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

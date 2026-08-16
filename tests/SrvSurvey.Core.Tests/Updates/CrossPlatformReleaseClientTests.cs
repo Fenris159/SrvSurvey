@@ -47,6 +47,8 @@ public sealed class CrossPlatformReleaseClientTests
         Assert.Equal(
             "https://downloads.example.test/windows.zip",
             result.Package.DownloadUri.AbsoluteUri);
+        Assert.Contains("## What's changed", result.ReleaseNotes);
+        Assert.DoesNotContain("## Packaging", result.ReleaseNotes);
         Assert.Equal([ReleasesUri, IndexUri], handler.RequestUris);
         Assert.All(handler.UserAgents, value =>
             Assert.Contains("SrvSurvey-XP/1.0", value));
@@ -268,6 +270,19 @@ public sealed class CrossPlatformReleaseClientTests
                 draft = false,
                 prerelease,
                 html_url = $"https://example.test/releases/{version}",
+                body = """
+                    # SrvSurvey-XP
+
+                    Release summary.
+
+                    ## What's changed
+
+                    - A useful change.
+
+                    ## Packaging
+
+                    - Package detail that is not shown in the app.
+                    """,
                 assets = new[]
                 {
                     new

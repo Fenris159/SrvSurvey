@@ -24,9 +24,30 @@ public sealed class ReferenceDataUpdateViewModelTests
         Assert.True(viewModel.IsRestartRequired);
         Assert.Contains("Codex reference", viewModel.UpdatedCatalogs);
         Assert.Equal(
-            "/profiles/reference-backups/verified",
+            "Backup created this session: /profiles/reference-backups/verified",
             viewModel.BackupDirectory);
         Assert.Contains("Restart SrvSurvey", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task CurrentCatalogsExplainThatNoUpdateOrBackupWasNeeded()
+    {
+        var result = new PublishedReferenceUpdateResult(
+            PublishedReferenceVersions.Empty,
+            PublishedReferenceVersions.Empty,
+            [],
+            [],
+            null);
+        var viewModel = new ReferenceDataUpdateViewModel(
+            new StubService(result),
+            Path.GetTempPath(),
+            "Ready");
+
+        await viewModel.RefreshAsync();
+
+        Assert.Contains("None needed; already current", viewModel.UpdatedCatalogs);
+        Assert.Contains("Not needed; no catalogs were replaced", viewModel.BackupDirectory);
+        Assert.Equal("Published reference data is current.", viewModel.StatusMessage);
     }
 
     [Fact]

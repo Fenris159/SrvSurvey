@@ -14,8 +14,10 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
     private readonly AsyncCommand restartCommand;
     private Func<Task>? restartHandler;
     private string statusMessage;
-    private string updatedCatalogs = "No refreshed catalogs this session.";
-    private string backupDirectory = "No reference backup created this session.";
+    private string updatedCatalogs =
+        "Catalogs updated this session: None yet; the automatic check is pending.";
+    private string backupDirectory =
+        "Backup created this session: Not needed unless catalogs are replaced.";
     private bool isRefreshing;
     private bool isRestartRequired;
 
@@ -110,8 +112,10 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
             var result = await service.RefreshAsync(dataDirectory);
             if (result.UpdatedCatalogs.Count == 0)
             {
-                UpdatedCatalogs = "No refreshed catalogs this session.";
-                BackupDirectory = "No reference backup created this session.";
+                UpdatedCatalogs =
+                    "Catalogs updated this session: None needed; already current.";
+                BackupDirectory =
+                    "Backup created this session: Not needed; no catalogs were replaced.";
                 IsRestartRequired = false;
                 StatusMessage = result.Warnings.Count == 0
                     ? "Published reference data is current."
@@ -119,9 +123,12 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
                 return;
             }
 
-            UpdatedCatalogs = string.Join(", ", result.UpdatedCatalogs);
+            UpdatedCatalogs = "Catalogs updated this session: "
+                + string.Join(", ", result.UpdatedCatalogs);
             BackupDirectory = result.BackupDirectory
-                ?? "No prior downloaded reference files required a backup.";
+                is { } backup
+                ? "Backup created this session: " + backup
+                : "Backup created this session: Not needed; no prior downloaded catalogs were replaced.";
             IsRestartRequired = result.RestartRequired;
             StatusMessage = $"Activated {result.UpdatedCatalogs.Count:N0} verified "
                 + "reference update(s). Restart SrvSurvey to use them.";
@@ -135,8 +142,10 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
         catch (Exception exception)
         {
             IsRestartRequired = false;
-            UpdatedCatalogs = "No reference updates were activated.";
-            BackupDirectory = "The prior live reference data remains active.";
+            UpdatedCatalogs =
+                "Catalogs updated this session: None; refresh failed before activation.";
+            BackupDirectory =
+                "Backup created this session: Not needed; existing reference data remains active.";
             StatusMessage = "Reference refresh failed safely: "
                 + exception.Message
                 + " Player profile and survey files were not changed.";

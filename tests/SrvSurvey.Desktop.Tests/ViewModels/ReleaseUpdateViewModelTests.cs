@@ -21,6 +21,8 @@ public sealed class ReleaseUpdateViewModelTests
         Assert.Equal("2.0.95.0", viewModel.CurrentVersion);
         Assert.Equal("2.0.95.23", viewModel.LatestVersion);
         Assert.Contains("unpackaged build", viewModel.StatusMessage);
+        Assert.True(viewModel.HasReleaseNotes);
+        Assert.Contains("A useful change", viewModel.ReleaseNotes);
         Assert.False(viewModel.OpenReleaseCommand.CanExecute(null));
     }
 
@@ -49,6 +51,10 @@ public sealed class ReleaseUpdateViewModelTests
                     StagingService = new StubStagingService(calls),
                     InstallationPreparer = new StubPreparer(calls),
                     HandoffService = new StubHandoff(calls),
+                    InstanceManager = new StubInstanceManager(0),
+                    ConfirmMultipleInstances = _ =>
+                        throw new InvalidOperationException(
+                            "Confirmation was not expected."),
                     DataDirectory = temporaryDirectory,
                     InstallationDirectory = installationDirectory,
                     StartupArguments = ["--frontier-id", "F123"],
@@ -103,6 +109,10 @@ public sealed class ReleaseUpdateViewModelTests
                     StagingService = new StubStagingService(calls),
                     InstallationPreparer = new StubPreparer(calls),
                     HandoffService = new StubHandoff(calls),
+                    InstanceManager = new StubInstanceManager(0),
+                    ConfirmMultipleInstances = _ =>
+                        throw new InvalidOperationException(
+                            "Confirmation was not expected."),
                     DataDirectory = temporaryDirectory,
                     InstallationDirectory = installationDirectory,
                     StartupArguments = [],
@@ -125,6 +135,120 @@ public sealed class ReleaseUpdateViewModelTests
                 "replace your existing AppImage",
                 ReleaseUpdateViewModel.AppImageManualInstallInstructions);
             Assert.Empty(calls);
+        }
+        finally
+        {
+            Directory.Delete(temporaryDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task MultipleInstancesCloseBeforeTheDownloadAfterConfirmation()
+    {
+        var temporaryDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-update-instance-tests-{Guid.NewGuid():N}");
+        var installationDirectory = Path.Combine(temporaryDirectory, "install");
+        Directory.CreateDirectory(installationDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(installationDirectory, "release-package.json"),
+            "{}");
+        var calls = new List<string>();
+        try
+        {
+            var viewModel = new ReleaseUpdateViewModel(
+                new StubService(CreateResult(isAvailable: true)),
+                new Version(2, 0, 95, 0));
+            viewModel.ConfigureInstaller(
+                new ReleaseInstallerConfiguration
+                {
+                    DownloadService = new StubDownloader(calls),
+                    StagingService = new StubStagingService(calls),
+                    InstallationPreparer = new StubPreparer(calls),
+                    HandoffService = new StubHandoff(calls),
+                    InstanceManager = new StubInstanceManager(2, calls),
+                    ConfirmMultipleInstances = count =>
+                    {
+                        calls.Add($"confirm:{count}");
+                        return Task.FromResult(true);
+                    },
+                    DataDirectory = temporaryDirectory,
+                    InstallationDirectory = installationDirectory,
+                    StartupArguments = [],
+                    Shutdown = () =>
+                    {
+                        calls.Add("shutdown");
+                        return Task.CompletedTask;
+                    },
+                });
+            await viewModel.CheckAsync();
+            viewModel.InstallConfirmed = true;
+
+            await viewModel.InstallAsync();
+
+            Assert.Equal(
+                [
+                    "detect",
+                    "confirm:2",
+                    "close",
+                    "download",
+                    "stage",
+                    "prepare",
+                    "handoff",
+                    "shutdown",
+                ],
+                calls);
+        }
+        finally
+        {
+            Directory.Delete(temporaryDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DecliningMultipleInstanceWarningDoesNotCloseOrDownload()
+    {
+        var temporaryDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-update-instance-tests-{Guid.NewGuid():N}");
+        var installationDirectory = Path.Combine(temporaryDirectory, "install");
+        Directory.CreateDirectory(installationDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(installationDirectory, "release-package.json"),
+            "{}");
+        var calls = new List<string>();
+        try
+        {
+            var viewModel = new ReleaseUpdateViewModel(
+                new StubService(CreateResult(isAvailable: true)),
+                new Version(2, 0, 95, 0));
+            viewModel.ConfigureInstaller(
+                new ReleaseInstallerConfiguration
+                {
+                    DownloadService = new StubDownloader(calls),
+                    StagingService = new StubStagingService(calls),
+                    InstallationPreparer = new StubPreparer(calls),
+                    HandoffService = new StubHandoff(calls),
+                    InstanceManager = new StubInstanceManager(1, calls),
+                    ConfirmMultipleInstances = count =>
+                    {
+                        calls.Add($"confirm:{count}");
+                        return Task.FromResult(false);
+                    },
+                    DataDirectory = temporaryDirectory,
+                    InstallationDirectory = installationDirectory,
+                    StartupArguments = [],
+                    Shutdown = () => Task.CompletedTask,
+                });
+            await viewModel.CheckAsync();
+            viewModel.InstallConfirmed = true;
+
+            await viewModel.InstallAsync();
+
+            Assert.Equal(["detect", "confirm:1"], calls);
+            Assert.False(viewModel.IsInstalling);
+            Assert.True(viewModel.InstallConfirmed);
+            Assert.Contains("no files were changed", viewModel.StatusMessage);
         }
         finally
         {
@@ -284,7 +408,8 @@ public sealed class ReleaseUpdateViewModelTests
                     new string('a', 64),
                     new Uri("https://example.test/package.zip"))
                 : null,
-            ReleaseChannel.Development);
+            ReleaseChannel.Development,
+            "## What's changed\n\n- A useful change.");
     }
 
     private static async Task WaitUntilAsync(Func<bool> predicate)
@@ -358,6 +483,25 @@ public sealed class ReleaseUpdateViewModelTests
                 true,
                 package.Size,
                 package.Sha256));
+        }
+    }
+
+    private sealed class StubInstanceManager(
+        int otherCount,
+        List<string>? calls = null) : IApplicationInstanceManager
+    {
+        public Task<int> CountOtherInstancesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            calls?.Add("detect");
+            return Task.FromResult(otherCount);
+        }
+
+        public Task CloseOtherInstancesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            calls?.Add("close");
+            return Task.CompletedTask;
         }
     }
 
