@@ -43,7 +43,7 @@
         <StackPanel Grid.Column="1"
                     VerticalAlignment="Center"
                     Spacing="1">
-          <TextBlock Classes="eyebrow" Text="FLIGHT WARNING" />
+          <TextBlock Classes="overlay-header" Text="FLIGHT WARNING" />
           <TextBlock Foreground="{Binding Survey.FlightWarningBrush}"
                      FontSize="13"
                      FontWeight="Bold"

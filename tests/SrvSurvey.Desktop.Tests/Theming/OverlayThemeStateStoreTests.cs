@@ -20,15 +20,21 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
         File.WriteAllText(themePath, originalTheme);
         var store = new OverlayThemeStateStore(statePath);
         var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
+        var typography = OverlayTypographySettings.Default with
+        {
+            Body = 12.5,
+            Caption = 8.5,
+        };
 
-        var first = store.SaveState("Exploration", colors);
+        var first = store.SaveState("Exploration", colors, typography);
         colors["orange"] = Color.FromArgb(255, 10, 20, 30);
-        var updated = store.SaveState(" exploration ", colors);
+        var updated = store.SaveState(" exploration ", colors, typography);
         var loaded = store.Load();
 
         var state = Assert.Single(loaded.States);
         Assert.Equal("exploration", state.Name);
         Assert.Equal(Color.FromArgb(255, 10, 20, 30), state.Colors["orange"]);
+        Assert.Equal(typography, state.EffectiveTypography);
         Assert.False(first.ReplacedExisting);
         Assert.True(updated.ReplacedExisting);
         Assert.NotNull(updated.BackupPath);
@@ -116,6 +122,7 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
         var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
         Assert.All(addedRoles, role =>
             Assert.Equal(defaults[role], state.Colors[role]));
+        Assert.Equal(OverlayTypographySettings.Default, state.EffectiveTypography);
     }
 
     public void Dispose()

@@ -12,6 +12,7 @@ public sealed class LegacyOverlayThemeStore
     private static readonly IReadOnlyDictionary<string, Color> DefaultColors =
         new Dictionary<string, Color>(StringComparer.Ordinal)
         {
+            ["header"] = Color.FromArgb(255, 255, 255, 0),
             ["orange"] = Color.FromArgb(255, 255, 111, 0),
             ["orangeDark"] = Color.FromArgb(255, 95, 48, 3),
             ["cyan"] = Color.FromArgb(255, 84, 223, 237),
@@ -24,7 +25,7 @@ public sealed class LegacyOverlayThemeStore
             ["white"] = Color.FromArgb(255, 255, 255, 255),
             ["black"] = Color.FromArgb(255, 0, 0, 0),
             ["menuGold"] = Color.FromArgb(235, 235, 145, 0),
-            ["grey"] = Color.FromArgb(255, 100, 100, 100),
+            ["grey"] = Color.FromArgb(255, 153, 175, 191),
             // Reward PIPs preserve the legacy VolumeBar palette. Fill colors,
             // possible-range colors, and outer edges are independent because
             // the WinForms renderer used a different brush for each layer.
@@ -124,6 +125,11 @@ public sealed class LegacyOverlayThemeStore
                     "The legacy overlay theme is not a JSON object.");
             var colors = new Dictionary<string, Color>(StringComparer.Ordinal);
             ParseObject(root, string.Empty, colors);
+            var typography = OverlayTypographySettings.Parse(
+                root["typography"] as JsonObject,
+                "Overlay theme");
+            _ = OverlayThemePresetCatalog.AddMissingHeaderColor(colors);
+            UpgradeLegacyDefaultMutedColor(colors);
             _ = OverlayThemePresetCatalog.TryUpgradeLegacyBiologyPalette(colors);
             _ = OverlayThemePresetCatalog.AddMissingExpandedBiologyColors(colors);
             foreach (var fallback in DefaultColors)
@@ -131,7 +137,7 @@ public sealed class LegacyOverlayThemeStore
                 colors.TryAdd(fallback.Key, fallback.Value);
             }
 
-            return new LegacyOverlayTheme(colors, true, null);
+            return new LegacyOverlayTheme(colors, true, null, typography);
         }
         catch (Exception exception) when (
             exception is IOException
@@ -169,9 +175,11 @@ public sealed class LegacyOverlayThemeStore
         var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
-            WriteTheme(temporaryPath, theme.Colors);
+            WriteTheme(temporaryPath, theme.Colors, theme.EffectiveTypography);
             var verified = new LegacyOverlayThemeStore(temporaryPath).Load();
-            if (verified.Error is not null || !ColorsEqual(theme.Colors, verified.Colors))
+            if (verified.Error is not null
+                || !ColorsEqual(theme.Colors, verified.Colors)
+                || verified.EffectiveTypography != theme.EffectiveTypography)
             {
                 throw new InvalidDataException(
                     verified.Error ?? "The written overlay theme did not verify.");
@@ -194,7 +202,36 @@ public sealed class LegacyOverlayThemeStore
         return new LegacyOverlayTheme(
             new Dictionary<string, Color>(DefaultColors, StringComparer.Ordinal),
             false,
-            null);
+            null,
+            OverlayTypographySettings.Default);
+    }
+
+    private static void UpgradeLegacyDefaultMutedColor(
+        Dictionary<string, Color> colors)
+    {
+        var previousMuted = Color.FromArgb(255, 100, 100, 100);
+        if (!colors.TryGetValue("grey", out var muted)
+            || muted != previousMuted)
+        {
+            return;
+        }
+
+        string[] unchangedGeneralKeys =
+        [
+            "orange",
+            "orangeDark",
+            "cyan",
+            "cyanDark",
+            "yellow",
+            "white",
+            "menuGold",
+        ];
+        if (unchangedGeneralKeys.All(key =>
+                colors.TryGetValue(key, out var color)
+                && color == DefaultColors[key]))
+        {
+            colors["grey"] = DefaultColors["grey"];
+        }
     }
 
     private static void ParseObject(
@@ -204,6 +241,12 @@ public sealed class LegacyOverlayThemeStore
     {
         foreach (var entry in source)
         {
+            if (prefix.Length == 0
+                && string.Equals(entry.Key, "typography", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             var name = prefix + entry.Key;
             if (entry.Value is JsonObject child)
             {
@@ -363,13 +406,16 @@ public sealed class LegacyOverlayThemeStore
 
     private static void WriteTheme(
         string outputPath,
-        IReadOnlyDictionary<string, Color> colors)
+        IReadOnlyDictionary<string, Color> colors,
+        OverlayTypographySettings typography)
     {
         var root = new JsonObject();
         foreach (var entry in colors.OrderBy(entry => entry.Key, StringComparer.Ordinal))
         {
             SetNestedValue(root, entry.Key, FormatHtmlColor(entry.Value));
         }
+
+        root["typography"] = typography.ToJson();
 
         using var stream = new FileStream(
             outputPath,
@@ -422,8 +468,12 @@ public sealed class LegacyOverlayThemeStore
 public sealed record LegacyOverlayTheme(
     IReadOnlyDictionary<string, Color> Colors,
     bool IsCustom,
-    string? Error)
+    string? Error,
+    OverlayTypographySettings? Typography = null)
 {
+    public OverlayTypographySettings EffectiveTypography =>
+        Typography ?? OverlayTypographySettings.Default;
+
     public Color GetColor(string name)
     {
         return Colors.TryGetValue(name, out var color)

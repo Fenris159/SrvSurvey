@@ -78,6 +78,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         Assert.Equal(
             Color.FromArgb(255, 20, 20, 20),
             theme.GetColor("guardian.surface"));
+        Assert.Equal(OverlayTypographySettings.Default, theme.EffectiveTypography);
     }
 
     [Fact]
@@ -143,8 +144,17 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
         colors["orange"] = Color.FromArgb(128, 12, 34, 56);
         colors["custom.future"] = Color.FromArgb(255, 90, 80, 70);
+        var typography = OverlayTypographySettings.Default with
+        {
+            Header = 11.5,
+            Title = 16,
+        };
 
-        var result = store.Save(new LegacyOverlayTheme(colors, true, null));
+        var result = store.Save(new LegacyOverlayTheme(
+            colors,
+            true,
+            null,
+            typography));
         var loaded = store.Load();
 
         Assert.Null(loaded.Error);
@@ -152,6 +162,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         Assert.All(colors, entry => Assert.Equal(
             entry.Value,
             loaded.Colors[entry.Key]));
+        Assert.Equal(typography, loaded.EffectiveTypography);
         Assert.NotNull(result.BackupPath);
         Assert.True(File.Exists(result.BackupPath));
         Assert.Equal("{\"orange\":[1,2,3]}", File.ReadAllText(result.BackupPath!));
@@ -173,6 +184,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         Assert.Equal(
             currentPreset.Colors["bio.prediction"],
             theme.GetColor("bio.prediction"));
+        Assert.Equal(Color.Parse("#FFCC33"), theme.GetColor("header"));
         Assert.NotEqual(
             Color.Parse("#4D4F51"),
             theme.GetColor("bio.prediction"));
@@ -210,6 +222,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
 
         Assert.Null(theme.Error);
         Assert.Equal(defaults["bio.prediction"], theme.GetColor("bio.prediction"));
+        Assert.Equal(defaults["grey"], theme.GetColor("grey"));
         Assert.Equal(defaults["bio.goldFill"], theme.GetColor("bio.goldFill"));
         Assert.Equal(
             defaults["bio.predictionPotential"],
@@ -232,6 +245,26 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         Assert.Equal(
             OverlayThemePresetCatalog.DefaultName,
             OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name);
+    }
+
+    [Fact]
+    public void CustomLegacyMutedGreyIsNotMigrated()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "theme.json");
+        File.WriteAllText(
+            path,
+            """
+            {
+              "orange": "#010203",
+              "grey": "#646464"
+            }
+            """);
+
+        var theme = new LegacyOverlayThemeStore(path).Load();
+
+        Assert.Null(theme.Error);
+        Assert.Equal(Color.Parse("#646464"), theme.GetColor("grey"));
     }
 
     [Fact]

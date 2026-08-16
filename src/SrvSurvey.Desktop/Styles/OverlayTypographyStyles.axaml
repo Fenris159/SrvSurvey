@@ -11,32 +11,46 @@
 
   <!-- Overlay typography uses role-based sizing. Oxanium carries titles,
        body copy, and values; Rajdhani compresses labels and longer detail. -->
+  <Style Selector="Window.srv-overlay TextBlock.overlay-header">
+    <Setter Property="FontFamily"
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
+    <Setter Property="FontSize"
+            Value="{DynamicResource RavenOverlayHeaderFontSize}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LetterSpacing" Value="1.2" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenHeaderBrush}" />
+  </Style>
   <Style Selector="Window.srv-overlay TextBlock.overlay-title">
     <Setter Property="FontFamily"
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
-    <Setter Property="FontSize" Value="15" />
+    <Setter Property="FontSize"
+            Value="{DynamicResource RavenOverlayTitleFontSize}" />
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
   <Style Selector="Window.srv-overlay TextBlock.overlay-value">
     <Setter Property="FontFamily"
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
-    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontSize"
+            Value="{DynamicResource RavenOverlayValueFontSize}" />
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
   <Style Selector="Window.srv-overlay TextBlock.overlay-body">
     <Setter Property="FontFamily"
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
-    <Setter Property="FontSize" Value="11" />
+    <Setter Property="FontSize"
+            Value="{DynamicResource RavenOverlayBodyFontSize}" />
   </Style>
   <Style Selector="Window.srv-overlay TextBlock.overlay-detail">
     <Setter Property="FontFamily"
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
-    <Setter Property="FontSize" Value="10" />
+    <Setter Property="FontSize"
+            Value="{DynamicResource RavenOverlayDetailFontSize}" />
   </Style>
   <Style Selector="Window.srv-overlay TextBlock.overlay-caption">
     <Setter Property="FontFamily"
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
-    <Setter Property="FontSize" Value="9" />
+    <Setter Property="FontSize"
+            Value="{DynamicResource RavenOverlayCaptionFontSize}" />
   </Style>
   <Style Selector="Window.srv-overlay TextBlock.eyebrow">
     <Setter Property="FontFamily"

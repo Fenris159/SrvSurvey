@@ -43,6 +43,7 @@ public sealed class RavenThemeServiceTests : IDisposable
         var store = new ThemePreferenceStore(
             Path.Combine(temporaryDirectory, "ui.json"));
         var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
+        colors["header"] = Color.FromArgb(255, 210, 180, 30);
         colors["orange"] = Color.FromArgb(255, 12, 34, 56);
         colors["orangeDark"] = Color.FromArgb(255, 65, 43, 21);
         colors["bio.confirmed"] = Color.FromArgb(255, 23, 45, 67);
@@ -55,13 +56,24 @@ public sealed class RavenThemeServiceTests : IDisposable
         colors["bio.galacticRegionPotential"] = Color.FromArgb(255, 91, 92, 93);
         colors["bio.unknownGlyph"] = Color.FromArgb(255, 98, 76, 54);
         colors["guardian.primary"] = Color.FromArgb(255, 21, 42, 63);
+        var typography = OverlayTypographySettings.Default with
+        {
+            Header = 11.5,
+            Detail = 10.5,
+        };
         var service = new RavenThemeService(
             application,
             store,
-            new LegacyOverlayTheme(colors, true, null));
+            new LegacyOverlayTheme(colors, true, null, typography));
 
         service.ApplyCurrent();
 
+        Assert.Equal(
+            Color.FromArgb(255, 210, 180, 30),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenOverlayHeaderBrush"]).Color);
+        Assert.Equal(11.5, application.Resources["RavenOverlayHeaderFontSize"]);
+        Assert.Equal(10.5, application.Resources["RavenOverlayDetailFontSize"]);
         Assert.Equal(
             Color.FromArgb(255, 12, 34, 56),
             Assert.IsType<SolidColorBrush>(

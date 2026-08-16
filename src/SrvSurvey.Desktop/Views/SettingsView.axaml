@@ -248,6 +248,50 @@
                        TextWrapping="Wrap"
                        Text="Choose any colour swatch to open its visual picker, or use the hex field for exact values. Alpha is supported for translucent overlays." />
 
+            <Border Classes="card">
+              <StackPanel Spacing="10">
+                <StackPanel Spacing="3">
+                  <TextBlock Classes="card-title" Text="Typography" />
+                  <TextBlock Classes="muted"
+                             FontSize="11"
+                             TextWrapping="Wrap"
+                             Text="Font sizes apply to shared overlay text roles. Values use half-point increments and update open overlays when previewed or applied." />
+                </StackPanel>
+                <ItemsControl x:Name="OverlayTypographyEditorList"
+                              ItemsSource="{Binding OverlayTheme.Typography}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel Orientation="Horizontal" ItemWidth="340" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:OverlayTypographyEditorViewModel">
+                      <Grid Width="326"
+                            Margin="0,0,12,6"
+                            ColumnDefinitions="*,Auto,122"
+                            ColumnSpacing="8">
+                        <TextBlock VerticalAlignment="Center"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding DisplayName}" />
+                        <TextBlock Grid.Column="1"
+                                   VerticalAlignment="Center"
+                                   Classes="muted"
+                                   Text="Font Size:" />
+                        <NumericUpDown Grid.Column="2"
+                                       Width="122"
+                                       Height="32"
+                                       Minimum="7"
+                                       Maximum="32"
+                                       Increment="0.5"
+                                       FormatString="0.#"
+                                       Value="{Binding FontSize, Mode=TwoWay}" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+
             <ItemsControl x:Name="OverlayThemeColorEditorList"
                           ItemsSource="{Binding OverlayTheme.Categories}">
               <ItemsControl.ItemTemplate>

@@ -16,6 +16,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
     private static readonly IReadOnlyList<OverlayThemeColorDefinition> Definitions =
     [
+        new(CategoryGeneral, "header", "Header"),
         new(CategoryGeneral, "orange", "Primary accent"),
         new(CategoryGeneral, "orangeDark", "Primary accent (dim)"),
         new(CategoryGeneral, "cyan", "Secondary accent"),
@@ -170,6 +171,17 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         new(CategoryGuardian, "guardian.danger", "Danger / missing"),
     ];
 
+    private static readonly IReadOnlyList<OverlayTypographyDefinition>
+        TypographyDefinitions =
+        [
+            new("header", "Header"),
+            new("title", "Title"),
+            new("value", "Value"),
+            new("body", "Body"),
+            new("detail", "Detail"),
+            new("caption", "Caption"),
+        ];
+
     private readonly LegacyOverlayThemeStore activeStore;
     private readonly OverlayThemeStateStore stateStore;
     private readonly RavenThemeService? themeService;
@@ -179,6 +191,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     private readonly DelegateCommand loadStateCommand;
     private readonly DelegateCommand deleteStateCommand;
     private IReadOnlyList<OverlayThemeCategoryViewModel> categories = [];
+    private IReadOnlyList<OverlayTypographyEditorViewModel> typography = [];
     private IReadOnlyList<string> savedStates = [];
     private string? selectedSavedState;
     private string stateName = string.Empty;
@@ -214,11 +227,12 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
         var theme = initialTheme ?? themeService?.CurrentOverlayTheme ?? activeStore.Load();
         ReplaceEditors(theme.Colors, acceptChanges: true);
+        ReplaceTypographyEditors(theme.EffectiveTypography, acceptChanges: true);
         RefreshSavedStates(
             OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name);
         StatusMessage = theme.Error
-            ?? "Overlay colours are independent from the application theme."
-                + " Imported theme.json colours are active until you apply changes here.";
+            ?? "Overlay colours and typography are independent from the application theme."
+                + " Imported theme.json appearance settings are active until you apply changes here.";
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -229,6 +243,16 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         private set
         {
             categories = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public IReadOnlyList<OverlayTypographyEditorViewModel> Typography
+    {
+        get => typography;
+        private set
+        {
+            typography = value;
             OnPropertyChanged();
         }
     }
@@ -289,7 +313,8 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     public bool HasStatusMessage => StatusMessage.Length > 0;
 
     public bool IsDirty => Categories.SelectMany(category => category.Colors)
-        .Any(color => color.IsDirty);
+        .Any(color => color.IsDirty)
+        || Typography.Any(editor => editor.IsDirty);
 
     public bool HasValidationErrors => Categories.SelectMany(category => category.Colors)
         .Any(color => color.HasValidationError);
@@ -332,7 +357,12 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
                 editor.AcceptChanges();
             }
 
-            StatusMessage = "Applied overlay colours to theme.json and all open overlays."
+            foreach (var editor in Typography)
+            {
+                editor.AcceptChanges();
+            }
+
+            StatusMessage = "Applied overlay colours and typography to theme.json and all open overlays."
                 + (result.BackupPath is null
                     ? string.Empty
                     : $" Previous theme backup: {result.BackupPath}");
@@ -354,7 +384,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         try
         {
             themeService?.ApplyOverlayTheme(CreateDraftTheme());
-            StatusMessage = "Refreshed all open overlays and position previews with unsaved colours. Apply to keep them, or discard changes to restore theme.json.";
+            StatusMessage = "Refreshed all open overlays and position previews with unsaved colours and typography. Apply to keep them, or discard changes to restore theme.json.";
         }
         catch (Exception exception) when (
             exception is InvalidDataException
@@ -377,7 +407,11 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
         try
         {
-            var result = stateStore.SaveState(StateName, CreateDraftTheme().Colors);
+            var draft = CreateDraftTheme();
+            var result = stateStore.SaveState(
+                StateName,
+                draft.Colors,
+                draft.EffectiveTypography);
             RefreshSavedStates(result.StateName);
             StateName = result.StateName;
             StatusMessage = result.ReplacedExisting
@@ -424,6 +458,9 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         }
 
         ReplaceEditors(state.Colors, acceptChanges: false);
+        ReplaceTypographyEditors(
+            state.EffectiveTypography,
+            acceptChanges: false);
         StateName = state.Name;
         Preview();
     }
@@ -467,12 +504,13 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     {
         var theme = activeStore.Load();
         ReplaceEditors(theme.Colors, acceptChanges: true);
+        ReplaceTypographyEditors(theme.EffectiveTypography, acceptChanges: true);
         SetSelectedSavedState(
             OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name,
             loadBuiltInPreset: false);
         themeService?.ApplyOverlayTheme(theme);
         StatusMessage = theme.Error
-            ?? "Reloaded the active theme.json colours, discarded editor changes, and refreshed open overlays.";
+            ?? "Reloaded the active theme.json colours and typography, discarded editor changes, and refreshed open overlays.";
     }
 
     private LegacyOverlayTheme CreateDraftTheme()
@@ -489,7 +527,8 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
                 editor => editor.Color,
                 StringComparer.Ordinal),
             IsCustom: true,
-            Error: null);
+            Error: null,
+            Typography: CreateTypographySettings());
     }
 
     private void ReplaceEditors(
@@ -533,6 +572,53 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
             .ToArray();
         OnEditorsChanged();
     }
+
+    private void ReplaceTypographyEditors(
+        OverlayTypographySettings settings,
+        bool acceptChanges)
+    {
+        Typography = TypographyDefinitions.Select(definition =>
+        {
+            var editor = new OverlayTypographyEditorViewModel(
+                definition,
+                GetTypographyValue(settings, definition.Key),
+                OnEditorsChanged);
+            if (!acceptChanges)
+            {
+                editor.MarkDirty();
+            }
+
+            return editor;
+        }).ToArray();
+        OnEditorsChanged();
+    }
+
+    private OverlayTypographySettings CreateTypographySettings() => new(
+        Header: GetTypographyEditor("header").FontSize,
+        Title: GetTypographyEditor("title").FontSize,
+        Value: GetTypographyEditor("value").FontSize,
+        Body: GetTypographyEditor("body").FontSize,
+        Detail: GetTypographyEditor("detail").FontSize,
+        Caption: GetTypographyEditor("caption").FontSize);
+
+    private OverlayTypographyEditorViewModel GetTypographyEditor(string key) =>
+        Typography.Single(editor => string.Equals(
+            editor.Key,
+            key,
+            StringComparison.Ordinal));
+
+    private static double GetTypographyValue(
+        OverlayTypographySettings settings,
+        string key) => key switch
+        {
+            "header" => settings.Header,
+            "title" => settings.Title,
+            "value" => settings.Value,
+            "body" => settings.Body,
+            "detail" => settings.Detail,
+            "caption" => settings.Caption,
+            _ => throw new ArgumentOutOfRangeException(nameof(key), key, null),
+        };
 
     private void RefreshSavedStates(string? select = null)
     {
@@ -593,6 +679,9 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         }
 
         ReplaceEditors(preset.Colors, acceptChanges: false);
+        ReplaceTypographyEditors(
+            OverlayTypographySettings.Default,
+            acceptChanges: false);
         StateName = string.Empty;
         StatusMessage = $"Loaded the built-in '{preset.Name}' overlay theme."
             + " Choose Apply to use it in-game.";
@@ -634,6 +723,72 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 public sealed record OverlayThemeCategoryViewModel(
     string Name,
     IReadOnlyList<OverlayThemeColorEditorViewModel> Colors);
+
+public sealed class OverlayTypographyEditorViewModel : INotifyPropertyChanged
+{
+    private readonly Action changed;
+    private double acceptedFontSize;
+    private double fontSize;
+    private bool forceDirty;
+
+    public OverlayTypographyEditorViewModel(
+        OverlayTypographyDefinition definition,
+        double initialFontSize,
+        Action changed)
+    {
+        Definition = definition;
+        this.changed = changed ?? throw new ArgumentNullException(nameof(changed));
+        acceptedFontSize = OverlayTypographySettings.Normalize(initialFontSize);
+        fontSize = acceptedFontSize;
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public OverlayTypographyDefinition Definition { get; }
+
+    public string Key => Definition.Key;
+
+    public string DisplayName => Definition.DisplayName;
+
+    public double FontSize
+    {
+        get => fontSize;
+        set
+        {
+            var normalized = OverlayTypographySettings.Normalize(value);
+            if (fontSize.Equals(normalized))
+            {
+                OnPropertyChanged();
+                return;
+            }
+
+            fontSize = normalized;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsDirty));
+            changed();
+        }
+    }
+
+    public bool IsDirty => forceDirty || !fontSize.Equals(acceptedFontSize);
+
+    public void AcceptChanges()
+    {
+        acceptedFontSize = fontSize;
+        forceDirty = false;
+        OnPropertyChanged(nameof(IsDirty));
+    }
+
+    public void MarkDirty()
+    {
+        forceDirty = true;
+        OnPropertyChanged(nameof(IsDirty));
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
 
 public sealed class OverlayThemeColorEditorViewModel : INotifyPropertyChanged
 {
@@ -770,5 +925,9 @@ public sealed class OverlayThemeColorEditorViewModel : INotifyPropertyChanged
 
 public sealed record OverlayThemeColorDefinition(
     string Category,
+    string Key,
+    string DisplayName);
+
+public sealed record OverlayTypographyDefinition(
     string Key,
     string DisplayName);

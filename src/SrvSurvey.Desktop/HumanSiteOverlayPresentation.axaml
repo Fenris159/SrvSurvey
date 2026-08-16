@@ -21,7 +21,7 @@
             RowDefinitions="Auto,Auto,Auto,Auto,Auto"
             ColumnSpacing="6"
             RowSpacing="2">
-        <TextBlock Classes="eyebrow" Text="HUMAN SETTLEMENT" />
+        <TextBlock Classes="overlay-header" Text="HUMAN SETTLEMENT" />
         <StackPanel Grid.Row="1"
                     Grid.ColumnSpan="2"
                     Orientation="Horizontal"

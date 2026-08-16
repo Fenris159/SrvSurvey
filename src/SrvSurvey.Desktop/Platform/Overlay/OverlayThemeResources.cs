@@ -28,6 +28,7 @@ public static class OverlayThemeResources
             "Window",
             "Surface",
             "RaisedSurface",
+            "Header",
             "Accent",
             "AccentMuted",
             "Text",

@@ -64,6 +64,8 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
             var actionsCard = settings.FindControl<Border>("OverlayThemeActionsCard");
             var colorEditorList = settings.FindControl<ItemsControl>(
                 "OverlayThemeColorEditorList");
+            var typographyEditorList = settings.FindControl<ItemsControl>(
+                "OverlayTypographyEditorList");
             var rows = settings.GetVisualDescendants()
                 .OfType<Grid>()
                 .Where(grid => grid.Classes.Contains("overlay-theme-color-row"))
@@ -73,6 +75,19 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
             Assert.NotNull(presetCard);
             Assert.NotNull(actionsCard);
             Assert.NotNull(colorEditorList);
+            Assert.NotNull(typographyEditorList);
+            var typographyEditors = typographyEditorList.GetVisualDescendants()
+                .OfType<NumericUpDown>()
+                .ToArray();
+            Assert.Equal(6, typographyEditors.Length);
+            Assert.All(typographyEditors, editor =>
+            {
+                var valueTextBox = editor.GetVisualDescendants()
+                    .OfType<TextBox>()
+                    .Single();
+                Assert.True(valueTextBox.Bounds.Width >= 40);
+                Assert.False(string.IsNullOrWhiteSpace(valueTextBox.Text));
+            });
             var presetOrigin = presetCard.TranslatePoint(default, settings);
             var actionsOrigin = actionsCard.TranslatePoint(default, settings);
             var colorEditorOrigin = colorEditorList.TranslatePoint(default, settings);

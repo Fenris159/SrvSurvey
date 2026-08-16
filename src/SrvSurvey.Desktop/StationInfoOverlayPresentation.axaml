@@ -19,7 +19,7 @@
             RowDefinitions="Auto,Auto,Auto"
             ColumnSpacing="6"
             RowSpacing="2">
-        <TextBlock Classes="eyebrow" Text="STATION INFORMATION" />
+        <TextBlock Classes="overlay-header" Text="STATION INFORMATION" />
         <StackPanel Grid.Row="1"
                     Grid.ColumnSpan="2"
                     Orientation="Horizontal"

@@ -16,7 +16,7 @@
     <StackPanel Spacing="5">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="3">
-          <TextBlock Classes="eyebrow" Text="SURFACE TARGET" />
+          <TextBlock Classes="overlay-header" Text="SURFACE TARGET" />
           <TextBlock Classes="muted"
                      FontSize="10"
                      Text="Live bearing and descent guidance" />

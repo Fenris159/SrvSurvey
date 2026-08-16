@@ -39,7 +39,7 @@
             RowDefinitions="Auto,Auto,Auto"
             ColumnSpacing="6"
             RowSpacing="2">
-        <TextBlock Classes="eyebrow" Text="LAST FSS SCAN" />
+        <TextBlock Classes="overlay-header" Text="LAST FSS SCAN" />
         <StackPanel Grid.Column="1"
                     HorizontalAlignment="Right"
                     Spacing="4">
