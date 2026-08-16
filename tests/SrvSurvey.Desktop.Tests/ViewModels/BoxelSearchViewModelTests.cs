@@ -33,8 +33,9 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     [Fact]
     public async Task AutoCopyNotifiesManualCopyGuidance()
     {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
         var viewModel = CreateViewModel(
-            new CommanderProfileStore(temporaryDirectory),
+            profileStore,
             new StubResolver([]));
         await viewModel.LoadProfileAsync(
             "F123",
@@ -58,6 +59,9 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             changedProperties);
         Assert.Equal("AUTO-COPY READY", viewModel.NextSystemClipboardStatus);
         Assert.False(viewModel.RequiresManualCopy);
+        await WaitUntilAsync(async () =>
+            (await profileStore.LoadAsync("F123", true))
+                .Data?.BoxelSearch.AutoCopy == true);
     }
 
     [AvaloniaFact]
@@ -959,6 +963,19 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         }
 
         Assert.True(condition(), "Timed out waiting for the asynchronous suggestion request.");
+    }
+
+    private static async Task WaitUntilAsync(Func<Task<bool>> condition)
+    {
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(2);
+        while (!await condition() && DateTimeOffset.UtcNow < deadline)
+        {
+            await Task.Delay(10);
+        }
+
+        Assert.True(
+            await condition(),
+            "Timed out waiting for asynchronous persistence.");
     }
 
     private sealed class StubSuggestionClient(
