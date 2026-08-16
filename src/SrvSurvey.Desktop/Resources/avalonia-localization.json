@@ -8885,10 +8885,6 @@
                    "translation":  "Körper mit geringem Wert können in den Einstellungen abgeblendet oder gefiltert werden, während Körper mit hohem Wert hervorgehoben bleiben."
                },
                {
-                   "source":  "Lowest incomplete suffix in the current boxel.",
-                   "translation":  "Niedrigstes unvollständiges Suffix im aktuellen Boxel."
-               },
-               {
                    "source":  "Lua debug code",
                    "translation":  "Lua-Debug-Code"
                },
@@ -9775,6 +9771,10 @@
                {
                    "source":  "Next entry",
                    "translation":  "Nächster Eintrag"
+               },
+               {
+                   "source":  "Next incomplete suffix in the current boxel.",
+                   "translation":  "Nächstes unvollständiges Suffix im aktuellen Boxel."
                },
                {
                    "source":  "Next or active direction",
@@ -30999,10 +30999,6 @@
                    "translation":  "Los cuerpos de bajo valor se pueden atenuar o filtrar en Configuración, mientras que los cuerpos valiosos permanecen resaltados."
                },
                {
-                   "source":  "Lowest incomplete suffix in the current boxel.",
-                   "translation":  "Sufijo incompleto más bajo en el cuadro actual."
-               },
-               {
                    "source":  "Lua debug code",
                    "translation":  "código de depuración lua"
                },
@@ -31889,6 +31885,10 @@
                {
                    "source":  "Next entry",
                    "translation":  "Próxima entrada"
+               },
+               {
+                   "source":  "Next incomplete suffix in the current boxel.",
+                   "translation":  "Siguiente sufijo incompleto en el cuadro actual."
                },
                {
                    "source":  "Next or active direction",
@@ -53113,10 +53113,6 @@
                    "translation":  "Les corps de faible valeur peuvent être grisés ou filtrés dans Paramètres tandis que les corps de valeur restent mis en surbrillance."
                },
                {
-                   "source":  "Lowest incomplete suffix in the current boxel.",
-                   "translation":  "Suffixe incomplet le plus bas dans le boxel actuel."
-               },
-               {
                    "source":  "Lua debug code",
                    "translation":  "Code de débogage Lua"
                },
@@ -54003,6 +53999,10 @@
                {
                    "source":  "Next entry",
                    "translation":  "Entrée suivante"
+               },
+               {
+                   "source":  "Next incomplete suffix in the current boxel.",
+                   "translation":  "Prochain suffixe incomplet dans le boxel actuel."
                },
                {
                    "source":  "Next or active direction",
@@ -75227,10 +75227,6 @@
                       "translation":  "Os corpos de baixo valor podem ser esmaecidos ou filtrados nas Configurações, enquanto os corpos valiosos permanecem destacados."
                   },
                   {
-                      "source":  "Lowest incomplete suffix in the current boxel.",
-                      "translation":  "Sufixo incompleto mais baixo no boxel atual."
-                  },
-                  {
                       "source":  "Lua debug code",
                       "translation":  "Código de depuração Lua"
                   },
@@ -76117,6 +76113,10 @@
                   {
                       "source":  "Next entry",
                       "translation":  "Próxima entrada"
+                  },
+                  {
+                      "source":  "Next incomplete suffix in the current boxel.",
+                      "translation":  "Próximo sufixo incompleto no boxel atual."
                   },
                   {
                       "source":  "Next or active direction",
@@ -97341,10 +97341,6 @@
                    "translation":  "Тела с низкой ценностью можно затемнить или отфильтровать в настройках, а ценные тела останутся выделенными."
                },
                {
-                   "source":  "Lowest incomplete suffix in the current boxel.",
-                   "translation":  "Самый низкий неполный суффикс в текущем боксе."
-               },
-               {
                    "source":  "Lua debug code",
                    "translation":  "Код отладки Lua"
                },
@@ -98231,6 +98227,10 @@
                {
                    "source":  "Next entry",
                    "translation":  "Следующая запись"
+               },
+               {
+                   "source":  "Next incomplete suffix in the current boxel.",
+                   "translation":  "Следующий неполный суффикс в текущем боксе."
                },
                {
                    "source":  "Next or active direction",
@@ -119455,10 +119455,6 @@
                         "translation":  "低价值的尸体可以在“设置”中变暗或过滤，而有价值的尸体则保持突出显示。"
                     },
                     {
-                        "source":  "Lowest incomplete suffix in the current boxel.",
-                        "translation":  "当前 boxel 中最低的不完整后缀。"
-                    },
-                    {
                         "source":  "Lua debug code",
                         "translation":  "Lua调试代码"
                     },
@@ -120345,6 +120341,10 @@
                     {
                         "source":  "Next entry",
                         "translation":  "下一个条目"
+                    },
+                    {
+                        "source":  "Next incomplete suffix in the current boxel.",
+                        "translation":  "当前 boxel 中的下一个不完整后缀。"
                     },
                     {
                         "source":  "Next or active direction",
@@ -141569,10 +141569,6 @@
                    "translation":  "* LOW-VALUE BODIES CAN BE DIMMED OR FILTERED IN SETTINGS WHILE VALUABLE BODIES REMAIN HIGHLIGHTED. \u003e\u003e\u003e!"
                },
                {
-                   "source":  "Lowest incomplete suffix in the current boxel.",
-                   "translation":  "* LOWEST INCOMPLETE SUFFIX IN THE CURRENT BOXEL. \u003e\u003e\u003e!"
-               },
-               {
                    "source":  "Lua debug code",
                    "translation":  "* LUA DEBUG CODE \u003e\u003e\u003e!"
                },
@@ -142459,6 +142455,10 @@
                {
                    "source":  "Next entry",
                    "translation":  "* NEXT ENTRY \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Next incomplete suffix in the current boxel.",
+                   "translation":  "* NEXT INCOMPLETE SUFFIX IN THE CURRENT BOXEL. \u003e\u003e\u003e!"
                },
                {
                    "source":  "Next or active direction",

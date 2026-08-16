@@ -17810,14 +17810,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Lowest incomplete suffix in the current boxel.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
-  },
-  {
     "Text": "Lua debug code",
     "IsFormat": false,
     "SourceKinds": [
@@ -19599,6 +19591,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
+  },
+  {
+    "Text": "Next incomplete suffix in the current boxel.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Next or active direction",

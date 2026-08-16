@@ -71,6 +71,12 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("TopBoxelTextBox_KeyDown", boxelBindings);
         Assert.Contains("CURRENT BOXEL PREFIX", boxelBindings);
         Assert.Contains("NEXT INCOMPLETE SYSTEM", boxelBindings);
+        Assert.Contains(
+            "Next incomplete suffix in the current boxel.",
+            boxelBindings);
+        Assert.DoesNotContain(
+            "Lowest incomplete suffix in the current boxel.",
+            boxelBindings);
         Assert.Contains("Mark Next Empty", boxelBindings);
         Assert.Contains("{Binding BoxelSearch.MarkNextEmptyCommand}", boxelBindings);
         Assert.Contains("LAST SYSTEM AVAILABLE", boxelBindings);

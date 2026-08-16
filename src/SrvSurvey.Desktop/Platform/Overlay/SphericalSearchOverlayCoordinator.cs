@@ -27,10 +27,9 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         RouteWorkspaceViewModel route,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null,
-        SystemNicknameViewModel? systemNicknames = null,
-        GlobalInputSettingsViewModel? inputSettings = null)
+        SphericalSearchOverlayCoordinatorOptions? options = null)
     {
+        options ??= new SphericalSearchOverlayCoordinatorOptions();
         this.sphere = sphere ?? throw new ArgumentNullException(nameof(sphere));
         this.boxel = boxel ?? throw new ArgumentNullException(nameof(boxel));
         this.route = route ?? throw new ArgumentNullException(nameof(route));
@@ -38,14 +37,14 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
+        overlayLayout = options.OverlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new SphericalSearchOverlayViewModel(
             sphere,
             boxel,
             route,
             platform.Capabilities,
-            systemNicknames,
-            inputSettings);
+            options.SystemNicknames,
+            options.InputSettings);
         sphere.PropertyChanged += OnSearchPropertyChanged;
         boxel.PropertyChanged += OnSearchPropertyChanged;
         route.PropertyChanged += OnSearchPropertyChanged;
@@ -209,4 +208,13 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         window = null;
         overlay?.Close();
     }
+}
+
+public sealed class SphericalSearchOverlayCoordinatorOptions
+{
+    public LegacyOverlayLayout? OverlayLayout { get; init; }
+
+    public SystemNicknameViewModel? SystemNicknames { get; init; }
+
+    public GlobalInputSettingsViewModel? InputSettings { get; init; }
 }

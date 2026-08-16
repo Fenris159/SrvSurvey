@@ -249,9 +249,12 @@ public sealed partial class App : Application
             viewModel.Route,
             overlayPresentation.CreatePlatformService(),
             CreateOverlayGameWindowTracker(),
-            overlayLayout,
-            viewModel.SystemNicknames,
-            viewModel.InputSettings);
+            new SphericalSearchOverlayCoordinatorOptions
+            {
+                OverlayLayout = overlayLayout,
+                SystemNicknames = viewModel.SystemNicknames,
+                InputSettings = viewModel.InputSettings,
+            });
         guardianOverlayCoordinator = new GuardianOverlayCoordinator(
             viewModel.Guardian,
             overlayPresentation.CreatePlatformService(),

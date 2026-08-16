@@ -30,6 +30,36 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.False(viewModel.AutoCopy);
     }
 
+    [Fact]
+    public async Task AutoCopyNotifiesManualCopyGuidance()
+    {
+        var viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([]));
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        viewModel.LowMassCode = "c";
+        await viewModel.ActivateAsync();
+        var changedProperties = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            changedProperties.Add(eventArgs.PropertyName);
+
+        viewModel.AutoCopy = true;
+
+        Assert.Contains(
+            nameof(BoxelSearchViewModel.NextSystemClipboardStatus),
+            changedProperties);
+        Assert.Contains(
+            nameof(BoxelSearchViewModel.RequiresManualCopy),
+            changedProperties);
+        Assert.Equal("AUTO-COPY READY", viewModel.NextSystemClipboardStatus);
+        Assert.False(viewModel.RequiresManualCopy);
+    }
+
     [AvaloniaFact]
     public async Task CancellingAuditKeepsSurveyStatisticsUpdatesSubscribed()
     {

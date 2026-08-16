@@ -308,6 +308,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             }
 
             state.SetAutoCopy(value);
+            OnPropertyChanged(nameof(NextSystemClipboardStatus));
+            OnPropertyChanged(nameof(RequiresManualCopy));
             _ = SaveAsync();
             if (value)
             {
