@@ -39,6 +39,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private readonly AsyncCommand copyNextCommand;
     private readonly AsyncCommand markNextEmptyCommand;
     private readonly AsyncCommand applyLastSystemAvailableCommand;
+    private readonly AsyncCommand nextJumpPageCommand;
     private readonly AsyncCommand previousSystemPageCommand;
     private readonly AsyncCommand nextSystemPageCommand;
     private readonly AsyncCommand navigateParentCommand;
@@ -78,6 +79,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private long? currentSystemAddress;
     private string systemListNote = string.Empty;
     private string systemPageText = "Page 1 of 1";
+    private IReadOnlyList<int> systemPageNumbers = [1];
     private int systemPageIndex;
     private string? systemPagePrefix;
     private bool showNextSystemPageOnUpdate;
@@ -170,6 +172,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             ApplyLastSystemAvailableAsync,
             CanUseActiveSearch);
         ApplyLastSystemAvailableCommand = applyLastSystemAvailableCommand;
+        nextJumpPageCommand = new AsyncCommand(
+            ShowNextJumpPageAsync,
+            CanShowNextJumpPage);
+        NextJumpPageCommand = nextJumpPageCommand;
         previousSystemPageCommand = new AsyncCommand(
             () => ChangeSystemPageAsync(-1),
             () => !IsBusy && systemPageIndex > 0);
@@ -569,6 +575,34 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         1,
         (GetSystemRowCount() + SystemsPerPage - 1) / SystemsPerPage);
 
+    public IReadOnlyList<int> SystemPageNumbers
+    {
+        get => systemPageNumbers;
+        private set => SetField(ref systemPageNumbers, value);
+    }
+
+    public int SelectedSystemPageIndex
+    {
+        get => systemPageIndex;
+        set
+        {
+            if (value < 0
+                || value >= SystemPageCount
+                || value == systemPageIndex)
+            {
+                return;
+            }
+
+            systemPageIndex = value;
+            UpdateSystemRows();
+        }
+    }
+
+    public double SystemPagePickerWidth => Math.Max(
+        120,
+        64 + (SystemPageCount
+            .ToString(CultureInfo.CurrentCulture).Length * 12));
+
     public string AuditDescription
     {
         get => auditDescription;
@@ -678,6 +712,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public ICommand MarkNextEmptyCommand { get; }
 
     public ICommand ApplyLastSystemAvailableCommand { get; }
+
+    public ICommand NextJumpPageCommand { get; }
 
     public ICommand PreviousSystemPageCommand { get; }
 
@@ -2068,10 +2104,36 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         return Task.CompletedTask;
     }
 
+    private bool CanShowNextJumpPage()
+    {
+        return !IsBusy
+            && HasSystems
+            && !string.IsNullOrWhiteSpace(state.NextSystem)
+            && systemPageIndex != GetNextSystemPageIndex();
+    }
+
+    private Task ShowNextJumpPageAsync()
+    {
+        systemPageIndex = Math.Clamp(
+            GetNextSystemPageIndex(),
+            0,
+            SystemPageCount - 1);
+        UpdateSystemRows();
+        return Task.CompletedTask;
+    }
+
     private void RaiseSystemPageState()
     {
+        if (SystemPageNumbers.Count != SystemPageCount)
+        {
+            SystemPageNumbers = Enumerable.Range(1, SystemPageCount).ToArray();
+            OnPropertyChanged(nameof(SystemPagePickerWidth));
+        }
+
         OnPropertyChanged(nameof(SystemPageNumber));
         OnPropertyChanged(nameof(SystemPageCount));
+        OnPropertyChanged(nameof(SelectedSystemPageIndex));
+        nextJumpPageCommand.RaiseCanExecuteChanged();
         previousSystemPageCommand.RaiseCanExecuteChanged();
         nextSystemPageCommand.RaiseCanExecuteChanged();
     }
@@ -2359,6 +2421,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         copyNextCommand.RaiseCanExecuteChanged();
         markNextEmptyCommand.RaiseCanExecuteChanged();
         applyLastSystemAvailableCommand.RaiseCanExecuteChanged();
+        nextJumpPageCommand.RaiseCanExecuteChanged();
         navigateParentCommand.RaiseCanExecuteChanged();
         navigatePreviousCommand.RaiseCanExecuteChanged();
         navigateNextCommand.RaiseCanExecuteChanged();

@@ -19577,6 +19577,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "Next Jump Page",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "Next boxel to search: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -28980,6 +28988,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml.cs"
+  },
+  {
+    "Text": "Select page",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Selected boxel",

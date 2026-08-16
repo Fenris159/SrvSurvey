@@ -5,6 +5,25 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 public sealed class BoxelViewMarkupTests
 {
     [Fact]
+    public void SelectedSystemPageUsesAccentForegroundForText()
+    {
+        var styles = LoadStyles().Descendants()
+            .Where(element => element.Name.LocalName == "Style")
+            .ToDictionary(
+                element => element.Attribute("Selector")?.Value ?? string.Empty,
+                StringComparer.Ordinal);
+        var selectedTextStyle = styles[
+            "ListBox.system-pages ListBoxItem:selected TextBlock"];
+
+        var foreground = Assert.Single(selectedTextStyle.Elements(), element =>
+            element.Name.LocalName == "Setter"
+            && element.Attribute("Property")?.Value == "Foreground");
+        Assert.Equal(
+            "{DynamicResource RavenAccentForegroundBrush}",
+            foreground.Attribute("Value")?.Value);
+    }
+
+    [Fact]
     public void DedicatedPageOwnsTheWholeBoxelWorkspace()
     {
         var boxel = LoadView("BoxelView.axaml");
@@ -106,11 +125,38 @@ public sealed class BoxelViewMarkupTests
             "{Binding BoxelSearch.PreviousSystemPageCommand}",
             boxelBindings);
         Assert.Contains(
+            "{Binding BoxelSearch.NextJumpPageCommand}",
+            boxelBindings);
+        Assert.Contains(
             "{Binding BoxelSearch.NextSystemPageCommand}",
             boxelBindings);
         Assert.Contains("{Binding BoxelSearch.SystemPageText}", boxelBindings);
         Assert.Contains("Previous page", boxelBindings);
         Assert.Contains("Next page", boxelBindings);
+        Assert.Contains("Next Jump Page", boxelBindings);
+        Assert.Contains("Select page", boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.SystemPageNumbers}",
+            boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.SelectedSystemPageIndex, Mode=TwoWay}",
+            boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.SystemPagePickerWidth}",
+            boxelBindings);
+        var systemPageFlyout = boxel.Descendants().Single(element =>
+            element.Name.LocalName == "Flyout"
+            && element.Descendants().Any(descendant =>
+                descendant.Attribute("Classes")?.Value == "system-pages"));
+        Assert.Equal(
+            "TopEdgeAlignedRight",
+            systemPageFlyout.Attribute("Placement")?.Value);
+        var systemPageList = systemPageFlyout.Descendants().Single(element =>
+            element.Name.LocalName == "ListBox");
+        Assert.Equal("362", systemPageList.Attribute("MaxHeight")?.Value);
+        Assert.Equal(
+            "SystemPageList_SelectionChanged",
+            systemPageList.Attribute("SelectionChanged")?.Value);
         Assert.DoesNotContain("500", boxelBindings);
         Assert.Contains("{StaticResource question_circle_regular}", boxelBindings);
         Assert.Contains("Explain last system available", boxelBindings);
@@ -472,6 +518,13 @@ public sealed class BoxelViewMarkupTests
         "SrvSurvey.Desktop",
         "Views",
         fileName));
+
+    private static XDocument LoadStyles() => XDocument.Load(Path.Combine(
+        FindRepositoryRoot(),
+        "src",
+        "SrvSurvey.Desktop",
+        "Styles",
+        "RavenStyles.axaml"));
 
     private static string FindRepositoryRoot()
     {

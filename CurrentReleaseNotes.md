@@ -1,33 +1,29 @@
-# SrvSurvey-XP 2.1.3.0-rc.28
+# SrvSurvey-XP 2.1.3.0-rc.29
 
-This release candidate makes Boxel searches safer to work in either direction
-and clarifies manual Galaxy Map copying. The changes below are the delta from
-`2.1.3.0-rc.27`.
+This release candidate makes long Boxel tables easier to navigate and prevents
+list selection from moving an enclosing page unexpectedly. The changes below
+are the delta from `2.1.3.0-rc.28`.
 
-## What's changed since 2.1.3.0-rc.27
+## What's changed since 2.1.3.0-rc.28
 
-- Adds **Sort (descending) for working results backwards.** The current-boxel
-  table starts at the highest suffix, and the next incomplete target, empty
-  marker, highlight, and Galaxy Map auto-copy all advance downward together.
-  The direction is retained in commander profiles and saved searches.
-- Makes the active search controls harder to misuse: **Start search** remains
-  disabled until **Stop search** resets the active search, and the stop action
-  is shown in red.
-- Restores a cleared **Last system available** field to its stored value when
-  focus leaves the field. Stopping, loading, or starting another search also
-  clears stale edits so later estimates can populate normally.
-- Shows the live **Copy next boxel system** shortcut in Search guidance when
-  auto-copy is off, for example **MANUAL COPY - CTRL C**. Changes made under
-  Shortcut bindings appear immediately, and an unbound action is identified as
-  **MANUAL COPY - NOT SET**.
+- Adds direct current-boxel table navigation: **Next Jump Page** returns to the
+  page containing the next incomplete target in ascending or descending
+  searches. **Select page** opens an upward, scrolling list of every page,
+  capped at ten visible entries and sized for the largest page number.
+- Contains selection-driven scrolling inside every list. Guardian sites,
+  Diagnostics journal events, Boxel suggestions, nearest-system results, and
+  other updating lists can still reveal their selected rows internally without
+  shifting the surrounding page away from its top or remembered position.
+  Explicit navigation such as **Review update** continues to control the page
+  viewport directly.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.28`
-- Tag: `xp-v2.1.3.0-rc.28`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.28-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.28-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.28-x86_64.AppImage`
+- Version: `2.1.3.0-rc.29`
+- Tag: `xp-v2.1.3.0-rc.29`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.29-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.29-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.29-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
