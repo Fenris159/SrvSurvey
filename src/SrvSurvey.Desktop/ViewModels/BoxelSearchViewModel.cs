@@ -1698,11 +1698,20 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         return RunSystemActionAsync(async () =>
         {
-            var changed = state.IsSystemDeferred(systemName)
-                ? state.TrySetSystemDeferred(systemName, false, out var error)
-                : state.IsSystemEmpty(systemName)
-                    ? state.TrySetSystemEmpty(systemName, false, out error)
-                    : state.TrySetSystemComplete(systemName, false, out error);
+            bool changed;
+            string? error;
+            if (state.IsSystemDeferred(systemName))
+            {
+                changed = state.TrySetSystemDeferred(systemName, false, out error);
+            }
+            else if (state.IsSystemEmpty(systemName))
+            {
+                changed = state.TrySetSystemEmpty(systemName, false, out error);
+            }
+            else
+            {
+                changed = state.TrySetSystemComplete(systemName, false, out error);
+            }
             if (!changed)
             {
                 StatusMessage = error ?? "The system was not reopened.";
