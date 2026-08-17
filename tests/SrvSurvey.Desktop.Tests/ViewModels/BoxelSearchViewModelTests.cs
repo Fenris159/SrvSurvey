@@ -58,6 +58,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             changedProperties);
         Assert.Equal("AUTO-COPY READY", viewModel.NextSystemClipboardStatus);
         Assert.False(viewModel.RequiresManualCopy);
+        await viewModel.DisableAsync();
     }
 
     [AvaloniaFact]
