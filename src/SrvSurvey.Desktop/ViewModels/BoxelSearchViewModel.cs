@@ -82,9 +82,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private string systemListNote = string.Empty;
     private string systemPageText = "Page 1 of 1";
     private IReadOnlyList<int> systemPageNumbers = [1];
-    private IReadOnlyList<int> orderedSystemNumbers = [];
-    private IReadOnlyDictionary<int, int> systemNumberPositions =
-        new Dictionary<int, int>();
+    private int[] orderedSystemNumbers = [];
+    private Dictionary<int, int> systemNumberPositions = [];
     private int currentDeferredSystemCount;
     private int systemPageIndex;
     private string? systemPagePrefix;
@@ -603,7 +602,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public int SystemPageCount => Math.Max(
         1,
-        (orderedSystemNumbers.Count + SystemsPerPage - 1) / SystemsPerPage);
+        (orderedSystemNumbers.Length + SystemsPerPage - 1) / SystemsPerPage);
 
     public IReadOnlyList<int> SystemPageNumbers
     {
@@ -2094,7 +2093,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             : orderedSystemNumbers
                 .Select((number, position) => (number, position))
                 .ToDictionary(entry => entry.number, entry => entry.position);
-        var rowCount = orderedSystemNumbers.Count;
+        var rowCount = orderedSystemNumbers.Length;
         if (!string.Equals(
                 systemPagePrefix,
                 state.Current.Prefix,
@@ -2215,7 +2214,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 : "No systems are available in this boxel.";
         }
 
-        var visibleTotal = orderedSystemNumbers.Count;
+        var visibleTotal = orderedSystemNumbers.Length;
         var firstPosition = pageOffset + 1;
         var lastPosition = pageOffset + rowsOnPage;
         var suffixRange = rowNumbers.Length == 1
