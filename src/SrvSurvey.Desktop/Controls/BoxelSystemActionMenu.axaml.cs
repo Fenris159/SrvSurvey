@@ -113,7 +113,7 @@ public sealed partial class BoxelSystemActionMenu : UserControl
 
     internal void BeginOpenIntent(bool explicitRequest)
     {
-        ClaimActiveMenu();
+        ClaimActiveMenu(this);
         closeTimer.Stop();
         explicitOpenRequested |= explicitRequest;
         if (!Launcher.Classes.Contains(EngagedClass))
@@ -195,21 +195,26 @@ public sealed partial class BoxelSystemActionMenu : UserControl
         MenuSurface.Classes.Remove("open");
         MenuSurface.IsVisible = false;
         MenuPopup.IsOpen = false;
-        if (activeMenu?.TryGetTarget(out var active) == true
-            && ReferenceEquals(active, this))
-        {
-            activeMenu = null;
-        }
+        ReleaseActiveMenu(this);
     }
 
-    private void ClaimActiveMenu()
+    private static void ClaimActiveMenu(BoxelSystemActionMenu menu)
     {
         if (activeMenu?.TryGetTarget(out var active) == true
-            && !ReferenceEquals(active, this))
+            && !ReferenceEquals(active, menu))
         {
             active.CloseMenu();
         }
-        activeMenu = new WeakReference<BoxelSystemActionMenu>(this);
+        activeMenu = new WeakReference<BoxelSystemActionMenu>(menu);
+    }
+
+    private static void ReleaseActiveMenu(BoxelSystemActionMenu menu)
+    {
+        if (activeMenu?.TryGetTarget(out var active) == true
+            && ReferenceEquals(active, menu))
+        {
+            activeMenu = null;
+        }
     }
 
 }
