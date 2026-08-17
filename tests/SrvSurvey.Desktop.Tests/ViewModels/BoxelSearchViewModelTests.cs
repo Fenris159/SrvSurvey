@@ -383,6 +383,62 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task StartHereGroupsPersistsAndFiltersDeferredSystems()
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        var copied = new List<string>();
+        var viewModel = new BoxelSearchViewModel(
+            profileStore,
+            new LegacySystemDataReader(temporaryDirectory),
+            new EmptyBoxelStore(temporaryDirectory),
+            new StubResolver([]),
+            text =>
+            {
+                copied.Add(text);
+                return Task.CompletedTask;
+            });
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        viewModel.LowMassCode = "c";
+        viewModel.AutoCopy = true;
+        await viewModel.ActivateAsync();
+        viewModel.LastSystemAvailable = "12";
+        await viewModel.ApplyLastSystemAvailableAsync();
+        copied.Clear();
+
+        var startRow = viewModel.Systems.Single(row => row.Name.EndsWith(
+            "c5-5",
+            StringComparison.Ordinal));
+        startRow.StartHereCommand.Execute(null);
+        await WaitUntilAsync(async () =>
+        {
+            var loaded = await profileStore.LoadAsync("F123", true);
+            return loaded.Data?.BoxelSearch.DeferredSystems.Count == 5;
+        });
+
+        Assert.Equal("Praea Euq IL-P c5-5", viewModel.NextSystem);
+        Assert.Equal(["Praea Euq IL-P c5-5"], copied);
+        Assert.Equal(
+            [5, 6, 7, 8, 9, 10, 11, 12, 0, 1],
+            viewModel.Systems.Select(row => BoxelAddress.Parse(row.Name).N2));
+        Assert.Equal("DEFERRED", viewModel.Systems[^1].Status);
+        Assert.Contains("Deferred systems are grouped last", viewModel.SystemListNote);
+
+        viewModel.ShowOnlyDeferred = true;
+
+        Assert.Equal(1, viewModel.SystemPageCount);
+        Assert.Equal([0, 1, 2, 3, 4], viewModel.Systems.Select(row =>
+            BoxelAddress.Parse(row.Name).N2));
+        Assert.All(viewModel.Systems, row => Assert.Equal("DEFERRED", row.Status));
+        Assert.False(viewModel.NextJumpPageCommand.CanExecute(null));
+        Assert.Contains("Showing deferred systems 1\u20135 of 5", viewModel.SystemListNote);
+    }
+
+    [Fact]
     public async Task AbandonedLastSystemEditRestoresAndNewSearchUsesResolvedEstimate()
     {
         var viewModel = CreateViewModel(
@@ -723,7 +779,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal(top.Prefix, viewModel.CurrentBoxelName);
         Assert.Equal("Praea Euq RS-U d2-1", viewModel.NextSystem);
         Assert.Equal("EMPTY", viewModel.Systems[0].Status);
-        Assert.Equal("Restore", viewModel.Systems[0].ToggleButtonText);
+        Assert.True(viewModel.Systems[0].ReopenCommand.CanExecute(null));
         Assert.Single(copied);
         Assert.Equal("Praea Euq RS-U d2-1", copied[0]);
         var saved = await profileStore.LoadAsync("F123", true);

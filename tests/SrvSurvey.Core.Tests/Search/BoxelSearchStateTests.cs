@@ -366,6 +366,91 @@ public sealed class BoxelSearchStateTests
     }
 
     [Fact]
+    public void DeferredSystemsAreSkippedWithoutCountingAsCompleteAndPersist()
+    {
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var state = new BoxelSearchState(new BoxelSearchSnapshot
+        {
+            Active = true,
+            TopBoxel = top,
+            Current = top,
+            CurrentCount = 4,
+            LowMassCode = 'c',
+            ProgressByPrefix = new Dictionary<string, int>
+            {
+                [top.Prefix] = 4,
+            },
+        });
+
+        Assert.True(state.TrySetSystemDeferred(top.WithSystemNumber(0).Name, true, out _));
+        Assert.True(state.TrySetSystemDeferred(top.WithSystemNumber(1).Name, true, out _));
+
+        Assert.Equal(top.WithSystemNumber(2).Name, state.NextSystem);
+        Assert.Equal(0, state.CompletedSystemCount);
+        Assert.False(state.CurrentSystemsComplete);
+        Assert.Equal(
+            [top.WithSystemNumber(0).GeneratedName, top.WithSystemNumber(1).GeneratedName],
+            state.DeferredSystems.Order(StringComparer.Ordinal));
+
+        var restored = new BoxelSearchState(state.CreateSnapshot());
+
+        Assert.Equal(top.WithSystemNumber(2).Name, restored.NextSystem);
+        Assert.Equal(
+            state.DeferredSystems.Order(StringComparer.Ordinal),
+            restored.DeferredSystems.Order(StringComparer.Ordinal));
+
+        Assert.True(restored.MergeSpanshSystems([
+            Observation(top.WithSystemNumber(0).Name)
+        ]));
+        Assert.True(restored.TrySetSystemComplete(
+            top.WithSystemNumber(0).Name,
+            true,
+            out _));
+        Assert.DoesNotContain(
+            top.WithSystemNumber(0).GeneratedName,
+            restored.DeferredSystems);
+        Assert.Equal(1, restored.CompletedSystemCount);
+    }
+
+    [Theory]
+    [InlineData(false, 3, 0, 1, 2)]
+    [InlineData(true, 2, 5, 4, 3)]
+    public void StartAtSystemDefersEarlierUnfinishedSystemsInSearchDirection(
+        bool descending,
+        int startSuffix,
+        params int[] expectedDeferredSuffixes)
+    {
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var state = new BoxelSearchState(new BoxelSearchSnapshot
+        {
+            Active = true,
+            TopBoxel = top,
+            Current = top,
+            CurrentCount = 6,
+            LowMassCode = 'c',
+            SortDescending = descending,
+            ProgressByPrefix = new Dictionary<string, int>
+            {
+                [top.Prefix] = 6,
+            },
+        });
+
+        Assert.True(state.TryStartAtSystem(
+            top.WithSystemNumber(startSuffix).Name,
+            out var deferredCount,
+            out var error));
+
+        Assert.Null(error);
+        Assert.Equal(expectedDeferredSuffixes.Length, deferredCount);
+        Assert.Equal(top.WithSystemNumber(startSuffix).Name, state.NextSystem);
+        Assert.Equal(
+            expectedDeferredSuffixes
+                .Select(suffix => top.WithSystemNumber(suffix).GeneratedName)
+                .Order(StringComparer.Ordinal),
+            state.DeferredSystems.Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
     public void FssModeWaitsForAllBodiesEvent()
     {
         var state = CreateActiveState(BoxelCompletionMode.FssAllBodies);

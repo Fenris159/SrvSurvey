@@ -281,16 +281,18 @@ public static class GuideCatalog
                         ]),
                     Section(
                         "Survey the current boxel",
-                        "Current boxel prefix identifies the sequence being worked; Next incomplete system is the lowest known or expected suffix in that sequence that has not met your completion rule.",
+                        "Current boxel prefix identifies the sequence being worked; Next incomplete system is the next active suffix in the chosen direction that has not met your completion rule.",
                         [
                             "Use Refresh boxel to merge systems from the local Commander profile, the active route, and Spansh. Community databases contain only submitted observations, so an unknown system is not proof that it does not exist.",
                             "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
                             "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Boxel, Route Manager, and FC Route auto-copy are mutually exclusive.",
-                            "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, the system completes after Elite writes FSSAllBodiesFound. Use Complete or Reopen for a manual correction.",
+                            "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, completion waits for Elite to write FSSAllBodiesFound.",
+                            "Hover over a row's System actions button to Complete, Reopen, Defer, or Start Here. Deferred systems remain unfinished, move to the end of the table, and are skipped until you return to them.",
+                            "Start Here defers every unfinished system before the chosen row in the current sort direction. Use Show Only Deferred when you are ready to return to skipped systems.",
                             "Use Mark Next Empty only when the Galaxy Map confirms that the next incomplete system does not exist. The marker is retained and the search skips to the following target.",
                         ],
                         [
-                            "The systems table is ordered by numeric suffix and separates distance, last Commander visit, last Spansh update, state, and the manual action.",
+                            "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
                             "The top Current system is where the Commander actually is; it is not the first system in the sequence. Next incomplete system is the next work item calculated from saved completion state.",
                         ]),
                     Section(

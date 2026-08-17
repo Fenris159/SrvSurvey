@@ -62,6 +62,8 @@ public sealed class BoxelSystemRowOptions
 
     public required bool IsEmpty { get; init; }
 
+    public required bool IsDeferred { get; init; }
+
     public required bool IsCurrent { get; init; }
 
     public required bool IsNextIncomplete { get; init; }
@@ -72,5 +74,11 @@ public sealed class BoxelSystemRowOptions
 
     public required string SpanshUpdatedAt { get; init; }
 
-    public required Func<Task> Toggle { get; init; }
+    public required Func<Task> Complete { get; init; }
+
+    public required Func<Task> Reopen { get; init; }
+
+    public required Func<Task> Defer { get; init; }
+
+    public required Func<Task> StartHere { get; init; }
 }

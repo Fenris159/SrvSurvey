@@ -7426,9 +7426,10 @@
     "Text": "Complete",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml"
   },
   {
     "Text": "Complete all three samples. The confirmed organism and unclaimed reward are retained in the Commander profile until sale events clear them.",
@@ -8690,7 +8691,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
-    "Text": "Current boxel prefix identifies the sequence being worked; Next incomplete system is the lowest known or expected suffix in that sequence that has not met your completion rule.",
+    "Text": "Current boxel prefix identifies the sequence being worked; Next incomplete system is the next active suffix in the chosen direction that has not met your completion rule.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -8896,6 +8897,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+  },
+  {
+    "Text": "DEFERRED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "DEMAND",
@@ -9268,6 +9277,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/InputBindingViewModel.cs"
   },
   {
+    "Text": "Defer",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml"
+  },
+  {
+    "Text": "Defer unfinished systems before this one in the current sort direction.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml"
+  },
+  {
+    "Text": "Deferred {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Deficit",
     "IsFormat": false,
     "SourceKinds": [
@@ -9450,6 +9483,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Descending order is active.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "Design-time error",
@@ -11057,6 +11098,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Enter numbers only, from 0 to 99,999.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Enter one key with ALT, CTRL, or SHIFT, or leave blank.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11087,6 +11136,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "Enter {0} or higher; that suffix is already recorded.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "Entered {0} in the Galaxy Map.",
@@ -16834,6 +16891,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml"
   },
   {
+    "Text": "Last system available cannot be below recorded suffix {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Last system available help",
     "IsFormat": false,
     "SourceKinds": [
@@ -18226,6 +18291,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Mark this recorded system complete.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml"
+  },
+  {
     "Text": "Marked Guardian point {0} empty.",
     "IsFormat": true,
     "SourceKinds": [
@@ -18271,7 +18344,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "Marked {0} empty. Next incomplete system: {1}.",
@@ -20209,6 +20282,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/InputBindingViewModel.cs"
   },
   {
+    "Text": "No deferred systems in this boxel.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "No description",
     "IsFormat": false,
     "SourceKinds": [
@@ -20776,6 +20857,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "No systems are available in this boxel.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "No tags",
@@ -26402,9 +26491,9 @@
     "Text": "Reopen",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml"
   },
   {
     "Text": "Reopened {0} in the route draft.",
@@ -26420,7 +26509,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "Repair",
@@ -26719,14 +26808,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
   },
   {
-    "Text": "Restore",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "Restore automatic map scaling.",
     "IsFormat": false,
     "SourceKinds": [
@@ -26759,14 +26840,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
-    "Text": "Restored {0} to the search.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "Resume Search",
     "IsFormat": false,
     "SourceKinds": [
@@ -26797,6 +26870,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
+  },
+  {
+    "Text": "Return a completed or empty system to the active survey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml"
   },
   {
     "Text": "Return one level toward the search root",
@@ -29833,6 +29914,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Show Only Deferred",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "Show SrvSurvey",
     "IsFormat": false,
     "SourceKinds": [
@@ -30071,6 +30160,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Show only systems deliberately skipped for later.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Show or hide construction commodity requirements.",
@@ -30481,7 +30578,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "Showing deferred systems {0}\u2013{1} of {2} ({3}).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Showing systems {0}\u2013{1} of {2} (descending).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Showing systems {0}\u2013{1} of {2} ({3}). Deferred systems are grouped last.{4}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -30679,6 +30792,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Skip this unfinished system and keep it for later.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml"
   },
   {
     "Text": "SkipAnalyzedCompositionScans",
@@ -31603,6 +31724,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "Start Here",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml"
+  },
+  {
     "Text": "Start a Guardian template draft before exporting.",
     "IsFormat": false,
     "SourceKinds": [
@@ -32268,6 +32397,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationView.axaml"
   },
   {
+    "Text": "Survey will start at {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Survey will start at {0}; deferred {1} earlier systems.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Surveying a complete sequence gives an explorer a bounded, repeatable area to study. It is useful for finding regional formation patterns, checking nearby systems after an interesting discovery, and keeping a long project organized.",
     "IsFormat": false,
     "SourceKinds": [
@@ -32373,6 +32518,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "System actions",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml"
+  },
+  {
     "Text": "System biology",
     "IsFormat": false,
     "SourceKinds": [
@@ -32387,14 +32540,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "System completion updated.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "System data is unavailable: {0}",
@@ -34151,14 +34296,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
-    "Text": "The empty-system marker was not removed.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "The error-report window could not be opened: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -35751,7 +35888,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
-    "Text": "The system completion state was not changed.",
+    "Text": "The survey start point was not changed.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -35823,6 +35960,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopBehaviorViewModel.cs"
   },
   {
+    "Text": "The system was not deferred.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "The system was not marked complete.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "The system was not reopened.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "The system-name file could not be read: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -35855,7 +36016,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
-    "Text": "The systems table is ordered by numeric suffix and separates distance, last Commander visit, last Spansh update, state, and the manual action.",
+    "Text": "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -39092,7 +39253,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseNotesDialogViewModel.cs"
   },
   {
-    "Text": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, the system completes after Elite writes FSSAllBodiesFound. Use Complete or Reopen for a manual correction.",
+    "Text": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, completion waits for Elite to write FSSAllBodiesFound.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -42123,6 +42284,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierCredentialStore.cs"
+  },
+  {
+    "Text": "suffix {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "suffixes {0}\u2013{1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "surface location",

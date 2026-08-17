@@ -136,6 +136,12 @@ public sealed class BoxelViewMarkupTests
             boxelBindings);
         Assert.Contains("{Binding RowIndicator}", boxelBindings);
         Assert.Contains("ACTION", boxelBindings);
+        Assert.Contains("Show Only Deferred", boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.ShowOnlyDeferred, Mode=TwoWay}",
+            boxelBindings);
+        Assert.Contains(boxel.Descendants(), element =>
+            element.Name.LocalName == "BoxelSystemActionMenu");
         Assert.Contains(
             "{Binding BoxelSearch.PreviousSystemPageCommand}",
             boxelBindings);
@@ -224,6 +230,33 @@ public sealed class BoxelViewMarkupTests
         Assert.DoesNotContain(
             searchBindings,
             binding => binding.Contains("BoxelSearch", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void SystemActionMenuProvidesFourThemedRadialActions()
+    {
+        var menu = XDocument.Load(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "Controls",
+            "BoxelSystemActionMenu.axaml"));
+        var values = menu.Descendants()
+            .SelectMany(element => element.Attributes())
+            .Select(attribute => attribute.Value)
+            .ToArray();
+
+        Assert.Contains("{Binding CompleteCommand}", values);
+        Assert.Contains("{Binding ReopenCommand}", values);
+        Assert.Contains("{Binding DeferCommand}", values);
+        Assert.Contains("{Binding StartHereCommand}", values);
+        Assert.Contains("Complete", values);
+        Assert.Contains("Reopen", values);
+        Assert.Contains("Defer", values);
+        Assert.Contains("Start Here", values);
+        Assert.Contains("radial-menu-surface", values);
+        Assert.Contains("{DynamicResource RavenAccentBrush}", values);
+        Assert.Contains("{DynamicResource RavenWarningBrush}", values);
     }
 
     [Fact]

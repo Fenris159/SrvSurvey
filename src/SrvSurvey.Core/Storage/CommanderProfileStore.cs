@@ -421,6 +421,7 @@ public sealed class CommanderProfileStore(string profileDirectory)
             CompletedPrefixes = ReadStringArray(boxelSearch, "completed"),
             CompletedSystems = ReadStringArray(boxelSearch, "completedSystems"),
             EmptySystems = ReadStringArray(boxelSearch, "emptySystems"),
+            DeferredSystems = ReadStringArray(boxelSearch, "deferredSystems"),
             ProgressByPrefix = ReadBoxelProgress(boxelSearch),
             AutoCopy = GetBoolean(boxelSearch, "autoCopy") ?? false,
             SortDescending = GetBoolean(boxelSearch, "sortDescending") ?? false,
@@ -551,6 +552,9 @@ public sealed class CommanderProfileStore(string profileDirectory)
             excludeBlankValues: true);
         node["emptySystems"] = WriteStringArray(
             boxelSearch.EmptySystems,
+            excludeBlankValues: true);
+        node["deferredSystems"] = WriteStringArray(
+            boxelSearch.DeferredSystems,
             excludeBlankValues: true);
         var progress = new JsonObject();
         foreach (var entry in boxelSearch.ProgressByPrefix

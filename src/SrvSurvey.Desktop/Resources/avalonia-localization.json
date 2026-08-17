@@ -4337,8 +4337,8 @@
                    "translation":  "Aktuelle Boxelkontrollen"
                },
                {
-                   "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the lowest known or expected suffix in that sequence that has not met your completion rule.",
-                   "translation":  "Das aktuelle Boxel-Präfix identifiziert die bearbeitete Sequenz. Das nächste unvollständige System ist das niedrigste bekannte oder erwartete Suffix in dieser Reihenfolge, das Ihre Vervollständigungsregel nicht erfüllt."
+                   "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the next active suffix in the chosen direction that has not met your completion rule.",
+                   "translation":  "Das aktuelle Boxel-Präfix identifiziert die bearbeitete Sequenz. Das nächste unvollständige System ist das nächste aktive Suffix in der gewählten Richtung, das Ihre Vervollständigungsregel nicht erfüllt."
                },
                {
                    "source":  "Current boxel {0}% searched.",
@@ -4439,6 +4439,10 @@
                {
                    "source":  "DEADLINE",
                    "translation":  "FRIST"
+               },
+               {
+                   "source":  "DEFERRED",
+                   "translation":  "VERSCHOBEN"
                },
                {
                    "source":  "DEMAND",
@@ -4625,6 +4629,18 @@
                    "translation":  "Standard: {0}"
                },
                {
+                   "source":  "Defer",
+                   "translation":  "Aufschieben"
+               },
+               {
+                   "source":  "Defer unfinished systems before this one in the current sort direction.",
+                   "translation":  "Unvollendete Systeme in der aktuellen Sortierrichtung vor diesem zurückstellen."
+               },
+               {
+                   "source":  "Deferred {0}.",
+                   "translation":  "Zurückgestellt {0}."
+               },
+               {
                    "source":  "Deficit",
                    "translation":  "Defizit"
                },
@@ -4715,6 +4731,10 @@
                {
                    "source":  "Depot contribution, completion, docking, beacon architect, and market events update the matching project only when the identity is unambiguous.",
                    "translation":  "Depotbeitrag, Fertigstellung, Andocken, Beacon-Architekt und Marktereignisse aktualisieren das passende Projekt nur, wenn die Identität eindeutig ist."
+               },
+               {
+                   "source":  "Descending order is active.",
+                   "translation":  "Absteigende Reihenfolge ist aktiv."
                },
                {
                    "source":  "Design-time error",
@@ -5517,6 +5537,10 @@
                    "translation":  "Geben Sie Koordinaten in „Reisen“ ein oder senden Sie .target hier über das Chat-Tagebuch im Spiel, um den aktuellen Standort zu erfassen."
                },
                {
+                   "source":  "Enter numbers only, from 0 to 99,999.",
+                   "translation":  "Geben Sie nur Zahlen von 0 bis 99.999 ein."
+               },
+               {
                    "source":  "Enter one key with ALT, CTRL, or SHIFT, or leave blank.",
                    "translation":  "Geben Sie eine Taste mit ALT, STRG oder UMSCHALT ein oder lassen Sie das Feld leer."
                },
@@ -5531,6 +5555,10 @@
                {
                    "source":  "Enter the current route, boxel, or clipboard target in the Galaxy Map.",
                    "translation":  "Geben Sie die aktuelle Route, das aktuelle Boxel oder das Zwischenablageziel in die Galaxy Map ein."
+               },
+               {
+                   "source":  "Enter {0} or higher; that suffix is already recorded.",
+                   "translation":  "Geben Sie {0} oder höher ein; Dieses Suffix ist bereits aufgezeichnet."
                },
                {
                    "source":  "Entered {0} in the Galaxy Map.",
@@ -8397,6 +8425,10 @@
                    "translation":  "Letztes verfügbares System"
                },
                {
+                   "source":  "Last system available cannot be below recorded suffix {0}.",
+                   "translation":  "Das letzte verfügbare System darf nicht unter dem aufgezeichneten Suffix {0} liegen."
+               },
+               {
                    "source":  "Last system available help",
                    "translation":  "Letzte vom System verfügbare Hilfe"
                },
@@ -9091,6 +9123,10 @@
                {
                    "source":  "Mark scanned",
                    "translation":  "Mark gescannt"
+               },
+               {
+                   "source":  "Mark this recorded system complete.",
+                   "translation":  "Markieren Sie dieses aufgezeichnete System als abgeschlossen."
                },
                {
                    "source":  "Marked Guardian point {0} empty.",
@@ -10081,6 +10117,10 @@
                    "translation":  "Keine Standardverknüpfung"
                },
                {
+                   "source":  "No deferred systems in this boxel.",
+                   "translation":  "In diesem Boxel gibt es keine verzögerten Systeme."
+               },
+               {
                    "source":  "No description",
                    "translation":  "Keine Beschreibung"
                },
@@ -10363,6 +10403,10 @@
                {
                    "source":  "No system names were found to import.",
                    "translation":  "Es wurden keine Systemnamen zum Importieren gefunden."
+               },
+               {
+                   "source":  "No systems are available in this boxel.",
+                   "translation":  "In dieser Box sind keine Systeme verfügbar."
                },
                {
                    "source":  "No tags",
@@ -13329,10 +13373,6 @@
                    "translation":  "Auffüllen"
                },
                {
-                   "source":  "Restore",
-                   "translation":  "Wiederherstellen"
-               },
-               {
                    "source":  "Restore automatic map scaling.",
                    "translation":  "Stellen Sie die automatische Kartenskalierung wieder her."
                },
@@ -13349,10 +13389,6 @@
                    "translation":  "{0} importierte Kolonisierungsprojekte von {1} wiederhergestellt.{2}"
                },
                {
-                   "source":  "Restored {0} to the search.",
-                   "translation":  "{0} für die Suche wiederhergestellt."
-               },
-               {
                    "source":  "Resume Search",
                    "translation":  "Suche fortsetzen"
                },
@@ -13367,6 +13403,10 @@
                {
                    "source":  "Resurrect",
                    "translation":  "Auferstehen"
+               },
+               {
+                   "source":  "Return a completed or empty system to the active survey.",
+                   "translation":  "Geben Sie ein abgeschlossenes oder leeres System zur aktiven Umfrage zurück."
                },
                {
                    "source":  "Return one level toward the search root",
@@ -14881,6 +14921,10 @@
                    "translation":  "Guardian-Sites im aktuellen System anzeigen"
                },
                {
+                   "source":  "Show Only Deferred",
+                   "translation":  "Nur verzögert anzeigen"
+               },
+               {
                    "source":  "Show SrvSurvey",
                    "translation":  "Anzeigen SrvSurvey"
                },
@@ -14999,6 +15043,10 @@
                {
                    "source":  "Show only logs still needed",
                    "translation":  "Nur noch benötigte Protokolle anzeigen"
+               },
+               {
+                   "source":  "Show only systems deliberately skipped for later.",
+                   "translation":  "Zeigt nur Systeme an, die absichtlich für später übersprungen wurden."
                },
                {
                    "source":  "Show or hide construction commodity requirements.",
@@ -15205,8 +15253,16 @@
                    "translation":  "Es werden Körper im Wert von mindestens {0} sowie terraformbare und signaltragende Körper angezeigt."
                },
                {
+                   "source":  "Showing deferred systems {0}–{1} of {2} ({3}).",
+                   "translation":  "Zeigt verzögerte Systeme {0}–{1} von {2} ({3})."
+               },
+               {
                    "source":  "Showing systems {0}–{1} of {2} (descending).",
                    "translation":  "Zeigt die Systeme {0}–{1} von {2} (absteigend)."
+               },
+               {
+                   "source":  "Showing systems {0}–{1} of {2} ({3}). Deferred systems are grouped last.{4}",
+                   "translation":  "Zeigt die Systeme {0}–{1} von {2} ({3}). Zurückgestellte Systeme werden zuletzt gruppiert.{4}"
                },
                {
                    "source":  "Showing systems {0}–{1} of {2}.",
@@ -15303,6 +15359,10 @@
                {
                    "source":  "Skip rings for DSS",
                    "translation":  "Sprungringe für DSS"
+               },
+               {
+                   "source":  "Skip this unfinished system and keep it for later.",
+                   "translation":  "Überspringen Sie dieses unvollendete System und bewahren Sie es für später auf."
                },
                {
                    "source":  "SkipAnalyzedCompositionScans",
@@ -15765,6 +15825,10 @@
                    "translation":  "Sternenhäfen"
                },
                {
+                   "source":  "Start Here",
+                   "translation":  "Beginnen Sie hier"
+               },
+               {
                    "source":  "Start a Guardian template draft before exporting.",
                    "translation":  "Beginnen Sie vor dem Export mit einem Guardian-Vorlagenentwurf."
                },
@@ -16097,6 +16161,14 @@
                    "translation":  "Umfragesummen"
                },
                {
+                   "source":  "Survey will start at {0}.",
+                   "translation":  "Die Umfrage beginnt um {0}."
+               },
+               {
+                   "source":  "Survey will start at {0}; deferred {1} earlier systems.",
+                   "translation":  "Die Umfrage beginnt um {0}; {1} frühere Systeme zurückgestellt."
+               },
+               {
                    "source":  "Surveying a complete sequence gives an explorer a bounded, repeatable area to study. It is useful for finding regional formation patterns, checking nearby systems after an interesting discovery, and keeping a long project organized.",
                    "translation":  "Durch die Vermessung einer vollständigen Sequenz erhält der Forscher einen abgegrenzten, wiederholbaren Untersuchungsbereich. Es ist nützlich, um regionale Formationsmuster zu finden, nahegelegene Systeme nach einer interessanten Entdeckung zu überprüfen und ein langes Projekt zu organisieren."
                },
@@ -16149,16 +16221,16 @@
                    "translation":  "System"
                },
                {
+                   "source":  "System actions",
+                   "translation":  "Systemaktionen"
+               },
+               {
                    "source":  "System biology",
                    "translation":  "Systembiologie"
                },
                {
                    "source":  "System biology overlay",
                    "translation":  "Systembiologie-Overlay"
-               },
-               {
-                   "source":  "System completion updated.",
-                   "translation":  "Systemabschluss aktualisiert."
                },
                {
                    "source":  "System data is unavailable: {0}",
@@ -17037,10 +17109,6 @@
                    "translation":  "Die Leersystemmarkierung wurde nicht geändert: {0}"
                },
                {
-                   "source":  "The empty-system marker was not removed.",
-                   "translation":  "Die Markierung für ein leeres System wurde nicht entfernt."
-               },
-               {
                    "source":  "The error-report window could not be opened: {0}",
                    "translation":  "Das Fehlerberichtsfenster konnte nicht geöffnet werden: {0}"
                },
@@ -17837,8 +17905,8 @@
                    "translation":  "Der Pfad des Umfragepakets wurde in die Zwischenablage kopiert."
                },
                {
-                   "source":  "The system completion state was not changed.",
-                   "translation":  "Der Systemabschlussstatus wurde nicht geändert."
+                   "source":  "The survey start point was not changed.",
+                   "translation":  "Der Startpunkt der Umfrage wurde nicht geändert."
                },
                {
                    "source":  "The system lookup failed without changing your limit: {0}",
@@ -17873,6 +17941,18 @@
                    "translation":  "Die Taskleiste ist nicht verfügbar. Durch Minimieren in die Taskleiste bleibt SrvSurvey in der Taskleiste. {0}"
                },
                {
+                   "source":  "The system was not deferred.",
+                   "translation":  "Das System wurde nicht aufgeschoben."
+               },
+               {
+                   "source":  "The system was not marked complete.",
+                   "translation":  "Das System wurde nicht als abgeschlossen markiert."
+               },
+               {
+                   "source":  "The system was not reopened.",
+                   "translation":  "Das System wurde nicht wieder geöffnet."
+               },
+               {
                    "source":  "The system-name file could not be read: {0}",
                    "translation":  "Die Systemnamendatei konnte nicht gelesen werden: {0}"
                },
@@ -17889,8 +17969,8 @@
                    "translation":  "Die Systemumfragepräferenz wurde für diese Sitzung geändert, konnte jedoch nicht gespeichert werden: {0}"
                },
                {
-                   "source":  "The systems table is ordered by numeric suffix and separates distance, last Commander visit, last Spansh update, state, and the manual action.",
-                   "translation":  "Die Systemtabelle ist nach numerischem Suffix geordnet und trennt Entfernung, letzter Commander-Besuch, letzte Spansh-Aktualisierung, Status und die manuelle Aktion."
+                   "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                   "translation":  "Die Systemtabelle hält aktive Systeme in der Reihenfolge der numerischen Suffixe und gruppiert zurückgestellte Systeme zuletzt. Mit „Nur verzögert anzeigen“ wird die aktive Gruppe vorübergehend ausgeblendet."
                },
                {
                    "source":  "The target changed for this session but could not be saved: {0}",
@@ -19505,8 +19585,8 @@
                    "translation":  "Was hat sich geändert?"
                },
                {
-                   "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, the system completes after Elite writes FSSAllBodiesFound. Use Complete or Reopen for a manual correction.",
-                   "translation":  "Wenn „FSS erforderlich“ deaktiviert ist, wird der Vorgang durch einen FSD-Sprung in ein passendes System abgeschlossen. Wenn es aktiviert ist, wird das System abgeschlossen, nachdem Elite FSSAllBodiesFound schreibt. Verwenden Sie „Abschließen“ oder „Erneut öffnen“ für eine manuelle Korrektur."
+                   "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, completion waits for Elite to write FSSAllBodiesFound.",
+                   "translation":  "Wenn „FSS erforderlich“ deaktiviert ist, wird der Vorgang durch einen FSD-Sprung in ein passendes System abgeschlossen. Wenn es aktiviert ist, wartet der Abschluss darauf, dass Elite FSSAllBodiesFound schreibt."
                },
                {
                    "source":  "When docking at a player colony, SrvSurvey can repair a Raven system-site entry that is missing its MarketID or final name.",
@@ -21019,6 +21099,14 @@
                {
                    "source":  "store",
                    "translation":  "speichern"
+               },
+               {
+                   "source":  "suffix {0}",
+                   "translation":  "Suffix {0}"
+               },
+               {
+                   "source":  "suffixes {0}–{1}",
+                   "translation":  "Suffixe {0}–{1}"
                },
                {
                    "source":  "surface location",
@@ -26459,8 +26547,8 @@
                    "translation":  "Controles de caja actuales"
                },
                {
-                   "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the lowest known or expected suffix in that sequence that has not met your completion rule.",
-                   "translation":  "El prefijo del cuadro actual identifica la secuencia que se está trabajando; El siguiente sistema incompleto es el sufijo más bajo conocido o esperado en esa secuencia que no cumplió con la regla de finalización."
+                   "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the next active suffix in the chosen direction that has not met your completion rule.",
+                   "translation":  "El prefijo del cuadro actual identifica la secuencia que se está trabajando; El siguiente sistema incompleto es el siguiente sufijo activo en la dirección elegida que no cumple con la regla de finalización."
                },
                {
                    "source":  "Current boxel {0}% searched.",
@@ -26561,6 +26649,10 @@
                {
                    "source":  "DEADLINE",
                    "translation":  "PLAZO"
+               },
+               {
+                   "source":  "DEFERRED",
+                   "translation":  "APLAZADO"
                },
                {
                    "source":  "DEMAND",
@@ -26747,6 +26839,18 @@
                    "translation":  "Predeterminado: {0}"
                },
                {
+                   "source":  "Defer",
+                   "translation":  "Aplazar"
+               },
+               {
+                   "source":  "Defer unfinished systems before this one in the current sort direction.",
+                   "translation":  "Aplazar los sistemas inacabados antes de éste en la dirección de clasificación actual."
+               },
+               {
+                   "source":  "Deferred {0}.",
+                   "translation":  "Diferido {0}."
+               },
+               {
                    "source":  "Deficit",
                    "translation":  "Déficit"
                },
@@ -26837,6 +26941,10 @@
                {
                    "source":  "Depot contribution, completion, docking, beacon architect, and market events update the matching project only when the identity is unambiguous.",
                    "translation":  "La contribución del depósito, la finalización, el atraque, el arquitecto de balizas y los eventos del mercado actualizan el proyecto coincidente solo cuando la identidad no es ambigua."
+               },
+               {
+                   "source":  "Descending order is active.",
+                   "translation":  "El orden descendente está activo."
                },
                {
                    "source":  "Design-time error",
@@ -27639,6 +27747,10 @@
                    "translation":  "Ingresa las coordenadas en Viajes o envía .target aquí a través del diario de chat del juego para capturar la ubicación actual."
                },
                {
+                   "source":  "Enter numbers only, from 0 to 99,999.",
+                   "translation":  "Introduzca sólo números, del 0 al 99.999."
+               },
+               {
                    "source":  "Enter one key with ALT, CTRL, or SHIFT, or leave blank.",
                    "translation":  "Ingrese una tecla con ALT, CTRL o MAYÚS, o déjela en blanco."
                },
@@ -27653,6 +27765,10 @@
                {
                    "source":  "Enter the current route, boxel, or clipboard target in the Galaxy Map.",
                    "translation":  "Ingrese la ruta actual, el cuadro o el objetivo del portapapeles en el mapa Galaxy."
+               },
+               {
+                   "source":  "Enter {0} or higher; that suffix is already recorded.",
+                   "translation":  "Ingresa {0} o superior; ese sufijo ya está registrado."
                },
                {
                    "source":  "Entered {0} in the Galaxy Map.",
@@ -30519,6 +30635,10 @@
                    "translation":  "Último sistema disponible"
                },
                {
+                   "source":  "Last system available cannot be below recorded suffix {0}.",
+                   "translation":  "El último sistema disponible no puede estar por debajo del sufijo registrado {0}."
+               },
+               {
                    "source":  "Last system available help",
                    "translation":  "Ayuda del último sistema disponible"
                },
@@ -31213,6 +31333,10 @@
                {
                    "source":  "Mark scanned",
                    "translation":  "Marca escaneada"
+               },
+               {
+                   "source":  "Mark this recorded system complete.",
+                   "translation":  "Marque este sistema grabado como completo."
                },
                {
                    "source":  "Marked Guardian point {0} empty.",
@@ -32203,6 +32327,10 @@
                    "translation":  "Sin acceso directo predeterminado"
                },
                {
+                   "source":  "No deferred systems in this boxel.",
+                   "translation":  "No hay sistemas diferidos en este boxel."
+               },
+               {
                    "source":  "No description",
                    "translation":  "Sin descripción"
                },
@@ -32485,6 +32613,10 @@
                {
                    "source":  "No system names were found to import.",
                    "translation":  "No se encontraron nombres de sistemas para importar."
+               },
+               {
+                   "source":  "No systems are available in this boxel.",
+                   "translation":  "No hay sistemas disponibles en esta caja."
                },
                {
                    "source":  "No tags",
@@ -35451,10 +35583,6 @@
                    "translation":  "Reabastecer"
                },
                {
-                   "source":  "Restore",
-                   "translation":  "Restaurar"
-               },
-               {
                    "source":  "Restore automatic map scaling.",
                    "translation":  "Restaurar la escala automática del mapa."
                },
@@ -35471,10 +35599,6 @@
                    "translation":  "Se restauraron {0} proyectos de colonización importados de {1}.{2}"
                },
                {
-                   "source":  "Restored {0} to the search.",
-                   "translation":  "Restaurado {0} a la búsqueda."
-               },
-               {
                    "source":  "Resume Search",
                    "translation":  "Reanudar búsqueda"
                },
@@ -35489,6 +35613,10 @@
                {
                    "source":  "Resurrect",
                    "translation":  "resucitar"
+               },
+               {
+                   "source":  "Return a completed or empty system to the active survey.",
+                   "translation":  "Devolver un sistema completo o vacío a la encuesta activa."
                },
                {
                    "source":  "Return one level toward the search root",
@@ -37003,6 +37131,10 @@
                    "translation":  "Mostrar sitios de Guardian en el sistema actual"
                },
                {
+                   "source":  "Show Only Deferred",
+                   "translation":  "Mostrar sólo diferido"
+               },
+               {
                    "source":  "Show SrvSurvey",
                    "translation":  "Mostrar SrvSurvey"
                },
@@ -37121,6 +37253,10 @@
                {
                    "source":  "Show only logs still needed",
                    "translation":  "Mostrar solo los registros que aún son necesarios"
+               },
+               {
+                   "source":  "Show only systems deliberately skipped for later.",
+                   "translation":  "Mostrar sólo los sistemas omitidos deliberadamente para más adelante."
                },
                {
                    "source":  "Show or hide construction commodity requirements.",
@@ -37327,8 +37463,16 @@
                    "translation":  "Mostrando cuerpos que valen al menos {0}, además de cuerpos terraformables y portadores de señales."
                },
                {
+                   "source":  "Showing deferred systems {0}–{1} of {2} ({3}).",
+                   "translation":  "Mostrando sistemas diferidos {0}–{1} de {2} ({3})."
+               },
+               {
                    "source":  "Showing systems {0}–{1} of {2} (descending).",
                    "translation":  "Mostrando los sistemas {0}–{1} de {2} (descendente)."
+               },
+               {
+                   "source":  "Showing systems {0}–{1} of {2} ({3}). Deferred systems are grouped last.{4}",
+                   "translation":  "Mostrando los sistemas {0}–{1} de {2} ({3}). Los sistemas diferidos se agrupan en último lugar.{4}"
                },
                {
                    "source":  "Showing systems {0}–{1} of {2}.",
@@ -37425,6 +37569,10 @@
                {
                    "source":  "Skip rings for DSS",
                    "translation":  "Anillos de salto para DSS"
+               },
+               {
+                   "source":  "Skip this unfinished system and keep it for later.",
+                   "translation":  "Omita este sistema inacabado y guárdelo para más adelante."
                },
                {
                    "source":  "SkipAnalyzedCompositionScans",
@@ -37887,6 +38035,10 @@
                    "translation":  "Puertos estelares"
                },
                {
+                   "source":  "Start Here",
+                   "translation":  "Comience aquí"
+               },
+               {
                    "source":  "Start a Guardian template draft before exporting.",
                    "translation":  "Inicie un borrador de plantilla de Guardian antes de exportar."
                },
@@ -38219,6 +38371,14 @@
                    "translation":  "Totales de la encuesta"
                },
                {
+                   "source":  "Survey will start at {0}.",
+                   "translation":  "La encuesta comenzará en {0}."
+               },
+               {
+                   "source":  "Survey will start at {0}; deferred {1} earlier systems.",
+                   "translation":  "La encuesta comenzará en {0}; diferido {1} sistemas anteriores."
+               },
+               {
                    "source":  "Surveying a complete sequence gives an explorer a bounded, repeatable area to study. It is useful for finding regional formation patterns, checking nearby systems after an interesting discovery, and keeping a long project organized.",
                    "translation":  "Examinar una secuencia completa le da al explorador un área limitada y repetible para estudiar. Es útil para encontrar patrones de formación regionales, comprobar sistemas cercanos después de un descubrimiento interesante y mantener organizado un proyecto largo."
                },
@@ -38271,16 +38431,16 @@
                    "translation":  "Sistema"
                },
                {
+                   "source":  "System actions",
+                   "translation":  "Acciones del sistema"
+               },
+               {
                    "source":  "System biology",
                    "translation":  "biología del sistema"
                },
                {
                    "source":  "System biology overlay",
                    "translation":  "Superposición de biología del sistema"
-               },
-               {
-                   "source":  "System completion updated.",
-                   "translation":  "Finalización del sistema actualizada."
                },
                {
                    "source":  "System data is unavailable: {0}",
@@ -39159,10 +39319,6 @@
                    "translation":  "El marcador de sistema vacío no fue cambiado: {0}"
                },
                {
-                   "source":  "The empty-system marker was not removed.",
-                   "translation":  "El marcador de sistema vacío no se eliminó."
-               },
-               {
                    "source":  "The error-report window could not be opened: {0}",
                    "translation":  "No se pudo abrir la ventana de informe de errores: {0}"
                },
@@ -39959,8 +40115,8 @@
                    "translation":  "La ruta del paquete de encuestas se copió en el portapapeles."
                },
                {
-                   "source":  "The system completion state was not changed.",
-                   "translation":  "El estado de finalización del sistema no cambió."
+                   "source":  "The survey start point was not changed.",
+                   "translation":  "El punto de inicio de la encuesta no fue cambiado."
                },
                {
                    "source":  "The system lookup failed without changing your limit: {0}",
@@ -39995,6 +40151,18 @@
                    "translation":  "La bandeja del sistema no está disponible; minimizar a la bandeja dejará SrvSurvey en la barra de tareas. {0}"
                },
                {
+                   "source":  "The system was not deferred.",
+                   "translation":  "El sistema no fue aplazado."
+               },
+               {
+                   "source":  "The system was not marked complete.",
+                   "translation":  "El sistema no fue marcado como completo."
+               },
+               {
+                   "source":  "The system was not reopened.",
+                   "translation":  "El sistema no fue reabierto."
+               },
+               {
                    "source":  "The system-name file could not be read: {0}",
                    "translation":  "No se pudo leer el archivo de nombre del sistema: {0}"
                },
@@ -40011,8 +40179,8 @@
                    "translation":  "La preferencia de la encuesta del sistema cambió para esta sesión pero no se pudo guardar: {0}"
                },
                {
-                   "source":  "The systems table is ordered by numeric suffix and separates distance, last Commander visit, last Spansh update, state, and the manual action.",
-                   "translation":  "La tabla de sistemas está ordenada por sufijo numérico y separa la distancia, la última visita del Commander, la última Spansh actualización, el estado y la acción manual."
+                   "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                   "translation":  "La tabla de sistemas mantiene los sistemas activos en orden de sufijo numérico y agrupa los sistemas diferidos al final. Mostrar solo diferido oculta temporalmente el grupo activo."
                },
                {
                    "source":  "The target changed for this session but could not be saved: {0}",
@@ -41627,8 +41795,8 @@
                    "translation":  "¿Qué ha cambiado?"
                },
                {
-                   "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, the system completes after Elite writes FSSAllBodiesFound. Use Complete or Reopen for a manual correction.",
-                   "translation":  "Cuando Requerir FSS está desactivado, un salto FSD a un sistema coincidente lo completa. Cuando está activado, el sistema se completa después de que Elite escribe FSSAllBodiesFound. Utilice Completar o Reabrir para una corrección manual."
+                   "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, completion waits for Elite to write FSSAllBodiesFound.",
+                   "translation":  "Cuando Requerir FSS está desactivado, un salto FSD a un sistema coincidente lo completa. Cuando está activado, la finalización espera a que Elite escriba FSSAllBodiesFound."
                },
                {
                    "source":  "When docking at a player colony, SrvSurvey can repair a Raven system-site entry that is missing its MarketID or final name.",
@@ -43141,6 +43309,14 @@
                {
                    "source":  "store",
                    "translation":  "tienda"
+               },
+               {
+                   "source":  "suffix {0}",
+                   "translation":  "sufijo {0}"
+               },
+               {
+                   "source":  "suffixes {0}–{1}",
+                   "translation":  "sufijos {0}–{1}"
                },
                {
                    "source":  "surface location",
@@ -48581,8 +48757,8 @@
                    "translation":  "Contrôles Boxel actuels"
                },
                {
-                   "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the lowest known or expected suffix in that sequence that has not met your completion rule.",
-                   "translation":  "Le préfixe boxel actuel identifie la séquence en cours de traitement ; Le prochain système incomplet est le suffixe le plus bas connu ou attendu dans cette séquence qui ne répond pas à votre règle d\u0027achèvement."
+                   "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the next active suffix in the chosen direction that has not met your completion rule.",
+                   "translation":  "Le préfixe boxel actuel identifie la séquence en cours de traitement ; Le prochain système incomplet est le prochain suffixe actif dans la direction choisie qui ne répond pas à votre règle d\u0027achèvement."
                },
                {
                    "source":  "Current boxel {0}% searched.",
@@ -48683,6 +48859,10 @@
                {
                    "source":  "DEADLINE",
                    "translation":  "DATE LIMITE"
+               },
+               {
+                   "source":  "DEFERRED",
+                   "translation":  "DIFFÉRÉ"
                },
                {
                    "source":  "DEMAND",
@@ -48869,6 +49049,18 @@
                    "translation":  "Valeur par défaut : {0}"
                },
                {
+                   "source":  "Defer",
+                   "translation":  "Différer"
+               },
+               {
+                   "source":  "Defer unfinished systems before this one in the current sort direction.",
+                   "translation":  "Différer les systèmes inachevés avant celui-ci dans le sens de tri actuel."
+               },
+               {
+                   "source":  "Deferred {0}.",
+                   "translation":  "Différé {0}."
+               },
+               {
                    "source":  "Deficit",
                    "translation":  "Déficit"
                },
@@ -48959,6 +49151,10 @@
                {
                    "source":  "Depot contribution, completion, docking, beacon architect, and market events update the matching project only when the identity is unambiguous.",
                    "translation":  "La contribution au dépôt, l\u0027achèvement, l\u0027amarrage, l\u0027architecte de balise et les événements de marché mettent à jour le projet correspondant uniquement lorsque l\u0027identité est sans ambiguïté."
+               },
+               {
+                   "source":  "Descending order is active.",
+                   "translation":  "L\u0027ordre décroissant est actif."
                },
                {
                    "source":  "Design-time error",
@@ -49761,6 +49957,10 @@
                    "translation":  "Entrez les coordonnées dans Voyage ou envoyez .target ici via le journal de discussion en jeu pour capturer l\u0027emplacement actuel."
                },
                {
+                   "source":  "Enter numbers only, from 0 to 99,999.",
+                   "translation":  "Entrez uniquement des chiffres, de 0 à 99 999."
+               },
+               {
                    "source":  "Enter one key with ALT, CTRL, or SHIFT, or leave blank.",
                    "translation":  "Entrez une touche avec ALT, CTRL ou SHIFT, ou laissez vide."
                },
@@ -49775,6 +49975,10 @@
                {
                    "source":  "Enter the current route, boxel, or clipboard target in the Galaxy Map.",
                    "translation":  "Entrez l\u0027itinéraire actuel, la boîte ou la cible du presse-papiers dans la Galaxy Map."
+               },
+               {
+                   "source":  "Enter {0} or higher; that suffix is already recorded.",
+                   "translation":  "Saisissez {0} ou supérieur ; ce suffixe est déjà enregistré."
                },
                {
                    "source":  "Entered {0} in the Galaxy Map.",
@@ -52641,6 +52845,10 @@
                    "translation":  "Dernier système disponible"
                },
                {
+                   "source":  "Last system available cannot be below recorded suffix {0}.",
+                   "translation":  "Le dernier système disponible ne peut pas être inférieur au suffixe enregistré {0}."
+               },
+               {
                    "source":  "Last system available help",
                    "translation":  "Aide du dernier système disponible"
                },
@@ -53335,6 +53543,10 @@
                {
                    "source":  "Mark scanned",
                    "translation":  "Marque numérisée"
+               },
+               {
+                   "source":  "Mark this recorded system complete.",
+                   "translation":  "Marquez ce système enregistré comme terminé."
                },
                {
                    "source":  "Marked Guardian point {0} empty.",
@@ -54325,6 +54537,10 @@
                    "translation":  "Pas de raccourci par défaut"
                },
                {
+                   "source":  "No deferred systems in this boxel.",
+                   "translation":  "Aucun système différé dans ce boxel."
+               },
+               {
                    "source":  "No description",
                    "translation":  "Pas de description"
                },
@@ -54607,6 +54823,10 @@
                {
                    "source":  "No system names were found to import.",
                    "translation":  "Aucun nom de système à importer n\u0027a été trouvé."
+               },
+               {
+                   "source":  "No systems are available in this boxel.",
+                   "translation":  "Aucun système n\u0027est disponible dans cette boîte."
                },
                {
                    "source":  "No tags",
@@ -57573,10 +57793,6 @@
                    "translation":  "Réapprovisionner"
                },
                {
-                   "source":  "Restore",
-                   "translation":  "Restaurer"
-               },
-               {
                    "source":  "Restore automatic map scaling.",
                    "translation":  "Restaurez la mise à l\u0027échelle automatique de la carte."
                },
@@ -57593,10 +57809,6 @@
                    "translation":  "{0} projets de colonisation importés de {1} restaurés.{2}"
                },
                {
-                   "source":  "Restored {0} to the search.",
-                   "translation":  "{0} restauré à la recherche."
-               },
-               {
                    "source":  "Resume Search",
                    "translation":  "Reprendre la recherche"
                },
@@ -57611,6 +57823,10 @@
                {
                    "source":  "Resurrect",
                    "translation":  "Ressusciter"
+               },
+               {
+                   "source":  "Return a completed or empty system to the active survey.",
+                   "translation":  "Renvoie un système complété ou vide à l\u0027enquête active."
                },
                {
                    "source":  "Return one level toward the search root",
@@ -59125,6 +59341,10 @@
                    "translation":  "Afficher les sites Guardian dans le système actuel"
                },
                {
+                   "source":  "Show Only Deferred",
+                   "translation":  "Afficher uniquement les différés"
+               },
+               {
                    "source":  "Show SrvSurvey",
                    "translation":  "Afficher SrvSurvey"
                },
@@ -59243,6 +59463,10 @@
                {
                    "source":  "Show only logs still needed",
                    "translation":  "Afficher uniquement les journaux encore nécessaires"
+               },
+               {
+                   "source":  "Show only systems deliberately skipped for later.",
+                   "translation":  "Afficher uniquement les systèmes délibérément ignorés pour plus tard."
                },
                {
                    "source":  "Show or hide construction commodity requirements.",
@@ -59449,8 +59673,16 @@
                    "translation":  "Affichage des corps valant au moins {0}, ainsi que des corps terraformables et porteurs de signaux."
                },
                {
+                   "source":  "Showing deferred systems {0}–{1} of {2} ({3}).",
+                   "translation":  "Affichage des systèmes différés {0}–{1} de {2} ({3})."
+               },
+               {
                    "source":  "Showing systems {0}–{1} of {2} (descending).",
                    "translation":  "Affichage des systèmes {0}–{1} de {2} (décroissant)."
+               },
+               {
+                   "source":  "Showing systems {0}–{1} of {2} ({3}). Deferred systems are grouped last.{4}",
+                   "translation":  "Affichage des systèmes {0}–{1} de {2} ({3}). Les systèmes différés sont regroupés en dernier.{4}"
                },
                {
                    "source":  "Showing systems {0}–{1} of {2}.",
@@ -59547,6 +59779,10 @@
                {
                    "source":  "Skip rings for DSS",
                    "translation":  "Anneaux de saut pour DSS"
+               },
+               {
+                   "source":  "Skip this unfinished system and keep it for later.",
+                   "translation":  "Ignorez ce système inachevé et conservez-le pour plus tard."
                },
                {
                    "source":  "SkipAnalyzedCompositionScans",
@@ -60009,6 +60245,10 @@
                    "translation":  "Ports stellaires"
                },
                {
+                   "source":  "Start Here",
+                   "translation":  "Commencez ici"
+               },
+               {
                    "source":  "Start a Guardian template draft before exporting.",
                    "translation":  "Démarrez un brouillon de modèle Guardian avant de l\u0027exporter."
                },
@@ -60341,6 +60581,14 @@
                    "translation":  "Totaux de l\u0027enquête"
                },
                {
+                   "source":  "Survey will start at {0}.",
+                   "translation":  "L\u0027enquête débutera à {0}."
+               },
+               {
+                   "source":  "Survey will start at {0}; deferred {1} earlier systems.",
+                   "translation":  "L\u0027enquête commencera à {0} ; différé {1} systèmes antérieurs."
+               },
+               {
                    "source":  "Surveying a complete sequence gives an explorer a bounded, repeatable area to study. It is useful for finding regional formation patterns, checking nearby systems after an interesting discovery, and keeping a long project organized.",
                    "translation":  "L\u0027étude d\u0027une séquence complète donne à l\u0027explorateur une zone délimitée et reproductible à étudier. Il est utile pour trouver des modèles de formation régionaux, vérifier les systèmes proches après une découverte intéressante et organiser un long projet."
                },
@@ -60393,16 +60641,16 @@
                    "translation":  "Système"
                },
                {
+                   "source":  "System actions",
+                   "translation":  "Actions du système"
+               },
+               {
                    "source":  "System biology",
                    "translation":  "Biologie des systèmes"
                },
                {
                    "source":  "System biology overlay",
                    "translation":  "Superposition de biologie systémique"
-               },
-               {
-                   "source":  "System completion updated.",
-                   "translation":  "Achèvement du système mis à jour."
                },
                {
                    "source":  "System data is unavailable: {0}",
@@ -61281,10 +61529,6 @@
                    "translation":  "Le marqueur de système vide n\u0027a pas été modifié : {0}"
                },
                {
-                   "source":  "The empty-system marker was not removed.",
-                   "translation":  "Le marqueur de système vide n’a pas été supprimé."
-               },
-               {
                    "source":  "The error-report window could not be opened: {0}",
                    "translation":  "La fenêtre de rapport d\u0027erreurs n\u0027a pas pu être ouverte : {0}"
                },
@@ -62081,8 +62325,8 @@
                    "translation":  "Le chemin du paquet d\u0027enquête a été copié dans le presse-papiers."
                },
                {
-                   "source":  "The system completion state was not changed.",
-                   "translation":  "L\u0027état d\u0027achèvement du système n\u0027a pas été modifié."
+                   "source":  "The survey start point was not changed.",
+                   "translation":  "Le point de départ de l\u0027enquête n\u0027a pas été modifié."
                },
                {
                    "source":  "The system lookup failed without changing your limit: {0}",
@@ -62117,6 +62361,18 @@
                    "translation":  "La barre d\u0027état système n\u0027est pas disponible ; minimiser-to-tray laissera SrvSurvey dans la barre des tâches. {0}"
                },
                {
+                   "source":  "The system was not deferred.",
+                   "translation":  "Le système n\u0027a pas été différé."
+               },
+               {
+                   "source":  "The system was not marked complete.",
+                   "translation":  "Le système n\u0027était pas marqué comme terminé."
+               },
+               {
+                   "source":  "The system was not reopened.",
+                   "translation":  "Le système n\u0027a pas été rouvert."
+               },
+               {
                    "source":  "The system-name file could not be read: {0}",
                    "translation":  "Le fichier du nom du système n\u0027a pas pu être lu : {0}"
                },
@@ -62133,8 +62389,8 @@
                    "translation":  "La préférence d\u0027enquête système a été modifiée pour cette session mais n\u0027a pas pu être enregistrée : {0}"
                },
                {
-                   "source":  "The systems table is ordered by numeric suffix and separates distance, last Commander visit, last Spansh update, state, and the manual action.",
-                   "translation":  "Le tableau des systèmes est classé par suffixe numérique et sépare la distance, la dernière visite du commandant, la dernière mise à jour Spansh, l\u0027état et l\u0027action manuelle."
+                   "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                   "translation":  "La table des systèmes conserve les systèmes actifs dans l\u0027ordre des suffixes numériques et regroupe les systèmes différés en dernier. Afficher uniquement les différés masque temporairement le groupe actif."
                },
                {
                    "source":  "The target changed for this session but could not be saved: {0}",
@@ -63749,8 +64005,8 @@
                    "translation":  "Qu\u0027est-ce qui a changé"
                },
                {
-                   "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, the system completes after Elite writes FSSAllBodiesFound. Use Complete or Reopen for a manual correction.",
-                   "translation":  "Lorsque Require FSS est désactivé, un saut FSD dans un système correspondant le complète. Lorsqu\u0027il est activé, le système se termine après qu\u0027Elite ait écrit FSSAllBodiesFound. Utilisez Complete ou Reopen pour une correction manuelle."
+                   "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, completion waits for Elite to write FSSAllBodiesFound.",
+                   "translation":  "Lorsque Require FSS est désactivé, un saut FSD dans un système correspondant le complète. Lorsqu\u0027il est activé, l\u0027achèvement attend qu\u0027Elite écrive FSSAllBodiesFound."
                },
                {
                    "source":  "When docking at a player colony, SrvSurvey can repair a Raven system-site entry that is missing its MarketID or final name.",
@@ -65263,6 +65519,14 @@
                {
                    "source":  "store",
                    "translation":  "magasin"
+               },
+               {
+                   "source":  "suffix {0}",
+                   "translation":  "suffixe {0}"
+               },
+               {
+                   "source":  "suffixes {0}–{1}",
+                   "translation":  "suffixes {0}–{1}"
                },
                {
                    "source":  "surface location",
@@ -70703,8 +70967,8 @@
                       "translation":  "Controles de boxel atuais"
                   },
                   {
-                      "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the lowest known or expected suffix in that sequence that has not met your completion rule.",
-                      "translation":  "O prefixo boxel atual identifica a sequência que está sendo trabalhada; O próximo sistema incompleto é o sufixo mais baixo conhecido ou esperado nessa sequência que não atendeu à sua regra de conclusão."
+                      "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the next active suffix in the chosen direction that has not met your completion rule.",
+                      "translation":  "O prefixo boxel atual identifica a sequência que está sendo trabalhada; O próximo sistema incompleto é o próximo sufixo ativo na direção escolhida que não atendeu à sua regra de conclusão."
                   },
                   {
                       "source":  "Current boxel {0}% searched.",
@@ -70805,6 +71069,10 @@
                   {
                       "source":  "DEADLINE",
                       "translation":  "PRAZO"
+                  },
+                  {
+                      "source":  "DEFERRED",
+                      "translation":  "DIFERIDO"
                   },
                   {
                       "source":  "DEMAND",
@@ -70991,6 +71259,18 @@
                       "translation":  "Padrão: {0}"
                   },
                   {
+                      "source":  "Defer",
+                      "translation":  "Adiar"
+                  },
+                  {
+                      "source":  "Defer unfinished systems before this one in the current sort direction.",
+                      "translation":  "Adie sistemas inacabados antes deste na direção de classificação atual."
+                  },
+                  {
+                      "source":  "Deferred {0}.",
+                      "translation":  "Adiado {0}."
+                  },
+                  {
                       "source":  "Deficit",
                       "translation":  "Déficit"
                   },
@@ -71081,6 +71361,10 @@
                   {
                       "source":  "Depot contribution, completion, docking, beacon architect, and market events update the matching project only when the identity is unambiguous.",
                       "translation":  "A contribuição do depósito, a conclusão, a ancoragem, o arquiteto de beacon e os eventos de mercado atualizam o projeto correspondente somente quando a identidade é inequívoca."
+                  },
+                  {
+                      "source":  "Descending order is active.",
+                      "translation":  "A ordem decrescente está ativa."
                   },
                   {
                       "source":  "Design-time error",
@@ -71883,6 +72167,10 @@
                       "translation":  "Insira as coordenadas em Viagem ou envie .target aqui através do diário de bate-papo do jogo para capturar a localização atual."
                   },
                   {
+                      "source":  "Enter numbers only, from 0 to 99,999.",
+                      "translation":  "Insira apenas números, de 0 a 99.999."
+                  },
+                  {
                       "source":  "Enter one key with ALT, CTRL, or SHIFT, or leave blank.",
                       "translation":  "Insira uma tecla com ALT, CTRL ou SHIFT ou deixe em branco."
                   },
@@ -71897,6 +72185,10 @@
                   {
                       "source":  "Enter the current route, boxel, or clipboard target in the Galaxy Map.",
                       "translation":  "Insira a rota atual, o boxel ou o alvo da área de transferência no Galaxy Map."
+                  },
+                  {
+                      "source":  "Enter {0} or higher; that suffix is already recorded.",
+                      "translation":  "Digite {0} ou superior; esse sufixo já está gravado."
                   },
                   {
                       "source":  "Entered {0} in the Galaxy Map.",
@@ -74763,6 +75055,10 @@
                       "translation":  "Último sistema disponível"
                   },
                   {
+                      "source":  "Last system available cannot be below recorded suffix {0}.",
+                      "translation":  "O último sistema disponível não pode estar abaixo do sufixo registrado {0}."
+                  },
+                  {
                       "source":  "Last system available help",
                       "translation":  "Ajuda disponível no último sistema"
                   },
@@ -75457,6 +75753,10 @@
                   {
                       "source":  "Mark scanned",
                       "translation":  "Marca digitalizada"
+                  },
+                  {
+                      "source":  "Mark this recorded system complete.",
+                      "translation":  "Marque este sistema gravado como completo."
                   },
                   {
                       "source":  "Marked Guardian point {0} empty.",
@@ -76447,6 +76747,10 @@
                       "translation":  "Nenhum atalho padrão"
                   },
                   {
+                      "source":  "No deferred systems in this boxel.",
+                      "translation":  "Não há sistemas diferidos neste boxel."
+                  },
+                  {
                       "source":  "No description",
                       "translation":  "Sem descrição"
                   },
@@ -76729,6 +77033,10 @@
                   {
                       "source":  "No system names were found to import.",
                       "translation":  "Nenhum nome de sistema foi encontrado para importar."
+                  },
+                  {
+                      "source":  "No systems are available in this boxel.",
+                      "translation":  "Nenhum sistema está disponível neste boxel."
                   },
                   {
                       "source":  "No tags",
@@ -79695,10 +80003,6 @@
                       "translation":  "Reabastecer"
                   },
                   {
-                      "source":  "Restore",
-                      "translation":  "Restaurar"
-                  },
-                  {
                       "source":  "Restore automatic map scaling.",
                       "translation":  "Restaure o dimensionamento automático do mapa."
                   },
@@ -79715,10 +80019,6 @@
                       "translation":  "{0} restaurado(s) projeto(s) de colonização importado(s) de {1}.{2}"
                   },
                   {
-                      "source":  "Restored {0} to the search.",
-                      "translation":  "Restaurado {0} para a pesquisa."
-                  },
-                  {
                       "source":  "Resume Search",
                       "translation":  "Retomar pesquisa"
                   },
@@ -79733,6 +80033,10 @@
                   {
                       "source":  "Resurrect",
                       "translation":  "Ressuscitar"
+                  },
+                  {
+                      "source":  "Return a completed or empty system to the active survey.",
+                      "translation":  "Retorne um sistema completo ou vazio para a pesquisa ativa."
                   },
                   {
                       "source":  "Return one level toward the search root",
@@ -81247,6 +81551,10 @@
                       "translation":  "Mostrar sites do Guardian no sistema atual"
                   },
                   {
+                      "source":  "Show Only Deferred",
+                      "translation":  "Mostrar apenas adiado"
+                  },
+                  {
                       "source":  "Show SrvSurvey",
                       "translation":  "Mostrar SrvSurvey"
                   },
@@ -81365,6 +81673,10 @@
                   {
                       "source":  "Show only logs still needed",
                       "translation":  "Mostrar apenas os registros ainda necessários"
+                  },
+                  {
+                      "source":  "Show only systems deliberately skipped for later.",
+                      "translation":  "Mostrar apenas sistemas ignorados deliberadamente para uso posterior."
                   },
                   {
                       "source":  "Show or hide construction commodity requirements.",
@@ -81571,8 +81883,16 @@
                       "translation":  "Mostrando corpos com valor de pelo menos {0}, além de corpos terraformáveis e portadores de sinais."
                   },
                   {
+                      "source":  "Showing deferred systems {0}–{1} of {2} ({3}).",
+                      "translation":  "Mostrando sistemas diferidos {0}–{1} de {2} ({3})."
+                  },
+                  {
                       "source":  "Showing systems {0}–{1} of {2} (descending).",
                       "translation":  "Mostrando sistemas {0}–{1} de {2} (descendente)."
+                  },
+                  {
+                      "source":  "Showing systems {0}–{1} of {2} ({3}). Deferred systems are grouped last.{4}",
+                      "translation":  "Mostrando sistemas {0}–{1} de {2} ({3}). Os sistemas diferidos são agrupados por último.{4}"
                   },
                   {
                       "source":  "Showing systems {0}–{1} of {2}.",
@@ -81669,6 +81989,10 @@
                   {
                       "source":  "Skip rings for DSS",
                       "translation":  "Pular anéis para DSS"
+                  },
+                  {
+                      "source":  "Skip this unfinished system and keep it for later.",
+                      "translation":  "Ignore este sistema inacabado e guarde-o para mais tarde."
                   },
                   {
                       "source":  "SkipAnalyzedCompositionScans",
@@ -82131,6 +82455,10 @@
                       "translation":  "Portos Estelares"
                   },
                   {
+                      "source":  "Start Here",
+                      "translation":  "Comece aqui"
+                  },
+                  {
                       "source":  "Start a Guardian template draft before exporting.",
                       "translation":  "Inicie um rascunho de modelo do Guardian antes de exportar."
                   },
@@ -82463,6 +82791,14 @@
                       "translation":  "Totais da pesquisa"
                   },
                   {
+                      "source":  "Survey will start at {0}.",
+                      "translation":  "A pesquisa começará às {0}."
+                  },
+                  {
+                      "source":  "Survey will start at {0}; deferred {1} earlier systems.",
+                      "translation":  "A pesquisa começará em {0}; diferido {1} sistemas anteriores."
+                  },
+                  {
                       "source":  "Surveying a complete sequence gives an explorer a bounded, repeatable area to study. It is useful for finding regional formation patterns, checking nearby systems after an interesting discovery, and keeping a long project organized.",
                       "translation":  "O levantamento de uma sequência completa dá ao explorador uma área limitada e repetível para estudar. É útil para encontrar padrões de formação regional, verificar sistemas próximos após uma descoberta interessante e manter um longo projeto organizado."
                   },
@@ -82515,16 +82851,16 @@
                       "translation":  "Sistema"
                   },
                   {
+                      "source":  "System actions",
+                      "translation":  "Ações do sistema"
+                  },
+                  {
                       "source":  "System biology",
                       "translation":  "Biologia do sistema"
                   },
                   {
                       "source":  "System biology overlay",
                       "translation":  "Sobreposição de biologia do sistema"
-                  },
-                  {
-                      "source":  "System completion updated.",
-                      "translation":  "Conclusão do sistema atualizada."
                   },
                   {
                       "source":  "System data is unavailable: {0}",
@@ -83403,10 +83739,6 @@
                       "translation":  "O marcador do sistema vazio não foi alterado: {0}"
                   },
                   {
-                      "source":  "The empty-system marker was not removed.",
-                      "translation":  "O marcador de sistema vazio não foi removido."
-                  },
-                  {
                       "source":  "The error-report window could not be opened: {0}",
                       "translation":  "A janela de relatório de erros não pôde ser aberta: {0}"
                   },
@@ -84203,8 +84535,8 @@
                       "translation":  "O caminho do pacote de pesquisa foi copiado para a área de transferência."
                   },
                   {
-                      "source":  "The system completion state was not changed.",
-                      "translation":  "O estado de conclusão do sistema não foi alterado."
+                      "source":  "The survey start point was not changed.",
+                      "translation":  "O ponto de início da pesquisa não foi alterado."
                   },
                   {
                       "source":  "The system lookup failed without changing your limit: {0}",
@@ -84239,6 +84571,18 @@
                       "translation":  "A bandeja do sistema não está disponível; minimizar para a bandeja deixará SrvSurvey na barra de tarefas. {0}"
                   },
                   {
+                      "source":  "The system was not deferred.",
+                      "translation":  "O sistema não foi adiado."
+                  },
+                  {
+                      "source":  "The system was not marked complete.",
+                      "translation":  "O sistema não foi marcado como completo."
+                  },
+                  {
+                      "source":  "The system was not reopened.",
+                      "translation":  "O sistema não foi reaberto."
+                  },
+                  {
                       "source":  "The system-name file could not be read: {0}",
                       "translation":  "O arquivo de nome do sistema não pôde ser lido: {0}"
                   },
@@ -84255,8 +84599,8 @@
                       "translation":  "A preferência de pesquisa do sistema foi alterada para esta sessão, mas não pôde ser salva: {0}"
                   },
                   {
-                      "source":  "The systems table is ordered by numeric suffix and separates distance, last Commander visit, last Spansh update, state, and the manual action.",
-                      "translation":  "A tabela de sistemas é ordenada por sufixo numérico e separa distância, última visita do Comandante, última atualização Spansh, estado e ação manual."
+                      "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                      "translation":  "A tabela de sistemas mantém os sistemas ativos em ordem de sufixos numéricos e agrupa os sistemas adiados por último. Mostrar apenas adiado oculta temporariamente o grupo ativo."
                   },
                   {
                       "source":  "The target changed for this session but could not be saved: {0}",
@@ -85871,8 +86215,8 @@
                       "translation":  "O que mudou"
                   },
                   {
-                      "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, the system completes after Elite writes FSSAllBodiesFound. Use Complete or Reopen for a manual correction.",
-                      "translation":  "Quando Exigir FSS está desativado, um salto do FSD para um sistema correspondente o completa. Quando ativado, o sistema é concluído depois que Elite grava FSSAllBodiesFound. Use Concluir ou Reabrir para uma correção manual."
+                      "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, completion waits for Elite to write FSSAllBodiesFound.",
+                      "translation":  "Quando Exigir FSS está desativado, um salto do FSD para um sistema correspondente o completa. Quando ativado, a conclusão aguarda que o Elite grave FSSAllBodiesFound."
                   },
                   {
                       "source":  "When docking at a player colony, SrvSurvey can repair a Raven system-site entry that is missing its MarketID or final name.",
@@ -87385,6 +87729,14 @@
                   {
                       "source":  "store",
                       "translation":  "loja"
+                  },
+                  {
+                      "source":  "suffix {0}",
+                      "translation":  "sufixo {0}"
+                  },
+                  {
+                      "source":  "suffixes {0}–{1}",
+                      "translation":  "sufixos {0}–{1}"
                   },
                   {
                       "source":  "surface location",
@@ -92825,8 +93177,8 @@
                    "translation":  "Текущие элементы управления боксом"
                },
                {
-                   "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the lowest known or expected suffix in that sequence that has not met your completion rule.",
-                   "translation":  "Текущий префикс бокселя идентифицирует обрабатываемую последовательность; Следующая неполная система — это наименьший известный или ожидаемый суффикс в этой последовательности, который не соответствует вашему правилу завершения."
+                   "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the next active suffix in the chosen direction that has not met your completion rule.",
+                   "translation":  "Текущий префикс бокселя идентифицирует обрабатываемую последовательность; Следующая неполная система — это следующий активный суффикс в выбранном направлении, который не соответствует вашему правилу завершения."
                },
                {
                    "source":  "Current boxel {0}% searched.",
@@ -92927,6 +93279,10 @@
                {
                    "source":  "DEADLINE",
                    "translation":  "СРОК"
+               },
+               {
+                   "source":  "DEFERRED",
+                   "translation":  "ОТЛОЖЕНО"
                },
                {
                    "source":  "DEMAND",
@@ -93113,6 +93469,18 @@
                    "translation":  "По умолчанию: {0}"
                },
                {
+                   "source":  "Defer",
+                   "translation":  "Отложить"
+               },
+               {
+                   "source":  "Defer unfinished systems before this one in the current sort direction.",
+                   "translation":  "Отложить незавершенные системы перед этой в текущем направлении сортировки."
+               },
+               {
+                   "source":  "Deferred {0}.",
+                   "translation":  "Отложенный {0}."
+               },
+               {
                    "source":  "Deficit",
                    "translation":  "Дефицит"
                },
@@ -93203,6 +93571,10 @@
                {
                    "source":  "Depot contribution, completion, docking, beacon architect, and market events update the matching project only when the identity is unambiguous.",
                    "translation":  "Вклад депо, завершение, стыковка, архитектор маяка и рыночные события обновляют соответствующий проект только в том случае, если его идентичность недвусмысленна."
+               },
+               {
+                   "source":  "Descending order is active.",
+                   "translation":  "По убыванию активен."
                },
                {
                    "source":  "Design-time error",
@@ -94005,6 +94377,10 @@
                    "translation":  "Введите координаты в приложении «Путешествия» или отправьте сюда .target через журнал внутриигрового чата, чтобы зафиксировать текущее местоположение."
                },
                {
+                   "source":  "Enter numbers only, from 0 to 99,999.",
+                   "translation":  "Введите только цифры от 0 до 99 999."
+               },
+               {
                    "source":  "Enter one key with ALT, CTRL, or SHIFT, or leave blank.",
                    "translation":  "Введите одну клавишу с помощью ALT, CTRL или SHIFT или оставьте поле пустым."
                },
@@ -94019,6 +94395,10 @@
                {
                    "source":  "Enter the current route, boxel, or clipboard target in the Galaxy Map.",
                    "translation":  "Введите текущий маршрут, поле или цель буфера обмена на карте Галактики."
+               },
+               {
+                   "source":  "Enter {0} or higher; that suffix is already recorded.",
+                   "translation":  "Введите {0} или выше; этот суффикс уже записан."
                },
                {
                    "source":  "Entered {0} in the Galaxy Map.",
@@ -96885,6 +97265,10 @@
                    "translation":  "Последняя доступная система"
                },
                {
+                   "source":  "Last system available cannot be below recorded suffix {0}.",
+                   "translation":  "Последняя доступная система не может быть ниже записанного суффикса {0}."
+               },
+               {
                    "source":  "Last system available help",
                    "translation":  "Последняя доступная справка по системе"
                },
@@ -97579,6 +97963,10 @@
                {
                    "source":  "Mark scanned",
                    "translation":  "Марк просканировал"
+               },
+               {
+                   "source":  "Mark this recorded system complete.",
+                   "translation":  "Отметьте эту записанную систему как завершенную."
                },
                {
                    "source":  "Marked Guardian point {0} empty.",
@@ -98569,6 +98957,10 @@
                    "translation":  "Нет ярлыка по умолчанию"
                },
                {
+                   "source":  "No deferred systems in this boxel.",
+                   "translation":  "Никаких отложенных систем в этом бокселе нет."
+               },
+               {
                    "source":  "No description",
                    "translation":  "Нет описания"
                },
@@ -98851,6 +99243,10 @@
                {
                    "source":  "No system names were found to import.",
                    "translation":  "Не найдено системных имен для импорта."
+               },
+               {
+                   "source":  "No systems are available in this boxel.",
+                   "translation":  "В этом боксе нет доступных систем."
                },
                {
                    "source":  "No tags",
@@ -101817,10 +102213,6 @@
                    "translation":  "Пополнение запасов"
                },
                {
-                   "source":  "Restore",
-                   "translation":  "Восстановить"
-               },
-               {
                    "source":  "Restore automatic map scaling.",
                    "translation":  "Восстановить автоматическое масштабирование карты."
                },
@@ -101837,10 +102229,6 @@
                    "translation":  "Восстановлены {0} импортированные проекты колонизации из {1}.{2}"
                },
                {
-                   "source":  "Restored {0} to the search.",
-                   "translation":  "Восстановлен {0} в поиске."
-               },
-               {
                    "source":  "Resume Search",
                    "translation":  "Возобновить поиск"
                },
@@ -101855,6 +102243,10 @@
                {
                    "source":  "Resurrect",
                    "translation":  "Воскресить"
+               },
+               {
+                   "source":  "Return a completed or empty system to the active survey.",
+                   "translation":  "Верните заполненную или пустую систему в активное обследование."
                },
                {
                    "source":  "Return one level toward the search root",
@@ -103369,6 +103761,10 @@
                    "translation":  "Показать сайты Guardian в текущей системе"
                },
                {
+                   "source":  "Show Only Deferred",
+                   "translation":  "Показать только отложенные"
+               },
+               {
                    "source":  "Show SrvSurvey",
                    "translation":  "Показать SrvSurvey"
                },
@@ -103487,6 +103883,10 @@
                {
                    "source":  "Show only logs still needed",
                    "translation":  "Показать только журналы, которые еще нужны"
+               },
+               {
+                   "source":  "Show only systems deliberately skipped for later.",
+                   "translation":  "Показать только системы, намеренно пропущенные на потом."
                },
                {
                    "source":  "Show or hide construction commodity requirements.",
@@ -103693,8 +104093,16 @@
                    "translation":  "Показаны тела стоимостью не менее {0}, а также терраформируемые и несущие сигналы тела."
                },
                {
+                   "source":  "Showing deferred systems {0}–{1} of {2} ({3}).",
+                   "translation":  "Показаны отложенные системы {0}–{1} из {2} ({3})."
+               },
+               {
                    "source":  "Showing systems {0}–{1} of {2} (descending).",
                    "translation":  "Показаны системы {0}–{1} из {2} (по убыванию)."
+               },
+               {
+                   "source":  "Showing systems {0}–{1} of {2} ({3}). Deferred systems are grouped last.{4}",
+                   "translation":  "Показаны системы {0}–{1} из {2} ({3}). Отложенные системы группируются последними.{4}"
                },
                {
                    "source":  "Showing systems {0}–{1} of {2}.",
@@ -103791,6 +104199,10 @@
                {
                    "source":  "Skip rings for DSS",
                    "translation":  "Пропустить кольца для DSS"
+               },
+               {
+                   "source":  "Skip this unfinished system and keep it for later.",
+                   "translation":  "Пропустите эту незавершенную систему и сохраните ее на будущее."
                },
                {
                    "source":  "SkipAnalyzedCompositionScans",
@@ -104253,6 +104665,10 @@
                    "translation":  "Космопорты"
                },
                {
+                   "source":  "Start Here",
+                   "translation":  "Начните здесь"
+               },
+               {
                    "source":  "Start a Guardian template draft before exporting.",
                    "translation":  "Прежде чем экспортировать, запустите черновик шаблона Guardian."
                },
@@ -104585,6 +105001,14 @@
                    "translation":  "Итоги опроса"
                },
                {
+                   "source":  "Survey will start at {0}.",
+                   "translation":  "Опрос начнется в {0}."
+               },
+               {
+                   "source":  "Survey will start at {0}; deferred {1} earlier systems.",
+                   "translation":  "Опрос начнется в {0}; отложенные {1} более ранних систем."
+               },
+               {
                    "source":  "Surveying a complete sequence gives an explorer a bounded, repeatable area to study. It is useful for finding regional formation patterns, checking nearby systems after an interesting discovery, and keeping a long project organized.",
                    "translation":  "Исследование полной последовательности дает исследователю ограниченную, повторяемую область для изучения. Это полезно для поиска закономерностей регионального формирования, проверки близлежащих систем после интересного открытия и организации длительного проекта."
                },
@@ -104637,16 +105061,16 @@
                    "translation":  "Система"
                },
                {
+                   "source":  "System actions",
+                   "translation":  "Системные действия"
+               },
+               {
                    "source":  "System biology",
                    "translation":  "Системная биология"
                },
                {
                    "source":  "System biology overlay",
                    "translation":  "Наложение системной биологии"
-               },
-               {
-                   "source":  "System completion updated.",
-                   "translation":  "Обновлена доработка системы."
                },
                {
                    "source":  "System data is unavailable: {0}",
@@ -105525,10 +105949,6 @@
                    "translation":  "Маркер пустой системы не был изменен: {0}"
                },
                {
-                   "source":  "The empty-system marker was not removed.",
-                   "translation":  "Маркер пустой системы не был удален."
-               },
-               {
                    "source":  "The error-report window could not be opened: {0}",
                    "translation":  "Не удалось открыть окно отчета об ошибке: {0}"
                },
@@ -106325,8 +106745,8 @@
                    "translation":  "Путь к пакету опросов скопирован в буфер обмена."
                },
                {
-                   "source":  "The system completion state was not changed.",
-                   "translation":  "Состояние завершения системы не изменилось."
+                   "source":  "The survey start point was not changed.",
+                   "translation":  "Начальная точка съемки не изменилась."
                },
                {
                    "source":  "The system lookup failed without changing your limit: {0}",
@@ -106361,6 +106781,18 @@
                    "translation":  "Системный трей недоступен; сворачивание в лоток оставит SrvSurvey на панели задач. {0}"
                },
                {
+                   "source":  "The system was not deferred.",
+                   "translation":  "Система не была отложена."
+               },
+               {
+                   "source":  "The system was not marked complete.",
+                   "translation":  "Система не была отмечена как завершенная."
+               },
+               {
+                   "source":  "The system was not reopened.",
+                   "translation":  "Система не была вновь открыта."
+               },
+               {
                    "source":  "The system-name file could not be read: {0}",
                    "translation":  "Не удалось прочитать файл системного имени: {0}"
                },
@@ -106377,8 +106809,8 @@
                    "translation":  "Настройки системного опроса изменились для этого сеанса, но не удалось сохранить: {0}"
                },
                {
-                   "source":  "The systems table is ordered by numeric suffix and separates distance, last Commander visit, last Spansh update, state, and the manual action.",
-                   "translation":  "Таблица систем упорядочена по числовому суффиксу и разделяет расстояние, последнее посещение командира, последнее обновление Spansh, состояние и ручное действие."
+                   "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                   "translation":  "В таблице систем активные системы хранятся в порядке числовых суффиксов, а отложенные системы группируются последними. Параметр «Показать только отложенные» временно скрывает активную группу."
                },
                {
                    "source":  "The target changed for this session but could not be saved: {0}",
@@ -107993,8 +108425,8 @@
                    "translation":  "Что изменилось"
                },
                {
-                   "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, the system completes after Elite writes FSSAllBodiesFound. Use Complete or Reopen for a manual correction.",
-                   "translation":  "Если параметр «Требовать FSS» отключен, переход FSD в соответствующую систему завершает его. Если он включен, система завершает работу после того, как Elite запишет FSSAllBodiesFound. Используйте «Завершить» или «Повторно открыть» для исправления вручную."
+                   "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, completion waits for Elite to write FSSAllBodiesFound.",
+                   "translation":  "Если параметр «Требовать FSS» отключен, переход FSD в соответствующую систему завершает его. Когда он включен, завершение ожидает, пока Elite запишет FSSAllBodiesFound."
                },
                {
                    "source":  "When docking at a player colony, SrvSurvey can repair a Raven system-site entry that is missing its MarketID or final name.",
@@ -109507,6 +109939,14 @@
                {
                    "source":  "store",
                    "translation":  "магазин"
+               },
+               {
+                   "source":  "suffix {0}",
+                   "translation":  "суффикс {0}"
+               },
+               {
+                   "source":  "suffixes {0}–{1}",
+                   "translation":  "суффиксы {0}–{1}"
                },
                {
                    "source":  "surface location",
@@ -114947,8 +115387,8 @@
                         "translation":  "当前的方框控件"
                     },
                     {
-                        "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the lowest known or expected suffix in that sequence that has not met your completion rule.",
-                        "translation":  "当前的 boxel 前缀标识正在处理的序列；下一个不完整系统是该序列中不符合完成规则的最低已知或预期后缀。"
+                        "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the next active suffix in the chosen direction that has not met your completion rule.",
+                        "translation":  "当前的 boxel 前缀标识正在处理的序列；下一个不完整系统是所选方向上未满足完成规则的下一个活动后缀。"
                     },
                     {
                         "source":  "Current boxel {0}% searched.",
@@ -115049,6 +115489,10 @@
                     {
                         "source":  "DEADLINE",
                         "translation":  "截止日期"
+                    },
+                    {
+                        "source":  "DEFERRED",
+                        "translation":  "延期"
                     },
                     {
                         "source":  "DEMAND",
@@ -115235,6 +115679,18 @@
                         "translation":  "默认值：{0}"
                     },
                     {
+                        "source":  "Defer",
+                        "translation":  "Defer"
+                    },
+                    {
+                        "source":  "Defer unfinished systems before this one in the current sort direction.",
+                        "translation":  "在当前排序方向上，将未完成的系统推迟到该系统之前。"
+                    },
+                    {
+                        "source":  "Deferred {0}.",
+                        "translation":  "已推迟 {0}。"
+                    },
+                    {
                         "source":  "Deficit",
                         "translation":  "赤字"
                     },
@@ -115325,6 +115781,10 @@
                     {
                         "source":  "Depot contribution, completion, docking, beacon architect, and market events update the matching project only when the identity is unambiguous.",
                         "translation":  "车厂贡献、竣工、对接、灯塔架构师、市场活动只有在身份明确的情况下才会更新匹配项目。"
+                    },
+                    {
+                        "source":  "Descending order is active.",
+                        "translation":  "降序排列处于活动状态。"
                     },
                     {
                         "source":  "Design-time error",
@@ -116127,6 +116587,10 @@
                         "translation":  "在“旅行”中输入坐标或通过游戏内聊天日志在此处发送 .target 以捕获当前位置。"
                     },
                     {
+                        "source":  "Enter numbers only, from 0 to 99,999.",
+                        "translation":  "仅输入 0 到 99,999 之间的数字。"
+                    },
+                    {
                         "source":  "Enter one key with ALT, CTRL, or SHIFT, or leave blank.",
                         "translation":  "使用 ALT、CTRL 或 SHIFT 输入一个键，或留空。"
                     },
@@ -116141,6 +116605,10 @@
                     {
                         "source":  "Enter the current route, boxel, or clipboard target in the Galaxy Map.",
                         "translation":  "在 Galaxy 地图中输入当前路线、方框或剪贴板目标。"
+                    },
+                    {
+                        "source":  "Enter {0} or higher; that suffix is already recorded.",
+                        "translation":  "输入 {0} 或更高；该后缀已被记录。"
                     },
                     {
                         "source":  "Entered {0} in the Galaxy Map.",
@@ -119007,6 +119475,10 @@
                         "translation":  "最后可用的系统"
                     },
                     {
+                        "source":  "Last system available cannot be below recorded suffix {0}.",
+                        "translation":  "最后可用的系统不能低于记录的后缀 {0}。"
+                    },
+                    {
                         "source":  "Last system available help",
                         "translation":  "最后的系统可用帮助"
                     },
@@ -119701,6 +120173,10 @@
                     {
                         "source":  "Mark scanned",
                         "translation":  "标记已扫描"
+                    },
+                    {
+                        "source":  "Mark this recorded system complete.",
+                        "translation":  "将此记录的系统标记为完成。"
                     },
                     {
                         "source":  "Marked Guardian point {0} empty.",
@@ -120691,6 +121167,10 @@
                         "translation":  "没有默认快捷方式"
                     },
                     {
+                        "source":  "No deferred systems in this boxel.",
+                        "translation":  "此盒子中没有延迟系统。"
+                    },
+                    {
                         "source":  "No description",
                         "translation":  "无描述"
                     },
@@ -120973,6 +121453,10 @@
                     {
                         "source":  "No system names were found to import.",
                         "translation":  "找不到要导入的系统名称。"
+                    },
+                    {
+                        "source":  "No systems are available in this boxel.",
+                        "translation":  "此盒子中没有可用的系统。"
                     },
                     {
                         "source":  "No tags",
@@ -123939,10 +124423,6 @@
                         "translation":  "补货"
                     },
                     {
-                        "source":  "Restore",
-                        "translation":  "恢复"
-                    },
-                    {
                         "source":  "Restore automatic map scaling.",
                         "translation":  "恢复自动地图缩放。"
                     },
@@ -123959,10 +124439,6 @@
                         "translation":  "已恢复 {0} 从 {1} 导入的殖民项目。{2}"
                     },
                     {
-                        "source":  "Restored {0} to the search.",
-                        "translation":  "已将 {0} 恢复到搜索。"
-                    },
-                    {
                         "source":  "Resume Search",
                         "translation":  "简历搜索"
                     },
@@ -123977,6 +124453,10 @@
                     {
                         "source":  "Resurrect",
                         "translation":  "复活"
+                    },
+                    {
+                        "source":  "Return a completed or empty system to the active survey.",
+                        "translation":  "将已完成或空的系统返回到活动调查。"
                     },
                     {
                         "source":  "Return one level toward the search root",
@@ -125491,6 +125971,10 @@
                         "translation":  "显示当前系统中的 Guardian 站点"
                     },
                     {
+                        "source":  "Show Only Deferred",
+                        "translation":  "Show Only Deferred"
+                    },
+                    {
                         "source":  "Show SrvSurvey",
                         "translation":  "显示 SrvSurvey"
                     },
@@ -125609,6 +126093,10 @@
                     {
                         "source":  "Show only logs still needed",
                         "translation":  "仅显示仍需要的日志"
+                    },
+                    {
+                        "source":  "Show only systems deliberately skipped for later.",
+                        "translation":  "仅显示稍后故意跳过的系统。"
                     },
                     {
                         "source":  "Show or hide construction commodity requirements.",
@@ -125815,8 +126303,16 @@
                         "translation":  "显示至少价值 {0} 的物体，以及可地形改造和信号承载物体。"
                     },
                     {
+                        "source":  "Showing deferred systems {0}–{1} of {2} ({3}).",
+                        "translation":  "显示 {2} ({3}) 的延迟系统 {0}–{1}。"
+                    },
+                    {
                         "source":  "Showing systems {0}–{1} of {2} (descending).",
                         "translation":  "显示 {2} 的系统 {0}–{1}（降序）。"
+                    },
+                    {
+                        "source":  "Showing systems {0}–{1} of {2} ({3}). Deferred systems are grouped last.{4}",
+                        "translation":  "显示 {2} ({3}) 的系统 {0}–{1}。延迟系统被分组在最后。{4}"
                     },
                     {
                         "source":  "Showing systems {0}–{1} of {2}.",
@@ -125913,6 +126409,10 @@
                     {
                         "source":  "Skip rings for DSS",
                         "translation":  "DSS 的跳过环"
+                    },
+                    {
+                        "source":  "Skip this unfinished system and keep it for later.",
+                        "translation":  "跳过这个未完成的系统并保留以供以后使用。"
                     },
                     {
                         "source":  "SkipAnalyzedCompositionScans",
@@ -126375,6 +126875,10 @@
                         "translation":  "星港"
                     },
                     {
+                        "source":  "Start Here",
+                        "translation":  "从这里开始"
+                    },
+                    {
                         "source":  "Start a Guardian template draft before exporting.",
                         "translation":  "在导出之前启动 Guardian 模板草稿。"
                     },
@@ -126707,6 +127211,14 @@
                         "translation":  "调查总计"
                     },
                     {
+                        "source":  "Survey will start at {0}.",
+                        "translation":  "调查将于 {0} 开始。"
+                    },
+                    {
+                        "source":  "Survey will start at {0}; deferred {1} earlier systems.",
+                        "translation":  "调查将于 {0} 开始；推迟了 {1} 早期系统。"
+                    },
+                    {
                         "source":  "Surveying a complete sequence gives an explorer a bounded, repeatable area to study. It is useful for finding regional formation patterns, checking nearby systems after an interesting discovery, and keeping a long project organized.",
                         "translation":  "勘测完整的序列为探索者提供了一个有界的、可重复的研究区域。它对于寻找区域形成模式、在有趣的发现后检查附近的系统以及保持长期项目的组织很有用。"
                     },
@@ -126759,16 +127271,16 @@
                         "translation":  "系统"
                     },
                     {
+                        "source":  "System actions",
+                        "translation":  "系统操作"
+                    },
+                    {
                         "source":  "System biology",
                         "translation":  "系统生物学"
                     },
                     {
                         "source":  "System biology overlay",
                         "translation":  "系统生物学叠加"
-                    },
-                    {
-                        "source":  "System completion updated.",
-                        "translation":  "系统完成更新。"
                     },
                     {
                         "source":  "System data is unavailable: {0}",
@@ -127647,10 +128159,6 @@
                         "translation":  "空系统标记未更改：{0}"
                     },
                     {
-                        "source":  "The empty-system marker was not removed.",
-                        "translation":  "空系统标记未被删除。"
-                    },
-                    {
                         "source":  "The error-report window could not be opened: {0}",
                         "translation":  "无法打开错误报告窗口：{0}"
                     },
@@ -128447,8 +128955,8 @@
                         "translation":  "调查包路径已复制到剪贴板。"
                     },
                     {
-                        "source":  "The system completion state was not changed.",
-                        "translation":  "系统完成状态未更改。"
+                        "source":  "The survey start point was not changed.",
+                        "translation":  "调查起点没有改变。"
                     },
                     {
                         "source":  "The system lookup failed without changing your limit: {0}",
@@ -128483,6 +128991,18 @@
                         "translation":  "系统托盘不可用；最小化到托盘将在任务栏中留下 SrvSurvey。 {0}"
                     },
                     {
+                        "source":  "The system was not deferred.",
+                        "translation":  "系统没有延迟。"
+                    },
+                    {
+                        "source":  "The system was not marked complete.",
+                        "translation":  "系统未标记为完成。"
+                    },
+                    {
+                        "source":  "The system was not reopened.",
+                        "translation":  "系统没有重新打开。"
+                    },
+                    {
                         "source":  "The system-name file could not be read: {0}",
                         "translation":  "无法读取系统名称文件：{0}"
                     },
@@ -128499,8 +129019,8 @@
                         "translation":  "此会话的系统调查首选项已更改，但无法保存：{0}"
                     },
                     {
-                        "source":  "The systems table is ordered by numeric suffix and separates distance, last Commander visit, last Spansh update, state, and the manual action.",
-                        "translation":  "系统表按数字后缀排序，并分隔距离、上次指挥官访问、上次 Spansh 更新、状态和手动操作。"
+                        "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                        "translation":  "系统表按数字后缀顺序保留活动系统，并将延迟系统放在最后。 Show Only Deferred 暂时隐藏活动组。"
                     },
                     {
                         "source":  "The target changed for this session but could not be saved: {0}",
@@ -130115,8 +130635,8 @@
                         "translation":  "发生了什么变化"
                     },
                     {
-                        "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, the system completes after Elite writes FSSAllBodiesFound. Use Complete or Reopen for a manual correction.",
-                        "translation":  "当“要求 FSS”关闭时，FSD 跳转到匹配系统即可完成该操作。当它打开时，系统在 Elite 写入 FSSAllBodiesFound 后完成。使用“完成”或“重新打开”进行手动更正。"
+                        "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, completion waits for Elite to write FSSAllBodiesFound.",
+                        "translation":  "当“要求 FSS”关闭时，FSD 跳转到匹配系统即可完成该操作。当它打开时，等待 Elite 写入 FSSAllBodiesFound 完成。"
                     },
                     {
                         "source":  "When docking at a player colony, SrvSurvey can repair a Raven system-site entry that is missing its MarketID or final name.",
@@ -131629,6 +132149,14 @@
                     {
                         "source":  "store",
                         "translation":  "商店"
+                    },
+                    {
+                        "source":  "suffix {0}",
+                        "translation":  "后缀 {0}"
+                    },
+                    {
+                        "source":  "suffixes {0}–{1}",
+                        "translation":  "后缀 {0}–{1}"
                     },
                     {
                         "source":  "surface location",
@@ -137069,8 +137597,8 @@
                    "translation":  "* CURRENT BOXEL CONTROLS \u003e\u003e\u003e!"
                },
                {
-                   "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the lowest known or expected suffix in that sequence that has not met your completion rule.",
-                   "translation":  "* CURRENT BOXEL PREFIX IDENTIFIES THE SEQUENCE BEING WORKED; NEXT INCOMPLETE SYSTEM IS THE LOWEST KNOWN OR EXPECTED SUFFIX IN THAT SEQUENCE THAT HAS NOT MET YOUR COMPLETION RULE. \u003e\u003e\u003e!"
+                   "source":  "Current boxel prefix identifies the sequence being worked; Next incomplete system is the next active suffix in the chosen direction that has not met your completion rule.",
+                   "translation":  "* CURRENT BOXEL PREFIX IDENTIFIES THE SEQUENCE BEING WORKED; NEXT INCOMPLETE SYSTEM IS THE NEXT ACTIVE SUFFIX IN THE CHOSEN DIRECTION THAT HAS NOT MET YOUR COMPLETION RULE. \u003e\u003e\u003e!"
                },
                {
                    "source":  "Current boxel {0}% searched.",
@@ -137171,6 +137699,10 @@
                {
                    "source":  "DEADLINE",
                    "translation":  "* DEADLINE \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "DEFERRED",
+                   "translation":  "* DEFERRED \u003e\u003e\u003e!"
                },
                {
                    "source":  "DEMAND",
@@ -137357,6 +137889,18 @@
                    "translation":  "* DEFAULT: {0} \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Defer",
+                   "translation":  "* DEFER \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Defer unfinished systems before this one in the current sort direction.",
+                   "translation":  "* DEFER UNFINISHED SYSTEMS BEFORE THIS ONE IN THE CURRENT SORT DIRECTION. \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Deferred {0}.",
+                   "translation":  "* DEFERRED {0}. \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Deficit",
                    "translation":  "* DEFICIT \u003e\u003e\u003e!"
                },
@@ -137447,6 +137991,10 @@
                {
                    "source":  "Depot contribution, completion, docking, beacon architect, and market events update the matching project only when the identity is unambiguous.",
                    "translation":  "* DEPOT CONTRIBUTION, COMPLETION, DOCKING, BEACON ARCHITECT, AND MARKET EVENTS UPDATE THE MATCHING PROJECT ONLY WHEN THE IDENTITY IS UNAMBIGUOUS. \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Descending order is active.",
+                   "translation":  "* DESCENDING ORDER IS ACTIVE. \u003e\u003e\u003e!"
                },
                {
                    "source":  "Design-time error",
@@ -138249,6 +138797,10 @@
                    "translation":  "* ENTER COORDINATES IN TRAVEL OR SEND .TARGET HERE THROUGH THE IN-GAME CHAT JOURNAL TO CAPTURE THE CURRENT LOCATION. \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Enter numbers only, from 0 to 99,999.",
+                   "translation":  "* ENTER NUMBERS ONLY, FROM 0 TO 99,999. \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Enter one key with ALT, CTRL, or SHIFT, or leave blank.",
                    "translation":  "* ENTER ONE KEY WITH ALT, CTRL, OR SHIFT, OR LEAVE BLANK. \u003e\u003e\u003e!"
                },
@@ -138263,6 +138815,10 @@
                {
                    "source":  "Enter the current route, boxel, or clipboard target in the Galaxy Map.",
                    "translation":  "* ENTER THE CURRENT ROUTE, BOXEL, OR CLIPBOARD TARGET IN THE GALAXY MAP. \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Enter {0} or higher; that suffix is already recorded.",
+                   "translation":  "* ENTER {0} OR HIGHER; THAT SUFFIX IS ALREADY RECORDED. \u003e\u003e\u003e!"
                },
                {
                    "source":  "Entered {0} in the Galaxy Map.",
@@ -141129,6 +141685,10 @@
                    "translation":  "* LAST SYSTEM AVAILABLE \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Last system available cannot be below recorded suffix {0}.",
+                   "translation":  "* LAST SYSTEM AVAILABLE CANNOT BE BELOW RECORDED SUFFIX {0}. \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Last system available help",
                    "translation":  "* LAST SYSTEM AVAILABLE HELP \u003e\u003e\u003e!"
                },
@@ -141823,6 +142383,10 @@
                {
                    "source":  "Mark scanned",
                    "translation":  "* MARK SCANNED \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Mark this recorded system complete.",
+                   "translation":  "* MARK THIS RECORDED SYSTEM COMPLETE. \u003e\u003e\u003e!"
                },
                {
                    "source":  "Marked Guardian point {0} empty.",
@@ -142813,6 +143377,10 @@
                    "translation":  "* NO DEFAULT SHORTCUT \u003e\u003e\u003e!"
                },
                {
+                   "source":  "No deferred systems in this boxel.",
+                   "translation":  "* NO DEFERRED SYSTEMS IN THIS BOXEL. \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "No description",
                    "translation":  "* NO DESCRIPTION \u003e\u003e\u003e!"
                },
@@ -143095,6 +143663,10 @@
                {
                    "source":  "No system names were found to import.",
                    "translation":  "* NO SYSTEM NAMES WERE FOUND TO IMPORT. \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "No systems are available in this boxel.",
+                   "translation":  "* NO SYSTEMS ARE AVAILABLE IN THIS BOXEL. \u003e\u003e\u003e!"
                },
                {
                    "source":  "No tags",
@@ -146061,10 +146633,6 @@
                    "translation":  "* RESTOCK \u003e\u003e\u003e!"
                },
                {
-                   "source":  "Restore",
-                   "translation":  "* RESTORE \u003e\u003e\u003e!"
-               },
-               {
                    "source":  "Restore automatic map scaling.",
                    "translation":  "* RESTORE AUTOMATIC MAP SCALING. \u003e\u003e\u003e!"
                },
@@ -146081,10 +146649,6 @@
                    "translation":  "* RESTORED {0} IMPORTED COLONISATION PROJECT(S) FROM {1}.{2} \u003e\u003e\u003e!"
                },
                {
-                   "source":  "Restored {0} to the search.",
-                   "translation":  "* RESTORED {0} TO THE SEARCH. \u003e\u003e\u003e!"
-               },
-               {
                    "source":  "Resume Search",
                    "translation":  "* RESUME SEARCH \u003e\u003e\u003e!"
                },
@@ -146099,6 +146663,10 @@
                {
                    "source":  "Resurrect",
                    "translation":  "* RESURRECT \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Return a completed or empty system to the active survey.",
+                   "translation":  "* RETURN A COMPLETED OR EMPTY SYSTEM TO THE ACTIVE SURVEY. \u003e\u003e\u003e!"
                },
                {
                    "source":  "Return one level toward the search root",
@@ -147613,6 +148181,10 @@
                    "translation":  "* SHOW GUARDIAN SITES IN THE CURRENT SYSTEM \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Show Only Deferred",
+                   "translation":  "* SHOW ONLY DEFERRED \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Show SrvSurvey",
                    "translation":  "* SHOW SRVSURVEY \u003e\u003e\u003e!"
                },
@@ -147731,6 +148303,10 @@
                {
                    "source":  "Show only logs still needed",
                    "translation":  "* SHOW ONLY LOGS STILL NEEDED \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Show only systems deliberately skipped for later.",
+                   "translation":  "* SHOW ONLY SYSTEMS DELIBERATELY SKIPPED FOR LATER. \u003e\u003e\u003e!"
                },
                {
                    "source":  "Show or hide construction commodity requirements.",
@@ -147937,8 +148513,16 @@
                    "translation":  "* SHOWING BODIES WORTH AT LEAST {0}, PLUS TERRAFORMABLE AND SIGNAL-BEARING BODIES. \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Showing deferred systems {0}–{1} of {2} ({3}).",
+                   "translation":  "* SHOWING DEFERRED SYSTEMS {0}–{1} OF {2} ({3}). \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Showing systems {0}–{1} of {2} (descending).",
                    "translation":  "* SHOWING SYSTEMS {0}–{1} OF {2} (DESCENDING). \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Showing systems {0}–{1} of {2} ({3}). Deferred systems are grouped last.{4}",
+                   "translation":  "* SHOWING SYSTEMS {0}–{1} OF {2} ({3}). DEFERRED SYSTEMS ARE GROUPED LAST.{4} \u003e\u003e\u003e!"
                },
                {
                    "source":  "Showing systems {0}–{1} of {2}.",
@@ -148035,6 +148619,10 @@
                {
                    "source":  "Skip rings for DSS",
                    "translation":  "* SKIP RINGS FOR DSS \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Skip this unfinished system and keep it for later.",
+                   "translation":  "* SKIP THIS UNFINISHED SYSTEM AND KEEP IT FOR LATER. \u003e\u003e\u003e!"
                },
                {
                    "source":  "SkipAnalyzedCompositionScans",
@@ -148497,6 +149085,10 @@
                    "translation":  "* STARPORTS \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Start Here",
+                   "translation":  "* START HERE \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Start a Guardian template draft before exporting.",
                    "translation":  "* START A GUARDIAN TEMPLATE DRAFT BEFORE EXPORTING. \u003e\u003e\u003e!"
                },
@@ -148829,6 +149421,14 @@
                    "translation":  "* SURVEY TOTALS \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Survey will start at {0}.",
+                   "translation":  "* SURVEY WILL START AT {0}. \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Survey will start at {0}; deferred {1} earlier systems.",
+                   "translation":  "* SURVEY WILL START AT {0}; DEFERRED {1} EARLIER SYSTEMS. \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Surveying a complete sequence gives an explorer a bounded, repeatable area to study. It is useful for finding regional formation patterns, checking nearby systems after an interesting discovery, and keeping a long project organized.",
                    "translation":  "* SURVEYING A COMPLETE SEQUENCE GIVES AN EXPLORER A BOUNDED, REPEATABLE AREA TO STUDY. IT IS USEFUL FOR FINDING REGIONAL FORMATION PATTERNS, CHECKING NEARBY SYSTEMS AFTER AN INTERESTING DISCOVERY, AND KEEPING A LONG PROJECT ORGANIZED. \u003e\u003e\u003e!"
                },
@@ -148881,16 +149481,16 @@
                    "translation":  "* SYSTEM \u003e\u003e\u003e!"
                },
                {
+                   "source":  "System actions",
+                   "translation":  "* SYSTEM ACTIONS \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "System biology",
                    "translation":  "* SYSTEM BIOLOGY \u003e\u003e\u003e!"
                },
                {
                    "source":  "System biology overlay",
                    "translation":  "* SYSTEM BIOLOGY OVERLAY \u003e\u003e\u003e!"
-               },
-               {
-                   "source":  "System completion updated.",
-                   "translation":  "* SYSTEM COMPLETION UPDATED. \u003e\u003e\u003e!"
                },
                {
                    "source":  "System data is unavailable: {0}",
@@ -149769,10 +150369,6 @@
                    "translation":  "* THE EMPTY-SYSTEM MARKER WAS NOT CHANGED: {0} \u003e\u003e\u003e!"
                },
                {
-                   "source":  "The empty-system marker was not removed.",
-                   "translation":  "* THE EMPTY-SYSTEM MARKER WAS NOT REMOVED. \u003e\u003e\u003e!"
-               },
-               {
                    "source":  "The error-report window could not be opened: {0}",
                    "translation":  "* THE ERROR-REPORT WINDOW COULD NOT BE OPENED: {0} \u003e\u003e\u003e!"
                },
@@ -150569,8 +151165,8 @@
                    "translation":  "* THE SURVEY BUNDLE PATH WAS COPIED TO THE CLIPBOARD. \u003e\u003e\u003e!"
                },
                {
-                   "source":  "The system completion state was not changed.",
-                   "translation":  "* THE SYSTEM COMPLETION STATE WAS NOT CHANGED. \u003e\u003e\u003e!"
+                   "source":  "The survey start point was not changed.",
+                   "translation":  "* THE SURVEY START POINT WAS NOT CHANGED. \u003e\u003e\u003e!"
                },
                {
                    "source":  "The system lookup failed without changing your limit: {0}",
@@ -150605,6 +151201,18 @@
                    "translation":  "* THE SYSTEM TRAY IS UNAVAILABLE; MINIMIZE-TO-TRAY WILL LEAVE SRVSURVEY IN THE TASKBAR. {0} \u003e\u003e\u003e!"
                },
                {
+                   "source":  "The system was not deferred.",
+                   "translation":  "* THE SYSTEM WAS NOT DEFERRED. \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "The system was not marked complete.",
+                   "translation":  "* THE SYSTEM WAS NOT MARKED COMPLETE. \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "The system was not reopened.",
+                   "translation":  "* THE SYSTEM WAS NOT REOPENED. \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "The system-name file could not be read: {0}",
                    "translation":  "* THE SYSTEM-NAME FILE COULD NOT BE READ: {0} \u003e\u003e\u003e!"
                },
@@ -150621,8 +151229,8 @@
                    "translation":  "* THE SYSTEM-SURVEY PREFERENCE CHANGED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} \u003e\u003e\u003e!"
                },
                {
-                   "source":  "The systems table is ordered by numeric suffix and separates distance, last Commander visit, last Spansh update, state, and the manual action.",
-                   "translation":  "* THE SYSTEMS TABLE IS ORDERED BY NUMERIC SUFFIX AND SEPARATES DISTANCE, LAST COMMANDER VISIT, LAST SPANSH UPDATE, STATE, AND THE MANUAL ACTION. \u003e\u003e\u003e!"
+                   "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                   "translation":  "* THE SYSTEMS TABLE KEEPS ACTIVE SYSTEMS IN NUMERIC SUFFIX ORDER AND GROUPS DEFERRED SYSTEMS LAST. SHOW ONLY DEFERRED TEMPORARILY HIDES THE ACTIVE GROUP. \u003e\u003e\u003e!"
                },
                {
                    "source":  "The target changed for this session but could not be saved: {0}",
@@ -152237,8 +152845,8 @@
                    "translation":  "* WHAT\u0027S CHANGED \u003e\u003e\u003e!"
                },
                {
-                   "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, the system completes after Elite writes FSSAllBodiesFound. Use Complete or Reopen for a manual correction.",
-                   "translation":  "* WHEN REQUIRE FSS IS OFF, AN FSD JUMP INTO A MATCHING SYSTEM COMPLETES IT. WHEN IT IS ON, THE SYSTEM COMPLETES AFTER ELITE WRITES FSSALLBODIESFOUND. USE COMPLETE OR REOPEN FOR A MANUAL CORRECTION. \u003e\u003e\u003e!"
+                   "source":  "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, completion waits for Elite to write FSSAllBodiesFound.",
+                   "translation":  "* WHEN REQUIRE FSS IS OFF, AN FSD JUMP INTO A MATCHING SYSTEM COMPLETES IT. WHEN IT IS ON, COMPLETION WAITS FOR ELITE TO WRITE FSSALLBODIESFOUND. \u003e\u003e\u003e!"
                },
                {
                    "source":  "When docking at a player colony, SrvSurvey can repair a Raven system-site entry that is missing its MarketID or final name.",
@@ -153751,6 +154359,14 @@
                {
                    "source":  "store",
                    "translation":  "* STORE \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "suffix {0}",
+                   "translation":  "* SUFFIX {0} \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "suffixes {0}–{1}",
+                   "translation":  "* SUFFIXES {0}–{1} \u003e\u003e\u003e!"
                },
                {
                    "source":  "surface location",

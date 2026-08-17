@@ -1,0 +1,188 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Controls.BoxelSystemActionMenu"
+             x:DataType="vm:BoxelSystemRowViewModel"
+             Width="110"
+             Height="52">
+  <UserControl.Styles>
+    <Style Selector="Button.radial-launcher">
+      <Setter Property="Width" Value="46" />
+      <Setter Property="Height" Value="46" />
+      <Setter Property="Padding" Value="7" />
+      <Setter Property="CornerRadius" Value="23" />
+      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="BorderThickness" Value="1.5" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.radial-launcher:pointerover">
+      <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentHoverBrush}" />
+    </Style>
+    <Style Selector="Canvas.radial-glyph">
+      <Setter Property="RenderTransform">
+        <RotateTransform Angle="0" />
+      </Setter>
+      <Setter Property="Transitions">
+        <Transitions>
+          <TransformOperationsTransition Property="RenderTransform"
+                                         Duration="0:0:0.24">
+            <TransformOperationsTransition.Easing>
+              <CubicEaseOut />
+            </TransformOperationsTransition.Easing>
+          </TransformOperationsTransition>
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Button.radial-launcher:pointerover Canvas.radial-glyph,
+                     Button.radial-launcher.open Canvas.radial-glyph">
+      <Setter Property="RenderTransform">
+        <RotateTransform Angle="45" />
+      </Setter>
+    </Style>
+    <Style Selector="Canvas.radial-menu-surface">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+      <Setter Property="RenderTransform">
+        <ScaleTransform ScaleX="0.78" ScaleY="0.78" />
+      </Setter>
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.16" />
+          <TransformOperationsTransition Property="RenderTransform"
+                                         Duration="0:0:0.22">
+            <TransformOperationsTransition.Easing>
+              <CubicEaseOut />
+            </TransformOperationsTransition.Easing>
+          </TransformOperationsTransition>
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Canvas.radial-menu-surface.open">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="RenderTransform">
+        <ScaleTransform ScaleX="1" ScaleY="1" />
+      </Setter>
+    </Style>
+    <Style Selector="Button.radial-option">
+      <Setter Property="Width" Value="104" />
+      <Setter Property="Height" Value="42" />
+      <Setter Property="Padding" Value="12,6" />
+      <Setter Property="CornerRadius" Value="21" />
+      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1.5" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.radial-option:pointerover">
+      <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentHoverBrush}" />
+    </Style>
+    <Style Selector="Button.radial-option:disabled">
+      <Setter Property="Opacity" Value="0.42" />
+    </Style>
+    <Style Selector="Button.radial-option.defer">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenWarningBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid>
+    <Button x:Name="Launcher"
+            Classes="radial-launcher"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Click="Launcher_Click"
+            KeyDown="Launcher_KeyDown"
+            PointerEntered="Menu_PointerEntered"
+            PointerExited="Menu_PointerExited"
+            ToolTip.Tip="System actions">
+      <Viewbox Width="30" Height="30">
+        <Canvas Width="100"
+                Height="100"
+                Classes="radial-glyph"
+                RenderTransformOrigin="50%,50%">
+          <Path Data="M 50,48 L 88,48 A 38,38 0 0 0 50,10 Z"
+                Fill="Transparent"
+                Stroke="{DynamicResource RavenAccentBrush}"
+                StrokeThickness="5" />
+          <Path Data="M 52,50 L 52,88 A 38,38 0 0 0 90,50 Z"
+                Fill="Transparent"
+                Stroke="{DynamicResource RavenAccentBrush}"
+                StrokeThickness="5" />
+          <Path Data="M 50,52 L 12,52 A 38,38 0 0 0 50,90 Z"
+                Fill="Transparent"
+                Stroke="{DynamicResource RavenAccentBrush}"
+                StrokeThickness="5" />
+          <Path Data="M 48,50 L 48,12 A 38,38 0 0 0 10,50 Z"
+                Fill="Transparent"
+                Stroke="{DynamicResource RavenAccentBrush}"
+                StrokeThickness="5" />
+          <Ellipse Width="10"
+                   Height="10"
+                   Canvas.Left="45"
+                   Canvas.Top="45"
+                   Fill="{DynamicResource RavenAccentBrush}" />
+        </Canvas>
+      </Viewbox>
+    </Button>
+
+    <Popup x:Name="MenuPopup"
+           PlacementTarget="{Binding #Launcher}"
+           Placement="AnchorAndGravity"
+           PlacementAnchor="None"
+           PlacementGravity="None"
+           IsLightDismissEnabled="False">
+      <Canvas x:Name="MenuSurface"
+              Width="330"
+              Height="190"
+              Classes="radial-menu-surface"
+              PointerEntered="Menu_PointerEntered"
+              PointerExited="Menu_PointerExited">
+        <Ellipse Width="72"
+                 Height="72"
+                 Canvas.Left="129"
+                 Canvas.Top="59"
+                 IsHitTestVisible="False"
+                 Opacity="0.48"
+                 Stroke="{DynamicResource RavenAccentBrush}"
+                 StrokeThickness="2" />
+        <Button x:Name="CompleteActionButton"
+                Classes="radial-option"
+                Canvas.Left="113"
+                Canvas.Top="1"
+                Command="{Binding CompleteCommand}"
+                Click="Action_Click"
+                Content="Complete"
+                ToolTip.Tip="Mark this recorded system complete." />
+        <Button x:Name="ReopenActionButton"
+                Classes="radial-option"
+                Canvas.Left="5"
+                Canvas.Top="74"
+                Command="{Binding ReopenCommand}"
+                Click="Action_Click"
+                Content="Reopen"
+                ToolTip.Tip="Return a completed or empty system to the active survey." />
+        <Button x:Name="DeferActionButton"
+                Classes="radial-option defer"
+                Canvas.Left="221"
+                Canvas.Top="74"
+                Command="{Binding DeferCommand}"
+                Click="Action_Click"
+                Content="Defer"
+                ToolTip.Tip="Skip this unfinished system and keep it for later." />
+        <Button x:Name="StartHereActionButton"
+                Classes="radial-option"
+                Canvas.Left="113"
+                Canvas.Top="147"
+                Command="{Binding StartHereCommand}"
+                Click="Action_Click"
+                Content="Start Here"
+                ToolTip.Tip="Defer unfinished systems before this one in the current sort direction." />
+      </Canvas>
+    </Popup>
+  </Grid>
+</UserControl>

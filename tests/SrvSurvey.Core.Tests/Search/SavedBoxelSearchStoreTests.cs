@@ -24,6 +24,7 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
             SortDescending = true,
             CompletedSystems = ["Praea Euq IL-P c5-0"],
             EmptySystems = ["Praea Euq IL-P c5-2"],
+            DeferredSystems = ["Praea Euq IL-P c5-1"],
             ProgressByPrefix = new Dictionary<string, int>
             {
                 [top.Prefix] = 3,
@@ -78,6 +79,7 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
         Assert.Contains(top.Prefix, entry.Prefixes);
         Assert.Equal(created.CreatedAt, loaded.CreatedAt);
         Assert.Equal(["Praea Euq IL-P c5-2"], loaded.Search.EmptySystems);
+        Assert.Equal(["Praea Euq IL-P c5-1"], loaded.Search.DeferredSystems);
         Assert.Equal(created.FileName, loaded.Search.SavedSearchFileName);
         Assert.True(loaded.Search.SortDescending);
 
