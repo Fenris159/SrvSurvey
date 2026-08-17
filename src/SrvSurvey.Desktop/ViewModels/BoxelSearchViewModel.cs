@@ -2769,9 +2769,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
 public sealed class BoxelSystemRowViewModel
 {
+    private readonly Func<Task> complete;
+    private readonly Func<Task> defer;
+    private readonly Func<Task> reopen;
+    private readonly Func<Task> startHere;
+
     public BoxelSystemRowViewModel(BoxelSystemRowOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
+        complete = options.Complete;
+        defer = options.Defer;
+        reopen = options.Reopen;
+        startHere = options.StartHere;
         Name = options.Name;
         IsComplete = options.IsComplete;
         IsKnown = options.IsKnown;
@@ -2803,20 +2812,20 @@ public sealed class BoxelSystemRowViewModel
             Status = "UNKNOWN";
         }
         CompleteCommand = new RowCommand(
-            options.Complete,
+            CompleteAsync,
             () => options.IsKnown
                 && !options.IsComplete
                 && !options.IsEmpty);
         ReopenCommand = new RowCommand(
-            options.Reopen,
+            ReopenAsync,
             () => options.IsComplete || options.IsEmpty || options.IsDeferred);
         DeferCommand = new RowCommand(
-            options.Defer,
+            DeferAsync,
             () => !options.IsComplete
                 && !options.IsEmpty
                 && !options.IsDeferred);
         StartHereCommand = new RowCommand(
-            options.StartHere,
+            StartHereAsync,
             () => !options.IsComplete && !options.IsEmpty);
     }
 
@@ -2863,6 +2872,14 @@ public sealed class BoxelSystemRowViewModel
     public ICommand DeferCommand { get; }
 
     public ICommand StartHereCommand { get; }
+
+    internal Task CompleteAsync() => complete();
+
+    internal Task DeferAsync() => defer();
+
+    internal Task ReopenAsync() => reopen();
+
+    internal Task StartHereAsync() => startHere();
 
     private sealed class RowCommand(
         Func<Task> execute,

@@ -546,16 +546,13 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         var startRow = viewModel.Systems.Single(row => row.Name.EndsWith(
             "c5-5",
             StringComparison.Ordinal));
-        startRow.StartHereCommand.Execute(null);
-        await WaitUntilAsync(async () =>
-        {
-            var loaded = await profileStore.LoadAsync("F123", true);
-            return loaded.Data?.BoxelSearch.DeferredRanges.SingleOrDefault()
-                ?.StartSystemNumber == 5;
-        });
-        await WaitUntilAsync(() => copied.Contains(
-            "Praea Euq IL-P c5-5",
-            StringComparer.Ordinal));
+        await startRow.StartHereAsync();
+
+        var loaded = await profileStore.LoadAsync("F123", true);
+        Assert.Equal(
+            5,
+            loaded.Data?.BoxelSearch.DeferredRanges.SingleOrDefault()
+                ?.StartSystemNumber);
 
         Assert.Equal("Praea Euq IL-P c5-5", viewModel.NextSystem);
         Assert.Equal(["Praea Euq IL-P c5-5"], copied);
@@ -578,13 +575,13 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             "c5-2",
             StringComparison.Ordinal));
         Assert.True(reopened.ReopenCommand.CanExecute(null));
-        reopened.ReopenCommand.Execute(null);
-        await WaitUntilAsync(async () =>
-        {
-            var loaded = await profileStore.LoadAsync("F123", true);
-            return loaded.Data?.BoxelSearch.DeferredRanges.SingleOrDefault()
-                ?.Exceptions.Contains(2) == true;
-        });
+        await reopened.ReopenAsync();
+
+        loaded = await profileStore.LoadAsync("F123", true);
+        Assert.Contains(
+            2,
+            loaded.Data?.BoxelSearch.DeferredRanges.SingleOrDefault()
+                ?.Exceptions ?? []);
 
         Assert.Equal("Praea Euq IL-P c5-2", viewModel.NextSystem);
         Assert.DoesNotContain(viewModel.Systems, row => row.Name.EndsWith(
@@ -616,10 +613,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             "c5-0",
             StringComparison.Ordinal));
         Assert.True(known.CompleteCommand.CanExecute(null));
-        known.CompleteCommand.Execute(null);
-        await WaitUntilAsync(() => viewModel.StatusMessage.Contains(
-            "Marked",
-            StringComparison.Ordinal));
+        await known.CompleteAsync();
         var completedSave = await profileStore.LoadAsync("F123", true);
         Assert.Contains(
             "Praea Euq IL-P c5-0",
@@ -629,13 +623,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             "c5-1",
             StringComparison.Ordinal));
         Assert.True(unknown.DeferCommand.CanExecute(null));
-        unknown.DeferCommand.Execute(null);
-        await WaitUntilAsync(() => viewModel.Systems.Single(row => row.Name.EndsWith(
-            "c5-1",
-            StringComparison.Ordinal)).IsDeferred);
-        await WaitUntilAsync(() => viewModel.StatusMessage.Contains(
-            "Deferred",
-            StringComparison.Ordinal));
+        await unknown.DeferAsync();
         var deferredSave = await profileStore.LoadAsync("F123", true);
         Assert.Contains(
             "Praea Euq IL-P c5-1",
@@ -645,13 +633,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             "c5-1",
             StringComparison.Ordinal));
         Assert.True(deferred.ReopenCommand.CanExecute(null));
-        deferred.ReopenCommand.Execute(null);
-        await WaitUntilAsync(() => viewModel.Systems.Single(row => row.Name.EndsWith(
-            "c5-1",
-            StringComparison.Ordinal)).IsDeferred == false);
-        await WaitUntilAsync(() => viewModel.StatusMessage.Contains(
-            "Reopened",
-            StringComparison.Ordinal));
+        await deferred.ReopenAsync();
 
         Assert.Equal("Praea Euq IL-P c5-1", viewModel.NextSystem);
         Assert.Contains("Reopened", viewModel.StatusMessage, StringComparison.Ordinal);
