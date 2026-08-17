@@ -535,9 +535,12 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
         NotesDraft = string.Empty;
     }
 
-    private void SetDialogField(ref bool field, bool value)
+    private void SetDialogField(
+        ref bool field,
+        bool value,
+        [CallerMemberName] string? propertyName = null)
     {
-        if (SetField(ref field, value))
+        if (SetField(ref field, value, propertyName))
         {
             OnPropertyChanged(nameof(IsDialogVisible));
             RaiseCommands();

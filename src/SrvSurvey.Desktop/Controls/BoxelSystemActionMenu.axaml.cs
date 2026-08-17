@@ -8,7 +8,9 @@ namespace SrvSurvey.Desktop.Controls;
 public sealed partial class BoxelSystemActionMenu : UserControl
 {
     internal const int RevealDelayMilliseconds = 1_500;
+    private const string EngagedClass = "engaged";
     private const int RevealAnimationDelayMilliseconds = 50;
+    private static WeakReference<BoxelSystemActionMenu>? activeMenu;
     private readonly DispatcherTimer closeTimer;
     private readonly DispatcherTimer revealAnimationTimer;
     private readonly DispatcherTimer revealTimer;
@@ -83,12 +85,9 @@ public sealed partial class BoxelSystemActionMenu : UserControl
     private void CloseTimer_Tick(object? sender, EventArgs eventArgs)
     {
         closeTimer.Stop();
-        if (!Launcher.IsPointerOver
-            && !MenuHitSurface.IsPointerOver
-            && !MenuHitSurface.IsKeyboardFocusWithin)
-        {
-            CloseMenu();
-        }
+        TryCloseForPointerExit(
+            Launcher.IsPointerOver,
+            MenuHitSurface.IsPointerOver);
     }
 
     private void RevealTimer_Tick(object? sender, EventArgs eventArgs)
@@ -114,11 +113,12 @@ public sealed partial class BoxelSystemActionMenu : UserControl
 
     internal void BeginOpenIntent(bool explicitRequest)
     {
+        ClaimActiveMenu();
         closeTimer.Stop();
         explicitOpenRequested |= explicitRequest;
-        if (!Launcher.Classes.Contains("engaged"))
+        if (!Launcher.Classes.Contains(EngagedClass))
         {
-            Launcher.Classes.Add("engaged");
+            Launcher.Classes.Add(EngagedClass);
         }
 
         if (MenuPopup.IsOpen || revealPending)
@@ -157,7 +157,7 @@ public sealed partial class BoxelSystemActionMenu : UserControl
         }
 
         explicitOpenRequested = false;
-        if (!Launcher.Classes.Contains("engaged"))
+        if (!Launcher.Classes.Contains(EngagedClass))
         {
             CloseMenu();
             return false;
@@ -171,6 +171,19 @@ public sealed partial class BoxelSystemActionMenu : UserControl
         return true;
     }
 
+    internal bool TryCloseForPointerExit(
+        bool launcherIsPointerOver,
+        bool menuIsPointerOver)
+    {
+        if (launcherIsPointerOver || menuIsPointerOver)
+        {
+            return false;
+        }
+
+        CloseMenu();
+        return true;
+    }
+
     private void CloseMenu()
     {
         closeTimer.Stop();
@@ -178,9 +191,25 @@ public sealed partial class BoxelSystemActionMenu : UserControl
         revealTimer.Stop();
         explicitOpenRequested = false;
         revealPending = false;
-        Launcher.Classes.Remove("engaged");
+        Launcher.Classes.Remove(EngagedClass);
         MenuSurface.Classes.Remove("open");
         MenuSurface.IsVisible = false;
         MenuPopup.IsOpen = false;
+        if (activeMenu?.TryGetTarget(out var active) == true
+            && ReferenceEquals(active, this))
+        {
+            activeMenu = null;
+        }
     }
+
+    private void ClaimActiveMenu()
+    {
+        if (activeMenu?.TryGetTarget(out var active) == true
+            && !ReferenceEquals(active, this))
+        {
+            active.CloseMenu();
+        }
+        activeMenu = new WeakReference<BoxelSystemActionMenu>(this);
+    }
+
 }

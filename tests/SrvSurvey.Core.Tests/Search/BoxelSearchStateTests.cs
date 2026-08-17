@@ -509,6 +509,26 @@ public sealed class BoxelSearchStateTests
     }
 
     [Fact]
+    public void DeferredRangeWithUpdatedExceptionsRebuildsItsLookup()
+    {
+        var range = new BoxelDeferredRangeSnapshot
+        {
+            Prefix = "Praea Euq IL-P c5-",
+            StartSystemNumber = 5,
+            Exceptions = [1],
+        };
+
+        Assert.False(range.Contains(1));
+        Assert.True(range.Contains(2));
+
+        var updated = range with { Exceptions = [2] };
+
+        Assert.True(updated.Contains(1));
+        Assert.False(updated.Contains(2));
+        Assert.Equal([2], updated.Exceptions);
+    }
+
+    [Fact]
     public void DeferredBoundaryValidatesActionsAndExcludesHandledSystems()
     {
         var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");

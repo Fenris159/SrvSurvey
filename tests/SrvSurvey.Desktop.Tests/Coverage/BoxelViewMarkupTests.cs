@@ -479,6 +479,7 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("{Binding !IsDialogVisible}", values);
         Assert.Contains("RenameTextBox", values);
         Assert.Contains("NotesTextBox", values);
+        Assert.Contains("{Binding IsDeleteConfirmationVisible}", values);
     }
 
     [Fact]

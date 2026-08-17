@@ -116,6 +116,36 @@ public sealed class BoxelSystemActionMenuTests
         window.Close();
     }
 
+    [AvaloniaFact]
+    public void PointerExitClosesPopupAndOnlyOneMenuRemainsActive()
+    {
+        var first = new BoxelSystemActionMenu { DataContext = CreateRow() };
+        var second = new BoxelSystemActionMenu { DataContext = CreateRow() };
+        var window = new Window
+        {
+            Content = new StackPanel { Children = { first, second } },
+        };
+        window.Show();
+
+        first.BeginOpenIntent(explicitRequest: true);
+        Assert.True(first.TryRevealMenu(launcherIsPointerOver: false));
+        Assert.True(first.FindControl<Popup>("MenuPopup")!.IsOpen);
+
+        Assert.True(first.TryCloseForPointerExit(
+            launcherIsPointerOver: false,
+            menuIsPointerOver: false));
+        Assert.False(first.FindControl<Popup>("MenuPopup")!.IsOpen);
+
+        first.BeginOpenIntent(explicitRequest: true);
+        Assert.True(first.TryRevealMenu(launcherIsPointerOver: false));
+        second.BeginOpenIntent(explicitRequest: true);
+        Assert.False(first.FindControl<Popup>("MenuPopup")!.IsOpen);
+        Assert.True(second.TryRevealMenu(launcherIsPointerOver: false));
+        Assert.True(second.FindControl<Popup>("MenuPopup")!.IsOpen);
+
+        window.Close();
+    }
+
     private static BoxelSystemRowViewModel CreateRow()
     {
         return new BoxelSystemRowViewModel(new BoxelSystemRowOptions

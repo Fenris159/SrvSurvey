@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using SrvSurvey.Core.Journal;
 
@@ -1492,6 +1493,10 @@ public sealed record BoxelSearchSnapshot
 
 public sealed record BoxelDeferredRangeSnapshot
 {
+    private static readonly ConditionalWeakTable<
+        BoxelDeferredRangeSnapshot,
+        HashSet<int>> ExceptionLookups = new();
+
     public string Prefix { get; init; } = string.Empty;
 
     public int StartSystemNumber { get; init; }
@@ -1506,7 +1511,14 @@ public sealed record BoxelDeferredRangeSnapshot
             && (SortDescending
                 ? systemNumber > StartSystemNumber
                 : systemNumber < StartSystemNumber)
-            && !Exceptions.Contains(systemNumber);
+            && !GetExceptionLookup().Contains(systemNumber);
+    }
+
+    private HashSet<int> GetExceptionLookup()
+    {
+        return ExceptionLookups.GetValue(
+            this,
+            static range => [.. range.Exceptions]);
     }
 }
 
