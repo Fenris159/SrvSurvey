@@ -240,6 +240,12 @@
     <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
   </Style>
+  <Style Selector="FlyoutPresenter.system-page-picker">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="Padding" Value="0" />
+  </Style>
   <Style Selector="ListBox.system-pages ListBoxItem">
     <Setter Property="Height" Value="36" />
     <Setter Property="Padding" Value="12,7" />

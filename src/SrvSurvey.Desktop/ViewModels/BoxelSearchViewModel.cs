@@ -63,6 +63,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private bool completeOnFssAllBodies;
     private bool autoCopy;
     private bool sortDescending;
+    private bool showOnlyDeferred;
     private bool suppressOptionPersistence;
     private bool isBusy;
     private bool isAuditing;
@@ -81,8 +82,13 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private string systemListNote = string.Empty;
     private string systemPageText = "Page 1 of 1";
     private IReadOnlyList<int> systemPageNumbers = [1];
+    private int[] orderedSystemNumbers = [];
+    private Dictionary<int, int> systemNumberPositions = [];
+    private int currentDeferredSystemCount;
     private int systemPageIndex;
     private string? systemPagePrefix;
+    private string? systemPageTarget;
+    private int? systemPageTargetIndex;
     private bool showNextSystemPageOnUpdate;
     private string auditDescription = "Activate a boxel search to audit its full area.";
     private string auditProgress = "No full-area audit has run in this session.";
@@ -342,6 +348,22 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool ShowOnlyDeferred
+    {
+        get => showOnlyDeferred;
+        set
+        {
+            if (!SetField(ref showOnlyDeferred, value))
+            {
+                return;
+            }
+
+            systemPageIndex = 0;
+            showNextSystemPageOnUpdate = !value;
+            UpdateSystemRows();
+        }
+    }
+
     public bool IsBusy
     {
         get => isBusy;
@@ -582,7 +604,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public int SystemPageCount => Math.Max(
         1,
-        (GetSystemRowCount() + SystemsPerPage - 1) / SystemsPerPage);
+        (orderedSystemNumbers.Length + SystemsPerPage - 1) / SystemsPerPage);
 
     public IReadOnlyList<int> SystemPageNumbers
     {
@@ -1659,36 +1681,101 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         await RefreshCurrentAsync();
     }
 
-    private async Task ToggleSystemAsync(string systemName)
+    private Task CompleteSystemAsync(string systemName)
     {
-        if (state.IsSystemEmpty(systemName))
+        return RunSystemActionAsync(async () =>
         {
-            if (!state.TrySetSystemEmpty(systemName, false, out var emptyError))
+            if (!state.TrySetSystemComplete(systemName, true, out var error))
             {
-                StatusMessage = emptyError ?? "The empty-system marker was not removed.";
+                StatusMessage = error ?? "The system was not marked complete.";
                 return;
             }
 
-            showNextSystemPageOnUpdate = true;
-            UpdateDisplay();
-            await SaveAsync($"Restored {systemName} to the search.");
-            return;
-        }
+            await FinishSystemActionAsync($"Marked {systemName} complete.");
+        });
+    }
 
-        var current = state.Systems.FirstOrDefault(system =>
-            string.Equals(system.Boxel.Name, systemName, StringComparison.Ordinal));
-        if (!state.TrySetSystemComplete(
-                systemName,
-                current?.IsComplete != true,
-                out var error))
+    private Task ReopenSystemAsync(string systemName)
+    {
+        return RunSystemActionAsync(async () =>
         {
-            StatusMessage = error ?? "The system completion state was not changed.";
-            return;
-        }
+            bool changed;
+            string? error;
+            if (state.IsSystemDeferred(systemName))
+            {
+                changed = state.TrySetSystemDeferred(systemName, false, out error);
+            }
+            else if (state.IsSystemEmpty(systemName))
+            {
+                changed = state.TrySetSystemEmpty(systemName, false, out error);
+            }
+            else
+            {
+                changed = state.TrySetSystemComplete(systemName, false, out error);
+            }
+            if (!changed)
+            {
+                StatusMessage = error ?? "The system was not reopened.";
+                return;
+            }
 
+            await FinishSystemActionAsync($"Reopened {systemName}.");
+        });
+    }
+
+    private Task DeferSystemAsync(string systemName)
+    {
+        return RunSystemActionAsync(async () =>
+        {
+            if (!state.TrySetSystemDeferred(systemName, true, out var error))
+            {
+                StatusMessage = error ?? "The system was not deferred.";
+                return;
+            }
+
+            await FinishSystemActionAsync($"Deferred {systemName}.");
+        });
+    }
+
+    private Task StartAtSystemAsync(string systemName)
+    {
+        return RunSystemActionAsync(async () =>
+        {
+            if (!state.TryStartAtSystem(systemName, out var deferredCount, out var error))
+            {
+                StatusMessage = error ?? "The survey start point was not changed.";
+                return;
+            }
+
+            var message = deferredCount == 0
+                ? $"Survey will start at {systemName}."
+                : $"Survey will start at {systemName}; deferred {deferredCount:N0} earlier systems.";
+            await FinishSystemActionAsync(message);
+        });
+    }
+
+    private async Task RunSystemActionAsync(Func<Task> action)
+    {
+        await operationLock.WaitAsync(CancellationToken.None);
+        try
+        {
+            await action();
+        }
+        finally
+        {
+            operationLock.Release();
+        }
+    }
+
+    private async Task FinishSystemActionAsync(string message)
+    {
         showNextSystemPageOnUpdate = true;
         UpdateDisplay();
-        await SaveAsync("System completion updated.");
+        await SaveAsync(message);
+        if (state.AutoCopy && !string.IsNullOrWhiteSpace(state.NextSystem))
+        {
+            await CopyNextSystemAsync();
+        }
     }
 
     private BoxelAddress? GetParent()
@@ -1983,11 +2070,16 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private void UpdateSystemRows()
     {
-        if (state.Current is null || state.CurrentIsEmpty)
+        if (!state.IsActive || state.Current is null || state.CurrentIsEmpty)
         {
             systemPageIndex = 0;
-            systemPagePrefix = state.Current?.Prefix;
+            systemPagePrefix = state.IsActive ? state.Current?.Prefix : null;
+            systemPageTarget = null;
+            systemPageTargetIndex = null;
             showNextSystemPageOnUpdate = false;
+            orderedSystemNumbers = [];
+            systemNumberPositions = new Dictionary<int, int>();
+            currentDeferredSystemCount = 0;
             SystemListNote = string.Empty;
             SystemPageText = "Page 1 of 1";
             Systems = [];
@@ -1997,38 +2089,49 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
         var systemsByNumber = state.Systems.ToDictionary(
             system => system.Boxel.N2);
-        var rowCount = Math.Max(1, GetSystemRowCount());
-        if (!string.Equals(
+        var totalRowCount = Math.Max(1, GetSystemRowCount());
+        (orderedSystemNumbers, currentDeferredSystemCount) =
+            GetOrderedSystemNumbers(totalRowCount);
+        systemNumberPositions = currentDeferredSystemCount == 0
+            ? new Dictionary<int, int>()
+            : orderedSystemNumbers
+                .Select((number, position) => (number, position))
+                .ToDictionary(entry => entry.number, entry => entry.position);
+        var rowCount = orderedSystemNumbers.Length;
+        var nextSystemPageIndex = GetNextSystemPageIndex();
+        var nextSystemLocationChanged = !string.Equals(
+                systemPageTarget,
+                state.NextSystem,
+                StringComparison.Ordinal)
+            || systemPageTargetIndex != nextSystemPageIndex;
+        if (!ShowOnlyDeferred
+            && (!string.Equals(
                 systemPagePrefix,
                 state.Current.Prefix,
                 StringComparison.Ordinal)
-            || showNextSystemPageOnUpdate)
+                || showNextSystemPageOnUpdate
+                || nextSystemLocationChanged))
         {
-            systemPageIndex = GetNextSystemPageIndex();
+            systemPageIndex = nextSystemPageIndex;
         }
 
         systemPagePrefix = state.Current.Prefix;
+        systemPageTarget = state.NextSystem;
+        systemPageTargetIndex = nextSystemPageIndex;
         showNextSystemPageOnUpdate = false;
         var pageCount = Math.Max(1, (rowCount + SystemsPerPage - 1) / SystemsPerPage);
         systemPageIndex = Math.Clamp(systemPageIndex, 0, pageCount - 1);
         var pageOffset = systemPageIndex * SystemsPerPage;
-        var rowsOnPage = Math.Min(SystemsPerPage, rowCount - pageOffset);
-        var firstNumber = SortDescending
-            ? rowCount - 1 - pageOffset
-            : pageOffset;
-        var lastNumber = SortDescending
-            ? firstNumber - rowsOnPage + 1
-            : firstNumber + rowsOnPage - 1;
-        var rowNumbers = SortDescending
-            ? Enumerable.Range(lastNumber, rowsOnPage).Reverse()
-            : Enumerable.Range(firstNumber, rowsOnPage);
-        SystemListNote = SortDescending
-            ? string.Create(
-                CultureInfo.CurrentCulture,
-                $"Showing systems {firstNumber:N0}\u2013{lastNumber:N0} of {rowCount:N0} (descending).")
-            : string.Create(
-                CultureInfo.CurrentCulture,
-                $"Showing systems {firstNumber:N0}\u2013{lastNumber:N0} of {rowCount:N0}.");
+        var rowsOnPage = Math.Min(SystemsPerPage, Math.Max(0, rowCount - pageOffset));
+        var rowNumbers = orderedSystemNumbers
+            .Skip(pageOffset)
+            .Take(rowsOnPage)
+            .ToArray();
+        SystemListNote = FormatSystemListNote(
+            totalRowCount,
+            pageOffset,
+            rowsOnPage,
+            rowNumbers);
         SystemPageText = string.Create(
             CultureInfo.CurrentCulture,
             $"Page {systemPageIndex + 1:N0} of {pageCount:N0}");
@@ -2058,6 +2161,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                         IsComplete = system?.IsComplete == true,
                         IsKnown = system is not null,
                         IsEmpty = state.EmptySystems.Contains(boxel.GeneratedName),
+                        IsDeferred = state.IsSystemDeferred(boxel.Prefix, boxel.N2),
                         IsCurrent = isCurrent,
                         IsNextIncomplete = string.Equals(
                             nextSystemName,
@@ -2066,7 +2170,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                         Distance = distance,
                         VisitedAt = FormatDate(system?.VisitedAt),
                         SpanshUpdatedAt = FormatDate(system?.SpanshUpdatedAt),
-                        Toggle = () => ToggleSystemAsync(boxel.Name),
+                        Complete = () => CompleteSystemAsync(boxel.Name),
+                        Reopen = () => ReopenSystemAsync(boxel.Name),
+                        Defer = () => DeferSystemAsync(boxel.Name),
+                        StartHere = () => StartAtSystemAsync(boxel.Name),
                     });
             })
             .ToArray();
@@ -2078,6 +2185,74 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         return state.Current is null || state.CurrentIsEmpty
             ? 0
             : Math.Max(state.CurrentCount, state.CurrentMaximumSystemNumber + 1);
+    }
+
+    private (int[] Numbers, int DeferredCount) GetOrderedSystemNumbers(
+        int rowCount)
+    {
+        var numbers = SortDescending
+            ? Enumerable.Range(0, rowCount).Reverse()
+            : Enumerable.Range(0, rowCount);
+        var ordered = numbers.ToArray();
+        if (state.Current is null)
+        {
+            return (ordered, 0);
+        }
+
+        var deferredNumbers = ordered
+            .Where(number => state.IsSystemDeferred(state.Current.Prefix, number))
+            .ToArray();
+        if (ShowOnlyDeferred)
+        {
+            return (deferredNumbers, deferredNumbers.Length);
+        }
+
+        var deferredSet = deferredNumbers.ToHashSet();
+        var result = ordered
+            .Where(number => !deferredSet.Contains(number))
+            .Concat(deferredNumbers)
+            .ToArray();
+        return (result, deferredNumbers.Length);
+    }
+
+    private string FormatSystemListNote(
+        int totalRowCount,
+        int pageOffset,
+        int rowsOnPage,
+        int[] rowNumbers)
+    {
+        if (rowsOnPage == 0)
+        {
+            return ShowOnlyDeferred
+                ? "No deferred systems in this boxel."
+                : "No systems are available in this boxel.";
+        }
+
+        var visibleTotal = orderedSystemNumbers.Length;
+        var firstPosition = pageOffset + 1;
+        var lastPosition = pageOffset + rowsOnPage;
+        var suffixRange = rowNumbers.Length == 1
+            ? $"suffix {rowNumbers[0]:N0}"
+            : $"suffixes {rowNumbers[0]:N0}\u2013{rowNumbers[^1]:N0}";
+        if (ShowOnlyDeferred)
+        {
+            return $"Showing deferred systems {firstPosition:N0}\u2013{lastPosition:N0} "
+                + $"of {visibleTotal:N0} ({suffixRange}).";
+        }
+
+        if (currentDeferredSystemCount == 0)
+        {
+            return SortDescending
+                ? $"Showing systems {rowNumbers[0]:N0}\u2013{rowNumbers[^1]:N0} "
+                    + $"of {totalRowCount:N0} (descending)."
+                : $"Showing systems {rowNumbers[0]:N0}\u2013{rowNumbers[^1]:N0} "
+                    + $"of {totalRowCount:N0}.";
+        }
+
+        var direction = SortDescending ? " Descending order is active." : string.Empty;
+        return $"Showing systems {firstPosition:N0}\u2013{lastPosition:N0} "
+            + $"of {totalRowCount:N0} ({suffixRange}). Deferred systems are grouped last."
+            + direction;
     }
 
     private int GetNextSystemPageIndex()
@@ -2107,10 +2282,20 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private int GetSystemPageIndex(int systemNumber)
     {
-        var offset = SortDescending
-            ? Math.Max(0, GetSystemRowCount() - 1 - systemNumber)
-            : systemNumber;
-        return offset / SystemsPerPage;
+        if (currentDeferredSystemCount == 0 && !ShowOnlyDeferred)
+        {
+            var rowCount = GetSystemRowCount();
+            var calculatedPosition = SortDescending
+                ? rowCount - systemNumber - 1
+                : systemNumber;
+            return calculatedPosition >= 0 && calculatedPosition < rowCount
+                ? calculatedPosition / SystemsPerPage
+                : 0;
+        }
+
+        return systemNumberPositions.TryGetValue(systemNumber, out var cachedPosition)
+            ? cachedPosition / SystemsPerPage
+            : 0;
     }
 
     private string FormatLastSystemAvailable()
@@ -2170,6 +2355,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         return !IsBusy
             && HasSystems
+            && !ShowOnlyDeferred
             && !string.IsNullOrWhiteSpace(state.NextSystem)
             && systemPageIndex != GetNextSystemPageIndex();
     }
@@ -2583,19 +2769,33 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
 public sealed class BoxelSystemRowViewModel
 {
+    private readonly Func<Task> complete;
+    private readonly Func<Task> defer;
+    private readonly Func<Task> reopen;
+    private readonly Func<Task> startHere;
+
     public BoxelSystemRowViewModel(BoxelSystemRowOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
+        complete = options.Complete;
+        defer = options.Defer;
+        reopen = options.Reopen;
+        startHere = options.StartHere;
         Name = options.Name;
         IsComplete = options.IsComplete;
         IsKnown = options.IsKnown;
         IsEmpty = options.IsEmpty;
+        IsDeferred = options.IsDeferred;
         IsCurrent = options.IsCurrent;
         IsNextIncomplete = options.IsNextIncomplete;
         Distance = options.Distance;
         VisitedAt = options.VisitedAt;
         SpanshUpdatedAt = options.SpanshUpdatedAt;
-        if (options.IsEmpty)
+        if (options.IsDeferred)
+        {
+            Status = "DEFERRED";
+        }
+        else if (options.IsEmpty)
         {
             Status = "EMPTY";
         }
@@ -2611,9 +2811,22 @@ public sealed class BoxelSystemRowViewModel
         {
             Status = "UNKNOWN";
         }
-        ToggleCommand = new RowCommand(
-            options.Toggle,
-            () => options.IsKnown || options.IsEmpty);
+        CompleteCommand = new RowCommand(
+            CompleteAsync,
+            () => options.IsKnown
+                && !options.IsComplete
+                && !options.IsEmpty);
+        ReopenCommand = new RowCommand(
+            ReopenAsync,
+            () => options.IsComplete || options.IsEmpty || options.IsDeferred);
+        DeferCommand = new RowCommand(
+            DeferAsync,
+            () => !options.IsComplete
+                && !options.IsEmpty
+                && !options.IsDeferred);
+        StartHereCommand = new RowCommand(
+            StartHereAsync,
+            () => !options.IsComplete && !options.IsEmpty);
     }
 
     public string Name { get; }
@@ -2623,6 +2836,8 @@ public sealed class BoxelSystemRowViewModel
     public bool IsKnown { get; }
 
     public bool IsEmpty { get; }
+
+    public bool IsDeferred { get; }
 
     public bool IsCurrent { get; }
 
@@ -2650,14 +2865,21 @@ public sealed class BoxelSystemRowViewModel
 
     public string Status { get; }
 
-    public string ToggleButtonText => (IsEmpty, IsComplete) switch
-    {
-        (true, _) => "Restore",
-        (false, true) => "Reopen",
-        _ => "Complete",
-    };
+    public ICommand CompleteCommand { get; }
 
-    public ICommand ToggleCommand { get; }
+    public ICommand ReopenCommand { get; }
+
+    public ICommand DeferCommand { get; }
+
+    public ICommand StartHereCommand { get; }
+
+    internal Task CompleteAsync() => complete();
+
+    internal Task DeferAsync() => defer();
+
+    internal Task ReopenAsync() => reopen();
+
+    internal Task StartHereAsync() => startHere();
 
     private sealed class RowCommand(
         Func<Task> execute,

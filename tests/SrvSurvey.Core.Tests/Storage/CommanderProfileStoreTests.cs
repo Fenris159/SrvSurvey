@@ -552,6 +552,17 @@ public sealed class CommanderProfileStoreTests : IDisposable
                     "Praea Euq IL-P c5-2",
                 ],
                 EmptySystems = ["Praea Euq IL-P c5-1"],
+                DeferredSystems = ["Praea Euq IL-P c5-3"],
+                DeferredRanges =
+                [
+                    new BoxelDeferredRangeSnapshot
+                    {
+                        Prefix = top.Prefix,
+                        StartSystemNumber = 2,
+                        SortDescending = true,
+                        Exceptions = [3],
+                    },
+                ],
                 ProgressByPrefix = new Dictionary<string, int>
                 {
                     [top.Prefix] = 4,
@@ -567,6 +578,14 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.Equal(
             ["Praea Euq IL-P c5-1"],
             loaded.Data.BoxelSearch.EmptySystems);
+        Assert.Equal(
+            ["Praea Euq IL-P c5-3"],
+            loaded.Data.BoxelSearch.DeferredSystems);
+        var deferredRange = Assert.Single(loaded.Data.BoxelSearch.DeferredRanges);
+        Assert.Equal(top.Prefix, deferredRange.Prefix);
+        Assert.Equal(2, deferredRange.StartSystemNumber);
+        Assert.True(deferredRange.SortDescending);
+        Assert.Equal([3], deferredRange.Exceptions);
         Assert.Equal(4, loaded.Data.BoxelSearch.ProgressByPrefix[top.Prefix]);
         Assert.True(loaded.Data.BoxelSearch.SortDescending);
         Assert.Equal(

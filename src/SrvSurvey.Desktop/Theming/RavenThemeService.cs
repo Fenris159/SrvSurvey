@@ -171,7 +171,9 @@ public sealed class RavenThemeService
         SetBrush("RavenMutedTextBrush", theme.MutedTextColor);
         SetBrush("RavenBorderBrush", theme.BorderColor);
         SetBrush("RavenSuccessBrush", theme.IsDark ? "#6CCB72" : "#107C10");
-        SetBrush("RavenWarningBrush", theme.IsDark ? "#F7C948" : "#8A5D00");
+        var warningColor = theme.IsDark ? "#F7C948" : "#8A5D00";
+        SetBrush("RavenWarningBrush", warningColor);
+        SetInsetShadow("RavenWarningInsetShadow", warningColor);
         SetBrush("RavenDangerBrush", theme.IsDark ? "#FF7B72" : "#C50F1F");
     }
 
@@ -219,6 +221,18 @@ public sealed class RavenThemeService
     private void SetBrush(string key, Color value)
     {
         application.Resources[key] = new SolidColorBrush(value);
+    }
+
+    private void SetInsetShadow(string key, string value)
+    {
+        var color = Color.Parse(value);
+        application.Resources[key] = new BoxShadows(new BoxShadow
+        {
+            Blur = 10,
+            Color = Color.FromArgb(153, color.R, color.G, color.B),
+            IsInset = true,
+            Spread = 2,
+        });
     }
 
     private static string GetBiologyEdgeResourceKey(string themeKey)

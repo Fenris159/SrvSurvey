@@ -25,6 +25,7 @@
     <SolidColorBrush x:Key="RavenBorderBrush" Color="#195494" />
     <SolidColorBrush x:Key="RavenSuccessBrush" Color="#6CCB72" />
     <SolidColorBrush x:Key="RavenWarningBrush" Color="#F7C948" />
+    <BoxShadows x:Key="RavenWarningInsetShadow">inset 0 0 10 2 #99F7C948</BoxShadows>
     <SolidColorBrush x:Key="RavenDangerBrush" Color="#FF7B72" />
     <!-- Stable legacy-overlay fallbacks. RavenThemeService replaces these
          from theme.json before normal runtime overlays are opened. -->

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using SrvSurvey.Core.Journal;
 
@@ -14,6 +15,11 @@ public sealed class BoxelSearchState
     private readonly HashSet<string> retainedCompleted = new(StringComparer.Ordinal);
     private readonly HashSet<string> completedSystems = new(StringComparer.Ordinal);
     private readonly HashSet<string> emptySystems = new(StringComparer.Ordinal);
+    private readonly HashSet<string> deferredSystems = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, HashSet<int>> deferredSystemNumbers = new(
+        StringComparer.Ordinal);
+    private readonly Dictionary<string, BoxelDeferredRangeSnapshot> deferredRanges = new(
+        StringComparer.Ordinal);
     private readonly Dictionary<string, int> completedSystemCounts = new(
         StringComparer.Ordinal);
     private int projectionVersion = -1;
@@ -120,6 +126,11 @@ public sealed class BoxelSearchState
 
     public IReadOnlySet<string> EmptySystems => emptySystems;
 
+    public IReadOnlySet<string> DeferredSystems => deferredSystems;
+
+    public IReadOnlyCollection<BoxelDeferredRangeSnapshot> DeferredRanges =>
+        deferredRanges.Values;
+
     public IReadOnlyList<BoxelSystemState> Systems
     {
         get
@@ -199,6 +210,17 @@ public sealed class BoxelSearchState
         {
             AddEmptySystem(systemName);
         }
+        deferredRanges.Clear();
+        foreach (var range in seed.DeferredRanges)
+        {
+            AddDeferredRange(range);
+        }
+        deferredSystems.Clear();
+        deferredSystemNumbers.Clear();
+        foreach (var systemName in seed.DeferredSystems)
+        {
+            AddDeferredSystem(systemName);
+        }
         systems.Clear();
         CurrentIsEmpty = false;
 
@@ -214,11 +236,9 @@ public sealed class BoxelSearchState
 
     private static DateTimeOffset NormalizeStartedOn(BoxelSearchSnapshot seed)
     {
-        return seed.Active
-            && seed.TopBoxel is not null
-            && seed.StartedOn == DateTimeOffset.MinValue
-                ? new DateTimeOffset(DateTime.Today)
-                : seed.StartedOn;
+        return seed.StartedOn == DateTimeOffset.MinValue
+            ? new DateTimeOffset(DateTime.Today)
+            : seed.StartedOn;
     }
 
     private void RestoreProgress(BoxelSearchSnapshot seed)
@@ -371,6 +391,7 @@ public sealed class BoxelSearchState
                 retainedCompleted.Remove(entry.Value);
                 RemoveCompletedSystems(entry.Value);
                 RemoveEmptySystems(entry.Value);
+                RemoveDeferredSystems(entry.Value);
             }
             changed = true;
         }
@@ -447,6 +468,8 @@ public sealed class BoxelSearchState
         if (isComplete)
         {
             emptySystems.Remove(entry.Key);
+            RemoveDeferredSystem(entry.Value.Boxel);
+            ExcludeFromDeferredRange(entry.Value.Boxel);
             AddCompletedSystem(entry.Key);
         }
         else
@@ -485,6 +508,12 @@ public sealed class BoxelSearchState
             return false;
         }
 
+        if (isEmpty)
+        {
+            RemoveDeferredSystem(boxel);
+            ExcludeFromDeferredRange(boxel);
+        }
+
         UpdateCurrentCompletion();
         SetNextSystem();
         Version++;
@@ -496,6 +525,117 @@ public sealed class BoxelSearchState
     {
         return TryResolveCurrentSystem(systemName, out var boxel)
             && emptySystems.Contains(boxel!.GeneratedName);
+    }
+
+    public bool IsSystemDeferred(string systemName)
+    {
+        return TryResolveCurrentSystem(systemName, out var boxel)
+            && boxel is not null
+            && IsSystemDeferred(boxel.Prefix, boxel.N2);
+    }
+
+    public bool IsSystemDeferred(string prefix, int systemNumber)
+    {
+        if (systemNumber < 0)
+        {
+            return false;
+        }
+
+        return deferredSystemNumbers.GetValueOrDefault(prefix)?.Contains(systemNumber) == true
+            || deferredRanges.TryGetValue(prefix, out var range)
+                && range.Contains(systemNumber);
+    }
+
+    public bool TrySetSystemDeferred(
+        string systemName,
+        bool isDeferred,
+        out string? error)
+    {
+        if (!TryResolveCurrentSystem(systemName, out var boxel)
+            || boxel is null
+            || boxel.N2 >= GetCurrentSystemLimit())
+        {
+            error = "Choose a numbered system in the current boxel.";
+            return false;
+        }
+
+        var generatedName = boxel.GeneratedName;
+        if (IsSystemHandled(generatedName))
+        {
+            error = $"{boxel.Name} is already complete or marked empty.";
+            return false;
+        }
+
+        var changed = isDeferred
+            ? DeferSystem(boxel)
+            : ReopenDeferredSystem(boxel);
+        if (!changed)
+        {
+            error = isDeferred
+                ? $"{boxel.Name} is already deferred."
+                : $"{boxel.Name} is not deferred.";
+            return false;
+        }
+
+        SetNextSystem();
+        Version++;
+        error = null;
+        return true;
+    }
+
+    public bool TryStartAtSystem(
+        string systemName,
+        out int deferredCount,
+        out string? error)
+    {
+        deferredCount = 0;
+        if (!TryResolveCurrentSystem(systemName, out var boxel)
+            || boxel is null
+            || boxel.N2 >= GetCurrentSystemLimit())
+        {
+            error = "Choose a numbered system in the current boxel.";
+            return false;
+        }
+
+        if (IsSystemHandled(boxel.GeneratedName))
+        {
+            error = $"{boxel.Name} is already complete or marked empty.";
+            return false;
+        }
+
+        var targetNumber = boxel.N2;
+        var systemLimit = GetCurrentSystemLimit();
+        var handledNumbers = GetHandledSystemNumbers(boxel.Prefix);
+        var exceptions = handledNumbers
+            .Where(number => number < systemLimit
+                && IsBeforeStart(number, targetNumber, SortDescending))
+            .Order()
+            .ToArray();
+        var range = new BoxelDeferredRangeSnapshot
+        {
+            Prefix = boxel.Prefix,
+            StartSystemNumber = targetNumber,
+            SortDescending = SortDescending,
+            Exceptions = exceptions,
+        };
+        if (GetRangeLength(targetNumber, systemLimit, SortDescending) == 0)
+        {
+            deferredRanges.Remove(boxel.Prefix);
+        }
+        else
+        {
+            deferredRanges[boxel.Prefix] = range;
+        }
+
+        RemoveRedundantDeferredSystems(range, boxel);
+        deferredCount = Math.Max(
+            0,
+            GetRangeLength(targetNumber, systemLimit, SortDescending)
+                - exceptions.Length);
+        SetNextSystem();
+        Version++;
+        error = null;
+        return true;
     }
 
     public bool TryMarkNextSystemEmpty(out string? systemName, out string? error)
@@ -531,6 +671,7 @@ public sealed class BoxelSearchState
             retainedCompleted.Remove(Current.Prefix);
             RemoveCompletedSystems(Current.Prefix);
             RemoveEmptySystems(Current.Prefix);
+            RemoveDeferredSystems(Current.Prefix);
             systems.Clear();
         }
         else
@@ -627,6 +768,10 @@ public sealed class BoxelSearchState
             CompletedPrefixes = completed.Order(StringComparer.Ordinal).ToArray(),
             CompletedSystems = completedSystems.Order(StringComparer.Ordinal).ToArray(),
             EmptySystems = emptySystems.Order(StringComparer.Ordinal).ToArray(),
+            DeferredSystems = deferredSystems.Order(StringComparer.Ordinal).ToArray(),
+            DeferredRanges = deferredRanges.Values
+                .OrderBy(range => range.Prefix, StringComparer.Ordinal)
+                .ToArray(),
             ProgressByPrefix = progress.ToDictionary(
                 entry => entry.Key,
                 entry => entry.Value,
@@ -738,6 +883,8 @@ public sealed class BoxelSearchState
             observation.HasKnownBodies || existing?.HasKnownBodies == true);
         if (isComplete)
         {
+            RemoveDeferredSystem(observation.Boxel);
+            ExcludeFromDeferredRange(observation.Boxel);
             AddCompletedSystem(observation.Boxel.GeneratedName);
         }
         CurrentCount = Math.Max(CurrentCount, observation.Boxel.N2 + 1);
@@ -761,7 +908,6 @@ public sealed class BoxelSearchState
         }
 
         return isComplete || (source == BoxelObservationSource.Spansh
-            && CompletionMode == BoxelCompletionMode.EnterSystem
             && observation.HasKnownBodies
             && SkipKnownToSpansh
             && observation.SpanshUpdatedAt < StartedOn);
@@ -857,6 +1003,16 @@ public sealed class BoxelSearchState
             && string.Equals(boxel.Prefix, prefix, StringComparison.Ordinal));
     }
 
+    private void RemoveDeferredSystems(string prefix)
+    {
+        deferredSystems.RemoveWhere(systemName =>
+            BoxelAddress.TryParse(systemName, out var boxel)
+            && boxel is not null
+            && string.Equals(boxel.Prefix, prefix, StringComparison.Ordinal));
+        deferredSystemNumbers.Remove(prefix);
+        deferredRanges.Remove(prefix);
+    }
+
     private void AddEmptySystem(string systemName)
     {
         if (BoxelAddress.TryParse(systemName, out var boxel) && boxel is not null)
@@ -864,6 +1020,207 @@ public sealed class BoxelSearchState
             emptySystems.Add(boxel.GeneratedName);
             retainedCompleted.Remove(boxel.Prefix);
         }
+    }
+
+    private void AddDeferredSystem(string systemName)
+    {
+        if (BoxelAddress.TryParse(systemName, out var boxel)
+            && boxel is not null
+            && !completedSystems.Contains(boxel.GeneratedName)
+            && !emptySystems.Contains(boxel.GeneratedName)
+            && (!deferredRanges.TryGetValue(boxel.Prefix, out var range)
+                || !range.Contains(boxel.N2)))
+        {
+            deferredSystems.Add(boxel.GeneratedName);
+            if (!deferredSystemNumbers.TryGetValue(boxel.Prefix, out var numbers))
+            {
+                numbers = [];
+                deferredSystemNumbers[boxel.Prefix] = numbers;
+            }
+            numbers.Add(boxel.N2);
+        }
+    }
+
+    private void AddDeferredRange(BoxelDeferredRangeSnapshot range)
+    {
+        if (range.StartSystemNumber < 0
+            || !BoxelAddress.TryParse(range.Prefix + "0", out var boxel)
+            || boxel is null)
+        {
+            return;
+        }
+
+        deferredRanges[boxel.Prefix] = range with
+        {
+            Prefix = boxel.Prefix,
+            Exceptions = range.Exceptions
+                .Where(number => number >= 0)
+                .Distinct()
+                .Order()
+                .ToArray(),
+        };
+    }
+
+    private bool DeferSystem(BoxelAddress boxel)
+    {
+        if (deferredRanges.TryGetValue(boxel.Prefix, out var range)
+            && IsBeforeStart(boxel.N2, range.StartSystemNumber, range.SortDescending))
+        {
+            if (!range.Exceptions.Contains(boxel.N2))
+            {
+                return false;
+            }
+
+            deferredRanges[boxel.Prefix] = range with
+            {
+                Exceptions = range.Exceptions
+                    .Where(number => number != boxel.N2)
+                    .ToArray(),
+            };
+            return true;
+        }
+
+        if (!deferredSystems.Add(boxel.GeneratedName))
+        {
+            return false;
+        }
+
+        if (!deferredSystemNumbers.TryGetValue(boxel.Prefix, out var numbers))
+        {
+            numbers = [];
+            deferredSystemNumbers[boxel.Prefix] = numbers;
+        }
+        numbers.Add(boxel.N2);
+        return true;
+    }
+
+    private bool ReopenDeferredSystem(BoxelAddress boxel)
+    {
+        var changed = RemoveDeferredSystem(boxel);
+        if (deferredRanges.TryGetValue(boxel.Prefix, out var range)
+            && range.Contains(boxel.N2))
+        {
+            deferredRanges[boxel.Prefix] = range with
+            {
+                Exceptions = range.Exceptions
+                    .Append(boxel.N2)
+                    .Distinct()
+                    .Order()
+                    .ToArray(),
+            };
+            changed = true;
+        }
+        return changed;
+    }
+
+    private bool RemoveDeferredSystem(BoxelAddress boxel)
+    {
+        var changed = deferredSystems.Remove(boxel.GeneratedName);
+        if (deferredSystemNumbers.TryGetValue(boxel.Prefix, out var numbers))
+        {
+            numbers.Remove(boxel.N2);
+            if (numbers.Count == 0)
+            {
+                deferredSystemNumbers.Remove(boxel.Prefix);
+            }
+        }
+        return changed;
+    }
+
+    private void ExcludeFromDeferredRange(BoxelAddress boxel)
+    {
+        if (!deferredRanges.TryGetValue(boxel.Prefix, out var range)
+            || !range.Contains(boxel.N2))
+        {
+            return;
+        }
+
+        deferredRanges[boxel.Prefix] = range with
+        {
+            Exceptions = range.Exceptions
+                .Append(boxel.N2)
+                .Distinct()
+                .Order()
+                .ToArray(),
+        };
+    }
+
+    private void RemoveRedundantDeferredSystems(
+        BoxelDeferredRangeSnapshot range,
+        BoxelAddress target)
+    {
+        var redundant = deferredSystemNumbers
+            .GetValueOrDefault(range.Prefix)?
+            .Where(number => number == target.N2 || range.Contains(number))
+            .ToArray() ?? [];
+        foreach (var number in redundant)
+        {
+            RemoveDeferredSystem(target.WithSystemNumber(number));
+        }
+    }
+
+    private HashSet<int> GetHandledSystemNumbers(string prefix)
+    {
+        var result = new HashSet<int>();
+        AddMatchingSystemNumbers(result, completedSystems, prefix);
+        AddMatchingSystemNumbers(result, emptySystems, prefix);
+        foreach (var system in systems.Values.Where(system => system.IsComplete
+                     && string.Equals(
+                         system.Boxel.Prefix,
+                         prefix,
+                         StringComparison.Ordinal)))
+        {
+            result.Add(system.Boxel.N2);
+        }
+        return result;
+    }
+
+    private static void AddMatchingSystemNumbers(
+        HashSet<int> target,
+        IEnumerable<string> systemNames,
+        string prefix)
+    {
+        foreach (var systemName in systemNames)
+        {
+            if (BoxelAddress.TryParse(systemName, out var boxel)
+                && boxel is not null
+                && string.Equals(boxel.Prefix, prefix, StringComparison.Ordinal))
+            {
+                target.Add(boxel.N2);
+            }
+        }
+    }
+
+    private static int GetRangeLength(
+        int startSystemNumber,
+        int systemLimit,
+        bool sortDescending)
+    {
+        return sortDescending
+            ? Math.Max(0, systemLimit - startSystemNumber - 1)
+            : Math.Min(startSystemNumber, systemLimit);
+    }
+
+    private static bool IsBeforeStart(
+        int systemNumber,
+        int startSystemNumber,
+        bool sortDescending)
+    {
+        return sortDescending
+            ? systemNumber > startSystemNumber
+            : systemNumber < startSystemNumber;
+    }
+
+    private int GetCurrentSystemLimit()
+    {
+        return Math.Max(CurrentCount, CurrentMaximumSystemNumber + 1);
+    }
+
+    private bool IsSystemHandled(string generatedName)
+    {
+        return completedSystems.Contains(generatedName)
+            || emptySystems.Contains(generatedName)
+            || systems.GetValueOrDefault(generatedName)?.IsComplete == true;
     }
 
     private bool TryResolveCurrentSystem(
@@ -985,7 +1342,8 @@ public sealed class BoxelSearchState
                 systems.TryGetValue(generated.GeneratedName, out var system);
                 if (system?.IsComplete == true
                     || completedSystems.Contains(generated.GeneratedName)
-                    || emptySystems.Contains(generated.GeneratedName))
+                    || emptySystems.Contains(generated.GeneratedName)
+                    || IsSystemDeferred(Current.Prefix, number))
                 {
                     continue;
                 }
@@ -1108,6 +1466,10 @@ public sealed record BoxelSearchSnapshot
 
     public IReadOnlyList<string> EmptySystems { get; init; } = [];
 
+    public IReadOnlyList<string> DeferredSystems { get; init; } = [];
+
+    public IReadOnlyList<BoxelDeferredRangeSnapshot> DeferredRanges { get; init; } = [];
+
     public IReadOnlyDictionary<string, int> ProgressByPrefix { get; init; } =
         new Dictionary<string, int>(StringComparer.Ordinal);
 
@@ -1127,6 +1489,37 @@ public sealed record BoxelSearchSnapshot
     public string? SavedSearchFileName { get; init; }
 
     public static BoxelSearchSnapshot Empty { get; } = new();
+}
+
+public sealed record BoxelDeferredRangeSnapshot
+{
+    private static readonly ConditionalWeakTable<
+        BoxelDeferredRangeSnapshot,
+        HashSet<int>> ExceptionLookups = new();
+
+    public string Prefix { get; init; } = string.Empty;
+
+    public int StartSystemNumber { get; init; }
+
+    public bool SortDescending { get; init; }
+
+    public IReadOnlyList<int> Exceptions { get; init; } = [];
+
+    public bool Contains(int systemNumber)
+    {
+        return systemNumber >= 0
+            && (SortDescending
+                ? systemNumber > StartSystemNumber
+                : systemNumber < StartSystemNumber)
+            && !GetExceptionLookup().Contains(systemNumber);
+    }
+
+    private HashSet<int> GetExceptionLookup()
+    {
+        return ExceptionLookups.GetValue(
+            this,
+            static range => [.. range.Exceptions]);
+    }
 }
 
 public sealed record BoxelSystemObservation(

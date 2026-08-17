@@ -6,6 +6,17 @@ namespace SrvSurvey.Core.Tests.Search;
 public sealed class BoxelSearchStateTests
 {
     [Fact]
+    public void EmptyStateDefaultsSearchStartToCurrentLocalDate()
+    {
+        var before = new DateTimeOffset(DateTime.Today);
+
+        var state = new BoxelSearchState();
+
+        var after = new DateTimeOffset(DateTime.Today);
+        Assert.True(state.StartedOn == before || state.StartedOn == after);
+    }
+
+    [Fact]
     public void ActivationUsesEnteredSystemSuffixAsInitialExpectedCount()
     {
         var state = new BoxelSearchState();
@@ -366,6 +377,326 @@ public sealed class BoxelSearchStateTests
     }
 
     [Fact]
+    public void DeferredSystemsAreSkippedWithoutCountingAsCompleteAndPersist()
+    {
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var state = new BoxelSearchState(new BoxelSearchSnapshot
+        {
+            Active = true,
+            TopBoxel = top,
+            Current = top,
+            CurrentCount = 4,
+            LowMassCode = 'c',
+            ProgressByPrefix = new Dictionary<string, int>
+            {
+                [top.Prefix] = 4,
+            },
+        });
+
+        Assert.True(state.TrySetSystemDeferred(top.WithSystemNumber(0).Name, true, out _));
+        Assert.True(state.TrySetSystemDeferred(top.WithSystemNumber(1).Name, true, out _));
+
+        Assert.Equal(top.WithSystemNumber(2).Name, state.NextSystem);
+        Assert.Equal(0, state.CompletedSystemCount);
+        Assert.False(state.CurrentSystemsComplete);
+        Assert.Equal(
+            [top.WithSystemNumber(0).GeneratedName, top.WithSystemNumber(1).GeneratedName],
+            state.DeferredSystems.Order(StringComparer.Ordinal));
+
+        var restored = new BoxelSearchState(state.CreateSnapshot());
+
+        Assert.Equal(top.WithSystemNumber(2).Name, restored.NextSystem);
+        Assert.Equal(
+            state.DeferredSystems.Order(StringComparer.Ordinal),
+            restored.DeferredSystems.Order(StringComparer.Ordinal));
+
+        Assert.True(restored.MergeSpanshSystems([
+            Observation(top.WithSystemNumber(0).Name)
+        ]));
+        Assert.True(restored.TrySetSystemComplete(
+            top.WithSystemNumber(0).Name,
+            true,
+            out _));
+        Assert.DoesNotContain(
+            top.WithSystemNumber(0).GeneratedName,
+            restored.DeferredSystems);
+        Assert.Equal(1, restored.CompletedSystemCount);
+    }
+
+    [Theory]
+    [InlineData(false, 3, 0, 1, 2)]
+    [InlineData(true, 2, 5, 4, 3)]
+    public void StartAtSystemDefersEarlierUnfinishedSystemsInSearchDirection(
+        bool descending,
+        int startSuffix,
+        params int[] expectedDeferredSuffixes)
+    {
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var state = new BoxelSearchState(new BoxelSearchSnapshot
+        {
+            Active = true,
+            TopBoxel = top,
+            Current = top,
+            CurrentCount = 6,
+            LowMassCode = 'c',
+            SortDescending = descending,
+            ProgressByPrefix = new Dictionary<string, int>
+            {
+                [top.Prefix] = 6,
+            },
+        });
+
+        Assert.True(state.TryStartAtSystem(
+            top.WithSystemNumber(startSuffix).Name,
+            out var deferredCount,
+            out var error));
+
+        Assert.Null(error);
+        Assert.Equal(expectedDeferredSuffixes.Length, deferredCount);
+        Assert.Equal(top.WithSystemNumber(startSuffix).Name, state.NextSystem);
+        Assert.Empty(state.DeferredSystems);
+        var range = Assert.Single(state.DeferredRanges);
+        Assert.Equal(top.Prefix, range.Prefix);
+        Assert.Equal(startSuffix, range.StartSystemNumber);
+        Assert.Equal(descending, range.SortDescending);
+        Assert.All(expectedDeferredSuffixes, suffix =>
+            Assert.True(state.IsSystemDeferred(top.Prefix, suffix)));
+        Assert.False(state.IsSystemDeferred(top.Prefix, startSuffix));
+
+        var restored = new BoxelSearchState(state.CreateSnapshot());
+
+        Assert.Equal(top.WithSystemNumber(startSuffix).Name, restored.NextSystem);
+        Assert.All(expectedDeferredSuffixes, suffix =>
+            Assert.True(restored.IsSystemDeferred(top.Prefix, suffix)));
+    }
+
+    [Fact]
+    public void StartAtSystemUsesCompactBoundaryAndAllowsOneDeferredSystemToReopen()
+    {
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var state = new BoxelSearchState(new BoxelSearchSnapshot
+        {
+            Active = true,
+            TopBoxel = top,
+            Current = top,
+            CurrentCount = 100_000,
+            LowMassCode = 'c',
+            ProgressByPrefix = new Dictionary<string, int>
+            {
+                [top.Prefix] = 100_000,
+            },
+        });
+
+        Assert.True(state.TryStartAtSystem(
+            top.WithSystemNumber(90_000).Name,
+            out var deferredCount,
+            out _));
+
+        Assert.Equal(90_000, deferredCount);
+        Assert.Empty(state.DeferredSystems);
+        var range = Assert.Single(state.CreateSnapshot().DeferredRanges);
+        Assert.Empty(range.Exceptions);
+        Assert.True(state.IsSystemDeferred(top.Prefix, 42_000));
+
+        Assert.True(state.TrySetSystemDeferred(
+            top.WithSystemNumber(42_000).Name,
+            false,
+            out _));
+
+        Assert.False(state.IsSystemDeferred(top.Prefix, 42_000));
+        Assert.Equal([42_000], Assert.Single(state.DeferredRanges).Exceptions);
+        Assert.Equal(top.WithSystemNumber(42_000).Name, state.NextSystem);
+    }
+
+    [Fact]
+    public void DeferredRangeWithUpdatedExceptionsRebuildsItsLookup()
+    {
+        var range = new BoxelDeferredRangeSnapshot
+        {
+            Prefix = "Praea Euq IL-P c5-",
+            StartSystemNumber = 5,
+            Exceptions = [1],
+        };
+
+        Assert.False(range.Contains(1));
+        Assert.True(range.Contains(2));
+
+        var updated = range with { Exceptions = [2] };
+
+        Assert.True(updated.Contains(1));
+        Assert.False(updated.Contains(2));
+        Assert.Equal([2], updated.Exceptions);
+    }
+
+    [Fact]
+    public void DeferredBoundaryValidatesActionsAndExcludesHandledSystems()
+    {
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var state = new BoxelSearchState(new BoxelSearchSnapshot
+        {
+            Active = true,
+            TopBoxel = top,
+            Current = top,
+            CurrentCount = 6,
+            LowMassCode = 'c',
+            CompletedSystems = [top.WithSystemNumber(0).GeneratedName],
+            EmptySystems = [top.WithSystemNumber(1).GeneratedName],
+            ProgressByPrefix = new Dictionary<string, int>
+            {
+                [top.Prefix] = 6,
+            },
+        });
+
+        Assert.False(state.TrySetSystemDeferred(
+            top.WithSystemNumber(8).Name,
+            true,
+            out var outsideError));
+        Assert.Contains("current boxel", outsideError, StringComparison.Ordinal);
+        Assert.False(state.TrySetSystemDeferred(
+            top.WithSystemNumber(0).Name,
+            true,
+            out var handledError));
+        Assert.Contains("already complete", handledError, StringComparison.Ordinal);
+        Assert.False(state.TryStartAtSystem(
+            top.WithSystemNumber(0).Name,
+            out _,
+            out handledError));
+        Assert.Contains("already complete", handledError, StringComparison.Ordinal);
+
+        Assert.True(state.TryStartAtSystem(
+            top.WithSystemNumber(4).Name,
+            out var deferredCount,
+            out _));
+
+        Assert.Equal(2, deferredCount);
+        Assert.Equal([0, 1], Assert.Single(state.DeferredRanges).Exceptions);
+        Assert.False(state.IsSystemDeferred(top.Prefix, -1));
+        Assert.False(state.IsSystemDeferred(top.Prefix, 0));
+        Assert.True(state.IsSystemDeferred(top.Prefix, 2));
+        Assert.False(state.TrySetSystemDeferred(
+            top.WithSystemNumber(2).Name,
+            true,
+            out var alreadyDeferredError));
+        Assert.Contains("already deferred", alreadyDeferredError, StringComparison.Ordinal);
+        Assert.True(state.TrySetSystemDeferred(
+            top.WithSystemNumber(2).Name,
+            false,
+            out _));
+        Assert.False(state.TrySetSystemDeferred(
+            top.WithSystemNumber(2).Name,
+            false,
+            out var notDeferredError));
+        Assert.Contains("not deferred", notDeferredError, StringComparison.Ordinal);
+        Assert.True(state.TrySetSystemDeferred(
+            top.WithSystemNumber(2).Name,
+            true,
+            out _));
+
+        Assert.True(state.TrySetSystemDeferred(
+            top.WithSystemNumber(5).Name,
+            true,
+            out _));
+        Assert.False(state.TrySetSystemDeferred(
+            top.WithSystemNumber(5).Name,
+            true,
+            out _));
+        Assert.True(state.TrySetSystemDeferred(
+            top.WithSystemNumber(5).Name,
+            false,
+            out _));
+
+        Assert.True(state.MergeSpanshSystems([
+            Observation(top.WithSystemNumber(3).Name)
+        ]));
+        Assert.True(state.TrySetSystemComplete(
+            top.WithSystemNumber(3).Name,
+            true,
+            out _));
+        Assert.False(state.IsSystemDeferred(top.Prefix, 3));
+        Assert.True(state.TrySetSystemComplete(
+            top.WithSystemNumber(3).Name,
+            false,
+            out _));
+        Assert.False(state.IsSystemDeferred(top.Prefix, 3));
+
+        Assert.False(state.TryStartAtSystem(
+            top.WithSystemNumber(0).Name,
+            out _,
+            out _));
+        Assert.True(state.MergeSpanshSystems([
+            Observation(top.WithSystemNumber(0).Name)
+        ]));
+        Assert.True(state.TrySetSystemComplete(
+            top.WithSystemNumber(0).Name,
+            false,
+            out _));
+        Assert.True(state.TryStartAtSystem(
+            top.WithSystemNumber(0).Name,
+            out var zeroDeferred,
+            out _));
+        Assert.Equal(0, zeroDeferred);
+        Assert.Empty(state.DeferredRanges);
+        Assert.True(state.TryStartAtSystem(
+            top.WithSystemNumber(2).Name,
+            out _,
+            out _));
+        Assert.True(state.TrySetSystemEmpty(
+            top.WithSystemNumber(1).Name,
+            false,
+            out _));
+        Assert.False(state.IsSystemDeferred(top.Prefix, 1));
+    }
+
+    [Fact]
+    public void RestoreNormalizesDeferredBoundariesAndExplicitSystems()
+    {
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var state = new BoxelSearchState(new BoxelSearchSnapshot
+        {
+            Active = true,
+            TopBoxel = top,
+            Current = top,
+            CurrentCount = 5,
+            DeferredSystems =
+            [
+                "not a system",
+                top.WithSystemNumber(1).GeneratedName,
+                top.WithSystemNumber(4).GeneratedName,
+            ],
+            DeferredRanges =
+            [
+                new BoxelDeferredRangeSnapshot
+                {
+                    Prefix = "not a prefix",
+                    StartSystemNumber = 2,
+                },
+                new BoxelDeferredRangeSnapshot
+                {
+                    Prefix = top.Prefix,
+                    StartSystemNumber = -1,
+                },
+                new BoxelDeferredRangeSnapshot
+                {
+                    Prefix = top.Prefix,
+                    StartSystemNumber = 3,
+                    Exceptions = [-1, 0, 0],
+                },
+            ],
+            ProgressByPrefix = new Dictionary<string, int>
+            {
+                [top.Prefix] = 5,
+            },
+        });
+
+        var range = Assert.Single(state.DeferredRanges);
+        Assert.Equal([0], range.Exceptions);
+        Assert.DoesNotContain(top.WithSystemNumber(1).GeneratedName, state.DeferredSystems);
+        Assert.Contains(top.WithSystemNumber(4).GeneratedName, state.DeferredSystems);
+        Assert.True(state.IsSystemDeferred(top.Prefix, 1));
+        Assert.True(state.IsSystemDeferred(top.Prefix, 4));
+    }
+
+    [Fact]
     public void FssModeWaitsForAllBodiesEvent()
     {
         var state = CreateActiveState(BoxelCompletionMode.FssAllBodies);
@@ -380,6 +711,39 @@ public sealed class BoxelSearchStateTests
         Assert.Equal(1, state.CompletedSystemCount);
         Assert.True(state.CurrentSystemsComplete);
         Assert.Contains("Praea Euq IL-P c5-", state.CreateSnapshot().CompletedPrefixes);
+    }
+
+    [Fact]
+    public void OlderSpanshBodiesRemainACompletionRuleInFssMode()
+    {
+        var state = new BoxelSearchState();
+        state.TryActivate(
+            new BoxelSearchActivationRequest
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = true,
+                CompletionMode = BoxelCompletionMode.FssAllBodies,
+                AutoCopy = false,
+            },
+            out _);
+
+        state.MergeSpanshSystems(
+        [
+            Observation(
+                "Praea Euq IL-P c5-0",
+                spansh: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                hasBodies: true),
+            Observation(
+                "Praea Euq IL-P c5-1",
+                spansh: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                hasBodies: false),
+        ]);
+
+        Assert.True(state.Systems.Single(system => system.Boxel.N2 == 0).IsComplete);
+        Assert.False(state.Systems.Single(system => system.Boxel.N2 == 1).IsComplete);
     }
 
     [Fact]

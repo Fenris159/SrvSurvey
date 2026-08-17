@@ -136,6 +136,12 @@ public sealed class BoxelViewMarkupTests
             boxelBindings);
         Assert.Contains("{Binding RowIndicator}", boxelBindings);
         Assert.Contains("ACTION", boxelBindings);
+        Assert.Contains("Show Only Deferred", boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.ShowOnlyDeferred, Mode=TwoWay}",
+            boxelBindings);
+        Assert.Contains(boxel.Descendants(), element =>
+            element.Name.LocalName == "BoxelSystemActionMenu");
         Assert.Contains(
             "{Binding BoxelSearch.PreviousSystemPageCommand}",
             boxelBindings);
@@ -166,9 +172,22 @@ public sealed class BoxelViewMarkupTests
         Assert.Equal(
             "TopEdgeAlignedRight",
             systemPageFlyout.Attribute("Placement")?.Value);
+        Assert.Equal(
+            "system-page-picker",
+            systemPageFlyout.Attribute("FlyoutPresenterClasses")?.Value);
+        var systemPagePickerButton = boxel.Descendants().Single(element =>
+            element.Attributes().Any(attribute =>
+                attribute.Name.LocalName == "Name"
+                && attribute.Value == "SystemPagePickerButton"));
+        Assert.Equal(
+            "{Binding BoxelSearch.SystemPagePickerWidth}",
+            systemPagePickerButton.Attribute("Width")?.Value);
         var systemPageList = systemPageFlyout.Descendants().Single(element =>
             element.Name.LocalName == "ListBox");
         Assert.Equal("362", systemPageList.Attribute("MaxHeight")?.Value);
+        Assert.Equal(
+            "{Binding BoxelSearch.SystemPagePickerWidth}",
+            systemPageList.Attribute("Width")?.Value);
         Assert.Equal(
             "SystemPageList_SelectionChanged",
             systemPageList.Attribute("SelectionChanged")?.Value);
@@ -221,9 +240,122 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains(
             "Treat systems whose Spansh body data predates the start date as complete",
             boxelBindings);
+        Assert.Contains(
+            "This is an explicit completion rule when Spansh has body records older than the search start date, even when full-FSS completion is required.",
+            boxelBindings);
+        Assert.Contains(
+            "Requires FSSAllBodiesFound for new local visits. Enabled earlier-visit and older-Spansh completion rules still apply.",
+            boxelBindings);
+        Assert.Equal(
+            2,
+            boxel.Descendants().Count(element =>
+                element.Name.LocalName == "Grid"
+                && element.Attribute("ColumnDefinitions")?.Value
+                    == "2.05*,0.75*,1.3*,1.3*,84,110"));
+        Assert.DoesNotContain(
+            boxel.Descendants(),
+            element => element.Attribute("ColumnDefinitions")?.Value
+                == "2.2*,0.8*,1.15*,1.15*,110,110");
         Assert.DoesNotContain(
             searchBindings,
             binding => binding.Contains("BoxelSearch", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void SystemActionMenuProvidesFourThemedRadialActions()
+    {
+        var menu = XDocument.Load(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "Controls",
+            "BoxelSystemActionMenu.axaml"));
+        var values = menu.Descendants()
+            .SelectMany(element => element.Attributes())
+            .Select(attribute => attribute.Value)
+            .ToArray();
+
+        Assert.Contains("{Binding CompleteCommand}", values);
+        Assert.Contains("{Binding ReopenCommand}", values);
+        Assert.Contains("{Binding DeferCommand}", values);
+        Assert.Contains("{Binding StartHereCommand}", values);
+        Assert.Contains("Complete", values);
+        Assert.Contains("Reopen", values);
+        Assert.Contains("Defer", values);
+        Assert.Contains("Start Here", values);
+        Assert.Contains("radial-menu-surface", values);
+        Assert.Contains("radial-slice slice-top-right", values);
+        Assert.Contains("radial-slice slice-bottom-right", values);
+        Assert.Contains("radial-slice slice-bottom-left", values);
+        Assert.Contains("radial-slice slice-top-left", values);
+        Assert.Contains("0:0:1", values);
+        Assert.Contains("0:0:1.5", values);
+        Assert.Contains(
+            "Button.radial-launcher.engaged Canvas.radial-glyph",
+            values);
+        Assert.Contains(
+            "Button.radial-launcher.engaged Path.slice-top-right",
+            values);
+        Assert.Contains(
+            "Button.radial-launcher.engaged Path.radial-slice",
+            values);
+        Assert.Contains(
+            "Button.radial-launcher.engaged Ellipse.radial-center",
+            values);
+        Assert.Contains("HorizontalContentAlignment", values);
+        Assert.Contains("VerticalContentAlignment", values);
+        Assert.Contains("option-chrome", values);
+        Assert.Contains("{DynamicResource RavenWarningInsetShadow}", values);
+        Assert.Contains("Transparent", values);
+        Assert.Contains("{DynamicResource RavenAccentBrush}", values);
+        Assert.Contains("{DynamicResource RavenAccentHoverBrush}", values);
+        Assert.Contains("{DynamicResource RavenWarningBrush}", values);
+        Assert.DoesNotContain("System actions", values);
+        var launcher = menu.Descendants().Single(element =>
+            element.Name.LocalName == "Button"
+            && element.Attributes().Any(attribute =>
+                attribute.Name.LocalName == "Name"
+                && attribute.Value == "Launcher"));
+        Assert.Equal("Menu_PointerEntered", launcher.Attribute("PointerEntered")?.Value);
+        Assert.Equal("Menu_PointerExited", launcher.Attribute("PointerExited")?.Value);
+        var launcherStyle = menu.Descendants().Single(element =>
+            element.Name.LocalName == "Style"
+            && element.Attribute("Selector")?.Value == "Button.radial-launcher");
+        Assert.Contains(launcherStyle.Elements(), element =>
+            element.Attribute("Property")?.Value == "BorderThickness"
+            && element.Attribute("Value")?.Value == "0");
+        Assert.Contains(launcherStyle.Elements(), element =>
+            element.Attribute("Property")?.Value == "Template");
+        var optionHoverStyle = menu.Descendants().Single(element =>
+            element.Name.LocalName == "Style"
+            && element.Attribute("Selector")?.Value == "Button.radial-option:pointerover");
+        Assert.Contains(optionHoverStyle.Elements(), element =>
+            element.Attribute("Property")?.Value == "Background"
+            && element.Attribute("Value")?.Value == "{DynamicResource RavenSurfaceBrush}");
+        Assert.Contains(optionHoverStyle.Elements(), element =>
+            element.Attribute("Property")?.Value == "BorderBrush"
+            && element.Attribute("Value")?.Value == "{DynamicResource RavenWarningBrush}");
+        Assert.Contains(optionHoverStyle.Elements(), element =>
+            element.Attribute("Property")?.Value == "BorderThickness"
+            && element.Attribute("Value")?.Value == "2");
+        var disabledOptionStyle = menu.Descendants().Single(element =>
+            element.Name.LocalName == "Style"
+            && element.Attribute("Selector")?.Value == "Button.radial-option:disabled");
+        Assert.Contains(disabledOptionStyle.Elements(), element =>
+            element.Attribute("Property")?.Value == "Opacity"
+            && element.Attribute("Value")?.Value == "1");
+        Assert.Contains(disabledOptionStyle.Elements(), element =>
+            element.Attribute("Property")?.Value == "Background"
+            && element.Attribute("Value")?.Value == "{DynamicResource RavenAccentMutedBrush}");
+        Assert.Contains(disabledOptionStyle.Elements(), element =>
+            element.Attribute("Property")?.Value == "BorderBrush"
+            && element.Attribute("Value")?.Value == "{DynamicResource RavenBorderBrush}");
+        Assert.Contains(disabledOptionStyle.Elements(), element =>
+            element.Attribute("Property")?.Value == "Cursor"
+            && element.Attribute("Value")?.Value == "Arrow");
+        Assert.DoesNotContain(menu.Descendants(), element =>
+            element.Name.LocalName == "Ellipse"
+            && element.Attribute("Stroke") is not null);
     }
 
     [Fact]
@@ -347,6 +479,7 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("{Binding !IsDialogVisible}", values);
         Assert.Contains("RenameTextBox", values);
         Assert.Contains("NotesTextBox", values);
+        Assert.Contains("{Binding IsDeleteConfirmationVisible}", values);
     }
 
     [Fact]

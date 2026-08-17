@@ -159,7 +159,6 @@ public sealed class BoxelCompletionAuditor
                         || request.SkipAlreadyVisited;
             }
             else if (source == AuditObservationSource.Spansh
-                && request.CompletionMode == BoxelCompletionMode.EnterSystem
                 && observation.HasKnownBodies
                 && request.SkipKnownToSpansh)
             {

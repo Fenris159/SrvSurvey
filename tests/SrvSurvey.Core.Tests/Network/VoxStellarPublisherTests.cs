@@ -144,11 +144,15 @@ public sealed class VoxStellarPublisherTests
 
         var disableStarted = new TaskCompletionSource(
             TaskCreationOptions.RunContinuationsAsynchronously);
-        var disableTask = Task.Run(() =>
-        {
-            disableStarted.TrySetResult();
-            publisher.SetEnabled(false);
-        });
+        var disableTask = Task.Factory.StartNew(
+            () =>
+            {
+                disableStarted.TrySetResult();
+                publisher.SetEnabled(false);
+            },
+            CancellationToken.None,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default);
         try
         {
             await disableStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));

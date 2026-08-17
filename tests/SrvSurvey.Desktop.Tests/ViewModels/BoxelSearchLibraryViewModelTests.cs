@@ -185,6 +185,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
 
         Assert.Contains(nameof(library.HasSearches), propertyChanges);
         Assert.Contains(nameof(library.SelectedSearch), propertyChanges);
+        Assert.Contains(nameof(library.IsDeleteConfirmationVisible), propertyChanges);
         Assert.Contains(nameof(library.IsDialogVisible), propertyChanges);
     }
 
