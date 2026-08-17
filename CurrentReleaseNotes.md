@@ -12,7 +12,7 @@ to active Boxel searches. The changes below are the delta from
 - Groups deferred systems after active systems while preserving suffix order in
   both ascending and descending searches. **Show Only Deferred** provides a
   focused view with correctly recalculated pagination.
-- Replaces the single row action with a themed radial menu for **Complete**,
+- Replaces the single-row action with a themed radial menu for **Complete**,
   **Reopen**, **Defer**, and **Start Here**.
 - Makes **Start Here** defer unfinished systems that precede the selected row in
   the active sort direction, then advances next-target selection and automatic

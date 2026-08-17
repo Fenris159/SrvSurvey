@@ -36016,7 +36016,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
-    "Text": "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+    "Text": "The systems table keeps active systems in the current sort direction and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

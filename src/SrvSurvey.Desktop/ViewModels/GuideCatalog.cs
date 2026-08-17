@@ -292,7 +292,7 @@ public static class GuideCatalog
                             "Use Mark Next Empty only when the Galaxy Map confirms that the next incomplete system does not exist. The marker is retained and the search skips to the following target.",
                         ],
                         [
-                            "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                            "The systems table keeps active systems in the current sort direction and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
                             "The top Current system is where the Commander actually is; it is not the first system in the sequence. Next incomplete system is the next work item calculated from saved completion state.",
                         ]),
                     Section(

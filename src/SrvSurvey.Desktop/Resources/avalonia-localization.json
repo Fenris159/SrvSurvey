@@ -17969,8 +17969,8 @@
                    "translation":  "Die Systemumfragepräferenz wurde für diese Sitzung geändert, konnte jedoch nicht gespeichert werden: {0}"
                },
                {
-                   "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
-                   "translation":  "Die Systemtabelle hält aktive Systeme in der Reihenfolge der numerischen Suffixe und gruppiert zurückgestellte Systeme zuletzt. Mit „Nur verzögert anzeigen“ wird die aktive Gruppe vorübergehend ausgeblendet."
+                   "source":  "The systems table keeps active systems in the current sort direction and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                   "translation":  "Die Systemtabelle behält aktive Systeme in der aktuellen Sortierrichtung bei und gruppiert zurückgestellte Systeme zuletzt. Mit „Nur verzögert anzeigen“ wird die aktive Gruppe vorübergehend ausgeblendet."
                },
                {
                    "source":  "The target changed for this session but could not be saved: {0}",
@@ -40179,8 +40179,8 @@
                    "translation":  "La preferencia de la encuesta del sistema cambió para esta sesión pero no se pudo guardar: {0}"
                },
                {
-                   "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
-                   "translation":  "La tabla de sistemas mantiene los sistemas activos en orden de sufijo numérico y agrupa los sistemas diferidos al final. Mostrar solo diferido oculta temporalmente el grupo activo."
+                   "source":  "The systems table keeps active systems in the current sort direction and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                   "translation":  "La tabla de sistemas mantiene los sistemas activos en la dirección de clasificación actual y agrupa los sistemas diferidos al final. Mostrar solo diferido oculta temporalmente el grupo activo."
                },
                {
                    "source":  "The target changed for this session but could not be saved: {0}",
@@ -62389,8 +62389,8 @@
                    "translation":  "La préférence d\u0027enquête système a été modifiée pour cette session mais n\u0027a pas pu être enregistrée : {0}"
                },
                {
-                   "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
-                   "translation":  "La table des systèmes conserve les systèmes actifs dans l\u0027ordre des suffixes numériques et regroupe les systèmes différés en dernier. Afficher uniquement les différés masque temporairement le groupe actif."
+                   "source":  "The systems table keeps active systems in the current sort direction and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                   "translation":  "La table des systèmes conserve les systèmes actifs dans le sens de tri actuel et regroupe les systèmes différés en dernier. Afficher uniquement les différés masque temporairement le groupe actif."
                },
                {
                    "source":  "The target changed for this session but could not be saved: {0}",
@@ -84599,8 +84599,8 @@
                       "translation":  "A preferência de pesquisa do sistema foi alterada para esta sessão, mas não pôde ser salva: {0}"
                   },
                   {
-                      "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
-                      "translation":  "A tabela de sistemas mantém os sistemas ativos em ordem de sufixos numéricos e agrupa os sistemas adiados por último. Mostrar apenas adiado oculta temporariamente o grupo ativo."
+                      "source":  "The systems table keeps active systems in the current sort direction and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                      "translation":  "A tabela de sistemas mantém os sistemas ativos na direção de classificação atual e agrupa os sistemas adiados por último. Mostrar apenas adiado oculta temporariamente o grupo ativo."
                   },
                   {
                       "source":  "The target changed for this session but could not be saved: {0}",
@@ -106809,8 +106809,8 @@
                    "translation":  "Настройки системного опроса изменились для этого сеанса, но не удалось сохранить: {0}"
                },
                {
-                   "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
-                   "translation":  "В таблице систем активные системы хранятся в порядке числовых суффиксов, а отложенные системы группируются последними. Параметр «Показать только отложенные» временно скрывает активную группу."
+                   "source":  "The systems table keeps active systems in the current sort direction and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                   "translation":  "В таблице систем активные системы сохраняются в текущем направлении сортировки, а отложенные системы группируются последними. Параметр «Показать только отложенные» временно скрывает активную группу."
                },
                {
                    "source":  "The target changed for this session but could not be saved: {0}",
@@ -129019,8 +129019,8 @@
                         "translation":  "此会话的系统调查首选项已更改，但无法保存：{0}"
                     },
                     {
-                        "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
-                        "translation":  "系统表按数字后缀顺序保留活动系统，并将延迟系统放在最后。 Show Only Deferred 暂时隐藏活动组。"
+                        "source":  "The systems table keeps active systems in the current sort direction and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                        "translation":  "系统表将活动系统保留在当前排序方向上，并将延迟系统分组在最后。 Show Only Deferred 暂时隐藏活动组。"
                     },
                     {
                         "source":  "The target changed for this session but could not be saved: {0}",
@@ -151229,8 +151229,8 @@
                    "translation":  "* THE SYSTEM-SURVEY PREFERENCE CHANGED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} \u003e\u003e\u003e!"
                },
                {
-                   "source":  "The systems table keeps active systems in numeric suffix order and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
-                   "translation":  "* THE SYSTEMS TABLE KEEPS ACTIVE SYSTEMS IN NUMERIC SUFFIX ORDER AND GROUPS DEFERRED SYSTEMS LAST. SHOW ONLY DEFERRED TEMPORARILY HIDES THE ACTIVE GROUP. \u003e\u003e\u003e!"
+                   "source":  "The systems table keeps active systems in the current sort direction and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
+                   "translation":  "* THE SYSTEMS TABLE KEEPS ACTIVE SYSTEMS IN THE CURRENT SORT DIRECTION AND GROUPS DEFERRED SYSTEMS LAST. SHOW ONLY DEFERRED TEMPORARILY HIDES THE ACTIVE GROUP. \u003e\u003e\u003e!"
                },
                {
                    "source":  "The target changed for this session but could not be saved: {0}",

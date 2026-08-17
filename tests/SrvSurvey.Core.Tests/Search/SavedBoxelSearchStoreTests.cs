@@ -25,6 +25,15 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
             CompletedSystems = ["Praea Euq IL-P c5-0"],
             EmptySystems = ["Praea Euq IL-P c5-2"],
             DeferredSystems = ["Praea Euq IL-P c5-1"],
+            DeferredRanges =
+            [
+                new BoxelDeferredRangeSnapshot
+                {
+                    Prefix = top.Prefix,
+                    StartSystemNumber = 1,
+                    Exceptions = [0],
+                },
+            ],
             ProgressByPrefix = new Dictionary<string, int>
             {
                 [top.Prefix] = 3,
@@ -56,7 +65,7 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
                 CompletedSystems =
                 [
                     "Praea Euq IL-P c5-0",
-                    "Praea Euq IL-P c5-1",
+                    "Praea Euq IL-P c5-3",
                 ],
             });
 
@@ -80,6 +89,10 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
         Assert.Equal(created.CreatedAt, loaded.CreatedAt);
         Assert.Equal(["Praea Euq IL-P c5-2"], loaded.Search.EmptySystems);
         Assert.Equal(["Praea Euq IL-P c5-1"], loaded.Search.DeferredSystems);
+        var deferredRange = Assert.Single(loaded.Search.DeferredRanges);
+        Assert.Equal(top.Prefix, deferredRange.Prefix);
+        Assert.Equal(1, deferredRange.StartSystemNumber);
+        Assert.Equal([0], deferredRange.Exceptions);
         Assert.Equal(created.FileName, loaded.Search.SavedSearchFileName);
         Assert.True(loaded.Search.SortDescending);
 
