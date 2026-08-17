@@ -79,6 +79,6 @@ public sealed record OverlayTypographySettings(
                 + $"{MinimumFontSize:0.#} to {MaximumFontSize:0.#}.");
         }
 
-        return fontSize;
+        return Normalize(fontSize);
     }
 }

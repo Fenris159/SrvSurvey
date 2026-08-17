@@ -13,10 +13,11 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     private const string CategoryColonisation = "Colonization";
     private const string CategoryHumanSettlements = "Human settlements";
     private const string CategoryGuardian = "Guardian";
+    private const string HeaderKey = "header";
 
     private static readonly IReadOnlyList<OverlayThemeColorDefinition> Definitions =
     [
-        new(CategoryGeneral, "header", "Header"),
+        new(CategoryGeneral, HeaderKey, "Header"),
         new(CategoryGeneral, "orange", "Primary accent"),
         new(CategoryGeneral, "orangeDark", "Primary accent (dim)"),
         new(CategoryGeneral, "cyan", "Secondary accent"),
@@ -174,7 +175,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     private static readonly IReadOnlyList<OverlayTypographyDefinition>
         TypographyDefinitions =
         [
-            new("header", "Header"),
+            new(HeaderKey, "Header"),
             new("title", "Title"),
             new("value", "Value"),
             new("body", "Body"),
@@ -594,7 +595,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     }
 
     private OverlayTypographySettings CreateTypographySettings() => new(
-        Header: GetTypographyEditor("header").FontSize,
+        Header: GetTypographyEditor(HeaderKey).FontSize,
         Title: GetTypographyEditor("title").FontSize,
         Value: GetTypographyEditor("value").FontSize,
         Body: GetTypographyEditor("body").FontSize,
@@ -611,7 +612,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         OverlayTypographySettings settings,
         string key) => key switch
         {
-            "header" => settings.Header,
+            HeaderKey => settings.Header,
             "title" => settings.Title,
             "value" => settings.Value,
             "body" => settings.Body,
@@ -726,6 +727,8 @@ public sealed record OverlayThemeCategoryViewModel(
 
 public sealed class OverlayTypographyEditorViewModel : INotifyPropertyChanged
 {
+    private const double FontSizeComparisonTolerance = 0.001;
+
     private readonly Action changed;
     private double acceptedFontSize;
     private double fontSize;
@@ -756,7 +759,7 @@ public sealed class OverlayTypographyEditorViewModel : INotifyPropertyChanged
         set
         {
             var normalized = OverlayTypographySettings.Normalize(value);
-            if (fontSize.Equals(normalized))
+            if (AreFontSizesEqual(fontSize, normalized))
             {
                 OnPropertyChanged();
                 return;
@@ -769,7 +772,9 @@ public sealed class OverlayTypographyEditorViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool IsDirty => forceDirty || !fontSize.Equals(acceptedFontSize);
+    public bool IsDirty => forceDirty || !AreFontSizesEqual(
+        fontSize,
+        acceptedFontSize);
 
     public void AcceptChanges()
     {
@@ -783,6 +788,9 @@ public sealed class OverlayTypographyEditorViewModel : INotifyPropertyChanged
         forceDirty = true;
         OnPropertyChanged(nameof(IsDirty));
     }
+
+    private static bool AreFontSizesEqual(double first, double second) =>
+        Math.Abs(first - second) < FontSizeComparisonTolerance;
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {

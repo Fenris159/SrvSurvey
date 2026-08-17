@@ -82,6 +82,19 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     }
 
     [Fact]
+    public void PersistedTypographyIsNormalizedToHalfPointIncrements()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "theme.json");
+        File.WriteAllText(path, "{\"typography\":{\"header\":10.26}}");
+
+        var theme = new LegacyOverlayThemeStore(path).Load();
+
+        Assert.Null(theme.Error);
+        Assert.Equal(10.5, theme.EffectiveTypography.Header);
+    }
+
+    [Fact]
     public void SaveRoundTripsCustomGuardianPrimary()
     {
         Directory.CreateDirectory(temporaryDirectory);
