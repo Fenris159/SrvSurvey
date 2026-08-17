@@ -22,6 +22,8 @@ public sealed class OverlayThemePresetCatalogTests
         var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
         Assert.True(defaults.All(entry =>
             OverlayThemePresetCatalog.Default.Colors[entry.Key] == entry.Value));
+        Assert.Equal(Color.Parse("#FFFF00"), defaults["header"]);
+        Assert.Equal(Color.Parse("#99AFBF"), defaults["grey"]);
         Assert.Equal(Color.Parse("#FF6F00"), defaults["bio.confirmed"]);
         Assert.Equal(Color.Parse("#552400"), defaults["bio.confirmedDim"]);
         Assert.Equal(
@@ -132,6 +134,7 @@ public sealed class OverlayThemePresetCatalogTests
         Assert.Equal(Color.Parse(secondary), preset.Colors["cyan"]);
         Assert.Equal(Color.Parse(text), preset.Colors["white"]);
         Assert.Equal(Color.Parse(values), preset.Colors["yellow"]);
+        Assert.Equal(Color.Parse(values), preset.Colors["header"]);
         Assert.Equal(Color.Parse(primary), preset.Colors["guardian.primary"]);
         Assert.Equal(Color.Parse(values), preset.Colors["colonise.highlight"]);
         Assert.Equal(Color.Parse(primary), preset.Colors["bio.confirmed"]);

@@ -14,6 +14,7 @@
     <SolidColorBrush x:Key="RavenSidebarBrush" Color="#01011C" />
     <SolidColorBrush x:Key="RavenSurfaceBrush" Color="#030325" />
     <SolidColorBrush x:Key="RavenRaisedSurfaceBrush" Color="#00324D" />
+    <SolidColorBrush x:Key="RavenHeaderBrush" Color="#F7C948" />
     <SolidColorBrush x:Key="RavenAccentBrush" Color="#3F87D4" />
     <SolidColorBrush x:Key="RavenAccentHoverBrush" Color="#5092D8" />
     <SolidColorBrush x:Key="RavenAccentMutedBrush" Color="#13293F" />
@@ -30,10 +31,11 @@
     <SolidColorBrush x:Key="RavenOverlayWindowBrush" Color="#000000" />
     <SolidColorBrush x:Key="RavenOverlaySurfaceBrush" Color="#000000" />
     <SolidColorBrush x:Key="RavenOverlayRaisedSurfaceBrush" Color="#000000" />
+    <SolidColorBrush x:Key="RavenOverlayHeaderBrush" Color="#FFFF00" />
     <SolidColorBrush x:Key="RavenOverlayAccentBrush" Color="#FF6F00" />
     <SolidColorBrush x:Key="RavenOverlayAccentMutedBrush" Color="#5F3003" />
     <SolidColorBrush x:Key="RavenOverlayTextBrush" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="RavenOverlayMutedTextBrush" Color="#646464" />
+    <SolidColorBrush x:Key="RavenOverlayMutedTextBrush" Color="#99AFBF" />
     <SolidColorBrush x:Key="RavenOverlayBorderBrush" Color="#008B8B" />
     <SolidColorBrush x:Key="RavenOverlayInformationBrush" Color="#54DFED" />
     <SolidColorBrush x:Key="RavenOverlaySuccessBrush" Color="#00FF00" />
@@ -107,6 +109,12 @@
     <SolidColorBrush x:Key="RavenOverlayGuardianSuccessBrush" Color="#00FF00" />
     <SolidColorBrush x:Key="RavenOverlayGuardianWarningBrush" Color="#FFFF00" />
     <SolidColorBrush x:Key="RavenOverlayGuardianSurfaceBrush" Color="#141414" />
+    <x:Double x:Key="RavenOverlayHeaderFontSize">10</x:Double>
+    <x:Double x:Key="RavenOverlayTitleFontSize">15</x:Double>
+    <x:Double x:Key="RavenOverlayValueFontSize">12</x:Double>
+    <x:Double x:Key="RavenOverlayBodyFontSize">11</x:Double>
+    <x:Double x:Key="RavenOverlayDetailFontSize">10</x:Double>
+    <x:Double x:Key="RavenOverlayCaptionFontSize">9</x:Double>
     <presentation:FrontierAssetImageConverter
         x:Key="FrontierAssetImageConverter" />
     <presentation:BundledAssetImageConverter

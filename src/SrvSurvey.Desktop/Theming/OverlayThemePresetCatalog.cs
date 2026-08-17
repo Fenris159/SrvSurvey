@@ -6,6 +6,7 @@ public static class OverlayThemePresetCatalog
 {
     public const string DefaultName = "Default";
 
+    private const string HeaderKey = "header";
     private const string OrangeKey = "orange";
     private const string OrangeDarkKey = "orangeDark";
     private const string CyanDarkKey = "cyanDark";
@@ -186,6 +187,20 @@ public static class OverlayThemePresetCatalog
         return changed;
     }
 
+    internal static bool AddMissingHeaderColor(Dictionary<string, Color> colors)
+    {
+        ArgumentNullException.ThrowIfNull(colors);
+        if (colors.ContainsKey(HeaderKey))
+        {
+            return false;
+        }
+
+        colors[HeaderKey] = colors.TryGetValue(YellowKey, out var existingValue)
+            ? existingValue
+            : LegacyOverlayThemeStore.CreateDefault().Colors[HeaderKey];
+        return true;
+    }
+
     private static OverlayThemePreset CreateExpandedPreset(
         string name,
         string headerPrimary,
@@ -251,6 +266,7 @@ public static class OverlayThemePresetCatalog
         Dictionary<string, Color> colors,
         ExpandedPalette palette)
     {
+        colors[HeaderKey] = palette.Value;
         colors[OrangeKey] = palette.Primary;
         colors[OrangeDarkKey] = palette.PrimaryDark;
         colors["cyan"] = palette.Secondary;

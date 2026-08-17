@@ -16,7 +16,7 @@
           CornerRadius="5">
     <StackPanel Spacing="5">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-        <TextBlock Classes="eyebrow"
+        <TextBlock Classes="overlay-header"
                    Text="FLEET CARRIER ROUTE" />
         <TextBlock Grid.Column="1"
                    Classes="eyebrow"

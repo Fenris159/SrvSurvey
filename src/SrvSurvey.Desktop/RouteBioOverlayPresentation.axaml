@@ -18,8 +18,7 @@
           RowDefinitions="Auto,Auto,Auto,Auto"
           RowSpacing="3">
       <StackPanel>
-        <TextBlock Classes="overlay-value"
-                   Foreground="{DynamicResource RavenWarningBrush}"
+        <TextBlock Classes="overlay-header"
                    Text="Route bodies" />
         <TextBlock Foreground="{DynamicResource RavenTextBrush}"
                    Classes="overlay-body"

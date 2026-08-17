@@ -21,7 +21,7 @@
             ColumnSpacing="6"
             RowSpacing="3"
             HorizontalAlignment="Left">
-        <TextBlock Classes="eyebrow" Text="BODY INFORMATION" />
+        <TextBlock Classes="overlay-header" Text="BODY INFORMATION" />
         <Border Grid.Column="1"
                 Classes="badge overlay-state-pill"
                 Padding="7,1"

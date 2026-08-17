@@ -16,8 +16,7 @@
           CornerRadius="5">
     <StackPanel Spacing="4">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-        <TextBlock FontSize="12"
-                   FontWeight="SemiBold"
+        <TextBlock Classes="overlay-header"
                    Text="Massacre missions" />
         <TextBlock Grid.Column="1"
                    Foreground="{DynamicResource RavenAccentBrush}"

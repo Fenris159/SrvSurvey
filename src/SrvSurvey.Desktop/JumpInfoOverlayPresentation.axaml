@@ -16,7 +16,7 @@
     <StackPanel Spacing="6">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="3">
-          <TextBlock Classes="eyebrow" Text="NEXT JUMP" />
+          <TextBlock Classes="overlay-header" Text="NEXT JUMP" />
           <TextBlock Classes="muted"
                      FontSize="11"
                      Text="Route and destination intelligence" />

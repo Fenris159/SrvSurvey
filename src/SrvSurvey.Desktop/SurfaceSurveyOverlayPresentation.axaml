@@ -17,7 +17,7 @@
     <Grid RowDefinitions="Auto,*,Auto" RowSpacing="5">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
         <StackPanel Spacing="2">
-          <TextBlock Classes="eyebrow" Text="SURFACE SURVEY" />
+          <TextBlock Classes="overlay-header" Text="SURFACE SURVEY" />
           <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                      FontSize="17"
                      FontWeight="SemiBold"

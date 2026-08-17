@@ -27,10 +27,47 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         Assert.Equal(Color.Parse("#B8E8FF"), GetColor(viewModel, "cyan"));
         Assert.Equal(Color.Parse("#D6EEF9"), GetColor(viewModel, "white"));
         Assert.Equal(Color.Parse("#FFE8A3"), GetColor(viewModel, "yellow"));
+        Assert.Equal(Color.Parse("#FFE8A3"), GetColor(viewModel, "header"));
         Assert.Equal(Color.Parse("#5EC8F2"), GetColor(viewModel, "guardian.primary"));
         Assert.True(viewModel.IsDirty);
         Assert.False(viewModel.CanDeleteSelectedState);
         Assert.Empty(viewModel.StateName);
+    }
+
+    [Fact]
+    public void GeneralHeaderEditorPrecedesPrimaryAccent()
+    {
+        var general = CreateViewModel().Categories.Single(
+            candidate => candidate.Name == "General");
+
+        Assert.Equal("header", general.Colors[0].Key);
+        Assert.Equal("Header", general.Colors[0].DisplayName);
+        Assert.Equal("orange", general.Colors[1].Key);
+    }
+
+    [Fact]
+    public void TypographyUsesExistingRoleSizesAndHalfPointSteps()
+    {
+        var viewModel = CreateViewModel();
+
+        Assert.Equal(
+            [
+                ("header", 10d),
+                ("title", 15d),
+                ("value", 12d),
+                ("body", 11d),
+                ("detail", 10d),
+                ("caption", 9d),
+            ],
+            viewModel.Typography.Select(editor =>
+                (editor.Key, editor.FontSize)));
+
+        var header = GetTypographyEditor(viewModel, "header");
+        header.FontSize = 10.26;
+
+        Assert.Equal(10.5, header.FontSize);
+        Assert.True(viewModel.IsDirty);
+        Assert.True(viewModel.CanApply);
     }
 
     [Fact]
@@ -90,6 +127,7 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         var viewModel = CreateViewModel();
         viewModel.SelectedSavedState = "Crimson Wake";
         GetEditor(viewModel, "orange").HexValue = "#010203";
+        GetTypographyEditor(viewModel, "header").FontSize = 20;
 
         viewModel.RestoreDefaultsCommand.Execute(null);
 
@@ -97,6 +135,9 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         Assert.Equal(OverlayThemePresetCatalog.DefaultName, viewModel.SelectedSavedState);
         Assert.All(defaults, entry =>
             Assert.Equal(entry.Value, GetColor(viewModel, entry.Key)));
+        Assert.Equal(
+            OverlayTypographySettings.Default.Header,
+            GetTypographyEditor(viewModel, "header").FontSize);
         Assert.Contains("'Default'", viewModel.StatusMessage);
     }
 
@@ -175,9 +216,16 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
             entry => entry.Value,
             StringComparer.Ordinal);
         customColors["orange"] = Color.Parse("#010203");
+        var customTypography = OverlayTypographySettings.Default with
+        {
+            Value = 13.5,
+        };
         var stateStore = new OverlayThemeStateStore(
             Path.Combine(temporaryDirectory, "states.json"));
-        _ = stateStore.SaveState("My custom theme", customColors);
+        _ = stateStore.SaveState(
+            "My custom theme",
+            customColors,
+            customTypography);
         var service = CreateThemeService(activeTheme);
         var viewModel = new OverlayThemeSettingsViewModel(
             activeStore,
@@ -192,6 +240,9 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         Assert.Equal(
             Color.Parse("#010203"),
             service.CurrentOverlayTheme.GetColor("orange"));
+        Assert.Equal(
+            customTypography,
+            service.CurrentOverlayTheme.EffectiveTypography);
         Assert.Contains("Refreshed all open overlays", viewModel.StatusMessage);
     }
 
@@ -217,8 +268,10 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         var primary = viewModel.Categories
             .SelectMany(category => category.Colors)
             .Single(color => color.Key == "orange");
+        var header = GetTypographyEditor(viewModel, "header");
 
         primary.HexValue = "#010203";
+        header.FontSize = 11.5;
         viewModel.PreviewCommand.Execute(null);
 
         Assert.True(viewModel.IsDirty);
@@ -226,6 +279,8 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         Assert.Equal(
             Color.Parse("#010203"),
             service.CurrentOverlayTheme.GetColor("orange"));
+        Assert.Equal(11.5, service.CurrentOverlayTheme.EffectiveTypography.Header);
+        Assert.Equal(11.5, application.Resources["RavenOverlayHeaderFontSize"]);
         Assert.Contains("unsaved colours", viewModel.StatusMessage);
 
         viewModel.ReloadActiveCommand.Execute(null);
@@ -233,6 +288,9 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         Assert.False(viewModel.IsDirty);
         Assert.Equal(activeTheme.GetColor("orange"),
             service.CurrentOverlayTheme.GetColor("orange"));
+        Assert.Equal(
+            activeTheme.EffectiveTypography,
+            service.CurrentOverlayTheme.EffectiveTypography);
     }
 
     public void Dispose()
@@ -279,4 +337,8 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     {
         return GetEditor(viewModel, key).Color;
     }
+
+    private static OverlayTypographyEditorViewModel GetTypographyEditor(
+        OverlayThemeSettingsViewModel viewModel,
+        string key) => viewModel.Typography.Single(editor => editor.Key == key);
 }

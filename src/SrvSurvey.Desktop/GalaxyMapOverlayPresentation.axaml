@@ -17,7 +17,7 @@
     <StackPanel Spacing="6">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="3">
-          <TextBlock Classes="eyebrow" Text="GALAXY MAP" />
+          <TextBlock Classes="overlay-header" Text="GALAXY MAP" />
           <TextBlock Classes="muted overlay-detail"
                      Text="Selected system and route intelligence" />
         </StackPanel>

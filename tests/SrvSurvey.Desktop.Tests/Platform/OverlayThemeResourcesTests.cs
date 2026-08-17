@@ -110,6 +110,7 @@ public sealed class OverlayThemeResourcesTests
     public void EveryOverlayUsesBundledRoleBasedTypography()
     {
         var primary = new TextBlock { Text = "Primary" };
+        var header = new TextBlock { Text = "Header", Classes = { "overlay-header" } };
         var eyebrow = new TextBlock { Text = "Eyebrow", Classes = { "eyebrow" } };
         var muted = new TextBlock { Text = "Muted", Classes = { "muted" } };
         var value = new TextBlock
@@ -149,6 +150,7 @@ public sealed class OverlayThemeResourcesTests
                 Children =
                 {
                     primary,
+                    header,
                     eyebrow,
                     muted,
                     value,
@@ -166,6 +168,8 @@ public sealed class OverlayThemeResourcesTests
 
         Assert.Contains("Oxanium", window.FontFamily.Name);
         Assert.Contains("Oxanium", primary.FontFamily.Name);
+        Assert.Contains("Rajdhani", header.FontFamily.Name);
+        Assert.Equal(10, header.FontSize);
         Assert.Contains("Oxanium", guardianPrimary.FontFamily.Name);
         Assert.Contains("Rajdhani", eyebrow.FontFamily.Name);
         Assert.Contains("Rajdhani", muted.FontFamily.Name);

@@ -17,7 +17,7 @@
     <StackPanel Spacing="5">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="3">
-          <TextBlock Classes="eyebrow" Text="FSS SURVEY" />
+          <TextBlock Classes="overlay-header" Text="FSS SURVEY" />
           <TextBlock Classes="overlay-title"
                      Foreground="{DynamicResource RavenAccentBrush}"
                      Text="{Binding Survey.SystemTitle}"

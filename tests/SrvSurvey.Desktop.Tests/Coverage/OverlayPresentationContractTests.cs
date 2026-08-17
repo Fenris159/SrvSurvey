@@ -5,6 +5,26 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 
 public sealed class OverlayPresentationContractTests
 {
+    private static readonly IReadOnlyDictionary<string, string> FixedHeaders =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["BodyInformationOverlayPresentation.axaml"] = "BODY INFORMATION",
+            ["FleetCarrierRouteOverlayPresentation.axaml"] = "FLEET CARRIER ROUTE",
+            ["FlightWarningOverlayPresentation.axaml"] = "FLIGHT WARNING",
+            ["FssInfoOverlayPresentation.axaml"] = "FSS SURVEY",
+            ["GalaxyMapOverlayPresentation.axaml"] = "GALAXY MAP",
+            ["GroundTargetOverlayPresentation.axaml"] = "SURFACE TARGET",
+            ["HumanSiteOverlayPresentation.axaml"] = "HUMAN SETTLEMENT",
+            ["JumpInfoOverlayPresentation.axaml"] = "NEXT JUMP",
+            ["LastFssBodyOverlayPresentation.axaml"] = "LAST FSS SCAN",
+            ["MassacreMissionsOverlayPresentation.axaml"] = "Massacre missions",
+            ["PriorScansOverlayPresentation.axaml"] = "CANONN PRIOR SCANS",
+            ["RouteBioOverlayPresentation.axaml"] = "Route bodies",
+            ["SphericalSearchOverlayPresentation.axaml"] = "Search guidance",
+            ["StationInfoOverlayPresentation.axaml"] = "STATION INFORMATION",
+            ["SurfaceSurveyOverlayPresentation.axaml"] = "SURFACE SURVEY",
+        };
+
     private static readonly PresentationContract[] Contracts =
     [
         Contract("PlotBase", [
@@ -991,7 +1011,29 @@ public sealed class OverlayPresentationContractTests
         IReadOnlyList<string> requiredTokens) => new(
             contractName,
             productionFiles,
-            requiredTokens);
+        requiredTokens);
+
+    [Fact]
+    public void FixedNonGuardianHeadersUseTheSharedHeaderRole()
+    {
+        var desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
+
+        foreach (var expected in FixedHeaders)
+        {
+            var document = XDocument.Load(Path.Combine(desktop, expected.Key));
+            var header = document.Descendants()
+                .Single(element =>
+                    element.Name.LocalName == "TextBlock"
+                    && string.Equals(
+                        element.Attribute("Text")?.Value,
+                        expected.Value,
+                        StringComparison.Ordinal));
+
+            Assert.Equal("overlay-header", header.Attribute("Classes")?.Value);
+            Assert.Null(header.Attribute("Foreground"));
+            Assert.Null(header.Attribute("FontSize"));
+        }
+    }
 
     private static string FindRepositoryRoot()
     {

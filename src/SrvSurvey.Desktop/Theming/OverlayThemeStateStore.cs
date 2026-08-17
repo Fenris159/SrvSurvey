@@ -34,7 +34,8 @@ public sealed class OverlayThemeStateStore
 
     public OverlayThemeStateSaveResult SaveState(
         string name,
-        IReadOnlyDictionary<string, Color> colors)
+        IReadOnlyDictionary<string, Color> colors,
+        OverlayTypographySettings? typography = null)
     {
         ArgumentNullException.ThrowIfNull(colors);
         var normalizedName = NormalizeName(name);
@@ -53,7 +54,8 @@ public sealed class OverlayThemeStateStore
                 StringComparison.OrdinalIgnoreCase));
             var updated = new OverlayThemeState(
                 normalizedName,
-                new Dictionary<string, Color>(colors, StringComparer.Ordinal));
+                new Dictionary<string, Color>(colors, StringComparer.Ordinal),
+                typography ?? OverlayTypographySettings.Default);
             if (existingIndex >= 0)
             {
                 states[existingIndex] = updated;
@@ -156,9 +158,13 @@ public sealed class OverlayThemeStateStore
                     colors.Add(entry.Key, color);
                 }
 
+                _ = OverlayThemePresetCatalog.AddMissingHeaderColor(colors);
                 _ = OverlayThemePresetCatalog.AddMissingExpandedBiologyColors(colors);
                 ValidateColors(name, colors);
-                states.Add(new OverlayThemeState(name, colors));
+                var typography = OverlayTypographySettings.Parse(
+                    state["typography"] as JsonObject,
+                    $"Overlay theme state '{name}'");
+                states.Add(new OverlayThemeState(name, colors, typography));
             }
 
             return new OverlayThemeStateCollection(
@@ -210,6 +216,7 @@ public sealed class OverlayThemeStateStore
                 {
                     ["name"] = state.Name,
                     ["colors"] = colors,
+                    ["typography"] = state.EffectiveTypography.ToJson(),
                 });
             }
 
@@ -317,6 +324,8 @@ public sealed class OverlayThemeStateStore
                 StringComparison.Ordinal));
             return actualState is not null
                 && expectedState.Colors.Count == actualState.Colors.Count
+                && expectedState.EffectiveTypography
+                    == actualState.EffectiveTypography
                 && expectedState.Colors.All(entry =>
                     actualState.Colors.TryGetValue(entry.Key, out var color)
                     && color == entry.Value);
@@ -326,7 +335,12 @@ public sealed class OverlayThemeStateStore
 
 public sealed record OverlayThemeState(
     string Name,
-    IReadOnlyDictionary<string, Color> Colors);
+    IReadOnlyDictionary<string, Color> Colors,
+    OverlayTypographySettings? Typography = null)
+{
+    public OverlayTypographySettings EffectiveTypography =>
+        Typography ?? OverlayTypographySettings.Default;
+}
 
 public sealed record OverlayThemeStateCollection(
     IReadOnlyList<OverlayThemeState> States,

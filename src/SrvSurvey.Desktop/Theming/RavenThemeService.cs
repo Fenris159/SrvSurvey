@@ -12,6 +12,7 @@ public sealed class RavenThemeService
             ["RavenOverlayWindowBrush"] = "black",
             ["RavenOverlaySurfaceBrush"] = "black",
             ["RavenOverlayRaisedSurfaceBrush"] = "black",
+            ["RavenOverlayHeaderBrush"] = "header",
             ["RavenOverlayAccentBrush"] = "orange",
             ["RavenOverlayAccentMutedBrush"] = "orangeDark",
             ["RavenOverlayTextBrush"] = "white",
@@ -188,6 +189,14 @@ public sealed class RavenThemeService
         {
             SetBrush(mapping.Key, theme.GetColor(mapping.Value));
         }
+
+        var typography = theme.EffectiveTypography;
+        application.Resources["RavenOverlayHeaderFontSize"] = typography.Header;
+        application.Resources["RavenOverlayTitleFontSize"] = typography.Title;
+        application.Resources["RavenOverlayValueFontSize"] = typography.Value;
+        application.Resources["RavenOverlayBodyFontSize"] = typography.Body;
+        application.Resources["RavenOverlayDetailFontSize"] = typography.Detail;
+        application.Resources["RavenOverlayCaptionFontSize"] = typography.Caption;
 
         foreach (var themeKey in BiologyEdgeKeys)
         {
