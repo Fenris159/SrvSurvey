@@ -6,6 +6,17 @@ namespace SrvSurvey.Core.Tests.Search;
 public sealed class BoxelSearchStateTests
 {
     [Fact]
+    public void EmptyStateDefaultsSearchStartToCurrentLocalDate()
+    {
+        var before = new DateTimeOffset(DateTime.Today);
+
+        var state = new BoxelSearchState();
+
+        var after = new DateTimeOffset(DateTime.Today);
+        Assert.True(state.StartedOn == before || state.StartedOn == after);
+    }
+
+    [Fact]
     public void ActivationUsesEnteredSystemSuffixAsInitialExpectedCount()
     {
         var state = new BoxelSearchState();
@@ -680,6 +691,39 @@ public sealed class BoxelSearchStateTests
         Assert.Equal(1, state.CompletedSystemCount);
         Assert.True(state.CurrentSystemsComplete);
         Assert.Contains("Praea Euq IL-P c5-", state.CreateSnapshot().CompletedPrefixes);
+    }
+
+    [Fact]
+    public void OlderSpanshBodiesRemainACompletionRuleInFssMode()
+    {
+        var state = new BoxelSearchState();
+        state.TryActivate(
+            new BoxelSearchActivationRequest
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
+                LowMassCode = 'c',
+                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                SkipAlreadyVisited = false,
+                SkipKnownToSpansh = true,
+                CompletionMode = BoxelCompletionMode.FssAllBodies,
+                AutoCopy = false,
+            },
+            out _);
+
+        state.MergeSpanshSystems(
+        [
+            Observation(
+                "Praea Euq IL-P c5-0",
+                spansh: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                hasBodies: true),
+            Observation(
+                "Praea Euq IL-P c5-1",
+                spansh: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                hasBodies: false),
+        ]);
+
+        Assert.True(state.Systems.Single(system => system.Boxel.N2 == 0).IsComplete);
+        Assert.False(state.Systems.Single(system => system.Boxel.N2 == 1).IsComplete);
     }
 
     [Fact]

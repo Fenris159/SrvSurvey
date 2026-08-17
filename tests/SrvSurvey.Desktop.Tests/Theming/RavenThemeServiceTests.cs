@@ -31,6 +31,15 @@ public sealed class RavenThemeServiceTests : IDisposable
             var accent = Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenAccentBrush"]);
             Assert.Equal(Color.Parse(theme.AccentColor), accent.Color);
+            var warning = Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenWarningBrush"]);
+            var warningShadow = Assert.IsType<BoxShadows>(
+                application.Resources["RavenWarningInsetShadow"]);
+            Assert.Equal(1, warningShadow.Count);
+            Assert.True(warningShadow[0].IsInset);
+            Assert.Equal(
+                Color.FromArgb(153, warning.Color.R, warning.Color.G, warning.Color.B),
+                warningShadow[0].Color);
         }
 
         Assert.Equal("green-dark", store.LoadThemeKey());

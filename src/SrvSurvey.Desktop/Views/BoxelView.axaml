@@ -272,9 +272,11 @@
             <CheckBox IsChecked="{Binding BoxelSearch.SkipAlreadyVisited, Mode=TwoWay}"
                       Content="Treat systems visited before the start date as complete" />
             <CheckBox IsChecked="{Binding BoxelSearch.SkipKnownToSpansh, Mode=TwoWay}"
-                      Content="Treat systems whose Spansh body data predates the start date as complete" />
+                      Content="Treat systems whose Spansh body data predates the start date as complete"
+                      ToolTip.Tip="This is an explicit completion rule when Spansh has body records older than the search start date, even when full-FSS completion is required." />
             <CheckBox IsChecked="{Binding BoxelSearch.CompleteOnFssAllBodies, Mode=TwoWay}"
-                      Content="Require FSS to report all bodies before completion" />
+                      Content="Require FSS to report all bodies before completion"
+                      ToolTip.Tip="Requires FSSAllBodiesFound for new local visits. Enabled earlier-visit and older-Spansh completion rules still apply." />
             <CheckBox IsChecked="{Binding BoxelSearch.SortDescending, Mode=TwoWay}"
                       Content="Sort (descending) for working results backwards." />
             <WrapPanel Orientation="Horizontal">
@@ -578,7 +580,7 @@
           <Border Background="{DynamicResource RavenSurfaceBrush}"
                   CornerRadius="8"
                   Padding="12,8">
-            <Grid ColumnDefinitions="2.2*,0.8*,1.15*,1.15*,110,110"
+            <Grid ColumnDefinitions="2.05*,0.75*,1.3*,1.3*,84,110"
                   ColumnSpacing="12">
               <TextBlock Classes="muted" Text="SYSTEM" />
               <TextBlock Grid.Column="1" Classes="muted" Text="DISTANCE" />
@@ -605,7 +607,7 @@
                             Background="{DynamicResource RavenSuccessBrush}"
                             IsVisible="{Binding ShowCurrentNextHighlight}"
                             Opacity="0.8" />
-                    <Grid ColumnDefinitions="2.2*,0.8*,1.15*,1.15*,110,110"
+                    <Grid ColumnDefinitions="2.05*,0.75*,1.3*,1.3*,84,110"
                           ColumnSpacing="12"
                           Margin="12,10">
                       <StackPanel Spacing="2">
@@ -668,12 +670,13 @@
             <Button x:Name="SystemPagePickerButton"
                     Grid.Column="4"
                     Classes="secondary"
-                    MinWidth="{Binding BoxelSearch.SystemPagePickerWidth}"
+                    Width="{Binding BoxelSearch.SystemPagePickerWidth}"
                     Content="Select page">
               <Button.Flyout>
-                <Flyout Placement="TopEdgeAlignedRight">
+                <Flyout FlyoutPresenterClasses="system-page-picker"
+                        Placement="TopEdgeAlignedRight">
                   <ListBox Classes="system-pages"
-                           MinWidth="{Binding BoxelSearch.SystemPagePickerWidth}"
+                           Width="{Binding BoxelSearch.SystemPagePickerWidth}"
                            MaxHeight="362"
                            ItemsSource="{Binding BoxelSearch.SystemPageNumbers}"
                            SelectedIndex="{Binding BoxelSearch.SelectedSystemPageIndex, Mode=TwoWay}"

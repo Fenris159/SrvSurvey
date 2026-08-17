@@ -87,6 +87,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private int currentDeferredSystemCount;
     private int systemPageIndex;
     private string? systemPagePrefix;
+    private string? systemPageTarget;
+    private int? systemPageTargetIndex;
     private bool showNextSystemPageOnUpdate;
     private string auditDescription = "Activate a boxel search to audit its full area.";
     private string auditProgress = "No full-area audit has run in this session.";
@@ -357,7 +359,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             }
 
             systemPageIndex = 0;
-            showNextSystemPageOnUpdate = false;
+            showNextSystemPageOnUpdate = !value;
             UpdateSystemRows();
         }
     }
@@ -2068,10 +2070,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private void UpdateSystemRows()
     {
-        if (state.Current is null || state.CurrentIsEmpty)
+        if (!state.IsActive || state.Current is null || state.CurrentIsEmpty)
         {
             systemPageIndex = 0;
-            systemPagePrefix = state.Current?.Prefix;
+            systemPagePrefix = state.IsActive ? state.Current?.Prefix : null;
+            systemPageTarget = null;
+            systemPageTargetIndex = null;
             showNextSystemPageOnUpdate = false;
             orderedSystemNumbers = [];
             systemNumberPositions = new Dictionary<int, int>();
@@ -2094,16 +2098,26 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 .Select((number, position) => (number, position))
                 .ToDictionary(entry => entry.number, entry => entry.position);
         var rowCount = orderedSystemNumbers.Length;
-        if (!string.Equals(
+        var nextSystemPageIndex = GetNextSystemPageIndex();
+        var nextSystemLocationChanged = !string.Equals(
+                systemPageTarget,
+                state.NextSystem,
+                StringComparison.Ordinal)
+            || systemPageTargetIndex != nextSystemPageIndex;
+        if (!ShowOnlyDeferred
+            && (!string.Equals(
                 systemPagePrefix,
                 state.Current.Prefix,
                 StringComparison.Ordinal)
-            || showNextSystemPageOnUpdate)
+                || showNextSystemPageOnUpdate
+                || nextSystemLocationChanged))
         {
-            systemPageIndex = GetNextSystemPageIndex();
+            systemPageIndex = nextSystemPageIndex;
         }
 
         systemPagePrefix = state.Current.Prefix;
+        systemPageTarget = state.NextSystem;
+        systemPageTargetIndex = nextSystemPageIndex;
         showNextSystemPageOnUpdate = false;
         var pageCount = Math.Max(1, (rowCount + SystemsPerPage - 1) / SystemsPerPage);
         systemPageIndex = Math.Clamp(systemPageIndex, 0, pageCount - 1);

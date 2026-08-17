@@ -235,11 +235,9 @@ public sealed class BoxelSearchState
 
     private static DateTimeOffset NormalizeStartedOn(BoxelSearchSnapshot seed)
     {
-        return seed.Active
-            && seed.TopBoxel is not null
-            && seed.StartedOn == DateTimeOffset.MinValue
-                ? new DateTimeOffset(DateTime.Today)
-                : seed.StartedOn;
+        return seed.StartedOn == DateTimeOffset.MinValue
+            ? new DateTimeOffset(DateTime.Today)
+            : seed.StartedOn;
     }
 
     private void RestoreProgress(BoxelSearchSnapshot seed)
@@ -909,7 +907,6 @@ public sealed class BoxelSearchState
         }
 
         return isComplete || (source == BoxelObservationSource.Spansh
-            && CompletionMode == BoxelCompletionMode.EnterSystem
             && observation.HasKnownBodies
             && SkipKnownToSpansh
             && observation.SpanshUpdatedAt < StartedOn);

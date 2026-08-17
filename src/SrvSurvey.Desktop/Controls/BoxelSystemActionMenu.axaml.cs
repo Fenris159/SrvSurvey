@@ -7,7 +7,15 @@ namespace SrvSurvey.Desktop.Controls;
 
 public sealed partial class BoxelSystemActionMenu : UserControl
 {
+    internal const int RevealDelayMilliseconds = 1_500;
+    private const int RevealAnimationDelayMilliseconds = 50;
     private readonly DispatcherTimer closeTimer;
+    private readonly DispatcherTimer revealAnimationTimer;
+    private readonly DispatcherTimer revealTimer;
+    private bool explicitOpenRequested;
+    private bool revealPending;
+
+    internal bool IsRevealPending => revealPending;
 
     public BoxelSystemActionMenu()
     {
@@ -17,31 +25,43 @@ public sealed partial class BoxelSystemActionMenu : UserControl
             Interval = TimeSpan.FromMilliseconds(350)
         };
         closeTimer.Tick += CloseTimer_Tick;
+        revealTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(RevealDelayMilliseconds)
+        };
+        revealTimer.Tick += RevealTimer_Tick;
+        revealAnimationTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(RevealAnimationDelayMilliseconds)
+        };
+        revealAnimationTimer.Tick += RevealAnimationTimer_Tick;
         DetachedFromVisualTree += (_, _) => CloseMenu();
     }
 
     private void Menu_PointerEntered(object? sender, PointerEventArgs eventArgs)
     {
         closeTimer.Stop();
-        OpenMenu();
+        if (sender == Launcher)
+        {
+            BeginOpenIntent(explicitRequest: false);
+        }
     }
 
     private void Menu_PointerExited(object? sender, PointerEventArgs eventArgs)
     {
         closeTimer.Stop();
+        if (sender == Launcher && !MenuPopup.IsOpen)
+        {
+            CancelOpenIntent();
+            return;
+        }
+
         closeTimer.Start();
     }
 
     private void Launcher_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        if (MenuPopup.IsOpen)
-        {
-            CloseMenu();
-        }
-        else
-        {
-            OpenMenu();
-        }
+        BeginOpenIntent(explicitRequest: true);
     }
 
     private void Launcher_KeyDown(object? sender, KeyEventArgs eventArgs)
@@ -64,39 +84,103 @@ public sealed partial class BoxelSystemActionMenu : UserControl
     {
         closeTimer.Stop();
         if (!Launcher.IsPointerOver
-            && !MenuSurface.IsPointerOver
-            && !MenuSurface.IsKeyboardFocusWithin)
+            && !MenuHitSurface.IsPointerOver
+            && !MenuHitSurface.IsKeyboardFocusWithin)
         {
             CloseMenu();
         }
     }
 
-    private void OpenMenu()
+    private void RevealTimer_Tick(object? sender, EventArgs eventArgs)
+    {
+        TryRevealMenu(Launcher.IsPointerOver);
+    }
+
+    private void RevealAnimationTimer_Tick(object? sender, EventArgs eventArgs)
+    {
+        AdvanceCommittedReveal();
+    }
+
+    internal void AdvanceCommittedReveal()
+    {
+        revealAnimationTimer.Stop();
+        if (MenuPopup.IsOpen
+            && MenuSurface.IsVisible
+            && !MenuSurface.Classes.Contains("open"))
+        {
+            MenuSurface.Classes.Add("open");
+        }
+    }
+
+    internal void BeginOpenIntent(bool explicitRequest)
     {
         closeTimer.Stop();
-        if (!MenuPopup.IsOpen)
+        explicitOpenRequested |= explicitRequest;
+        if (!Launcher.Classes.Contains("engaged"))
         {
-            MenuPopup.IsOpen = true;
+            Launcher.Classes.Add("engaged");
         }
 
-        if (!Launcher.Classes.Contains("open"))
+        if (MenuPopup.IsOpen || revealPending)
         {
-            Launcher.Classes.Add("open");
+            return;
         }
-        Dispatcher.UIThread.Post(() =>
+
+        revealPending = true;
+        MenuSurface.Classes.Remove("open");
+        MenuSurface.IsVisible = false;
+        revealTimer.Stop();
+        revealTimer.Start();
+    }
+
+    internal void CancelOpenIntent()
+    {
+        if (!MenuPopup.IsOpen)
         {
-            if (MenuPopup.IsOpen && !MenuSurface.Classes.Contains("open"))
-            {
-                MenuSurface.Classes.Add("open");
-            }
-        });
+            CloseMenu();
+        }
+    }
+
+    internal bool TryRevealMenu(bool launcherIsPointerOver)
+    {
+        revealTimer.Stop();
+        if (!revealPending)
+        {
+            return false;
+        }
+
+        revealPending = false;
+        if (!launcherIsPointerOver && !explicitOpenRequested)
+        {
+            CloseMenu();
+            return false;
+        }
+
+        explicitOpenRequested = false;
+        if (!Launcher.Classes.Contains("engaged"))
+        {
+            CloseMenu();
+            return false;
+        }
+
+        MenuSurface.Classes.Remove("open");
+        MenuSurface.IsVisible = true;
+        MenuPopup.IsOpen = true;
+        revealAnimationTimer.Stop();
+        revealAnimationTimer.Start();
+        return true;
     }
 
     private void CloseMenu()
     {
         closeTimer.Stop();
-        Launcher.Classes.Remove("open");
+        revealAnimationTimer.Stop();
+        revealTimer.Stop();
+        explicitOpenRequested = false;
+        revealPending = false;
+        Launcher.Classes.Remove("engaged");
         MenuSurface.Classes.Remove("open");
+        MenuSurface.IsVisible = false;
         MenuPopup.IsOpen = false;
     }
 }

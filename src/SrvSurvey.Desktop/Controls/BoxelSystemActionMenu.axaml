@@ -9,16 +9,32 @@
     <Style Selector="Button.radial-launcher">
       <Setter Property="Width" Value="46" />
       <Setter Property="Height" Value="46" />
-      <Setter Property="Padding" Value="7" />
-      <Setter Property="CornerRadius" Value="23" />
-      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
-      <Setter Property="BorderThickness" Value="1.5" />
+      <Setter Property="Padding" Value="4" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
       <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="Transparent"
+                  BorderBrush="Transparent"
+                  BorderThickness="0">
+            <ContentPresenter Background="Transparent"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              Opacity="1"
+                              Padding="{TemplateBinding Padding}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
     </Style>
     <Style Selector="Button.radial-launcher:pointerover">
-      <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentHoverBrush}" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
     </Style>
     <Style Selector="Canvas.radial-glyph">
       <Setter Property="RenderTransform">
@@ -27,7 +43,7 @@
       <Setter Property="Transitions">
         <Transitions>
           <TransformOperationsTransition Property="RenderTransform"
-                                         Duration="0:0:0.24">
+                                         Duration="0:0:1">
             <TransformOperationsTransition.Easing>
               <CubicEaseOut />
             </TransformOperationsTransition.Easing>
@@ -35,10 +51,54 @@
         </Transitions>
       </Setter>
     </Style>
-    <Style Selector="Button.radial-launcher:pointerover Canvas.radial-glyph,
-                     Button.radial-launcher.open Canvas.radial-glyph">
+    <Style Selector="Button.radial-launcher.engaged Canvas.radial-glyph">
       <Setter Property="RenderTransform">
         <RotateTransform Angle="45" />
+      </Setter>
+    </Style>
+    <Style Selector="Path.radial-slice">
+      <Setter Property="Stroke" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="RenderTransform">
+        <TranslateTransform X="0" Y="0" />
+      </Setter>
+      <Setter Property="Transitions">
+        <Transitions>
+          <TransformOperationsTransition Property="RenderTransform"
+                                         Duration="0:0:1.5">
+            <TransformOperationsTransition.Easing>
+              <CubicEaseOut />
+            </TransformOperationsTransition.Easing>
+          </TransformOperationsTransition>
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Ellipse.radial-center">
+      <Setter Property="Fill" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="Button.radial-launcher.engaged Path.radial-slice">
+      <Setter Property="Stroke" Value="{DynamicResource RavenAccentHoverBrush}" />
+    </Style>
+    <Style Selector="Button.radial-launcher.engaged Ellipse.radial-center">
+      <Setter Property="Fill" Value="{DynamicResource RavenAccentHoverBrush}" />
+    </Style>
+    <Style Selector="Button.radial-launcher.engaged Path.slice-top-right">
+      <Setter Property="RenderTransform">
+        <TranslateTransform X="5" Y="-5" />
+      </Setter>
+    </Style>
+    <Style Selector="Button.radial-launcher.engaged Path.slice-bottom-right">
+      <Setter Property="RenderTransform">
+        <TranslateTransform X="5" Y="5" />
+      </Setter>
+    </Style>
+    <Style Selector="Button.radial-launcher.engaged Path.slice-bottom-left">
+      <Setter Property="RenderTransform">
+        <TranslateTransform X="-5" Y="5" />
+      </Setter>
+    </Style>
+    <Style Selector="Button.radial-launcher.engaged Path.slice-top-left">
+      <Setter Property="RenderTransform">
+        <TranslateTransform X="-5" Y="-5" />
       </Setter>
     </Style>
     <Style Selector="Canvas.radial-menu-surface">
@@ -51,7 +111,7 @@
         <Transitions>
           <DoubleTransition Property="Opacity" Duration="0:0:0.16" />
           <TransformOperationsTransition Property="RenderTransform"
-                                         Duration="0:0:0.22">
+                                         Duration="0:0:0.55">
             <TransformOperationsTransition.Easing>
               <CubicEaseOut />
             </TransformOperationsTransition.Easing>
@@ -71,22 +131,107 @@
       <Setter Property="Padding" Value="12,6" />
       <Setter Property="CornerRadius" Value="21" />
       <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenWarningBrush}" />
       <Setter Property="BorderThickness" Value="1.5" />
       <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
       <Setter Property="FontSize" Value="12" />
       <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
       <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Classes="option-chrome"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  ClipToBounds="True"
+                  CornerRadius="{TemplateBinding CornerRadius}">
+            <Border.Transitions>
+              <Transitions>
+                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" />
+              </Transitions>
+            </Border.Transitions>
+            <ContentPresenter Background="Transparent"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              FontFamily="{TemplateBinding FontFamily}"
+                              FontSize="{TemplateBinding FontSize}"
+                              FontWeight="{TemplateBinding FontWeight}"
+                              Foreground="{TemplateBinding Foreground}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              Padding="{TemplateBinding Padding}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.32" />
+          <TransformOperationsTransition Property="RenderTransform"
+                                         Duration="0:0:0.55">
+            <TransformOperationsTransition.Easing>
+              <CubicEaseOut />
+            </TransformOperationsTransition.Easing>
+          </TransformOperationsTransition>
+        </Transitions>
+      </Setter>
     </Style>
-    <Style Selector="Button.radial-option:pointerover">
-      <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentHoverBrush}" />
+    <Style Selector="Button.radial-option.complete">
+      <Setter Property="RenderTransform">
+        <TranslateTransform X="0" Y="32" />
+      </Setter>
     </Style>
-    <Style Selector="Button.radial-option:disabled">
-      <Setter Property="Opacity" Value="0.42" />
+    <Style Selector="Button.radial-option.reopen">
+      <Setter Property="RenderTransform">
+        <TranslateTransform X="32" Y="0" />
+      </Setter>
     </Style>
     <Style Selector="Button.radial-option.defer">
+      <Setter Property="RenderTransform">
+        <TranslateTransform X="-32" Y="0" />
+      </Setter>
+    </Style>
+    <Style Selector="Button.radial-option.start-here">
+      <Setter Property="RenderTransform">
+        <TranslateTransform X="0" Y="-32" />
+      </Setter>
+    </Style>
+    <Style Selector="Canvas.radial-menu-surface.open Button.radial-option">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="RenderTransform">
+        <TranslateTransform X="0" Y="0" />
+      </Setter>
+    </Style>
+    <Style Selector="Button.radial-option /template/ Border.option-chrome">
+      <Setter Property="BoxShadow" Value="inset 0 0 0 0 #00F7C948" />
+    </Style>
+    <Style Selector="Button.radial-option /template/ ContentPresenter">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="Button.radial-option:pointerover">
+      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource RavenWarningBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="Button.radial-option:pointerover /template/ Border.option-chrome">
+      <Setter Property="BoxShadow" Value="{DynamicResource RavenWarningInsetShadow}" />
+    </Style>
+    <Style Selector="Button.radial-option:disabled">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Cursor" Value="Arrow" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+    </Style>
+    <Style Selector="Button.radial-option:disabled /template/ Border.option-chrome">
+      <Setter Property="BoxShadow" Value="inset 0 0 0 0 #00F7C948" />
+    </Style>
+    <Style Selector="Button.radial-option:disabled /template/ ContentPresenter">
+      <Setter Property="Opacity" Value="0.5" />
     </Style>
   </UserControl.Styles>
 
@@ -98,34 +243,33 @@
             Click="Launcher_Click"
             KeyDown="Launcher_KeyDown"
             PointerEntered="Menu_PointerEntered"
-            PointerExited="Menu_PointerExited"
-            ToolTip.Tip="System actions">
-      <Viewbox Width="30" Height="30">
+            PointerExited="Menu_PointerExited">
+      <Viewbox Width="34" Height="34">
         <Canvas Width="100"
                 Height="100"
                 Classes="radial-glyph"
                 RenderTransformOrigin="50%,50%">
-          <Path Data="M 50,48 L 88,48 A 38,38 0 0 0 50,10 Z"
-                Fill="Transparent"
-                Stroke="{DynamicResource RavenAccentBrush}"
-                StrokeThickness="5" />
-          <Path Data="M 52,50 L 52,88 A 38,38 0 0 0 90,50 Z"
-                Fill="Transparent"
-                Stroke="{DynamicResource RavenAccentBrush}"
-                StrokeThickness="5" />
-          <Path Data="M 50,52 L 12,52 A 38,38 0 0 0 50,90 Z"
-                Fill="Transparent"
-                Stroke="{DynamicResource RavenAccentBrush}"
-                StrokeThickness="5" />
-          <Path Data="M 48,50 L 48,12 A 38,38 0 0 0 10,50 Z"
-                Fill="Transparent"
-                Stroke="{DynamicResource RavenAccentBrush}"
-                StrokeThickness="5" />
-          <Ellipse Width="10"
-                   Height="10"
-                   Canvas.Left="45"
-                   Canvas.Top="45"
-                   Fill="{DynamicResource RavenAccentBrush}" />
+          <Path Classes="radial-slice slice-top-right"
+                Data="M 54,12 A 38,38 0 0 1 88,46 L 68,46 A 18,18 0 0 0 54,32 Z"
+                Fill="{DynamicResource RavenSurfaceBrush}"
+                StrokeThickness="4" />
+          <Path Classes="radial-slice slice-bottom-right"
+                Data="M 88,54 A 38,38 0 0 1 54,88 L 54,68 A 18,18 0 0 0 68,54 Z"
+                Fill="{DynamicResource RavenSurfaceBrush}"
+                StrokeThickness="4" />
+          <Path Classes="radial-slice slice-bottom-left"
+                Data="M 46,88 A 38,38 0 0 1 12,54 L 32,54 A 18,18 0 0 0 46,68 Z"
+                Fill="{DynamicResource RavenSurfaceBrush}"
+                StrokeThickness="4" />
+          <Path Classes="radial-slice slice-top-left"
+                Data="M 12,46 A 38,38 0 0 1 46,12 L 46,32 A 18,18 0 0 0 32,46 Z"
+                Fill="{DynamicResource RavenSurfaceBrush}"
+                StrokeThickness="4" />
+          <Ellipse Classes="radial-center"
+                   Width="9"
+                   Height="9"
+                   Canvas.Left="45.5"
+                   Canvas.Top="45.5" />
         </Canvas>
       </Viewbox>
     </Button>
@@ -136,52 +280,50 @@
            PlacementAnchor="None"
            PlacementGravity="None"
            IsLightDismissEnabled="False">
-      <Canvas x:Name="MenuSurface"
+      <Canvas x:Name="MenuHitSurface"
               Width="330"
               Height="190"
-              Classes="radial-menu-surface"
+              Background="Transparent"
               PointerEntered="Menu_PointerEntered"
               PointerExited="Menu_PointerExited">
-        <Ellipse Width="72"
-                 Height="72"
-                 Canvas.Left="129"
-                 Canvas.Top="59"
-                 IsHitTestVisible="False"
-                 Opacity="0.48"
-                 Stroke="{DynamicResource RavenAccentBrush}"
-                 StrokeThickness="2" />
-        <Button x:Name="CompleteActionButton"
-                Classes="radial-option"
-                Canvas.Left="113"
-                Canvas.Top="1"
-                Command="{Binding CompleteCommand}"
-                Click="Action_Click"
-                Content="Complete"
-                ToolTip.Tip="Mark this recorded system complete." />
-        <Button x:Name="ReopenActionButton"
-                Classes="radial-option"
-                Canvas.Left="5"
-                Canvas.Top="74"
-                Command="{Binding ReopenCommand}"
-                Click="Action_Click"
-                Content="Reopen"
-                ToolTip.Tip="Return a completed or empty system to the active survey." />
-        <Button x:Name="DeferActionButton"
-                Classes="radial-option defer"
-                Canvas.Left="221"
-                Canvas.Top="74"
-                Command="{Binding DeferCommand}"
-                Click="Action_Click"
-                Content="Defer"
-                ToolTip.Tip="Skip this unfinished system and keep it for later." />
-        <Button x:Name="StartHereActionButton"
-                Classes="radial-option"
-                Canvas.Left="113"
-                Canvas.Top="147"
-                Command="{Binding StartHereCommand}"
-                Click="Action_Click"
-                Content="Start Here"
-                ToolTip.Tip="Defer unfinished systems before this one in the current sort direction." />
+        <Canvas x:Name="MenuSurface"
+                Width="330"
+                Height="190"
+                Classes="radial-menu-surface"
+                IsVisible="False">
+          <Button x:Name="CompleteActionButton"
+                  Classes="radial-option complete"
+                  Canvas.Left="113"
+                  Canvas.Top="1"
+                  Command="{Binding CompleteCommand}"
+                  Click="Action_Click"
+                  Content="Complete"
+                  ToolTip.Tip="Mark this recorded system complete." />
+          <Button x:Name="ReopenActionButton"
+                  Classes="radial-option reopen"
+                  Canvas.Left="5"
+                  Canvas.Top="74"
+                  Command="{Binding ReopenCommand}"
+                  Click="Action_Click"
+                  Content="Reopen"
+                  ToolTip.Tip="Return a completed or empty system to the active survey." />
+          <Button x:Name="DeferActionButton"
+                  Classes="radial-option defer"
+                  Canvas.Left="221"
+                  Canvas.Top="74"
+                  Command="{Binding DeferCommand}"
+                  Click="Action_Click"
+                  Content="Defer"
+                  ToolTip.Tip="Skip this unfinished system and keep it for later." />
+          <Button x:Name="StartHereActionButton"
+                  Classes="radial-option start-here"
+                  Canvas.Left="113"
+                  Canvas.Top="147"
+                  Command="{Binding StartHereCommand}"
+                  Click="Action_Click"
+                  Content="Start Here"
+                  ToolTip.Tip="Defer unfinished systems before this one in the current sort direction." />
+        </Canvas>
       </Canvas>
     </Popup>
   </Grid>

@@ -195,6 +195,34 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
         Assert.True(result.Entries[1].IsComplete);
     }
 
+    [Fact]
+    public async Task FssAuditStillAppliesTheOlderSpanshBodyRule()
+    {
+        var boxel = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+        var auditor = new BoxelCompletionAuditor(
+            new LegacySystemDataReader(temporaryDirectory),
+            new StubResolver(_ =>
+            [
+                Observation(
+                    boxel,
+                    DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    hasKnownBodies: true),
+            ]));
+
+        var result = await auditor.AuditAsync(new BoxelCompletionAuditRequest(
+            "F123",
+            [boxel],
+            new HashSet<string>(StringComparer.Ordinal),
+            null,
+            DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+            false,
+            true,
+            BoxelCompletionMode.FssAllBodies,
+            []));
+
+        Assert.True(Assert.Single(result.Entries).IsComplete);
+    }
+
     private async Task WriteLocalSystemAsync(
         BoxelAddress boxel,
         DateTimeOffset visitedAt,
