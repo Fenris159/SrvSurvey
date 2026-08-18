@@ -31,11 +31,25 @@ public sealed class ReleaseInstallationHistoryCleaner
     private readonly TimeProvider timeProvider;
     private readonly int retainedDirectoriesPerKind;
     private readonly TimeSpan minimumAge;
+    private readonly Action<string> deleteDirectory;
 
     public ReleaseInstallationHistoryCleaner(
         TimeProvider? timeProvider = null,
         int retainedDirectoriesPerKind = DefaultRetainedDirectoriesPerKind,
         TimeSpan? minimumAge = null)
+        : this(
+            timeProvider,
+            retainedDirectoriesPerKind,
+            minimumAge,
+            path => Directory.Delete(path, recursive: true))
+    {
+    }
+
+    internal ReleaseInstallationHistoryCleaner(
+        TimeProvider? timeProvider,
+        int retainedDirectoriesPerKind,
+        TimeSpan? minimumAge,
+        Action<string> deleteDirectory)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(retainedDirectoriesPerKind);
         var resolvedMinimumAge = minimumAge ?? DefaultMinimumAge;
@@ -45,12 +59,16 @@ public sealed class ReleaseInstallationHistoryCleaner
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.retainedDirectoriesPerKind = retainedDirectoriesPerKind;
         this.minimumAge = resolvedMinimumAge;
+        this.deleteDirectory = deleteDirectory
+            ?? throw new ArgumentNullException(nameof(deleteDirectory));
     }
 
     public ReleaseInstallationCleanupResult Clean(
         string installationDirectory,
-        IEnumerable<string>? protectedDirectories = null)
+        IEnumerable<string>? protectedDirectories = null,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(installationDirectory);
         var installation = Path.TrimEndingDirectorySeparator(
             Path.GetFullPath(installationDirectory));
@@ -88,6 +106,7 @@ public sealed class ReleaseInstallationHistoryCleaner
         var failures = new List<string>();
         foreach (var kind in Kinds)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var candidates = FindCandidates(
                 parent,
                 installationName,
@@ -96,9 +115,10 @@ public sealed class ReleaseInstallationHistoryCleaner
                 failures);
             retained += Math.Min(
                 retainedDirectoriesPerKind,
-                candidates.Count);
+                candidates.Length);
             foreach (var candidate in candidates.Skip(retainedDirectoriesPerKind))
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (timeProvider.GetUtcNow() - candidate.LastWriteTimeUtc
                     < minimumAge)
                 {
@@ -108,12 +128,13 @@ public sealed class ReleaseInstallationHistoryCleaner
 
                 try
                 {
-                    Directory.Delete(candidate.FullName, recursive: true);
+                    deleteDirectory(candidate.FullName);
                     deleted[kind]++;
                 }
                 catch (Exception exception) when (
                     exception is IOException or UnauthorizedAccessException)
                 {
+                    retained++;
                     failures.Add($"{candidate.FullName}: {exception.Message}");
                 }
             }
@@ -127,12 +148,25 @@ public sealed class ReleaseInstallationHistoryCleaner
             failures);
     }
 
-    private static IReadOnlyList<DirectoryInfo> FindCandidates(
+    public Task<ReleaseInstallationCleanupResult> CleanAsync(
+        string installationDirectory,
+        IEnumerable<string>? protectedDirectories = null,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.Run(
+            () => Clean(
+                installationDirectory,
+                protectedDirectories,
+                cancellationToken),
+            cancellationToken);
+    }
+
+    private static DirectoryInfo[] FindCandidates(
         string parent,
         string installationName,
         string kind,
-        IReadOnlySet<string> protectedPaths,
-        ICollection<string> failures)
+        HashSet<string> protectedPaths,
+        List<string> failures)
     {
         var prefix = $".{installationName}-{kind}-";
         var comparison = OperatingSystem.IsWindows()
@@ -173,12 +207,26 @@ public sealed class ReleasePackageCacheCleaner
     private readonly TimeProvider timeProvider;
     private readonly int retainedVersions;
     private readonly TimeSpan minimumAge;
+    private readonly Action<string> deleteDirectory;
 
     public ReleasePackageCacheCleaner(
         TimeProvider? timeProvider = null,
         int retainedVersions =
             ReleaseInstallationHistoryCleaner.DefaultRetainedDirectoriesPerKind,
         TimeSpan? minimumAge = null)
+        : this(
+            timeProvider,
+            retainedVersions,
+            minimumAge,
+            path => Directory.Delete(path, recursive: true))
+    {
+    }
+
+    internal ReleasePackageCacheCleaner(
+        TimeProvider? timeProvider,
+        int retainedVersions,
+        TimeSpan? minimumAge,
+        Action<string> deleteDirectory)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(retainedVersions);
         var resolvedMinimumAge = minimumAge
@@ -189,10 +237,15 @@ public sealed class ReleasePackageCacheCleaner
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.retainedVersions = retainedVersions;
         this.minimumAge = resolvedMinimumAge;
+        this.deleteDirectory = deleteDirectory
+            ?? throw new ArgumentNullException(nameof(deleteDirectory));
     }
 
-    public ReleasePackageCacheCleanupResult Clean(string dataDirectory)
+    public ReleasePackageCacheCleanupResult Clean(
+        string dataDirectory,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         var updatesRoot = Path.GetFullPath(Path.Combine(
             dataDirectory,
@@ -200,10 +253,12 @@ public sealed class ReleasePackageCacheCleaner
         var failures = new List<string>();
         var packageResult = CleanVersionRoot(
             Path.Combine(updatesRoot, "packages"),
-            failures);
+            failures,
+            cancellationToken);
         var stagedResult = CleanVersionRoot(
             Path.Combine(updatesRoot, "staged"),
-            failures);
+            failures,
+            cancellationToken);
         return new ReleasePackageCacheCleanupResult(
             packageResult.Deleted,
             stagedResult.Deleted,
@@ -211,18 +266,24 @@ public sealed class ReleasePackageCacheCleaner
             failures);
     }
 
+    public Task<ReleasePackageCacheCleanupResult> CleanAsync(
+        string dataDirectory,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.Run(
+            () => Clean(dataDirectory, cancellationToken),
+            cancellationToken);
+    }
+
     private (int Deleted, int Retained) CleanVersionRoot(
         string root,
-        ICollection<string> failures)
+        List<string> failures,
+        CancellationToken cancellationToken)
     {
-        if (!Directory.Exists(root))
-        {
-            return (0, 0);
-        }
-
         DirectoryInfo[] candidates;
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             candidates = new DirectoryInfo(root)
                 .EnumerateDirectories()
                 .Where(directory =>
@@ -231,6 +292,10 @@ public sealed class ReleasePackageCacheCleaner
                 .OrderByDescending(directory => directory.LastWriteTimeUtc)
                 .ThenByDescending(directory => directory.Name, StringComparer.Ordinal)
                 .ToArray();
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return (0, 0);
         }
         catch (Exception exception) when (
             exception is IOException or UnauthorizedAccessException)
@@ -243,6 +308,7 @@ public sealed class ReleasePackageCacheCleaner
         var retained = Math.Min(retainedVersions, candidates.Length);
         foreach (var candidate in candidates.Skip(retainedVersions))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (timeProvider.GetUtcNow() - candidate.LastWriteTimeUtc < minimumAge)
             {
                 retained++;
@@ -251,16 +317,62 @@ public sealed class ReleasePackageCacheCleaner
 
             try
             {
-                Directory.Delete(candidate.FullName, recursive: true);
+                deleteDirectory(candidate.FullName);
                 deleted++;
             }
             catch (Exception exception) when (
                 exception is IOException or UnauthorizedAccessException)
             {
+                retained++;
                 failures.Add($"{candidate.FullName}: {exception.Message}");
             }
         }
 
         return (deleted, retained);
+    }
+}
+
+public sealed class ReleaseUpdateHistoryCleanupCoordinator
+{
+    private readonly SemaphoreSlim gate = new(1, 1);
+
+    public async Task<ReleaseInstallationCleanupResult> CleanInstallationAsync(
+        ReleaseInstallationHistoryCleaner cleaner,
+        string installationDirectory,
+        IEnumerable<string>? protectedDirectories = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(cleaner);
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await cleaner.CleanAsync(
+                    installationDirectory,
+                    protectedDirectories,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    public async Task<ReleasePackageCacheCleanupResult> CleanPackageCacheAsync(
+        ReleasePackageCacheCleaner cleaner,
+        string dataDirectory,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(cleaner);
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await cleaner.CleanAsync(dataDirectory, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            gate.Release();
+        }
     }
 }

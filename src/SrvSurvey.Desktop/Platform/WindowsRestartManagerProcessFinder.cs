@@ -3,7 +3,7 @@ using System.Text;
 
 namespace SrvSurvey.Desktop.Platform;
 
-internal static class WindowsRestartManagerProcessFinder
+internal static partial class WindowsRestartManagerProcessFinder
 {
     private const int ErrorSuccess = 0;
     private const int ErrorMoreData = 234;
@@ -83,7 +83,7 @@ internal static class WindowsRestartManagerProcessFinder
             log);
     }
 
-    private static IReadOnlySet<int> ReadAllocatedProcessList(
+    private static HashSet<int> ReadAllocatedProcessList(
         uint session,
         uint needed,
         uint rebootReasons,
@@ -151,6 +151,7 @@ internal static class WindowsRestartManagerProcessFinder
         public bool Restartable;
     }
 
+#pragma warning disable SYSLIB1054 // Restart Manager arrays require runtime marshalling.
     [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode)]
     private static extern int RmStartSession(
         out uint sessionHandle,
@@ -174,7 +175,8 @@ internal static class WindowsRestartManagerProcessFinder
         ref uint processInfoCount,
         [In, Out] RestartManagerProcessInfo[]? affectedApplications,
         ref uint rebootReasons);
+#pragma warning restore SYSLIB1054
 
-    [DllImport("rstrtmgr.dll")]
-    private static extern int RmEndSession(uint sessionHandle);
+    [LibraryImport("rstrtmgr.dll")]
+    private static partial int RmEndSession(uint sessionHandle);
 }

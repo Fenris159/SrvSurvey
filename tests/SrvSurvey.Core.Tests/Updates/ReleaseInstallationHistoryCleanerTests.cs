@@ -120,6 +120,125 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
         Assert.Empty(result.Failures);
     }
 
+    [Fact]
+    public void FailedInstallationHistoryDeletionCountsDirectoryAsRetained()
+    {
+        var installation = Path.Combine(root, "SrvSurvey-XP");
+        Directory.CreateDirectory(installation);
+        var candidate = CreateGenerated("backup", 1, Now.AddDays(-8));
+        var cleaner = new ReleaseInstallationHistoryCleaner(
+            new FixedTimeProvider(Now),
+            retainedDirectoriesPerKind: 0,
+            minimumAge: TimeSpan.Zero,
+            _ => throw new IOException("in use"));
+
+        var result = cleaner.Clean(installation);
+
+        Assert.True(Directory.Exists(candidate));
+        Assert.Equal(0, result.DeletedDirectories);
+        Assert.Equal(1, result.RetainedDirectories);
+        Assert.Single(result.Failures);
+        Assert.Contains("in use", result.Failures[0]);
+    }
+
+    [Fact]
+    public void FailedPackageDeletionCountsDirectoriesAsRetained()
+    {
+        var dataDirectory = Path.Combine(root, "data");
+        var package = CreateVersionDirectory(
+            Path.Combine(dataDirectory, "updates", "packages"),
+            "2.1.3.0-rc.20",
+            Now.AddDays(-8));
+        var staged = CreateVersionDirectory(
+            Path.Combine(dataDirectory, "updates", "staged"),
+            "2.1.3.0-rc.20",
+            Now.AddDays(-8));
+        var cleaner = new ReleasePackageCacheCleaner(
+            new FixedTimeProvider(Now),
+            retainedVersions: 0,
+            minimumAge: TimeSpan.Zero,
+            _ => throw new UnauthorizedAccessException("locked"));
+
+        var result = cleaner.Clean(dataDirectory);
+
+        Assert.True(Directory.Exists(package));
+        Assert.True(Directory.Exists(staged));
+        Assert.Equal(0, result.DeletedVersions);
+        Assert.Equal(2, result.RetainedVersions);
+        Assert.Equal(2, result.Failures.Count);
+    }
+
+    [Fact]
+    public void MissingPackageRootsAreNotReportedAsFailures()
+    {
+        var result = new ReleasePackageCacheCleaner().Clean(
+            Path.Combine(root, "missing-data"));
+
+        Assert.Equal(0, result.DeletedVersions);
+        Assert.Equal(0, result.RetainedVersions);
+        Assert.Empty(result.Failures);
+    }
+
+    [Fact]
+    public async Task AsyncCleanupObservesCancellationBeforeDeleting()
+    {
+        var installation = Path.Combine(root, "SrvSurvey-XP");
+        Directory.CreateDirectory(installation);
+        var candidate = CreateGenerated("backup", 1, Now.AddDays(-8));
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            new ReleaseInstallationHistoryCleaner(
+                new FixedTimeProvider(Now),
+                retainedDirectoriesPerKind: 0,
+                minimumAge: TimeSpan.Zero)
+                .CleanAsync(installation, cancellationToken: cancellation.Token));
+
+        Assert.True(Directory.Exists(candidate));
+    }
+
+    [Fact]
+    public async Task CoordinatorSerializesCleanupOperations()
+    {
+        var installation = Path.Combine(root, "SrvSurvey-XP");
+        Directory.CreateDirectory(installation);
+        _ = CreateGenerated("backup", 1, Now.AddDays(-8));
+        var dataDirectory = Path.Combine(root, "data");
+        _ = CreateVersionDirectory(
+            Path.Combine(dataDirectory, "updates", "packages"),
+            "2.1.3.0-rc.20",
+            Now.AddDays(-8));
+        using var entered = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var coordinator = new ReleaseUpdateHistoryCleanupCoordinator();
+        var first = coordinator.CleanInstallationAsync(
+            new ReleaseInstallationHistoryCleaner(
+                new FixedTimeProvider(Now),
+                retainedDirectoriesPerKind: 0,
+                minimumAge: TimeSpan.Zero,
+                path =>
+                {
+                    entered.Set();
+                    release.Wait(TimeSpan.FromSeconds(2));
+                    Directory.Delete(path, recursive: true);
+                }),
+            installation);
+        Assert.True(entered.Wait(TimeSpan.FromSeconds(2)));
+
+        var second = coordinator.CleanPackageCacheAsync(
+            new ReleasePackageCacheCleaner(
+                new FixedTimeProvider(Now),
+                retainedVersions: 0,
+                minimumAge: TimeSpan.Zero),
+            dataDirectory);
+        Assert.False(second.IsCompleted);
+
+        release.Set();
+        await first;
+        await second;
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(root))

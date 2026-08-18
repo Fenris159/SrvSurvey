@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -5,7 +6,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace SrvSurvey.Desktop.Platform;
 
-internal static unsafe partial class ApplicationProcessPathResolver
+internal static partial class ApplicationProcessPathResolver
 {
     private const uint ProcessQueryLimitedInformation = 0x1000;
     private const int MaximumWindowsPathCapacity = 32_768;
@@ -86,7 +87,7 @@ internal static unsafe partial class ApplicationProcessPathResolver
         return Path.TrimEndingDirectorySeparator(Path.GetFullPath(fullPath));
     }
 
-    private static bool TryResolveWindows(
+    internal static bool TryResolveWindows(
         int processId,
         out string? executablePath,
         out string? error)
@@ -102,28 +103,32 @@ internal static unsafe partial class ApplicationProcessPathResolver
             return false;
         }
 
-        var capacity = MaximumWindowsPathCapacity;
-        var buffer = new char[capacity];
-        fixed (char* bufferPointer = buffer)
+        var buffer = ArrayPool<char>.Shared.Rent(MaximumWindowsPathCapacity);
+        try
         {
+            var capacity = buffer.Length;
             if (!QueryFullProcessImageNameW(
                 handle,
                 0,
-                bufferPointer,
+                buffer,
                 ref capacity))
             {
                 executablePath = null;
                 error = new Win32Exception(Marshal.GetLastPInvokeError()).Message;
                 return false;
             }
-        }
 
-        executablePath = Canonicalize(new string(buffer, 0, capacity));
-        error = null;
-        return true;
+            executablePath = Canonicalize(new string(buffer, 0, capacity));
+            error = null;
+            return true;
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(buffer);
+        }
     }
 
-    private static bool TryResolveLinux(
+    internal static bool TryResolveLinux(
         int processId,
         out string? executablePath,
         out string? error)
@@ -154,7 +159,7 @@ internal static unsafe partial class ApplicationProcessPathResolver
         }
     }
 
-    private static bool TryGetFinalWindowsPath(
+    internal static bool TryGetFinalWindowsPath(
         string path,
         out string finalPath)
     {
@@ -165,24 +170,28 @@ internal static unsafe partial class ApplicationProcessPathResolver
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete);
-            var buffer = new char[MaximumWindowsPathCapacity];
-            uint length;
-            fixed (char* bufferPointer = buffer)
+            var buffer = ArrayPool<char>.Shared.Rent(MaximumWindowsPathCapacity);
+            try
             {
-                length = GetFinalPathNameByHandleW(
+                var length = GetFinalPathNameByHandleW(
                     handle,
-                    bufferPointer,
+                    buffer,
                     (uint)buffer.Length,
                     0);
-            }
-            if (length == 0 || length >= buffer.Length)
-            {
-                finalPath = path;
-                return false;
-            }
+                if (length == 0 || length >= buffer.Length)
+                {
+                    finalPath = path;
+                    return false;
+                }
 
-            finalPath = RemoveWindowsDevicePrefix(new string(buffer, 0, (int)length));
-            return true;
+                finalPath = RemoveWindowsDevicePrefix(
+                    new string(buffer, 0, (int)length));
+                return true;
+            }
+            finally
+            {
+                ArrayPool<char>.Shared.Return(buffer);
+            }
         }
         catch (Exception exception) when (
             exception is IOException
@@ -194,7 +203,7 @@ internal static unsafe partial class ApplicationProcessPathResolver
         }
     }
 
-    private static string RemoveWindowsDevicePrefix(string path)
+    internal static string RemoveWindowsDevicePrefix(string path)
     {
         const string uncPrefix = @"\\?\UNC\";
         const string devicePrefix = @"\\?\";
@@ -214,24 +223,28 @@ internal static unsafe partial class ApplicationProcessPathResolver
         [MarshalAs(UnmanagedType.Bool)] bool inheritHandle,
         int processId);
 
-    [LibraryImport(
+#pragma warning disable SYSLIB1054 // Output arrays require runtime marshalling.
+    [DllImport(
         "kernel32.dll",
         EntryPoint = "QueryFullProcessImageNameW",
+        CharSet = CharSet.Unicode,
         SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool QueryFullProcessImageNameW(
+    private static extern bool QueryFullProcessImageNameW(
         SafeProcessHandle process,
         uint flags,
-        char* executableName,
+        [Out] char[] executableName,
         ref int size);
 
-    [LibraryImport(
+    [DllImport(
         "kernel32.dll",
         EntryPoint = "GetFinalPathNameByHandleW",
+        CharSet = CharSet.Unicode,
         SetLastError = true)]
-    private static partial uint GetFinalPathNameByHandleW(
+    private static extern uint GetFinalPathNameByHandleW(
         SafeFileHandle file,
-        char* path,
+        [Out] char[] path,
         uint capacity,
         uint flags);
+#pragma warning restore SYSLIB1054
 }

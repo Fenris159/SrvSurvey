@@ -70,6 +70,11 @@ public sealed partial class App : Application
     private IClassicDesktopStyleApplicationLifetime? desktopLifetime;
     private ApplicationLogService? applicationLogService;
     private ApplicationInstanceManager? applicationInstanceManager;
+    private readonly CancellationTokenSource releaseHistoryCleanupCancellation =
+        new();
+    private readonly ReleaseUpdateHistoryCleanupCoordinator releaseHistoryCleanup =
+        new();
+    private Task? releaseHistoryCleanupTask;
     private GlobalInputSettingsViewModel? globalInputSettings;
     private IGameTextInputService? gameTextInputService;
     private bool manualOverlaySuppressed;
@@ -382,7 +387,10 @@ public sealed partial class App : Application
         desktop.Exit += async (_, _) =>
             await HandleDesktopExitAsync(viewModel, applicationLog);
         ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
-        CleanReleaseUpdateHistory(appDataPaths, applicationLog);
+        releaseHistoryCleanupTask = CleanReleaseUpdateHistoryAsync(
+            appDataPaths,
+            applicationLog,
+            releaseHistoryCleanupCancellation.Token);
     }
 
     private void ConfigureReleaseInstaller(
@@ -402,7 +410,8 @@ public sealed partial class App : Application
             {
                 DownloadService = new ReleasePackageDownloadService(),
                 StagingService = new ReleasePackageStagingService(),
-                InstallationPreparer = new ReleaseInstallationPreparer(),
+                InstallationPreparer = new ReleaseInstallationPreparer(
+                    historyCleanup: releaseHistoryCleanup),
                 HandoffService = new ApplicationUpdateHandoffService(),
                 InstanceManager = applicationInstanceManager,
                 ConfirmMultipleInstances = scan =>
@@ -646,6 +655,7 @@ public sealed partial class App : Application
         Dispatcher.UIThread.UnhandledException -= HandleUiException;
         TaskScheduler.UnobservedTaskException -=
             HandleUnobservedTaskException;
+        await StopReleaseUpdateHistoryCleanupAsync();
         if (applicationInstanceManager is not null)
         {
             await applicationInstanceManager.DisposeAsync();
@@ -750,14 +760,18 @@ public sealed partial class App : Application
         }
     }
 
-    private static void CleanReleaseUpdateHistory(
+    private async Task CleanReleaseUpdateHistoryAsync(
         AppDataPaths appDataPaths,
-        ApplicationLogService applicationLog)
+        ApplicationLogService applicationLog,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var cacheResult = new ReleasePackageCacheCleaner()
-                .Clean(appDataPaths.DataDirectory);
+            var cacheResult = await releaseHistoryCleanup.CleanPackageCacheAsync(
+                    new ReleasePackageCacheCleaner(),
+                    appDataPaths.DataDirectory,
+                    cancellationToken)
+                .ConfigureAwait(false);
             if (cacheResult.DeletedVersions > 0)
             {
                 applicationLog.Append(
@@ -780,8 +794,12 @@ public sealed partial class App : Application
                 return;
             }
 
-            var installationResult = new ReleaseInstallationHistoryCleaner()
-                .Clean(AppContext.BaseDirectory);
+            var installationResult = await releaseHistoryCleanup
+                .CleanInstallationAsync(
+                    new ReleaseInstallationHistoryCleaner(),
+                    AppContext.BaseDirectory,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
             if (installationResult.DeletedDirectories > 0)
             {
                 applicationLog.Append(
@@ -798,6 +816,10 @@ public sealed partial class App : Application
                     + failure);
             }
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Application shutdown cancels background history cleanup.
+        }
         catch (Exception exception) when (
             exception is IOException
                 or UnauthorizedAccessException
@@ -805,6 +827,30 @@ public sealed partial class App : Application
         {
             applicationLog.Append(
                 "Update history cleanup could not run: " + exception.Message);
+        }
+    }
+
+    private async Task StopReleaseUpdateHistoryCleanupAsync()
+    {
+        var cleanupTask = releaseHistoryCleanupTask;
+        if (cleanupTask is null)
+        {
+            return;
+        }
+
+        releaseHistoryCleanupTask = null;
+        await releaseHistoryCleanupCancellation.CancelAsync();
+        try
+        {
+            await cleanupTask.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // The cancellation request stops any remaining background cleanup.
+        }
+        finally
+        {
+            releaseHistoryCleanupCancellation.Dispose();
         }
     }
 

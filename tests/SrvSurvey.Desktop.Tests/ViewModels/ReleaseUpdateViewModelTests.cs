@@ -258,6 +258,130 @@ public sealed class ReleaseUpdateViewModelTests
     }
 
     [Fact]
+    public async Task UnverifiedInstanceWarningExplainsSafeUpdateBlock()
+    {
+        var temporaryDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-update-unverified-tests-{Guid.NewGuid():N}");
+        var installationDirectory = Path.Combine(temporaryDirectory, "install");
+        Directory.CreateDirectory(installationDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(installationDirectory, "release-package.json"),
+            "{}");
+        var calls = new List<string>();
+        string? warningStatus = null;
+        try
+        {
+            var viewModel = new ReleaseUpdateViewModel(
+                new StubService(CreateResult(isAvailable: true)),
+                new Version(2, 0, 95, 0));
+            viewModel.ConfigureInstaller(
+                new ReleaseInstallerConfiguration
+                {
+                    DownloadService = new StubDownloader(calls),
+                    StagingService = new StubStagingService(calls),
+                    InstallationPreparer = new StubPreparer(calls),
+                    HandoffService = new StubHandoff(calls),
+                    InstanceManager = new StubInstanceManager(
+                        otherCount: 1,
+                        calls,
+                        unverifiedCount: 1,
+                        throwOnClose: true),
+                    ConfirmMultipleInstances = _ =>
+                    {
+                        warningStatus = viewModel.StatusMessage;
+                        calls.Add("confirm");
+                        return Task.FromResult(true);
+                    },
+                    DataDirectory = temporaryDirectory,
+                    InstallationDirectory = installationDirectory,
+                    StartupArguments = [],
+                    Shutdown = () => Task.CompletedTask,
+                });
+            await viewModel.CheckAsync();
+            viewModel.InstallConfirmed = true;
+
+            await viewModel.InstallAsync();
+
+            Assert.Contains("would not let it verify", warningStatus);
+            Assert.Equal(["detect", "confirm", "close"], calls);
+            Assert.Contains("remains unverified", viewModel.StatusMessage);
+            Assert.Equal("Update preparation stopped safely.", viewModel.InstallProgressText);
+        }
+        finally
+        {
+            Directory.Delete(temporaryDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DecliningPreHandoffRecheckAbortsPreparedCandidate()
+    {
+        var temporaryDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-update-handoff-cancel-tests-{Guid.NewGuid():N}");
+        var installationDirectory = Path.Combine(temporaryDirectory, "install");
+        Directory.CreateDirectory(installationDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(installationDirectory, "release-package.json"),
+            "{}");
+        var calls = new List<string>();
+        try
+        {
+            var viewModel = new ReleaseUpdateViewModel(
+                new StubService(CreateResult(isAvailable: true)),
+                new Version(2, 0, 95, 0));
+            viewModel.ConfigureInstaller(
+                new ReleaseInstallerConfiguration
+                {
+                    DownloadService = new StubDownloader(calls),
+                    StagingService = new StubStagingService(calls),
+                    InstallationPreparer = new StubPreparer(calls),
+                    HandoffService = new StubHandoff(calls),
+                    InstanceManager = new StubInstanceManager(
+                        [
+                            new ApplicationInstanceScan(0, 0),
+                            new ApplicationInstanceScan(1, 0),
+                        ],
+                        calls),
+                    ConfirmMultipleInstances = _ =>
+                    {
+                        calls.Add("confirm");
+                        return Task.FromResult(false);
+                    },
+                    DataDirectory = temporaryDirectory,
+                    InstallationDirectory = installationDirectory,
+                    StartupArguments = [],
+                    Shutdown = () => Task.CompletedTask,
+                });
+            await viewModel.CheckAsync();
+            viewModel.InstallConfirmed = true;
+
+            await viewModel.InstallAsync();
+
+            Assert.Equal(
+                [
+                    "detect",
+                    "download",
+                    "stage",
+                    "prepare",
+                    "detect",
+                    "confirm",
+                    "abort",
+                ],
+                calls);
+            Assert.Equal(
+                "Update canceled before installation handoff.",
+                viewModel.InstallProgressText);
+            Assert.Contains("no files were changed", viewModel.StatusMessage);
+        }
+        finally
+        {
+            Directory.Delete(temporaryDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task OpenReleaseUsesConfiguredPlatformLauncher()
     {
         var viewModel = new ReleaseUpdateViewModel(
@@ -490,12 +614,33 @@ public sealed class ReleaseUpdateViewModelTests
     private sealed class StubInstanceManager : IApplicationInstanceManager
     {
         private readonly List<string>? calls;
-        private int otherCount;
+        private readonly Queue<ApplicationInstanceScan> scans;
+        private readonly bool throwOnClose;
+        private ApplicationInstanceScan currentScan;
 
-        public StubInstanceManager(int otherCount, List<string>? calls = null)
+        public StubInstanceManager(
+            int otherCount,
+            List<string>? calls = null,
+            int unverifiedCount = 0,
+            bool throwOnClose = false)
+            : this(
+                [new ApplicationInstanceScan(otherCount, unverifiedCount)],
+                calls,
+                throwOnClose)
         {
-            this.otherCount = otherCount;
+        }
+
+        public StubInstanceManager(
+            IEnumerable<ApplicationInstanceScan> scans,
+            List<string>? calls = null,
+            bool throwOnClose = false)
+        {
+            this.scans = new Queue<ApplicationInstanceScan>(scans);
+            currentScan = this.scans.Count > 0
+                ? this.scans.Peek()
+                : new ApplicationInstanceScan(0, 0);
             this.calls = calls;
+            this.throwOnClose = throwOnClose;
         }
 
         public Task<ApplicationInstanceScan> ScanOtherInstancesAsync(
@@ -503,7 +648,16 @@ public sealed class ReleaseUpdateViewModelTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             calls?.Add("detect");
-            return Task.FromResult(new ApplicationInstanceScan(otherCount, 0));
+            if (scans.Count > 1)
+            {
+                currentScan = scans.Dequeue();
+            }
+            else if (scans.Count == 1)
+            {
+                currentScan = scans.Peek();
+            }
+
+            return Task.FromResult(currentScan);
         }
 
         public async Task<int> CountOtherInstancesAsync(
@@ -516,8 +670,17 @@ public sealed class ReleaseUpdateViewModelTests
         public Task CloseOtherInstancesAsync(
             CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             calls?.Add("close");
-            otherCount = 0;
+            if (throwOnClose && currentScan.UnverifiedCount > 0)
+            {
+                throw new IOException(
+                    "A matching SrvSurvey process remains unverified.");
+            }
+
+            scans.Clear();
+            currentScan = new ApplicationInstanceScan(0, 0);
+            scans.Enqueue(currentScan);
             return Task.CompletedTask;
         }
     }
@@ -557,6 +720,15 @@ public sealed class ReleaseUpdateViewModelTests
     private sealed class StubPreparer(List<string> calls)
         : IReleaseInstallationPreparer
     {
+        public Task AbortAsync(
+            ReleaseInstallationPreparation preparation,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            calls.Add("abort");
+            return Task.CompletedTask;
+        }
+
         public Task<ReleaseInstallationPreparation> PrepareAsync(
             ReleaseVersion version,
             string runtimeIdentifier,

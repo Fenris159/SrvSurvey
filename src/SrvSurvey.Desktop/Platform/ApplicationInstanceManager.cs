@@ -106,14 +106,14 @@ internal sealed class ApplicationInstanceManager
         this.forcedExitTimeout = forcedExitTimeout;
     }
 
-    public Task<ApplicationInstanceScan> ScanOtherInstancesAsync(
+    public async Task<ApplicationInstanceScan> ScanOtherInstancesAsync(
         CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        using var discovery = processSource.DiscoverOtherInstances();
-        return Task.FromResult(new ApplicationInstanceScan(
+        using var discovery = await DiscoverOtherInstancesAsync(cancellationToken)
+            .ConfigureAwait(false);
+        return new ApplicationInstanceScan(
             discovery.Confirmed.Count,
-            discovery.UnverifiedCount));
+            discovery.UnverifiedCount);
     }
 
     public async Task<int> CountOtherInstancesAsync(
@@ -127,8 +127,8 @@ internal sealed class ApplicationInstanceManager
     public async Task CloseOtherInstancesAsync(
         CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        using (var discovery = processSource.DiscoverOtherInstances())
+        using (var discovery = await DiscoverOtherInstancesAsync(cancellationToken)
+            .ConfigureAwait(false))
         {
             var graceful = await RequestGracefulExitAsync(
                     discovery.Confirmed,
@@ -150,7 +150,8 @@ internal sealed class ApplicationInstanceManager
                 .ConfigureAwait(false);
         }
 
-        using var verification = processSource.DiscoverOtherInstances();
+        using var verification = await DiscoverOtherInstancesAsync(cancellationToken)
+            .ConfigureAwait(false);
         var remaining = verification.Confirmed.Count(instance => !instance.HasExited);
         if (verification.UnverifiedCount > 0)
         {
@@ -167,6 +168,14 @@ internal sealed class ApplicationInstanceManager
                 $"Could not close {remaining:N0} other SrvSurvey instance(s). "
                 + "The update was not started.");
         }
+    }
+
+    private Task<ApplicationInstanceDiscovery> DiscoverOtherInstancesAsync(
+        CancellationToken cancellationToken)
+    {
+        return Task.Run(
+            processSource.DiscoverOtherInstances,
+            cancellationToken);
     }
 
     public async ValueTask DisposeAsync()
@@ -246,10 +255,32 @@ internal sealed class SystemApplicationInstanceProcessSource
         Action<string>? log)
     {
         this.log = log;
-        registry = new ApplicationInstanceRegistry(
-            dataDirectory,
-            requestShutdown,
-            log);
+        try
+        {
+            registry = new ApplicationInstanceRegistry(
+                dataDirectory,
+                requestShutdown,
+                log);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidOperationException
+                or NotSupportedException)
+        {
+            try
+            {
+                log?.Invoke(
+                    "Update instance registration is unavailable; "
+                    + "continuing with process-name and executable-path discovery. "
+                    + exception.Message);
+            }
+            catch (Exception logException) when (
+                logException is IOException or InvalidOperationException)
+            {
+                // Registry failure must not prevent application startup.
+            }
+        }
     }
 
     public ApplicationInstanceDiscovery DiscoverOtherInstances()
@@ -268,44 +299,65 @@ internal sealed class SystemApplicationInstanceProcessSource
 
         var confirmed = new List<IApplicationInstanceProcess>();
         var unverified = 0;
-        foreach (var process in processes.Values)
+        try
         {
-            var processRecords = recordsByProcess.GetValueOrDefault(process.Id) ?? [];
-            var classification = ClassifyProcess(
-                process,
-                currentPath,
-                current.ProcessName,
-                processRecords,
-                restartManagerProcessIds.Contains(process.Id));
-            if (classification.IsConfirmed)
+            foreach (var processId in processes.Keys.ToArray())
             {
-                confirmed.Add(new SystemApplicationInstanceProcess(
+                var process = processes[processId];
+                var processRecords = recordsByProcess.GetValueOrDefault(process.Id)
+                    ?? [];
+                var classification = ClassifyProcess(
                     process,
-                    classification.Record?.PipeName));
-                log?.Invoke(
-                    $"Confirmed update instance PID {process.Id} using "
-                    + $"{classification.Method}.");
-                continue;
+                    currentPath,
+                    current.ProcessName,
+                    processRecords,
+                    restartManagerProcessIds.Contains(process.Id));
+                if (classification.IsConfirmed)
+                {
+                    confirmed.Add(new SystemApplicationInstanceProcess(
+                        process,
+                        classification.Record?.PipeName));
+                    processes.Remove(processId);
+                    log?.Invoke(
+                        $"Confirmed update instance PID {process.Id} using "
+                        + $"{classification.Method}.");
+                    continue;
+                }
+
+                if (classification.IsUnverified)
+                {
+                    unverified++;
+                    log?.Invoke(
+                        $"Could not verify update candidate PID {process.Id}: "
+                        + classification.Error);
+                }
+                else
+                {
+                    log?.Invoke(
+                        $"Ignored unrelated process PID {process.Id} at "
+                        + $"'{classification.Path ?? classification.Record?.ExecutablePath ?? "unknown"}'.");
+                }
+
+                process.Dispose();
+                processes.Remove(processId);
             }
 
-            if (classification.IsUnverified)
-            {
-                unverified++;
-                log?.Invoke(
-                    $"Could not verify update candidate PID {process.Id}: "
-                    + classification.Error);
-            }
-            else
-            {
-                log?.Invoke(
-                    $"Ignored unrelated process PID {process.Id} at "
-                    + $"'{classification.Path ?? classification.Record?.ExecutablePath ?? "unknown"}'.");
-            }
-
-            process.Dispose();
+            return new ApplicationInstanceDiscovery(confirmed, unverified);
         }
+        catch
+        {
+            foreach (var process in confirmed)
+            {
+                process.Dispose();
+            }
 
-        return new ApplicationInstanceDiscovery(confirmed, unverified);
+            foreach (var process in processes.Values)
+            {
+                process.Dispose();
+            }
+
+            throw;
+        }
     }
 
     private static string? ResolveCurrentPath()
@@ -340,7 +392,7 @@ internal sealed class SystemApplicationInstanceProcessSource
     }
 
     private static void AddNamedProcesses(
-        IDictionary<int, Process> processes,
+        Dictionary<int, Process> processes,
         Process current)
     {
         foreach (var process in Process.GetProcessesByName(current.ProcessName))
@@ -355,7 +407,7 @@ internal sealed class SystemApplicationInstanceProcessSource
     }
 
     private void AddRegisteredProcesses(
-        IDictionary<int, Process> processes,
+        Dictionary<int, Process> processes,
         IEnumerable<ApplicationInstanceRecord> records,
         int currentProcessId)
     {
@@ -379,7 +431,7 @@ internal sealed class SystemApplicationInstanceProcessSource
     }
 
     private static void AddRestartManagerProcesses(
-        IDictionary<int, Process> processes,
+        Dictionary<int, Process> processes,
         IEnumerable<int> processIds,
         int currentProcessId)
     {

@@ -28,6 +28,8 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
     private readonly Action<string>? log;
     private readonly CancellationTokenSource cancellation = new();
     private readonly Task listener;
+    private readonly object disposalGate = new();
+    private Task? disposalTask;
 
     public ApplicationInstanceRegistry(
         string dataDirectory,
@@ -62,7 +64,7 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
         recordPath = Path.Combine(directory, $"{current.Id}-{startTicks}.json");
         WriteRecord(Current);
         listener = ListenAsync(cancellation.Token);
-        log?.Invoke(
+        TryLog(
             $"Registered update instance PID {current.Id} at '{canonicalPath}'.");
     }
 
@@ -88,46 +90,15 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
 
         foreach (var path in paths)
         {
-            if (string.Equals(
-                Path.GetFullPath(path),
-                recordPath,
-                OperatingSystem.IsWindows()
-                    ? StringComparison.OrdinalIgnoreCase
-                    : StringComparison.Ordinal))
+            if (IsCurrentRecord(path))
             {
                 continue;
             }
 
-            try
+            var record = ReadRecord(path);
+            if (record is not null)
             {
-                var info = new FileInfo(path);
-                if (!info.Exists || info.Length is <= 0 or > MaximumRecordBytes)
-                {
-                    TryDelete(path);
-                    continue;
-                }
-
-                using var stream = new FileStream(
-                    path,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.ReadWrite | FileShare.Delete);
-                var record = JsonSerializer.Deserialize<ApplicationInstanceRecord>(stream);
-                if (!IsValid(record))
-                {
-                    TryDelete(path);
-                    continue;
-                }
-
-                records.Add(record!);
-            }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or JsonException)
-            {
-                log?.Invoke($"Ignored unreadable update instance record '{path}': "
-                    + exception.Message);
+                records.Add(record);
             }
         }
 
@@ -156,7 +127,7 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
                 ".",
                 pipeName,
                 PipeDirection.InOut,
-                PipeOptions.Asynchronous);
+                PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(
                 cancellationToken);
             timeout.CancelAfter(TimeSpan.FromSeconds(1));
@@ -193,9 +164,18 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
         }
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        cancellation.Cancel();
+        lock (disposalGate)
+        {
+            disposalTask ??= DisposeCoreAsync();
+            return new ValueTask(disposalTask);
+        }
+    }
+
+    private async Task DisposeCoreAsync()
+    {
+        await cancellation.CancelAsync().ConfigureAwait(false);
         try
         {
             await listener.ConfigureAwait(false);
@@ -215,18 +195,12 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            var options = PipeOptions.Asynchronous;
-            if (OperatingSystem.IsWindows())
-            {
-                options |= PipeOptions.CurrentUserOnly;
-            }
-
             await using var pipe = new NamedPipeServerStream(
                 Current.PipeName,
                 PipeDirection.InOut,
                 maxNumberOfServerInstances: 1,
                 PipeTransmissionMode.Byte,
-                options);
+                PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
             try
             {
                 await pipe.WaitForConnectionAsync(cancellationToken)
@@ -269,6 +243,52 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
                 log?.Invoke("Update instance communication failed: "
                     + exception.Message);
             }
+        }
+    }
+
+    private bool IsCurrentRecord(string path)
+    {
+        return string.Equals(
+            Path.GetFullPath(path),
+            recordPath,
+            OperatingSystem.IsWindows()
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal);
+    }
+
+    private ApplicationInstanceRecord? ReadRecord(string path)
+    {
+        try
+        {
+            var info = new FileInfo(path);
+            if (!info.Exists || info.Length is <= 0 or > MaximumRecordBytes)
+            {
+                TryDelete(path);
+                return null;
+            }
+
+            using var stream = new FileStream(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete);
+            var record = JsonSerializer.Deserialize<ApplicationInstanceRecord>(stream);
+            if (IsValid(record))
+            {
+                return record;
+            }
+
+            TryDelete(path);
+            return null;
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or JsonException)
+        {
+            TryLog($"Ignored unreadable update instance record '{path}': "
+                + exception.Message);
+            return null;
         }
     }
 
@@ -366,6 +386,19 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
             exception is IOException or UnauthorizedAccessException)
         {
             // Stale records are validated before use and can be retried later.
+        }
+    }
+
+    private void TryLog(string message)
+    {
+        try
+        {
+            log?.Invoke(message);
+        }
+        catch (Exception exception) when (
+            exception is IOException or InvalidOperationException)
+        {
+            // Diagnostic logging must not interrupt instance coordination.
         }
     }
 }

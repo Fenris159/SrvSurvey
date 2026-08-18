@@ -60,6 +60,30 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
     }
 
     [Fact]
+    public async Task AbortRemovesPreparedCandidateWithoutChangingInstallation()
+    {
+        var fixture = await CreateFixtureAsync();
+        var preparer = new ReleaseInstallationPreparer();
+        var preparation = await preparer.PrepareAsync(
+            Version,
+            "win-x64",
+            fixture.ReadyDirectory,
+            fixture.ManifestSha256,
+            fixture.InstallationDirectory,
+            []);
+        Assert.True(Directory.Exists(preparation.CandidateDirectory));
+
+        await preparer.AbortAsync(preparation);
+
+        Assert.False(Directory.Exists(preparation.CandidateDirectory));
+        Assert.Equal(
+            fixture.OldEntryPoint,
+            await File.ReadAllBytesAsync(Path.Combine(
+                fixture.InstallationDirectory,
+                "SrvSurvey.Desktop.exe")));
+    }
+
+    [Fact]
     public async Task FailedHealthConfirmationRestoresOldInstallationByteForByte()
     {
         var fixture = await CreateFixtureAsync();

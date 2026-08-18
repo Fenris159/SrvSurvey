@@ -9,10 +9,11 @@ namespace SrvSurvey.Desktop.Theming;
 
 public sealed class LegacyOverlayThemeStore
 {
+    private const string HeaderKey = "header";
     private static readonly IReadOnlyDictionary<string, Color> DefaultColors =
         new Dictionary<string, Color>(StringComparer.Ordinal)
         {
-            ["header"] = Color.FromArgb(255, 204, 0, 3),
+            [HeaderKey] = Color.FromArgb(255, 204, 0, 3),
             ["orange"] = Color.FromArgb(255, 255, 111, 0),
             ["orangeDark"] = Color.FromArgb(255, 95, 48, 3),
             ["cyan"] = Color.FromArgb(255, 84, 223, 237),
@@ -239,7 +240,7 @@ public sealed class LegacyOverlayThemeStore
         Dictionary<string, Color> colors)
     {
         var previousHeader = Color.FromArgb(255, 255, 255, 0);
-        if (!colors.TryGetValue("header", out var header)
+        if (!colors.TryGetValue(HeaderKey, out var header)
             || header != previousHeader)
         {
             return;
@@ -251,16 +252,21 @@ public sealed class LegacyOverlayThemeStore
             "orangeDark",
             "cyan",
             "cyanDark",
+            "red",
+            "redDark",
             "yellow",
+            "green",
+            "greenDark",
             "white",
+            "black",
             "menuGold",
             "grey",
         ];
         if (unchangedGeneralKeys.All(key =>
-                colors.TryGetValue(key, out var color)
-                && color == DefaultColors[key]))
+                !colors.TryGetValue(key, out var color)
+                || color == DefaultColors[key]))
         {
-            colors["header"] = DefaultColors["header"];
+            colors[HeaderKey] = DefaultColors[HeaderKey];
         }
     }
 
