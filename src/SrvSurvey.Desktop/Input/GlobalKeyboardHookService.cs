@@ -171,10 +171,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
             }
         }
 
-        if (pendingStatus is not null)
-        {
-            SetStatus(pendingStatus, statusBeforeStart);
-        }
+        PublishPendingStatus(pendingStatus, statusBeforeStart);
 
         if (stoppedTask is not null)
         {
@@ -394,6 +391,16 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         }
 
         StatusChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void PublishPendingStatus(
+        string? pendingStatus,
+        string? expectedStatus)
+    {
+        if (pendingStatus is not null)
+        {
+            SetStatus(pendingStatus, expectedStatus);
+        }
     }
 }
 

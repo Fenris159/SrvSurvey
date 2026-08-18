@@ -64,15 +64,19 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
         ArgumentNullException.ThrowIfNull(onStatusChanged);
 
         var initialized = false;
-        var lifecycleEntered = false;
         try
         {
             await SdlLifecycleGate.WaitAsync(cancellationToken);
-            lifecycleEntered = true;
-            initialized = await Dispatcher.UIThread.InvokeAsync(
-                () => SDL.InitSubSystem(InputSubsystems));
-            SdlLifecycleGate.Release();
-            lifecycleEntered = false;
+            try
+            {
+                initialized = await Dispatcher.UIThread.InvokeAsync(
+                    () => SDL.InitSubSystem(InputSubsystems));
+            }
+            finally
+            {
+                SdlLifecycleGate.Release();
+            }
+
             if (!initialized)
             {
                 onStatusChanged(new ControllerBackendStatus(
@@ -137,20 +141,16 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
         }
         finally
         {
-            try
+            if (initialized)
             {
-                if (initialized)
+                await SdlLifecycleGate.WaitAsync(CancellationToken.None)
+                    .ConfigureAwait(false);
+                try
                 {
-                    await SdlLifecycleGate.WaitAsync(CancellationToken.None)
-                        .ConfigureAwait(false);
-                    lifecycleEntered = true;
                     await Dispatcher.UIThread.InvokeAsync(
                         () => SDL.QuitSubSystem(InputSubsystems));
                 }
-            }
-            finally
-            {
-                if (lifecycleEntered)
+                finally
                 {
                     SdlLifecycleGate.Release();
                 }
