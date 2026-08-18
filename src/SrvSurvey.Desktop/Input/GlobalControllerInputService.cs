@@ -20,8 +20,9 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
         Justification = "The run observer disposes the captured source after the controller loop exits.")]
     private CancellationTokenSource? runCancellation;
     private Task? runTask;
+    private Task? disposalTask;
     private long runVersion;
-    private bool disposed;
+    private volatile bool disposed;
     private string status;
 
     public GlobalControllerInputService(
@@ -87,6 +88,7 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
         long version;
         lock (lifecycleLock)
         {
+            ObjectDisposedException.ThrowIf(disposed, this);
             if (runCancellation is not null)
             {
                 return;
@@ -142,15 +144,19 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
         }
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        if (disposed)
+        lock (lifecycleLock)
         {
-            return;
+            disposalTask ??= DisposeCoreAsync();
+            return new ValueTask(disposalTask);
         }
+    }
 
+    private async Task DisposeCoreAsync()
+    {
         disposed = true;
-        await WaitForRunToStopAsync(StopRun());
+        await WaitForRunToStopAsync(StopRun()).ConfigureAwait(false);
         gameWindowTracker.Dispose();
     }
 
@@ -296,16 +302,12 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
 
     private async Task RestartAfterStopAsync(Task? stoppedTask)
     {
-        await WaitForRunToStopAsync(stoppedTask);
-        if (!disposed && Volatile.Read(ref settings).ControllerEnabled)
+        await WaitForRunToStopAsync(stoppedTask).ConfigureAwait(false);
+        lock (lifecycleLock)
         {
-            try
+            if (!disposed && Volatile.Read(ref settings).ControllerEnabled)
             {
                 Start();
-            }
-            catch (ObjectDisposedException) when (disposed)
-            {
-                // Shutdown won the race with a queued settings restart.
             }
         }
     }

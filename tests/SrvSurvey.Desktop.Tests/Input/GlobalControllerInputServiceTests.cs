@@ -181,6 +181,33 @@ public sealed class GlobalControllerInputServiceTests
     public async Task DisposalWaitsForTheBackendToStop()
     {
         var backend = new BlockingStopControllerInputBackend();
+        var tracker = new CountingGameWindowTracker();
+        var service = new GlobalControllerInputService(
+            EnabledSettings(),
+            OverlayHostKind.LinuxX11,
+            tracker,
+            isApplicationActive: () => true,
+            backend);
+
+        service.Start();
+        var firstDisposal = service.DisposeAsync().AsTask();
+        var secondDisposal = service.DisposeAsync().AsTask();
+
+        await backend.CancellationObserved.WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.Same(firstDisposal, secondDisposal);
+        Assert.False(firstDisposal.IsCompleted);
+        Assert.Equal(0, tracker.DisposeCount);
+
+        backend.AllowStop();
+        await Task.WhenAll(firstDisposal, secondDisposal)
+            .WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.Equal(1, tracker.DisposeCount);
+    }
+
+    [Fact]
+    public async Task DisposalPreventsAQueuedRestart()
+    {
+        var backend = new BlockingStopControllerInputBackend();
         var service = new GlobalControllerInputService(
             EnabledSettings(),
             OverlayHostKind.LinuxX11,
@@ -189,13 +216,17 @@ public sealed class GlobalControllerInputServiceTests
             backend);
 
         service.Start();
-        var disposal = service.DisposeAsync().AsTask();
-
+        service.Update(EnabledSettings() with
+        {
+            ControllerDeviceId = "controller-2",
+        });
         await backend.CancellationObserved.WaitAsync(TimeSpan.FromSeconds(2));
-        Assert.False(disposal.IsCompleted);
 
+        var disposal = service.DisposeAsync().AsTask();
         backend.AllowStop();
         await disposal.WaitAsync(TimeSpan.FromSeconds(2));
+
+        Assert.Equal(["controller-1"], backend.StartedDeviceIds);
     }
 
     private static GlobalInputSettings EnabledSettings()
@@ -278,6 +309,8 @@ public sealed class GlobalControllerInputServiceTests
     private sealed class BlockingStopControllerInputBackend
         : IControllerInputBackend
     {
+        private readonly object startedDeviceIdsLock = new();
+        private readonly List<string> startedDeviceIds = [];
         private readonly TaskCompletionSource cancellationObserved = new(
             TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly TaskCompletionSource allowStop = new(
@@ -286,7 +319,16 @@ public sealed class GlobalControllerInputServiceTests
             TaskCreationOptions.RunContinuationsAsynchronously);
         private int runCount;
 
-        public List<string> StartedDeviceIds { get; } = [];
+        public IReadOnlyList<string> StartedDeviceIds
+        {
+            get
+            {
+                lock (startedDeviceIdsLock)
+                {
+                    return [.. startedDeviceIds];
+                }
+            }
+        }
 
         public Task CancellationObserved => cancellationObserved.Task;
 
@@ -298,7 +340,10 @@ public sealed class GlobalControllerInputServiceTests
             Action<ControllerBackendStatus> onStatusChanged,
             CancellationToken cancellationToken)
         {
-            StartedDeviceIds.Add(deviceId);
+            lock (startedDeviceIdsLock)
+            {
+                startedDeviceIds.Add(deviceId);
+            }
             var currentRun = Interlocked.Increment(ref runCount);
             if (currentRun > 1)
             {
@@ -343,6 +388,23 @@ public sealed class GlobalControllerInputServiceTests
 
         public void Dispose()
         {
+        }
+    }
+
+    private sealed class CountingGameWindowTracker : IGameWindowTracker
+    {
+        private int disposeCount;
+
+        public int DisposeCount => Volatile.Read(ref disposeCount);
+
+        public GameWindowSnapshot GetSnapshot()
+        {
+            return GameWindowSnapshot.Unavailable;
+        }
+
+        public void Dispose()
+        {
+            Interlocked.Increment(ref disposeCount);
         }
     }
 }

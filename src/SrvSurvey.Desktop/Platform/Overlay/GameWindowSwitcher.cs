@@ -236,6 +236,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
 {
     private const int RevertToParent = 2;
     private const int PropertyReadLength = 16_384;
+    private readonly object gate = new();
     private nint display;
     private readonly nuint rootWindow;
     private readonly nuint activeWindowAtom;
@@ -296,12 +297,18 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
 
     public bool TryActivateNext()
     {
-        return TryActivate(activateNext: true);
+        lock (gate)
+        {
+            return TryActivate(activateNext: true);
+        }
     }
 
     public bool TryActivateCurrent()
     {
-        return TryActivate(activateNext: false);
+        lock (gate)
+        {
+            return TryActivate(activateNext: false);
+        }
     }
 
     private bool TryActivate(bool activateNext)
@@ -340,7 +347,10 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
 
     public int GetAvailableWindowCount()
     {
-        return display == nint.Zero ? 0 : GetCandidateWindows().Length;
+        lock (gate)
+        {
+            return display == nint.Zero ? 0 : GetCandidateWindows().Length;
+        }
     }
 
     private nint[] GetCandidateWindows()
@@ -360,18 +370,21 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
 
     public void Dispose()
     {
-        var currentDisplay = display;
-        display = nint.Zero;
-        if (currentDisplay != nint.Zero)
+        lock (gate)
         {
-            try
+            var currentDisplay = display;
+            display = nint.Zero;
+            if (currentDisplay != nint.Zero)
             {
-                _ = X11Native.XCloseDisplay(currentDisplay);
-            }
-            finally
-            {
-                X11OverlayPlatformService.UnregisterErrorHandledDisplay(
-                    currentDisplay);
+                try
+                {
+                    _ = X11Native.XCloseDisplay(currentDisplay);
+                }
+                finally
+                {
+                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(
+                        currentDisplay);
+                }
             }
         }
     }

@@ -579,30 +579,63 @@ internal sealed class X11OverlayPlatformService
         nint errorDisplay,
         ref X11Native.XErrorEvent errorEvent)
     {
-        var suppressExpectedLifecycleRace =
-            ShouldSuppressXError(
-                errorDisplay,
-                errorEvent.ErrorCode,
-                errorEvent.RequestCode);
-        var message =
-            suppressExpectedLifecycleRace
-                ? "Ignoring an expected X11 window or capture lifecycle race: "
-                : "X11 request failed and will be delegated to the "
-                    + "previous error handler: ";
-        Trace.TraceWarning(
-            message
-            + $"error {errorEvent.ErrorCode}, request "
-            + $"{errorEvent.RequestCode}.{errorEvent.MinorCode}, resource "
-            + $"{errorEvent.ResourceId}, display {errorDisplay}.");
+        bool suppressExpectedLifecycleRace;
+        try
+        {
+            suppressExpectedLifecycleRace =
+                ShouldSuppressXError(
+                    errorDisplay,
+                    errorEvent.ErrorCode,
+                    errorEvent.RequestCode);
+        }
+        catch (Exception)
+        {
+            return 0;
+        }
+
+        try
+        {
+            var detail =
+                $"error {errorEvent.ErrorCode}, request "
+                + $"{errorEvent.RequestCode}.{errorEvent.MinorCode}, resource "
+                + $"{errorEvent.ResourceId}, display {errorDisplay}.";
+            if (suppressExpectedLifecycleRace)
+            {
+                Trace.TraceInformation(
+                    "Ignoring an expected X11 window or capture lifecycle "
+                        + "race: "
+                        + detail);
+            }
+            else
+            {
+                Trace.TraceWarning(
+                    "X11 request failed and will be delegated to the previous "
+                        + "error handler: "
+                        + detail);
+            }
+        }
+        catch (Exception)
+        {
+            // Logging failures must not change Xlib error handling.
+        }
+
         if (suppressExpectedLifecycleRace)
         {
             return 0;
         }
 
-        return X11Native.InvokeErrorHandler(
-            previousErrorHandlerPointer,
-            errorDisplay,
-            ref errorEvent);
+        try
+        {
+            return X11Native.InvokeErrorHandler(
+                previousErrorHandlerPointer,
+                errorDisplay,
+                ref errorEvent);
+        }
+        catch (Exception)
+        {
+            // Managed exceptions must never unwind through this Xlib callback.
+            return 0;
+        }
     }
 
     internal static void RegisterErrorHandledDisplay(nint errorDisplay)

@@ -123,6 +123,8 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         Task? stoppedTask = null;
         IGlobalHook? startedHook = null;
         Task? startedTask = null;
+        string? pendingStatus = null;
+        string? statusBeforeStart = null;
         lock (lifecycleLock)
         {
             if (disposed
@@ -147,7 +149,8 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
                     pendingHook.HookDisabled += OnHookDisabled;
                     hook = pendingHook;
 
-                    SetStatus("Starting global keyboard input...");
+                    statusBeforeStart = Status;
+                    pendingStatus = "Starting global keyboard input...";
                     startedTask = pendingHook.RunAsync();
                     runTask = startedTask;
                     startedHook = pendingHook;
@@ -161,10 +164,16 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
                         DisposeHook(pendingHook);
                     }
 
-                    SetStatus(
-                        $"Global keyboard input could not start: {exception.Message}");
+                    pendingStatus =
+                        $"Global keyboard input could not start: {exception.Message}";
+                    statusBeforeStart = null;
                 }
             }
+        }
+
+        if (pendingStatus is not null)
+        {
+            SetStatus(pendingStatus, statusBeforeStart);
         }
 
         if (stoppedTask is not null)
@@ -367,11 +376,16 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         }
     }
 
-    private void SetStatus(string status)
+    private void SetStatus(string status, string? expectedStatus = null)
     {
         lock (statusLock)
         {
-            if (string.Equals(this.status, status, StringComparison.Ordinal))
+            if ((expectedStatus is not null
+                    && !string.Equals(
+                        this.status,
+                        expectedStatus,
+                        StringComparison.Ordinal))
+                || string.Equals(this.status, status, StringComparison.Ordinal))
             {
                 return;
             }

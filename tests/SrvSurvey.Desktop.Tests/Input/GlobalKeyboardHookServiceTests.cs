@@ -97,6 +97,24 @@ public sealed class GlobalKeyboardHookServiceTests
     }
 
     [Fact]
+    public async Task ReportsHookStartupFailure()
+    {
+        await using var service = new GlobalKeyboardHookService(
+            EnabledSettings(),
+            OverlayHostKind.LinuxX11,
+            new StubGameWindowTracker(),
+            isApplicationActive: () => true,
+            hookFactory: () => throw new InvalidOperationException("test failure"));
+
+        service.Start();
+
+        Assert.False(service.IsRunning);
+        Assert.Equal(
+            "Global keyboard input could not start: test failure",
+            service.Status);
+    }
+
+    [Fact]
     public async Task DisposalWaitsForInFlightEventBeforeDisposingTracker()
     {
         using var testHook = new TestGlobalHook(TestThreadingMode.EventLoop)

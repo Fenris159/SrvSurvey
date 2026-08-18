@@ -71,6 +71,8 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
             lifecycleEntered = true;
             initialized = await Dispatcher.UIThread.InvokeAsync(
                 () => SDL.InitSubSystem(InputSubsystems));
+            SdlLifecycleGate.Release();
+            lifecycleEntered = false;
             if (!initialized)
             {
                 onStatusChanged(new ControllerBackendStatus(
@@ -139,6 +141,9 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
             {
                 if (initialized)
                 {
+                    await SdlLifecycleGate.WaitAsync(CancellationToken.None)
+                        .ConfigureAwait(false);
+                    lifecycleEntered = true;
                     await Dispatcher.UIThread.InvokeAsync(
                         () => SDL.QuitSubSystem(InputSubsystems));
                 }
