@@ -12,7 +12,7 @@ public sealed class LegacyOverlayThemeStore
     private static readonly IReadOnlyDictionary<string, Color> DefaultColors =
         new Dictionary<string, Color>(StringComparer.Ordinal)
         {
-            ["header"] = Color.FromArgb(255, 255, 255, 0),
+            ["header"] = Color.FromArgb(255, 204, 0, 3),
             ["orange"] = Color.FromArgb(255, 255, 111, 0),
             ["orangeDark"] = Color.FromArgb(255, 95, 48, 3),
             ["cyan"] = Color.FromArgb(255, 84, 223, 237),
@@ -130,6 +130,7 @@ public sealed class LegacyOverlayThemeStore
                 "Overlay theme");
             _ = OverlayThemePresetCatalog.AddMissingHeaderColor(colors);
             UpgradeLegacyDefaultMutedColor(colors);
+            UpgradeLegacyDefaultHeaderColor(colors);
             _ = OverlayThemePresetCatalog.TryUpgradeLegacyBiologyPalette(colors);
             _ = OverlayThemePresetCatalog.AddMissingExpandedBiologyColors(colors);
             foreach (var fallback in DefaultColors)
@@ -231,6 +232,35 @@ public sealed class LegacyOverlayThemeStore
                 && color == DefaultColors[key]))
         {
             colors["grey"] = DefaultColors["grey"];
+        }
+    }
+
+    private static void UpgradeLegacyDefaultHeaderColor(
+        Dictionary<string, Color> colors)
+    {
+        var previousHeader = Color.FromArgb(255, 255, 255, 0);
+        if (!colors.TryGetValue("header", out var header)
+            || header != previousHeader)
+        {
+            return;
+        }
+
+        string[] unchangedGeneralKeys =
+        [
+            "orange",
+            "orangeDark",
+            "cyan",
+            "cyanDark",
+            "yellow",
+            "white",
+            "menuGold",
+            "grey",
+        ];
+        if (unchangedGeneralKeys.All(key =>
+                colors.TryGetValue(key, out var color)
+                && color == DefaultColors[key]))
+        {
+            colors["header"] = DefaultColors["header"];
         }
     }
 

@@ -167,9 +167,9 @@ public sealed class ReleaseUpdateViewModelTests
                     InstallationPreparer = new StubPreparer(calls),
                     HandoffService = new StubHandoff(calls),
                     InstanceManager = new StubInstanceManager(2, calls),
-                    ConfirmMultipleInstances = count =>
+                    ConfirmMultipleInstances = scan =>
                     {
-                        calls.Add($"confirm:{count}");
+                        calls.Add($"confirm:{scan.TotalCount}");
                         return Task.FromResult(true);
                     },
                     DataDirectory = temporaryDirectory,
@@ -194,6 +194,7 @@ public sealed class ReleaseUpdateViewModelTests
                     "download",
                     "stage",
                     "prepare",
+                    "detect",
                     "handoff",
                     "shutdown",
                 ],
@@ -230,9 +231,9 @@ public sealed class ReleaseUpdateViewModelTests
                     InstallationPreparer = new StubPreparer(calls),
                     HandoffService = new StubHandoff(calls),
                     InstanceManager = new StubInstanceManager(1, calls),
-                    ConfirmMultipleInstances = count =>
+                    ConfirmMultipleInstances = scan =>
                     {
-                        calls.Add($"confirm:{count}");
+                        calls.Add($"confirm:{scan.TotalCount}");
                         return Task.FromResult(false);
                     },
                     DataDirectory = temporaryDirectory,
@@ -486,21 +487,37 @@ public sealed class ReleaseUpdateViewModelTests
         }
     }
 
-    private sealed class StubInstanceManager(
-        int otherCount,
-        List<string>? calls = null) : IApplicationInstanceManager
+    private sealed class StubInstanceManager : IApplicationInstanceManager
     {
-        public Task<int> CountOtherInstancesAsync(
+        private readonly List<string>? calls;
+        private int otherCount;
+
+        public StubInstanceManager(int otherCount, List<string>? calls = null)
+        {
+            this.otherCount = otherCount;
+            this.calls = calls;
+        }
+
+        public Task<ApplicationInstanceScan> ScanOtherInstancesAsync(
             CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             calls?.Add("detect");
-            return Task.FromResult(otherCount);
+            return Task.FromResult(new ApplicationInstanceScan(otherCount, 0));
+        }
+
+        public async Task<int> CountOtherInstancesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            var scan = await ScanOtherInstancesAsync(cancellationToken);
+            return scan.TotalCount;
         }
 
         public Task CloseOtherInstancesAsync(
             CancellationToken cancellationToken = default)
         {
             calls?.Add("close");
+            otherCount = 0;
             return Task.CompletedTask;
         }
     }

@@ -10,16 +10,15 @@ public sealed class OverlayPresentationContractTests
         {
             ["BodyInformationOverlayPresentation.axaml"] = "BODY INFORMATION",
             ["FleetCarrierRouteOverlayPresentation.axaml"] = "FLEET CARRIER ROUTE",
-            ["FlightWarningOverlayPresentation.axaml"] = "FLIGHT WARNING",
             ["FssInfoOverlayPresentation.axaml"] = "FSS SURVEY",
             ["GalaxyMapOverlayPresentation.axaml"] = "GALAXY MAP",
             ["GroundTargetOverlayPresentation.axaml"] = "SURFACE TARGET",
             ["HumanSiteOverlayPresentation.axaml"] = "HUMAN SETTLEMENT",
             ["JumpInfoOverlayPresentation.axaml"] = "NEXT JUMP",
             ["LastFssBodyOverlayPresentation.axaml"] = "LAST FSS SCAN",
-            ["MassacreMissionsOverlayPresentation.axaml"] = "Massacre missions",
+            ["MassacreMissionsOverlayPresentation.axaml"] = "MASSACRE MISSIONS",
             ["PriorScansOverlayPresentation.axaml"] = "CANONN PRIOR SCANS",
-            ["RouteBioOverlayPresentation.axaml"] = "Route bodies",
+            ["RouteBioOverlayPresentation.axaml"] = "ROUTE BODIES",
             ["SphericalSearchOverlayPresentation.axaml"] = "Search guidance",
             ["StationInfoOverlayPresentation.axaml"] = "STATION INFORMATION",
             ["SurfaceSurveyOverlayPresentation.axaml"] = "SURFACE SURVEY",
@@ -78,7 +77,7 @@ public sealed class OverlayPresentationContractTests
             "FlightWarningText", "FlightWarningBrush", "FlightWarningDimBrush", "FlightWarningNote", "IsExtremeFlightWarning", "MinHeight=\"1\"", "SizeToContent=\"WidthAndHeight\"",
         ]),
         Contract("PlotFootCombat", ["src/SrvSurvey.Desktop/FootCombatOverlayWindow.axaml", "src/SrvSurvey.Desktop/FootCombatOverlayPresentation.axaml"], [
-            "SettlementName", "FootCombatKills",
+            "SettlementHeader", "FootCombatKills",
         ]),
         Contract("PlotFSS", ["src/SrvSurvey.Desktop/LastFssBodyOverlayWindow.axaml", "src/SrvSurvey.Desktop/LastFssBodyOverlayPresentation.axaml"], [
             "LastFssBodyName", "LastFssBodyDistance", "LastFssScanValue", "LastFssMappedValue",
@@ -1033,6 +1032,86 @@ public sealed class OverlayPresentationContractTests
             Assert.Null(header.Attribute("Foreground"));
             Assert.Null(header.Attribute("FontSize"));
         }
+    }
+
+    [Fact]
+    public void FlightWarningHeaderUsesTheDynamicSeverityColor()
+    {
+        var document = XDocument.Load(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "FlightWarningOverlayPresentation.axaml"));
+        var header = document.Descendants().Single(element =>
+            element.Name.LocalName == "TextBlock"
+            && element.Attribute("Text")?.Value == "FLIGHT WARNING");
+
+        Assert.Equal("overlay-header", header.Attribute("Classes")?.Value);
+        Assert.Equal(
+            "{Binding Survey.FlightWarningBrush}",
+            header.Attribute("Foreground")?.Value);
+        Assert.Null(header.Attribute("FontSize"));
+        Assert.Null(header.Attribute("FontWeight"));
+    }
+
+    [Fact]
+    public void RequestedDynamicAndGuardianHeadersUseTheSharedHeaderRole()
+    {
+        var desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
+        var expectedBindings = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["ColonizationCommodityOverlayPresentation.axaml"] = "HeaderTitle",
+            ["FootCombatOverlayPresentation.axaml"] = "Combat.SettlementHeader",
+            ["GuardianSystemOverlayPresentation.axaml"] = "Guardian.CurrentSystemGuardianTitle",
+            ["RamTahOverlayPresentation.axaml"] = "Guardian.CurrentRamTahTitle",
+        };
+
+        foreach (var expected in expectedBindings)
+        {
+            var document = XDocument.Load(Path.Combine(desktop, expected.Key));
+            var header = document.Descendants()
+                .Single(element =>
+                    element.Name.LocalName == "TextBlock"
+                    && string.Equals(
+                        element.Attribute("Text")?.Value,
+                        $"{{Binding {expected.Value}}}",
+                        StringComparison.Ordinal));
+
+            Assert.Equal("overlay-header", header.Attribute("Classes")?.Value);
+            Assert.Null(header.Attribute("Foreground"));
+            Assert.Null(header.Attribute("FontSize"));
+        }
+
+        var guardianStatus = XDocument.Load(Path.Combine(
+            desktop,
+            "GuardianStatusOverlayPresentation.axaml"));
+        var statusHeaders = guardianStatus.Descendants()
+            .Where(element =>
+                element.Name.LocalName == "TextBlock"
+                && element.Attribute("Text")?.Value.Contains(
+                    "Title",
+                    StringComparison.Ordinal) == true)
+            .ToArray();
+        Assert.NotEmpty(statusHeaders);
+        Assert.All(statusHeaders, header =>
+            Assert.Equal("overlay-header", header.Attribute("Classes")?.Value));
+
+        foreach (var fileName in new[]
+        {
+            "GuardianSystemOverlayPresentation.axaml",
+            "GuardianStatusOverlayPresentation.axaml",
+            "RamTahOverlayPresentation.axaml",
+        })
+        {
+            var markup = File.ReadAllText(Path.Combine(desktop, fileName));
+            Assert.Contains("general-header-rule", markup);
+        }
+
+        var guardianSite = File.ReadAllText(Path.Combine(
+            desktop,
+            "GuardianSiteOverlayPresentation.axaml"));
+        Assert.Contains("Classes=\"guardian-title\"", guardianSite);
+        Assert.DoesNotContain("Classes=\"overlay-header\"", guardianSite);
     }
 
     private static string FindRepositoryRoot()

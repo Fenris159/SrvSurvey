@@ -69,6 +69,7 @@ public sealed partial class App : Application
     private MainWindow? mainWindow;
     private IClassicDesktopStyleApplicationLifetime? desktopLifetime;
     private ApplicationLogService? applicationLogService;
+    private ApplicationInstanceManager? applicationInstanceManager;
     private GlobalInputSettingsViewModel? globalInputSettings;
     private IGameTextInputService? gameTextInputService;
     private bool manualOverlaySuppressed;
@@ -188,7 +189,11 @@ public sealed partial class App : Application
             RestartApplicationAsync("Published reference data refreshed"));
         viewModel.Localization.SetRestartHandler(() =>
             RestartApplicationAsync("Language preference changed"));
-        ConfigureReleaseInstaller(viewModel, desktop, appDataPaths);
+        ConfigureReleaseInstaller(
+            viewModel,
+            desktop,
+            appDataPaths,
+            applicationLog);
 
         viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
         viewModel.JournalSettings.RestartRequested +=
@@ -377,14 +382,21 @@ public sealed partial class App : Application
         desktop.Exit += async (_, _) =>
             await HandleDesktopExitAsync(viewModel, applicationLog);
         ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
+        CleanReleaseUpdateHistory(appDataPaths, applicationLog);
     }
 
-    private static void ConfigureReleaseInstaller(
+    private void ConfigureReleaseInstaller(
         MainWindowViewModel viewModel,
         IClassicDesktopStyleApplicationLifetime desktop,
-        AppDataPaths appDataPaths)
+        AppDataPaths appDataPaths,
+        ApplicationLogService applicationLog)
     {
         var appImagePath = Environment.GetEnvironmentVariable("APPIMAGE");
+        applicationInstanceManager = new ApplicationInstanceManager(
+            appDataPaths.DataDirectory,
+            async () => await Dispatcher.UIThread.InvokeAsync(
+                () => desktop.Shutdown()),
+            message => applicationLog.Append(message));
         viewModel.ReleaseUpdates.ConfigureInstaller(
             new ReleaseInstallerConfiguration
             {
@@ -392,11 +404,11 @@ public sealed partial class App : Application
                 StagingService = new ReleasePackageStagingService(),
                 InstallationPreparer = new ReleaseInstallationPreparer(),
                 HandoffService = new ApplicationUpdateHandoffService(),
-                InstanceManager = new ApplicationInstanceManager(),
-                ConfirmMultipleInstances = otherCount =>
+                InstanceManager = applicationInstanceManager,
+                ConfirmMultipleInstances = scan =>
                     ConfirmMultipleApplicationInstancesAsync(
                         desktop,
-                        otherCount),
+                        scan),
                 DataDirectory = appDataPaths.DataDirectory,
                 InstallationDirectory = AppContext.BaseDirectory,
                 StartupArguments = Program.StartupArguments,
@@ -412,7 +424,7 @@ public sealed partial class App : Application
 
     private static async Task<bool> ConfirmMultipleApplicationInstancesAsync(
         IClassicDesktopStyleApplicationLifetime desktop,
-        int otherInstanceCount)
+        ApplicationInstanceScan scan)
     {
         if (!Dispatcher.UIThread.CheckAccess())
         {
@@ -425,7 +437,9 @@ public sealed partial class App : Application
             return false;
         }
 
-        var dialog = new MultipleApplicationInstancesDialog(otherInstanceCount);
+        var dialog = new MultipleApplicationInstancesDialog(
+            scan.TotalCount,
+            scan.UnverifiedCount);
         return await dialog.ShowDialog<bool>(owner);
     }
 
@@ -632,6 +646,12 @@ public sealed partial class App : Application
         Dispatcher.UIThread.UnhandledException -= HandleUiException;
         TaskScheduler.UnobservedTaskException -=
             HandleUnobservedTaskException;
+        if (applicationInstanceManager is not null)
+        {
+            await applicationInstanceManager.DisposeAsync();
+            applicationInstanceManager = null;
+        }
+
         applicationLog.Append("Application exit");
         await DisposeDesktopServicesAsync(viewModel);
     }
@@ -727,6 +747,64 @@ public sealed partial class App : Application
             applicationLog.Append(
                 "Update replacement health confirmation failed: "
                 + exception.Message);
+        }
+    }
+
+    private static void CleanReleaseUpdateHistory(
+        AppDataPaths appDataPaths,
+        ApplicationLogService applicationLog)
+    {
+        try
+        {
+            var cacheResult = new ReleasePackageCacheCleaner()
+                .Clean(appDataPaths.DataDirectory);
+            if (cacheResult.DeletedVersions > 0)
+            {
+                applicationLog.Append(
+                    $"Removed {cacheResult.DeletedVersions:N0} stale update cache versions "
+                    + $"({cacheResult.DeletedPackageVersions:N0} package, "
+                    + $"{cacheResult.DeletedStagedVersions:N0} staged).");
+            }
+
+            foreach (var failure in cacheResult.Failures)
+            {
+                applicationLog.Append(
+                    "Update cache cleanup retained an inaccessible directory: "
+                    + failure);
+            }
+
+            if (!File.Exists(Path.Combine(
+                AppContext.BaseDirectory,
+                "release-package.json")))
+            {
+                return;
+            }
+
+            var installationResult = new ReleaseInstallationHistoryCleaner()
+                .Clean(AppContext.BaseDirectory);
+            if (installationResult.DeletedDirectories > 0)
+            {
+                applicationLog.Append(
+                    $"Removed {installationResult.DeletedDirectories:N0} stale update directories "
+                    + $"({installationResult.DeletedBackupDirectories:N0} backup, "
+                    + $"{installationResult.DeletedUpdateDirectories:N0} candidate, "
+                    + $"{installationResult.DeletedFailedDirectories:N0} failed).");
+            }
+
+            foreach (var failure in installationResult.Failures)
+            {
+                applicationLog.Append(
+                    "Update history cleanup retained an inaccessible directory: "
+                    + failure);
+            }
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            applicationLog.Append(
+                "Update history cleanup could not run: " + exception.Message);
         }
     }
 

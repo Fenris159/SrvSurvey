@@ -108,6 +108,10 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
                 "The SrvSurvey installation directory name is invalid.");
         }
 
+        _ = new ReleaseInstallationHistoryCleaner().Clean(
+            installationRoot,
+            [readyRoot]);
+
         var entryPoint = runtimeIdentifier switch
         {
             "win-x64" => "SrvSurvey.Desktop.exe",

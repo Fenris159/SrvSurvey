@@ -28,6 +28,10 @@
           <TextBlock Classes="muted"
                      Text="The other instances will close before downloading begins. This instance will remain open until the verified update helper is ready, then close normally to complete the update."
                      TextWrapping="Wrap" />
+          <TextBlock x:Name="VerificationWarningText"
+                     Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="False"
+                     TextWrapping="Wrap" />
         </StackPanel>
       </Border>
     </StackPanel>

@@ -281,6 +281,18 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     }
 
     [Fact]
+    public void CustomHeaderColorIsNotMigrated()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "theme.json");
+        File.WriteAllText(path, "{\"header\":\"#123456\"}");
+
+        var theme = new LegacyOverlayThemeStore(path).Load();
+
+        Assert.Equal(Color.Parse("#123456"), theme.GetColor("header"));
+    }
+
+    [Fact]
     public void NonPresetLegacyBiologyPaletteDerivesExpandedCustomRoles()
     {
         Directory.CreateDirectory(temporaryDirectory);

@@ -299,7 +299,7 @@ internal static class OverlayEditorPreviewCatalog
         return new BiologySurveyViewModel
         {
             Mode = BiologySurveyMode.System,
-            Title = "System biology",
+            Title = "SYSTEM BIOLOGY",
             Heading = State.CurrentSystem,
             ProgressText = "4 of 12 biological signals analyzed",
             Bodies =
@@ -419,7 +419,7 @@ internal static class OverlayEditorPreviewCatalog
         new()
         {
             Mode = BiologySurveyMode.Body,
-            Title = "Body Predictions",
+            Title = "BODY PREDICTIONS",
             SelectedBodyId = 3,
             Heading = State.CurrentBody,
             ProgressText = "4 biological signals",
@@ -456,7 +456,7 @@ internal static class OverlayEditorPreviewCatalog
         new()
         {
             Mode = BiologySurveyMode.Body,
-            Title = "Identified Bio",
+            Title = "IDENTIFIED BIO",
             SelectedBodyId = 3,
             Heading = State.CurrentBody,
             ProgressText = "3 biological signals",

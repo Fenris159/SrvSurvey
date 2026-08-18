@@ -18,6 +18,9 @@
     <Setter Property="Background" Value="{DynamicResource RavenGuardianHeaderBrush}" />
     <Setter Property="Opacity" Value="0.65" />
   </Style>
+  <Style Selector="Border.guardian-header-rule.general-header-rule">
+    <Setter Property="Background" Value="{DynamicResource RavenHeaderBrush}" />
+  </Style>
 
   <Style Selector="TextBlock.guardian-title">
     <Setter Property="FontFamily"

@@ -231,7 +231,7 @@ internal sealed class GuardianOverlayPreviewState
     public string GuardianOnFootFooter =>
         "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.";
 
-    public string GuardianStatusObeliskTitle => "A01 - History #12";
+    public string GuardianStatusObeliskTitle => "A01 - HISTORY #12";
 
     public string GuardianStatusObeliskLogText => "Ram Tah log H12";
 
@@ -286,13 +286,13 @@ internal sealed class GuardianOverlayPreviewState
 
     public IReadOnlyList<GuardianSiteRowViewModel> CurrentSystemSites { get; }
 
-    public string CurrentSystemGuardianTitle => "Guardian sites: 2";
+    public string CurrentSystemGuardianTitle => "GUARDIAN SITES: 2";
 
     public IReadOnlyList<GuardianRamTahLogViewModel> CurrentRamTahLogs { get; }
 
     public bool HasCurrentRamTahLogs => true;
 
-    public string CurrentRamTahTitle => "Unscanned Ram Tah logs: 3";
+    public string CurrentRamTahTitle => "UNSCANNED RAM TAH LOGS: 3";
 
     public string ActiveSiteTitle => "GR 504 - Beta ruins #1";
 

@@ -49,6 +49,24 @@ public sealed class ApplicationInstanceManagerTests
     }
 
     [Fact]
+    public async Task ScanIncludesUnverifiedMatchingProcesses()
+    {
+        var source = new StubProcessSource([], unverifiedCount: 2);
+        var manager = new ApplicationInstanceManager(
+            source,
+            TimeSpan.Zero,
+            TimeSpan.Zero);
+
+        var scan = await manager.ScanOtherInstancesAsync();
+
+        Assert.Equal(0, scan.ConfirmedCount);
+        Assert.Equal(2, scan.UnverifiedCount);
+        Assert.Equal(2, scan.TotalCount);
+        await Assert.ThrowsAsync<IOException>(
+            () => manager.CloseOtherInstancesAsync());
+    }
+
+    [Fact]
     public async Task CloseUsesGracefulExitAndImmediatelyForcesUnsupportedInstances()
     {
         var graceful = new StubProcess(10)
@@ -142,11 +160,75 @@ public sealed class ApplicationInstanceManagerTests
         Assert.True(instance.HasExited);
         if (OperatingSystem.IsWindows())
         {
-            Assert.False(instance.RequestGracefulExit());
+            Assert.False(await instance.RequestGracefulExitAsync(
+                CancellationToken.None));
         }
 
         instance.ForceTerminate();
         await instance.WaitForExitAsync(CancellationToken.None);
+    }
+
+    [Fact]
+    public void CurrentProcessPathCanBeResolvedAndCanonicalized()
+    {
+        using var process = Process.GetCurrentProcess();
+
+        var resolved = ApplicationProcessPathResolver.TryResolve(
+            process,
+            out var path,
+            out var method,
+            out var error);
+
+        Assert.True(resolved, error);
+        Assert.NotNull(path);
+        Assert.True(Path.IsPathFullyQualified(path!));
+        Assert.False(string.IsNullOrWhiteSpace(method));
+    }
+
+    [Fact]
+    public void WindowsRestartManagerFindsTheCurrentExecutableOwner()
+    {
+        if (!OperatingSystem.IsWindows() || Environment.ProcessPath is null)
+        {
+            return;
+        }
+
+        var processIds = WindowsRestartManagerProcessFinder
+            .FindLockingProcessIds(Environment.ProcessPath);
+
+        Assert.Contains(Environment.ProcessId, processIds);
+    }
+
+    [Fact]
+    public async Task CooperativeRegistryAcceptsVerifiedShutdownRequest()
+    {
+        var dataDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-instance-registry-tests-{Guid.NewGuid():N}");
+        var requested = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        try
+        {
+            await using var registry = new ApplicationInstanceRegistry(
+                dataDirectory,
+                () =>
+                {
+                    requested.TrySetResult();
+                    return Task.CompletedTask;
+                });
+
+            Assert.True(await ApplicationInstanceRegistry.RequestShutdownAsync(
+                registry.Current.PipeName,
+                CancellationToken.None));
+            await requested.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        }
+        finally
+        {
+            if (Directory.Exists(dataDirectory))
+            {
+                Directory.Delete(dataDirectory, recursive: true);
+            }
+        }
     }
 
     private static ApplicationInstanceManager CreateManager(
@@ -159,11 +241,14 @@ public sealed class ApplicationInstanceManagerTests
     }
 
     private sealed class StubProcessSource(
-        IReadOnlyList<StubProcess> processes) : IApplicationInstanceProcessSource
+        IReadOnlyList<StubProcess> processes,
+        int unverifiedCount = 0) : IApplicationInstanceProcessSource
     {
-        public IReadOnlyList<IApplicationInstanceProcess> FindOtherInstances()
+        public ApplicationInstanceDiscovery DiscoverOtherInstances()
         {
-            return processes.Cast<IApplicationInstanceProcess>().ToArray();
+            return new ApplicationInstanceDiscovery(
+                processes.Cast<IApplicationInstanceProcess>().ToArray(),
+                unverifiedCount);
         }
     }
 
@@ -185,10 +270,12 @@ public sealed class ApplicationInstanceManagerTests
 
         public bool Disposed { get; private set; }
 
-        public bool RequestGracefulExit()
+        public Task<bool> RequestGracefulExitAsync(
+            CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             GracefulExitRequests++;
-            return GracefulExitSupported;
+            return Task.FromResult(GracefulExitSupported);
         }
 
         public void ForceTerminate()

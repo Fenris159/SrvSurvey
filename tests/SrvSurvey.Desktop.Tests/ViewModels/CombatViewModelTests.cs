@@ -38,6 +38,7 @@ public sealed class CombatViewModelTests : IDisposable
 
         Assert.True(viewModel.ShouldShowFootCombat);
         Assert.Equal("Test Base", viewModel.SettlementName);
+        Assert.Equal("TEST BASE", viewModel.SettlementHeader);
         Assert.Equal(1, viewModel.FootCombatKills);
         Assert.Equal("17,361 CR", viewModel.FootCombatBonds);
 

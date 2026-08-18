@@ -41,6 +41,8 @@ public sealed class ColonizationCommodityOverlayViewModel
 
     public string Title => Plan.Title;
 
+    public string HeaderTitle => Title.ToUpperInvariant();
+
     public IReadOnlyList<string> ProjectNames => projectNames;
 
     public bool HasMultipleProjects => ProjectNames.Count > 1;
@@ -293,6 +295,7 @@ public sealed class ColonizationCommodityOverlayViewModel
     private void RaisePlanProperties()
     {
         OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(HeaderTitle));
         OnPropertyChanged(nameof(ProjectNames));
         OnPropertyChanged(nameof(HasMultipleProjects));
         OnPropertyChanged(nameof(HasRows));

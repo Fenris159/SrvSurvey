@@ -19,7 +19,7 @@
           RowSpacing="3">
       <StackPanel>
         <TextBlock Classes="overlay-header"
-                   Text="Route bodies" />
+                   Text="ROUTE BODIES" />
         <TextBlock Foreground="{DynamicResource RavenTextBrush}"
                    Classes="overlay-body"
                    FontWeight="SemiBold"
@@ -31,7 +31,7 @@
 
       <Border Grid.Row="1"
               Classes="overlay-divider"
-              Background="{DynamicResource RavenWarningBrush}"
+              Background="{DynamicResource RavenHeaderBrush}"
               Opacity="0.65" />
 
       <controls:RouteBioTargetList x:Name="TargetList"

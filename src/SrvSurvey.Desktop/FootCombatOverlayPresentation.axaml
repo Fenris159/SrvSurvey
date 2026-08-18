@@ -14,10 +14,8 @@
           CornerRadius="5">
     <StackPanel Spacing="4">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                   FontSize="12"
-                   FontWeight="SemiBold"
-                   Text="{Binding Combat.SettlementName}"
+        <TextBlock Classes="overlay-header"
+                   Text="{Binding Combat.SettlementHeader}"
                    TextTrimming="CharacterEllipsis" />
         <TextBlock Grid.Column="1"
                    Foreground="{DynamicResource RavenAccentBrush}"

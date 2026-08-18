@@ -1,33 +1,39 @@
-# SrvSurvey-XP 2.1.3.0-rc.32
+# SrvSurvey-XP 2.1.3.0-rc.33
 
-This release candidate adds flexible start-point and deferred-system management
-to active Boxel searches. The changes below are the delta from
-`2.1.3.0-rc.31`.
+This release candidate improves update reliability and standardizes overlay
+headers. The changes below are the delta from `2.1.3.0-rc.32`.
 
-## What's changed since 2.1.3.0-rc.31
+## What's changed since 2.1.3.0-rc.32
 
-- Adds a persistent **Deferred** system state. Deferred systems remain available
-  for later surveying, are skipped by next-target selection and automatic copy,
-  and do not count as completed systems.
-- Groups deferred systems after active systems while preserving suffix order in
-  both ascending and descending searches. **Show Only Deferred** provides a
-  focused view with correctly recalculated pagination.
-- Replaces the single-row action with a themed radial menu for **Complete**,
-  **Reopen**, **Defer**, and **Start Here**.
-- Makes **Start Here** defer unfinished systems that precede the selected row in
-  the active sort direction, then advances next-target selection and automatic
-  copy from the chosen starting point.
-- Persists deferred systems in saved searches and Commander profiles, updates
-  the Boxel guidance and localized UI, and adds regression coverage for state,
-  persistence, ordering, filtering, pagination, and radial-menu commands.
+- Hardens detection of other running SrvSurvey-XP instances before an update on
+  Windows and Linux. Registered instances receive a cooperative shutdown
+  request, native executable-path checks provide a fallback, and Windows also
+  consults Restart Manager for processes holding the installed executable.
+- Rechecks for running instances immediately before handing control to the
+  updater. An instance that cannot be verified now blocks installation safely
+  instead of risking a partial update or terminating an unrelated process.
+- Bounds accumulated updater history while preserving recent recovery data.
+  Startup and installation cleanup retain the three newest generated backup,
+  update, failed-install, downloaded-package, and staged-package entries, plus
+  entries created within the last 24 hours.
+- Standardizes fixed overlay headers for System Biology, Route Bodies, Guardian
+  guidance except Guardian Site, Ground Combat, Colonization Commodities, and
+  Massacre Missions. These headers now use the shared uppercase Rajdhani header
+  typography and the configured overlay header color.
+- Changes the default overlay header color to `#CC0003`. Flight Warning keeps
+  its established danger-level color progression instead of using the general
+  header color.
+- Adds regression coverage for cross-platform process discovery, cooperative
+  shutdown, Windows Restart Manager detection, safe cleanup retention, and the
+  standardized overlay presentation contracts.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.32`
-- Tag: `xp-v2.1.3.0-rc.32`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.32-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.32-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.32-x86_64.AppImage`
+- Version: `2.1.3.0-rc.33`
+- Tag: `xp-v2.1.3.0-rc.33`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.33-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.33-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.33-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
