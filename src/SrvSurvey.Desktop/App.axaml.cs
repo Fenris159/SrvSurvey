@@ -69,6 +69,12 @@ public sealed partial class App : Application
     private MainWindow? mainWindow;
     private IClassicDesktopStyleApplicationLifetime? desktopLifetime;
     private ApplicationLogService? applicationLogService;
+    private ApplicationInstanceManager? applicationInstanceManager;
+    private readonly CancellationTokenSource releaseHistoryCleanupCancellation =
+        new();
+    private readonly ReleaseUpdateHistoryCleanupCoordinator releaseHistoryCleanup =
+        new();
+    private Task? releaseHistoryCleanupTask;
     private GlobalInputSettingsViewModel? globalInputSettings;
     private IGameTextInputService? gameTextInputService;
     private bool manualOverlaySuppressed;
@@ -137,7 +143,7 @@ public sealed partial class App : Application
         var commanderPreferenceResolution = new CommanderPreferenceResolver(
                 commanderPreferenceStore,
                 new CommanderProfileCatalog(appDataPaths.DataDirectory))
-            .ResolveAsync(commandLineFrontierId)
+            .ResolveAsync(commandLineFrontierId, CancellationToken.None)
             .GetAwaiter()
             .GetResult();
         if (commanderPreferenceResolution.StatusMessage is not null)
@@ -188,7 +194,11 @@ public sealed partial class App : Application
             RestartApplicationAsync("Published reference data refreshed"));
         viewModel.Localization.SetRestartHandler(() =>
             RestartApplicationAsync("Language preference changed"));
-        ConfigureReleaseInstaller(viewModel, desktop, appDataPaths);
+        ConfigureReleaseInstaller(
+            viewModel,
+            desktop,
+            appDataPaths,
+            applicationLog);
 
         viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
         viewModel.JournalSettings.RestartRequested +=
@@ -377,26 +387,37 @@ public sealed partial class App : Application
         desktop.Exit += async (_, _) =>
             await HandleDesktopExitAsync(viewModel, applicationLog);
         ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
+        releaseHistoryCleanupTask = CleanReleaseUpdateHistoryAsync(
+            appDataPaths,
+            applicationLog,
+            releaseHistoryCleanupCancellation.Token);
     }
 
-    private static void ConfigureReleaseInstaller(
+    private void ConfigureReleaseInstaller(
         MainWindowViewModel viewModel,
         IClassicDesktopStyleApplicationLifetime desktop,
-        AppDataPaths appDataPaths)
+        AppDataPaths appDataPaths,
+        ApplicationLogService applicationLog)
     {
         var appImagePath = Environment.GetEnvironmentVariable("APPIMAGE");
+        applicationInstanceManager = new ApplicationInstanceManager(
+            appDataPaths.DataDirectory,
+            async () => await Dispatcher.UIThread.InvokeAsync(
+                () => desktop.Shutdown()),
+            message => applicationLog.Append(message));
         viewModel.ReleaseUpdates.ConfigureInstaller(
             new ReleaseInstallerConfiguration
             {
                 DownloadService = new ReleasePackageDownloadService(),
                 StagingService = new ReleasePackageStagingService(),
-                InstallationPreparer = new ReleaseInstallationPreparer(),
+                InstallationPreparer = new ReleaseInstallationPreparer(
+                    historyCleanup: releaseHistoryCleanup),
                 HandoffService = new ApplicationUpdateHandoffService(),
-                InstanceManager = new ApplicationInstanceManager(),
-                ConfirmMultipleInstances = otherCount =>
+                InstanceManager = applicationInstanceManager,
+                ConfirmMultipleInstances = scan =>
                     ConfirmMultipleApplicationInstancesAsync(
                         desktop,
-                        otherCount),
+                        scan),
                 DataDirectory = appDataPaths.DataDirectory,
                 InstallationDirectory = AppContext.BaseDirectory,
                 StartupArguments = Program.StartupArguments,
@@ -412,7 +433,7 @@ public sealed partial class App : Application
 
     private static async Task<bool> ConfirmMultipleApplicationInstancesAsync(
         IClassicDesktopStyleApplicationLifetime desktop,
-        int otherInstanceCount)
+        ApplicationInstanceScan scan)
     {
         if (!Dispatcher.UIThread.CheckAccess())
         {
@@ -425,7 +446,9 @@ public sealed partial class App : Application
             return false;
         }
 
-        var dialog = new MultipleApplicationInstancesDialog(otherInstanceCount);
+        var dialog = new MultipleApplicationInstancesDialog(
+            scan.TotalCount,
+            scan.UnverifiedCount);
         return await dialog.ShowDialog<bool>(owner);
     }
 
@@ -632,6 +655,13 @@ public sealed partial class App : Application
         Dispatcher.UIThread.UnhandledException -= HandleUiException;
         TaskScheduler.UnobservedTaskException -=
             HandleUnobservedTaskException;
+        await StopReleaseUpdateHistoryCleanupAsync();
+        if (applicationInstanceManager is not null)
+        {
+            await applicationInstanceManager.DisposeAsync();
+            applicationInstanceManager = null;
+        }
+
         applicationLog.Append("Application exit");
         await DisposeDesktopServicesAsync(viewModel);
     }
@@ -727,6 +757,100 @@ public sealed partial class App : Application
             applicationLog.Append(
                 "Update replacement health confirmation failed: "
                 + exception.Message);
+        }
+    }
+
+    private async Task CleanReleaseUpdateHistoryAsync(
+        AppDataPaths appDataPaths,
+        ApplicationLogService applicationLog,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var cacheResult = await releaseHistoryCleanup.CleanPackageCacheAsync(
+                    new ReleasePackageCacheCleaner(),
+                    appDataPaths.DataDirectory,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (cacheResult.DeletedVersions > 0)
+            {
+                applicationLog.Append(
+                    $"Removed {cacheResult.DeletedVersions:N0} stale update cache versions "
+                    + $"({cacheResult.DeletedPackageVersions:N0} package, "
+                    + $"{cacheResult.DeletedStagedVersions:N0} staged).");
+            }
+
+            foreach (var failure in cacheResult.Failures)
+            {
+                applicationLog.Append(
+                    "Update cache cleanup retained an inaccessible directory: "
+                    + failure);
+            }
+
+            if (!File.Exists(Path.Combine(
+                AppContext.BaseDirectory,
+                "release-package.json")))
+            {
+                return;
+            }
+
+            var installationResult = await releaseHistoryCleanup
+                .CleanInstallationAsync(
+                    new ReleaseInstallationHistoryCleaner(),
+                    AppContext.BaseDirectory,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            if (installationResult.DeletedDirectories > 0)
+            {
+                applicationLog.Append(
+                    $"Removed {installationResult.DeletedDirectories:N0} stale update directories "
+                    + $"({installationResult.DeletedBackupDirectories:N0} backup, "
+                    + $"{installationResult.DeletedUpdateDirectories:N0} candidate, "
+                    + $"{installationResult.DeletedFailedDirectories:N0} failed).");
+            }
+
+            foreach (var failure in installationResult.Failures)
+            {
+                applicationLog.Append(
+                    "Update history cleanup retained an inaccessible directory: "
+                    + failure);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Application shutdown cancels background history cleanup.
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            applicationLog.Append(
+                "Update history cleanup could not run: " + exception.Message);
+        }
+    }
+
+    private async Task StopReleaseUpdateHistoryCleanupAsync()
+    {
+        var cleanupTask = releaseHistoryCleanupTask;
+        if (cleanupTask is null)
+        {
+            return;
+        }
+
+        releaseHistoryCleanupTask = null;
+        await releaseHistoryCleanupCancellation.CancelAsync();
+        try
+        {
+            await cleanupTask.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // The cancellation request stops any remaining background cleanup.
+        }
+        finally
+        {
+            releaseHistoryCleanupCancellation.Dispose();
         }
     }
 
@@ -1117,7 +1241,9 @@ public sealed partial class App : Application
             return Task.FromResult(false);
         }
 
-        return viewModel.SurfaceSurvey.ToggleQuickTrackerAsync(trackerNumber);
+        return viewModel.SurfaceSurvey.ToggleQuickTrackerAsync(
+            trackerNumber,
+            CancellationToken.None);
     }
 
     private bool RefreshColonyData()

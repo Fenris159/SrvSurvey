@@ -26,10 +26,8 @@
           MinWidth="200">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="0">
-          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                     FontSize="11"
-                     FontWeight="SemiBold"
-                     Text="{Binding Title}"
+          <TextBlock Classes="overlay-header"
+                     Text="{Binding HeaderTitle}"
                      TextTrimming="CharacterEllipsis" />
           <ItemsControl IsVisible="{Binding HasMultipleProjects}"
                         ItemsSource="{Binding ProjectNames}">

@@ -20,7 +20,9 @@ public sealed class ReleaseInstallerConfiguration
 
     public required IApplicationInstanceManager InstanceManager { get; init; }
 
-    public required Func<int, Task<bool>> ConfirmMultipleInstances { get; init; }
+    public required Func<ApplicationInstanceScan, Task<bool>>
+        ConfirmMultipleInstances
+    { get; init; }
 
     public required string DataDirectory { get; init; }
 
@@ -513,6 +515,15 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
                 staged.ManifestSha256,
                 installer.InstallationDirectory,
                 installer.StartupArguments);
+            InstallProgressText =
+                "Rechecking for SrvSurvey instances before update handoff...";
+            if (!await CloseOtherInstancesBeforeUpdateAsync(installer))
+            {
+                await installer.InstallationPreparer.AbortAsync(preparation);
+                InstallProgressText = "Update canceled before installation handoff.";
+                return;
+            }
+
             InstallProgressText = preparation.RequiresElevation
                 ? "Starting elevated update helper; approve the Windows prompt..."
                 : "Rollback candidate verified; starting external helper...";
@@ -553,17 +564,32 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
     private async Task<bool> CloseOtherInstancesBeforeUpdateAsync(
         InstallerContext currentInstaller)
     {
-        var otherCount = await currentInstaller.InstanceManager
-            .CountOtherInstancesAsync(CancellationToken.None);
+        var scan = await currentInstaller.InstanceManager
+            .ScanOtherInstancesAsync(CancellationToken.None);
+        var otherCount = scan.TotalCount;
         if (otherCount == 0)
         {
             return true;
         }
 
-        StatusMessage = otherCount == 1
-            ? "Another SrvSurvey instance is running. Confirm whether all instances should close before updating."
-            : $"{otherCount:N0} other SrvSurvey instances are running. Confirm whether all instances should close before updating.";
-        if (!await currentInstaller.ConfirmMultipleInstances(otherCount))
+        if (scan.UnverifiedCount > 0)
+        {
+            StatusMessage =
+                $"SrvSurvey found {otherCount:N0} matching process(es), including "
+                + $"{scan.UnverifiedCount:N0} that the operating system would not let it verify. "
+                + "Confirm the warning; the update will stop safely if any process remains unverified.";
+        }
+        else if (otherCount == 1)
+        {
+            StatusMessage =
+                "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.";
+        }
+        else
+        {
+            StatusMessage =
+                $"{otherCount:N0} other SrvSurvey instances are running. Confirm whether all instances should close before updating.";
+        }
+        if (!await currentInstaller.ConfirmMultipleInstances(scan))
         {
             StatusMessage =
                 "Update canceled. The other SrvSurvey instances remain open and no files were changed.";
@@ -574,7 +600,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             ? "Closing the other SrvSurvey instance..."
             : $"Closing {otherCount:N0} other SrvSurvey instances...";
         StatusMessage =
-            "Closing other SrvSurvey instances before downloading the update.";
+            "Closing other SrvSurvey instances before continuing the update.";
         await currentInstaller.InstanceManager
             .CloseOtherInstancesAsync(CancellationToken.None);
         return true;
@@ -716,7 +742,9 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
 
         public required IApplicationInstanceManager InstanceManager { get; init; }
 
-        public required Func<int, Task<bool>> ConfirmMultipleInstances { get; init; }
+        public required Func<ApplicationInstanceScan, Task<bool>>
+            ConfirmMultipleInstances
+        { get; init; }
 
         public required string DataDirectory { get; init; }
 

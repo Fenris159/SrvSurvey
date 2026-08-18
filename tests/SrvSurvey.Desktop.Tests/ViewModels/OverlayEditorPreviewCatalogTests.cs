@@ -73,7 +73,7 @@ public sealed class OverlayEditorPreviewCatalogTests
             OverlayEditorPreviewCatalog.Create("PlotBioSystem", 1));
         var biology = overlay.Survey.BiologySurveyDisplay;
 
-        Assert.Equal("Body Predictions", biology.Title);
+        Assert.Equal("BODY PREDICTIONS", biology.Title);
         Assert.Equal(OverlayPreviewSimulationState.Default.CurrentBody, biology.Heading);
         Assert.DoesNotContain("biology", biology.Heading, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(
@@ -88,7 +88,7 @@ public sealed class OverlayEditorPreviewCatalogTests
             OverlayEditorPreviewCatalog.Create("PlotBioSystem", 2));
         var biology = overlay.Survey.BiologySurveyDisplay;
 
-        Assert.Equal("Identified Bio", biology.Title);
+        Assert.Equal("IDENTIFIED BIO", biology.Title);
         Assert.Equal(OverlayPreviewSimulationState.Default.CurrentBody, biology.Heading);
         Assert.DoesNotContain("biology", biology.Heading, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(

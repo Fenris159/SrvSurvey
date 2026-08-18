@@ -42,6 +42,10 @@ public interface IReleaseInstallationPreparer
         string installationDirectory,
         IReadOnlyList<string> startupArguments,
         CancellationToken cancellationToken = default);
+
+    Task AbortAsync(
+        ReleaseInstallationPreparation preparation,
+        CancellationToken cancellationToken = default);
 }
 
 internal enum ReleaseInstallationCheckpoint
@@ -57,20 +61,25 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
     private const long MaximumInstallationBytes = 4L * 1024 * 1024 * 1024;
     private readonly ReleasePackageStagingService stagingService;
     private readonly Func<string, string, CancellationToken, Task> copyDirectory;
+    private readonly ReleaseUpdateHistoryCleanupCoordinator historyCleanup;
 
     public ReleaseInstallationPreparer(
-        ReleasePackageStagingService? stagingService = null)
-        : this(stagingService, CopyDirectoryAsync)
+        ReleasePackageStagingService? stagingService = null,
+        ReleaseUpdateHistoryCleanupCoordinator? historyCleanup = null)
+        : this(stagingService, CopyDirectoryAsync, historyCleanup)
     {
     }
 
     internal ReleaseInstallationPreparer(
         ReleasePackageStagingService? stagingService,
-        Func<string, string, CancellationToken, Task> copyDirectory)
+        Func<string, string, CancellationToken, Task> copyDirectory,
+        ReleaseUpdateHistoryCleanupCoordinator? historyCleanup = null)
     {
         this.stagingService = stagingService ?? new ReleasePackageStagingService();
         this.copyDirectory = copyDirectory
             ?? throw new ArgumentNullException(nameof(copyDirectory));
+        this.historyCleanup = historyCleanup
+            ?? new ReleaseUpdateHistoryCleanupCoordinator();
     }
 
     public async Task<ReleaseInstallationPreparation> PrepareAsync(
@@ -107,6 +116,13 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             throw new InvalidDataException(
                 "The SrvSurvey installation directory name is invalid.");
         }
+
+        _ = await historyCleanup.CleanInstallationAsync(
+                new ReleaseInstallationHistoryCleaner(),
+                installationRoot,
+                [readyRoot],
+                cancellationToken)
+            .ConfigureAwait(false);
 
         var entryPoint = runtimeIdentifier switch
         {
@@ -198,6 +214,17 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             TryDeleteDirectory(candidateDirectory);
             throw;
         }
+    }
+
+    public async Task AbortAsync(
+        ReleaseInstallationPreparation preparation,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(preparation);
+        await Task.Run(
+                () => TryDeleteDirectory(preparation.CandidateDirectory),
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     internal static async Task<string> ComputeDirectoryFingerprintAsync(

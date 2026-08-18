@@ -818,7 +818,7 @@ public sealed class GuardianViewModel
     public bool HasCurrentSystemSites => CurrentSystemSites.Count > 0;
 
     public string CurrentSystemGuardianTitle =>
-        $"Guardian sites: {CurrentSystemSites.Count:N0}";
+        $"GUARDIAN SITES: {CurrentSystemSites.Count:N0}";
 
     public IReadOnlyList<GuardianRamTahLogViewModel> CurrentRamTahLogs =>
         currentRamTahLogs;
@@ -826,7 +826,7 @@ public sealed class GuardianViewModel
     public bool HasCurrentRamTahLogs => CurrentRamTahLogs.Count > 0;
 
     public string CurrentRamTahTitle =>
-        $"Unscanned Ram Tah logs: {CurrentRamTahLogs.Count:N0}";
+        $"UNSCANNED RAM TAH LOGS: {CurrentRamTahLogs.Count:N0}";
 
     public bool ShouldShowGuardianSystemSummary => EnableGuardianSites
         && AutoShowGuardianSummary
@@ -1266,8 +1266,8 @@ public sealed class GuardianViewModel
         Proximity?.NearestPoint?.ActiveObelisk;
 
     public string GuardianStatusObeliskTitle => GuardianStatusObelisk is { } obelisk
-        ? $"{obelisk.Name} · active obelisk"
-        : "No current active obelisk";
+        ? $"{obelisk.Name} · ACTIVE OBELISK"
+        : "NO CURRENT ACTIVE OBELISK";
 
     public string GuardianStatusObeliskLogText => GuardianStatusObelisk is { } obelisk
         ? $"Log: {GetLogDisplayName(obelisk.LogCode)}"

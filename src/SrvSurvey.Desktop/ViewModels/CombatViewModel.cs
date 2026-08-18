@@ -108,6 +108,8 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
     public string SettlementName => state.SettlementName ?? string.Empty;
 
+    public string SettlementHeader => SettlementName.ToUpperInvariant();
+
     public int FootCombatKills => state.FootCombatKills;
 
     public string FootCombatBonds => $"{state.FootCombatBonds:N0} CR";
@@ -335,6 +337,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     private void NotifyAllState()
     {
         OnPropertyChanged(nameof(SettlementName));
+        OnPropertyChanged(nameof(SettlementHeader));
         OnPropertyChanged(nameof(FootCombatKills));
         OnPropertyChanged(nameof(FootCombatBonds));
         OnPropertyChanged(nameof(MassacreMissions));

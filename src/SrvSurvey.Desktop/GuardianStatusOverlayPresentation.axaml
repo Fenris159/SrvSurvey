@@ -32,10 +32,10 @@
     <Grid>
     <Grid IsVisible="{Binding Guardian.IsGlideApproach}"
           RowDefinitions="Auto,Auto,*,Auto">
-      <TextBlock Classes="guardian-title"
+      <TextBlock Classes="overlay-header"
                  Text="{Binding Guardian.GlideApproachTitle}"
                  TextWrapping="Wrap" />
-      <Border Grid.Row="1" Classes="guardian-header-rule" />
+      <Border Grid.Row="1" Classes="guardian-header-rule general-header-rule" />
       <TextBlock Grid.Row="2"
                  Classes="guardian-legacy-middle guardian-legacy-cyan"
                  VerticalAlignment="Center"
@@ -50,10 +50,10 @@
     <Grid IsVisible="{Binding Guardian.IsLocalGuardianStatus}">
       <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianSiteTypeChoiceVisible}">
-        <TextBlock Classes="guardian-title"
+        <TextBlock Classes="overlay-header"
                    Text="{Binding Guardian.GuardianStatusTitle}"
                    TextWrapping="Wrap" />
-        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <Border Grid.Row="1" Classes="guardian-header-rule general-header-rule" />
         <Grid Grid.Row="2"
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
@@ -106,10 +106,10 @@
 
       <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianHeadingChoiceVisible}">
-        <TextBlock Classes="guardian-title"
+        <TextBlock Classes="overlay-header"
                    Text="{Binding Guardian.GuardianStatusTitle}"
                    TextWrapping="Wrap" />
-        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <Border Grid.Row="1" Classes="guardian-header-rule general-header-rule" />
         <TextBlock Grid.Row="2"
                    Classes="guardian-legacy-middle"
                    VerticalAlignment="Center"
@@ -123,10 +123,10 @@
 
       <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianOriginVisible}">
-        <TextBlock Classes="guardian-title"
+        <TextBlock Classes="overlay-header"
                    Text="{Binding Guardian.GuardianStatusTitle}"
                    TextWrapping="Wrap" />
-        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <Border Grid.Row="1" Classes="guardian-header-rule general-header-rule" />
         <TextBlock Grid.Row="2"
                    Classes="guardian-legacy-middle"
                    VerticalAlignment="Center"
@@ -140,10 +140,10 @@
 
       <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianOnFootRelicVisible}">
-        <TextBlock Classes="guardian-title"
+        <TextBlock Classes="overlay-header"
                    Text="{Binding Guardian.GuardianStatusTitle}"
                    TextWrapping="Wrap" />
-        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <Border Grid.Row="1" Classes="guardian-header-rule general-header-rule" />
         <TextBlock Grid.Row="2"
                    Classes="guardian-legacy-middle"
                    VerticalAlignment="Center"
@@ -157,10 +157,10 @@
 
       <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianObeliskVisible}">
-        <TextBlock Classes="guardian-title"
+        <TextBlock Classes="overlay-header"
                    Text="{Binding Guardian.GuardianStatusObeliskTitle}"
                    TextWrapping="Wrap" />
-        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <Border Grid.Row="1" Classes="guardian-header-rule general-header-rule" />
         <StackPanel Grid.Row="2"
                     VerticalAlignment="Center"
                     Spacing="2">
@@ -214,10 +214,10 @@
 
       <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianPoiChoiceVisible}">
-        <TextBlock Classes="guardian-title"
+        <TextBlock Classes="overlay-header"
                    Text="{Binding Guardian.GuardianStatusTitle}"
                    TextWrapping="Wrap" />
-        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <Border Grid.Row="1" Classes="guardian-header-rule general-header-rule" />
         <Grid Grid.Row="2"
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
@@ -262,10 +262,10 @@
 
       <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianNoPointVisible}">
-        <TextBlock Classes="guardian-title"
+        <TextBlock Classes="overlay-header"
                    Text="{Binding Guardian.GuardianStatusTitle}"
                    TextWrapping="Wrap" />
-        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <Border Grid.Row="1" Classes="guardian-header-rule general-header-rule" />
         <TextBlock Grid.Row="2"
                    Classes="guardian-legacy-middle"
                    VerticalAlignment="Center"

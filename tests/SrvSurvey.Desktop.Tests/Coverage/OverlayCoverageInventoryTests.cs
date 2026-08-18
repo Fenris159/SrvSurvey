@@ -543,6 +543,12 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("RouteBioOverlayPresentation", routeOverlay);
         Assert.Contains("RouteBioTargetList", routeOverlayPresentation);
         Assert.Contains("Width=\"260\"", routeOverlay);
+        Assert.Contains("Text=\"ROUTE BODIES\"", routeOverlayPresentation);
+        Assert.Contains("Classes=\"overlay-header\"", routeOverlayPresentation);
+        Assert.Contains(
+            "Background=\"{DynamicResource RavenHeaderBrush}\"",
+            routeOverlayPresentation);
+        Assert.DoesNotContain("RavenWarningBrush", routeOverlayPresentation);
         Assert.DoesNotContain(
             "BorderBrush=\"{DynamicResource RavenWarningBrush}\"",
             routeOverlayPresentation);
@@ -558,6 +564,11 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains(
             "Text=\"{Binding Survey.BiologySurveyDisplay.Title}\"",
             biologyPresentation);
+        Assert.Contains("Classes=\"overlay-header\"", biologyPresentation);
+        Assert.Contains(
+            "Background=\"{DynamicResource RavenHeaderBrush}\"",
+            biologyPresentation);
+        Assert.DoesNotContain("RavenWarningBrush", biologyPresentation);
         Assert.Contains("Padding=\"4\"", biologyPresentation);
         Assert.Contains("BorderThickness=\"0\"", biologyPresentation);
         Assert.Contains("CornerRadius=\"5\"", biologyPresentation);

@@ -12,7 +12,7 @@ public sealed class BiologySurveyViewModel
 
     public BiologySurveyMode Mode { get; init; }
 
-    public string Title { get; init; } = "System biology";
+    public string Title { get; init; } = "SYSTEM BIOLOGY";
 
     public int? SelectedBodyId { get; init; }
 
@@ -309,7 +309,7 @@ public sealed class BiologySurveyViewModel
         return new BiologySurveyViewModel
         {
             Mode = BiologySurveyMode.System,
-            Title = "System biology",
+            Title = "SYSTEM BIOLOGY",
             SelectedBodyId = null,
             Heading = snapshot.SystemName ?? "Current system",
             ProgressText = $"{analyzed:N0} of {total:N0} biological signals analyzed",
@@ -395,8 +395,8 @@ public sealed class BiologySurveyViewModel
         {
             Mode = BiologySurveyMode.Body,
             Title = isIdentified
-                ? "Identified Bio"
-                : "Body Predictions",
+                ? "IDENTIFIED BIO"
+                : "BODY PREDICTIONS",
             SelectedBodyId = body.BodyId,
             Heading = body.Name,
             ProgressText = FormatBodyProgressText(body.BiologicalSignalCount),

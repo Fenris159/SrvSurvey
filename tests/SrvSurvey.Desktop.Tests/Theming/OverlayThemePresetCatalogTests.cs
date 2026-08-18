@@ -22,7 +22,7 @@ public sealed class OverlayThemePresetCatalogTests
         var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
         Assert.True(defaults.All(entry =>
             OverlayThemePresetCatalog.Default.Colors[entry.Key] == entry.Value));
-        Assert.Equal(Color.Parse("#FFFF00"), defaults["header"]);
+        Assert.Equal(Color.Parse("#CC0003"), defaults["header"]);
         Assert.Equal(Color.Parse("#99AFBF"), defaults["grey"]);
         Assert.Equal(Color.Parse("#FF6F00"), defaults["bio.confirmed"]);
         Assert.Equal(Color.Parse("#552400"), defaults["bio.confirmedDim"]);

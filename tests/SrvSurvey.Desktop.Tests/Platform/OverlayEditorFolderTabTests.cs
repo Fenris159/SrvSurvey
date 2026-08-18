@@ -88,7 +88,7 @@ public sealed class OverlayEditorFolderTabTests
                 presentation.DataContext);
             Assert.True(overview.Survey.BiologySurveyDisplay.IsSystemOverview);
             Assert.Equal(
-                "System biology",
+                "SYSTEM BIOLOGY",
                 overview.Survey.BiologySurveyDisplay.Title);
             Assert.All(
                 overview.Survey.BiologySurveyDisplay.Bodies,
@@ -112,7 +112,7 @@ public sealed class OverlayEditorFolderTabTests
                 presentation.DataContext);
             Assert.True(predictions.Survey.BiologySurveyDisplay.IsBodyDetail);
             Assert.Equal(
-                "Body Predictions",
+                "BODY PREDICTIONS",
                 predictions.Survey.BiologySurveyDisplay.Title);
             Assert.True(predictions.Survey.BiologySurveyDisplay.RequiresDss);
             Assert.All(
@@ -141,7 +141,7 @@ public sealed class OverlayEditorFolderTabTests
                 presentation.DataContext);
             Assert.True(identified.Survey.BiologySurveyDisplay.IsBodyDetail);
             Assert.Equal(
-                "Identified Bio",
+                "IDENTIFIED BIO",
                 identified.Survey.BiologySurveyDisplay.Title);
             Assert.False(identified.Survey.BiologySurveyDisplay.RequiresDss);
             Assert.Contains(

@@ -13,10 +13,10 @@
   </UserControl.Styles>
   <Border Classes="guardian-panel" MinHeight="60">
     <StackPanel Spacing="3">
-      <TextBlock Classes="guardian-title"
+      <TextBlock Classes="overlay-header"
                  Text="{Binding Guardian.CurrentSystemGuardianTitle}"
                  TextWrapping="Wrap" />
-      <Border Classes="guardian-header-rule" />
+      <Border Classes="guardian-header-rule general-header-rule" />
       <ItemsControl ItemsSource="{Binding Guardian.CurrentSystemSites}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:GuardianSiteRowViewModel">
