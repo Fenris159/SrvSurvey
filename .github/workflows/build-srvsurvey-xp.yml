@@ -255,7 +255,7 @@ jobs:
           echo "a6d71e2b6cd66f8e8d16c37ad164658985e0cf5fcaa950c90a482890cb9d13e0  $tool" \
             | sha256sum --check --strict
           chmod +x "$tool"
-          convert "src/SrvSurvey.Desktop/Assets/logo.ico[0]" \
+          convert "src/SrvSurvey.Desktop/Assets/logo-remastered-linux-windows-split.png" \
             -background none \
             -resize 256x256 \
             "artifacts/appimage/srvsurvey.png"

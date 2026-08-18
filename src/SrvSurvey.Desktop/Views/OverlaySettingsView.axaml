@@ -167,8 +167,9 @@
                            Text="Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor." />
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="3">
-                <TextBox Text="{Binding OverlayInteractionBinding.Chord, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                         PlaceholderText="Leave blank to disable" />
+                <controls:ShortcutCaptureBox Chord="{Binding OverlayInteractionBinding.Chord, Mode=TwoWay}"
+                                             PlaceholderText="Click, then hold shortcut keys"
+                                             ToolTip.Tip="Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears." />
                 <TextBlock Classes="muted"
                            FontSize="10"
                            Text="{Binding OverlayInteractionBinding.DefaultChord}" />
@@ -1567,6 +1568,52 @@
                    IsVisible="{Binding SystemSurvey.HasSettingsStatus}"
                    TextWrapping="Wrap"
                    Text="{Binding SystemSurvey.SettingsStatus}" />
+      </StackPanel>
+    </Border>
+
+    <Border x:Name="PanelVisibilityCard" Classes="card raised">
+      <StackPanel Spacing="14">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="card-title" Text="Panel availability and shortcuts" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="These master switches control whether each panel may render. Existing auto-show and context settings still decide when an enabled panel appears. Shortcut fields are optional and have no default binding." />
+        </StackPanel>
+        <ItemsControl x:Name="PanelVisibilityItems">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:OverlayPanelVisibilityEntryViewModel">
+              <Grid Margin="0,4"
+                    ColumnDefinitions="*,260"
+                    ColumnSpacing="24">
+                <StackPanel Spacing="3">
+                  <CheckBox IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+                            Content="{Binding DisplayName}" />
+                  <TextBlock Margin="28,0,0,0"
+                             Classes="muted"
+                             FontSize="11"
+                             TextWrapping="Wrap"
+                             Text="{Binding Description}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="3">
+                  <TextBlock Classes="muted"
+                             FontSize="11"
+                             Text="Optional visibility shortcut" />
+                  <controls:ShortcutCaptureBox Chord="{Binding Shortcut.Chord, Mode=TwoWay}"
+                                               PlaceholderText="Click, then hold shortcut keys"
+                                               ToolTip.Tip="Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears." />
+                  <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                             FontSize="10"
+                             IsVisible="{Binding Shortcut.HasValidationError}"
+                             Text="{Binding Shortcut.ValidationMessage}" />
+                </StackPanel>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                   IsVisible="{Binding OverlayPanelVisibility.HasPersistenceStatus}"
+                   TextWrapping="Wrap"
+                   Text="{Binding OverlayPanelVisibility.PersistenceStatus}" />
       </StackPanel>
     </Border>
   </StackPanel>

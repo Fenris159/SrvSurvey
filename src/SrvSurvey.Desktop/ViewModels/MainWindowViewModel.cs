@@ -323,6 +323,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
             OverlayPlatformCapabilities.DetectCurrent());
+        OverlayPanelVisibility = new OverlayPanelVisibilityViewModel(
+            new OverlayPanelVisibilitySettingsStore(AppDataPaths.UiSettingsPath),
+            InputSettings);
         var sharedGameWindowSwitcher = gameWindowSwitcher
             ?? GameWindowSwitcher.CreateCurrent();
         DesktopBehavior = new DesktopBehaviorViewModel(
@@ -755,6 +758,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public CommanderProfileViewModel FrontierProfile { get; }
 
     public GlobalInputSettingsViewModel InputSettings { get; }
+
+    public OverlayPanelVisibilityViewModel OverlayPanelVisibility { get; }
 
     public DesktopBehaviorViewModel DesktopBehavior { get; }
 

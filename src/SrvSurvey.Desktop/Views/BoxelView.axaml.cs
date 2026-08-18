@@ -8,6 +8,7 @@ using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
@@ -21,9 +22,21 @@ public sealed partial class BoxelView : UserControl
     public BoxelView()
     {
         InitializeComponent();
+        AddHandler(
+            PointerWheelChangedEvent,
+            BoxelView_PointerWheelChanged,
+            RoutingStrategies.Tunnel,
+            handledEventsToo: true);
         AttachedToVisualTree += (_, _) => ConnectClipboard();
         DetachedFromVisualTree += (_, _) => DisconnectClipboard();
         DataContextChanged += (_, _) => ConnectClipboard();
+    }
+
+    private static void BoxelView_PointerWheelChanged(
+        object? sender,
+        PointerWheelEventArgs eventArgs)
+    {
+        BoxelSystemActionMenu.DismissActiveMenuForScroll();
     }
 
     private void ConnectClipboard()

@@ -11,7 +11,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
     [Fact]
     public void CatalogPreservesLegacyActionsAndAddsOverlayEditShortcut()
     {
-        Assert.Equal(31, GlobalInputActionCatalog.All.Count);
+        Assert.Equal(60, GlobalInputActionCatalog.All.Count);
         Assert.Equal(
             GlobalInputActionCatalog.All.Count,
             GlobalInputActionCatalog.All
@@ -36,6 +36,18 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         Assert.Equal(
             new("resetVR", string.Empty),
             GetLegacyBinding(GlobalInputAction.ResetVr));
+        var panelToggles = GlobalInputActionCatalog.All
+            .Where(definition => definition.OverlayPlotterName is not null)
+            .ToArray();
+        Assert.Equal(29, panelToggles.Length);
+        Assert.All(panelToggles, definition =>
+        {
+            Assert.Empty(definition.DefaultChord);
+            Assert.StartsWith("Toggle ", definition.DisplayName);
+            Assert.EndsWith(" visibility", definition.DisplayName);
+            Assert.Contains("rendered inactive", definition.Description);
+            Assert.Contains("until toggled on", definition.Description);
+        });
     }
 
     [Fact]
@@ -99,7 +111,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         Assert.Equal(
             "ALT F2",
             loaded.Bindings[GlobalInputAction.ToggleAllVisibility]);
-        Assert.Equal(31, loaded.Bindings.Count);
+        Assert.Equal(GlobalInputActionCatalog.All.Count, loaded.Bindings.Count);
     }
 
     [Fact]

@@ -155,6 +155,47 @@ public sealed class OverlayWindowRegistryTests
             galaxyMapActive: false));
     }
 
+    [AvaloniaFact]
+    public void UserVisibilitySuppressesAndRestoresRegisteredPanels()
+    {
+        var registry = new OverlayWindowRegistry();
+        var presentationWindow = new Window();
+        var separateWindow = new Window();
+        registry.Register(presentationWindow, "PlotBioSystem");
+        registry.Register(separateWindow, "PlotRouteBio");
+        registry.SetPresentationVisual(presentationWindow, new Border());
+        separateWindow.Show();
+
+        registry.SetUserVisibility("PlotBioSystem", visible: false);
+        registry.SetUserVisibility("PlotRouteBio", visible: false);
+
+        Assert.False(registry.ShouldPresent("PlotBioSystem"));
+        Assert.False(registry.ShouldPresent("PlotRouteBio"));
+        Assert.False(registry.Snapshot().Single(entry =>
+            entry.PlotterName == "PlotBioSystem").IsVisible);
+        Assert.False(separateWindow.IsVisible);
+
+        registry.SetUserVisibility("PlotBioSystem", visible: true);
+        registry.SetUserVisibility("PlotRouteBio", visible: true);
+
+        Assert.True(registry.ShouldPresent("PlotBioSystem"));
+        Assert.True(registry.Snapshot().Single(entry =>
+            entry.PlotterName == "PlotBioSystem").IsVisible);
+        Assert.True(separateWindow.IsVisible);
+        presentationWindow.Close();
+        separateWindow.Close();
+    }
+
+    [Fact]
+    public void UserVisibilityParticipatesInPresentationResolution()
+    {
+        Assert.False(OverlayWindowRegistry.ResolvePresentationVisibility(
+            "PlotGalMap",
+            requestedVisibility: true,
+            galaxyMapActive: false,
+            userVisible: false));
+    }
+
     [Fact]
     public void CatalogExplicitlyLimitsGalaxyMapPanels()
     {

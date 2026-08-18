@@ -852,8 +852,9 @@
                                Text="{Binding Description}" />
                   </StackPanel>
                   <StackPanel Grid.Column="1" Spacing="3">
-                    <TextBox Text="{Binding Chord, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                             PlaceholderText="Leave blank to disable" />
+                    <controls:ShortcutCaptureBox Chord="{Binding Chord, Mode=TwoWay}"
+                                                 PlaceholderText="Click, then hold shortcut keys"
+                                                 ToolTip.Tip="Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears." />
                     <TextBlock Classes="muted"
                                FontSize="10"
                                Text="{Binding DefaultChord}" />

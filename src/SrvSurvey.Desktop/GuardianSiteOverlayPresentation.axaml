@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:local="using:SrvSurvey.Desktop"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.GuardianSiteOverlayPresentation"
              x:DataType="vm:GuardianOverlayViewModel"
@@ -31,6 +32,16 @@
           ShadowBrush="{DynamicResource RavenGuardianBackgroundBrush}"
           Opacity="{Binding Guardian.AlignmentOpacity}"
           IsVisible="{Binding Guardian.IsAlignmentVisible}" />
+
+      <Border
+          Margin="0,0,8,8"
+          HorizontalAlignment="Right"
+          VerticalAlignment="Bottom"
+          IsHitTestVisible="False"
+          IsVisible="{Binding ShowEmbeddedZoomPreview}">
+        <local:GuardianZoomOverlayPresentation
+            DataContext="{Binding $parent[UserControl].((vm:GuardianOverlayViewModel)DataContext).ZoomControls}" />
+      </Border>
 
       <Grid Margin="2"
             RowDefinitions="Auto,*,Auto"

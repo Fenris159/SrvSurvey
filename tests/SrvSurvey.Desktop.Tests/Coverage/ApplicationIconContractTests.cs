@@ -4,6 +4,9 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 
 public sealed class ApplicationIconContractTests
 {
+    private const string HighResolutionIconFileName =
+        "logo-remastered-linux-windows-split.png";
+
     private static readonly int[] RequiredIconSizes =
         [16, 20, 24, 32, 48, 64, 128, 256];
 
@@ -60,6 +63,59 @@ public sealed class ApplicationIconContractTests
         }
     }
 
+    [Fact]
+    public void EveryWindowInheritsTheApplicationIcon()
+    {
+        var root = FindRepositoryRoot();
+        var application = XDocument.Load(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "App.axaml"));
+        var windowStyle = application.Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Style"
+                && element.Attribute("Selector")?.Value == "Window");
+        var iconSetter = windowStyle.Elements()
+            .Single(element =>
+                element.Name.LocalName == "Setter"
+                && element.Attribute("Property")?.Value == "Icon");
+
+        Assert.Equal("/Assets/logo.ico", iconSetter.Attribute("Value")?.Value);
+    }
+
+    [Fact]
+    public void HighResolutionIconSourceDrivesLinuxPackaging()
+    {
+        var root = FindRepositoryRoot();
+        var sourcePath = Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Assets",
+            HighResolutionIconFileName);
+        using var stream = File.OpenRead(sourcePath);
+        using var reader = new BinaryReader(stream);
+
+        Assert.Equal(
+            [137, 80, 78, 71, 13, 10, 26, 10],
+            reader.ReadBytes(8));
+        _ = ReadBigEndianUInt32(reader);
+        Assert.Equal("IHDR", new string(reader.ReadChars(4)));
+        Assert.Equal(1024u, ReadBigEndianUInt32(reader));
+        Assert.Equal(1024u, ReadBigEndianUInt32(reader));
+
+        var workflow = File.ReadAllText(Path.Combine(
+            root,
+            ".github",
+            "workflows",
+            "build-srvsurvey-xp.yml"));
+        Assert.Contains(
+            $"Assets/{HighResolutionIconFileName}",
+            workflow,
+            StringComparison.Ordinal);
+    }
+
     private static IconEntry ReadEntry(BinaryReader reader)
     {
         var width = DecodeDimension(reader.ReadByte());
@@ -74,6 +130,18 @@ public sealed class ApplicationIconContractTests
     }
 
     private static int DecodeDimension(byte value) => value == 0 ? 256 : value;
+
+    private static uint ReadBigEndianUInt32(BinaryReader reader)
+    {
+        var bytes = reader.ReadBytes(sizeof(uint));
+        Assert.Equal(sizeof(uint), bytes.Length);
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(bytes);
+        }
+
+        return BitConverter.ToUInt32(bytes);
+    }
 
     private static string FindRepositoryRoot()
     {

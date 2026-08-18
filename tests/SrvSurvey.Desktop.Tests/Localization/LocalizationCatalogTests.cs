@@ -12,8 +12,8 @@ public sealed class LocalizationCatalogTests : IDisposable
 
         Assert.Equal("de", LocalizationCatalog.CurrentLanguage);
         Assert.Equal(1_090, LocalizationCatalog.LegacyTranslationCount);
-        Assert.Equal(5_552, LocalizationCatalog.ApplicationTranslationCount);
-        Assert.Equal(5_552, LocalizationCatalog.SourceCount);
+        Assert.Equal(5_629, LocalizationCatalog.ApplicationTranslationCount);
+        Assert.Equal(5_629, LocalizationCatalog.SourceCount);
         Assert.Equal("Himmelskörper", LocalizationCatalog.Translate("Bodies"));
         Assert.Equal(
             "Plattformübergreifender Erkundungsbegleiter",
@@ -40,6 +40,7 @@ public sealed class LocalizationCatalogTests : IDisposable
     [InlineData("Close", "Schließen")]
     [InlineData("CURRENT SYSTEM", "AKTUELLES SYSTEM")]
     [InlineData("ATMOSPHERE", "ATMOSPHÄRE")]
+    [InlineData("SEARCH GUIDANCE", "SUCHANLEITUNG")]
     [InlineData("Next jump", "Nächster Sprung")]
     public void SafeLegacyLabelVariantsReuseUniqueTranslations(
         string source,

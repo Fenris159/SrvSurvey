@@ -33,6 +33,35 @@ public enum GlobalInputAction
     Track8,
     QuestShow,
     ToggleImageEmbed,
+    ToggleBiologySampleStatusVisibility,
+    ToggleSystemBiologyVisibility,
+    ToggleBodyInformationVisibility,
+    ToggleColonizationCommoditiesVisibility,
+    ToggleFlightWarningVisibility,
+    ToggleNotificationsVisibility,
+    ToggleGroundCombatVisibility,
+    ToggleFssBodyFeedVisibility,
+    ToggleFssInformationVisibility,
+    ToggleGalaxyMapSystemIntelligenceVisibility,
+    ToggleSurfaceSurveyVisibility,
+    ToggleGuardianSiteVisibility,
+    ToggleGuardianStatusVisibility,
+    ToggleGuardianSystemVisibility,
+    ToggleHumanSettlementVisibility,
+    ToggleNextJumpInformationVisibility,
+    ToggleFleetCarrierRouteVisibility,
+    ToggleRouteBodiesVisibility,
+    ToggleMassacreMissionsVisibility,
+    ToggleMiniTrackerVisibility,
+    ToggleMultiCommanderIndicatorVisibility,
+    TogglePriorScansVisibility,
+    ToggleJournalActivityVisibility,
+    ToggleQuestIndicatorVisibility,
+    ToggleRamTahGuidanceVisibility,
+    ToggleSphericalSearchVisibility,
+    ToggleStationInformationVisibility,
+    ToggleSystemStatusVisibility,
+    ToggleGroundTargetVisibility,
 }
 
 public sealed record GlobalInputActionDefinition(
@@ -40,7 +69,8 @@ public sealed record GlobalInputActionDefinition(
     string LegacyName,
     string DisplayName,
     string Description,
-    string DefaultChord);
+    string DefaultChord,
+    string? OverlayPlotterName = null);
 
 public static class GlobalInputActionCatalog
 {
@@ -77,6 +107,35 @@ public static class GlobalInputActionCatalog
         Define(GlobalInputAction.Track8, "track8", "Track location 8", "Toggle surface bookmark number 8.", "ALT CTRL F8"),
         Define(GlobalInputAction.QuestShow, "questShow", "Toggle quest communications", "Show or hide quest communications.", "ALT Q"),
         Define(GlobalInputAction.ToggleImageEmbed, "toggleImageEmbed", "Toggle screenshot data", "Enable or disable data banners on future screenshots.", "ALT CTRL I"),
+        DefineOverlayToggle(GlobalInputAction.ToggleBiologySampleStatusVisibility, "toggleBiologySampleStatusVisibility", "Biology sample status", "PlotBioStatus"),
+        DefineOverlayToggle(GlobalInputAction.ToggleSystemBiologyVisibility, "toggleSystemBiologyVisibility", "System biology", "PlotBioSystem"),
+        DefineOverlayToggle(GlobalInputAction.ToggleBodyInformationVisibility, "toggleBodyInformationVisibility", "Body information", "PlotBodyInfo"),
+        DefineOverlayToggle(GlobalInputAction.ToggleColonizationCommoditiesVisibility, "toggleColonizationCommoditiesVisibility", "Colonization commodities", "PlotBuildCommodities"),
+        DefineOverlayToggle(GlobalInputAction.ToggleFlightWarningVisibility, "toggleFlightWarningVisibility", "Flight warning", "PlotFlightWarning"),
+        DefineOverlayToggle(GlobalInputAction.ToggleNotificationsVisibility, "toggleNotificationsVisibility", "Notifications", "PlotFloatie"),
+        DefineOverlayToggle(GlobalInputAction.ToggleGroundCombatVisibility, "toggleGroundCombatVisibility", "Ground combat", "PlotFootCombat"),
+        DefineOverlayToggle(GlobalInputAction.ToggleFssBodyFeedVisibility, "toggleFssBodyFeedVisibility", "FSS body feed", "PlotFSS"),
+        DefineOverlayToggle(GlobalInputAction.ToggleFssInformationVisibility, "toggleFssInformationVisibility", "FSS information", "PlotFSSInfo"),
+        DefineOverlayToggle(GlobalInputAction.ToggleGalaxyMapSystemIntelligenceVisibility, "toggleGalaxyMapSystemIntelligenceVisibility", "Galaxy Map system intelligence", "PlotGalMap"),
+        DefineOverlayToggle(GlobalInputAction.ToggleSurfaceSurveyVisibility, "toggleSurfaceSurveyVisibility", "Surface survey", "PlotGrounded"),
+        DefineOverlayToggle(GlobalInputAction.ToggleGuardianSiteVisibility, "toggleGuardianSiteVisibility", "Guardian site", "PlotGuardians"),
+        DefineOverlayToggle(GlobalInputAction.ToggleGuardianStatusVisibility, "toggleGuardianStatusVisibility", "Guardian status", "PlotGuardianStatus"),
+        DefineOverlayToggle(GlobalInputAction.ToggleGuardianSystemVisibility, "toggleGuardianSystemVisibility", "Guardian system", "PlotGuardianSystem"),
+        DefineOverlayToggle(GlobalInputAction.ToggleHumanSettlementVisibility, "toggleHumanSettlementVisibility", "Human settlement", "PlotHumanSite"),
+        DefineOverlayToggle(GlobalInputAction.ToggleNextJumpInformationVisibility, "toggleNextJumpInformationVisibility", "Next-jump information", "PlotJumpInfo"),
+        DefineOverlayToggle(GlobalInputAction.ToggleFleetCarrierRouteVisibility, "toggleFleetCarrierRouteVisibility", "Fleet carrier route", "PlotFleetCarrierRoute"),
+        DefineOverlayToggle(GlobalInputAction.ToggleRouteBodiesVisibility, "toggleRouteBodiesVisibility", "Route bodies", "PlotRouteBio"),
+        DefineOverlayToggle(GlobalInputAction.ToggleMassacreMissionsVisibility, "toggleMassacreMissionsVisibility", "Massacre missions", "PlotMassacre"),
+        DefineOverlayToggle(GlobalInputAction.ToggleMiniTrackerVisibility, "toggleMiniTrackerVisibility", "Mini tracker", "PlotMiniTrack"),
+        DefineOverlayToggle(GlobalInputAction.ToggleMultiCommanderIndicatorVisibility, "toggleMultiCommanderIndicatorVisibility", "Multiple Commander indicator", "PlotMultiGameCommander"),
+        DefineOverlayToggle(GlobalInputAction.TogglePriorScansVisibility, "togglePriorScansVisibility", "Prior scans", "PlotPriorScans"),
+        DefineOverlayToggle(GlobalInputAction.ToggleJournalActivityVisibility, "toggleJournalActivityVisibility", "Journal activity and SCO status", "PlotPulse"),
+        DefineOverlayToggle(GlobalInputAction.ToggleQuestIndicatorVisibility, "toggleQuestIndicatorVisibility", "Quest indicator", "PlotQuestMini"),
+        DefineOverlayToggle(GlobalInputAction.ToggleRamTahGuidanceVisibility, "toggleRamTahGuidanceVisibility", "Ram Tah guidance", "PlotRamTah"),
+        DefineOverlayToggle(GlobalInputAction.ToggleSphericalSearchVisibility, "toggleSphericalSearchVisibility", "Spherical search", "PlotSphericalSearch"),
+        DefineOverlayToggle(GlobalInputAction.ToggleStationInformationVisibility, "toggleStationInformationVisibility", "Station information", "PlotStationInfo"),
+        DefineOverlayToggle(GlobalInputAction.ToggleSystemStatusVisibility, "toggleSystemStatusVisibility", "System status", "PlotSysStatus"),
+        DefineOverlayToggle(GlobalInputAction.ToggleGroundTargetVisibility, "toggleGroundTargetVisibility", "Ground target", "PlotTrackTarget"),
     ];
 
     public static GlobalInputActionDefinition Get(GlobalInputAction action)
@@ -95,6 +154,14 @@ public static class GlobalInputActionCatalog
         return definition is not null;
     }
 
+    public static bool TryGetOverlayPlotterName(
+        GlobalInputAction action,
+        out string plotterName)
+    {
+        plotterName = Get(action).OverlayPlotterName ?? string.Empty;
+        return plotterName.Length > 0;
+    }
+
     private static GlobalInputActionDefinition Define(
         GlobalInputAction action,
         string legacyName,
@@ -108,5 +175,20 @@ public static class GlobalInputActionCatalog
             displayName,
             description,
             defaultChord);
+    }
+
+    private static GlobalInputActionDefinition DefineOverlayToggle(
+        GlobalInputAction action,
+        string legacyName,
+        string panelName,
+        string plotterName)
+    {
+        return new GlobalInputActionDefinition(
+            action,
+            legacyName,
+            $"Toggle {panelName} visibility",
+            $"When off, the {panelName} panel is rendered inactive and is not visible until toggled on.",
+            string.Empty,
+            plotterName);
     }
 }

@@ -61,6 +61,13 @@ public sealed partial class BoxelSystemActionMenu : UserControl
         closeTimer.Start();
     }
 
+    private void Menu_PointerWheelChanged(
+        object? sender,
+        PointerWheelEventArgs eventArgs)
+    {
+        CloseMenu();
+    }
+
     private void Launcher_Click(object? sender, RoutedEventArgs eventArgs)
     {
         BeginOpenIntent(explicitRequest: true);
@@ -181,6 +188,18 @@ public sealed partial class BoxelSystemActionMenu : UserControl
         }
 
         CloseMenu();
+        return true;
+    }
+
+    internal static bool DismissActiveMenuForScroll()
+    {
+        if (activeMenu?.TryGetTarget(out var active) != true || active is null)
+        {
+            activeMenu = null;
+            return false;
+        }
+
+        active.CloseMenu();
         return true;
     }
 
