@@ -143,7 +143,7 @@ public sealed partial class App : Application
         var commanderPreferenceResolution = new CommanderPreferenceResolver(
                 commanderPreferenceStore,
                 new CommanderProfileCatalog(appDataPaths.DataDirectory))
-            .ResolveAsync(commandLineFrontierId)
+            .ResolveAsync(commandLineFrontierId, CancellationToken.None)
             .GetAwaiter()
             .GetResult();
         if (commanderPreferenceResolution.StatusMessage is not null)
@@ -1241,7 +1241,9 @@ public sealed partial class App : Application
             return Task.FromResult(false);
         }
 
-        return viewModel.SurfaceSurvey.ToggleQuickTrackerAsync(trackerNumber);
+        return viewModel.SurfaceSurvey.ToggleQuickTrackerAsync(
+            trackerNumber,
+            CancellationToken.None);
     }
 
     private bool RefreshColonyData()
