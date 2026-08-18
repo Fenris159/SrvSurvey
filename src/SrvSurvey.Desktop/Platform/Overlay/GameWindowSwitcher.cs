@@ -262,10 +262,15 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
         var display = nint.Zero;
         try
         {
+            X11OverlayPlatformService.EnsureErrorHandlerInstalled();
             display = X11Native.XOpenDisplay(nint.Zero);
-            return display == nint.Zero
-                ? null
-                : new X11GameWindowSwitcher(display);
+            if (display == nint.Zero)
+            {
+                return null;
+            }
+
+            X11OverlayPlatformService.RegisterErrorHandledDisplay(display);
+            return new X11GameWindowSwitcher(display);
         }
         catch (Exception exception) when (
             exception is DllNotFoundException
@@ -274,7 +279,15 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
         {
             if (display != nint.Zero)
             {
-                _ = X11Native.XCloseDisplay(display);
+                try
+                {
+                    _ = X11Native.XCloseDisplay(display);
+                }
+                finally
+                {
+                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(
+                        display);
+                }
             }
 
             return null;
@@ -351,7 +364,15 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
         display = nint.Zero;
         if (currentDisplay != nint.Zero)
         {
-            _ = X11Native.XCloseDisplay(currentDisplay);
+            try
+            {
+                _ = X11Native.XCloseDisplay(currentDisplay);
+            }
+            finally
+            {
+                X11OverlayPlatformService.UnregisterErrorHandledDisplay(
+                    currentDisplay);
+            }
         }
     }
 

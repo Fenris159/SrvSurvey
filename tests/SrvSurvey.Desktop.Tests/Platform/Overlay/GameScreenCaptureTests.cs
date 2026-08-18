@@ -54,6 +54,33 @@ public sealed class GameScreenCaptureTests
     }
 
     [Fact]
+    public void X11CaptureClipsBoundsToTheRootWindow()
+    {
+        Assert.Equal(
+            new PixelRect(0, 10, 30, 40),
+            X11GameScreenCapture.ClipToRootWindow(
+                new PixelRect(-20, 10, 50, 40),
+                rootWidth: 100,
+                rootHeight: 80));
+        Assert.Equal(
+            new PixelRect(80, 60, 20, 20),
+            X11GameScreenCapture.ClipToRootWindow(
+                new PixelRect(80, 60, 50, 40),
+                rootWidth: 100,
+                rootHeight: 80));
+    }
+
+    [Fact]
+    public void X11CaptureRejectsBoundsOutsideTheRootWindow()
+    {
+        Assert.Throws<InvalidOperationException>(
+            () => X11GameScreenCapture.ClipToRootWindow(
+                new PixelRect(100, 20, 10, 10),
+                rootWidth: 100,
+                rootHeight: 80));
+    }
+
+    [Fact]
     public void DiagnosticWriterCreatesAPortablePng()
     {
         var directory = Path.Combine(

@@ -6,6 +6,7 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 internal sealed class X11GameWindowTracker : IGameWindowTracker
 {
     private const int PropertyReadLength = 16_384;
+    private readonly object gate = new();
     private nint display;
     private readonly nuint rootWindow;
     private readonly nuint activeWindowAtom;
@@ -36,10 +37,15 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         var display = nint.Zero;
         try
         {
+            X11OverlayPlatformService.EnsureErrorHandlerInstalled();
             display = X11Native.XOpenDisplay(nint.Zero);
-            return display == nint.Zero
-                ? null
-                : new X11GameWindowTracker(display);
+            if (display == nint.Zero)
+            {
+                return null;
+            }
+
+            X11OverlayPlatformService.RegisterErrorHandledDisplay(display);
+            return new X11GameWindowTracker(display);
         }
         catch (Exception exception) when (
             exception is DllNotFoundException
@@ -48,7 +54,15 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         {
             if (display != nint.Zero)
             {
-                _ = X11Native.XCloseDisplay(display);
+                try
+                {
+                    _ = X11Native.XCloseDisplay(display);
+                }
+                finally
+                {
+                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(
+                        display);
+                }
             }
 
             return null;
@@ -57,58 +71,72 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
 
     public GameWindowSnapshot GetSnapshot()
     {
-        if (display == nint.Zero)
+        lock (gate)
         {
-            return GameWindowSnapshot.Unavailable;
-        }
+            if (display == nint.Zero)
+            {
+                return GameWindowSnapshot.Unavailable;
+            }
 
-        var activeWindow = ReadSingleWindow(activeWindowAtom);
-        if (activeWindow != 0
-            && activeWindow != gameWindow
-            && activeWindow != inspectedActiveWindow)
-        {
-            inspectedActiveWindow = activeWindow;
-            inspectedActiveWindowIsElite = IsEliteWindow(activeWindow);
-        }
+            var activeWindow = ReadSingleWindow(activeWindowAtom);
+            if (activeWindow != 0
+                && activeWindow != gameWindow
+                && activeWindow != inspectedActiveWindow)
+            {
+                inspectedActiveWindow = activeWindow;
+                inspectedActiveWindowIsElite = IsEliteWindow(activeWindow);
+            }
 
-        if (activeWindow != 0
-            && (activeWindow == gameWindow
-                || (activeWindow == inspectedActiveWindow
-                    && inspectedActiveWindowIsElite)))
-        {
-            gameWindow = activeWindow;
-        }
+            if (activeWindow != 0
+                && (activeWindow == gameWindow
+                    || (activeWindow == inspectedActiveWindow
+                        && inspectedActiveWindowIsElite)))
+            {
+                gameWindow = activeWindow;
+            }
 
-        if (gameWindow == 0 || !TryGetBounds(gameWindow, out _, out _))
-        {
-            gameWindow = FindGameWindow(activeWindow);
-        }
+            if (gameWindow == 0 || !TryGetBounds(gameWindow, out _, out _))
+            {
+                gameWindow = FindGameWindow(activeWindow);
+            }
 
-        if (gameWindow == 0
-            || !TryGetBounds(
-                gameWindow,
-                out var clientBounds,
-                out var isVisible))
-        {
-            gameWindow = 0;
-            return GameWindowSnapshot.Unavailable;
-        }
+            if (gameWindow == 0
+                || !TryGetBounds(
+                    gameWindow,
+                    out var clientBounds,
+                    out var isVisible))
+            {
+                gameWindow = 0;
+                return GameWindowSnapshot.Unavailable;
+            }
 
-        return new GameWindowSnapshot(
-            unchecked((nint)gameWindow),
-            ReadProcessId(gameWindow),
-            clientBounds,
-            isVisible,
-            activeWindow == gameWindow);
+            return new GameWindowSnapshot(
+                unchecked((nint)gameWindow),
+                ReadProcessId(gameWindow),
+                clientBounds,
+                isVisible,
+                activeWindow == gameWindow);
+        }
     }
 
     public void Dispose()
     {
-        var currentDisplay = display;
-        display = nint.Zero;
-        if (currentDisplay != nint.Zero)
+        lock (gate)
         {
-            _ = X11Native.XCloseDisplay(currentDisplay);
+            var currentDisplay = display;
+            display = nint.Zero;
+            if (currentDisplay != nint.Zero)
+            {
+                try
+                {
+                    _ = X11Native.XCloseDisplay(currentDisplay);
+                }
+                finally
+                {
+                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(
+                        currentDisplay);
+                }
+            }
         }
     }
 

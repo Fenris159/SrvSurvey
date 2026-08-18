@@ -4,12 +4,41 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 internal static partial class X11Native
 {
+    internal const byte BadValue = 2;
+    internal const byte BadWindow = 3;
+    internal const byte BadMatch = 8;
+    internal const byte BadDrawable = 9;
+    internal const byte SetInputFocusRequest = 42;
+    internal const byte GetImageRequest = 73;
     internal const int IsViewable = 2;
     internal const int ShapeInput = 2;
     internal const int ShapeSet = 0;
     internal const int Unsorted = 0;
     internal const int ZPixmap = 2;
     internal const int PropertyReplace = 0;
+
+    internal static bool TryInitializeThreading()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return false;
+        }
+
+        try
+        {
+            return XInitThreads() != 0;
+        }
+        catch (Exception exception) when (
+            exception is DllNotFoundException
+                or EntryPointNotFoundException
+                or BadImageFormatException)
+        {
+            return false;
+        }
+    }
+
+    [LibraryImport("libX11.so.6")]
+    private static partial int XInitThreads();
 
     [LibraryImport("libX11.so.6")]
     internal static partial nint XOpenDisplay(nint displayName);

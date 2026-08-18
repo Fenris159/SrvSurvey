@@ -675,9 +675,17 @@ public sealed partial class App : Application
         errorReportWindowCoordinator = null;
         viewModel.DiagnosticsLog.Dispose();
         viewModel.JumpInfo.Dispose();
-        globalControllerInputService?.Dispose();
+        if (globalControllerInputService is not null)
+        {
+            await globalControllerInputService.DisposeAsync();
+        }
+
         globalControllerInputService = null;
-        globalKeyboardHookService?.Dispose();
+        if (globalKeyboardHookService is not null)
+        {
+            await globalKeyboardHookService.DisposeAsync();
+        }
+
         globalKeyboardHookService = null;
         colonizationCommodityOverlayCoordinator?.Dispose();
         colonizationCommodityOverlayCoordinator = null;

@@ -7,10 +7,10 @@ namespace SrvSurvey.Desktop.Tests.Input;
 public sealed class GlobalControllerInputServiceTests
 {
     [Fact]
-    public void DispatchesConfiguredChordOnFirstRelease()
+    public async Task DispatchesConfiguredChordOnFirstRelease()
     {
         var backend = new StubControllerInputBackend();
-        using var service = new GlobalControllerInputService(
+        await using var service = new GlobalControllerInputService(
             EnabledSettings(),
             OverlayHostKind.Windows,
             new StubGameWindowTracker(),
@@ -33,10 +33,10 @@ public sealed class GlobalControllerInputServiceTests
     }
 
     [Fact]
-    public void IgnoresChordOutsideApplicationAndGameContext()
+    public async Task IgnoresChordOutsideApplicationAndGameContext()
     {
         var backend = new StubControllerInputBackend();
-        using var service = new GlobalControllerInputService(
+        await using var service = new GlobalControllerInputService(
             EnabledSettings(),
             OverlayHostKind.LinuxX11,
             new StubGameWindowTracker(),
@@ -54,10 +54,10 @@ public sealed class GlobalControllerInputServiceTests
     }
 
     [Fact]
-    public void RoutesChordWhileEliteIsForeground()
+    public async Task RoutesChordWhileEliteIsForeground()
     {
         var backend = new StubControllerInputBackend();
-        using var service = new GlobalControllerInputService(
+        await using var service = new GlobalControllerInputService(
             EnabledSettings(),
             OverlayHostKind.Windows,
             new StubGameWindowTracker(isForeground: true),
@@ -75,10 +75,10 @@ public sealed class GlobalControllerInputServiceTests
     }
 
     [Fact]
-    public void DisconnectClearsPartiallyPressedChord()
+    public async Task DisconnectClearsPartiallyPressedChord()
     {
         var backend = new StubControllerInputBackend();
-        using var service = new GlobalControllerInputService(
+        await using var service = new GlobalControllerInputService(
             EnabledSettings(),
             OverlayHostKind.Windows,
             new StubGameWindowTracker(),
@@ -99,10 +99,10 @@ public sealed class GlobalControllerInputServiceTests
     }
 
     [Fact]
-    public void ChangingSelectedDeviceRestartsBackend()
+    public async Task ChangingSelectedDeviceRestartsBackend()
     {
         var backend = new StubControllerInputBackend();
-        using var service = new GlobalControllerInputService(
+        await using var service = new GlobalControllerInputService(
             EnabledSettings(),
             OverlayHostKind.Windows,
             new StubGameWindowTracker(),
@@ -114,6 +114,7 @@ public sealed class GlobalControllerInputServiceTests
         {
             ControllerDeviceId = "controller-2",
         });
+        await backend.WaitForStartCountAsync(2);
 
         Assert.Equal(
             ["controller-1", "controller-2"],
@@ -121,16 +122,16 @@ public sealed class GlobalControllerInputServiceTests
     }
 
     [Fact]
-    public void DoesNotStartWithoutSupportedPlatformOrSelection()
+    public async Task DoesNotStartWithoutSupportedPlatformOrSelection()
     {
         var backend = new StubControllerInputBackend();
-        using var unsupported = new GlobalControllerInputService(
+        await using var unsupported = new GlobalControllerInputService(
             EnabledSettings(),
             OverlayHostKind.Other,
             new StubGameWindowTracker(),
             isApplicationActive: () => true,
             backend);
-        using var unselected = new GlobalControllerInputService(
+        await using var unselected = new GlobalControllerInputService(
             EnabledSettings() with { ControllerDeviceId = null },
             OverlayHostKind.Windows,
             new StubGameWindowTracker(),
@@ -147,6 +148,54 @@ public sealed class GlobalControllerInputServiceTests
         Assert.Equal(
             "Select a controller before enabling controller input.",
             unselected.Status);
+    }
+
+    [Fact]
+    public async Task RestartWaitsForThePreviousBackendToStop()
+    {
+        var backend = new BlockingStopControllerInputBackend();
+        await using var service = new GlobalControllerInputService(
+            EnabledSettings(),
+            OverlayHostKind.LinuxX11,
+            new StubGameWindowTracker(),
+            isApplicationActive: () => true,
+            backend);
+
+        service.Start();
+        service.Update(EnabledSettings() with
+        {
+            ControllerDeviceId = "controller-2",
+        });
+
+        await backend.CancellationObserved.WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.Equal(["controller-1"], backend.StartedDeviceIds);
+
+        backend.AllowStop();
+        await backend.SecondRunStarted.WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.Equal(
+            ["controller-1", "controller-2"],
+            backend.StartedDeviceIds);
+    }
+
+    [Fact]
+    public async Task DisposalWaitsForTheBackendToStop()
+    {
+        var backend = new BlockingStopControllerInputBackend();
+        var service = new GlobalControllerInputService(
+            EnabledSettings(),
+            OverlayHostKind.LinuxX11,
+            new StubGameWindowTracker(),
+            isApplicationActive: () => true,
+            backend);
+
+        service.Start();
+        var disposal = service.DisposeAsync().AsTask();
+
+        await backend.CancellationObserved.WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.False(disposal.IsCompleted);
+
+        backend.AllowStop();
+        await disposal.WaitAsync(TimeSpan.FromSeconds(2));
     }
 
     private static GlobalInputSettings EnabledSettings()
@@ -166,6 +215,8 @@ public sealed class GlobalControllerInputServiceTests
     {
         private Action<ControllerInputChange>? onInputChanged;
         private Action<ControllerBackendStatus>? onStatusChanged;
+        private TaskCompletionSource startChanged = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
 
         public List<string> StartedDeviceIds { get; } = [];
 
@@ -175,13 +226,38 @@ public sealed class GlobalControllerInputServiceTests
             Action<ControllerBackendStatus> statusChanged,
             CancellationToken cancellationToken)
         {
-            StartedDeviceIds.Add(deviceId);
+            lock (StartedDeviceIds)
+            {
+                StartedDeviceIds.Add(deviceId);
+                startChanged.TrySetResult();
+                startChanged = new TaskCompletionSource(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
+            }
             onInputChanged = inputChanged;
             onStatusChanged = statusChanged;
             statusChanged(new ControllerBackendStatus(
                 IsConnected: true,
                 "Controller connected for testing."));
             return Task.Delay(Timeout.Infinite, cancellationToken);
+        }
+
+        public async Task WaitForStartCountAsync(int count)
+        {
+            while (true)
+            {
+                Task changed;
+                lock (StartedDeviceIds)
+                {
+                    if (StartedDeviceIds.Count >= count)
+                    {
+                        return;
+                    }
+
+                    changed = startChanged.Task;
+                }
+
+                await changed.WaitAsync(TimeSpan.FromSeconds(2));
+            }
         }
 
         public void Emit(string token, bool isPressed)
@@ -196,6 +272,57 @@ public sealed class GlobalControllerInputServiceTests
             onStatusChanged?.Invoke(new ControllerBackendStatus(
                 IsConnected: false,
                 "Controller disconnected for testing."));
+        }
+    }
+
+    private sealed class BlockingStopControllerInputBackend
+        : IControllerInputBackend
+    {
+        private readonly TaskCompletionSource cancellationObserved = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource allowStop = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource secondRunStarted = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        private int runCount;
+
+        public List<string> StartedDeviceIds { get; } = [];
+
+        public Task CancellationObserved => cancellationObserved.Task;
+
+        public Task SecondRunStarted => secondRunStarted.Task;
+
+        public async Task RunAsync(
+            string deviceId,
+            Action<ControllerInputChange> onInputChanged,
+            Action<ControllerBackendStatus> onStatusChanged,
+            CancellationToken cancellationToken)
+        {
+            StartedDeviceIds.Add(deviceId);
+            var currentRun = Interlocked.Increment(ref runCount);
+            if (currentRun > 1)
+            {
+                secondRunStarted.TrySetResult();
+            }
+
+            try
+            {
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
+            {
+                if (currentRun == 1)
+                {
+                    cancellationObserved.TrySetResult();
+                    await allowStop.Task;
+                }
+            }
+        }
+
+        public void AllowStop()
+        {
+            allowStop.TrySetResult();
         }
     }
 

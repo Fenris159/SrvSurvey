@@ -85,6 +85,10 @@ internal static class Program
             return;
         }
 
+        var displayCapabilities = OverlayPlatformCapabilities.DetectCurrent();
+        var x11ThreadingInitialized = displayCapabilities.UsesX11Compatibility
+            ? X11Native.TryInitializeThreading()
+            : (bool?)null;
         applicationLog.Append(
             $"SrvSurvey {typeof(Program).Assembly.GetName().Version}");
         applicationLog.Append($"New log path: {applicationLog.CurrentLogPath}");
@@ -92,7 +96,14 @@ internal static class Program
         applicationLog.Append(
             $"Platform: {Environment.OSVersion.Platform} ({Environment.OSVersion.VersionString})");
         applicationLog.Append(
-            $"Display host: {OverlayPlatformCapabilities.DetectCurrent().Host}");
+            $"Display host: {displayCapabilities.Host}");
+        if (x11ThreadingInitialized is not null)
+        {
+            applicationLog.Append(x11ThreadingInitialized.Value
+                ? "X11 threading: initialized before platform startup."
+                : "X11 threading: initialization was unavailable; native X11 access may be unsafe.");
+        }
+
         var useSoftwareRendering = IsSoftwareRenderingRequested(
             Environment.GetEnvironmentVariable(SoftwareRenderingEnvironmentVariable));
         applicationLog.Append(

@@ -1,4 +1,5 @@
 using SDL3;
+using Avalonia.Threading;
 
 namespace SrvSurvey.Desktop.Input;
 
@@ -24,6 +25,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
     private const int ReconnectDelayMilliseconds = 1_000;
     private const SDL.InitFlags InputSubsystems =
         SDL.InitFlags.Joystick | SDL.InitFlags.Gamepad;
+    private static readonly SemaphoreSlim SdlLifecycleGate = new(1, 1);
 
     private static readonly (SDL.GamepadButton Button, string Token)[]
         StandardButtons =
@@ -62,9 +64,13 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
         ArgumentNullException.ThrowIfNull(onStatusChanged);
 
         var initialized = false;
+        var lifecycleEntered = false;
         try
         {
-            initialized = SDL.InitSubSystem(InputSubsystems);
+            await SdlLifecycleGate.WaitAsync(cancellationToken);
+            lifecycleEntered = true;
+            initialized = await Dispatcher.UIThread.InvokeAsync(
+                () => SDL.InitSubSystem(InputSubsystems));
             if (!initialized)
             {
                 onStatusChanged(new ControllerBackendStatus(
@@ -129,9 +135,20 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
         }
         finally
         {
-            if (initialized)
+            try
             {
-                SDL.QuitSubSystem(InputSubsystems);
+                if (initialized)
+                {
+                    await Dispatcher.UIThread.InvokeAsync(
+                        () => SDL.QuitSubSystem(InputSubsystems));
+                }
+            }
+            finally
+            {
+                if (lifecycleEntered)
+                {
+                    SdlLifecycleGate.Release();
+                }
             }
         }
     }

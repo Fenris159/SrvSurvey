@@ -172,6 +172,47 @@ public sealed class OverlayPlatformServiceTests
         GC.KeepAlive(handler);
     }
 
+    [Fact]
+    public void X11ErrorHandlerOnlySuppressesExpectedRacesOnOwnedDisplays()
+    {
+        var ownedDisplay = (nint)42;
+        X11OverlayPlatformService.RegisterErrorHandledDisplay(ownedDisplay);
+        try
+        {
+            Assert.True(X11OverlayPlatformService.ShouldSuppressXError(
+                ownedDisplay,
+                X11Native.BadWindow));
+            Assert.True(X11OverlayPlatformService.ShouldSuppressXError(
+                ownedDisplay,
+                X11Native.BadMatch,
+                X11Native.SetInputFocusRequest));
+            Assert.True(X11OverlayPlatformService.ShouldSuppressXError(
+                ownedDisplay,
+                X11Native.BadDrawable,
+                X11Native.GetImageRequest));
+            Assert.False(X11OverlayPlatformService.ShouldSuppressXError(
+                ownedDisplay,
+                errorCode: X11Native.BadValue));
+            Assert.False(X11OverlayPlatformService.ShouldSuppressXError(
+                ownedDisplay,
+                X11Native.BadMatch,
+                requestCode: 12));
+            Assert.False(X11OverlayPlatformService.ShouldSuppressXError(
+                errorDisplay: 43,
+                errorCode: X11Native.BadMatch,
+                requestCode: X11Native.SetInputFocusRequest));
+        }
+        finally
+        {
+            X11OverlayPlatformService.UnregisterErrorHandledDisplay(
+                ownedDisplay);
+        }
+
+        Assert.False(X11OverlayPlatformService.ShouldSuppressXError(
+            ownedDisplay,
+            X11Native.BadWindow));
+    }
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate int CompatibleX11ErrorHandler(
         nint display,

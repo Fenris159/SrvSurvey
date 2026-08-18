@@ -1,6 +1,6 @@
 # Install SrvSurvey on Windows
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.33**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.34**.
 
 > [!IMPORTANT]
 > If RC4 or earlier is installed under a protected folder such as
