@@ -53,7 +53,7 @@ internal static partial class WindowsRestartManagerProcessFinder
         }
     }
 
-    private static IReadOnlySet<int> ReadProcessIds(
+    private static HashSet<int> ReadProcessIds(
         uint session,
         Action<string>? log)
     {

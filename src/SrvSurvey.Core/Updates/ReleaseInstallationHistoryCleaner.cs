@@ -1,3 +1,5 @@
+using System.Threading.Channels;
+
 namespace SrvSurvey.Core.Updates;
 
 public sealed record ReleaseInstallationCleanupResult(
@@ -334,7 +336,7 @@ public sealed class ReleasePackageCacheCleaner
 
 public sealed class ReleaseUpdateHistoryCleanupCoordinator
 {
-    private readonly SemaphoreSlim gate = new(1, 1);
+    private readonly Channel<bool> gate = CreateGate();
 
     public async Task<ReleaseInstallationCleanupResult> CleanInstallationAsync(
         ReleaseInstallationHistoryCleaner cleaner,
@@ -343,7 +345,7 @@ public sealed class ReleaseUpdateHistoryCleanupCoordinator
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(cleaner);
-        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        _ = await gate.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             return await cleaner.CleanAsync(
@@ -354,7 +356,7 @@ public sealed class ReleaseUpdateHistoryCleanupCoordinator
         }
         finally
         {
-            gate.Release();
+            ReleaseGate();
         }
     }
 
@@ -364,7 +366,7 @@ public sealed class ReleaseUpdateHistoryCleanupCoordinator
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(cleaner);
-        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        _ = await gate.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             return await cleaner.CleanAsync(dataDirectory, cancellationToken)
@@ -372,7 +374,33 @@ public sealed class ReleaseUpdateHistoryCleanupCoordinator
         }
         finally
         {
-            gate.Release();
+            ReleaseGate();
+        }
+    }
+
+    private static Channel<bool> CreateGate()
+    {
+        var channel = Channel.CreateBounded<bool>(new BoundedChannelOptions(1)
+        {
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleReader = false,
+            SingleWriter = false,
+        });
+        if (!channel.Writer.TryWrite(true))
+        {
+            throw new InvalidOperationException(
+                "Could not initialize the release-history cleanup gate.");
+        }
+
+        return channel;
+    }
+
+    private void ReleaseGate()
+    {
+        if (!gate.Writer.TryWrite(true))
+        {
+            throw new InvalidOperationException(
+                "The release-history cleanup gate was released more than once.");
         }
     }
 }
