@@ -252,15 +252,21 @@ public sealed class BoxelSystemActionMenuTests
         Point labelPoint,
         Point inwardCutoutPoint)
     {
-        var clip = Assert.IsAssignableFrom<Avalonia.Media.Geometry>(button.Clip);
+        var clip = Assert.IsType<Avalonia.Media.Geometry>(
+            button.Clip,
+            exactMatch: false);
         Assert.True(clip.FillContains(labelPoint));
         Assert.False(clip.FillContains(inwardCutoutPoint));
     }
 
     private static void AssertMirroredSideGeometry(Button left, Button right)
     {
-        var leftClip = Assert.IsAssignableFrom<Avalonia.Media.Geometry>(left.Clip);
-        var rightClip = Assert.IsAssignableFrom<Avalonia.Media.Geometry>(right.Clip);
+        var leftClip = Assert.IsType<Avalonia.Media.Geometry>(
+            left.Clip,
+            exactMatch: false);
+        var rightClip = Assert.IsType<Avalonia.Media.Geometry>(
+            right.Clip,
+            exactMatch: false);
 
         for (var y = 1; y < left.Height; y += 4)
         {
@@ -278,9 +284,15 @@ public sealed class BoxelSystemActionMenuTests
         Button left,
         Button right)
     {
-        var topClip = Assert.IsAssignableFrom<Avalonia.Media.Geometry>(top.Clip);
-        var leftClip = Assert.IsAssignableFrom<Avalonia.Media.Geometry>(left.Clip);
-        var rightClip = Assert.IsAssignableFrom<Avalonia.Media.Geometry>(right.Clip);
+        var topClip = Assert.IsType<Avalonia.Media.Geometry>(
+            top.Clip,
+            exactMatch: false);
+        var leftClip = Assert.IsType<Avalonia.Media.Geometry>(
+            left.Clip,
+            exactMatch: false);
+        var rightClip = Assert.IsType<Avalonia.Media.Geometry>(
+            right.Clip,
+            exactMatch: false);
         const double centerX = 165;
         const double centerY = 93;
         var topOuterX = top.GetValue(Canvas.LeftProperty) + 4;

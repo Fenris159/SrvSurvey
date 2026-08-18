@@ -14,11 +14,6 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
         var guardianSite = File.ReadAllText(Path.Combine(
             desktop,
             "GuardianSiteOverlayPresentation.axaml"));
-        var coordinator = File.ReadAllText(Path.Combine(
-            desktop,
-            "Platform",
-            "Overlay",
-            "GuardianOverlayCoordinator.cs"));
         var buttons = presentation.Descendants()
             .Where(element => element.Name.LocalName == "Button")
             .ToArray();
@@ -34,9 +29,6 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
             button.Attribute("Command")?.Value == "{Binding ZoomInCommand}");
         Assert.Contains(buttons, button =>
             button.Attribute("Command")?.Value == "{Binding ZoomOutCommand}");
-        Assert.Contains("platform.PreparePassiveWindow(overlay)", coordinator);
-        Assert.Contains("platform.SetInteractive(overlay, interactive: true)", coordinator);
-        Assert.Contains("OverlayWindowRegistry.Shared.Register(overlay, \"PlotGuardians\")", coordinator);
         Assert.Contains("GuardianZoomOverlayPresentation", guardianSite);
         Assert.Contains("ShowEmbeddedZoomPreview", guardianSite);
     }

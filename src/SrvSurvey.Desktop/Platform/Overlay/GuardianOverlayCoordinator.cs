@@ -8,6 +8,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class GuardianOverlayCoordinator : IDisposable
 {
+    private const string GuardianPlotterName = "PlotGuardians";
+
     private readonly GuardianViewModel guardian;
     private readonly GuardianOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
@@ -17,6 +19,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private GuardianOverlayWindow? liveSiteWindow;
     private GuardianZoomOverlayWindow? zoomWindow;
+    private bool zoomOverlayUnavailable;
     private GuardianStatusOverlayWindow? guardianStatusWindow;
     private GuardianSystemOverlayWindow? systemSummaryWindow;
     private RamTahOverlayWindow? ramTahWindow;
@@ -208,7 +211,10 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         var overlay = new GuardianOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotGuardians");
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            GuardianPlotterName);
         overlay.Opened += (_, _) =>
         {
             PrepareWindow(overlay, PositionLiveSite);
@@ -229,7 +235,9 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
     private void SynchronizeZoomWindow(bool shouldShow)
     {
-        if (!shouldShow || liveSiteWindow is null)
+        if (!shouldShow
+            || liveSiteWindow is null
+            || zoomOverlayUnavailable)
         {
             CloseZoomWindow();
             return;
@@ -247,8 +255,8 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         OverlayThemeResources.ApplyOpacity(
             overlay,
             overlayLayout,
-            "PlotGuardians");
-        OverlayWindowRegistry.Shared.Register(overlay, "PlotGuardians");
+            GuardianPlotterName);
+        OverlayWindowRegistry.Shared.Register(overlay, GuardianPlotterName);
         overlay.Opened += (_, _) => PrepareZoomWindow(overlay);
         overlay.Closed += (_, _) =>
         {
@@ -267,6 +275,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         var preparation = platform.PreparePassiveWindow(overlay);
         if (!preparation.IsClickThrough)
         {
+            zoomOverlayUnavailable = true;
             CloseZoomWindow();
             return;
         }
@@ -274,6 +283,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         var interaction = platform.SetInteractive(overlay, interactive: true);
         if (!interaction.IsPrepared || !interaction.IsInteractive)
         {
+            zoomOverlayUnavailable = true;
             CloseZoomWindow();
         }
     }
@@ -402,7 +412,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         PositionWindow(
             window,
             gameBounds,
-            "PlotGuardians",
+            GuardianPlotterName,
             OverlayWindowPlacement.BottomRight,
             margin: 20);
     }

@@ -34,10 +34,11 @@ public sealed class OverlayPanelVisibilitySettingsStore
                 root["OverlayPanelVisibility"] = settings;
             }
 
-            foreach (var definition in OverlayLayoutCatalog.Supported)
+            foreach (var plotterName in OverlayLayoutCatalog.Supported.Select(
+                         definition => definition.Name))
             {
-                settings[definition.Name] = visibility.GetValueOrDefault(
-                    definition.Name,
+                settings[plotterName] = visibility.GetValueOrDefault(
+                    plotterName,
                     true);
             }
 

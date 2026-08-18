@@ -28,7 +28,12 @@ public sealed class GuardianOverlayPresentationRenderingTests
                 "SRVSURVEY_GUARDIAN_ZOOM_RENDER_OUTPUT");
             if (!string.IsNullOrWhiteSpace(outputPath))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+                var outputDirectory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrWhiteSpace(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+
                 frame.Save(outputPath, PngBitmapEncoderOptions.Default);
             }
         }

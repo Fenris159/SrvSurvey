@@ -193,7 +193,7 @@ public sealed partial class BoxelSystemActionMenu : UserControl
 
     internal static bool DismissActiveMenuForScroll()
     {
-        if (activeMenu?.TryGetTarget(out var active) != true || active is null)
+        if (activeMenu is null || !activeMenu.TryGetTarget(out var active))
         {
             activeMenu = null;
             return false;
