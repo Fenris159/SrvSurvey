@@ -5,6 +5,14 @@
              x:DataType="vm:BoxelSystemRowViewModel"
              Width="110"
              Height="52">
+  <UserControl.Resources>
+    <!-- The inward arcs follow the launcher while leaving the wider outer
+         portions available for action labels. -->
+    <StreamGeometry x:Key="RadialOptionTopGeometry">M 4,22 C 26,1 92,1 114,22 L 80,63 C 68,53 50,53 38,63 Z</StreamGeometry>
+    <StreamGeometry x:Key="RadialOptionLeftGeometry">M 26,0 A 81,81 0 0 0 26,118 L 60,77 A 28,28 0 0 1 60,41 Z</StreamGeometry>
+    <StreamGeometry x:Key="RadialOptionRightGeometry">M 36,0 A 81,81 0 0 1 36,118 L 2,77 A 28,28 0 0 0 2,41 Z</StreamGeometry>
+    <StreamGeometry x:Key="RadialOptionBottomGeometry">M 38,3 C 50,17 68,17 80,3 L 114,44 C 92,65 26,65 4,44 Z</StreamGeometry>
+  </UserControl.Resources>
   <UserControl.Styles>
     <Style Selector="Button.radial-launcher">
       <Setter Property="Width" Value="46" />
@@ -126,11 +134,7 @@
       </Setter>
     </Style>
     <Style Selector="Button.radial-option">
-      <Setter Property="Width" Value="104" />
-      <Setter Property="Height" Value="42" />
-      <Setter Property="Padding" Value="12,6" />
-      <Setter Property="CornerRadius" Value="21" />
-      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource RavenWarningBrush}" />
       <Setter Property="BorderThickness" Value="1.5" />
       <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
@@ -143,17 +147,16 @@
       <Setter Property="RenderTransformOrigin" Value="50%,50%" />
       <Setter Property="Template">
         <ControlTemplate>
-          <Border Classes="option-chrome"
-                  Background="{TemplateBinding Background}"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  ClipToBounds="True"
-                  CornerRadius="{TemplateBinding CornerRadius}">
-            <Border.Transitions>
-              <Transitions>
-                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" />
-              </Transitions>
-            </Border.Transitions>
+          <Grid>
+            <Path Classes="option-chrome"
+                  Data="{TemplateBinding Clip}"
+                  Fill="{TemplateBinding Background}"
+                  Stroke="{TemplateBinding BorderBrush}" />
+            <Path Classes="option-disabled-shade"
+                  Data="{TemplateBinding Clip}"
+                  Fill="#000000"
+                  IsHitTestVisible="False"
+                  Opacity="0" />
             <ContentPresenter Background="Transparent"
                               Content="{TemplateBinding Content}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -164,7 +167,7 @@
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                               Padding="{TemplateBinding Padding}"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
+          </Grid>
         </ControlTemplate>
       </Setter>
       <Setter Property="Transitions">
@@ -180,23 +183,39 @@
       </Setter>
     </Style>
     <Style Selector="Button.radial-option.complete">
+      <Setter Property="Width" Value="118" />
+      <Setter Property="Height" Value="66" />
+      <Setter Property="Padding" Value="20,6" />
+      <Setter Property="Clip" Value="{StaticResource RadialOptionTopGeometry}" />
       <Setter Property="RenderTransform">
-        <TranslateTransform X="0" Y="32" />
+        <TranslateTransform X="0" Y="50" />
       </Setter>
     </Style>
     <Style Selector="Button.radial-option.reopen">
+      <Setter Property="Width" Value="62" />
+      <Setter Property="Height" Value="118" />
+      <Setter Property="Padding" Value="2,4,6,4" />
+      <Setter Property="Clip" Value="{StaticResource RadialOptionLeftGeometry}" />
       <Setter Property="RenderTransform">
-        <TranslateTransform X="32" Y="0" />
+        <TranslateTransform X="50" Y="2" />
       </Setter>
     </Style>
     <Style Selector="Button.radial-option.defer">
+      <Setter Property="Width" Value="62" />
+      <Setter Property="Height" Value="118" />
+      <Setter Property="Padding" Value="6,4,2,4" />
+      <Setter Property="Clip" Value="{StaticResource RadialOptionRightGeometry}" />
       <Setter Property="RenderTransform">
-        <TranslateTransform X="-32" Y="0" />
+        <TranslateTransform X="-50" Y="2" />
       </Setter>
     </Style>
     <Style Selector="Button.radial-option.start-here">
+      <Setter Property="Width" Value="118" />
+      <Setter Property="Height" Value="66" />
+      <Setter Property="Padding" Value="20,6" />
+      <Setter Property="Clip" Value="{StaticResource RadialOptionBottomGeometry}" />
       <Setter Property="RenderTransform">
-        <TranslateTransform X="0" Y="-32" />
+        <TranslateTransform X="0" Y="-46" />
       </Setter>
     </Style>
     <Style Selector="Canvas.radial-menu-surface.open Button.radial-option">
@@ -205,19 +224,19 @@
         <TranslateTransform X="0" Y="0" />
       </Setter>
     </Style>
-    <Style Selector="Button.radial-option /template/ Border.option-chrome">
-      <Setter Property="BoxShadow" Value="inset 0 0 0 0 #00F7C948" />
+    <Style Selector="Button.radial-option /template/ Path.option-chrome">
+      <Setter Property="StrokeThickness" Value="1.5" />
     </Style>
     <Style Selector="Button.radial-option /template/ ContentPresenter">
       <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="Button.radial-option:pointerover">
-      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource RavenWarningBrush}" />
       <Setter Property="BorderThickness" Value="2" />
     </Style>
-    <Style Selector="Button.radial-option:pointerover /template/ Border.option-chrome">
-      <Setter Property="BoxShadow" Value="{DynamicResource RavenWarningInsetShadow}" />
+    <Style Selector="Button.radial-option:pointerover /template/ Path.option-chrome">
+      <Setter Property="StrokeThickness" Value="2" />
     </Style>
     <Style Selector="Button.radial-option:disabled">
       <Setter Property="Opacity" Value="1" />
@@ -227,8 +246,11 @@
       <Setter Property="Cursor" Value="Arrow" />
       <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
     </Style>
-    <Style Selector="Button.radial-option:disabled /template/ Border.option-chrome">
-      <Setter Property="BoxShadow" Value="inset 0 0 0 0 #00F7C948" />
+    <Style Selector="Button.radial-option:disabled /template/ Path.option-chrome">
+      <Setter Property="StrokeThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.radial-option:disabled /template/ Path.option-disabled-shade">
+      <Setter Property="Opacity" Value="0.45" />
     </Style>
     <Style Selector="Button.radial-option:disabled /template/ ContentPresenter">
       <Setter Property="Opacity" Value="0.5" />
@@ -285,7 +307,8 @@
               Height="190"
               Background="Transparent"
               PointerEntered="Menu_PointerEntered"
-              PointerExited="Menu_PointerExited">
+              PointerExited="Menu_PointerExited"
+              PointerWheelChanged="Menu_PointerWheelChanged">
         <Canvas x:Name="MenuSurface"
                 Width="330"
                 Height="190"
@@ -293,32 +316,32 @@
                 IsVisible="False">
           <Button x:Name="CompleteActionButton"
                   Classes="radial-option complete"
-                  Canvas.Left="113"
-                  Canvas.Top="1"
+                  Canvas.Left="106"
+                  Canvas.Top="12"
                   Command="{Binding CompleteCommand}"
                   Click="Action_Click"
                   Content="Complete"
                   ToolTip.Tip="Mark this recorded system complete." />
           <Button x:Name="ReopenActionButton"
                   Classes="radial-option reopen"
-                  Canvas.Left="5"
-                  Canvas.Top="74"
+                  Canvas.Left="84"
+                  Canvas.Top="34"
                   Command="{Binding ReopenCommand}"
                   Click="Action_Click"
                   Content="Reopen"
                   ToolTip.Tip="Return a completed or empty system to the active survey." />
           <Button x:Name="DeferActionButton"
                   Classes="radial-option defer"
-                  Canvas.Left="221"
-                  Canvas.Top="74"
+                  Canvas.Left="184"
+                  Canvas.Top="34"
                   Command="{Binding DeferCommand}"
                   Click="Action_Click"
                   Content="Defer"
                   ToolTip.Tip="Skip this unfinished system and keep it for later." />
           <Button x:Name="StartHereActionButton"
                   Classes="radial-option start-here"
-                  Canvas.Left="113"
-                  Canvas.Top="147"
+                  Canvas.Left="106"
+                  Canvas.Top="108"
                   Command="{Binding StartHereCommand}"
                   Click="Action_Click"
                   Content="Start Here"

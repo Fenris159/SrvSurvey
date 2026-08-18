@@ -8,6 +8,8 @@ namespace SrvSurvey.Desktop.Views;
 
 public sealed partial class OverlaySettingsView : UserControl
 {
+    private readonly OverlaySettingsCategory category;
+
     public OverlaySettingsView()
         : this(OverlaySettingsCategory.Global)
     {
@@ -15,8 +17,23 @@ public sealed partial class OverlaySettingsView : UserControl
 
     public OverlaySettingsView(OverlaySettingsCategory category)
     {
+        this.category = category;
         InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
         ApplyCategory(category);
+    }
+
+    private void OnDataContextChanged(object? sender, EventArgs eventArgs)
+    {
+        if (DataContext is not MainWindowViewModel viewModel)
+        {
+            PanelVisibilityItems.ItemsSource = null;
+            return;
+        }
+
+        var panels = viewModel.OverlayPanelVisibility.ForCategory(category);
+        PanelVisibilityItems.ItemsSource = panels;
+        PanelVisibilityCard.IsVisible = panels.Count > 0;
     }
 
     private void ApplyCategory(OverlaySettingsCategory category)

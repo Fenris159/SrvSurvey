@@ -20,7 +20,7 @@
       <StackPanel>
         <TextBlock Classes="overlay-header"
                    Text="ROUTE BODIES" />
-        <TextBlock Foreground="{DynamicResource RavenTextBrush}"
+        <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
                    Classes="overlay-body"
                    FontWeight="SemiBold"
                    Text="{Binding SystemName}"

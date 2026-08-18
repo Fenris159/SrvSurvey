@@ -221,6 +221,37 @@ public sealed class GuidesViewModelTests
     }
 
     [Fact]
+    public void CatalogDocumentsCurrentRouteBoxelOverlayAndDesktopFeatures()
+    {
+        var categories = GuideCatalog.Create();
+        string Instructions(string key) => string.Join(
+            ' ',
+            categories.Single(category => category.Key == key)
+                .Sections.SelectMany(section =>
+                    new[] { section.Title, section.Summary }
+                        .Concat(section.Steps)
+                        .Concat(section.Details)));
+
+        var exploration = Instructions("exploration");
+        var travel = Instructions("travel-search");
+        var boxel = Instructions("boxel");
+        var overlays = Instructions("overlays");
+        var settings = Instructions("settings-migration");
+
+        Assert.Contains("Show flight warnings", exploration, StringComparison.Ordinal);
+        Assert.Contains("8 g", exploration, StringComparison.Ordinal);
+        Assert.Contains("Route bodies", travel, StringComparison.Ordinal);
+        Assert.Contains("marks that destination complete", travel, StringComparison.Ordinal);
+        Assert.Contains("ten rows per page", boxel, StringComparison.Ordinal);
+        Assert.Contains("Review Boxel statistics", boxel, StringComparison.Ordinal);
+        Assert.Contains("Export JSON + CSV", boxel, StringComparison.Ordinal);
+        Assert.Contains("overlay-settings icon", overlays, StringComparison.Ordinal);
+        Assert.Contains("Caption font sizes", overlays, StringComparison.Ordinal);
+        Assert.Contains("Desktop placement and focus", settings, StringComparison.Ordinal);
+        Assert.Contains("Default monitor", settings, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void SelectingCategoryReturnsToBrowsingMode()
     {
         var viewModel = new GuidesViewModel(GuideCatalog.Create())

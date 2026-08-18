@@ -301,6 +301,7 @@ public sealed partial class OverlayCoverageInventoryTests
         var containerWindows = new HashSet<string>(StringComparer.Ordinal)
         {
             "CombinedOverlayWindow.axaml",
+            "GuardianZoomOverlayWindow.axaml",
             "StreamOverlayWindow.axaml",
         };
         var runtimePanels = Directory.GetFiles(

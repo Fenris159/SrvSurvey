@@ -1068,6 +1068,11 @@ public sealed partial class App : Application
 
     private void HandleAction(GlobalInputActionTriggeredEventArgs eventArgs)
     {
+        if (ShortcutCaptureSession.IsActive)
+        {
+            return;
+        }
+
         Dispatcher.UIThread.Post(async () =>
         {
             var viewModel = mainViewModel;
@@ -1090,6 +1095,13 @@ public sealed partial class App : Application
         if (mainWindow is null)
         {
             throw new InvalidOperationException("Main window is not ready.");
+        }
+
+        if (GlobalInputActionCatalog.TryGetOverlayPlotterName(
+                action,
+                out var plotterName))
+        {
+            return viewModel.OverlayPanelVisibility.Toggle(plotterName);
         }
 
         return action switch

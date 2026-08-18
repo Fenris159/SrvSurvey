@@ -15,7 +15,7 @@
     <StackPanel Spacing="6">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <TextBlock Classes="overlay-header"
-                   Text="Search guidance" />
+                   Text="SEARCH GUIDANCE" />
         <TextBlock Grid.Column="1"
                    Foreground="{DynamicResource RavenAccentBrush}"
                    FontSize="8"

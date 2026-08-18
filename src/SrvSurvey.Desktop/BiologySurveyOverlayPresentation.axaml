@@ -109,7 +109,7 @@
                 Spacing="3">
       <TextBlock Classes="overlay-header"
                  Text="{Binding Survey.BiologySurveyDisplay.Title}" />
-      <TextBlock Foreground="{DynamicResource RavenTextBrush}"
+      <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
                  FontSize="10"
                  FontWeight="SemiBold"
                  Text="{Binding Survey.BiologySurveyDisplay.Heading}"

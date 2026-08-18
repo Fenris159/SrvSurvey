@@ -11,16 +11,23 @@ public sealed class GuardianOverlayViewModel : INotifyPropertyChanged
 
     public GuardianOverlayViewModel(
         IGuardianOverlayPresentationState guardian,
-        OverlayPlatformCapabilities capabilities)
+        OverlayPlatformCapabilities capabilities,
+        bool showEmbeddedZoomPreview = false)
     {
         Guardian = guardian ?? throw new ArgumentNullException(nameof(guardian));
         ArgumentNullException.ThrowIfNull(capabilities);
         platformStatus = capabilities.StatusText;
+        ZoomControls = new GuardianZoomOverlayViewModel(_ => { });
+        ShowEmbeddedZoomPreview = showEmbeddedZoomPreview;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public IGuardianOverlayPresentationState Guardian { get; }
+
+    public GuardianZoomOverlayViewModel ZoomControls { get; }
+
+    public bool ShowEmbeddedZoomPreview { get; }
 
     internal static GuardianOverlayViewModel CreateEditorPreview(
         GuardianStatusPreviewState statusState =
@@ -30,7 +37,8 @@ public sealed class GuardianOverlayViewModel : INotifyPropertyChanged
             statusState == GuardianStatusPreviewState.ObeliskTarget
                 ? GuardianOverlayPreviewState.Instance
                 : GuardianOverlayPreviewState.Create(statusState),
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows),
+            showEmbeddedZoomPreview: true);
         viewModel.ApplyPreparation(new OverlayPreparationResult(
             IsPrepared: true,
             IsClickThrough: true,

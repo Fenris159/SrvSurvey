@@ -4,12 +4,45 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media.Imaging;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class GuardianOverlayPresentationRenderingTests
 {
+    [AvaloniaFact]
+    public void GuardianZoomOrbsRenderAtTheirCompactOverlaySize()
+    {
+        var window = new GuardianZoomOverlayWindow(
+            new GuardianZoomOverlayViewModel(_ => { }));
+        try
+        {
+            OverlayThemeResources.Apply(window);
+            window.Show();
+            var frame = window.CaptureRenderedFrame();
+
+            Assert.NotNull(frame);
+            Assert.Equal(new PixelSize(42, 20), frame.PixelSize);
+            var outputPath = Environment.GetEnvironmentVariable(
+                "SRVSURVEY_GUARDIAN_ZOOM_RENDER_OUTPUT");
+            if (!string.IsNullOrWhiteSpace(outputPath))
+            {
+                var outputDirectory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrWhiteSpace(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+
+                frame.Save(outputPath, PngBitmapEncoderOptions.Default);
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void EveryGuardianEditorPresentationRendersAtItsCatalogSize()
     {

@@ -160,6 +160,7 @@
     </Style>
     <Style Selector="Window">
       <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
+      <Setter Property="Icon" Value="/Assets/logo.ico" />
     </Style>
     <Style Selector="ScrollViewer">
       <Setter Property="IsScrollChainingEnabled" Value="False" />

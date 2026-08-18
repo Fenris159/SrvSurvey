@@ -8,6 +8,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class GuardianOverlayCoordinator : IDisposable
 {
+    private const string GuardianPlotterName = "PlotGuardians";
+
     private readonly GuardianViewModel guardian;
     private readonly GuardianOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
@@ -16,6 +18,8 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private GuardianOverlayWindow? liveSiteWindow;
+    private GuardianZoomOverlayWindow? zoomWindow;
+    private bool zoomOverlayUnavailable;
     private GuardianStatusOverlayWindow? guardianStatusWindow;
     private GuardianSystemOverlayWindow? systemSummaryWindow;
     private RamTahOverlayWindow? ramTahWindow;
@@ -202,12 +206,20 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         if (liveSiteWindow is not null)
         {
             PositionLiveSite(liveSiteWindow, gameWindow.ClientBounds);
+            SynchronizeZoomWindow(shouldShow: true);
             return;
         }
 
         var overlay = new GuardianOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotGuardians");
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionLiveSite);
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            GuardianPlotterName);
+        overlay.Opened += (_, _) =>
+        {
+            PrepareWindow(overlay, PositionLiveSite);
+            SynchronizeZoomWindow(shouldShow: true);
+        };
         overlay.Closed += (_, _) =>
         {
             if (ReferenceEquals(liveSiteWindow, overlay))
@@ -219,6 +231,61 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         liveSiteWindow = overlay;
         overlay.Show();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void SynchronizeZoomWindow(bool shouldShow)
+    {
+        if (!shouldShow
+            || liveSiteWindow is null
+            || zoomOverlayUnavailable)
+        {
+            CloseZoomWindow();
+            return;
+        }
+
+        if (zoomWindow is not null)
+        {
+            PositionZoomWindow(zoomWindow, gameWindow.ClientBounds);
+            return;
+        }
+
+        var overlay = new GuardianZoomOverlayWindow(
+            new GuardianZoomOverlayViewModel(zoomIn => AdjustZoom(zoomIn)));
+        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.ApplyOpacity(
+            overlay,
+            overlayLayout,
+            GuardianPlotterName);
+        OverlayWindowRegistry.Shared.Register(overlay, GuardianPlotterName);
+        overlay.Opened += (_, _) => PrepareZoomWindow(overlay);
+        overlay.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(zoomWindow, overlay))
+            {
+                zoomWindow = null;
+            }
+        };
+        zoomWindow = overlay;
+        overlay.Show();
+    }
+
+    private void PrepareZoomWindow(GuardianZoomOverlayWindow overlay)
+    {
+        PositionZoomWindow(overlay, gameWindow.ClientBounds);
+        var preparation = platform.PreparePassiveWindow(overlay);
+        if (!preparation.IsClickThrough)
+        {
+            zoomOverlayUnavailable = true;
+            CloseZoomWindow();
+            return;
+        }
+
+        var interaction = platform.SetInteractive(overlay, interactive: true);
+        if (!interaction.IsPrepared || !interaction.IsInteractive)
+        {
+            zoomOverlayUnavailable = true;
+            CloseZoomWindow();
+        }
     }
 
     private void SynchronizeSystemSummaryWindow(bool shouldShow)
@@ -345,9 +412,35 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         PositionWindow(
             window,
             gameBounds,
-            "PlotGuardians",
+            GuardianPlotterName,
             OverlayWindowPlacement.BottomRight,
             margin: 20);
+    }
+
+    private void PositionZoomWindow(Window window, PixelRect gameBounds)
+    {
+        var siteWindow = liveSiteWindow;
+        var screen = siteWindow?.Screens.ScreenFromBounds(gameBounds)
+            ?? window.Screens.ScreenFromBounds(gameBounds)
+            ?? window.Screens.Primary;
+        if (siteWindow is null || screen is null)
+        {
+            return;
+        }
+
+        const int inset = 8;
+        var scale = screen.Scaling;
+        var siteWidth = (int)Math.Ceiling(siteWindow.Width * scale);
+        var siteHeight = (int)Math.Ceiling(siteWindow.Height * scale);
+        var width = (int)Math.Ceiling(window.Width * scale);
+        var height = (int)Math.Ceiling(window.Height * scale);
+        var position = new PixelPoint(
+            siteWindow.Position.X + siteWidth - width - (int)Math.Ceiling(inset * scale),
+            siteWindow.Position.Y + siteHeight - height - (int)Math.Ceiling(inset * scale));
+        if (window.Position != position)
+        {
+            window.Position = position;
+        }
     }
 
     private void PositionSystemSummary(
@@ -427,6 +520,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
     private void CloseLiveSiteWindow()
     {
+        CloseZoomWindow();
         var overlay = liveSiteWindow;
         if (overlay is null)
         {
@@ -436,6 +530,18 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         liveSiteWindow = null;
         overlay.Close();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void CloseZoomWindow()
+    {
+        var overlay = zoomWindow;
+        if (overlay is null)
+        {
+            return;
+        }
+
+        zoomWindow = null;
+        overlay.Close();
     }
 
     private void CloseSystemSummaryWindow()

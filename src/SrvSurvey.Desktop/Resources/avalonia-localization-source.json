@@ -1256,6 +1256,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayThemeStateStore.cs"
   },
   {
+    "Text": "A saved standard route can include body destinations for each system. Route bodies shows their body icon, arrival distance, exploration and biology values, and completion state; arriving at the matching body marks that destination complete.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "A scanned body and live surface coordinates are required to toggle a quick tracker.",
     "IsFormat": false,
     "SourceKinds": [
@@ -1446,7 +1454,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/InputChord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/ShortcutCaptureBox.cs"
   },
   {
     "Text": "ALT B",
@@ -1961,14 +1969,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardChordFormatter.cs"
   },
   {
-    "Text": "Add a tracker from Composition Scanner discoveries",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Add anything useful about this system...",
     "IsFormat": false,
     "SourceKinds": [
@@ -2055,14 +2055,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Add system, body, commander, and location banner",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Add the steps or game activity that led to this error.",
@@ -2177,6 +2169,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
+    "Text": "Adjust Header, Title, Value, Body, Detail, and Caption font sizes in half-point increments. These shared roles keep related overlays consistent instead of resizing individual labels independently.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Adjust VR overlay",
     "IsFormat": false,
     "SourceKinds": [
@@ -2207,6 +2207,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Aerial copies need to be within 50 m of site origin, altitude 500\u20132000 m (e.g. \u0027Aerial alpha\u0027). Alt\u002BCtrl\u002BI toggles data banners for future screenshots.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Aerial {0}",
@@ -2361,6 +2369,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "Allow timed notification messages",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Allowed",
     "IsFormat": false,
     "SourceKinds": [
@@ -2372,9 +2388,10 @@
     "Text": "Alpha",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Also displays the overlay in supercruise when the navigation destination matches the next followed-route system.",
@@ -2385,36 +2402,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Also show in the navigation panel",
+    "Text": "Alt\u002BB toggles details for the current or selected body. With the bubble rule enabled, the panel stays hidden within the configured Sol radius (upstream default \u003C200 ly).",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Also show in the system map",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Alt\u002BB toggles details for the current or selected body. The panel stays hidden inside the configured Sol radius unless that rule is disabled.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Alt\u002BCtrl\u002BI toggles data banners for future screenshots.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Alt\u002BCtrl\u002BO toggles this capture window. Its enabled state is restored at startup.",
@@ -2857,6 +2850,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Application window scale",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Application window scale changes the complete shell and is reduced only when the selected size would not fit the active monitor.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Applied overlay colours to theme.json and all open overlays.{0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -3233,12 +3242,60 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Auto add tracker location when Composition scanning organisms.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Auto remove tracker location when sampling an organism within 250 m.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Auto remove tracker locations upon final scan",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Auto show colonization overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Auto zoom map if within 30 m of obelisks",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Auto \u00B7 {0}\u00D7",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteViewModel.cs"
+  },
+  {
+    "Text": "Auto-copy is mutually exclusive with Route Manager and FC Routes so only one Galaxy Map destination source can control the clipboard.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Auto-copy next system in Galaxy Map",
@@ -3263,6 +3320,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Auto-zoom if inside buildings",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Auto-zoom with analyzer tool",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "AutoHideBioPlotOnRepeat",
@@ -4153,14 +4226,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "Bands fill above 0 and each configured threshold.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Bank balance",
     "IsFormat": false,
     "SourceKinds": [
@@ -4207,6 +4272,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Controls/HumanSiteMapControl.cs"
+  },
+  {
+    "Text": "Battery packs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Battery, Medkit, Alarm, Power...",
@@ -4276,9 +4349,10 @@
     "Text": "Beta",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Bindings",
@@ -4295,6 +4369,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Bio signal radius (organism sample range)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Bio signals and biology predictions",
@@ -4447,7 +4529,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Biology system and Codex overlays",
@@ -4673,7 +4755,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Body information and values",
@@ -4812,12 +4894,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "Boxel Stats summarizes the Commander data SrvSurvey has actually recorded; it does not estimate unvisited systems from a configured search size.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Boxel auto-copy was disabled because another Galaxy Map auto-copy setting was selected.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Boxel completion notifications",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Boxel hierarchy",
@@ -4964,12 +5062,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Built-in presets fill the editor without changing theme.json until you apply them. Your named states remain stored separately from the active in-game overlay palette.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Bumper",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "But keep it hidden when in the bubble near Sol",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "But not if that organism has already been analyzed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "B{0}",
@@ -5306,7 +5428,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/InputChord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/ShortcutCaptureBox.cs"
   },
   {
     "Text": "CTRL \u002B",
@@ -6405,6 +6527,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Choose the reward level per group by millions of credits:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Choose where the application opens and preserve the original hand-off to the selected Elite Dangerous window.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Choose where this journey should begin.",
     "IsFormat": false,
     "SourceKinds": [
@@ -6475,6 +6621,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Clear all trackers on current body",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Clear cancelled; unclaimed rewards were not changed.",
@@ -6563,6 +6717,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Click, then hold shortcut keys",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
@@ -6814,6 +6984,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyPredictionsWindow.axaml"
   },
   {
+    "Text": "Collapse cargo groups when enough on FCs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Collapse construction data",
     "IsFormat": false,
     "SourceKinds": [
@@ -6915,7 +7093,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Colonization shopping",
@@ -7407,6 +7585,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyPredictionsViewModel.cs"
   },
   {
+    "Text": "Compact mode keeps the target and route visualization while hiding network metadata and special locations.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Compare commander surveys with the published Guardian catalog, then package only new headings, locations, POI states, relic and component-material data, groups, and raw map points.",
     "IsFormat": false,
     "SourceKinds": [
@@ -7565,7 +7751,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Configure the search sphere",
@@ -8073,6 +8259,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteViewModel.cs"
   },
   {
+    "Text": "Controls the complete PlotPulse overlay: the ~10-second journal/status pulse bar and the Supercruise Overdrive cooldown indicator. There is a single enable preference for both.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Convert .bmp screenshots into .png files",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux.",
     "IsFormat": false,
     "SourceKinds": [
@@ -8474,6 +8676,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
+    "Text": "Count Nav Beacon scans as FSS complete changes only the displayed statistic. Minimum-system settings control when averages appear and which boxels export; they do not change stored survey data, Boxel completion, or the next target.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Covas",
     "IsFormat": false,
     "SourceKinds": [
@@ -8504,14 +8714,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Create Guardian aerial-site copies",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Create a project",
@@ -8600,14 +8802,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Crop and rotate Alpha-site aerial copies",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Cross-platform exploration companion",
@@ -9060,7 +9254,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "DSS distance limit (LS)",
+    "Text": "DSS distance limit (LS from primary star)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -9138,6 +9332,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Data terminals",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Data use and licensing",
@@ -9269,6 +9471,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/LegacyOverlayThemeStore.cs"
   },
   {
+    "Text": "Default monitor",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Default: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -9338,7 +9548,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "Delete \u0027{0}\u0027? The route will be moved to recovery storage.",
@@ -9387,14 +9597,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
-  },
-  {
-    "Text": "Delete the original BMP after verification",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Delete this route?",
@@ -9515,6 +9717,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopBehaviorViewModel.cs"
+  },
+  {
+    "Text": "Desktop behavior controls where the main application returns, how large it appears, and whether focus is handed back to Elite Dangerous.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Desktop placement and focus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Desktop profile ({0} files)",
@@ -9830,7 +10048,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/SurfaceSurveyRadarControl.cs"
   },
   {
-    "Text": "Dim fully analyzed organisms",
+    "Text": "Dim if analyzed",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -9854,6 +10072,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/JournalSettingsStore.cs"
   },
   {
+    "Text": "Disable aerial screenshot alignment overlay.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Disable limit",
     "IsFormat": false,
     "SourceKinds": [
@@ -9870,12 +10096,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Disable overlays when on foot in:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Disable quests",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Disable site heading assistance overlay.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "DisableAerialAlignmentGrid",
@@ -10250,9 +10492,10 @@
     "Text": "Dominator suit",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayBehaviorViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Doors",
@@ -10287,20 +10530,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "Download all available biology images in the background",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
     "Text": "Download hash verified; validating archive files...",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Download star system, bodies and organic signals data from EDSM, Spansh and Canonn",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Download the AppImage from this release, make it executable, replace your existing AppImage file, and launch it again.",
@@ -10541,7 +10784,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "EXPLORATION",
@@ -10760,6 +11003,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/EliteGameWindowIdentity.cs"
   },
   {
+    "Text": "Embed location details within image, if known",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Emerald, Teal",
     "IsFormat": false,
     "SourceKinds": [
@@ -10801,7 +11052,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
-    "Text": "Enable Guardian site overlays",
+    "Text": "Enable Guardian Ruins features",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -10873,7 +11124,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Enable Require FSS to report all bodies when entering a system is not enough and you want completion to wait for a full FSS identification.",
+    "Text": "Enable Require FSS to report all bodies when entering a new system is not enough and you want completion to wait for a full FSS identification. Enabled earlier-visit and older-Spansh completion rules remain explicit exceptions.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -10889,12 +11140,44 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Enable Show flight warnings and choose a gravity threshold in Exploration overlay settings. The warning appears only when SrvSurvey can identify a nearby landable body in a supported ship, fighter, or SRV flight context.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Enable VR overlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Enable controller/joystick key chords",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Enable key chords",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Enable limit",
@@ -10948,10 +11231,9 @@
     "Text": "Enabled",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.cs"
   },
   {
     "Text": "Encoded",
@@ -11000,6 +11282,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
+  },
+  {
+    "Text": "Enter",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/ShortcutCaptureBox.cs"
   },
   {
     "Text": "Enter a biological signal or missing variants to find nearby systems.",
@@ -11507,6 +11797,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "Explore recorded children to move down the boxel hierarchy. When statistics are opened from a saved-search entry, switch between the selected boxel and the combined saved-search scope; boxels without recorded statistics add nothing to the rollup.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Explore sites, review surveys, and track both Ram Tah research missions.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11529,6 +11827,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml.cs"
+  },
+  {
+    "Text": "Export JSON \u002B CSV writes the detailed snapshot and tabular summary to a folder you choose.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Export JSON \u002B CSV\u2026",
@@ -11641,6 +11947,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Extend Body Information Preview by:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Extend Body Predictions preview by:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "External data consent",
@@ -11955,7 +12277,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "FSS complete",
@@ -11979,7 +12301,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "FSS information and system survey",
@@ -12511,6 +12833,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "Fleet carrier route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "Fleet carriers",
     "IsFormat": false,
     "SourceKinds": [
@@ -12556,7 +12886,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Flight warning, search, travel, colonization",
@@ -12567,28 +12897,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Focus Elite after SrvSurvey starts",
+    "Text": "Flight-warning color and advice escalate at 2 g, 4 g, and 8 g. The panel hides when the body context is stale, while on foot, or while an external game panel has focus.",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "Focus Elite after each live FSD jump",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "Focus Elite when SrvSurvey is minimized",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Focus current body",
@@ -12605,6 +12919,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
+  },
+  {
+    "Text": "Focus-on-start, focus-on-minimize, focus-after-jump, and minimize-to-tray are independent. Passive overlays remain click-through and do not activate the application window.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "FocusGameAfterFsdJump",
@@ -12671,6 +12993,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "Font Size:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Font sizes apply to shared overlay text roles. Values use half-point increments and update open overlays when previewed or applied.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "FootZoom",
     "IsFormat": false,
     "SourceKinds": [
@@ -12693,6 +13031,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml.cs"
+  },
+  {
+    "Text": "For streaming: use joined overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Former ship location",
@@ -13367,6 +13713,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Galaxy Map boxel guidance",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Galaxy Map data is unavailable: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -13412,7 +13766,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Galaxy Map text entry failed with SharpHook result {0}.",
@@ -13498,9 +13852,10 @@
     "Text": "Gamma",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Gas giant with ammonia life",
@@ -13756,7 +14111,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Ground target",
@@ -14085,7 +14440,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Guardian site heading",
@@ -14160,6 +14515,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Guardian status",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "Guardian summaries identify known sites, beacons, survey status, blueprint type, and extra notes for the current system.",
     "IsFormat": false,
     "SourceKinds": [
@@ -14189,7 +14552,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Guardian tower heading",
@@ -14491,12 +14854,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Hide SrvSurvey in the system tray when minimized",
+    "Text": "Hide PlotPulse (journal activity and SCO status) \u2192\u2192\u2192",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Hide body materials",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Hide combat overlays while Raven Colonial build projects are active",
@@ -14515,7 +14886,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Hide geological signal counts",
+    "Text": "Hide geo signal counts",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -14523,7 +14894,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Hide geological signals in biology details",
+    "Text": "Hide geo signals",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -14531,7 +14902,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Hide in surface flight until landing gear is down",
+    "Text": "Hide if landing gear is not deployed when flying.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -14539,23 +14910,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Hide material composition",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Hide my own Canonn signals and analyzed organisms",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Hide near Sol",
+    "Text": "Hide my own scans. Uncheck to revisit signals after dying",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -14571,15 +14926,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
-    "Text": "Hide overlays in a Dominator suit",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Hide overlays in a Maverick suit",
+    "Text": "Hide survey overlays while build projects are active",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -14707,14 +15054,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "High-gravity warning (g)",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "High-intensity conflict zone",
     "IsFormat": false,
     "SourceKinds": [
@@ -14763,6 +15102,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
+    "Text": "Highlight if ship can load enough on FCs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Highlight one-trip FC restocks",
     "IsFormat": false,
     "SourceKinds": [
@@ -14771,7 +15118,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "Highlight regional first discoveries",
+    "Text": "Highlight regional firsts in gold",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -14876,6 +15223,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
   },
   {
+    "Text": "Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Honk or enter FSS to establish the system body count and signal state.",
     "IsFormat": false,
     "SourceKinds": [
@@ -14977,7 +15332,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Human settlement conflict-zone map",
@@ -14997,6 +15352,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Human settlement maps",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Human settlement quest map",
     "IsFormat": false,
     "SourceKinds": [
@@ -15008,6 +15371,7 @@
     "Text": "Human settlements",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
@@ -15307,6 +15671,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "Illustrations show 1, 2, 3, then 4 filled bands for rewards above 0 CR and each threshold (defaults 3 / 7 / 12 M).",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Image could not be decoded: {0}",
@@ -15669,6 +16041,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "In orbit around a body",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "In the System Map",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "In-game overlay appearance",
@@ -16410,7 +16798,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Keep biology status available after a DSS scan",
+    "Text": "Keep bio overlays visible after DSS scans for:",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -16450,14 +16838,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "Keep the position editor open to see unsaved color edits refresh in its previews.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Keep travelling",
     "IsFormat": false,
     "SourceKinds": [
@@ -16480,14 +16860,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
-  },
-  {
-    "Text": "Keeps the target and route visualization while hiding network metadata and special locations.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Keyboard and supported controller bindings are configurable per action and checked for collisions.",
@@ -17003,14 +17375,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "Leave blank to disable",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Legacy",
     "IsFormat": false,
     "SourceKinds": [
@@ -17307,6 +17671,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Load Defaults",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Load a commander profile before publishing ship cargo.",
     "IsFormat": false,
     "SourceKinds": [
@@ -17337,14 +17709,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
-  },
-  {
-    "Text": "Load defaults",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
@@ -17811,6 +18175,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Log dock-to-dock times to .csv file",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Log: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -17968,7 +18340,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/MassacreMissionsOverlayPresentation.axaml"
   },
   {
     "Text": "MATCHING SYSTEMS",
@@ -18484,13 +18856,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Massacre mission helper (Experimental)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Massacre missions",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Massacre rows show progress only for compatible active missions and avoid double-crediting one bounty event to the same mission giver.",
@@ -18533,6 +18912,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayScaleSettingsStore.cs"
   },
   {
+    "Text": "Matches upstream polarity: leave unchecked to keep the heading grid and aerial origin guides available at ruins.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Material",
     "IsFormat": false,
     "SourceKinds": [
@@ -18547,6 +18934,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
+  },
+  {
+    "Text": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "MaterialCollected",
@@ -18581,12 +18976,21 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
+    "Text": "Materials count after pickup",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Maverick suit",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayBehaviorViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "MaxJumpRange",
@@ -18595,6 +18999,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+  },
+  {
+    "Text": "Med kits",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Medium",
@@ -18747,7 +19159,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "Mini trackers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Minimal",
@@ -18758,6 +19178,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/JumpInfoSettingsStore.cs"
   },
   {
+    "Text": "Minimize to system tray",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "MinimizeToTray",
     "IsFormat": false,
     "SourceKinds": [
@@ -18766,7 +19194,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/DesktopBehaviorSettingsStore.cs"
   },
   {
-    "Text": "Minimum DSS value",
+    "Text": "Minimum DSS value (credits)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -18774,7 +19202,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Minimum displayed body value",
+    "Text": "Minimum displayed body value (credits)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -18782,7 +19210,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Minimum reward (CR)",
+    "Text": "Minimum reward (credits)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -18836,6 +19264,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Mission remaining cargo count",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Mission states follow the live journal. Checklists use the same commander profile fields as the WinForms application.",
@@ -19035,7 +19471,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Multiple Commanders",
@@ -19344,14 +19780,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Named states are stored separately from theme.json. Loading a state fills the editor; Apply updates the active in-game overlay palette.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Nameplate",
@@ -19783,7 +20211,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Next-jump information and route overlays",
@@ -20699,14 +21127,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemNotesViewModel.cs"
   },
   {
-    "Text": "No saved overlay themes",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
     "Text": "No saved routes",
     "IsFormat": false,
     "SourceKinds": [
@@ -21274,7 +21694,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardChordFormatter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/ShortcutCaptureBox.cs"
   },
   {
     "Text": "OemPipe",
@@ -21290,7 +21710,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardChordFormatter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/ShortcutCaptureBox.cs"
   },
   {
     "Text": "OemQuotes",
@@ -21314,7 +21734,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardChordFormatter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/ShortcutCaptureBox.cs"
   },
   {
     "Text": "Oemtilde",
@@ -21390,6 +21810,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Onfoot: Show only when Genetic Sampler is drawn.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Only commander-specific raw points can be removed.",
     "IsFormat": false,
     "SourceKinds": [
@@ -21414,6 +21842,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "Opacity",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Opacity overrides are ready. Changes apply to visible overlays after Save.",
     "IsFormat": false,
     "SourceKinds": [
@@ -21428,6 +21864,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
+  },
+  {
+    "Text": "Open Boxel Stats from the top of the Boxel workspace, then filter by mass code or choose a recently recorded boxel. Open a row to inspect recorded systems, highest suffix, completeness, helium, body classes, averages, and estimated value.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Open Canonn",
@@ -22024,6 +22468,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "Optional visibility shortcut",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Optional {0} \u00B7 Class {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -22456,6 +22908,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayWindowPlacement.cs"
   },
   {
+    "Text": "Overlay theme presets and saved states",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Overlay theme state \u0027{0}\u0027 does not define \u0027{1}\u0027.",
     "IsFormat": true,
     "SourceKinds": [
@@ -22802,6 +23262,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Panel availability and shortcuts",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Panel availability changed for this session but could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPanelVisibilityViewModel.cs"
+  },
+  {
     "Text": "Parents",
     "IsFormat": false,
     "SourceKinds": [
@@ -22959,7 +23435,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotBioSystem",
@@ -22967,7 +23443,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotBodyInfo",
@@ -22975,7 +23451,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotBuildCommodities",
@@ -22983,7 +23459,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotFSS",
@@ -22991,7 +23467,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotFSSInfo",
@@ -22999,7 +23475,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "PlotFleetCarrierRoute",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotFlightWarning",
@@ -23007,7 +23491,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotFloatie",
@@ -23015,7 +23499,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotFootCombat",
@@ -23023,7 +23507,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotGalMap",
@@ -23031,7 +23515,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotGrounded",
@@ -23039,7 +23523,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "PlotGuardianStatus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotGuardianSystem",
@@ -23047,7 +23539,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotGuardians",
@@ -23055,7 +23547,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotHumanSite",
@@ -23063,7 +23555,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotJumpInfo",
@@ -23071,7 +23563,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotMassacre",
@@ -23079,7 +23571,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotMiniTrack",
@@ -23087,7 +23579,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotMultiGameCommander",
@@ -23095,7 +23587,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotPriorScans",
@@ -23103,7 +23595,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotPulse",
@@ -23111,7 +23603,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotQuestMini",
@@ -23119,7 +23611,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotRamTah",
@@ -23127,7 +23619,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotRouteBio",
@@ -23135,7 +23627,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotSphericalSearch",
@@ -23143,7 +23635,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotStationInfo",
@@ -23151,7 +23643,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotSysStatus",
@@ -23159,7 +23651,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "PlotTrackTarget",
@@ -23167,7 +23659,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Plugin source",
@@ -23257,14 +23749,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestIndicatorViewModel.cs"
-  },
-  {
-    "Text": "Post-DSS visibility (seconds)",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Potential Galactic-region first",
@@ -23453,6 +23937,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "Pre-download all available biology images",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "PreDownload",
     "IsFormat": false,
     "SourceKinds": [
@@ -23531,6 +24023,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
+  },
+  {
+    "Text": "Preferred altitude for aerial screenshots (m). Adjust so each site comfortably fits your monitor. Screenshots within 50 m of site origin and 500\u20132000 m altitude are eligible for aerial copies.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Preferred commander",
@@ -23661,14 +24161,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Preserve the original hand-off to the selected Elite Dangerous window without cycling to another commander instance.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
     "Text": "Preserved {0} unconverted organic-history file(s); see Diagnostics for details.",
     "IsFormat": true,
     "SourceKinds": [
@@ -23683,6 +24175,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Press shortcut keys",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/ShortcutCaptureBox.cs"
   },
   {
     "Text": "Press the shortcut again to restore passive click-through behavior.",
@@ -23826,7 +24326,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Prior scans, mini-track, surface survey",
@@ -23837,7 +24337,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Prior-scan guidance uses Canonn coordinates for the current body. Disabling external data prevents these requests.",
+    "Text": "Prior-scan guidance uses Canonn coordinates for the current body (PlotPriorScans list). When surface radar is visible, the same coordinates are drawn as rings on PlotGrounded, matching legacy drawPriorScans. Disabling external data prevents Canonn POI requests. Use External Bio Data controls whether Spansh/Canonn body biology is merged into the system scan; prior-scan coordinates still require External Data only.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Prior-scan guidance uses Canonn coordinates for the current body. Disabling external data prevents these network requests.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -24306,7 +24814,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Quest indicator and settlement objectives",
@@ -24491,7 +24999,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
     "Text": "RAM TAH CATALOG DATA",
@@ -24695,7 +25203,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "Radar size",
+    "Text": "Radar size (0\u20134)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -24732,7 +25240,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Ram Tah log already acquired.",
@@ -25984,7 +26492,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
   },
   {
-    "Text": "Refresh active colonisation project data.",
+    "Text": "Refresh active colonization project data.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -26070,6 +26578,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
+  },
+  {
+    "Text": "Refresh reloads current statistics. Rebuild imports historical journals when older visits are missing; ordinary live journal updates do not require a rebuild.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Refresh sites",
@@ -26312,14 +26828,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
   },
   {
-    "Text": "Remove a nearby tracker when sampling",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Remove development quest",
     "IsFormat": false,
     "SourceKinds": [
@@ -26342,6 +26850,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "Remove original files after conversion",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Remove point",
@@ -26382,14 +26898,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
-  },
-  {
-    "Text": "Remove the tracker group after analysis",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Removed \u0027{0}\u0027 locally.",
@@ -26888,6 +27396,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "Review Boxel statistics",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Review Raven changes",
     "IsFormat": false,
     "SourceKinds": [
@@ -27032,14 +27548,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
   },
   {
-    "Text": "Reward-band thresholds (millions of CR)",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Reward: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -27094,6 +27602,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Rotate Alpha site screenshots by 90\u00B0 and truncate.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "RotateAlphaAerial",
@@ -27175,6 +27691,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "Route bodies",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Route complete",
@@ -27513,6 +28037,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "SEARCH GUIDANCE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"
+  },
+  {
     "Text": "SEARCH MODE",
     "IsFormat": false,
     "SourceKinds": [
@@ -27622,7 +28154,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/InputChord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/ShortcutCaptureBox.cs"
   },
   {
     "Text": "SHIP",
@@ -27728,6 +28260,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+  },
+  {
+    "Text": "SPECIES REWARD GROUPS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "SPHERICAL LIMIT",
@@ -28043,6 +28583,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "Save Ruins aerial screenshots into site-type sub-folders",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Save a Raven API key before Fleet Carrier cargo can sync.",
     "IsFormat": false,
     "SourceKinds": [
@@ -28083,7 +28631,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Save a named overlay state when the palette is ready; choose saved states from the dropdown or reload the original defaults.",
+    "Text": "Save a named overlay state when its palette and typography are ready; choose saved states from the dropdown or reload the original defaults.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -28323,14 +28871,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
-    "Text": "Saved overlay theme states",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
     "Text": "Saved route as {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -28449,6 +28989,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemNotesViewModel.cs"
+  },
+  {
+    "Text": "Scales the complete application interface. Oversized choices are reduced only as needed to fit the active monitor.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Scan",
@@ -28676,6 +29224,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Screenshot taken",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Screenshot {0} was not converted: {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -28740,14 +29296,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "Search guidance",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"
   },
   {
     "Text": "Search guides, settings, symbols, or workflows",
@@ -29063,6 +29611,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
   },
   {
+    "Text": "Select an overlay theme",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Select folder containing quest definition files",
     "IsFormat": false,
     "SourceKinds": [
@@ -29270,6 +29826,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GroundTargetViewModel.cs"
+  },
+  {
+    "Text": "Set focus on Elite Dangerous after each FSD jump.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Set focus on Elite Dangerous when minimizing Srv Survey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Set focus on Elite Dangerous when starting Srv Survey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Set group label",
@@ -29624,6 +30204,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Share column with ship cargo counts",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Share data",
     "IsFormat": false,
     "SourceKinds": [
@@ -29863,7 +30451,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Shortcut bindings",
@@ -29890,14 +30478,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
   },
   {
-    "Text": "Show Canonn biology signals on the radar",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Show FC surplus or deficit",
     "IsFormat": false,
     "SourceKinds": [
@@ -29906,7 +30486,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "Show Guardian sites in the current system",
+    "Text": "Show Fleet Carrier aggregate counts",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -29930,7 +30510,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml.cs"
   },
   {
-    "Text": "Show aiming guidance to known biology signals",
+    "Text": "Show aiming guidance to bio signals from Canonn",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -29946,7 +30526,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
-    "Text": "Show at the surface in analysis mode",
+    "Text": "Show bio signals from Canonn on the radar",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -29954,15 +30534,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show automatically in FSS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show automatically in the Galaxy Map",
+    "Text": "Show biological signal summary",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -29978,7 +30550,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show body details only when nearby",
+    "Text": "Show body bio signals only when the target body is close by (DSS always shows the targeted body).",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -29986,15 +30558,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show body information automatically",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show collected materials",
+    "Text": "Show body information panel",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30010,7 +30574,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show compact genetic-sampler status automatically",
+    "Text": "Show current boxel completion percentage",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30018,7 +30582,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show current Boxel completion",
+    "Text": "Show delta vs sum",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30026,7 +30590,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show data terminals",
+    "Text": "Show dots when some material is collected",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30034,7 +30598,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show destination faction influence",
+    "Text": "Show exploration preview in Galaxy Map (uses external data)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30042,7 +30606,31 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show energy cells",
+    "Text": "Show exploration values in FSS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Show exploration values list",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Show factions in gal-map",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Show flight warnings",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30058,7 +30646,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show high-gravity flight warnings",
+    "Text": "Show helper for Ram Tah missions",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30066,7 +30654,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show in the system map",
+    "Text": "Show hops only",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Show if destination is next hop in route",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30090,12 +30686,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "Show local time in the banner",
+    "Text": "Show list in system map",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Show logs available at each site",
@@ -30106,7 +30702,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "Show material totals after pickup",
+    "Text": "Show next system summary before FSD jumping (uses external data)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30114,31 +30710,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show medical kits",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show needed Ram Tah logs and artifacts",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show next-jump information automatically",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show non-body signal count",
+    "Text": "Show non-body signals",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30226,7 +30798,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
-    "Text": "Show remaining cargo mission units",
+    "Text": "Show sample scan exclusion zones",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30234,7 +30806,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show saved screenshot names",
+    "Text": "Show station/target details in left nav panel",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30242,7 +30814,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show selected station details in the navigation panel",
+    "Text": "Show summary of Guardian sites",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30250,23 +30822,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show surface history and trackers automatically",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show system completion status",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show system exobiology status automatically",
+    "Text": "Show system DSS remaining",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30282,30 +30838,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
-    "Text": "Show the PlotPulse overlay",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show the aerial origin-alignment guide",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show the compact quick-tracker overlay",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Show the last tuned body in FSS",
     "IsFormat": false,
     "SourceKinds": [
@@ -30314,15 +30846,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show the legacy ten-second journal/status pulse and the Supercruise Overdrive cooldown indicator.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show the next Boxel target",
+    "Text": "Show the next boxel when the current one is complete",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30338,23 +30862,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show the ruins heading-measurement guide",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show the settlement map automatically",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30370,15 +30878,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show when the followed-route next hop is selected",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show while orbiting or gliding",
+    "Text": "Show when looking at right-hand panel",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30392,6 +30892,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Show whole system exo bio status",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "ShowBatteries",
@@ -30666,7 +31174,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
-    "Text": "Shows tower loadouts and destructible panels and preserves the original component survey format.",
+    "Text": "Shows tower loadouts and destructible panels and preserves the original component survey format. Auto-zoom engages within 30 m of an active obelisk.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30746,7 +31254,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Skip Composition Scanner trackers already analyzed",
+    "Text": "Skip DSS of gas giants",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30754,7 +31262,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Skip and highlight by DSS value",
+    "Text": "Skip DSS of rings",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30762,7 +31270,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Skip distant DSS candidates",
+    "Text": "Skip bodies exceeding:",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30770,7 +31278,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Skip gas giants for DSS",
+    "Text": "Skip bodies with estimated value below:",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30778,15 +31286,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Skip lower-value signals",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Skip rings for DSS",
+    "Text": "Skip signals with reward below:",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -30866,6 +31366,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
+    "Text": "Small circles (~100 m)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Software\\Classes\\{0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -30874,7 +31382,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
-    "Text": "Sol bubble radius (ly)",
+    "Text": "Sol bubble radius (ly, default 200)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -31040,7 +31548,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Spherical search active",
@@ -31122,6 +31630,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
+  },
+  {
+    "Text": "SrvSurvey Guardian map zoom",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/GuardianZoomOverlayWindow.axaml"
   },
   {
     "Text": "SrvSurvey Guardian overlay",
@@ -31378,6 +31894,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+  },
+  {
+    "Text": "SrvSurvey restores the last on-screen window position when that display is still available. Otherwise it uses the configured Default monitor and clamps the window to the usable desktop.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "SrvSurvey route biology overlay",
@@ -32277,6 +32801,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
+    "Text": "Surface history, trackers, and sample-exclusion rings on the bio plot radar.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Surface location unavailable",
     "IsFormat": false,
     "SourceKinds": [
@@ -32314,7 +32846,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Surface survey - heading 074 degrees",
@@ -32531,7 +33063,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "System biology overlay",
@@ -32691,7 +33223,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "System suggestions are temporarily unavailable; you can still enter a system name manually.",
@@ -34608,6 +35140,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ErrorReportViewModel.cs"
   },
   {
+    "Text": "The last on-screen position is restored when possible. This monitor is used when no saved position is available or its display is disconnected.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "The left edge of the FSS tuning bar was not found.",
     "IsFormat": false,
     "SourceKinds": [
@@ -36256,6 +36796,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "These master switches control whether each panel may render. Existing auto-show and context settings still decide when an enabled panel appears. Shortcut fields are optional and have no default binding.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Thin carbon dioxide",
     "IsFormat": false,
     "SourceKinds": [
@@ -36672,6 +37220,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "Toggle {0} visibility",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "Tolerance",
     "IsFormat": false,
     "SourceKinds": [
@@ -36846,14 +37402,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
-    "Text": "Track active massacre missions",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Track location 1",
@@ -37152,6 +37700,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+  },
+  {
+    "Text": "Typography",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "UL",
@@ -37803,7 +38359,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
-    "Text": "Upload matching candidates to Raven Colonial",
+    "Text": "Upload GGG candidates",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -37979,6 +38535,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use Refresh preview to apply unsaved colors and typography to open overlays and position previews, then Apply to overlays to keep them or Discard changes to restore theme.json.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Use Settings \u003E Overlay behavior and layout to disable individual overlays or change their triggers.",
     "IsFormat": false,
     "SourceKinds": [
@@ -37993,14 +38557,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Use Spansh for the system last-updated time",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Use SrvSurvey-XP development releases",
@@ -38035,7 +38591,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "Use compact signal circles",
+    "Text": "Use bio signal radius",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -38067,15 +38623,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Use external biology confirmations",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Use external survey data",
+    "Text": "Use downloaded bio data from Canonn and Spansh",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -38089,6 +38637,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
+  },
+  {
+    "Text": "Use last updated time from Spansh not EDSM",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Use local time",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Use one of the five original Guardian plotter sizes.",
@@ -38105,6 +38669,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Use small circles",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Use system nicknames",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Use the Boxel workspace after choosing a procedurally generated system whose surrounding sequence you want to survey.",
@@ -38145,14 +38725,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Use the compact overlay",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Use the configurable jump-information shortcut to show or hide the route overlay manually.",
@@ -38212,6 +38784,14 @@
   },
   {
     "Text": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use the overlay-settings icon beside a supported navigation category to open only that activity\u0027s overlay controls. The main Settings workspace remains the complete view.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -39253,12 +39833,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseNotesDialogViewModel.cs"
   },
   {
-    "Text": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, completion waits for Elite to write FSSAllBodiesFound.",
+    "Text": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, new local visits wait for Elite to write FSSAllBodiesFound; enabled earlier-history rules still count matching systems as complete.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "When at planet surface and not in Combat mode",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "When body gravity is above (g)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "When checked, the entire PlotPulse overlay is hidden (journal pulse and SCO indicator). When unchecked, PlotPulse can appear outside Galaxy Map and System Map for ~10 seconds after journal activity and SCO use. Matches the original hideJournalWriteTimer setting polarity.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "When docking at a player colony, SrvSurvey can repair a Raven system-site entry that is missing its MarketID or final name.",
@@ -39317,6 +39921,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "When off, the {0} panel is rendered inactive and is not visible until toggled on.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "Which systems are included?",
     "IsFormat": false,
     "SourceKinds": [
@@ -39326,6 +39938,14 @@
   },
   {
     "Text": "While a polygon is active, toggling ship shields captures the current point just like the original builder.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -39606,28 +40226,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceSurveyViewModel.cs"
   },
   {
-    "Text": "Zoom automatically inside buildings",
+    "Text": "Zoom Guardian map in",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/GuardianZoomOverlayPresentation.axaml"
   },
   {
-    "Text": "Zoom automatically when a suit tool is active",
+    "Text": "Zoom Guardian map out",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Zoom in near Guardian obelisks",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/GuardianZoomOverlayPresentation.axaml"
   },
   {
     "Text": "[Desktop Entry]",
@@ -42052,6 +42664,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "seconds",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "secret-tool",

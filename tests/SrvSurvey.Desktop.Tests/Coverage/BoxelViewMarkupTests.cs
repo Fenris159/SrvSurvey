@@ -305,7 +305,14 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("HorizontalContentAlignment", values);
         Assert.Contains("VerticalContentAlignment", values);
         Assert.Contains("option-chrome", values);
-        Assert.Contains("{DynamicResource RavenWarningInsetShadow}", values);
+        Assert.Contains("{TemplateBinding Clip}", values);
+        Assert.Contains("{StaticResource RadialOptionTopGeometry}", values);
+        Assert.Contains("{StaticResource RadialOptionLeftGeometry}", values);
+        Assert.Contains("{StaticResource RadialOptionRightGeometry}", values);
+        Assert.Contains("{StaticResource RadialOptionBottomGeometry}", values);
+        Assert.Contains(
+            "Button.radial-option:pointerover /template/ Path.option-chrome",
+            values);
         Assert.Contains("Transparent", values);
         Assert.Contains("{DynamicResource RavenAccentBrush}", values);
         Assert.Contains("{DynamicResource RavenAccentHoverBrush}", values);
@@ -326,12 +333,18 @@ public sealed class BoxelViewMarkupTests
             && element.Attribute("Value")?.Value == "0");
         Assert.Contains(launcherStyle.Elements(), element =>
             element.Attribute("Property")?.Value == "Template");
+        var optionStyle = menu.Descendants().Single(element =>
+            element.Name.LocalName == "Style"
+            && element.Attribute("Selector")?.Value == "Button.radial-option");
+        Assert.Contains(optionStyle.Elements(), element =>
+            element.Attribute("Property")?.Value == "Background"
+            && element.Attribute("Value")?.Value == "{DynamicResource RavenAccentMutedBrush}");
         var optionHoverStyle = menu.Descendants().Single(element =>
             element.Name.LocalName == "Style"
             && element.Attribute("Selector")?.Value == "Button.radial-option:pointerover");
         Assert.Contains(optionHoverStyle.Elements(), element =>
             element.Attribute("Property")?.Value == "Background"
-            && element.Attribute("Value")?.Value == "{DynamicResource RavenSurfaceBrush}");
+            && element.Attribute("Value")?.Value == "{DynamicResource RavenAccentMutedBrush}");
         Assert.Contains(optionHoverStyle.Elements(), element =>
             element.Attribute("Property")?.Value == "BorderBrush"
             && element.Attribute("Value")?.Value == "{DynamicResource RavenWarningBrush}");
@@ -353,9 +366,23 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains(disabledOptionStyle.Elements(), element =>
             element.Attribute("Property")?.Value == "Cursor"
             && element.Attribute("Value")?.Value == "Arrow");
+        var disabledShadeStyle = menu.Descendants().Single(element =>
+            element.Name.LocalName == "Style"
+            && element.Attribute("Selector")?.Value
+                == "Button.radial-option:disabled /template/ Path.option-disabled-shade");
+        Assert.Contains(disabledShadeStyle.Elements(), element =>
+            element.Attribute("Property")?.Value == "Opacity"
+            && element.Attribute("Value")?.Value == "0.45");
         Assert.DoesNotContain(menu.Descendants(), element =>
             element.Name.LocalName == "Ellipse"
             && element.Attribute("Stroke") is not null);
+        var menuHitSurface = menu.Descendants().Single(element =>
+            element.Attributes().Any(attribute =>
+                attribute.Name.LocalName == "Name"
+                && attribute.Value == "MenuHitSurface"));
+        Assert.Equal(
+            "Menu_PointerWheelChanged",
+            menuHitSurface.Attribute("PointerWheelChanged")?.Value);
     }
 
     [Fact]

@@ -1,35 +1,40 @@
-# SrvSurvey-XP 2.1.3.0-rc.34
+# SrvSurvey-XP 2.1.3.0-rc.35
 
-This release candidate hardens Linux overlay and global-input native lifecycles.
-The changes below are the delta from `2.1.3.0-rc.33`.
+This release candidate improves overlay controls, panel customization,
+typography, guidance, and application branding. The changes below are the delta
+from `2.1.3.0-rc.34`.
 
-## What's changed since 2.1.3.0-rc.33
+## What's changed since 2.1.3.0-rc.34
 
-- Scopes Xlib protocol-error handling to SrvSurvey-owned display connections
-  and treats only expected stale-window, focus, and capture races as benign.
-  X11 windows disappearing while passive panels or the overlay editor change no
-  longer fall through to Xlib's fatal default handler.
-- Clips X11 game-screen captures to the desktop root bounds and reports an
-  unavailable capture when the Elite window is outside the desktop instead of
-  issuing an invalid `XGetImage` request.
-- Serializes SDL controller initialization and shutdown on Avalonia's UI thread
-  and awaits the controller worker before releasing SDL or its game-window
-  tracker.
-- Serializes SharpHook start, restart, and shutdown so only one native keyboard
-  hook can exist at a time. Shutdown now drains in-flight keyboard callbacks
-  before closing the X11 tracker, and settings publish input bindings atomically.
-- Initializes Xlib threading before Avalonia and SharpHook on X11/XWayland and
-  serializes X11 tracker queries against display closure.
-- Adds regression coverage for X11 error-policy decisions, off-screen capture
-  clipping, controller cancellation, and keyboard callback/restart races.
+- Adds compact click-through Guardian site-map zoom controls tied to the
+  existing map zoom actions. The overlay editor preview shows the same controls.
+- Adds master availability switches for affiliated panels at the bottom of
+  every overlay settings category. Each panel can also receive an optional,
+  unbound keyboard shortcut that toggles its visibility.
+- Replaces text-like shortcut fields with reactive chord capture throughout the
+  application. Held combinations appear live, releasing all keys commits them,
+  Escape cancels, and Backspace or Delete clears the binding without firing the
+  prior shortcut during capture.
+- Refines the Boxel system action radial into a theme-aware four-part ring,
+  clearly darkens inactive actions, and closes the control immediately when the
+  containing view scrolls.
+- Normalizes missed overlay typography and accent usage in Search Guidance,
+  Biology Survey, and Route Bodies, and expands Guides to document the current
+  overlay controls and states.
+- Replaces the executable, window, tray, and Linux package icons with the new
+  high-resolution split SrvSurvey design and supplies optimized Windows icon
+  sizes from 16 through 256 pixels.
+- Adds regression coverage for panel availability, shortcut capture, Guardian
+  zoom rendering, radial action behavior, application icon packaging, Guides,
+  and overlay presentation contracts.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.34`
-- Tag: `xp-v2.1.3.0-rc.34`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.34-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.34-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.34-x86_64.AppImage`
+- Version: `2.1.3.0-rc.35`
+- Tag: `xp-v2.1.3.0-rc.35`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.35-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.35-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.35-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.

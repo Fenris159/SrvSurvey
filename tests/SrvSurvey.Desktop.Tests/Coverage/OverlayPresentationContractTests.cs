@@ -19,7 +19,7 @@ public sealed class OverlayPresentationContractTests
             ["MassacreMissionsOverlayPresentation.axaml"] = "MASSACRE MISSIONS",
             ["PriorScansOverlayPresentation.axaml"] = "CANONN PRIOR SCANS",
             ["RouteBioOverlayPresentation.axaml"] = "ROUTE BODIES",
-            ["SphericalSearchOverlayPresentation.axaml"] = "Search guidance",
+            ["SphericalSearchOverlayPresentation.axaml"] = "SEARCH GUIDANCE",
             ["StationInfoOverlayPresentation.axaml"] = "STATION INFORMATION",
             ["SurfaceSurveyOverlayPresentation.axaml"] = "SURFACE SURVEY",
         };
@@ -1032,6 +1032,41 @@ public sealed class OverlayPresentationContractTests
             Assert.Null(header.Attribute("Foreground"));
             Assert.Null(header.Attribute("FontSize"));
         }
+    }
+
+    [Fact]
+    public void SystemBiologyHeadingUsesThePrimaryAccentRole()
+    {
+        var document = XDocument.Load(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "BiologySurveyOverlayPresentation.axaml"));
+        var heading = document.Descendants().Single(element =>
+            element.Name.LocalName == "TextBlock"
+            && element.Attribute("Text")?.Value
+                == "{Binding Survey.BiologySurveyDisplay.Heading}");
+
+        Assert.Equal(
+            "{DynamicResource RavenPrimaryBrush}",
+            heading.Attribute("Foreground")?.Value);
+    }
+
+    [Fact]
+    public void RouteBodiesSystemNameUsesThePrimaryAccentRole()
+    {
+        var document = XDocument.Load(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "RouteBioOverlayPresentation.axaml"));
+        var systemName = document.Descendants().Single(element =>
+            element.Name.LocalName == "TextBlock"
+            && element.Attribute("Text")?.Value == "{Binding SystemName}");
+
+        Assert.Equal(
+            "{DynamicResource RavenPrimaryBrush}",
+            systemName.Attribute("Foreground")?.Value);
     }
 
     [Fact]

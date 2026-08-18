@@ -128,6 +128,8 @@ public static class GuideCatalog
                             "A check beside value means the detailed surface scan is complete.",
                             "T identifies a terraformable candidate and L identifies a landable body in compact FSS rows.",
                             "A first-discovery flag means the body was not previously discovered according to the journal data.",
+                            "Enable Show flight warnings and choose a gravity threshold in Exploration overlay settings. The warning appears only when SrvSurvey can identify a nearby landable body in a supported ship, fighter, or SRV flight context.",
+                            "Flight-warning color and advice escalate at 2 g, 4 g, and 8 g. The panel hides when the body context is stale, while on foot, or while an external game panel has focus.",
                         ]),
                     Section(
                         "Galaxy Map and next jump",
@@ -227,6 +229,7 @@ public static class GuideCatalog
                         [
                             "Create or resume a journey, then let journal events add visited systems and exploration totals.",
                             "Import a named route or create one from supported route data, then advance it as jumps arrive.",
+                            "A saved standard route can include body destinations for each system. Route bodies shows their body icon, arrival distance, exploration and biology values, and completion state; arriving at the matching body marks that destination complete.",
                             "Use Show system notes to edit notes for the current system without leaving the game context.",
                         ]),
                     Section(
@@ -289,6 +292,7 @@ public static class GuideCatalog
                             "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, new local visits wait for Elite to write FSSAllBodiesFound; enabled earlier-history rules still count matching systems as complete.",
                             "Hover over a row's System actions button to Complete, Reopen, Defer, or Start Here. Deferred systems remain unfinished, move to the end of the table, and are skipped until you return to them.",
                             "Start Here defers every unfinished system before the chosen row in the current sort direction. Use Show Only Deferred when you are ready to return to skipped systems.",
+                            "The systems table shows ten rows per page. Use Next Jump Page to return to the page containing the next target, Previous or Next page to browse in order, or Select page to jump directly.",
                             "Use Mark Next Empty only when the Galaxy Map confirms that the next incomplete system does not exist. The marker is retained and the search skips to the following target.",
                         ],
                         [
@@ -319,6 +323,18 @@ public static class GuideCatalog
                         ],
                         [
                             "External timestamps describe when a community service last received data, not guaranteed first-discovery or current in-game completeness. Treat skip rules as workflow filters rather than proof that a system has nothing left to discover.",
+                        ]),
+                    Section(
+                        "Review Boxel statistics",
+                        "Boxel Stats summarizes the Commander data SrvSurvey has actually recorded; it does not estimate unvisited systems from a configured search size.",
+                        [
+                            "Open Boxel Stats from the top of the Boxel workspace, then filter by mass code or choose a recently recorded boxel. Open a row to inspect recorded systems, highest suffix, completeness, helium, body classes, averages, and estimated value.",
+                            "Explore recorded children to move down the boxel hierarchy. When statistics are opened from a saved-search entry, switch between the selected boxel and the combined saved-search scope; boxels without recorded statistics add nothing to the rollup.",
+                            "Refresh reloads current statistics. Rebuild imports historical journals when older visits are missing; ordinary live journal updates do not require a rebuild.",
+                            "Export JSON + CSV writes the detailed snapshot and tabular summary to a folder you choose.",
+                        ],
+                        [
+                            "Count Nav Beacon scans as FSS complete changes only the displayed statistic. Minimum-system settings control when averages appear and which boxels export; they do not change stored survey data, Boxel completion, or the next target.",
                         ]),
                     Section(
                         "Share a survey with VoxStellar",
@@ -507,6 +523,7 @@ public static class GuideCatalog
                             "FSS overlays follow FSS focus; body and biology overlays follow the current body; maps follow nearby site or surface state; travel overlays follow targets and routes; shopping follows active construction context.",
                             "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
                             "Manual show shortcuts do not fabricate live data; the full position editor is the intentional offline preview surface.",
+                            "Use the overlay-settings icon beside a supported navigation category to open only that activity's overlay controls. The main Settings workspace remains the complete view.",
                         ]),
                     Section(
                         "Edit all overlay positions",
@@ -536,8 +553,9 @@ public static class GuideCatalog
                         "The in-game palette is independent from the application light/dark theme.",
                         [
                             "Open Settings > In-game overlay appearance and choose colors with the picker beside each overlay control.",
-                            "Keep the position editor open to see unsaved color edits refresh in its previews.",
-                            "Save a named overlay state when the palette is ready; choose saved states from the dropdown or reload the original defaults.",
+                            "Adjust Header, Title, Value, Body, Detail, and Caption font sizes in half-point increments. These shared roles keep related overlays consistent instead of resizing individual labels independently.",
+                            "Use Refresh preview to apply unsaved colors and typography to open overlays and position previews, then Apply to overlays to keep them or Discard changes to restore theme.json.",
+                            "Save a named overlay state when its palette and typography are ready; choose saved states from the dropdown or reload the original defaults.",
                         ],
                         [
                             "Changing Blue light, Blue dark, Orange dark, Green light, or Green dark for the application never rewrites theme.json or a named overlay state.",
@@ -566,6 +584,15 @@ public static class GuideCatalog
                             "Application theme changes the main Avalonia windows and supports the Raven Colonial light and dark palettes.",
                             "In-game overlay appearance changes only detached overlays and retains the original SrvSurvey color roles, named states, and defaults.",
                             "Neither selector writes into the other control group, so a light application can use a dark orange overlay palette or any custom combination.",
+                        ]),
+                    Section(
+                        "Desktop placement and focus",
+                        "Desktop behavior controls where the main application returns, how large it appears, and whether focus is handed back to Elite Dangerous.",
+                        [],
+                        [
+                            "SrvSurvey restores the last on-screen window position when that display is still available. Otherwise it uses the configured Default monitor and clamps the window to the usable desktop.",
+                            "Application window scale changes the complete shell and is reduced only when the selected size would not fit the active monitor.",
+                            "Focus-on-start, focus-on-minimize, focus-after-jump, and minimize-to-tray are independent. Passive overlays remain click-through and do not activate the application window.",
                         ]),
                     Section(
                         "Import an original SrvSurvey profile",
