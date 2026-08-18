@@ -29,13 +29,14 @@ public sealed class GlobalInputBindingRouter
             routes.TryAdd(chord, action);
         }
 
-        actionsByChord = routes;
+        Volatile.Write(ref actionsByChord, routes);
     }
 
     public bool TryResolve(string chord, out GlobalInputAction action)
     {
         action = default;
+        var routes = Volatile.Read(ref actionsByChord);
         return InputChord.TryNormalize(chord, out var normalized)
-            && actionsByChord.TryGetValue(normalized, out action);
+            && routes.TryGetValue(normalized, out action);
     }
 }

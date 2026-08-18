@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Avalonia;
@@ -16,6 +17,8 @@ internal sealed class X11OverlayPlatformService
     private const nint SubstructureRedirectMask = 1 << 20;
     private static readonly X11Native.XErrorHandler ErrorHandler = HandleXError;
     private static readonly object ErrorHandlerSync = new();
+    private static readonly ConcurrentDictionary<nint, byte>
+        ErrorHandledDisplays = new();
     private static nint previousErrorHandlerPointer;
     private static bool errorHandlerInstalled;
     private readonly object displaySync = new();
@@ -92,6 +95,8 @@ internal sealed class X11OverlayPlatformService
         {
             return null;
         }
+
+        RegisterErrorHandledDisplay(display);
 
         var shapeAvailable = false;
         try
@@ -536,12 +541,19 @@ internal sealed class X11OverlayPlatformService
             display = nint.Zero;
             if (currentDisplay != nint.Zero)
             {
-                _ = X11Native.XCloseDisplay(currentDisplay);
+                try
+                {
+                    _ = X11Native.XCloseDisplay(currentDisplay);
+                }
+                finally
+                {
+                    UnregisterErrorHandledDisplay(currentDisplay);
+                }
             }
         }
     }
 
-    private static void EnsureErrorHandlerInstalled()
+    internal static void EnsureErrorHandlerInstalled()
     {
         lock (ErrorHandlerSync)
         {
@@ -567,15 +579,110 @@ internal sealed class X11OverlayPlatformService
         nint errorDisplay,
         ref X11Native.XErrorEvent errorEvent)
     {
-        Trace.TraceWarning(
-            "X11 request failed without terminating the overlay host: "
-            + $"error {errorEvent.ErrorCode}, request "
-            + $"{errorEvent.RequestCode}.{errorEvent.MinorCode}, resource "
-            + $"{errorEvent.ResourceId}, display {errorDisplay}.");
-        return X11Native.InvokeErrorHandler(
-            previousErrorHandlerPointer,
-            errorDisplay,
-            ref errorEvent);
+        bool suppressExpectedLifecycleRace;
+        try
+        {
+            suppressExpectedLifecycleRace =
+                ShouldSuppressXError(
+                    errorDisplay,
+                    errorEvent.ErrorCode,
+                    errorEvent.RequestCode);
+        }
+        catch (Exception)
+        {
+            return 0;
+        }
+
+        try
+        {
+            var detail =
+                $"error {errorEvent.ErrorCode}, request "
+                + $"{errorEvent.RequestCode}.{errorEvent.MinorCode}, resource "
+                + $"{errorEvent.ResourceId}, display {errorDisplay}.";
+            if (suppressExpectedLifecycleRace)
+            {
+                Trace.TraceInformation(
+                    "Ignoring an expected X11 window or capture lifecycle "
+                        + "race: "
+                        + detail);
+            }
+            else
+            {
+                Trace.TraceWarning(
+                    "X11 request failed and will be delegated to the previous "
+                        + "error handler: "
+                        + detail);
+            }
+        }
+        catch (Exception)
+        {
+            // Logging failures must not change Xlib error handling.
+        }
+
+        if (suppressExpectedLifecycleRace)
+        {
+            return 0;
+        }
+
+        try
+        {
+            return X11Native.InvokeErrorHandler(
+                previousErrorHandlerPointer,
+                errorDisplay,
+                ref errorEvent);
+        }
+        catch (Exception)
+        {
+            // Managed exceptions must never unwind through this Xlib callback.
+            return 0;
+        }
+    }
+
+    internal static void RegisterErrorHandledDisplay(nint errorDisplay)
+    {
+        if (errorDisplay != nint.Zero)
+        {
+            ErrorHandledDisplays.TryAdd(errorDisplay, 0);
+        }
+    }
+
+    internal static void UnregisterErrorHandledDisplay(nint errorDisplay)
+    {
+        ErrorHandledDisplays.TryRemove(errorDisplay, out _);
+    }
+
+    internal static bool ShouldSuppressXError(
+        nint errorDisplay,
+        byte errorCode,
+        byte requestCode = 0)
+    {
+        // A window can disappear after it is read from _NET_CLIENT_LIST but
+        // before its class, bounds, or input state is queried. The Xlib
+        // default handler treats that normal lifecycle race as fatal.
+        if (!ErrorHandledDisplays.ContainsKey(errorDisplay))
+        {
+            return false;
+        }
+
+        if (errorCode == X11Native.BadWindow)
+        {
+            return true;
+        }
+
+        // Focus can become non-viewable between the viewability check and
+        // XSetInputFocus. Treat only that exact request race as benign.
+        if (requestCode == X11Native.SetInputFocusRequest)
+        {
+            return errorCode == X11Native.BadMatch;
+        }
+
+        // XGetImage reports capture failures through the process-global Xlib
+        // handler before returning null. Let the capture layer turn only the
+        // documented GetImage failures into managed errors.
+        return requestCode == X11Native.GetImageRequest
+            && errorCode is X11Native.BadValue
+                or X11Native.BadMatch
+                or X11Native.BadDrawable;
     }
 
     private static nuint[] ReadSupportedAtoms(nint display, nuint atomType)

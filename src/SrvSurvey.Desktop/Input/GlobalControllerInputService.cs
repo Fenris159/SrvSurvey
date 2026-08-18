@@ -2,7 +2,7 @@ using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Input;
 
-public sealed class GlobalControllerInputService : IDisposable
+public sealed class GlobalControllerInputService : IAsyncDisposable
 {
     private readonly object lifecycleLock = new();
     private readonly object trackerLock = new();
@@ -19,8 +19,10 @@ public sealed class GlobalControllerInputService : IDisposable
         "CA2213:Disposable fields should be disposed",
         Justification = "The run observer disposes the captured source after the controller loop exits.")]
     private CancellationTokenSource? runCancellation;
+    private Task? runTask;
+    private Task? disposalTask;
     private long runVersion;
-    private bool disposed;
+    private volatile bool disposed;
     private string status;
 
     public GlobalControllerInputService(
@@ -80,10 +82,13 @@ public sealed class GlobalControllerInputService : IDisposable
             return;
         }
 
+        SetStatus("Starting controller input...");
         CancellationTokenSource cancellation;
+        Task task;
         long version;
         lock (lifecycleLock)
         {
+            ObjectDisposedException.ThrowIf(disposed, this);
             if (runCancellation is not null)
             {
                 return;
@@ -92,14 +97,14 @@ public sealed class GlobalControllerInputService : IDisposable
             cancellation = new CancellationTokenSource();
             runCancellation = cancellation;
             version = Interlocked.Increment(ref runVersion);
+            task = backend.RunAsync(
+                currentSettings.ControllerDeviceId!,
+                change => OnInputChanged(version, change),
+                update => OnBackendStatusChanged(version, update),
+                cancellation.Token);
+            runTask = task;
         }
 
-        SetStatus("Starting controller input...");
-        var task = backend.RunAsync(
-            currentSettings.ControllerDeviceId!,
-            change => OnInputChanged(version, change),
-            update => OnBackendStatusChanged(version, update),
-            cancellation.Token);
         _ = ObserveRunAsync(version, cancellation, task);
     }
 
@@ -119,7 +124,14 @@ public sealed class GlobalControllerInputService : IDisposable
                 StringComparison.Ordinal);
         if (mustRestart)
         {
-            StopRun();
+            var stoppedTask = StopRun();
+            _ = RestartAfterStopAsync(stoppedTask);
+            if (!updatedSettings.ControllerEnabled)
+            {
+                SetStatus("Controller input is disabled.");
+            }
+
+            return;
         }
 
         if (updatedSettings.ControllerEnabled)
@@ -132,15 +144,19 @@ public sealed class GlobalControllerInputService : IDisposable
         }
     }
 
-    public void Dispose()
+    public ValueTask DisposeAsync()
     {
-        if (disposed)
+        lock (lifecycleLock)
         {
-            return;
+            disposalTask ??= DisposeCoreAsync();
+            return new ValueTask(disposalTask);
         }
+    }
 
+    private async Task DisposeCoreAsync()
+    {
         disposed = true;
-        StopRun();
+        await WaitForRunToStopAsync(StopRun()).ConfigureAwait(false);
         gameWindowTracker.Dispose();
     }
 
@@ -245,6 +261,7 @@ public sealed class GlobalControllerInputService : IDisposable
                     && ReferenceEquals(runCancellation, cancellation))
                 {
                     runCancellation = null;
+                    runTask = null;
                     isCurrent = true;
                 }
             }
@@ -261,20 +278,54 @@ public sealed class GlobalControllerInputService : IDisposable
         }
     }
 
-    private void StopRun()
+    private Task? StopRun()
     {
         CancellationTokenSource? cancellation;
+        Task? task;
         lock (lifecycleLock)
         {
             Interlocked.Increment(ref runVersion);
             cancellation = runCancellation;
             runCancellation = null;
+            task = runTask;
+            runTask = null;
         }
 
         cancellation?.Cancel();
         lock (trackerLock)
         {
             tracker.Clear();
+        }
+
+        return task;
+    }
+
+    private async Task RestartAfterStopAsync(Task? stoppedTask)
+    {
+        await WaitForRunToStopAsync(stoppedTask).ConfigureAwait(false);
+        lock (lifecycleLock)
+        {
+            if (!disposed && Volatile.Read(ref settings).ControllerEnabled)
+            {
+                Start();
+            }
+        }
+    }
+
+    private static async Task WaitForRunToStopAsync(Task? task)
+    {
+        if (task is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await task.ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            // ObserveRunAsync reports backend failures through the runtime status.
         }
     }
 

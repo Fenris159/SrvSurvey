@@ -345,10 +345,15 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
         var display = nint.Zero;
         try
         {
+            X11OverlayPlatformService.EnsureErrorHandlerInstalled();
             display = X11Native.XOpenDisplay(nint.Zero);
-            return display == nint.Zero
-                ? null
-                : new X11GameScreenCapture(display);
+            if (display == nint.Zero)
+            {
+                return null;
+            }
+
+            X11OverlayPlatformService.RegisterErrorHandledDisplay(display);
+            return new X11GameScreenCapture(display);
         }
         catch (Exception exception) when (
             exception is DllNotFoundException
@@ -357,7 +362,15 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
         {
             if (display != nint.Zero)
             {
-                _ = X11Native.XCloseDisplay(display);
+                try
+                {
+                    _ = X11Native.XCloseDisplay(display);
+                }
+                finally
+                {
+                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(
+                        display);
+                }
             }
 
             return null;
@@ -371,13 +384,14 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
             this);
 
         ValidateBounds(bounds);
+        var captureBounds = ClipToRootWindow(bounds);
         var image = X11Native.XGetImage(
             display,
             rootWindow,
-            bounds.X,
-            bounds.Y,
-            (uint)bounds.Width,
-            (uint)bounds.Height,
+            captureBounds.X,
+            captureBounds.Y,
+            (uint)captureBounds.Width,
+            (uint)captureBounds.Height,
             nuint.MaxValue,
             X11Native.ZPixmap);
         if (image == nint.Zero)
@@ -403,7 +417,15 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
         display = nint.Zero;
         if (currentDisplay != nint.Zero)
         {
-            _ = X11Native.XCloseDisplay(currentDisplay);
+            try
+            {
+                _ = X11Native.XCloseDisplay(currentDisplay);
+            }
+            finally
+            {
+                X11OverlayPlatformService.UnregisterErrorHandledDisplay(
+                    currentDisplay);
+            }
         }
     }
 
@@ -509,6 +531,55 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
                 nameof(bounds),
                 "The capture bounds exceed the 256 MiB safety limit.");
         }
+    }
+
+    private PixelRect ClipToRootWindow(PixelRect bounds)
+    {
+        if (X11Native.XGetWindowAttributes(
+                display,
+                rootWindow,
+                out var rootAttributes) == 0
+            || rootAttributes.Width <= 0
+            || rootAttributes.Height <= 0)
+        {
+            throw new InvalidOperationException(
+                "X11 could not read the desktop capture bounds.");
+        }
+
+        return ClipToRootWindow(
+            bounds,
+            rootAttributes.Width,
+            rootAttributes.Height);
+    }
+
+    internal static PixelRect ClipToRootWindow(
+        PixelRect bounds,
+        int rootWidth,
+        int rootHeight)
+    {
+        ValidateBounds(bounds);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rootWidth);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rootHeight);
+
+        var left = Math.Max(0L, bounds.X);
+        var top = Math.Max(0L, bounds.Y);
+        var right = Math.Min(
+            rootWidth,
+            checked((long)bounds.X + bounds.Width));
+        var bottom = Math.Min(
+            rootHeight,
+            checked((long)bounds.Y + bounds.Height));
+        if (right <= left || bottom <= top)
+        {
+            throw new InvalidOperationException(
+                "The Elite Dangerous capture area is outside the X11 desktop.");
+        }
+
+        return new PixelRect(
+            checked((int)left),
+            checked((int)top),
+            checked((int)(right - left)),
+            checked((int)(bottom - top)));
     }
 
     [StructLayout(LayoutKind.Sequential)]
