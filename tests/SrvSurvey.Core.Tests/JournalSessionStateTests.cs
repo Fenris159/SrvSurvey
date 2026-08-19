@@ -74,6 +74,7 @@ public sealed class JournalSessionStateTests
 
         Assert.Equal(EliteSrvTypes.Nomad, state.ActiveSrvType);
         Assert.True(state.IsNomadActive);
+        Assert.Equal(44, state.KnownNomadVehicleId);
         Assert.False(state.IsFighterLaunched);
     }
 

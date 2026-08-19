@@ -362,6 +362,7 @@ public sealed class JournalSessionState
         {
             ActiveSrvType = EliteSrvTypes.Nomad;
             srvTypesById[vehicleId] = EliteSrvTypes.Nomad;
+            KnownNomadVehicleId = vehicleId;
             IsFighterLaunched = false;
             pendingPlayerControlledFighterId = null;
             isNomadStatusConfirmationPending = false;

@@ -1461,12 +1461,11 @@ public sealed class MainWindowViewModelTests
                 + "{\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"Explorer_NX\",\"ShipID\":31}\n"
                 + "{\"event\":\"Location\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"Body\":\"Test System 1\",\"BodyType\":\"Planet\"}\n"
                 + "{\"event\":\"Scan\",\"ScanType\":\"Detailed\",\"SystemAddress\":42,\"BodyName\":\"Test System 1\",\"BodyID\":7,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"Radius\":1000}\n"
-                + "{\"event\":\"DockSRV\",\"SRVType\":\"lander01\",\"ID\":44}\n"
-                + "{\"event\":\"Touchdown\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"Body\":\"Test System 1\",\"BodyID\":7,\"Latitude\":1,\"Longitude\":2}\n"
-                + "{\"event\":\"Disembark\",\"SRV\":true,\"ID\":44}\n");
+                + "{\"event\":\"LaunchFighter\",\"ID\":44,\"PlayerControlled\":true}\n");
+            var statusPath = Path.Combine(root, StatusFileReader.FileName);
             await File.WriteAllTextAsync(
-                Path.Combine(root, StatusFileReader.FileName),
-                "{\"event\":\"Status\",\"Flags\":2097152,\"Flags2\":17,\"Latitude\":1.001,\"Longitude\":2,\"Heading\":0,\"Altitude\":0,\"BodyName\":\"Test System 1\",\"PlanetRadius\":1000}");
+                statusPath,
+                "{\"event\":\"Status\",\"Flags\":69206020,\"Flags2\":0,\"Latitude\":1,\"Longitude\":2,\"Heading\":0,\"Altitude\":0,\"BodyName\":\"Test System 1\",\"PlanetRadius\":1000}");
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
@@ -1479,6 +1478,16 @@ public sealed class MainWindowViewModelTests
                     AppDataPaths = paths,
                 });
 
+            await viewModel.RefreshAsync();
+            Assert.Equal("Nomad", viewModel.VehicleState);
+
+            await File.AppendAllTextAsync(
+                Path.Combine(root, "Journal.2026-08-19T154645.01.log"),
+                "{\"event\":\"Touchdown\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"Body\":\"Test System 1\",\"BodyID\":7,\"Latitude\":1,\"Longitude\":2}\n"
+                + "{\"event\":\"Disembark\",\"SRV\":true,\"ID\":44}\n");
+            await File.WriteAllTextAsync(
+                statusPath,
+                "{\"event\":\"Status\",\"Flags\":2097152,\"Flags2\":17,\"Latitude\":1.001,\"Longitude\":2,\"Heading\":0,\"Altitude\":0,\"BodyName\":\"Test System 1\",\"PlanetRadius\":1000}");
             await viewModel.RefreshAsync();
 
             var marker = Assert.Single(
