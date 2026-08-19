@@ -105,7 +105,9 @@ public sealed class SurfaceSurveyJournalTracker
                         journalEvent.Payload,
                         cancellationToken).ConfigureAwait(false),
                     "Liftoff" or "ShipDismissed" => ApplyShipDeparted(),
-                    "Disembark" => ApplyDisembark(journalEvent.Payload),
+                    "Disembark" => ApplyDisembark(
+                        session,
+                        journalEvent.Payload),
                     "Embark" => ApplyEmbark(journalEvent.Payload),
                     "LeaveBody" or "StartJump" or "SupercruiseEntry"
                         or "FSDJump" or "CarrierJump" or "Shutdown"
@@ -341,10 +343,28 @@ public sealed class SurfaceSurveyJournalTracker
         return 1;
     }
 
-    private int ApplyDisembark(JsonElement root)
+    private int ApplyDisembark(
+        SurfaceSurveySessionContext session,
+        JsonElement root)
     {
-        if (!(GetBoolean(root, "SRV") ?? false)
-            || GetCurrentCoordinate() is not { } location)
+        if (!(GetBoolean(root, "SRV") ?? false))
+        {
+            return 0;
+        }
+
+        if (session.NomadVehicleId is { } nomadVehicleId
+            && GetInt64(root, "ID") == nomadVehicleId)
+        {
+            if (SrvLocation is null)
+            {
+                return 0;
+            }
+
+            SrvLocation = null;
+            return 1;
+        }
+
+        if (GetCurrentCoordinate() is not { } location)
         {
             return 0;
         }
@@ -728,7 +748,8 @@ public sealed record SurfaceSurveySessionContext(
     GalacticCoordinate? StarPosition,
     int? BodyId = null,
     string? BodyName = null,
-    double BodyRadiusMeters = 0);
+    double BodyRadiusMeters = 0,
+    long? NomadVehicleId = null);
 
 public sealed record SurfaceSurveyTrackingOptions(
     bool AutoRemoveTrackerOnSampling,

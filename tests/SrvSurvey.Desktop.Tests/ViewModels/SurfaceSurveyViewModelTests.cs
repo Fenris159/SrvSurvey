@@ -181,6 +181,35 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task NomadDisembarkRendersOnlyTheShipVehicleMarker()
+    {
+        var (viewModel, survey, _) = CreateViewModel();
+        ApplySurveyContext(survey, Status(StatusFlags.None));
+
+        await viewModel.ApplyUpdateAsync(
+            Session() with { NomadVehicleId = 44 },
+            [
+                Event(
+                    """
+                    {"event":"Touchdown","StarSystem":"Test System","SystemAddress":42,"Body":"Test System 1","BodyID":7,"Latitude":0,"Longitude":1}
+                    """),
+                Event(
+                    """
+                    {"event":"Disembark","SRV":true,"ID":44}
+                    """),
+            ],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        var marker = Assert.Single(viewModel.NavigationMarkers);
+        Assert.Equal(SurfaceRadarMarkerKind.Ship, marker.Kind);
+        Assert.Equal("Ship", marker.Name);
+        Assert.DoesNotContain(
+            viewModel.RadarMarkers,
+            candidate => candidate.Kind == SurfaceRadarMarkerKind.Srv);
+    }
+
+    [Fact]
     public async Task EligibilityAppliesAltitudePanelLandingGearAndSupercruiseRules()
     {
         var (viewModel, survey, store) = CreateViewModel();

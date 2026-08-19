@@ -155,6 +155,27 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
         Assert.Null(tracker.ShipLocation);
     }
 
+    [Fact]
+    public async Task NomadDisembarkDoesNotCreateAnSrvMarker()
+    {
+        var (tracker, _) = CreateTracker();
+        var nomadSession = Session() with { NomadVehicleId = 44 };
+
+        await tracker.ApplyAsync(
+            nomadSession,
+            [Event("{\"event\":\"Disembark\",\"SRV\":true,\"ID\":7}")],
+            Status(1, 2));
+        Assert.Equal(new SurfaceCoordinate(1, 2), tracker.SrvLocation);
+
+        var result = await tracker.ApplyAsync(
+            nomadSession,
+            [Event("{\"event\":\"Disembark\",\"SRV\":true,\"ID\":44}")],
+            new EliteStatus());
+
+        Assert.Equal(1, result.MutationCount);
+        Assert.Null(tracker.SrvLocation);
+    }
+
     [Theory]
     [InlineData("LeaveBody")]
     [InlineData("StartJump")]

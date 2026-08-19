@@ -2661,7 +2661,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             surfaceBody?.Name,
             latestStatus?.PlanetRadius is > 0
                 ? (double)latestStatus.PlanetRadius
-                : surfaceBody?.RadiusMeters ?? 0);
+                : surfaceBody?.RadiusMeters ?? 0,
+            journalState.KnownNomadVehicleId);
     }
 
     private void ApplyMonitorStatusMessages(

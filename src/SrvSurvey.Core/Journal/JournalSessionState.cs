@@ -34,6 +34,8 @@ public sealed class JournalSessionState
 
     public bool IsNomadActive => EliteSrvTypes.IsNomad(ActiveSrvType);
 
+    public long? KnownNomadVehicleId { get; private set; }
+
     public OdysseySuitType CurrentSuit { get; private set; }
 
     public bool IsFighterLaunched { get; private set; }
@@ -89,8 +91,15 @@ public sealed class JournalSessionState
                 break;
 
             case "Commander":
-                CommanderName = GetString(root, "Name") ?? CommanderName;
-                FrontierId = GetString(root, "FID") ?? FrontierId;
+                var nextCommanderName = GetString(root, "Name");
+                var nextFrontierId = GetString(root, "FID");
+                if (HasCommanderChanged(nextCommanderName, nextFrontierId))
+                {
+                    ResetVehicleSessionState();
+                }
+
+                CommanderName = nextCommanderName ?? CommanderName;
+                FrontierId = nextFrontierId ?? FrontierId;
                 break;
 
             case "LoadGame":
@@ -137,9 +146,12 @@ public sealed class JournalSessionState
 
             case "DockSRV":
                 RememberSrvType(root, GetString(root, "SRVType"));
-                ActiveSrvType = null;
-                pendingPlayerControlledFighterId = null;
-                isNomadStatusConfirmationPending = false;
+                ResetActiveVehicleState();
+                break;
+
+            case "SRVDestroyed":
+                ForgetSrvType(root);
+                ResetActiveVehicleState();
                 break;
 
             case "LaunchFighter":
@@ -278,10 +290,23 @@ public sealed class JournalSessionState
 
     private void ApplyLoadGame(JsonElement root)
     {
-        ResetVehicleSessionState();
+        var loadedCommanderName = GetString(root, "Commander");
+        var loadedFrontierId = GetString(root, "FID");
+        if (HasCommanderChanged(loadedCommanderName, loadedFrontierId))
+        {
+            ResetVehicleSessionState();
+        }
+        else
+        {
+            // Elite can emit another LoadGame while the commander is on foot,
+            // reporting the suit as Ship. Keep vehicle IDs learned earlier in
+            // this journal so a later Embark can restore the Nomad identity.
+            ResetActiveVehicleState();
+        }
+
         var loadedShipType = GetString(root, "Ship");
-        CommanderName = GetString(root, "Commander") ?? CommanderName;
-        FrontierId = GetString(root, "FID") ?? FrontierId;
+        CommanderName = loadedCommanderName ?? CommanderName;
+        FrontierId = loadedFrontierId ?? FrontierId;
         GameMode = GetString(root, nameof(GameMode)) ?? GameMode;
         GameVersion = GetString(root, "gameversion") ?? GameVersion;
         GameBuild = GetString(root, "build") ?? GameBuild;
@@ -297,6 +322,7 @@ public sealed class JournalSessionState
             if (loadedShipId is { } loadedVehicleId)
             {
                 srvTypesById[loadedVehicleId] = EliteSrvTypes.Nomad;
+                KnownNomadVehicleId = loadedVehicleId;
             }
         }
 
@@ -336,6 +362,7 @@ public sealed class JournalSessionState
         {
             ActiveSrvType = EliteSrvTypes.Nomad;
             srvTypesById[vehicleId] = EliteSrvTypes.Nomad;
+            KnownNomadVehicleId = vehicleId;
             IsFighterLaunched = false;
             pendingPlayerControlledFighterId = null;
             isNomadStatusConfirmationPending = false;
@@ -381,16 +408,61 @@ public sealed class JournalSessionState
         if (vehicleId is not null && !string.IsNullOrWhiteSpace(srvType))
         {
             srvTypesById[vehicleId.Value] = srvType;
+            if (EliteSrvTypes.IsNomad(srvType))
+            {
+                KnownNomadVehicleId = vehicleId.Value;
+            }
+            else if (KnownNomadVehicleId == vehicleId.Value)
+            {
+                KnownNomadVehicleId = null;
+            }
         }
     }
 
-    private void ResetVehicleSessionState()
+    private void ForgetSrvType(JsonElement root)
+    {
+        if (GetInt64(root, "ID") is { } vehicleId)
+        {
+            srvTypesById.Remove(vehicleId);
+            if (KnownNomadVehicleId == vehicleId)
+            {
+                KnownNomadVehicleId = null;
+            }
+        }
+    }
+
+    private bool HasCommanderChanged(
+        string? nextCommanderName,
+        string? nextFrontierId)
+    {
+        var frontierIdChanged = !string.IsNullOrWhiteSpace(nextFrontierId)
+            && !string.IsNullOrWhiteSpace(FrontierId)
+            && !string.Equals(
+                nextFrontierId,
+                FrontierId,
+                StringComparison.OrdinalIgnoreCase);
+        var commanderNameChanged = !string.IsNullOrWhiteSpace(nextCommanderName)
+            && !string.IsNullOrWhiteSpace(CommanderName)
+            && !string.Equals(
+                nextCommanderName,
+                CommanderName,
+                StringComparison.OrdinalIgnoreCase);
+        return frontierIdChanged || commanderNameChanged;
+    }
+
+    private void ResetActiveVehicleState()
     {
         ActiveSrvType = null;
         IsFighterLaunched = false;
         pendingPlayerControlledFighterId = null;
         isNomadStatusConfirmationPending = false;
+    }
+
+    private void ResetVehicleSessionState()
+    {
+        ResetActiveVehicleState();
         srvTypesById.Clear();
+        KnownNomadVehicleId = null;
     }
 
     public JournalSnapshot CreateSnapshot(

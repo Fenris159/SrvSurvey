@@ -1,40 +1,27 @@
-# SrvSurvey-XP 2.1.3.0-rc.35
+# SrvSurvey-XP 2.1.3.0-rc.36
 
-This release candidate improves overlay controls, panel customization,
-typography, guidance, and application branding. The changes below are the delta
-from `2.1.3.0-rc.34`.
+This release candidate corrects Nomad vehicle-state tracking and surface
+overlay visibility. The changes below are the delta from `2.1.3.0-rc.35`.
 
-## What's changed since 2.1.3.0-rc.34
+## What's changed since 2.1.3.0-rc.35
 
-- Adds compact click-through Guardian site-map zoom controls tied to the
-  existing map zoom actions. The overlay editor preview shows the same controls.
-- Adds master availability switches for affiliated panels at the bottom of
-  every overlay settings category. Each panel can also receive an optional,
-  unbound keyboard shortcut that toggles its visibility.
-- Replaces text-like shortcut fields with reactive chord capture throughout the
-  application. Held combinations appear live, releasing all keys commits them,
-  Escape cancels, and Backspace or Delete clears the binding without firing the
-  prior shortcut during capture.
-- Refines the Boxel system action radial into a theme-aware four-part ring,
-  clearly darkens inactive actions, and closes the control immediately when the
-  containing view scrolls.
-- Normalizes missed overlay typography and accent usage in Search Guidance,
-  Biology Survey, and Route Bodies, and expands Guides to document the current
-  overlay controls and states.
-- Replaces the executable, window, tray, and Linux package icons with the new
-  high-resolution split SrvSurvey design and supplies optimized Windows icon
-  sizes from 16 through 256 pixels.
-- Adds regression coverage for panel availability, shortcut capture, Guardian
-  zoom rendering, radial action behavior, application icon packaging, Guides,
-  and overlay presentation contracts.
+- Preserves the Nomad's learned journal vehicle ID across same-commander suit
+  reloads so re-entering the vehicle restores its correct identity.
+- Restores landing-gear-driven visibility for Surface Survey and Canonn Prior
+  Scans while flying the Nomad, including after an on-foot reload.
+- Stops an on-foot Nomad from appearing simultaneously as both the ship and an
+  SRV in Surface Survey navigation trackers.
+- Adds journal, surface-tracking, presentation, and end-to-end regressions for
+  Nomad reload, landing-gear, and vehicle-marker behavior while preserving
+  conventional SRV handling.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.35`
-- Tag: `xp-v2.1.3.0-rc.35`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.35-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.35-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.35-x86_64.AppImage`
+- Version: `2.1.3.0-rc.36`
+- Tag: `xp-v2.1.3.0-rc.36`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.36-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.36-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.36-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
