@@ -1385,6 +1385,119 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task RefreshPreservesNomadAcrossSuitLoadGameAndEmbark()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-nomad-suit-load-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(root);
+            await File.WriteAllTextAsync(
+                Path.Combine(root, "Journal.2026-08-19T154645.01.log"),
+                "{\"timestamp\":\"2026-08-19T20:46:42Z\",\"event\":\"Fileheader\"}\n"
+                + "{\"timestamp\":\"2026-08-19T20:47:46Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"Explorer_NX\",\"ShipID\":31}\n"
+                + "{\"timestamp\":\"2026-08-19T21:23:50Z\",\"event\":\"DockSRV\",\"SRVType\":\"lander01\",\"ID\":44}\n"
+                + "{\"timestamp\":\"2026-08-19T21:29:42Z\",\"event\":\"LaunchFighter\",\"ID\":44,\"PlayerControlled\":true}\n"
+                + "{\"timestamp\":\"2026-08-19T21:33:12Z\",\"event\":\"Disembark\",\"SRV\":true,\"ID\":44}\n"
+                + "{\"timestamp\":\"2026-08-19T21:35:07Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"ExplorationSuit_Class5\"}\n"
+                + "{\"timestamp\":\"2026-08-19T21:36:29Z\",\"event\":\"Embark\",\"SRV\":true,\"ID\":44}\n");
+            var statusPath = Path.Combine(root, StatusFileReader.FileName);
+            await File.WriteAllTextAsync(
+                statusPath,
+                "{\"timestamp\":\"2026-08-19T22:03:47Z\",\"event\":\"Status\",\"Flags\":67108868,\"Flags2\":0}");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(
+                root,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = paths,
+                });
+
+            await viewModel.RefreshAsync();
+            viewModel.SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear = true;
+
+            Assert.Equal("Nomad", viewModel.VehicleState);
+            Assert.Equal(EliteSrvTypes.Nomad, viewModel.CurrentVrOverlayMode);
+            Assert.False(
+                viewModel.SystemSurvey
+                    .ShouldSuppressSurfaceNavigationForLandingGear);
+
+            await File.WriteAllTextAsync(
+                statusPath,
+                "{\"timestamp\":\"2026-08-19T22:03:48Z\",\"event\":\"Status\",\"Flags\":67108864,\"Flags2\":0}");
+            await viewModel.RefreshAsync();
+
+            Assert.True(
+                viewModel.SystemSurvey
+                    .ShouldSuppressSurfaceNavigationForLandingGear);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task RefreshDoesNotPresentNomadAsAnSrvWhenOnFoot()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-nomad-surface-marker-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(root);
+            await File.WriteAllTextAsync(
+                Path.Combine(root, "Journal.2026-08-19T154645.01.log"),
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                + "{\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"Explorer_NX\",\"ShipID\":31}\n"
+                + "{\"event\":\"Location\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"Body\":\"Test System 1\",\"BodyType\":\"Planet\"}\n"
+                + "{\"event\":\"Scan\",\"ScanType\":\"Detailed\",\"SystemAddress\":42,\"BodyName\":\"Test System 1\",\"BodyID\":7,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"Radius\":1000}\n"
+                + "{\"event\":\"DockSRV\",\"SRVType\":\"lander01\",\"ID\":44}\n"
+                + "{\"event\":\"Touchdown\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"Body\":\"Test System 1\",\"BodyID\":7,\"Latitude\":1,\"Longitude\":2}\n"
+                + "{\"event\":\"Disembark\",\"SRV\":true,\"ID\":44}\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(root, StatusFileReader.FileName),
+                "{\"event\":\"Status\",\"Flags\":2097152,\"Flags2\":17,\"Latitude\":1.001,\"Longitude\":2,\"Heading\":0,\"Altitude\":0,\"BodyName\":\"Test System 1\",\"PlanetRadius\":1000}");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(
+                root,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = paths,
+                });
+
+            await viewModel.RefreshAsync();
+
+            var marker = Assert.Single(
+                viewModel.SurfaceSurvey.NavigationMarkers);
+            Assert.Equal(SurfaceRadarMarkerKind.Ship, marker.Kind);
+            Assert.DoesNotContain(
+                viewModel.SurfaceSurvey.RadarMarkers,
+                candidate => candidate.Kind == SurfaceRadarMarkerKind.Srv);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task RefreshLosslesslyUpdatesImportedSystemHistoryAndRepeatState()
     {
         var root = Path.Combine(
