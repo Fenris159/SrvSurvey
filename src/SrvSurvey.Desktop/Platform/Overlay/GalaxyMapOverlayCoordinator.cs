@@ -8,6 +8,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class GalaxyMapOverlayCoordinator : IDisposable
 {
+    private const string PlotterName = "PlotGalMap";
+
     private readonly GalaxyMapOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
@@ -132,7 +134,7 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
         OverlayThemeResources.Apply(
             overlay,
             overlayLayout,
-            "PlotGalMap");
+            PlotterName);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -159,7 +161,7 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
         OverlayThemeResources.ApplyOpacity(
             window,
             overlayLayout,
-            "PlotGalMap");
+            PlotterName);
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
         if (screen is null)
@@ -167,15 +169,10 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var logicalHeight = window.Bounds.Height > 0
-            ? window.Bounds.Height
-            : window.MinHeight;
-        var size = new PixelSize(
-            width,
-            Math.Max((int)Math.Ceiling(logicalHeight * screen.Scaling), 1));
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            window, overlayLayout, PlotterName, screen.Scaling);
         var position = overlayLayout.GetPosition(
-                "PlotGalMap",
+                PlotterName,
                 gameBounds,
                 size)
             ?? OverlayWindowPlacement.TopLeft(gameBounds, size, 8);

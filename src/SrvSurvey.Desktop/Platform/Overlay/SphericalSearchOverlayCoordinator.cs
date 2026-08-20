@@ -8,6 +8,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class SphericalSearchOverlayCoordinator : IDisposable
 {
+    private const string PlotterName = "PlotSphericalSearch";
+
     private readonly SphereLimitViewModel sphere;
     private readonly BoxelSearchViewModel boxel;
     private readonly RouteWorkspaceViewModel route;
@@ -177,7 +179,7 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         OverlayThemeResources.ApplyOpacity(
             window,
             overlayLayout,
-            "PlotSphericalSearch");
+            PlotterName);
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
         if (screen is null)
@@ -185,14 +187,10 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var logicalHeight = window.Bounds.Height > 0
-            ? window.Bounds.Height
-            : window.MinHeight;
-        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var size = new PixelSize(width, Math.Max(height, 1));
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            window, overlayLayout, PlotterName, screen.Scaling);
         var position = overlayLayout.GetPosition(
-                "PlotSphericalSearch",
+                PlotterName,
                 gameBounds,
                 size)
             ?? OverlayWindowPlacement.TopRight(gameBounds, size, 8);

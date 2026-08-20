@@ -190,12 +190,11 @@ public sealed class FleetCarrierRouteOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(target.Width * screen.Scaling);
-        var logicalHeight = target.Bounds.Height > 0
-            ? target.Bounds.Height
-            : target.MinHeight;
-        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var size = new PixelSize(width, Math.Max(height, 1));
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            target,
+            overlayLayout,
+            PlotterName,
+            screen.Scaling);
         var position = overlayLayout.GetPosition(
                 PlotterName,
                 gameBounds,

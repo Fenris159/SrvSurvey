@@ -8,6 +8,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class GroundTargetOverlayCoordinator : IDisposable
 {
+    private const string PlotterName = "PlotTrackTarget";
+
     private readonly GroundTargetViewModel groundTarget;
     private readonly GroundTargetOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
@@ -121,7 +123,7 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
         }
 
         var overlay = new GroundTargetOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotTrackTarget");
+        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -151,7 +153,7 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
         OverlayThemeResources.ApplyOpacity(
             window,
             overlayLayout,
-            "PlotTrackTarget");
+            PlotterName);
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
         if (screen is null)
@@ -159,13 +161,9 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var logicalHeight = window.Bounds.Height > 0
-            ? window.Bounds.Height
-            : window.MinHeight;
-        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var size = new PixelSize(width, Math.Max(height, 1));
-        var position = overlayLayout.GetPosition("PlotTrackTarget", gameBounds, size)
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            window, overlayLayout, PlotterName, screen.Scaling);
+        var position = overlayLayout.GetPosition(PlotterName, gameBounds, size)
             ?? OverlayWindowPlacement.BottomCenter(gameBounds, size);
         if (window.Position != position)
         {

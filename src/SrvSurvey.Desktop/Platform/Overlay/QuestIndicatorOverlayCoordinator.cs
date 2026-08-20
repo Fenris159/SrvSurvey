@@ -7,6 +7,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class QuestIndicatorOverlayCoordinator : IDisposable
 {
+    private const string PlotterName = "PlotQuestMini";
+
     private readonly QuestIndicatorViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
@@ -120,7 +122,7 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
         OverlayThemeResources.Apply(
             overlay,
             overlayLayout,
-            "PlotQuestMini");
+            PlotterName);
         overlay.Opened += (_, _) => PrepareWindow(overlay);
         overlay.Closed += (_, _) =>
         {
@@ -151,7 +153,7 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
         OverlayThemeResources.ApplyOpacity(
             overlay,
             overlayLayout,
-            "PlotQuestMini");
+            PlotterName);
         var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds)
             ?? overlay.Screens.Primary;
         if (screen is null)
@@ -159,14 +161,10 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(overlay.Width * screen.Scaling);
-        var logicalHeight = overlay.Bounds.Height > 0
-            ? overlay.Bounds.Height
-            : overlay.MinHeight;
-        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var size = new PixelSize(width, Math.Max(height, 1));
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            overlay, overlayLayout, PlotterName, screen.Scaling);
         var position = overlayLayout.GetPosition(
-                "PlotQuestMini",
+                PlotterName,
                 gameWindow.ClientBounds,
                 size)
             ?? OverlayWindowPlacement.TopRight(

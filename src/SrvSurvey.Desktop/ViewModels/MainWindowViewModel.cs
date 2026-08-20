@@ -1568,6 +1568,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 AppDataPaths.DataDirectory,
                 ProfileBackupDirectory,
                 CancellationToken.None);
+            var overlayLayoutMigration = LegacyOverlayLayoutImportMigrator
+                .MigrateIfNeeded(AppDataPaths);
             var settingsMigration = new LegacyUiSettingsMigrator()
                 .MigrateIfNeeded(AppDataPaths);
             var organicMigration = await new LegacyOrganicProfileMigrator(
@@ -1586,6 +1588,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 + $"checksum-verified {importedBytes:N0} bytes, "
                 + $"retained {retainedFiles:N0} current-only files, and recorded "
                 + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
+                + GetOverlayLayoutMigrationStatus(overlayLayoutMigration)
+                + " "
                 + GetSettingsMigrationStatus(settingsMigration)
                 + " "
                 + GetOrganicMigrationStatus(organicMigration)
@@ -1664,6 +1668,22 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         return migration.Migrated
             ? $"Translated {migration.MappedPreferenceCount:N0} legacy UI preferences."
             : "No legacy UI preference translation was required.";
+    }
+
+    private static string GetOverlayLayoutMigrationStatus(
+        LegacyOverlayLayoutImportMigrationResult migration)
+    {
+        if (migration.Error is not null)
+        {
+            return "Legacy overlay positions were preserved, but absolute desktop "
+                + "anchors could not be converted. Reposition affected panels in "
+                + $"the overlay editor. {migration.Error}";
+        }
+
+        return migration.Migrated
+            ? $"Converted {migration.NormalizedPlacementCount:N0} absolute overlay "
+                + "placement(s) to game-window-relative anchors."
+            : "No absolute overlay placement conversion was required.";
     }
 
     private static string GetOrganicMigrationStatus(

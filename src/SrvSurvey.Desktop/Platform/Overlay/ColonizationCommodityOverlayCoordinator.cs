@@ -8,6 +8,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
 {
+    private const string PlotterName = "PlotBuildCommodities";
+
     private readonly ColonizationCommodityOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
@@ -143,7 +145,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         OverlayThemeResources.Apply(
             overlay,
             overlayLayout,
-            "PlotBuildCommodities");
+            PlotterName);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -171,7 +173,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         OverlayThemeResources.ApplyOpacity(
             window,
             overlayLayout,
-            "PlotBuildCommodities");
+            PlotterName);
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
         if (screen is null)
@@ -179,11 +181,10 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var height = (int)Math.Ceiling(window.Height * screen.Scaling);
-        var size = new PixelSize(width, height);
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            window, overlayLayout, PlotterName, screen.Scaling);
         var position = overlayLayout.GetPosition(
-                "PlotBuildCommodities",
+                PlotterName,
                 gameBounds,
                 size)
             ?? OverlayWindowPlacement.TopRight(gameBounds, size);

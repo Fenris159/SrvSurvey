@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
+using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -379,30 +380,68 @@ public sealed record RegisteredOverlayWindow(
 
 internal static class OverlayWindowMetrics
 {
+    public static PixelSize PrepareForPlacement(
+        Window window,
+        LegacyOverlayLayout layout,
+        string plotterName,
+        double targetScaling)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        ArgumentNullException.ThrowIfNull(layout);
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        var definition = OverlayLayoutCatalog.GetRequired(plotterName);
+        var scaling = NormalizeScaling(targetScaling);
+        var scaleIndex = layout.GetScaleIndex(plotterName);
+        OverlayThemeResources.ApplyScale(window, scaleIndex, scaling);
+        var fallbackScale = scaling * OverlayScaleCatalog.GetRelativeScale(
+            scaleIndex,
+            scaling);
+        var fallback = ScalePixelSize(definition.PreviewSize, fallbackScale);
+        return GetPixelSize(window, fallback, scaling);
+    }
+
     public static PixelSize GetPixelSize(RegisteredOverlayWindow registered)
     {
         ArgumentNullException.ThrowIfNull(registered);
-        var fallback = OverlayLayoutCatalog
+        var scaling = NormalizeScaling(registered.Window.RenderScaling);
+        var previewSize = OverlayLayoutCatalog
             .GetRequired(registered.PlotterName)
             .PreviewSize;
-        var scaling = Math.Max(0.1, registered.Window.RenderScaling);
-        var presentation = registered.PresentationVisual;
+        var fallback = ScalePixelSize(previewSize, scaling);
+        return GetPixelSize(
+            registered.Window,
+            fallback,
+            scaling,
+            registered.PresentationVisual);
+    }
+
+    private static PixelSize ScalePixelSize(PixelSize size, double scaling) =>
+        new(
+            Math.Max(1, (int)Math.Ceiling(size.Width * scaling)),
+            Math.Max(1, (int)Math.Ceiling(size.Height * scaling)));
+
+    private static PixelSize GetPixelSize(
+        Window window,
+        PixelSize fallback,
+        double scaling,
+        Visual? presentation = null)
+    {
         var logicalWidth = presentation is not null
             && presentation.Bounds.Width > 0
             ? presentation.Bounds.Width
-            : registered.Window.Bounds.Width;
+            : window.Bounds.Width;
         if (!(logicalWidth > 0))
         {
-            logicalWidth = registered.Window.Width;
+            logicalWidth = window.Width;
         }
 
         var logicalHeight = presentation is not null
             && presentation.Bounds.Height > 0
             ? presentation.Bounds.Height
-            : registered.Window.Bounds.Height;
+            : window.Bounds.Height;
         if (!(logicalHeight > 0))
         {
-            logicalHeight = registered.Window.Height;
+            logicalHeight = window.Height;
         }
 
         var width = double.IsFinite(logicalWidth) && logicalWidth > 0
@@ -413,4 +452,7 @@ internal static class OverlayWindowMetrics
             : fallback.Height;
         return new PixelSize(Math.Max(width, 1), Math.Max(height, 1));
     }
+
+    private static double NormalizeScaling(double scaling) =>
+        double.IsFinite(scaling) && scaling > 0 ? scaling : 1d;
 }

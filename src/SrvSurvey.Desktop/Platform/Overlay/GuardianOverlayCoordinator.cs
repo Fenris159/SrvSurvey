@@ -430,13 +430,18 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
         const int inset = 8;
         var scale = screen.Scaling;
-        var siteWidth = (int)Math.Ceiling(siteWindow.Width * scale);
-        var siteHeight = (int)Math.Ceiling(siteWindow.Height * scale);
-        var width = (int)Math.Ceiling(window.Width * scale);
-        var height = (int)Math.Ceiling(window.Height * scale);
+        var siteSize = OverlayWindowMetrics.PrepareForPlacement(
+            siteWindow,
+            overlayLayout,
+            GuardianPlotterName,
+            scale);
+        var width = Math.Max(1, (int)Math.Ceiling(window.Width * scale));
+        var height = Math.Max(1, (int)Math.Ceiling(window.Height * scale));
         var position = new PixelPoint(
-            siteWindow.Position.X + siteWidth - width - (int)Math.Ceiling(inset * scale),
-            siteWindow.Position.Y + siteHeight - height - (int)Math.Ceiling(inset * scale));
+            siteWindow.Position.X + siteSize.Width - width
+                - (int)Math.Ceiling(inset * scale),
+            siteWindow.Position.Y + siteSize.Height - height
+                - (int)Math.Ceiling(inset * scale));
         if (window.Position != position)
         {
             window.Position = position;
@@ -500,16 +505,11 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var logicalHeight = window.Bounds.Height > 0
-            ? window.Bounds.Height
-            : (window.MinHeight > 0) switch
-            {
-                true => window.MinHeight,
-                false => window.Height
-            };
-        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var size = new PixelSize(Math.Max(width, 1), Math.Max(height, 1));
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            window,
+            overlayLayout,
+            plotterName,
+            screen.Scaling);
         var position = overlayLayout.GetPosition(plotterName, gameBounds, size)
             ?? placement(gameBounds, size, margin);
         if (window.Position != position)

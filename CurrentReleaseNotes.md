@@ -11,6 +11,12 @@ overlay visibility. The changes below are the delta from `2.1.3.0-rc.35`.
   Scans while flying the Nomad, including after an on-foot reload.
 - Stops an on-foot Nomad from appearing simultaneously as both the ship and an
   SRV in Surface Survey navigation trackers.
+- Prevents Linux and mixed-monitor overlay placement failures when a panel opens
+  before its content size has been measured, while honoring the game monitor's
+  display scale.
+- Migrates imported absolute desktop anchors for panels listed in the supported
+  overlay catalog to safe game-window-relative defaults, preserving existing
+  relative placements and creating a backup before rewriting legacy layout data.
 - Adds journal, surface-tracking, presentation, and end-to-end regressions for
   Nomad reload, landing-gear, and vehicle-marker behavior while preserving
   conventional SRV handling.

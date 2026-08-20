@@ -8,6 +8,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class JumpInfoOverlayCoordinator : IDisposable
 {
+    private const string PlotterName = "PlotJumpInfo";
+
     private readonly JumpInfoViewModel jumpInfo;
     private readonly JumpInfoOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
@@ -144,7 +146,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
                 OverlayThemeResources.Apply(
                     overlay,
                     overlayLayout,
-                    "PlotJumpInfo");
+                    PlotterName);
                 overlay.Opened += (_, _) =>
                 {
                     PositionWindow(overlay, gameWindow.ClientBounds);
@@ -195,7 +197,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
         OverlayThemeResources.ApplyOpacity(
             window,
             overlayLayout,
-            "PlotJumpInfo");
+            PlotterName);
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
         if (screen is null)
@@ -203,13 +205,9 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var logicalHeight = window.Bounds.Height > 0
-            ? window.Bounds.Height
-            : window.MinHeight;
-        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var size = new PixelSize(width, Math.Max(height, 1));
-        var position = overlayLayout.GetPosition("PlotJumpInfo", gameBounds, size)
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            window, overlayLayout, PlotterName, screen.Scaling);
+        var position = overlayLayout.GetPosition(PlotterName, gameBounds, size)
             ?? OverlayWindowPlacement.TopCenter(gameBounds, size);
         if (window.Position != position)
         {

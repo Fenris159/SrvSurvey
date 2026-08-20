@@ -101,6 +101,7 @@ public sealed partial class App : Application
         var appDataPaths = AppDataPaths.ResolveCurrent();
         var applicationLog = Program.ApplicationLog
             ?? new ApplicationLogService(appDataPaths.DataDirectory);
+        MigrateLegacyOverlayLayout(appDataPaths, applicationLog);
         MigrateLegacyUiSettings(appDataPaths, applicationLog);
         MigrateLegacyOrganicProfiles(appDataPaths, applicationLog);
 
@@ -491,6 +492,31 @@ public sealed partial class App : Application
             applicationLog.Append(
                 "Legacy UI settings migration was skipped: "
                 + settingsMigration.Error);
+        }
+    }
+
+    private static void MigrateLegacyOverlayLayout(
+        AppDataPaths appDataPaths,
+        ApplicationLogService applicationLog)
+    {
+        var migration = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(
+            appDataPaths);
+        if (migration.Migrated)
+        {
+            applicationLog.Append(
+                $"Converted {migration.NormalizedPlacementCount:N0} imported "
+                + "absolute overlay placement(s) to game-window-relative anchors."
+                + (migration.BackupPath is null
+                    ? string.Empty
+                    : " Previous layout backup: " + migration.BackupPath));
+            return;
+        }
+
+        if (migration.Error is not null)
+        {
+            applicationLog.Append(
+                "Imported overlay placement conversion was skipped: "
+                + migration.Error);
         }
     }
 
