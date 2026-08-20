@@ -18,10 +18,9 @@ public sealed class OverlayWindowRegistry
     private bool manualSuppressed;
     private bool suitSuppressed;
     private bool sessionSuppressed;
-    private OverlayPriorityFact priorityFacts;
+    private OverlayPriorityFacts priorityFacts;
     private bool isReconciling;
     private bool reconcileAgain;
-    private bool changePending;
 
     public static OverlayWindowRegistry Shared { get; } = new();
 
@@ -134,7 +133,7 @@ public sealed class OverlayWindowRegistry
         ReconcileAndNotify();
     }
 
-    internal void SetPriorityFacts(OverlayPriorityFact facts)
+    internal void SetPriorityFacts(OverlayPriorityFacts facts)
     {
         Dispatcher.UIThread.VerifyAccess();
         if (priorityFacts == facts)
@@ -305,7 +304,6 @@ public sealed class OverlayWindowRegistry
 
     private void ReconcileAndNotify()
     {
-        changePending = true;
         if (isReconciling)
         {
             reconcileAgain = true;
@@ -327,11 +325,7 @@ public sealed class OverlayWindowRegistry
             isReconciling = false;
         }
 
-        if (changePending)
-        {
-            changePending = false;
-            Changed?.Invoke(this, EventArgs.Empty);
-        }
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     private void ReconcileCore()

@@ -1,7 +1,7 @@
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 [Flags]
-internal enum OverlayPriorityFact
+internal enum OverlayPriorityFacts
 {
     None = 0,
     FssInfoForced = 1 << 0,
@@ -11,35 +11,38 @@ internal enum OverlayPriorityFact
 internal sealed record OverlayPriorityRule(
     OverlayId Target,
     IReadOnlyList<OverlayId> PresentedBlockers,
-    OverlayPriorityFact FactBlockers = OverlayPriorityFact.None,
-    OverlayPriorityFact UnlessFacts = OverlayPriorityFact.None);
+    OverlayPriorityFacts FactBlockers = OverlayPriorityFacts.None,
+    OverlayPriorityFacts UnlessFacts = OverlayPriorityFacts.None);
 
 internal static class OverlayPriorityRules
 {
+    private const string Guardians = "PlotGuardians";
+    private const string HumanSite = "PlotHumanSite";
+
     private static readonly IReadOnlyList<OverlayPriorityRule> rules =
     [
         Rule(
             "PlotFSSInfo",
             ["PlotGuardianSystem"],
-            unlessFacts: OverlayPriorityFact.FssInfoForced),
+            unlessFacts: OverlayPriorityFacts.FssInfoForced),
         Rule(
             "PlotBodyInfo",
             ["PlotGuardianSystem"],
-            unlessFacts: OverlayPriorityFact.BodyInfoForced),
-        Rule("PlotBioSystem", ["PlotGuardians", "PlotHumanSite"]),
+            unlessFacts: OverlayPriorityFacts.BodyInfoForced),
+        Rule("PlotBioSystem", [Guardians, HumanSite]),
         Rule(
             "PlotBioStatus",
-            ["PlotGuardians", "PlotHumanSite", "PlotJumpInfo"]),
+            [Guardians, HumanSite, "PlotJumpInfo"]),
         Rule(
             "PlotPriorScans",
-            ["PlotGuardians", "PlotHumanSite", "PlotStationInfo"]),
-        Rule("PlotGrounded", ["PlotGuardians", "PlotHumanSite"]),
+            [Guardians, HumanSite, "PlotStationInfo"]),
+        Rule("PlotGrounded", [Guardians, HumanSite]),
         Rule("PlotGuardianStatus", ["PlotJumpInfo"]),
         Rule(
             "PlotGuardianSystem",
             [],
-            factBlockers: OverlayPriorityFact.FssInfoForced
-                | OverlayPriorityFact.BodyInfoForced),
+            factBlockers: OverlayPriorityFacts.FssInfoForced
+                | OverlayPriorityFacts.BodyInfoForced),
     ];
 
     static OverlayPriorityRules()
@@ -50,7 +53,7 @@ internal static class OverlayPriorityRules
     internal static bool IsObscured(
         OverlayId target,
         Func<OverlayId, bool> isPresented,
-        OverlayPriorityFact facts)
+        OverlayPriorityFacts facts)
     {
         ArgumentNullException.ThrowIfNull(isPresented);
         var rule = rules.SingleOrDefault(candidate => candidate.Target == target);
@@ -119,8 +122,8 @@ internal static class OverlayPriorityRules
     private static OverlayPriorityRule Rule(
         string target,
         IReadOnlyList<string> presentedBlockers,
-        OverlayPriorityFact factBlockers = OverlayPriorityFact.None,
-        OverlayPriorityFact unlessFacts = OverlayPriorityFact.None)
+        OverlayPriorityFacts factBlockers = OverlayPriorityFacts.None,
+        OverlayPriorityFacts unlessFacts = OverlayPriorityFacts.None)
     {
         return new OverlayPriorityRule(
             GetId(target),

@@ -357,7 +357,7 @@ public sealed class OverlayWindowRegistryTests
         Assert.False(fssWindow.IsVisible);
         Assert.True(guardianSummaryWindow.IsVisible);
 
-        registry.SetPriorityFacts(OverlayPriorityFact.FssInfoForced);
+        registry.SetPriorityFacts(OverlayPriorityFacts.FssInfoForced);
 
         Assert.True(fssWindow.IsVisible);
         Assert.False(guardianSummaryWindow.IsVisible);

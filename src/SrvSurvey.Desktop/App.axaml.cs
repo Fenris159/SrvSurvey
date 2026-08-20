@@ -367,8 +367,8 @@ public sealed partial class App : Application
                 overlayLayout);
 
         viewModel.SystemSurvey.PropertyChanged +=
-            HandleOverlayPriorityFactsChanged;
-        SynchronizeOverlayPriorityFacts();
+            HandleOverlayPriorityFactssChanged;
+        SynchronizeOverlayPriorityFactss();
         colonizationCommodityOverlayCoordinator =
             new ColonizationCommodityOverlayCoordinator(
                 viewModel.Colonization.CommodityOverlay,
@@ -676,7 +676,7 @@ public sealed partial class App : Application
         viewModel.OverlayBehavior.PropertyChanged -=
             HandleOverlayBehaviorChanged;
         viewModel.SystemSurvey.PropertyChanged -=
-            HandleOverlayPriorityFactsChanged;
+            HandleOverlayPriorityFactssChanged;
         viewModel.FrontierProfile.AuthorizationCallbackReceived -=
             HandleFrontierAuthorizationCallback;
         Dispatcher.UIThread.UnhandledException -= HandleUiException;
@@ -1015,7 +1015,7 @@ public sealed partial class App : Application
         eventArgs.SetObserved();
     }
 
-    private void SynchronizeOverlayPriorityFacts()
+    private void SynchronizeOverlayPriorityFactss()
     {
         var viewModel = mainViewModel;
         if (viewModel is null)
@@ -1023,28 +1023,28 @@ public sealed partial class App : Application
             return;
         }
 
-        var facts = OverlayPriorityFact.None;
+        var facts = OverlayPriorityFacts.None;
         if (viewModel.SystemSurvey.IsFssInfoForced)
         {
-            facts |= OverlayPriorityFact.FssInfoForced;
+            facts |= OverlayPriorityFacts.FssInfoForced;
         }
 
         if (viewModel.SystemSurvey.IsBodyInfoForced)
         {
-            facts |= OverlayPriorityFact.BodyInfoForced;
+            facts |= OverlayPriorityFacts.BodyInfoForced;
         }
 
         OverlayWindowRegistry.Shared.SetPriorityFacts(facts);
     }
 
-    private void HandleOverlayPriorityFactsChanged(
+    private void HandleOverlayPriorityFactssChanged(
         object? sender,
         System.ComponentModel.PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.IsFssInfoForced)
             or nameof(SystemSurveyViewModel.IsBodyInfoForced))
         {
-            SynchronizeOverlayPriorityFacts();
+            SynchronizeOverlayPriorityFactss();
         }
     }
 
