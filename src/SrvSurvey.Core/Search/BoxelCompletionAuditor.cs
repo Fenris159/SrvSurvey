@@ -4,11 +4,11 @@ namespace SrvSurvey.Core.Search;
 
 public sealed class BoxelCompletionAuditor
 {
-    private readonly LegacySystemDataReader localSystemReader;
+    private readonly IBoxelLocalSystemReader localSystemReader;
     private readonly IBoxelSystemResolver systemResolver;
 
     public BoxelCompletionAuditor(
-        LegacySystemDataReader localSystemReader,
+        IBoxelLocalSystemReader localSystemReader,
         IBoxelSystemResolver systemResolver)
     {
         this.localSystemReader = localSystemReader

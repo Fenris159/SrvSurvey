@@ -6,7 +6,7 @@ namespace SrvSurvey.Core.Search;
     "Design",
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "The store is application-scoped and its semaphore may still have in-flight waiters.")]
-public sealed class EmptyBoxelStore
+public sealed class EmptyBoxelStore : IBoxelEmptyStore
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
