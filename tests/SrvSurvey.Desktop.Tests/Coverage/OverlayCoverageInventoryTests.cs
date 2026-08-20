@@ -322,6 +322,11 @@ public sealed partial class OverlayCoverageInventoryTests
     public void EveryRuntimeOverlayUsesTheSharedLegacyPresentationPipeline()
     {
         var root = FindRepositoryRoot();
+        var hostedWindowSource = File.ReadAllText(Path.Combine(
+            root,
+            Native(
+                "src/SrvSurvey.Desktop/Platform/Overlay/HostedOverlayWindow.cs")));
+        Assert.Contains("OverlayThemeResources.Apply(", hostedWindowSource);
         var coordinatorFiles = Directory.GetFiles(
                 Path.Combine(
                     root,
@@ -340,8 +345,11 @@ public sealed partial class OverlayCoverageInventoryTests
                     $"\"{definition.Name}\"",
                     StringComparison.Ordinal));
             Assert.Contains(owners, owner => owner.Source.Contains(
-                "OverlayThemeResources.Apply(",
-                StringComparison.Ordinal));
+                    "OverlayThemeResources.Apply(",
+                    StringComparison.Ordinal)
+                || owner.Source.Contains(
+                    "PassiveOverlayWindowDefinition(",
+                    StringComparison.Ordinal));
         }
     }
 

@@ -124,7 +124,18 @@ public sealed partial class App : Application
             new GlobalInputSettingsStore(appDataPaths.UiSettingsPath),
             capabilities);
         var inputSettings = globalInputSettings;
-        var overlayPresentation = OverlayPresentationSession.CreateCurrent();
+        var overlayPresentation = OverlayPresentationSession.CreateCurrent(
+            gameWindowTracker: null,
+            registry: null,
+            overlayLayout,
+            () => mainViewModel is { } current
+                && (current.OverlayBehavior.KeepWhenGameLosesFocus
+                    || current.OverlayInteraction.IsEditing
+                    || current.OverlayInteraction.IsLiveInteractionEnabled),
+            diagnostic => applicationLog.Append(
+                $"Overlay host '{diagnostic.PlotterName}' "
+                + $"{diagnostic.Phase} -> {diagnostic.Health}: "
+                + diagnostic.Status));
         overlayPresentationSession = overlayPresentation;
         applicationLog.Append(
             $"Overlay presentation: {overlayPresentation.Decision.Mode}. "
@@ -290,9 +301,7 @@ public sealed partial class App : Application
                 overlayLayout);
         groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
             viewModel.GroundTarget,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout);
+            overlayPresentation);
         combatOverlayCoordinator = new CombatOverlayCoordinator(
             viewModel.Combat,
             overlayPresentation.CreatePlatformService(),
@@ -300,9 +309,7 @@ public sealed partial class App : Application
             overlayLayout);
         stationInfoOverlayCoordinator = new StationInfoOverlayCoordinator(
             viewModel.StationInfo,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout);
+            overlayPresentation);
         humanSiteOverlayCoordinator = new HumanSiteOverlayCoordinator(
             viewModel.HumanSite,
             overlayPresentation.CreatePlatformService(),
