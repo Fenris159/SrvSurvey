@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using System.Runtime.ExceptionServices;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -132,13 +133,38 @@ public sealed class OverlayPresentationSession : IDisposable
         }
 
         disposed = true;
-        foreach (var hosted in hostedWindows.ToArray())
+        Exception? disposalFailure = null;
+        try
         {
-            hosted.Dispose();
+            foreach (var hosted in hostedWindows.ToArray())
+            {
+                try
+                {
+                    hosted.Dispose();
+                }
+                catch (Exception exception)
+                {
+                    disposalFailure ??= exception;
+                }
+            }
+        }
+        finally
+        {
+            hostedWindows.Clear();
+            try
+            {
+                combinedController?.Dispose();
+            }
+            catch (Exception exception)
+            {
+                disposalFailure ??= exception;
+            }
         }
 
-        hostedWindows.Clear();
-        combinedController?.Dispose();
+        if (disposalFailure is not null)
+        {
+            ExceptionDispatchInfo.Capture(disposalFailure).Throw();
+        }
     }
 
     private static OverlayPresentationSessionDependencies CreateHostDependencies(

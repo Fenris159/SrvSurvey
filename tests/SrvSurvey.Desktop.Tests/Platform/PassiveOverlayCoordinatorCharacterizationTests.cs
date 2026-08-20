@@ -82,7 +82,18 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
     {
         if (Directory.Exists(temporaryDirectory))
         {
-            Directory.Delete(temporaryDirectory, recursive: true);
+            try
+            {
+                Directory.Delete(temporaryDirectory, recursive: true);
+            }
+            catch (IOException)
+            {
+                // Cleanup must not mask the characterization assertion result.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Cleanup must not mask the characterization assertion result.
+            }
         }
     }
 

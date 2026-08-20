@@ -10,6 +10,37 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class HostedOverlayWindowTests
 {
     [AvaloniaFact]
+    public void DispatcherTimerSupportsItsHostedLifecycle()
+    {
+        var timer = new DispatcherHostedOverlayTimer(TimeSpan.FromMinutes(1));
+        var ticks = 0;
+        EventHandler handler = (_, _) => ticks++;
+
+        var exception = Record.Exception(() =>
+        {
+            timer.Tick += handler;
+            timer.Start();
+            timer.Stop();
+            timer.Tick -= handler;
+            timer.Dispose();
+        });
+
+        Assert.Null(exception);
+        Assert.Equal(0, ticks);
+    }
+
+    [AvaloniaFact]
+    public void CurrentSessionReportsTheDetectedPresentationDecision()
+    {
+        var expected = OverlayPresentationModeSelector.DetectCurrent(
+            OverlayPlatformCapabilities.DetectCurrent());
+
+        using var session = OverlayPresentationSession.CreateCurrent();
+
+        Assert.Equal(expected, session.Decision);
+    }
+
+    [AvaloniaFact]
     public void EligibleIntentCreatesPositionsAndPreparesOneWindow()
     {
         var platform = new RecordingOverlayPlatform();
@@ -103,6 +134,71 @@ public sealed class HostedOverlayWindowTests
     }
 
     [AvaloniaFact]
+    public void NullWindowFactoryResultIsLatchedAsAHostFault()
+    {
+        var diagnostics = new List<OverlayHostDiagnostic>();
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(
+                OverlayPresentationMode.MultipleWindows,
+                "Test session"),
+            new OverlayPresentationSessionDependencies(
+                () => new RecordingOverlayPlatform(),
+                () => new RecordingGameWindowTracker(AvailableGameWindow),
+                _ => new ManualHostedOverlayTimer(),
+                LegacyOverlayLayout.Empty,
+                diagnostics.Add));
+        using var hosted = session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotTrackTarget",
+                _ => null!,
+                (_, _) => new PixelPoint(25, 30)));
+
+        hosted.Reconcile(wantsWindow: true);
+
+        Assert.Equal(OverlayHostHealth.Faulted, hosted.Health);
+        Assert.False(hosted.IsVisible);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Contains("returned null", diagnostic.Status);
+    }
+
+    [AvaloniaFact]
+    public void UnsupportedCapabilitiesAreReportedOnceAndStopPolling()
+    {
+        var capabilities = OverlayPlatformCapabilities.ForHost(
+            OverlayHostKind.LinuxWayland);
+        var platform = new RecordingOverlayPlatform(capabilities);
+        var timer = new ManualHostedOverlayTimer();
+        var diagnostics = new List<OverlayHostDiagnostic>();
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(
+                OverlayPresentationMode.MultipleWindows,
+                "Test session"),
+            new OverlayPresentationSessionDependencies(
+                () => platform,
+                () => new RecordingGameWindowTracker(AvailableGameWindow),
+                _ => timer,
+                LegacyOverlayLayout.Empty,
+                diagnostics.Add));
+        using var hosted = session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotTrackTarget",
+                _ => new Window { Width = 128, Height = 108 },
+                (_, _) => new PixelPoint(25, 30)));
+
+        hosted.Reconcile(wantsWindow: true);
+        hosted.Reconcile(wantsWindow: true);
+        timer.Pulse();
+
+        Assert.False(hosted.IsVisible);
+        Assert.False(timer.IsStarted);
+        Assert.Equal(OverlayHostHealth.Unsupported, hosted.Health);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal(OverlayHostPhase.Hidden, diagnostic.Phase);
+        Assert.Equal(OverlayHostHealth.Unsupported, diagnostic.Health);
+        Assert.Equal(capabilities.StatusText, diagnostic.Status);
+    }
+
+    [AvaloniaFact]
     public void DiagnosticSinkFailureDoesNotEscapeTheHostedLifecycle()
     {
         using var session = OverlayPresentationSession.CreateForAdapters(
@@ -154,6 +250,87 @@ public sealed class HostedOverlayWindowTests
         Assert.Equal(1, platform.DisposeCalls);
     }
 
+    [Fact]
+    public void NonPositivePollingIntervalIsRejectedBeforeLeaseAcquisition()
+    {
+        var platformFactoryCalls = 0;
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(
+                OverlayPresentationMode.MultipleWindows,
+                "Test session"),
+            new OverlayPresentationSessionDependencies(
+                () =>
+                {
+                    platformFactoryCalls++;
+                    return new RecordingOverlayPlatform();
+                },
+                () => new RecordingGameWindowTracker(AvailableGameWindow),
+                _ => new ManualHostedOverlayTimer(),
+                LegacyOverlayLayout.Empty));
+        var definition = CreateDefinition() with
+        {
+            PollInterval = TimeSpan.Zero,
+        };
+
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(
+            () => session.HostPassiveWindow(definition));
+
+        Assert.Equal("definition", exception.ParamName);
+        Assert.Equal(0, platformFactoryCalls);
+    }
+
+    [Fact]
+    public void TimerFactoryFailureReleasesPlatformAndTrackerLeases()
+    {
+        var platform = new RecordingOverlayPlatform();
+        var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(
+                OverlayPresentationMode.MultipleWindows,
+                "Test session"),
+            new OverlayPresentationSessionDependencies(
+                () => platform,
+                () => tracker,
+                _ => throw new InvalidOperationException("Timer failed"),
+                LegacyOverlayLayout.Empty));
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => session.HostPassiveWindow(CreateDefinition()));
+
+        Assert.Equal("Timer failed", exception.Message);
+        Assert.Equal(1, platform.DisposeCalls);
+        Assert.Equal(1, tracker.DisposeCalls);
+    }
+
+    [Fact]
+    public void TimerStartFailureReleasesEveryAcquiredLease()
+    {
+        var platform = new RecordingOverlayPlatform();
+        var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
+        var timer = new ManualHostedOverlayTimer
+        {
+            StartException = new InvalidOperationException(
+                "Timer start failed"),
+        };
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(
+                OverlayPresentationMode.MultipleWindows,
+                "Test session"),
+            new OverlayPresentationSessionDependencies(
+                () => platform,
+                () => tracker,
+                _ => timer,
+                LegacyOverlayLayout.Empty));
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => session.HostPassiveWindow(CreateDefinition()));
+
+        Assert.Equal("Timer start failed", exception.Message);
+        Assert.Equal(1, platform.DisposeCalls);
+        Assert.Equal(1, tracker.DisposeCalls);
+        Assert.Equal(1, timer.DisposeCalls);
+    }
+
     [AvaloniaFact]
     public async Task BackgroundReconciliationCreatesWindowOnUiThread()
     {
@@ -185,6 +362,34 @@ public sealed class HostedOverlayWindowTests
 
         Assert.True(hosted.IsVisible);
         Assert.Equal(uiThread, factoryThread);
+    }
+
+    [AvaloniaFact]
+    public void ReentrantIntentChangeRunsOneCoalescedFollowUp()
+    {
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(
+                OverlayPresentationMode.MultipleWindows,
+                "Test session"),
+            new OverlayPresentationSessionDependencies(
+                () => new RecordingOverlayPlatform(),
+                () => new RecordingGameWindowTracker(AvailableGameWindow),
+                _ => new ManualHostedOverlayTimer(),
+                LegacyOverlayLayout.Empty));
+        HostedOverlayWindow? hosted = null;
+        var visibilityChanges = 0;
+        hosted = session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotTrackTarget",
+                _ => new Window { Width = 128, Height = 108 },
+                (_, _) => new PixelPoint(25, 30),
+                _ => hosted!.Reconcile(wantsWindow: false)));
+        hosted.VisibilityChanged += (_, _) => visibilityChanges++;
+
+        hosted.Reconcile(wantsWindow: true);
+
+        Assert.False(hosted.IsVisible);
+        Assert.Equal(2, visibilityChanges);
     }
 
     [AvaloniaFact]
@@ -305,6 +510,82 @@ public sealed class HostedOverlayWindowTests
     }
 
     [AvaloniaFact]
+    public void SessionDisposalContinuesAfterAHostedWindowFails()
+    {
+        var platforms = new List<RecordingOverlayPlatform>();
+        var trackers = new List<RecordingGameWindowTracker>();
+        var timers = new List<ManualHostedOverlayTimer>();
+        var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(
+                OverlayPresentationMode.MultipleWindows,
+                "Test session"),
+            new OverlayPresentationSessionDependencies(
+                () =>
+                {
+                    var platform = new RecordingOverlayPlatform
+                    {
+                        DisposeException = new InvalidOperationException(
+                            "Platform disposal failed"),
+                    };
+                    platforms.Add(platform);
+                    return platform;
+                },
+                () =>
+                {
+                    var tracker = new RecordingGameWindowTracker(
+                        AvailableGameWindow);
+                    trackers.Add(tracker);
+                    return tracker;
+                },
+                _ =>
+                {
+                    var timer = new ManualHostedOverlayTimer();
+                    timers.Add(timer);
+                    return timer;
+                },
+                LegacyOverlayLayout.Empty));
+        _ = session.HostPassiveWindow(CreateDefinition());
+        _ = session.HostPassiveWindow(CreateDefinition());
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            session.Dispose);
+
+        Assert.Equal("Platform disposal failed", exception.Message);
+        Assert.Equal(2, platforms.Sum(platform => platform.DisposeCalls));
+        Assert.All(trackers, tracker => Assert.Equal(1, tracker.DisposeCalls));
+        Assert.All(timers, timer => Assert.Equal(1, timer.DisposeCalls));
+    }
+
+    [AvaloniaFact]
+    public async Task OffThreadDisposalFailsBeforeReleasingResources()
+    {
+        var platform = new RecordingOverlayPlatform();
+        var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
+        var timer = new ManualHostedOverlayTimer();
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(
+                OverlayPresentationMode.MultipleWindows,
+                "Test session"),
+            new OverlayPresentationSessionDependencies(
+                () => platform,
+                () => tracker,
+                _ => timer,
+                LegacyOverlayLayout.Empty));
+        var hosted = session.HostPassiveWindow(CreateDefinition());
+
+        var exception = await Record.ExceptionAsync(
+            () => Task.Run(hosted.Dispose));
+
+        Assert.IsType<InvalidOperationException>(exception);
+        Assert.Equal(OverlayHostHealth.Healthy, hosted.Health);
+        Assert.Equal(0, platform.DisposeCalls);
+        Assert.Equal(0, tracker.DisposeCalls);
+        Assert.Equal(0, timer.DisposeCalls);
+
+        hosted.Dispose();
+    }
+
+    [AvaloniaFact]
     public void PollingClosesAndRestoresWindowAsGameEligibilityChanges()
     {
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
@@ -348,10 +629,25 @@ public sealed class HostedOverlayWindowTests
         IsVisible: true,
         IsForeground: true);
 
+    private static PassiveOverlayWindowDefinition CreateDefinition()
+    {
+        return new PassiveOverlayWindowDefinition(
+            "PlotTrackTarget",
+            _ => new Window { Width = 128, Height = 108 },
+            (_, _) => new PixelPoint(25, 30));
+    }
+
     private sealed class RecordingOverlayPlatform : IOverlayPlatformService
     {
-        public OverlayPlatformCapabilities Capabilities { get; } =
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
+        public RecordingOverlayPlatform(
+            OverlayPlatformCapabilities? capabilities = null)
+        {
+            Capabilities = capabilities
+                ?? OverlayPlatformCapabilities.ForHost(
+                    OverlayHostKind.Windows);
+        }
+
+        public OverlayPlatformCapabilities Capabilities { get; }
 
         public List<Window> PreparedWindows { get; } = [];
 
@@ -359,6 +655,8 @@ public sealed class HostedOverlayWindowTests
             new(true, true, "Prepared");
 
         public int DisposeCalls { get; private set; }
+
+        public Exception? DisposeException { get; init; }
 
         public OverlayPreparationResult PreparePassiveWindow(Window window)
         {
@@ -379,6 +677,10 @@ public sealed class HostedOverlayWindowTests
         public void Dispose()
         {
             DisposeCalls++;
+            if (DisposeException is not null)
+            {
+                throw DisposeException;
+            }
         }
     }
 
@@ -409,8 +711,15 @@ public sealed class HostedOverlayWindowTests
 
         public int DisposeCalls { get; private set; }
 
+        public Exception? StartException { get; init; }
+
         public void Start()
         {
+            if (StartException is not null)
+            {
+                throw StartException;
+            }
+
             IsStarted = true;
         }
 

@@ -205,6 +205,7 @@ internal sealed class HostedOverlayWindow : IDisposable
 
     public void Dispose()
     {
+        Dispatcher.UIThread.VerifyAccess();
         if (disposed)
         {
             return;
@@ -318,7 +319,8 @@ internal sealed class HostedOverlayWindow : IDisposable
 
     private void ReconcileCore()
     {
-        if (disposed || Health is OverlayHostHealth.PassivePreparationFailed
+        if (disposed || Health is OverlayHostHealth.Unsupported
+            or OverlayHostHealth.PassivePreparationFailed
             or OverlayHostHealth.Faulted)
         {
             return;
@@ -330,6 +332,12 @@ internal sealed class HostedOverlayWindow : IDisposable
             || !platform.Capabilities.SupportsGameWindowTracking)
         {
             Health = OverlayHostHealth.Unsupported;
+            TryReportDiagnostic(new OverlayHostDiagnostic(
+                definition.PlotterName,
+                OverlayHostPhase.Hidden,
+                Health,
+                platform.Capabilities.StatusText));
+            timer.Stop();
             CloseWindow();
             return;
         }
