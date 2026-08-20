@@ -83,6 +83,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         viewModel.Cancel();
 
         Assert.True(runtimeWindow.IsVisible);
+        Assert.Empty(platform.SuppressionStates);
         runtimeWindow.Close();
     }
 

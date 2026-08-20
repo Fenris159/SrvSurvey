@@ -49,7 +49,6 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     private readonly IOverlayPlatformService platform;
     private readonly OverlayWindowRegistry registry;
     private readonly List<OverlayPositionPreviewWindow> previews = [];
-    private readonly Dictionary<Window, RuntimeWindowState> runtimeWindows = [];
     private readonly Dictionary<string, RuntimeOverlayGeometry>
         runtimePlacementReferences = new(StringComparer.Ordinal);
     private OverlayPositionEditorWindow? editor;
@@ -121,9 +120,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
         CaptureVisibleRuntimePlacements(registry.Snapshot());
 
-        (platform as IOverlayPresentationControl)
-            ?.SetRuntimeOverlaysSuppressed(!keepRuntimeOverlaysVisible);
         registry.Changed += OnRegistryChanged;
+        registry.SetEditorSuppressed(!keepRuntimeOverlaysVisible);
         SynchronizeRuntimeWindows();
         ShowCategory(session, category);
         toolbar.Activate();
@@ -267,25 +265,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             CaptureVisibleRuntimePlacements(registry.Snapshot());
         }
 
-        (platform as IOverlayPresentationControl)
-            ?.SetRuntimeOverlaysSuppressed(!visible);
+        registry.SetEditorSuppressed(!visible);
         SynchronizeRuntimeWindows();
         if (visible)
         {
-            foreach (var entry in runtimeWindows.Where(entry =>
-                         entry.Value.RestoreAfterEditing
-                         && !entry.Key.IsVisible))
-            {
-                try
-                {
-                    entry.Key.Show();
-                }
-                catch (InvalidOperationException)
-                {
-                    // The runtime coordinator closed the window while editing.
-                }
-            }
-
             CaptureVisibleRuntimePlacements(registry.Snapshot());
             if (editSession is not null)
             {
@@ -293,12 +276,6 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             }
 
             return;
-        }
-
-        foreach (var window in runtimeWindows.Keys.Where(window =>
-                     window.IsVisible))
-        {
-            window.Hide();
         }
     }
 
@@ -323,11 +300,9 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             toolbar.Close();
         }
 
-        RestoreRuntimeWindows(restoreRuntimeWindows);
         if (restoreRuntimeWindows)
         {
-            (platform as IOverlayPresentationControl)
-                ?.SetRuntimeOverlaysSuppressed(false);
+            registry.SetEditorSuppressed(suppressed: false);
         }
 
         closing = false;
@@ -454,9 +429,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         editSession = null;
         registry.Changed -= OnRegistryChanged;
         ClosePreviews();
-        RestoreRuntimeWindows(restore: true);
-        (platform as IOverlayPresentationControl)
-            ?.SetRuntimeOverlaysSuppressed(false);
+        registry.SetEditorSuppressed(suppressed: false);
         runtimePlacementReferences.Clear();
         keepRuntimeOverlaysVisible = false;
         Closed?.Invoke(this, EventArgs.Empty);
@@ -537,99 +510,6 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
         var snapshot = registry.Snapshot();
         CaptureVisibleRuntimePlacements(snapshot);
-        var current = snapshot.Select(item => item.Window).ToHashSet();
-        foreach (var stale in runtimeWindows.Keys
-                     .Where(window => !current.Contains(window))
-                     .ToArray())
-        {
-            DetachRuntimeWindow(stale);
-        }
-
-        foreach (var window in snapshot.Select(registered => registered.Window))
-        {
-            if (runtimeWindows.ContainsKey(window))
-            {
-                if (window.IsVisible)
-                {
-                    SuppressRuntimeWindow(window);
-                }
-
-                continue;
-            }
-
-            EventHandler opened = (_, _) => Dispatcher.UIThread.Post(() =>
-                SuppressRuntimeWindow(window));
-            EventHandler closed = (_, _) => DetachRuntimeWindow(window);
-            var state = new RuntimeWindowState(
-                opened,
-                closed,
-                RestoreAfterEditing: window.IsVisible);
-            runtimeWindows.Add(window, state);
-            window.Opened += opened;
-            window.Closed += closed;
-            if (window.IsVisible && !keepRuntimeOverlaysVisible)
-            {
-                window.Hide();
-            }
-        }
-    }
-
-    private void SuppressRuntimeWindow(Window window)
-    {
-        if (keepRuntimeOverlaysVisible
-            || editor is null
-            || !runtimeWindows.TryGetValue(window, out var state)
-            || !window.IsVisible)
-        {
-            return;
-        }
-
-        var registered = registry.Snapshot().FirstOrDefault(candidate =>
-            ReferenceEquals(candidate.Window, window));
-        if (registered is { IsVisible: true })
-        {
-            CaptureRuntimePlacement(registered);
-        }
-
-        state.RestoreAfterEditing = true;
-        window.Hide();
-    }
-
-    private void DetachRuntimeWindow(Window window)
-    {
-        if (!runtimeWindows.Remove(window, out var state))
-        {
-            return;
-        }
-
-        window.Opened -= state.Opened;
-        window.Closed -= state.Closed;
-    }
-
-    private void RestoreRuntimeWindows(bool restore)
-    {
-        var states = runtimeWindows.ToArray();
-        foreach (var entry in states)
-        {
-            DetachRuntimeWindow(entry.Key);
-        }
-
-        if (!restore)
-        {
-            return;
-        }
-
-        foreach (var entry in states.Where(entry => entry.Value.RestoreAfterEditing))
-        {
-            try
-            {
-                entry.Key.Show();
-            }
-            catch (InvalidOperationException)
-            {
-                // The runtime coordinator closed the window while editing.
-            }
-        }
     }
 
     private void PositionPreview(
@@ -737,18 +617,6 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             || current.HorizontalOffset != original.HorizontalOffset
             || current.Vertical != original.Vertical
             || current.VerticalOffset != original.VerticalOffset;
-    }
-
-    private sealed class RuntimeWindowState(
-        EventHandler opened,
-        EventHandler closed,
-        bool RestoreAfterEditing)
-    {
-        public EventHandler Opened { get; } = opened;
-
-        public EventHandler Closed { get; } = closed;
-
-        public bool RestoreAfterEditing { get; set; } = RestoreAfterEditing;
     }
 
     private readonly record struct RuntimeOverlayGeometry(

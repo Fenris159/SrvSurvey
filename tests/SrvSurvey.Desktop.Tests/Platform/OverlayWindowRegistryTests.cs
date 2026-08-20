@@ -186,6 +186,108 @@ public sealed class OverlayWindowRegistryTests
         separateWindow.Close();
     }
 
+    [AvaloniaFact]
+    public void EditorSuppressionPreservesRequestedIntentAndHostEligibility()
+    {
+        var registry = new OverlayWindowRegistry();
+        var presentationWindow = new Window();
+        var separateWindow = new Window();
+        registry.Register(presentationWindow, "PlotBioSystem");
+        registry.Register(separateWindow, "PlotRouteBio");
+        registry.SetPresentationVisual(presentationWindow, new Border());
+        separateWindow.Show();
+
+        registry.SetEditorSuppressed(suppressed: true);
+
+        Assert.All(
+            new[] { presentationWindow, separateWindow },
+            window =>
+            {
+                var decision = registry.GetDecision(window);
+                Assert.True(decision.ShouldHost);
+                Assert.False(decision.ShouldPresent);
+                Assert.Equal(
+                    OverlayVisibilityReason.EditorSuppressed,
+                    decision.Reasons);
+            });
+        Assert.All(registry.Snapshot(), entry => Assert.False(entry.IsVisible));
+
+        registry.SetEditorSuppressed(suppressed: false);
+
+        Assert.All(registry.Snapshot(), entry => Assert.True(entry.IsVisible));
+        presentationWindow.Close();
+        separateWindow.Close();
+    }
+
+    [AvaloniaFact]
+    public void GlobalSuppressionRecordsDistinctLifecycleReasons()
+    {
+        var registry = new OverlayWindowRegistry();
+        var window = new Window();
+        registry.Register(window, "PlotJumpInfo");
+        window.Show();
+
+        registry.SetGlobalSuppression(
+            manualSuppressed: true,
+            suitSuppressed: true,
+            sessionSuppressed: true);
+
+        var decision = registry.GetDecision(window);
+        Assert.False(decision.Permitted);
+        Assert.False(decision.ShouldHost);
+        Assert.False(decision.ShouldPresent);
+        Assert.Equal(
+            OverlayVisibilityReason.ManualSuppressed
+            | OverlayVisibilityReason.SuitSuppressed
+            | OverlayVisibilityReason.SessionSuppressed,
+            decision.Reasons);
+        Assert.False(window.IsVisible);
+
+        registry.SetGlobalSuppression(
+            manualSuppressed: false,
+            suitSuppressed: false,
+            sessionSuppressed: false);
+
+        Assert.True(window.IsVisible);
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public void RestoringPolicyDoesNotShowAWindowThatWasNeverRequested()
+    {
+        var registry = new OverlayWindowRegistry();
+        var window = new Window();
+        registry.Register(window, "PlotJumpInfo");
+
+        registry.SetEditorSuppressed(suppressed: true);
+        registry.SetEditorSuppressed(suppressed: false);
+
+        Assert.False(window.IsVisible);
+        Assert.Equal(
+            OverlayVisibilityReason.DomainNotRequested,
+            registry.GetDecision(window).Reasons);
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public void PresentationRequestRemainsOffAcrossEditorSuppression()
+    {
+        var registry = new OverlayWindowRegistry();
+        var window = new Window();
+        registry.Register(window, "PlotJumpInfo");
+        registry.SetPresentationVisual(window, new Border());
+        registry.SetPresentationVisible(window, visible: false);
+
+        registry.SetEditorSuppressed(suppressed: true);
+        registry.SetEditorSuppressed(suppressed: false);
+
+        Assert.False(Assert.Single(registry.Snapshot()).IsVisible);
+        Assert.Equal(
+            OverlayVisibilityReason.DomainNotRequested,
+            registry.GetDecision(window).Reasons);
+        window.Close();
+    }
+
     [Fact]
     public void UserVisibilityParticipatesInPresentationResolution()
     {

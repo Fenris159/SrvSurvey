@@ -163,7 +163,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         }
 
         entry.Presenter.IsHitTestVisible = interactive
-            && registry.ShouldPresent(entry.PlotterName);
+            && registry.ShouldPresent(window);
         var result = ApplyHostInputRegion();
         return new OverlayInteractionResult(
             result.IsPrepared,
@@ -368,7 +368,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             size,
             host.RenderScaling);
         entry.Projection = projection;
-        var shouldPresent = registry.ShouldPresent(entry.PlotterName);
+        var shouldPresent = registry.ShouldPresent(window);
         presenter.IsVisible = projection is not null && shouldPresent;
         presenter.IsHitTestVisible = shouldPresent
             && interactiveWindows.Contains(window);
@@ -394,7 +394,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
 
         var regions = interactiveWindows
             .Select(source => entries.TryGetValue(source, out var entry)
-                && registry.ShouldPresent(entry.PlotterName)
+                && registry.ShouldPresent(source)
                     ? entry.Projection?.InputRegion
                 : null)
             .Where(region => region is not null)
