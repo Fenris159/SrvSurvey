@@ -19,7 +19,7 @@ public sealed class SphericalSearchOverlayViewModelTests : IDisposable
         var sphere = new SphereLimitViewModel(
             new CommanderProfileStore(temporaryDirectory),
             new EmptyStarResolver());
-        var boxel = new BoxelSearchViewModel(
+        var boxel = BoxelSearchViewModelTestFactory.Create(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -64,7 +64,7 @@ public sealed class SphericalSearchOverlayViewModelTests : IDisposable
         var sphere = new SphereLimitViewModel(
             new CommanderProfileStore(temporaryDirectory),
             new EmptyStarResolver());
-        var boxel = new BoxelSearchViewModel(
+        var boxel = BoxelSearchViewModelTestFactory.Create(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),

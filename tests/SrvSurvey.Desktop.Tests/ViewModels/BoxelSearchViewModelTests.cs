@@ -54,7 +54,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         var originalStart = DateTimeOffset.Parse("2026-05-04T00:00:00-05:00");
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var savedStore = new SavedBoxelSearchStore(temporaryDirectory);
-        var first = new BoxelSearchViewModel(
+        var first = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -69,7 +69,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             SaveBoxelProgressResult.Saved,
             await first.SaveProgressAsync("Original configuration", null));
         var saved = Assert.Single(await savedStore.ListAsync("F123"));
-        var resumed = new BoxelSearchViewModel(
+        var resumed = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -96,6 +96,8 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
         viewModel.LowMassCode = "c";
         await viewModel.ActivateAsync();
+        Assert.True(viewModel.CanSaveProgress);
+        Assert.Equal("Save to Library", viewModel.LibrarySaveButtonText);
         var changedProperties = new List<string?>();
         viewModel.PropertyChanged += (_, eventArgs) =>
             changedProperties.Add(eventArgs.PropertyName);
@@ -203,7 +205,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal('c', saved.Data?.BoxelSearch.LowMassCode);
         Assert.True(saved.Data?.BoxelSearch.SkipAlreadyVisited);
 
-        viewModel.UpdateCurrentSystem(
+        await viewModel.UpdateCurrentSystemAsync(
             "Praea Euq IL-P c5-0",
             new GalacticCoordinate(1, 2, 3),
             100);
@@ -213,7 +215,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         viewModel.PropertyChanged += (_, eventArgs) =>
             notifications.Add(eventArgs.PropertyName);
 
-        viewModel.UpdateCurrentSystem(
+        await viewModel.UpdateCurrentSystemAsync(
             "Praea Euq IL-P c5-0",
             new GalacticCoordinate(1, 2, 3),
             100);
@@ -221,7 +223,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Same(rows, viewModel.Systems);
         Assert.Empty(notifications);
 
-        viewModel.UpdateCurrentSystem(
+        await viewModel.UpdateCurrentSystemAsync(
             "Praea Euq IL-P c5-1",
             new GalacticCoordinate(1, 2, 3),
             101);
@@ -465,7 +467,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -520,7 +522,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -702,7 +704,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             "known_systems = {\n  \"sol\": 10477373803,\n}\n"
                 + "known_missing = [\n]\n");
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -736,7 +738,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             new SystemNameSuggestion("Sol", 10477373803, "EDSM"),
             new SystemNameSuggestion("Solati", 1458376315610, "EDSM"),
         ]);
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -778,7 +780,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var copied = new List<string>();
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -801,7 +803,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         viewModel.LowMassCode = "c";
         viewModel.AutoCopy = true;
         await viewModel.ActivateAsync();
-        viewModel.UpdateCurrentSystem(
+        await viewModel.UpdateCurrentSystemAsync(
             "Praea Euq IL-P c5-1",
             new GalacticCoordinate(1, 2, 3));
         await viewModel.ApplyJournalEventsAsync(
@@ -827,7 +829,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var copied = new List<string>();
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -850,7 +852,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         viewModel.LowMassCode = "c";
         viewModel.AutoCopy = true;
         await viewModel.ActivateAsync();
-        viewModel.UpdateCurrentSystem(
+        await viewModel.UpdateCurrentSystemAsync(
             "Praea Euq IL-P c5-0",
             new GalacticCoordinate(1, 2, 3));
 
@@ -951,7 +953,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -1070,7 +1072,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal(rootChildren[3].Label, viewModel.CurrentHierarchyBoxel?.Label);
         Assert.Equal("4 of 8 at this level", viewModel.SiblingPosition);
 
-        viewModel.SetProfileError("Profile unavailable.");
+        await viewModel.SetProfileErrorAsync("Profile unavailable.");
         await viewModel.LoadProfileAsync(
             "F123",
             "Drew",
@@ -1187,7 +1189,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var savedStore = new SavedBoxelSearchStore(temporaryDirectory);
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -1212,6 +1214,9 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal(
             SaveBoxelProgressResult.Saved,
             await viewModel.SaveProgressAsync("Return later", "Test notes"));
+        Assert.False(viewModel.CanSaveProgress);
+        Assert.True(viewModel.IsSavedToLibrary);
+        Assert.Equal("Saved to Library", viewModel.LibrarySaveButtonText);
         var entry = Assert.Single(await savedStore.ListAsync("F123"));
 
         await viewModel.ApplyJournalEventsAsync(
@@ -1233,6 +1238,9 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal(
             SaveBoxelProgressResult.RequiresDetails,
             await viewModel.SaveProgressAsync());
+        Assert.True(viewModel.CanSaveProgress);
+        Assert.False(viewModel.IsSavedToLibrary);
+        Assert.Equal("Save to Library", viewModel.LibrarySaveButtonText);
         var active = await profileStore.LoadAsync("F123", true);
         Assert.Null(active.Data?.BoxelSearch.SavedSearchFileName);
     }
@@ -1288,7 +1296,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         ISystemNameSuggestionClient? suggestionClient = null,
         BoxelSurveyStatsCoordinator? surveyStats = null)
     {
-        return new BoxelSearchViewModel(
+        return BoxelSearchViewModelTestFactory.Create(
             store,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),

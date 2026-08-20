@@ -20,7 +20,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
         using var coordinator = new RouteAutoCopyCoordinator(
             standard,
             carrier,
-            boxel);
+            boxel.Session);
 
         Assert.True(standard.ShouldAutoCopyNextHop);
         Assert.True(carrier.ShouldAutoCopyNextHop);
@@ -55,7 +55,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
         using var coordinator = new RouteAutoCopyCoordinator(
             standard,
             carrier,
-            CreateInactiveBoxel());
+            CreateInactiveBoxel().Session);
 
         await coordinator.ClaimAsync(carrier);
 
@@ -73,7 +73,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
         var coordinator = new RouteAutoCopyCoordinator(
             standard,
             carrier,
-            CreateInactiveBoxel());
+            CreateInactiveBoxel().Session);
         coordinator.Dispose();
 
         await coordinator.ClaimAfterPropertyChangeAsync(standard);
@@ -91,7 +91,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
         using var coordinator = new RouteAutoCopyCoordinator(
             standard,
             carrier,
-            boxel);
+            boxel.Session);
 
         await coordinator.ReconcileAsync();
 
@@ -123,12 +123,12 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
         using var coordinator = new RouteAutoCopyCoordinator(
             standard,
             carrier,
-            boxel);
+            boxel.Session);
         await coordinator.ClaimAsync(standard);
 
         boxel.AutoCopy = true;
         await WaitUntilAsync(() => !standard.AutoCopy && !carrier.AutoCopy);
-        await coordinator.ClaimAsync(boxel);
+        await coordinator.ClaimAsync(boxel.Session);
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         await WaitUntilAsync(async () =>
             (await profileStore.LoadAsync("F123", true))
@@ -152,7 +152,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
         using var coordinator = new RouteAutoCopyCoordinator(
             standard,
             carrier,
-            CreateInactiveBoxel());
+            CreateInactiveBoxel().Session);
 
         Assert.True(standard.AutoCopy);
         Assert.True(carrier.AutoCopy);
@@ -209,7 +209,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
 
     private BoxelSearchViewModel CreateInactiveBoxel()
     {
-        return new BoxelSearchViewModel(
+        return BoxelSearchViewModelTestFactory.Create(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),

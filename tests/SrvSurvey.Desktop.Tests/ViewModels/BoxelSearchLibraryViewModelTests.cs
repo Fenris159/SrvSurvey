@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
@@ -30,14 +31,14 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
         };
         await store.CreateAsync("F123", "First", null, snapshot);
         await store.CreateAsync("F123", "Second", null, snapshot);
-        var boxel = new BoxelSearchViewModel(
+        var boxel = BoxelSearchViewModelTestFactory.Create(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
             new EmptyResolver(),
             savedSearchStore: store);
         await boxel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
-        var library = new BoxelSearchLibraryViewModel(boxel);
+        var library = new BoxelSearchLibraryViewModel(boxel.Session, boxel.SurveyStats);
         await library.RefreshAsync();
 
         library.Searches[0].IsSelected = true;
@@ -256,6 +257,53 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task ExternalLibraryChangesPreserveSelectionAndOpenDrafts()
+    {
+        var (_, boxel, library) = await CreateLibraryAsync(
+            ("Alpha", null, 0, 1),
+            ("Zulu", null, 0, 1));
+        var selected = library.Searches.Single(search => search.Name == "Alpha");
+        var changed = library.Searches.Single(search => search.Name == "Zulu");
+        selected.IsSelected = true;
+        selected.RenameCommand.Execute(null);
+        library.RenameDraft = "Draft name";
+
+        await boxel.Session.ExecuteAsync(
+            new SetSavedBoxelSearchFavorite(changed.FileName, true));
+
+        Assert.True(library.IsRenameVisible);
+        Assert.Equal("Draft name", library.RenameDraft);
+        Assert.Equal(selected.FileName, library.SelectedSearch?.FileName);
+
+        var refreshCompleted = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
+        {
+            if (eventArgs.PropertyName == nameof(library.IsBusy)
+                && !library.IsBusy)
+            {
+                refreshCompleted.TrySetResult();
+            }
+        }
+
+        library.PropertyChanged += OnPropertyChanged;
+        try
+        {
+            library.CancelDialogCommand.Execute(null);
+            await refreshCompleted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        }
+        finally
+        {
+            library.PropertyChanged -= OnPropertyChanged;
+        }
+
+        Assert.Equal(selected.FileName, library.SelectedSearch?.FileName);
+        Assert.True(library.Searches
+            .Single(search => search.FileName == changed.FileName)
+            .IsFavorite);
+    }
+
+    [Fact]
     public async Task MissingSavedFilesReportEachLibraryOperationWithoutCrashing()
     {
         var (_, _, library) = await CreateLibraryAsync(
@@ -350,7 +398,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
         ]);
         await coordinator.FlushAsync();
 
-        var boxel = new BoxelSearchViewModel(
+        var boxel = BoxelSearchViewModelTestFactory.Create(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -358,7 +406,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
             savedSearchStore: store,
             surveyStats: coordinator);
         await boxel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
-        var library = new BoxelSearchLibraryViewModel(boxel);
+        var library = new BoxelSearchLibraryViewModel(boxel.Session, boxel.SurveyStats);
         BoxelSurveyStatsFocusRequest? requested = null;
         library.StatisticsRequested += (_, request) => requested = request;
         await library.RefreshAsync();
@@ -401,7 +449,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
             await store.CreateAsync("F123", search.Name, search.Notes, snapshot);
         }
 
-        var boxel = new BoxelSearchViewModel(
+        var boxel = BoxelSearchViewModelTestFactory.Create(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -412,7 +460,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
             "Drew",
             true,
             BoxelSearchSnapshot.Empty);
-        var library = new BoxelSearchLibraryViewModel(boxel);
+        var library = new BoxelSearchLibraryViewModel(boxel.Session, boxel.SurveyStats);
         await library.RefreshAsync();
         return (store, boxel, library);
     }
@@ -430,6 +478,17 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
         }
 
         Assert.True(completed());
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        var timeout = DateTimeOffset.UtcNow.AddSeconds(2);
+        while (!condition() && DateTimeOffset.UtcNow < timeout)
+        {
+            await Task.Delay(10);
+        }
+
+        Assert.True(condition());
     }
 
     public void Dispose()

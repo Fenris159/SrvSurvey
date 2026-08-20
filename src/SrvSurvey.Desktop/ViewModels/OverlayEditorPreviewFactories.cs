@@ -491,11 +491,7 @@ internal static class OverlayEditorPreviewFactories
             new EmptySpanshRouteClient());
         var vm = new SphericalSearchOverlayViewModel(
             new SphereLimitViewModel(profileStore, resolver),
-            new BoxelSearchViewModel(
-                profileStore,
-                new LegacySystemDataReader(temporaryDirectory),
-                new EmptyBoxelStore(temporaryDirectory),
-                new EmptyBoxelResolver()),
+            new BoxelSearchViewModel(PreviewBoxelSearchSession.Instance),
             route,
             Caps());
         vm.InstallEditorPreview(
@@ -616,11 +612,47 @@ internal static class OverlayEditorPreviewFactories
             Task.CompletedTask;
     }
 
-    private sealed class EmptyBoxelResolver : IBoxelSystemResolver
+    private sealed class PreviewBoxelSearchSession : IBoxelSearchSession
     {
-        public Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
-            BoxelAddress boxel,
+        public static PreviewBoxelSearchSession Instance { get; } = new();
+
+        public BoxelSearchSessionSnapshot Current =>
+            BoxelSearchSessionSnapshot.Empty;
+
+        public event EventHandler<BoxelSearchSessionChangedEventArgs>? Changed
+        {
+            add { }
+            remove { }
+        }
+
+        public Task<BoxelSearchOutcome> SwitchProfileAsync(
+            BoxelSearchProfile profile,
             CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<BoxelSystemObservation>>([]);
+            Task.FromException<BoxelSearchOutcome>(
+                new NotSupportedException("Editor previews do not load profiles."));
+
+        public Task<BoxelSearchOutcome> ClearProfileAsync(
+            BoxelSearchMessageCode reason = BoxelSearchMessageCode.ProfileUnavailable,
+            CancellationToken cancellationToken = default) =>
+            Task.FromException<BoxelSearchOutcome>(
+                new NotSupportedException("Editor previews do not load profiles."));
+
+        public Task<BoxelSearchOutcome> ApplyAsync(
+            BoxelSearchUpdate update,
+            CancellationToken cancellationToken = default) =>
+            Task.FromException<BoxelSearchOutcome>(
+                new NotSupportedException("Editor previews are read-only."));
+
+        public Task<BoxelSearchOutcome> ExecuteAsync(
+            BoxelSearchAction action,
+            CancellationToken cancellationToken = default) =>
+            Task.FromException<BoxelSearchOutcome>(
+                new NotSupportedException("Editor previews are read-only."));
+
+        public Task<BoxelSearchLibrarySnapshot> GetLibraryAsync(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new BoxelSearchLibrarySnapshot(0, []));
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 }

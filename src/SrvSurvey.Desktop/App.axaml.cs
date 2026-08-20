@@ -1232,7 +1232,7 @@ public sealed partial class App : Application
             return false;
         }
 
-        viewModel.BoxelSearch.SetClipboardWriter(WriteClipboardAsync);
+        viewModel.BoxelClipboard.SetWriter(WriteClipboardAsync);
         await viewModel.BoxelSearch.CopyNextSystemAsync();
         return true;
     }

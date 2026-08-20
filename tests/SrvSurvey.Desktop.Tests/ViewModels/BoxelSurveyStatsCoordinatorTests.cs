@@ -102,7 +102,7 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IDisposable
     {
         using var coordinator = new BoxelSurveyStatsCoordinator(
             new BoxelSurveyStatsStore(temporaryDirectory));
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),

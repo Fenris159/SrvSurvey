@@ -43,7 +43,7 @@ public sealed partial class BoxelView : UserControl
     {
         if (DataContext is MainWindowViewModel viewModel)
         {
-            viewModel.BoxelSearch.SetClipboardWriter(WriteClipboardAsync);
+            viewModel.BoxelClipboard.SetWriter(WriteClipboardAsync);
         }
     }
 
@@ -51,7 +51,7 @@ public sealed partial class BoxelView : UserControl
     {
         if (DataContext is MainWindowViewModel viewModel)
         {
-            viewModel.BoxelSearch.SetClipboardWriter(null);
+            viewModel.BoxelClipboard.SetWriter(null);
         }
     }
 
@@ -205,7 +205,9 @@ public sealed partial class BoxelView : UserControl
             return;
         }
 
-        var library = new BoxelSearchLibraryViewModel(viewModel.BoxelSearch);
+        var library = new BoxelSearchLibraryViewModel(
+            viewModel.BoxelSearchSession,
+            viewModel.BoxelSurveyStats);
         library.StatisticsRequested += async (_, request) =>
         {
             try
@@ -225,7 +227,10 @@ public sealed partial class BoxelView : UserControl
             DataContext = library
         };
         boxelSearchLibraryWindow.Closed += (_, _) =>
+        {
+            library.Dispose();
             boxelSearchLibraryWindow = null;
+        };
         boxelSearchLibraryWindow.Show(owner);
     }
 

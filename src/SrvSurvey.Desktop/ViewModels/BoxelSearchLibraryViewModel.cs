@@ -6,9 +6,11 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
+public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDisposable
 {
-    private readonly BoxelSearchViewModel boxelSearch;
+    private readonly IBoxelSearchSession session;
+    private readonly BoxelSurveyStatsCoordinator? surveyStats;
+    private readonly SynchronizationContext? synchronizationContext;
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand openSelectedCommand;
     private readonly AsyncCommand confirmDeleteCommand;
@@ -32,11 +34,20 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
     private BoxelSearchLibrarySortColumn sortColumn =
         BoxelSearchLibrarySortColumn.Name;
     private bool sortAscending = true;
+    private long observedLibraryRevision;
+    private bool refreshPending;
+    private bool disposed;
+    private Task pendingRefresh = Task.CompletedTask;
 
-    public BoxelSearchLibraryViewModel(BoxelSearchViewModel boxelSearch)
+    public BoxelSearchLibraryViewModel(
+        IBoxelSearchSession session,
+        BoxelSurveyStatsCoordinator? surveyStats = null)
     {
-        this.boxelSearch = boxelSearch
-            ?? throw new ArgumentNullException(nameof(boxelSearch));
+        this.session = session ?? throw new ArgumentNullException(nameof(session));
+        this.surveyStats = surveyStats;
+        synchronizationContext = SynchronizationContext.Current;
+        observedLibraryRevision = session.Current.LibraryRevision;
+        session.Changed += OnSessionChanged;
         refreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
         openSelectedCommand = new AsyncCommand(
             OpenSelectedAsync,
@@ -212,8 +223,11 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var entries = await boxelSearch.ListSavedSearchesAsync();
-            var knownPrefixes = boxelSearch.SurveyStats?.Index
+            var library = await session.GetLibraryAsync();
+            observedLibraryRevision = library.Revision;
+            var entries = library.Entries;
+            var selectedFileName = SelectedSearch?.FileName;
+            var knownPrefixes = surveyStats?.Index
                 .Select(entry => entry.Prefix)
                 .ToHashSet(StringComparer.Ordinal)
                 ?? [];
@@ -229,6 +243,10 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
                     OpenStatistics);
                 item.SetCanOpenStatistics(
                     entry.Prefixes.Any(knownPrefixes.Contains));
+                item.SetSelected(string.Equals(
+                    entry.FileName,
+                    selectedFileName,
+                    StringComparison.Ordinal));
                 Searches.Add(item);
             }
 
@@ -257,7 +275,9 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            await boxelSearch.ResumeSavedSearchAsync(selected.FileName);
+            ThrowForRejectedOutcome(await session.ExecuteAsync(
+                new ResumeSavedBoxelSearch(selected.FileName)));
+            AcceptLocalLibraryRevision();
             StatusMessage = $"Opened {selected.Name}.";
             SearchOpened?.Invoke(this, EventArgs.Empty);
         }
@@ -277,9 +297,11 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var saved = await boxelSearch.SetSavedSearchFavoriteAsync(
-                search.FileName,
-                !search.IsFavorite);
+            var saved = RequireSavedSearch(await session.ExecuteAsync(
+                new SetSavedBoxelSearchFavorite(
+                    search.FileName,
+                    !search.IsFavorite)));
+            AcceptLocalLibraryRevision();
             search.SetFavorite(saved.IsFavorite);
             search.SetUpdatedAt(saved.UpdatedAt);
             Reorder();
@@ -334,9 +356,9 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var saved = await boxelSearch.RenameSavedSearchAsync(
-                search.FileName,
-                RenameDraft);
+            var saved = RequireSavedSearch(await session.ExecuteAsync(
+                new RenameSavedBoxelSearch(search.FileName, RenameDraft)));
+            AcceptLocalLibraryRevision();
             search.SetName(saved.Name);
             search.SetUpdatedAt(saved.UpdatedAt);
             CloseDialogs();
@@ -364,9 +386,9 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var saved = await boxelSearch.SaveSavedSearchNotesAsync(
-                search.FileName,
-                NotesDraft);
+            var saved = RequireSavedSearch(await session.ExecuteAsync(
+                new UpdateSavedBoxelSearchNotes(search.FileName, NotesDraft)));
+            AcceptLocalLibraryRevision();
             search.SetNotes(saved.Notes);
             search.SetUpdatedAt(saved.UpdatedAt);
             CloseDialogs();
@@ -400,7 +422,9 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            await boxelSearch.DeleteSavedSearchAsync(selected.FileName);
+            ThrowForRejectedOutcome(await session.ExecuteAsync(
+                new DeleteSavedBoxelSearch(selected.FileName)));
+            AcceptLocalLibraryRevision();
             Searches.Remove(selected);
             StatusMessage = $"Moved {selected.Name} to recovery storage.";
             RaiseState();
@@ -533,6 +557,116 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged
         EditingSearch = null;
         RenameDraft = string.Empty;
         NotesDraft = string.Empty;
+        if (refreshPending)
+        {
+            refreshPending = false;
+            QueueRefresh();
+        }
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        session.Changed -= OnSessionChanged;
+    }
+
+    private void OnSessionChanged(
+        object? sender,
+        BoxelSearchSessionChangedEventArgs eventArgs)
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        if (synchronizationContext is null)
+        {
+            HandleLibraryRevision(eventArgs.Current.LibraryRevision);
+            return;
+        }
+
+        synchronizationContext.Post(
+            _ => HandleLibraryRevision(session.Current.LibraryRevision),
+            null);
+    }
+
+    private void HandleLibraryRevision(long revision)
+    {
+        if (disposed || revision == observedLibraryRevision)
+        {
+            return;
+        }
+
+        observedLibraryRevision = revision;
+        if (IsBusy || IsDialogVisible)
+        {
+            refreshPending = true;
+            return;
+        }
+
+        QueueRefresh();
+    }
+
+    private void QueueRefresh()
+    {
+        if (!pendingRefresh.IsCompleted)
+        {
+            refreshPending = true;
+            return;
+        }
+
+        pendingRefresh = RefreshAfterSessionChangeAsync();
+    }
+
+    private void AcceptLocalLibraryRevision()
+    {
+        observedLibraryRevision = session.Current.LibraryRevision;
+        refreshPending = false;
+    }
+
+    private async Task RefreshAfterSessionChangeAsync()
+    {
+        try
+        {
+            do
+            {
+                refreshPending = false;
+                await RefreshAsync();
+            }
+            while (refreshPending && !disposed && !IsDialogVisible);
+        }
+        catch (ObjectDisposedException) when (disposed)
+        {
+            // A library refresh may race the window closing.
+        }
+        catch (Exception exception)
+        {
+            StatusMessage = "The saved boxel searches could not be refreshed: "
+                + exception.Message;
+        }
+    }
+
+    private static SavedBoxelSearchDocument RequireSavedSearch(
+        BoxelSearchOutcome outcome)
+    {
+        ThrowForRejectedOutcome(outcome);
+        return outcome.SavedSearch
+            ?? throw new InvalidOperationException(
+                "The library action did not return a saved search.");
+    }
+
+    private static void ThrowForRejectedOutcome(BoxelSearchOutcome outcome)
+    {
+        if (outcome.Kind == BoxelSearchOutcomeKind.Rejected)
+        {
+            throw new InvalidOperationException(
+                "The saved boxel search action could not be completed.");
+        }
     }
 
     private void SetDialogField(

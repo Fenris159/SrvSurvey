@@ -1,10 +1,12 @@
+using SrvSurvey.Core.Search;
+
 namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class RouteAutoCopyCoordinator : IDisposable
 {
     private readonly RouteWorkspaceViewModel standardRoute;
     private readonly RouteWorkspaceViewModel fleetCarrierRoute;
-    private readonly BoxelSearchViewModel boxel;
+    private readonly IBoxelSearchSession boxel;
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
         "CA2213:Disposable fields should be disposed",
@@ -16,14 +18,14 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
     public RouteAutoCopyCoordinator(
         RouteWorkspaceViewModel standardRoute,
         RouteWorkspaceViewModel fleetCarrierRoute,
-        BoxelSearchViewModel boxel)
+        IBoxelSearchSession boxel)
     {
         this.standardRoute = standardRoute;
         this.fleetCarrierRoute = fleetCarrierRoute;
         this.boxel = boxel;
         standardRoute.AutoCopySelected += OnRouteAutoCopySelected;
         fleetCarrierRoute.AutoCopySelected += OnRouteAutoCopySelected;
-        boxel.AutoCopySelected += OnBoxelAutoCopySelected;
+        boxel.Changed += OnBoxelChanged;
     }
 
     public Task ClaimAsync(RouteWorkspaceViewModel source)
@@ -42,7 +44,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
             Interlocked.Increment(ref claimVersion));
     }
 
-    public Task ClaimAsync(BoxelSearchViewModel source)
+    public Task ClaimAsync(IBoxelSearchSession source)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         if (!ReferenceEquals(source, boxel))
@@ -60,7 +62,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
     public async Task ReconcileAsync()
     {
         ObjectDisposedException.ThrowIf(disposed, this);
-        if (boxel.AutoCopy)
+        if (boxel.Current.Search.AutoCopy)
         {
             await ClaimAsync(boxel);
             return;
@@ -118,7 +120,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
         disposed = true;
         standardRoute.AutoCopySelected -= OnRouteAutoCopySelected;
         fleetCarrierRoute.AutoCopySelected -= OnRouteAutoCopySelected;
-        boxel.AutoCopySelected -= OnBoxelAutoCopySelected;
+        boxel.Changed -= OnBoxelChanged;
     }
 
     private async Task ClaimRouteAsync(
@@ -152,9 +154,9 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
                 return;
             }
 
-            if (boxel.AutoCopy)
+            if (boxel.Current.Search.AutoCopy)
             {
-                await boxel.DisableAutoCopyForCompetingRouteAsync();
+                await boxel.ExecuteAsync(new SetBoxelAutoCopy(false));
             }
         }
         finally
@@ -164,7 +166,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
     }
 
     private async Task ClaimBoxelAsync(
-        BoxelSearchViewModel source,
+        IBoxelSearchSession source,
         long version)
     {
         if (!CanOwnAutoCopy(source))
@@ -202,7 +204,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
         }
     }
 
-    private void OnRouteAutoCopySelected(object? sender, EventArgs eventArgs)
+    private async void OnRouteAutoCopySelected(object? sender, EventArgs eventArgs)
     {
         if (disposed
             || sender is not RouteWorkspaceViewModel source
@@ -211,19 +213,22 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
             return;
         }
 
-        _ = ClaimAfterPropertyChangeAsync(source);
+        await ClaimAfterPropertyChangeAsync(source);
     }
 
-    private void OnBoxelAutoCopySelected(object? sender, EventArgs eventArgs)
+    private async void OnBoxelChanged(
+        object? sender,
+        BoxelSearchSessionChangedEventArgs eventArgs)
     {
         if (disposed
-            || sender is not BoxelSearchViewModel source
-            || !CanOwnAutoCopy(source))
+            || !ReferenceEquals(sender, boxel)
+            || eventArgs.Previous.Search.AutoCopy
+            || !eventArgs.Current.Search.AutoCopy)
         {
             return;
         }
 
-        _ = ClaimAfterPropertyChangeAsync(source);
+        await ClaimAfterPropertyChangeAsync(boxel);
     }
 
     internal async Task ClaimAfterPropertyChangeAsync(
@@ -242,7 +247,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
     }
 
     internal async Task ClaimAfterPropertyChangeAsync(
-        BoxelSearchViewModel source)
+        IBoxelSearchSession source)
     {
         try
         {
@@ -259,8 +264,8 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
         return route.HasSavedRoute && route.AutoCopy;
     }
 
-    private static bool CanOwnAutoCopy(BoxelSearchViewModel boxelSearch)
+    private static bool CanOwnAutoCopy(IBoxelSearchSession boxelSearch)
     {
-        return boxelSearch.AutoCopy;
+        return boxelSearch.Current.Search.AutoCopy;
     }
 }

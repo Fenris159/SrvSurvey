@@ -69,6 +69,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         Justification = "The system-body worker disposes the captured source in its finally block.")]
     private CancellationTokenSource? systemBodyDataCancellation;
     private readonly RouteAutoCopyCoordinator routeAutoCopyCoordinator;
+    private readonly IBoxelSearchSession boxelSearchSession;
     private readonly BoxelSurveyStatsCoordinator boxelSurveyStats;
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
@@ -460,11 +461,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             new BoxelSurveyStatsSettingsStore(AppDataPaths.UiSettingsPath)
                 .Load()
                 .TreatNavBeaconAsFullyScanned;
-        BoxelSearch = new BoxelSearchViewModel(
+        BoxelClipboard = new BoxelClipboardAdapter();
+        boxelSearchSession = new BoxelSearchSession(
             commanderProfileStore,
             new LegacySystemDataReader(AppDataPaths.DataDirectory),
             new EmptyBoxelStore(AppDataPaths.DataDirectory),
+            new SavedBoxelSearchStore(AppDataPaths.DataDirectory),
             boxelSystemResolver ?? new SpanshBoxelClient(),
+            BoxelClipboard,
+            resolvedApplicationLogService is null
+                ? null
+                : new ApplicationLogBoxelSearchDiagnosticSink(
+                    resolvedApplicationLogService));
+        BoxelSearch = new BoxelSearchViewModel(
+            boxelSearchSession,
             knownSystems: knownSystems,
             systemNameSuggestionClient: systemNameSuggestionClient
                 ?? new FallbackSystemNameSuggestionClient(
@@ -506,7 +516,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         routeAutoCopyCoordinator = new RouteAutoCopyCoordinator(
             Route,
             FleetCarrierRoute,
-            BoxelSearch);
+            boxelSearchSession);
         var sharedJumpInfoSettingsStore = jumpInfoSettingsStore
             ?? new JumpInfoSettingsStore(AppDataPaths.UiSettingsPath);
         var sharedSystemSummaryClient = systemSummaryClient
@@ -868,6 +878,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public SphereLimitViewModel Search { get; }
 
     public BoxelSearchViewModel BoxelSearch { get; }
+
+    public IBoxelSearchSession BoxelSearchSession => boxelSearchSession;
+
+    public BoxelClipboardAdapter BoxelClipboard { get; }
 
     public BoxelSurveyStatsCoordinator BoxelSurveyStats => boxelSurveyStats;
 
@@ -2447,7 +2461,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             journalState.SystemName,
             journalState.SystemAddress,
             journalState.StarPosition);
-        BoxelSearch.UpdateCurrentSystem(
+        await BoxelSearch.UpdateCurrentSystemAsync(
             journalState.SystemName,
             journalState.StarPosition,
             journalState.SystemAddress);
@@ -3090,7 +3104,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 ?? CommanderProfileLoadFailedMessage;
             Search.SetProfileError(
                 result.Error ?? CommanderProfileLoadFailedMessage);
-            BoxelSearch.SetProfileError(
+            await BoxelSearch.SetProfileErrorAsync(
                 result.Error ?? CommanderProfileLoadFailedMessage);
             Guardian.SetProfileError(
                 result.Error ?? CommanderProfileLoadFailedMessage);
@@ -4474,6 +4488,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         routeAutoCopyCoordinator.Dispose();
         await boxelSurveyStats.DisposeAsync();
         BoxelSearch.CancelPendingOperations();
+        await boxelSearchSession.DisposeAsync();
         JournalPostProcessor.Cancel();
         CancelSystemBodyDataRequest();
         await firstFootfallInferenceCancellation.CancelAsync();
