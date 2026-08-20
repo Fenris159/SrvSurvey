@@ -1,7 +1,7 @@
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 [Flags]
-internal enum OverlayVisibilityReason
+internal enum OverlayVisibilityReasons
 {
     None = 0,
     DomainNotRequested = 1 << 0,
@@ -30,80 +30,80 @@ internal readonly record struct OverlayVisibilityDecision(
     bool Permitted,
     bool ShouldHost,
     bool ShouldPresent,
-    OverlayVisibilityReason Reasons);
+    OverlayVisibilityReasons Reasons);
 
 internal static class OverlayVisibilityPolicy
 {
-    private const OverlayVisibilityReason LifecycleReasons =
-        OverlayVisibilityReason.DomainNotRequested
-        | OverlayVisibilityReason.HostIneligible
-        | OverlayVisibilityReason.ManualSuppressed
-        | OverlayVisibilityReason.SuitSuppressed
-        | OverlayVisibilityReason.SessionSuppressed
-        | OverlayVisibilityReason.PriorityObscured;
-    private const OverlayVisibilityReason PolicyReasons =
-        OverlayVisibilityReason.ManualSuppressed
-        | OverlayVisibilityReason.SuitSuppressed
-        | OverlayVisibilityReason.SessionSuppressed
-        | OverlayVisibilityReason.PriorityObscured
-        | OverlayVisibilityReason.UserDisabled
-        | OverlayVisibilityReason.GalaxyMapExcluded
-        | OverlayVisibilityReason.EditorSuppressed;
+    private const OverlayVisibilityReasons LifecycleReasons =
+        OverlayVisibilityReasons.DomainNotRequested
+        | OverlayVisibilityReasons.HostIneligible
+        | OverlayVisibilityReasons.ManualSuppressed
+        | OverlayVisibilityReasons.SuitSuppressed
+        | OverlayVisibilityReasons.SessionSuppressed
+        | OverlayVisibilityReasons.PriorityObscured;
+    private const OverlayVisibilityReasons PolicyReasons =
+        OverlayVisibilityReasons.ManualSuppressed
+        | OverlayVisibilityReasons.SuitSuppressed
+        | OverlayVisibilityReasons.SessionSuppressed
+        | OverlayVisibilityReasons.PriorityObscured
+        | OverlayVisibilityReasons.UserDisabled
+        | OverlayVisibilityReasons.GalaxyMapExcluded
+        | OverlayVisibilityReasons.EditorSuppressed;
 
     internal static OverlayVisibilityDecision Evaluate(
         OverlayVisibilityFacts facts)
     {
-        var reasons = OverlayVisibilityReason.None;
+        var reasons = OverlayVisibilityReasons.None;
         if (!facts.Requested)
         {
-            reasons |= OverlayVisibilityReason.DomainNotRequested;
+            reasons |= OverlayVisibilityReasons.DomainNotRequested;
         }
 
         if (!facts.HostEligible)
         {
-            reasons |= OverlayVisibilityReason.HostIneligible;
+            reasons |= OverlayVisibilityReasons.HostIneligible;
         }
 
         if (facts.ManualSuppressed)
         {
-            reasons |= OverlayVisibilityReason.ManualSuppressed;
+            reasons |= OverlayVisibilityReasons.ManualSuppressed;
         }
 
         if (facts.SuitSuppressed)
         {
-            reasons |= OverlayVisibilityReason.SuitSuppressed;
+            reasons |= OverlayVisibilityReasons.SuitSuppressed;
         }
 
         if (facts.SessionSuppressed)
         {
-            reasons |= OverlayVisibilityReason.SessionSuppressed;
+            reasons |= OverlayVisibilityReasons.SessionSuppressed;
         }
 
         if (facts.PriorityObscured)
         {
-            reasons |= OverlayVisibilityReason.PriorityObscured;
+            reasons |= OverlayVisibilityReasons.PriorityObscured;
         }
 
         if (!facts.UserEnabled)
         {
-            reasons |= OverlayVisibilityReason.UserDisabled;
+            reasons |= OverlayVisibilityReasons.UserDisabled;
         }
 
         if (!facts.GalaxyMapAllowed)
         {
-            reasons |= OverlayVisibilityReason.GalaxyMapExcluded;
+            reasons |= OverlayVisibilityReasons.GalaxyMapExcluded;
         }
 
         if (facts.EditorSuppressed)
         {
-            reasons |= OverlayVisibilityReason.EditorSuppressed;
+            reasons |= OverlayVisibilityReasons.EditorSuppressed;
         }
 
         var shouldHost = (reasons & LifecycleReasons) == 0;
         return new OverlayVisibilityDecision(
             (reasons & PolicyReasons) == 0,
             shouldHost,
-            shouldHost && reasons == OverlayVisibilityReason.None,
+            shouldHost && reasons == OverlayVisibilityReasons.None,
             reasons);
     }
 }
