@@ -12,7 +12,7 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
         $"SrvSurvey-overlay-panel-vm-tests-{Guid.NewGuid():N}");
 
     [Fact]
-    public void EveryPanelHasOneCategoryAndOneUnboundVisibilityShortcut()
+    public void EveryPanelUsesCatalogedSettingsCategoriesAndOneUnboundShortcut()
     {
         var registry = new OverlayWindowRegistry();
         var viewModel = Create(registry);
@@ -31,6 +31,22 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
                 panel.PlotterName,
                 panel.Shortcut.Definition.OverlayPlotterName);
         });
+        Assert.Equal(
+            [
+                OverlaySettingsCategory.Boxel,
+                OverlaySettingsCategory.Exploration,
+                OverlaySettingsCategory.Travel,
+            ],
+            viewModel.Panels.Single(panel =>
+                panel.PlotterName == "PlotSphericalSearch").SettingsCategories);
+        Assert.Equal(
+            [OverlaySettingsCategory.Travel],
+            viewModel.Panels.Single(panel =>
+                panel.PlotterName == "PlotStationInfo").SettingsCategories);
+        Assert.Equal(
+            [OverlaySettingsCategory.Global],
+            viewModel.Panels.Single(panel =>
+                panel.PlotterName == "PlotFloatie").SettingsCategories);
         Assert.All(
             Enum.GetValues<OverlaySettingsCategory>(),
             category => Assert.NotEmpty(viewModel.ForCategory(category)));
@@ -51,6 +67,70 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
         Assert.False(reloaded.Panels.Single(panel =>
             panel.PlotterName == "PlotGuardians").IsEnabled);
         Assert.False(viewModel.Toggle("PlotUnknown"));
+    }
+
+    [Fact]
+    public void SettingsCategoriesPreserveEstablishedPanelGroups()
+    {
+        var expected = new Dictionary<OverlaySettingsCategory, string[]>
+        {
+            [OverlaySettingsCategory.Global] =
+                ["PlotFloatie", "PlotMultiGameCommander", "PlotPulse"],
+            [OverlaySettingsCategory.Exploration] =
+            [
+                "PlotBodyInfo",
+                "PlotFlightWarning",
+                "PlotFSS",
+                "PlotFSSInfo",
+                "PlotGalMap",
+                "PlotSphericalSearch",
+                "PlotSysStatus",
+            ],
+            [OverlaySettingsCategory.Exobiology] =
+            [
+                "PlotBioStatus",
+                "PlotBioSystem",
+                "PlotGrounded",
+                "PlotMiniTrack",
+                "PlotPriorScans",
+                "PlotTrackTarget",
+            ],
+            [OverlaySettingsCategory.Travel] =
+            [
+                "PlotFleetCarrierRoute",
+                "PlotJumpInfo",
+                "PlotRouteBio",
+                "PlotSphericalSearch",
+                "PlotStationInfo",
+            ],
+            [OverlaySettingsCategory.Boxel] = ["PlotSphericalSearch"],
+            [OverlaySettingsCategory.Guardian] =
+            [
+                "PlotGuardians",
+                "PlotGuardianStatus",
+                "PlotGuardianSystem",
+                "PlotRamTah",
+            ],
+            [OverlaySettingsCategory.Quests] =
+            [
+                "PlotFootCombat",
+                "PlotHumanSite",
+                "PlotMassacre",
+                "PlotQuestMini",
+            ],
+            [OverlaySettingsCategory.Colonization] =
+                ["PlotBuildCommodities"],
+        };
+        var viewModel = Create(new OverlayWindowRegistry());
+
+        foreach (var (category, plotterNames) in expected)
+        {
+            Assert.Equal(
+                plotterNames.Order(StringComparer.Ordinal),
+                viewModel.ForCategory(category)
+                    .Select(panel => panel.PlotterName)
+                    .Order(StringComparer.Ordinal));
+        }
     }
 
     public void Dispose()
