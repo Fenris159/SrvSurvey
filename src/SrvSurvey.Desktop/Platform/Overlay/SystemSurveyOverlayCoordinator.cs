@@ -19,6 +19,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly IGameScreenCapture gameScreenCapture;
     private readonly LegacyOverlayLayout overlayLayout;
+    private readonly OverlayWindowRegistry windowRegistry;
     private readonly CachingCanonnSystemPoiClient canonnSystemPoiClient;
     private readonly Func<string?> commanderNameProvider;
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
@@ -42,12 +43,6 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private SurfaceSurveyOverlayWindow? surfaceWindow;
     private SystemStatusOverlayWindow? statusWindow;
     private bool isSuppressed;
-    private bool isBiologyObscured;
-    private bool isBiologyStatusObscured;
-    private bool isBodyInfoObscured;
-    private bool isFssObscured;
-    private bool isPriorScansObscured;
-    private bool isSurfaceObscured;
     private string? canonnLoadedKey;
     private string? canonnFailedKey;
     private DateTimeOffset canonnRetryAfter;
@@ -76,6 +71,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
                 ? null
                 : options.FssDiagnosticDirectory;
         this.overlayLayout = options.OverlayLayout ?? LegacyOverlayLayout.Empty;
+        this.windowRegistry = options.WindowRegistry
+            ?? OverlayWindowRegistry.Shared;
         this.commanderNameProvider = options.CommanderNameProvider
             ?? (() => null);
         this.canonnSystemPoiClient = new CachingCanonnSystemPoiClient(
@@ -171,72 +168,6 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         isSuppressed = value;
-        SynchronizeWindows();
-    }
-
-    public void SetFssObscured(bool value)
-    {
-        if (disposed || value == isFssObscured)
-        {
-            return;
-        }
-
-        isFssObscured = value;
-        SynchronizeWindows();
-    }
-
-    public void SetBodyInfoObscured(bool value)
-    {
-        if (disposed || value == isBodyInfoObscured)
-        {
-            return;
-        }
-
-        isBodyInfoObscured = value;
-        SynchronizeWindows();
-    }
-
-    public void SetBiologyObscured(bool value)
-    {
-        if (disposed || value == isBiologyObscured)
-        {
-            return;
-        }
-
-        isBiologyObscured = value;
-        SynchronizeWindows();
-    }
-
-    public void SetBiologyStatusObscured(bool value)
-    {
-        if (disposed || value == isBiologyStatusObscured)
-        {
-            return;
-        }
-
-        isBiologyStatusObscured = value;
-        SynchronizeWindows();
-    }
-
-    public void SetPriorScansObscured(bool value)
-    {
-        if (disposed || value == isPriorScansObscured)
-        {
-            return;
-        }
-
-        isPriorScansObscured = value;
-        SynchronizeWindows();
-    }
-
-    public void SetSurfaceObscured(bool value)
-    {
-        if (disposed || value == isSurfaceObscured)
-        {
-            return;
-        }
-
-        isSurfaceObscured = value;
         SynchronizeWindows();
     }
 
@@ -628,27 +559,27 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             && gameWindow.IsForeground;
         var showFss = platformReady
             && survey.ShouldShowFssInfo
-            && (!isFssObscured || survey.IsFssInfoForced);
+            && windowRegistry.ShouldHost("PlotFSSInfo");
         var showLastFssBody = platformReady
             && survey.ShouldShowLastFssBody;
         var showBodyInfo = platformReady
             && survey.ShouldShowBodyInfo
-            && (!isBodyInfoObscured || survey.IsBodyInfoForced);
+            && windowRegistry.ShouldHost("PlotBodyInfo");
         var showStatus = platformReady && survey.ShouldShowSystemStatus;
         var showFlightWarning = platformReady
             && survey.ShouldShowFlightWarning;
         var showBiology = platformReady
             && survey.ShouldShowBioSystem
-            && !isBiologyObscured;
+            && windowRegistry.ShouldHost("PlotBioSystem");
         var showBiologyStatus = platformReady
             && survey.ShouldShowBioStatus
-            && !isBiologyStatusObscured;
+            && windowRegistry.ShouldHost("PlotBioStatus");
         var showPriorScans = platformReady
             && priorScansViewModel.ShouldShow
-            && !isPriorScansObscured;
+            && windowRegistry.ShouldHost("PlotPriorScans");
         var showSurface = platformReady
             && surfaceSurvey.ShouldShow
-            && !isSurfaceObscured;
+            && windowRegistry.ShouldHost("PlotGrounded");
         var showMiniTrack = platformReady
             && surfaceSurvey.ShouldShowMiniTrack;
 
@@ -679,7 +610,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new MiniTrackOverlayWindow(surfaceViewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotMiniTrack");
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotMiniTrack",
+            windowRegistry);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionMiniTrack,
@@ -712,7 +647,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new FlightWarningOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotFlightWarning");
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotFlightWarning",
+            windowRegistry);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopCenter,
@@ -745,7 +684,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new SurfaceSurveyOverlayWindow(surfaceViewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotGrounded");
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotGrounded",
+            windowRegistry);
         ApplySurfaceWindowSize(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
@@ -779,7 +722,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new PriorScansOverlayWindow(priorScansViewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotPriorScans");
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotPriorScans",
+            windowRegistry);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionBottomRight,
@@ -812,7 +759,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new BiologyStatusOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotBioStatus");
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotBioStatus",
+            windowRegistry);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopCenter,
@@ -845,7 +796,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new BiologySurveyOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotBioSystem");
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotBioSystem",
+            windowRegistry);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionBiologyWindow,
@@ -878,7 +833,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new BodyInformationOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotBodyInfo");
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotBodyInfo",
+            windowRegistry);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopLeft,
@@ -911,7 +870,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new LastFssBodyOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotFSS");
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotFSS",
+            windowRegistry);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopCenter,
@@ -944,7 +907,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new FssInfoOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotFSSInfo");
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotFSSInfo",
+            windowRegistry);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopLeft,
@@ -977,7 +944,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new SystemStatusOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotSysStatus");
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotSysStatus",
+            windowRegistry);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionBottomLeft,
@@ -1291,6 +1262,8 @@ public sealed class SystemSurveyOverlayCoordinatorOptions
     public ExobiologyReferenceCatalog? ExobiologyCatalog { get; init; }
 
     public LegacyOverlayLayout? OverlayLayout { get; init; }
+
+    internal OverlayWindowRegistry? WindowRegistry { get; init; }
 
     public IGameScreenCapture? GameScreenCapture { get; init; }
 

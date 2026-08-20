@@ -6,11 +6,6 @@ using Avalonia.Threading;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-internal interface IOverlayPresentationControl
-{
-    void SetRuntimeOverlaysSuppressed(bool suppressed);
-}
-
 internal sealed class CombinedOverlayPresentationController : IDisposable
 {
     private readonly IOverlayPlatformService nativePlatform;
@@ -26,7 +21,6 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
     private PixelRect[] appliedInputRegions = [];
     private OverlayInteractionResult? appliedInputResult;
     private DragState? drag;
-    private bool runtimeOverlaysSuppressed;
     private bool disposed;
 
     public CombinedOverlayPresentationController(
@@ -115,9 +109,6 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             presenter.PointerReleased += OnPresenterPointerReleased;
             presenter.PointerCaptureLost += OnPresenterPointerCaptureLost;
             registry.SetPresentationVisual(window, content);
-            registry.SetPresentationVisible(
-                window,
-                !runtimeOverlaysSuppressed);
             EnsureHost();
             host?.Add(presenter);
         }
@@ -187,29 +178,6 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         {
             nativePlatform.BeginMoveDrag(window, eventArgs);
         }
-    }
-
-    public void SetRuntimeOverlaysSuppressed(bool suppressed)
-    {
-        if (disposed || runtimeOverlaysSuppressed == suppressed)
-        {
-            return;
-        }
-
-        runtimeOverlaysSuppressed = suppressed;
-        foreach (var entry in entries.Values)
-        {
-            registry.SetPresentationVisible(
-                entry.Window,
-                !suppressed);
-        }
-
-        if (suppressed)
-        {
-            StopDrag(releasePointer: true);
-        }
-
-        UpdateHost();
     }
 
     public void Dispose()
@@ -295,12 +263,6 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         var window = host;
         if (window is null)
         {
-            return;
-        }
-
-        if (runtimeOverlaysSuppressed)
-        {
-            window.Hide();
             return;
         }
 

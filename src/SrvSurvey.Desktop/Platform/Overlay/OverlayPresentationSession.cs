@@ -192,7 +192,7 @@ public sealed class OverlayPresentationSession : IDisposable
 
     private sealed class CombinedOverlayPlatformService(
         CombinedOverlayPresentationController controller)
-        : IOverlayPlatformService, IOverlayPresentationControl
+        : IOverlayPlatformService
     {
         public OverlayPlatformCapabilities Capabilities =>
             controller.Capabilities;
@@ -219,11 +219,6 @@ public sealed class OverlayPresentationSession : IDisposable
             PointerPressedEventArgs eventArgs)
         {
             controller.BeginMoveDrag(window, eventArgs);
-        }
-
-        public void SetRuntimeOverlaysSuppressed(bool suppressed)
-        {
-            controller.SetRuntimeOverlaysSuppressed(suppressed);
         }
 
         public void Dispose()
