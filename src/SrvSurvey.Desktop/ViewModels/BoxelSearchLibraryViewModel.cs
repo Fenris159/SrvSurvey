@@ -262,6 +262,10 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDispo
         {
             IsBusy = false;
             RaiseState();
+            if (refreshPending && !IsDialogVisible)
+            {
+                QueueRefresh();
+            }
         }
     }
 

@@ -307,6 +307,10 @@ public sealed record BoxelSearchSessionSearchSnapshot
 
     public required string? NextSystem { get; init; }
 
+    public required string? NextSystemAscending { get; init; }
+
+    public required string? NextSystemDescending { get; init; }
+
     public required bool CurrentIsEmpty { get; init; }
 
     public required int CurrentMinimumSystemNumber { get; init; }
@@ -394,6 +398,8 @@ public sealed record BoxelSearchSessionSearchSnapshot
         Version = 0,
         Persistence = BoxelSearchSnapshot.Empty,
         NextSystem = null,
+        NextSystemAscending = null,
+        NextSystemDescending = null,
         CurrentIsEmpty = false,
         CurrentMinimumSystemNumber = -1,
         CurrentMaximumSystemNumber = 0,

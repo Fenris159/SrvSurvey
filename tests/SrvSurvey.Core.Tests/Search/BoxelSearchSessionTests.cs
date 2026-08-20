@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
@@ -25,6 +26,12 @@ public sealed class BoxelSearchSessionTests : IDisposable
         Assert.Equal(BoxelSearchOutcomeKind.Success, outcome.Kind);
         Assert.True(session.Current.Search.IsActive);
         Assert.Equal("Praea Euq IL-P c5-0", session.Current.Search.NextSystem);
+        Assert.Equal(
+            "Praea Euq IL-P c5-0",
+            session.Current.Search.NextSystemAscending);
+        Assert.Equal(
+            "Praea Euq IL-P c5-2",
+            session.Current.Search.NextSystemDescending);
         Assert.Same(context, session.Current.Context);
         Assert.Same(health, session.Current.Health);
         Assert.NotEmpty(profileStore.Snapshots);
@@ -137,6 +144,35 @@ public sealed class BoxelSearchSessionTests : IDisposable
     }
 
     [Fact]
+    public async Task RepeatedRefreshAwaitsTheCancelledRequestBeforeRestarting()
+    {
+        var resolver = new BlockingRefreshResolver();
+        await using var session = CreateSession(
+            new RecordingProfileStore(),
+            systemResolver: resolver);
+        await session.SwitchProfileAsync(Profile(BoxelSearchSnapshot.Empty));
+        await session.ExecuteAsync(new ActivateBoxelSearch(
+            Activation("Praea Euq IL-P c5-2")));
+
+        var cancelledRefresh = session.ExecuteAsync(new RefreshCurrentBoxel());
+        await resolver.Blocked.WaitAsync(TimeSpan.FromSeconds(2));
+        var replacementRefreshes = new[]
+        {
+            session.ExecuteAsync(new RefreshCurrentBoxel()),
+            session.ExecuteAsync(new RefreshCurrentBoxel()),
+        };
+        var outcomes = await Task.WhenAll(
+                replacementRefreshes.Prepend(cancelledRefresh))
+            .WaitAsync(TimeSpan.FromSeconds(2));
+
+        Assert.Equal(2, outcomes.Count(
+            outcome => outcome.Kind == BoxelSearchOutcomeKind.Cancelled));
+        Assert.Single(outcomes, outcome =>
+            outcome.Kind == BoxelSearchOutcomeKind.Success);
+        Assert.Equal(2, resolver.CancellationsObserved);
+    }
+
+    [Fact]
     public async Task ClipboardNotReadyDoesNotConsumeAutomaticCopyOpportunity()
     {
         var clipboard = new RecordingClipboard();
@@ -188,6 +224,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
         IBoxelSearchProfileStore profileStore,
         IBoxelSearchLibraryStore? library = null,
         IBoxelClipboard? clipboard = null,
+        IBoxelSystemResolver? systemResolver = null,
         BoxelSearchSessionOptions? options = null)
     {
         Directory.CreateDirectory(temporaryDirectory);
@@ -196,7 +233,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
             library ?? new SavedBoxelSearchStore(temporaryDirectory),
-            new StubResolver(),
+            systemResolver ?? new StubResolver(),
             clipboard,
             options: options);
     }
@@ -221,7 +258,9 @@ public sealed class BoxelSearchSessionTests : IDisposable
 
     private sealed class RecordingProfileStore : IBoxelSearchProfileStore
     {
-        public List<BoxelSearchSnapshot> Snapshots { get; } = [];
+        private readonly ConcurrentQueue<BoxelSearchSnapshot> snapshots = new();
+
+        public IReadOnlyList<BoxelSearchSnapshot> Snapshots => snapshots.ToArray();
 
         public Task SaveBoxelSearchAsync(
             string frontierId,
@@ -231,16 +270,17 @@ public sealed class BoxelSearchSessionTests : IDisposable
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Snapshots.Add(boxelSearch);
+            snapshots.Enqueue(boxelSearch);
             return Task.CompletedTask;
         }
     }
 
     private sealed class FlakyProfileStore : IBoxelSearchProfileStore
     {
+        private readonly ConcurrentQueue<BoxelSearchSnapshot> snapshots = new();
         private int failuresRemaining = 2;
 
-        public List<BoxelSearchSnapshot> Snapshots { get; } = [];
+        public IReadOnlyList<BoxelSearchSnapshot> Snapshots => snapshots.ToArray();
 
         public Task SaveBoxelSearchAsync(
             string frontierId,
@@ -255,23 +295,30 @@ public sealed class BoxelSearchSessionTests : IDisposable
                 throw new IOException("locked");
             }
 
-            Snapshots.Add(boxelSearch);
+            snapshots.Enqueue(boxelSearch);
             return Task.CompletedTask;
         }
     }
 
     private sealed class RecordingClipboard : IBoxelClipboard
     {
-        public bool IsReady { get; set; }
+        private readonly ConcurrentQueue<string> writes = new();
+        private int isReady;
 
-        public List<string> Writes { get; } = [];
+        public bool IsReady
+        {
+            get => Volatile.Read(ref isReady) != 0;
+            set => Volatile.Write(ref isReady, value ? 1 : 0);
+        }
+
+        public IReadOnlyList<string> Writes => writes.ToArray();
 
         public Task WriteTextAsync(
             string text,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Writes.Add(text);
+            writes.Enqueue(text);
             return Task.CompletedTask;
         }
     }
@@ -287,12 +334,51 @@ public sealed class BoxelSearchSessionTests : IDisposable
         }
     }
 
+    private sealed class BlockingRefreshResolver : IBoxelSystemResolver
+    {
+        private readonly TaskCompletionSource blocked = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        private int calls;
+        private int cancellationsObserved;
+
+        public Task Blocked => blocked.Task;
+
+        public int CancellationsObserved =>
+            Volatile.Read(ref cancellationsObserved);
+
+        public async Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
+            BoxelAddress boxel,
+            CancellationToken cancellationToken = default)
+        {
+            var call = Interlocked.Increment(ref calls);
+            if (call is not (2 or 3))
+            {
+                return [];
+            }
+
+            blocked.TrySetResult();
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                return [];
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
+            {
+                Interlocked.Increment(ref cancellationsObserved);
+                throw;
+            }
+        }
+    }
+
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        while (!condition())
+        while (!condition() && !timeout.IsCancellationRequested)
         {
-            await Task.Delay(10, timeout.Token);
+            await Task.Delay(10);
         }
+
+        Assert.True(condition());
     }
 }

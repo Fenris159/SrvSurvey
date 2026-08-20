@@ -628,31 +628,45 @@ internal static class OverlayEditorPreviewFactories
         public Task<BoxelSearchOutcome> SwitchProfileAsync(
             BoxelSearchProfile profile,
             CancellationToken cancellationToken = default) =>
-            Task.FromException<BoxelSearchOutcome>(
-                new NotSupportedException("Editor previews do not load profiles."));
+            Task.FromResult(CreateRejectedOutcome(
+                BoxelSearchMessageCode.SearchNotConfigured));
 
         public Task<BoxelSearchOutcome> ClearProfileAsync(
             BoxelSearchMessageCode reason = BoxelSearchMessageCode.ProfileUnavailable,
             CancellationToken cancellationToken = default) =>
-            Task.FromException<BoxelSearchOutcome>(
-                new NotSupportedException("Editor previews do not load profiles."));
+            Task.FromResult(CreateRejectedOutcome(reason));
 
         public Task<BoxelSearchOutcome> ApplyAsync(
             BoxelSearchUpdate update,
             CancellationToken cancellationToken = default) =>
-            Task.FromException<BoxelSearchOutcome>(
-                new NotSupportedException("Editor previews are read-only."));
+            Task.FromResult(CreateRejectedOutcome(
+                BoxelSearchMessageCode.SearchNotConfigured));
 
         public Task<BoxelSearchOutcome> ExecuteAsync(
             BoxelSearchAction action,
             CancellationToken cancellationToken = default) =>
-            Task.FromException<BoxelSearchOutcome>(
-                new NotSupportedException("Editor previews are read-only."));
+            Task.FromResult(CreateRejectedOutcome(
+                BoxelSearchMessageCode.SearchNotConfigured));
 
         public Task<BoxelSearchLibrarySnapshot> GetLibraryAsync(
             CancellationToken cancellationToken = default) =>
             Task.FromResult(new BoxelSearchLibrarySnapshot(0, []));
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+        private BoxelSearchOutcome CreateRejectedOutcome(
+            BoxelSearchMessageCode code)
+        {
+            var snapshot = Current;
+            return new BoxelSearchOutcome(
+                BoxelSearchOutcomeKind.Rejected,
+                code,
+                snapshot.Version,
+                snapshot.Search.Version,
+                snapshot.Context.Version,
+                snapshot.Activity.Version,
+                snapshot.Health.Version,
+                snapshot.LibraryRevision);
+        }
     }
 }

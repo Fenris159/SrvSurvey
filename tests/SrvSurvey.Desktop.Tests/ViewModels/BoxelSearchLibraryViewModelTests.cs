@@ -7,8 +7,9 @@ using static SrvSurvey.Desktop.Tests.JournalEventEnvelopeTestParser;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class BoxelSearchLibraryViewModelTests : IDisposable
+public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
 {
+    private readonly List<BoxelSearchSession> sessions = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         "SrvSurvey-BoxelLibraryTests-" + Guid.NewGuid().ToString("N"));
@@ -31,7 +32,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
         };
         await store.CreateAsync("F123", "First", null, snapshot);
         await store.CreateAsync("F123", "Second", null, snapshot);
-        var boxel = BoxelSearchViewModelTestFactory.Create(
+        var boxel = CreateBoxel(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -398,7 +399,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
         ]);
         await coordinator.FlushAsync();
 
-        var boxel = BoxelSearchViewModelTestFactory.Create(
+        var boxel = CreateBoxel(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -449,7 +450,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
             await store.CreateAsync("F123", search.Name, search.Notes, snapshot);
         }
 
-        var boxel = BoxelSearchViewModelTestFactory.Create(
+        var boxel = CreateBoxel(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -491,12 +492,39 @@ public sealed class BoxelSearchLibraryViewModelTests : IDisposable
         Assert.True(condition());
     }
 
-    public void Dispose()
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+
+    public async ValueTask DisposeAsync()
     {
+        foreach (var session in sessions.AsEnumerable().Reverse())
+        {
+            await session.DisposeAsync();
+        }
+
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, recursive: true);
         }
+    }
+
+    private BoxelSearchViewModel CreateBoxel(
+        CommanderProfileStore profileStore,
+        LegacySystemDataReader localSystemReader,
+        EmptyBoxelStore emptyBoxelStore,
+        IBoxelSystemResolver systemResolver,
+        SavedBoxelSearchStore? savedSearchStore = null,
+        BoxelSurveyStatsCoordinator? surveyStats = null)
+    {
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
+            profileStore,
+            localSystemReader,
+            emptyBoxelStore,
+            systemResolver,
+            out var session,
+            savedSearchStore: savedSearchStore,
+            surveyStats: surveyStats);
+        sessions.Add(session);
+        return viewModel;
     }
 
     private sealed class EmptyResolver : IBoxelSystemResolver

@@ -7,8 +7,9 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class SphericalSearchOverlayViewModelTests : IDisposable
+public sealed class SphericalSearchOverlayViewModelTests : IAsyncLifetime
 {
+    private readonly List<BoxelSearchSession> sessions = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-search-overlay-tests-{Guid.NewGuid():N}");
@@ -19,7 +20,7 @@ public sealed class SphericalSearchOverlayViewModelTests : IDisposable
         var sphere = new SphereLimitViewModel(
             new CommanderProfileStore(temporaryDirectory),
             new EmptyStarResolver());
-        var boxel = BoxelSearchViewModelTestFactory.Create(
+        var boxel = CreateBoxel(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -64,7 +65,7 @@ public sealed class SphericalSearchOverlayViewModelTests : IDisposable
         var sphere = new SphereLimitViewModel(
             new CommanderProfileStore(temporaryDirectory),
             new EmptyStarResolver());
-        var boxel = BoxelSearchViewModelTestFactory.Create(
+        var boxel = CreateBoxel(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -103,12 +104,35 @@ public sealed class SphericalSearchOverlayViewModelTests : IDisposable
         Assert.Equal("MANUAL COPY - NOT SET", viewModel.BoxelClipboardStatus);
     }
 
-    public void Dispose()
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+
+    public async ValueTask DisposeAsync()
     {
+        foreach (var session in sessions.AsEnumerable().Reverse())
+        {
+            await session.DisposeAsync();
+        }
+
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, true);
         }
+    }
+
+    private BoxelSearchViewModel CreateBoxel(
+        CommanderProfileStore profileStore,
+        LegacySystemDataReader localSystemReader,
+        EmptyBoxelStore emptyBoxelStore,
+        IBoxelSystemResolver systemResolver)
+    {
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
+            profileStore,
+            localSystemReader,
+            emptyBoxelStore,
+            systemResolver,
+            out var session);
+        sessions.Add(session);
+        return viewModel;
     }
 
     private sealed class EmptyStarResolver : IStarSystemResolver

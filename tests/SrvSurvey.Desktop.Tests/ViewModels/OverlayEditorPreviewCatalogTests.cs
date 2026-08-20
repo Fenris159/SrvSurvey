@@ -1,9 +1,30 @@
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class OverlayEditorPreviewCatalogTests
 {
+    [Fact]
+    public async Task SphericalPreviewRejectsSessionMutationsWithoutFaulting()
+    {
+        using var preview = Assert.IsType<SphericalSearchOverlayViewModel>(
+            OverlayEditorPreviewCatalog.Create("PlotSphericalSearch", 0));
+
+        var outcome = await preview.Boxel.Session.ExecuteAsync(
+            new StopBoxelSearch());
+        var cleared = await preview.Boxel.Session.ClearProfileAsync(
+            BoxelSearchMessageCode.ProfileUnavailable);
+
+        Assert.Equal(BoxelSearchOutcomeKind.Rejected, outcome.Kind);
+        Assert.Equal(
+            BoxelSearchMessageCode.SearchNotConfigured,
+            outcome.Code);
+        Assert.Equal(preview.Boxel.Session.Current.Version, outcome.SessionVersion);
+        Assert.Equal(BoxelSearchOutcomeKind.Rejected, cleared.Kind);
+        Assert.Equal(BoxelSearchMessageCode.ProfileUnavailable, cleared.Code);
+    }
+
     [Fact]
     public void FlightWarningPreviewStatesUseDifficultyNames()
     {

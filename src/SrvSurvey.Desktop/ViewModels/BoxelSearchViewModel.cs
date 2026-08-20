@@ -1069,7 +1069,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         }
 
         Dispatcher.UIThread.Post(
-            () => ApplySessionSnapshot(session.Current, eventArgs.Previous));
+            () => ApplySessionSnapshot(eventArgs.Current, eventArgs.Previous));
     }
 
     private void ApplySessionSnapshot(
@@ -1801,44 +1801,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private string? GetPresentedNextSystem()
     {
-        if (SortDescending == searchState.SortDescending
-            || searchState.CurrentBoxel is null
-            || searchState.CurrentIsEmpty)
-        {
-            return searchState.NextSystem;
-        }
-
-        var systemsByName = searchState.Systems.ToDictionary(
-            system => system.Boxel.GeneratedName,
-            StringComparer.Ordinal);
-        var maximum = Math.Max(
-            searchState.CurrentMaximumSystemNumber + 1,
-            searchState.CurrentCount);
-        var numbers = SortDescending
-            ? Enumerable.Range(0, maximum).Reverse()
-            : Enumerable.Range(0, maximum);
-        foreach (var number in numbers)
-        {
-            var generated = searchState.CurrentBoxel.WithSystemNumber(number);
-            systemsByName.TryGetValue(generated.GeneratedName, out var system);
-            if (system?.IsComplete == true
-                || searchState.Persistence.CompletedSystems.Contains(
-                    generated.GeneratedName,
-                    StringComparer.Ordinal)
-                || searchState.EmptySystems.Contains(
-                    generated.GeneratedName,
-                    StringComparer.Ordinal)
-                || searchState.IsSystemDeferred(
-                    searchState.CurrentBoxel.Prefix,
-                    number))
-            {
-                continue;
-            }
-
-            return system?.Boxel.Name ?? generated.Name;
-        }
-
-        return searchState.NextSystem;
+        return SortDescending
+            ? searchState.NextSystemDescending
+            : searchState.NextSystemAscending;
     }
 
     private (int[] Numbers, int DeferredCount) GetOrderedSystemNumbers(

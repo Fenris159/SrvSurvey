@@ -5644,7 +5644,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
-    "Text": "Cancel audit safely retains the partial work already applied. Save again after reviewing the result so the saved library entry records the newest progress and modified date.",
+    "Text": "Cancel audit safely retains the partial work already applied. Linked library progress and its modified date update automatically as audit results are applied.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

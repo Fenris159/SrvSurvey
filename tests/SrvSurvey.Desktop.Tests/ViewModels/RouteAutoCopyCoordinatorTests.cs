@@ -1,3 +1,4 @@
+using Avalonia.Headless.XUnit;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
@@ -5,8 +6,10 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class RouteAutoCopyCoordinatorTests : IDisposable
+[Collection(AvaloniaHeadlessTestCollection.Name)]
+public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
 {
+    private readonly List<BoxelSearchSession> sessions = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-route-autocopy-tests-{Guid.NewGuid():N}");
@@ -114,7 +117,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
         Assert.False(savedProfile.Data!.BoxelSearch.AutoCopy);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public async Task SelectingBoxelAutoCopyAutomaticallyClearsBothRouteSelections()
     {
         var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
@@ -126,7 +129,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
             boxel.Session);
         await coordinator.ClaimAsync(standard);
 
-        boxel.AutoCopy = true;
+        await Task.Run(() => boxel.AutoCopy = true);
         await WaitUntilAsync(() => !standard.AutoCopy && !carrier.AutoCopy);
         await coordinator.ClaimAsync(boxel.Session);
         var profileStore = new CommanderProfileStore(temporaryDirectory);
@@ -209,11 +212,14 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
 
     private BoxelSearchViewModel CreateInactiveBoxel()
     {
-        return BoxelSearchViewModelTestFactory.Create(
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
-            new EmptyBoxelResolver());
+            new EmptyBoxelResolver(),
+            out var session);
+        sessions.Add(session);
+        return viewModel;
     }
 
     private async Task<BoxelSearchViewModel> CreateConfiguredBoxelAsync(
@@ -242,23 +248,36 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        while (!condition())
+        while (!condition() && !timeout.IsCancellationRequested)
         {
-            await Task.Delay(10, timeout.Token);
+            await Task.Delay(10);
         }
+
+        Assert.True(condition());
     }
 
     private static async Task WaitUntilAsync(Func<Task<bool>> condition)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        while (!await condition())
+        var satisfied = await condition();
+        while (!satisfied && !timeout.IsCancellationRequested)
         {
-            await Task.Delay(10, timeout.Token);
+            await Task.Delay(10);
+            satisfied = await condition();
         }
+
+        Assert.True(satisfied);
     }
 
-    public void Dispose()
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+
+    public async ValueTask DisposeAsync()
     {
+        foreach (var session in sessions.AsEnumerable().Reverse())
+        {
+            await session.DisposeAsync();
+        }
+
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, true);

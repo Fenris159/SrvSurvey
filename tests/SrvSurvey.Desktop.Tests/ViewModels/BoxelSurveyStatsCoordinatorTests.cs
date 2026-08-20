@@ -7,8 +7,9 @@ using static SrvSurvey.Desktop.Tests.JournalEventEnvelopeTestParser;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class BoxelSurveyStatsCoordinatorTests : IDisposable
+public sealed class BoxelSurveyStatsCoordinatorTests : IAsyncLifetime
 {
+    private BoxelSearchSession? session;
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         "SrvSurvey-BoxelSurveyStatsCoordinatorTests-" + Guid.NewGuid().ToString("N"));
@@ -107,12 +108,20 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IDisposable
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
             new NullResolver(),
+            out session,
             surveyStats: coordinator);
         Assert.Same(coordinator, viewModel.SurveyStats);
     }
 
-    public void Dispose()
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+
+    public async ValueTask DisposeAsync()
     {
+        if (session is not null)
+        {
+            await session.DisposeAsync();
+        }
+
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, recursive: true);

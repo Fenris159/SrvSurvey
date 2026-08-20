@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -228,7 +229,14 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
             return;
         }
 
-        await ClaimAfterPropertyChangeAsync(boxel);
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            await ClaimAfterPropertyChangeAsync(boxel);
+            return;
+        }
+
+        Dispatcher.UIThread.Post(
+            async () => await ClaimAfterPropertyChangeAsync(boxel));
     }
 
     internal async Task ClaimAfterPropertyChangeAsync(

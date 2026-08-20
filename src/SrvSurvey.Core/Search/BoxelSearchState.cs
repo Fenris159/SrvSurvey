@@ -1323,18 +1323,22 @@ public sealed class BoxelSearchState
 
     private void SetNextSystem()
     {
+        NextSystem = GetNextSystem(SortDescending);
+    }
+
+    public string? GetNextSystem(bool descending)
+    {
         if (Current is null)
         {
-            NextSystem = null;
-            return;
+            return null;
         }
 
         string? next = null;
         if (!CurrentIsEmpty)
         {
             var maximum = Math.Max(CurrentMaximumSystemNumber, CurrentCount);
-            var step = SortDescending ? -1 : 1;
-            for (var number = SortDescending ? maximum - 1 : 0;
+            var step = descending ? -1 : 1;
+            for (var number = descending ? maximum - 1 : 0;
                  number >= 0 && number < maximum;
                  number += step)
             {
@@ -1357,7 +1361,7 @@ public sealed class BoxelSearchState
         next ??= progress.FirstOrDefault(entry =>
                 entry.Value != -1 && !completed.Contains(entry.Key))
             .Key;
-        NextSystem = next ?? Current.Prefix;
+        return next ?? Current.Prefix;
     }
 
     private static DateTimeOffset? Max(

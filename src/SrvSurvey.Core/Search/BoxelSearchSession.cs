@@ -21,6 +21,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
     private readonly BoxelCompletionAuditor completionAuditor;
     private readonly BoxelSearchState state = new();
     private readonly SemaphoreSlim mutationGate = new(1, 1);
+    private readonly SemaphoreSlim refreshStartGate = new(1, 1);
     private readonly CancellationTokenSource lifetimeCancellation = new();
     private readonly object externalWorkSync = new();
     private readonly Dictionary<BoxelSearchHealthSubsystem, BoxelSearchHealthIssue>
@@ -552,22 +553,33 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             .ConfigureAwait(false);
     }
 
-    private Task<BoxelSearchOutcome> StartRefreshAsync(CancellationToken cancellationToken)
+    private async Task<BoxelSearchOutcome> StartRefreshAsync(
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfUnavailable();
         Task<BoxelSearchOutcome> task;
-        lock (externalWorkSync)
+        await refreshStartGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            refreshCancellation?.Cancel();
-            refreshCancellation?.Dispose();
-            refreshCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-                lifetimeCancellation.Token);
-            task = RunRefreshCoreAsync(refreshCancellation.Token);
-            refreshTask = task;
+            ThrowIfUnavailable();
+            await CancelRefreshAsync().ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            lock (externalWorkSync)
+            {
+                refreshCancellation?.Dispose();
+                refreshCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                    lifetimeCancellation.Token);
+                task = RunRefreshCoreAsync(refreshCancellation.Token);
+                refreshTask = task;
+            }
+        }
+        finally
+        {
+            refreshStartGate.Release();
         }
 
-        return AwaitAndClearRefreshAsync(task);
+        return await AwaitAndClearRefreshAsync(task).ConfigureAwait(false);
     }
 
     private async Task<BoxelSearchOutcome> RunRefreshAsync(
@@ -665,6 +677,11 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
                             request.Current,
                             cancellationToken)
                         .ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                    when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
                 }
                 catch (Exception exception) when (IsResolverException(exception))
                 {
@@ -1880,6 +1897,8 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             Version = state.Version,
             Persistence = state.CreateSnapshot(),
             NextSystem = state.NextSystem,
+            NextSystemAscending = state.GetNextSystem(descending: false),
+            NextSystemDescending = state.GetNextSystem(descending: true),
             CurrentIsEmpty = state.CurrentIsEmpty,
             CurrentMinimumSystemNumber = state.CurrentMinimumSystemNumber,
             CurrentMaximumSystemNumber = state.CurrentMaximumSystemNumber,

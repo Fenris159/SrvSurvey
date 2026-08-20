@@ -197,6 +197,7 @@ public sealed partial class App : Application
         applicationLogService = applicationLog;
 
         mainWindow = new MainWindow(viewModel);
+        viewModel.BoxelClipboard.SetWriter(WriteClipboardAsync);
         desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
         desktop.MainWindow = mainWindow;
 
@@ -666,6 +667,7 @@ public sealed partial class App : Application
     {
         linuxTerminationRegistration?.Dispose();
         linuxTerminationRegistration = null;
+        viewModel.BoxelClipboard.SetWriter(null);
         viewModel.SetJournalCommandPlatformServices(null, null, null);
         viewModel.ProfileImportCompleted -=
             RestartAfterProfileImportAsync;
@@ -1232,7 +1234,6 @@ public sealed partial class App : Application
             return false;
         }
 
-        viewModel.BoxelClipboard.SetWriter(WriteClipboardAsync);
         await viewModel.BoxelSearch.CopyNextSystemAsync();
         return true;
     }

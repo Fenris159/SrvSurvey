@@ -2817,8 +2817,8 @@
                    "translation":  "Prüfung abbrechen"
                },
                {
-                   "source":  "Cancel audit safely retains the partial work already applied. Save again after reviewing the result so the saved library entry records the newest progress and modified date.",
-                   "translation":  "Mit „Prüfung abbrechen“ werden die bereits angewendeten Teilarbeiten sicher beibehalten. Speichern Sie erneut, nachdem Sie das Ergebnis überprüft haben, damit der gespeicherte Bibliothekseintrag den neuesten Fortschritt und das Änderungsdatum aufzeichnet."
+                   "source":  "Cancel audit safely retains the partial work already applied. Linked library progress and its modified date update automatically as audit results are applied.",
+                   "translation":  "Mit „Prüfung abbrechen“ werden die bereits angewendeten Teilarbeiten sicher beibehalten. Der Fortschritt der verknüpften Bibliothek und ihr Änderungsdatum werden automatisch aktualisiert, wenn Prüfergebnisse angewendet werden."
                },
                {
                    "source":  "Cancel overlay position and opacity changes",
@@ -25467,8 +25467,8 @@
                    "translation":  "Cancelar auditoría"
                },
                {
-                   "source":  "Cancel audit safely retains the partial work already applied. Save again after reviewing the result so the saved library entry records the newest progress and modified date.",
-                   "translation":  "Cancelar auditoría conserva de forma segura el trabajo parcial ya aplicado. Guarde nuevamente después de revisar el resultado para que la entrada guardada de la biblioteca registre el progreso más reciente y la fecha de modificación."
+                   "source":  "Cancel audit safely retains the partial work already applied. Linked library progress and its modified date update automatically as audit results are applied.",
+                   "translation":  "Cancelar auditoría conserva de forma segura el trabajo parcial ya aplicado. El progreso de la biblioteca vinculada y su fecha de modificación se actualizan automáticamente a medida que se aplican los resultados de la auditoría."
                },
                {
                    "source":  "Cancel overlay position and opacity changes",
@@ -48117,8 +48117,8 @@
                    "translation":  "Annuler l\u0027audit"
                },
                {
-                   "source":  "Cancel audit safely retains the partial work already applied. Save again after reviewing the result so the saved library entry records the newest progress and modified date.",
-                   "translation":  "Annuler l\u0027audit conserve en toute sécurité le travail partiel déjà appliqué. Enregistrez à nouveau après avoir examiné le résultat afin que l\u0027entrée de bibliothèque enregistrée enregistre la progression la plus récente et la date de modification."
+                   "source":  "Cancel audit safely retains the partial work already applied. Linked library progress and its modified date update automatically as audit results are applied.",
+                   "translation":  "Annuler l\u0027audit conserve en toute sécurité le travail partiel déjà appliqué. La progression de la bibliothèque liée et sa date de modification sont automatiquement mises à jour à mesure que les résultats de l\u0027audit sont appliqués."
                },
                {
                    "source":  "Cancel overlay position and opacity changes",
@@ -70767,8 +70767,8 @@
                       "translation":  "Cancelar auditoria"
                   },
                   {
-                      "source":  "Cancel audit safely retains the partial work already applied. Save again after reviewing the result so the saved library entry records the newest progress and modified date.",
-                      "translation":  "Cancelar auditoria retém com segurança o trabalho parcial já aplicado. Salve novamente após revisar o resultado para que a entrada salva da biblioteca registre o progresso mais recente e a data de modificação."
+                      "source":  "Cancel audit safely retains the partial work already applied. Linked library progress and its modified date update automatically as audit results are applied.",
+                      "translation":  "Cancelar auditoria retém com segurança o trabalho parcial já aplicado. O progresso da biblioteca vinculada e sua data de modificação são atualizados automaticamente à medida que os resultados da auditoria são aplicados."
                   },
                   {
                       "source":  "Cancel overlay position and opacity changes",
@@ -93417,8 +93417,8 @@
                    "translation":  "Отменить аудит"
                },
                {
-                   "source":  "Cancel audit safely retains the partial work already applied. Save again after reviewing the result so the saved library entry records the newest progress and modified date.",
-                   "translation":  "Отмена аудита безопасно сохраняет уже выполненную частичную работу. Сохраните еще раз после просмотра результата, чтобы в сохраненной записи библиотеки были записаны новейшие сведения о ходе выполнения и дата изменения."
+                   "source":  "Cancel audit safely retains the partial work already applied. Linked library progress and its modified date update automatically as audit results are applied.",
+                   "translation":  "Отмена аудита безопасно сохраняет уже выполненную частичную работу. Ход работы связанной библиотеки и дата ее изменения обновляются автоматически по мере применения результатов аудита."
                },
                {
                    "source":  "Cancel overlay position and opacity changes",
@@ -116067,8 +116067,8 @@
                         "translation":  "取消审核"
                     },
                     {
-                        "source":  "Cancel audit safely retains the partial work already applied. Save again after reviewing the result so the saved library entry records the newest progress and modified date.",
-                        "translation":  "取消审核可以安全地保留已应用的部分工作。查看结果后再次保存，以便保存的库条目记录最新的进度和修改日期。"
+                        "source":  "Cancel audit safely retains the partial work already applied. Linked library progress and its modified date update automatically as audit results are applied.",
+                        "translation":  "取消审核可以安全地保留已应用的部分工作。应用审核结果时，链接库进度及其修改日期会自动更新。"
                     },
                     {
                         "source":  "Cancel overlay position and opacity changes",
@@ -138717,8 +138717,8 @@
                    "translation":  "* CANCEL AUDIT \u003e\u003e\u003e!"
                },
                {
-                   "source":  "Cancel audit safely retains the partial work already applied. Save again after reviewing the result so the saved library entry records the newest progress and modified date.",
-                   "translation":  "* CANCEL AUDIT SAFELY RETAINS THE PARTIAL WORK ALREADY APPLIED. SAVE AGAIN AFTER REVIEWING THE RESULT SO THE SAVED LIBRARY ENTRY RECORDS THE NEWEST PROGRESS AND MODIFIED DATE. \u003e\u003e\u003e!"
+                   "source":  "Cancel audit safely retains the partial work already applied. Linked library progress and its modified date update automatically as audit results are applied.",
+                   "translation":  "* CANCEL AUDIT SAFELY RETAINS THE PARTIAL WORK ALREADY APPLIED. LINKED LIBRARY PROGRESS AND ITS MODIFIED DATE UPDATE AUTOMATICALLY AS AUDIT RESULTS ARE APPLIED. \u003e\u003e\u003e!"
                },
                {
                    "source":  "Cancel overlay position and opacity changes",

@@ -8,8 +8,9 @@ using static SrvSurvey.Desktop.Tests.JournalEventEnvelopeTestParser;
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
-public sealed class BoxelSearchViewModelTests : IDisposable
+public sealed class BoxelSearchViewModelTests : IAsyncLifetime
 {
+    private readonly List<BoxelSearchSession> sessions = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-boxel-vm-tests-{Guid.NewGuid():N}");
@@ -54,7 +55,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         var originalStart = DateTimeOffset.Parse("2026-05-04T00:00:00-05:00");
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var savedStore = new SavedBoxelSearchStore(temporaryDirectory);
-        var first = BoxelSearchViewModelTestFactory.Create(
+        var first = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -69,7 +70,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             SaveBoxelProgressResult.Saved,
             await first.SaveProgressAsync("Original configuration", null));
         var saved = Assert.Single(await savedStore.ListAsync("F123"));
-        var resumed = BoxelSearchViewModelTestFactory.Create(
+        var resumed = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -467,7 +468,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -522,7 +523,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -704,7 +705,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             "known_systems = {\n  \"sol\": 10477373803,\n}\n"
                 + "known_missing = [\n]\n");
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -738,7 +739,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             new SystemNameSuggestion("Sol", 10477373803, "EDSM"),
             new SystemNameSuggestion("Solati", 1458376315610, "EDSM"),
         ]);
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -780,7 +781,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var copied = new List<string>();
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -829,7 +830,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var copied = new List<string>();
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -953,7 +954,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -1189,7 +1190,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var savedStore = new SavedBoxelSearchStore(temporaryDirectory);
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -1282,12 +1283,47 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.True(restarted.Systems[1].IsComplete);
     }
 
-    public void Dispose()
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+
+    public async ValueTask DisposeAsync()
     {
+        foreach (var session in sessions.AsEnumerable().Reverse())
+        {
+            await session.DisposeAsync();
+        }
+
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, true);
         }
+    }
+
+    private BoxelSearchViewModel CreateTrackedViewModel(
+        CommanderProfileStore profileStore,
+        LegacySystemDataReader localSystemReader,
+        EmptyBoxelStore emptyBoxelStore,
+        IBoxelSystemResolver systemResolver,
+        Func<string, Task>? clipboardWriter = null,
+        KnownSystemAddressCatalog? knownSystems = null,
+        SavedBoxelSearchStore? savedSearchStore = null,
+        ISystemNameSuggestionClient? systemNameSuggestionClient = null,
+        TimeSpan? systemSuggestionDelay = null,
+        BoxelSurveyStatsCoordinator? surveyStats = null)
+    {
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
+            profileStore,
+            localSystemReader,
+            emptyBoxelStore,
+            systemResolver,
+            out var session,
+            clipboardWriter,
+            knownSystems,
+            savedSearchStore,
+            systemNameSuggestionClient,
+            systemSuggestionDelay,
+            surveyStats);
+        sessions.Add(session);
+        return viewModel;
     }
 
     private BoxelSearchViewModel CreateViewModel(
@@ -1296,7 +1332,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         ISystemNameSuggestionClient? suggestionClient = null,
         BoxelSurveyStatsCoordinator? surveyStats = null)
     {
-        return BoxelSearchViewModelTestFactory.Create(
+        return CreateTrackedViewModel(
             store,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
