@@ -920,14 +920,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RamTahViewModel.cs"
   },
   {
-    "Text": "A commander profile must be loaded first.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "A compatible live construction depot is ready.",
     "IsFormat": false,
     "SourceKinds": [
@@ -1857,14 +1849,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
-    "Text": "Activate a boxel search before refreshing systems.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "Activate a boxel search to audit its full area.",
     "IsFormat": false,
     "SourceKinds": [
@@ -2030,7 +2014,15 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
+    "Text": "Add or remove saved search favorite",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "Add planning notes, reminders, or a description for this route.",
@@ -2158,7 +2150,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "Adding embedded banner to future screenshots",
@@ -3170,14 +3162,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
-    "Text": "Audit stopped after {0} boxels.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "Audited all {0} boxels and saved the refreshed progress.",
     "IsFormat": true,
     "SourceKinds": [
@@ -3186,7 +3170,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
-    "Text": "Audited all {0} boxels.",
+    "Text": "Audited all {0} boxels with {1} warnings.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Audited {0} of {1} boxels.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -4037,9 +4029,10 @@
     "Text": "BOXEL",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "BOXEL 42 / 128 | ROUTE HOP 4 / 9",
@@ -4942,6 +4935,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "Boxel search synchronization restored.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Boxel statistics",
     "IsFormat": false,
     "SourceKinds": [
@@ -5665,14 +5666,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Cancelled after {0} of {1} boxels.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "Cancelling the full-area audit after the current request\u2026",
@@ -9082,7 +9075,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "DEADLINE",
@@ -9551,6 +9544,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
+    "Text": "Delete \u0027{0}\u0027? It will be moved to recovery storage.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
+  },
+  {
     "Text": "Delete \u0027{0}\u0027? The route will be moved to recovery storage.",
     "IsFormat": true,
     "SourceKinds": [
@@ -9565,6 +9566,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Delete saved search?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "Delete selected fleet-carrier routes",
@@ -9597,6 +9606,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Delete selected saved search",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
+    "Text": "Delete the selected saved search?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "Delete this route?",
@@ -10703,7 +10728,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "EDSM",
@@ -10897,6 +10922,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Edit notes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "Edit overlay positions",
@@ -11338,6 +11371,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Enter a name for this saved search.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SaveBoxelSearchDialog.axaml"
   },
   {
     "Text": "Enter a star-system name to set a custom origin.",
@@ -12493,7 +12534,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "Federation",
@@ -16950,6 +16991,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/LastFssBodyOverlayWindow.axaml"
   },
   {
+    "Text": "LAST MODIFIED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
     "Text": "LAST SYNC 2 M AGO | RADAR 1.0 KM",
     "IsFormat": false,
     "SourceKinds": [
@@ -17839,6 +17888,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceSurveyViewModel.cs"
   },
   {
+    "Text": "Loaded the active boxel search.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Loaded the active legacy spherical limit.",
     "IsFormat": false,
     "SourceKinds": [
@@ -17933,6 +17990,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Loaded {0} saved boxel search{1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "Loaded {0} saved route{1}.",
@@ -18037,6 +18102,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml.cs"
+  },
+  {
+    "Text": "Loading saved boxel searches\u2026",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "Loading stations in {0}...",
@@ -19458,6 +19531,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
+    "Text": "Moved {0} to recovery storage.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
+  },
+  {
     "Text": "Moved {0}. Use \u2713 to save all changes or \u2715 to cancel them.",
     "IsFormat": true,
     "SourceKinds": [
@@ -19591,7 +19672,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "NAMED POINT",
@@ -19738,7 +19819,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "NOTES / RELATED SITE",
@@ -19764,6 +19845,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Name this search so you can resume it later.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SaveBoxelSearchDialog.axaml"
   },
   {
     "Text": "Name=SrvSurvey",
@@ -20979,7 +21068,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "No on-foot materials are currently available from ShipLocker.json.",
@@ -21093,6 +21182,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
+  },
+  {
+    "Text": "No saved boxel searches",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
+    "Text": "No saved boxel searches yet.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "No saved commander profiles were found. Import the original profile or start Elite once.",
@@ -21493,7 +21598,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "Notes added to the draft. Use Save As... to keep them.",
@@ -21954,6 +22059,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "Open Library",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
     "Text": "Open Raven builds",
     "IsFormat": false,
     "SourceKinds": [
@@ -22033,6 +22146,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Open boxel statistics",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "Open categorized previews without starting Elite. Changes are saved only with \u2713.",
@@ -22458,6 +22579,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Optional notes about this boxel search",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SaveBoxelSearchDialog.axaml"
   },
   {
     "Text": "Optional project notes",
@@ -23172,6 +23301,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "PROGRESS COMPLETED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "PROHIBITED",
@@ -24119,14 +24256,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/BiologyCodexWindowCoordinator.cs"
-  },
-  {
-    "Text": "Preparing to audit {0} boxels\u2026",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "Preparing update...",
@@ -26636,6 +26765,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "Refreshed {0} known systems with warnings.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "Refreshing Raven data and checking for concurrent changes...",
     "IsFormat": false,
     "SourceKinds": [
@@ -26666,14 +26803,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml.cs"
-  },
-  {
-    "Text": "Refreshing {0}\u2026",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "Refreshing...",
@@ -26993,7 +27122,23 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
+  },
+  {
+    "Text": "Rename saved search",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
+    "Text": "Renamed saved search to {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "Reopen",
@@ -27133,6 +27278,14 @@
   },
   {
     "Text": "Require FSS to report all bodies before completion",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Requires FSSAllBodiesFound for new local visits. Enabled earlier-visit and older-Spansh completion rules still apply.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -27348,12 +27501,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
-    "Text": "Resume Search",
+    "Text": "Resume Selected",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
+    "Text": "Resume an older search or organize searches you want to revisit.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "Resume paused quest",
@@ -28090,7 +28251,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "SELECTED",
@@ -28335,6 +28496,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
+    "Text": "STATS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
     "Text": "STATUS",
     "IsFormat": false,
     "SourceKinds": [
@@ -28567,20 +28736,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
+    "Text": "Save Boxel Search Progress",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SaveBoxelSearchDialog.axaml"
+  },
+  {
     "Text": "Save Changes",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
-  },
-  {
-    "Text": "Save Progress",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "Save Ruins aerial screenshots into site-type sub-folders",
@@ -28679,6 +28848,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "Save name",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
     "Text": "Save named state",
     "IsFormat": false,
     "SourceKinds": [
@@ -28690,9 +28867,10 @@
     "Text": "Save notes",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemNotesViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "Save opacity override",
@@ -28759,6 +28937,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
   },
   {
+    "Text": "Save to Library",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SaveBoxelSearchDialog.axaml"
+  },
+  {
     "Text": "Save, resume, and audit a boxel project",
     "IsFormat": false,
     "SourceKinds": [
@@ -28799,6 +28986,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
   },
   {
+    "Text": "Saved Boxel Searches",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
     "Text": "Saved Guardian survey to {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -28813,6 +29008,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Saved boxel searches",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "Saved development state could not be reloaded: {0}",
@@ -28836,7 +29039,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "Saved notes to {0}.",
@@ -28887,7 +29090,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
   },
   {
-    "Text": "Saved the current boxel search progress.",
+    "Text": "Saved to Library",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -29442,6 +29645,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Select Open Library to browse saved searches by favorite, name, creation date, last modified date, completion, and notes. Resume Selected restores its tree, options, and completed systems.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Select Refresh to scan commander profiles and the game state.",
     "IsFormat": false,
     "SourceKinds": [
@@ -29450,15 +29661,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
   },
   {
-    "Text": "Select Resume Search to browse one saved search at a time by favorite, name, creation date, last modified date, completion, and notes. Open Selected restores its tree, options, and completed systems.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Select Save Progress. The first save asks for a name and notes, preloading the top system as the name. Later saves update that same entry directly.",
+    "Text": "Select Save to Library. The first save asks for a name and notes, preloading the top system as the name. Progress then syncs to that library entry automatically.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -31479,14 +31682,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "Spansh refresh failed: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "Spansh returned a route with no systems.",
     "IsFormat": false,
     "SourceKinds": [
@@ -32272,14 +32467,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Start a boxel search before saving its progress.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "Start a journey to track systems, scans, notes, screenshots, and rewards.",
     "IsFormat": false,
     "SourceKinds": [
@@ -32294,6 +32481,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Start a search, then choose Save to Library to add it here.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
     "Text": "Start a settlement template draft before exporting.",
@@ -34260,14 +34455,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "The audit finished for a profile that is no longer active; its results were not applied.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "The bio-status and surface overlays track the active genus, three-sample sequence, colony distance, and estimated reward.",
     "IsFormat": false,
     "SourceKinds": [
@@ -34300,16 +34487,16 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "The boxel refresh could not be completed: {0}",
-    "IsFormat": true,
+    "Text": "The boxel refresh could not be completed.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
-    "Text": "The boxel search changed for this session but could not be saved: {0}",
-    "IsFormat": true,
+    "Text": "The boxel search changed for this session but could not be saved.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -34325,6 +34512,14 @@
   },
   {
     "Text": "The boxel search could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "The boxel search option could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -34820,14 +35015,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
   },
   {
-    "Text": "The empty-system marker was not changed: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
     "Text": "The error-report window could not be opened: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -34865,7 +35052,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
@@ -34892,15 +35079,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "The full-area audit could not be completed: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
-    "Text": "The full-area audit is running in the background.",
+    "Text": "The full-area audit could not be completed.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -35484,12 +35663,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
-    "Text": "The next system could not be copied: {0}",
-    "IsFormat": true,
+    "Text": "The next system could not be copied.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "The notes could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "The number produced is an estimate. You need to manually \u0022bruteforce\u0022 the last system of the boxel in the galaxy map search to be certain. Begin with a high number and decrease it until you find the last existing system. Enter that final system number exactly as shown; SrvSurvey includes system 0 when it calculates the total.",
@@ -36068,6 +36255,46 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderPreferenceViewModel.cs"
   },
   {
+    "Text": "The saved boxel search action could not be completed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
+  },
+  {
+    "Text": "The saved boxel search could not be opened: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
+  },
+  {
+    "Text": "The saved boxel search library is temporarily unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "The saved boxel searches could not be loaded: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
+  },
+  {
+    "Text": "The saved boxel searches could not be refreshed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
+  },
+  {
     "Text": "The saved overlay theme state was not deleted: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -36122,6 +36349,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The saved search could not be deleted: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
+  },
+  {
+    "Text": "The saved search could not be renamed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "The scan/task is complete, the condition is valid, or the ship/carrier has enough cargo for the requirement.",
@@ -36194,14 +36437,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianTemplateAuthoringViewModel.cs"
-  },
-  {
-    "Text": "The selected boxel could not be opened.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "The selected export folder is not available as a local filesystem path.",
@@ -36844,6 +37079,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "This boxel search is already saved to the library.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
     "Text": "This construction site is not in the active project list.",
     "IsFormat": false,
     "SourceKinds": [
@@ -36866,6 +37109,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
+  },
+  {
+    "Text": "This is an explicit completion rule when Spansh has body records older than the search start date, even when full-FSS completion is required.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "This key belongs to {0}, not {1}. The saved key was not changed.",
@@ -38567,7 +38818,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
-    "Text": "Use Stop search when you want the live Boxel workflow inactive while retaining its current profile state. Save Progress is the clearer choice when you intend to switch among several named projects.",
+    "Text": "Use Stop search when you want the live Boxel workflow inactive while retaining both its current profile state and its linked library progress.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -44379,6 +44630,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "{0} of {1} known systems complete; audit for the full total",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
+  },
+  {
     "Text": "{0} of {1} logs \u2022 {2}%",
     "IsFormat": true,
     "SourceKinds": [
@@ -44401,6 +44660,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "{0} of {1} systems complete",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "{0} of {1} \u00B7 {2}",
@@ -44529,6 +44796,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
+    "Text": "{0} saved search{1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
     "Text": "{0} scan circles \u00B7 {1} trackers",
@@ -44705,14 +44980,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
-  },
-  {
-    "Text": "{0} {1} warning{2} occurred. First: {3}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "{0} \u00B7 active",

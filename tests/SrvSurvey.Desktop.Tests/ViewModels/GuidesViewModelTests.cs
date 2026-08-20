@@ -214,7 +214,8 @@ public sealed class GuidesViewModelTests
         Assert.Contains("lowest incomplete suffix", instructions, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("FSSAllBodiesFound", instructions, StringComparison.Ordinal);
         Assert.Contains("mutually exclusive", instructions, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("Resume Search", instructions, StringComparison.Ordinal);
+        Assert.Contains("Open Library", instructions, StringComparison.Ordinal);
+        Assert.Contains("Resume Selected", instructions, StringComparison.Ordinal);
         Assert.Contains("last modified date", instructions, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("more than 1,000 requests", instructions, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Marx's Guide to Boxels", instructions, StringComparison.Ordinal);

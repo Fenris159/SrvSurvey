@@ -293,10 +293,10 @@
               <Button Classes="secondary"
                       IsEnabled="{Binding BoxelSearch.CanSaveProgress}"
                       Click="SaveProgress_Click"
-                      Content="Save Progress" />
+                      Content="{Binding BoxelSearch.LibrarySaveButtonText}" />
               <Button Classes="secondary"
                       Click="ResumeSearch_Click"
-                      Content="Resume Search" />
+                      Content="Open Library" />
             </StackPanel>
           </StackPanel>
         </Border>
