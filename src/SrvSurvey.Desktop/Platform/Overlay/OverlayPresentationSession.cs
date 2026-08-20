@@ -54,6 +54,7 @@ public sealed class OverlayPresentationSession : IDisposable
                 null,
                 CreateHostDependencies(
                     OverlayPlatformService.CreateCurrent,
+                    registry,
                     overlayLayout,
                     keepWhenGameLosesFocus,
                     diagnosticSink));
@@ -72,6 +73,7 @@ public sealed class OverlayPresentationSession : IDisposable
                 null,
                 CreateHostDependencies(
                     OverlayPlatformService.CreateCurrent,
+                    registry,
                     overlayLayout,
                     keepWhenGameLosesFocus,
                     diagnosticSink));
@@ -86,6 +88,7 @@ public sealed class OverlayPresentationSession : IDisposable
             controller,
             CreateHostDependencies(
                 () => new CombinedOverlayPlatformService(controller),
+                registry,
                 overlayLayout,
                 keepWhenGameLosesFocus,
                 diagnosticSink));
@@ -140,6 +143,7 @@ public sealed class OverlayPresentationSession : IDisposable
 
     private static OverlayPresentationSessionDependencies CreateHostDependencies(
         Func<IOverlayPlatformService> platformFactory,
+        OverlayWindowRegistry? registry,
         LegacyOverlayLayout overlayLayout,
         Func<bool> keepWhenGameLosesFocus,
         Action<OverlayHostDiagnostic>? diagnosticSink)
@@ -151,7 +155,8 @@ public sealed class OverlayPresentationSession : IDisposable
                 keepWhenGameLosesFocus),
             interval => new DispatcherHostedOverlayTimer(interval),
             overlayLayout,
-            diagnosticSink);
+            diagnosticSink,
+            registry ?? OverlayWindowRegistry.Shared);
     }
 
     private void RemoveHostedWindow(HostedOverlayWindow hosted)

@@ -309,9 +309,7 @@ public sealed partial class App : Application
             overlayLayout);
         stationInfoOverlayCoordinator = new StationInfoOverlayCoordinator(
             viewModel.StationInfo,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout);
+            overlayPresentation);
         humanSiteOverlayCoordinator = new HumanSiteOverlayCoordinator(
             viewModel.HumanSite,
             overlayPresentation.CreatePlatformService(),

@@ -15,6 +15,7 @@ public sealed class HostedOverlayWindowTests
         var platform = new RecordingOverlayPlatform();
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
         var timer = new ManualHostedOverlayTimer();
+        var registry = new OverlayWindowRegistry();
         using var session = OverlayPresentationSession.CreateForAdapters(
             new OverlayPresentationDecision(
                 OverlayPresentationMode.MultipleWindows,
@@ -23,7 +24,8 @@ public sealed class HostedOverlayWindowTests
                 () => platform,
                 () => tracker,
                 _ => timer,
-                LegacyOverlayLayout.Empty));
+                LegacyOverlayLayout.Empty,
+                WindowRegistry: registry));
         var preparation = default(OverlayPreparationResult);
         var fallbackCalls = 0;
         using var hosted = session.HostPassiveWindow(
@@ -53,6 +55,10 @@ public sealed class HostedOverlayWindowTests
         Assert.Equal("Prepared", preparation?.Status);
         Assert.Equal(1, fallbackCalls);
         Assert.True(timer.IsStarted);
+        Assert.True(registry.TryGetPlotterName(
+            platform.PreparedWindows[0],
+            out var registeredPlotter));
+        Assert.Equal("PlotTrackTarget", registeredPlotter);
     }
 
     [AvaloniaFact]
@@ -94,6 +100,58 @@ public sealed class HostedOverlayWindowTests
         Assert.Equal(OverlayHostHealth.Faulted, diagnostic.Health);
         Assert.Equal("Factory failed", diagnostic.Status);
         Assert.IsType<InvalidOperationException>(diagnostic.Exception);
+    }
+
+    [AvaloniaFact]
+    public void DiagnosticSinkFailureDoesNotEscapeTheHostedLifecycle()
+    {
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(
+                OverlayPresentationMode.MultipleWindows,
+                "Test session"),
+            new OverlayPresentationSessionDependencies(
+                () => new RecordingOverlayPlatform(),
+                () => new RecordingGameWindowTracker(AvailableGameWindow),
+                _ => new ManualHostedOverlayTimer(),
+                LegacyOverlayLayout.Empty,
+                _ => throw new InvalidOperationException(
+                    "Diagnostic sink failed")));
+        using var hosted = session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotTrackTarget",
+                _ => throw new InvalidOperationException("Factory failed"),
+                (_, _) => new PixelPoint(25, 30)));
+
+        var exception = Record.Exception(
+            () => hosted.Reconcile(wantsWindow: true));
+
+        Assert.Null(exception);
+        Assert.Equal(OverlayHostHealth.Faulted, hosted.Health);
+    }
+
+    [Fact]
+    public void ConstructionFailureReleasesEarlierDependencyLeases()
+    {
+        var platform = new RecordingOverlayPlatform();
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(
+                OverlayPresentationMode.MultipleWindows,
+                "Test session"),
+            new OverlayPresentationSessionDependencies(
+                () => platform,
+                () => throw new InvalidOperationException("Tracker failed"),
+                _ => new ManualHostedOverlayTimer(),
+                LegacyOverlayLayout.Empty));
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => session.HostPassiveWindow(
+                new PassiveOverlayWindowDefinition(
+                    "PlotTrackTarget",
+                    _ => new Window { Width = 128, Height = 108 },
+                    (_, _) => new PixelPoint(25, 30))));
+
+        Assert.Equal("Tracker failed", exception.Message);
+        Assert.Equal(1, platform.DisposeCalls);
     }
 
     [AvaloniaFact]

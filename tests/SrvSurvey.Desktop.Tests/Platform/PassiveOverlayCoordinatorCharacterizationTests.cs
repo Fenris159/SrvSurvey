@@ -54,10 +54,10 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
         using var stationInfo = CreateStationInfo();
         var platform = new RecordingOverlayPlatform();
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
+        using var session = CreateSession(platform, tracker);
         using var coordinator = new StationInfoOverlayCoordinator(
             stationInfo,
-            platform,
-            tracker);
+            session);
         var visibilityChanges = 0;
         coordinator.VisibilityChanged += (_, _) => visibilityChanges++;
 

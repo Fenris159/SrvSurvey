@@ -125,14 +125,24 @@ public static class OverlayThemeResources
         LegacyOverlayLayout layout,
         string plotterName)
     {
+        Apply(window, layout, plotterName, OverlayWindowRegistry.Shared);
+    }
+
+    internal static void Apply(
+        Window window,
+        LegacyOverlayLayout layout,
+        string plotterName,
+        OverlayWindowRegistry registry)
+    {
         ArgumentNullException.ThrowIfNull(layout);
+        ArgumentNullException.ThrowIfNull(registry);
         _ = OverlayLayoutCatalog.GetRequired(plotterName);
         Apply(window);
         ApplyLegacyFormFactor(window, plotterName);
         ApplyLegacyPresentation(window, plotterName);
         ApplyScale(window, layout, plotterName);
         ApplyOpacity(window, layout, plotterName);
-        OverlayWindowRegistry.Shared.Register(window, plotterName);
+        registry.Register(window, plotterName);
         RegisterLayoutSettings(window, layout, plotterName);
     }
 

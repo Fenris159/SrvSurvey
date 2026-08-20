@@ -43,7 +43,8 @@ internal sealed record OverlayPresentationSessionDependencies(
     Func<IGameWindowTracker> CreateGameWindowTracker,
     Func<TimeSpan, IHostedOverlayTimer> CreateTimer,
     LegacyOverlayLayout OverlayLayout,
-    Action<OverlayHostDiagnostic>? ReportDiagnostic = null);
+    Action<OverlayHostDiagnostic>? ReportDiagnostic = null,
+    OverlayWindowRegistry? WindowRegistry = null);
 
 internal interface IHostedOverlayTimer : IDisposable
 {
@@ -87,6 +88,7 @@ internal sealed class HostedOverlayWindow : IDisposable
     private readonly LegacyOverlayLayout overlayLayout;
     private readonly IHostedOverlayTimer timer;
     private readonly Action<OverlayHostDiagnostic>? reportDiagnostic;
+    private readonly OverlayWindowRegistry windowRegistry;
     private readonly Action<HostedOverlayWindow> removeFromSession;
     private readonly object reconciliationGate = new();
     private Window? window;
@@ -107,13 +109,64 @@ internal sealed class HostedOverlayWindow : IDisposable
         ArgumentNullException.ThrowIfNull(dependencies);
         this.removeFromSession = removeFromSession
             ?? throw new ArgumentNullException(nameof(removeFromSession));
-        platform = dependencies.CreatePlatform();
-        gameWindowTracker = dependencies.CreateGameWindowTracker();
+        ArgumentNullException.ThrowIfNull(dependencies.CreatePlatform);
+        ArgumentNullException.ThrowIfNull(
+            dependencies.CreateGameWindowTracker);
+        ArgumentNullException.ThrowIfNull(dependencies.CreateTimer);
+        ArgumentNullException.ThrowIfNull(dependencies.OverlayLayout);
         overlayLayout = dependencies.OverlayLayout;
         reportDiagnostic = dependencies.ReportDiagnostic;
-        timer = dependencies.CreateTimer(definition.PollInterval);
-        timer.Tick += OnTimerTick;
-        timer.Start();
+        windowRegistry = dependencies.WindowRegistry
+            ?? OverlayWindowRegistry.Shared;
+        platform = dependencies.CreatePlatform()
+            ?? throw new InvalidOperationException(
+                "The overlay platform factory returned null.");
+        try
+        {
+            gameWindowTracker = dependencies.CreateGameWindowTracker()
+                ?? throw new InvalidOperationException(
+                    "The game-window tracker factory returned null.");
+        }
+        catch
+        {
+            TryDispose(platform);
+            throw;
+        }
+
+        try
+        {
+            timer = dependencies.CreateTimer(definition.PollInterval)
+                ?? throw new InvalidOperationException(
+                    "The hosted overlay timer factory returned null.");
+        }
+        catch
+        {
+            TryDispose(gameWindowTracker);
+            TryDispose(platform);
+            throw;
+        }
+
+        try
+        {
+            timer.Tick += OnTimerTick;
+            timer.Start();
+        }
+        catch
+        {
+            try
+            {
+                timer.Tick -= OnTimerTick;
+            }
+            catch
+            {
+                // Continue releasing every successfully acquired lease.
+            }
+
+            TryDispose(timer);
+            TryDispose(gameWindowTracker);
+            TryDispose(platform);
+            throw;
+        }
     }
 
     public event EventHandler? VisibilityChanged;
@@ -184,6 +237,18 @@ internal sealed class HostedOverlayWindow : IDisposable
 
         _ = OverlayLayoutCatalog.GetRequired(definition.PlotterName);
         return definition;
+    }
+
+    private static void TryDispose(IDisposable disposable)
+    {
+        try
+        {
+            disposable.Dispose();
+        }
+        catch
+        {
+            // Construction cleanup is best effort and preserves the root fault.
+        }
     }
 
     private void OnTimerTick(object? sender, EventArgs eventArgs)
@@ -296,7 +361,8 @@ internal sealed class HostedOverlayWindow : IDisposable
         OverlayThemeResources.Apply(
             overlay,
             overlayLayout,
-            definition.PlotterName);
+            definition.PlotterName,
+            windowRegistry);
         overlay.Opened += OnWindowOpened;
         overlay.Closed += OnWindowClosed;
         window = overlay;
@@ -316,7 +382,7 @@ internal sealed class HostedOverlayWindow : IDisposable
         if (!preparation.IsClickThrough)
         {
             Health = OverlayHostHealth.PassivePreparationFailed;
-            reportDiagnostic?.Invoke(new OverlayHostDiagnostic(
+            TryReportDiagnostic(new OverlayHostDiagnostic(
                 definition.PlotterName,
                 OverlayHostPhase.Opening,
                 Health,
@@ -408,11 +474,23 @@ internal sealed class HostedOverlayWindow : IDisposable
             // Preserve the first lifecycle fault as the diagnostic cause.
         }
 
-        reportDiagnostic?.Invoke(new OverlayHostDiagnostic(
+        TryReportDiagnostic(new OverlayHostDiagnostic(
             definition.PlotterName,
             phase,
             Health,
             exception.Message,
             exception));
+    }
+
+    private void TryReportDiagnostic(OverlayHostDiagnostic diagnostic)
+    {
+        try
+        {
+            reportDiagnostic?.Invoke(diagnostic);
+        }
+        catch
+        {
+            // Diagnostics must not destabilize the lifecycle being reported.
+        }
     }
 }
