@@ -8,6 +8,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class NotificationOverlayCoordinator : IDisposable
 {
+    private const string PlotterName = "PlotFloatie";
+
     private readonly NotificationViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
@@ -118,7 +120,7 @@ public sealed class NotificationOverlayCoordinator : IDisposable
         }
 
         var overlay = new NotificationOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotFloatie");
+        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
         overlay.Opened += (_, _) => PrepareWindow(overlay);
         overlay.Closed += (_, _) =>
         {
@@ -147,7 +149,7 @@ public sealed class NotificationOverlayCoordinator : IDisposable
         OverlayThemeResources.ApplyOpacity(
             overlay,
             overlayLayout,
-            "PlotFloatie");
+            PlotterName);
         var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds)
             ?? overlay.Screens.Primary;
         if (screen is null)
@@ -156,12 +158,9 @@ public sealed class NotificationOverlayCoordinator : IDisposable
         }
 
         var size = OverlayWindowMetrics.PrepareForPlacement(
-            overlay,
-            overlayLayout,
-            "PlotFloatie",
-            screen.Scaling);
+            overlay, overlayLayout, PlotterName, screen.Scaling);
         var position = overlayLayout.GetPosition(
-                "PlotFloatie",
+                PlotterName,
                 gameWindow.ClientBounds,
                 size)
             ?? OverlayWindowPlacement.BottomCenter(

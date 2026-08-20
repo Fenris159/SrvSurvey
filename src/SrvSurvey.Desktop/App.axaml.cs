@@ -499,8 +499,8 @@ public sealed partial class App : Application
         AppDataPaths appDataPaths,
         ApplicationLogService applicationLog)
     {
-        var migration = new LegacyOverlayLayoutImportMigrator()
-            .MigrateIfNeeded(appDataPaths);
+        var migration = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(
+            appDataPaths);
         if (migration.Migrated)
         {
             applicationLog.Append(

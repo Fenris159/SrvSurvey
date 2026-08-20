@@ -1568,9 +1568,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 AppDataPaths.DataDirectory,
                 ProfileBackupDirectory,
                 CancellationToken.None);
-            var overlayLayoutMigration =
-                new LegacyOverlayLayoutImportMigrator()
-                    .MigrateIfNeeded(AppDataPaths);
+            var overlayLayoutMigration = LegacyOverlayLayoutImportMigrator
+                .MigrateIfNeeded(AppDataPaths);
             var settingsMigration = new LegacyUiSettingsMigrator()
                 .MigrateIfNeeded(AppDataPaths);
             var organicMigration = await new LegacyOrganicProfileMigrator(

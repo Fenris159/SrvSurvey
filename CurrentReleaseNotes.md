@@ -14,9 +14,9 @@ overlay visibility. The changes below are the delta from `2.1.3.0-rc.35`.
 - Prevents Linux and mixed-monitor overlay placement failures when a panel opens
   before its content size has been measured, while honoring the game monitor's
   display scale.
-- Migrates imported absolute desktop overlay anchors to safe game-window-relative
-  defaults, preserving existing relative placements and creating a backup before
-  rewriting legacy layout data.
+- Migrates imported absolute desktop anchors for panels listed in the supported
+  overlay catalog to safe game-window-relative defaults, preserving existing
+  relative placements and creating a backup before rewriting legacy layout data.
 - Adds journal, surface-tracking, presentation, and end-to-end regressions for
   Nomad reload, landing-gear, and vehicle-marker behavior while preserving
   conventional SRV handling.

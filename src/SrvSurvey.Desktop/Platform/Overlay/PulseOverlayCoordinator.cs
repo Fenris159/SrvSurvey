@@ -8,6 +8,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class PulseOverlayCoordinator : IDisposable
 {
+    private const string PlotterName = "PlotPulse";
+
     private readonly PulseOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
@@ -118,7 +120,7 @@ public sealed class PulseOverlayCoordinator : IDisposable
         }
 
         var overlay = new PulseOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotPulse");
+        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay);
@@ -142,7 +144,7 @@ public sealed class PulseOverlayCoordinator : IDisposable
 
     private void PositionWindow(Window overlay)
     {
-        OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, "PlotPulse");
+        OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, PlotterName);
         var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds)
             ?? overlay.Screens.Primary;
         if (screen is null)
@@ -151,12 +153,9 @@ public sealed class PulseOverlayCoordinator : IDisposable
         }
 
         var size = OverlayWindowMetrics.PrepareForPlacement(
-            overlay,
-            overlayLayout,
-            "PlotPulse",
-            screen.Scaling);
+            overlay, overlayLayout, PlotterName, screen.Scaling);
         var position = overlayLayout.GetPosition(
-                "PlotPulse",
+                PlotterName,
                 gameWindow.ClientBounds,
                 size)
             ?? OverlayWindowPlacement.BottomLeft(

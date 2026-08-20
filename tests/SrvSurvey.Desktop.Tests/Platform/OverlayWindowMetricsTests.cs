@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using SrvSurvey.Desktop.Platform.Overlay;
 
@@ -60,5 +61,23 @@ public sealed class OverlayWindowMetricsTests
             1.5d);
 
         Assert.Equal(new PixelSize(140, 140), size);
+    }
+
+    [AvaloniaFact]
+    public void UnmeasuredRegisteredWindowUsesRenderScaledCatalogFallback()
+    {
+        var window = new Window
+        {
+            Width = double.NaN,
+            Height = double.NaN,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            Content = new Border(),
+        };
+        window.SetRenderScaling(1.5d);
+
+        var size = OverlayWindowMetrics.GetPixelSize(
+            new RegisteredOverlayWindow(window, "PlotSysStatus"));
+
+        Assert.Equal(new PixelSize(210, 210), size);
     }
 }

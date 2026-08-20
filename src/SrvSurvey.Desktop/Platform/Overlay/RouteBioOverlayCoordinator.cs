@@ -7,6 +7,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class RouteBioOverlayCoordinator : IDisposable
 {
+    private const string PlotterName = "PlotRouteBio";
+
     private readonly RouteWorkspaceViewModel route;
     private readonly RouteBioOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
@@ -116,7 +118,7 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
         }
 
         var overlay = new RouteBioOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotRouteBio");
+        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -144,7 +146,7 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
         OverlayThemeResources.ApplyOpacity(
             target,
             overlayLayout,
-            "PlotRouteBio");
+            PlotterName);
         var screen = target.Screens.ScreenFromBounds(gameBounds)
             ?? target.Screens.Primary;
         if (screen is null)
@@ -153,11 +155,8 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
         }
 
         var size = OverlayWindowMetrics.PrepareForPlacement(
-            target,
-            overlayLayout,
-            "PlotRouteBio",
-            screen.Scaling);
-        var position = overlayLayout.GetPosition("PlotRouteBio", gameBounds, size)
+            target, overlayLayout, PlotterName, screen.Scaling);
+        var position = overlayLayout.GetPosition(PlotterName, gameBounds, size)
             ?? OverlayWindowPlacement.TopRight(gameBounds, size, margin: 8);
         if (target.Position != position)
         {

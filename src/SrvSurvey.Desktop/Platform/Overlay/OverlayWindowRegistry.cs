@@ -396,30 +396,29 @@ internal static class OverlayWindowMetrics
         var fallbackScale = scaling * OverlayScaleCatalog.GetRelativeScale(
             scaleIndex,
             scaling);
-        var fallback = new PixelSize(
-            Math.Max(
-                1,
-                (int)Math.Ceiling(
-                    definition.PreviewSize.Width * fallbackScale)),
-            Math.Max(
-                1,
-                (int)Math.Ceiling(
-                    definition.PreviewSize.Height * fallbackScale)));
+        var fallback = ScalePixelSize(definition.PreviewSize, fallbackScale);
         return GetPixelSize(window, fallback, scaling);
     }
 
     public static PixelSize GetPixelSize(RegisteredOverlayWindow registered)
     {
         ArgumentNullException.ThrowIfNull(registered);
-        var fallback = OverlayLayoutCatalog
+        var scaling = NormalizeScaling(registered.Window.RenderScaling);
+        var previewSize = OverlayLayoutCatalog
             .GetRequired(registered.PlotterName)
             .PreviewSize;
+        var fallback = ScalePixelSize(previewSize, scaling);
         return GetPixelSize(
             registered.Window,
             fallback,
-            NormalizeScaling(registered.Window.RenderScaling),
+            scaling,
             registered.PresentationVisual);
     }
+
+    private static PixelSize ScalePixelSize(PixelSize size, double scaling) =>
+        new(
+            Math.Max(1, (int)Math.Ceiling(size.Width * scaling)),
+            Math.Max(1, (int)Math.Ceiling(size.Height * scaling)));
 
     private static PixelSize GetPixelSize(
         Window window,

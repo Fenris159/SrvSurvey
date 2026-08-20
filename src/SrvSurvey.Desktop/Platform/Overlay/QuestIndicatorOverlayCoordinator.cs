@@ -7,6 +7,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class QuestIndicatorOverlayCoordinator : IDisposable
 {
+    private const string PlotterName = "PlotQuestMini";
+
     private readonly QuestIndicatorViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
@@ -120,7 +122,7 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
         OverlayThemeResources.Apply(
             overlay,
             overlayLayout,
-            "PlotQuestMini");
+            PlotterName);
         overlay.Opened += (_, _) => PrepareWindow(overlay);
         overlay.Closed += (_, _) =>
         {
@@ -151,7 +153,7 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
         OverlayThemeResources.ApplyOpacity(
             overlay,
             overlayLayout,
-            "PlotQuestMini");
+            PlotterName);
         var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds)
             ?? overlay.Screens.Primary;
         if (screen is null)
@@ -160,12 +162,9 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
         }
 
         var size = OverlayWindowMetrics.PrepareForPlacement(
-            overlay,
-            overlayLayout,
-            "PlotQuestMini",
-            screen.Scaling);
+            overlay, overlayLayout, PlotterName, screen.Scaling);
         var position = overlayLayout.GetPosition(
-                "PlotQuestMini",
+                PlotterName,
                 gameWindow.ClientBounds,
                 size)
             ?? OverlayWindowPlacement.TopRight(

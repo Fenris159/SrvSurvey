@@ -29,8 +29,7 @@ public sealed class LegacyOverlayLayoutImportMigratorTests : IDisposable
             }
             """);
 
-        var result = new LegacyOverlayLayoutImportMigrator()
-            .MigrateIfNeeded(paths);
+        var result = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(paths);
 
         Assert.True(result.Migrated);
         Assert.Equal(1, result.NormalizedPlacementCount);
@@ -69,11 +68,22 @@ public sealed class LegacyOverlayLayoutImportMigratorTests : IDisposable
             saved);
         Assert.Contains("screen:-100, os:25", saved);
 
-        var repeated = new LegacyOverlayLayoutImportMigrator()
-            .MigrateIfNeeded(paths);
+        Assert.True(File.Exists(Path.Combine(
+            paths.DataDirectory,
+            LegacyOverlayLayoutImportMigrator.CompletionMarkerFileName)));
+
+        const string remapped =
+            "{\"PlotBodyInfo\":\"screen:400, os:250\"}";
+        File.WriteAllText(
+            Path.Combine(paths.DataDirectory, "plotters.json"),
+            remapped);
+        var repeated = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(paths);
 
         Assert.False(repeated.Migrated);
         Assert.Null(repeated.Error);
+        Assert.Equal(
+            remapped,
+            File.ReadAllText(Path.Combine(paths.DataDirectory, "plotters.json")));
     }
 
     [Fact]
@@ -85,11 +95,42 @@ public sealed class LegacyOverlayLayoutImportMigratorTests : IDisposable
         const string original = "{\"PlotBodyInfo\":\"screen:3140, os:220\"}";
         File.WriteAllText(plottersPath, original);
 
-        var result = new LegacyOverlayLayoutImportMigrator()
-            .MigrateIfNeeded(paths);
+        var result = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(paths);
 
         Assert.False(result.Migrated);
         Assert.Equal(original, File.ReadAllText(plottersPath));
+    }
+
+    [Fact]
+    public void CompletedNoOpImportDoesNotReprocessLaterAbsoluteAnchor()
+    {
+        var paths = CreatePaths();
+        Directory.CreateDirectory(paths.DataDirectory);
+        File.WriteAllText(
+            Path.Combine(
+                paths.DataDirectory,
+                LegacyProfileImporter.ManifestFileName),
+            "{}");
+        var plottersPath = Path.Combine(paths.DataDirectory, "plotters.json");
+        File.WriteAllText(
+            plottersPath,
+            "{\"PlotBodyInfo\":\"left:8, top:8\"}");
+
+        var result = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(paths);
+
+        Assert.False(result.Migrated);
+        Assert.True(File.Exists(Path.Combine(
+            paths.DataDirectory,
+            LegacyOverlayLayoutImportMigrator.CompletionMarkerFileName)));
+
+        const string laterAbsolute =
+            "{\"PlotBodyInfo\":\"screen:900, os:300\"}";
+        File.WriteAllText(plottersPath, laterAbsolute);
+
+        var repeated = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(paths);
+
+        Assert.False(repeated.Migrated);
+        Assert.Equal(laterAbsolute, File.ReadAllText(plottersPath));
     }
 
     public void Dispose()

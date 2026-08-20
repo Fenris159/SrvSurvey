@@ -2,9 +2,12 @@ using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-internal sealed class LegacyOverlayLayoutImportMigrator
+internal static class LegacyOverlayLayoutImportMigrator
 {
-    public LegacyOverlayLayoutImportMigrationResult MigrateIfNeeded(
+    internal const string CompletionMarkerFileName =
+        ".srv-survey-overlay-layout-import-v1";
+
+    public static LegacyOverlayLayoutImportMigrationResult MigrateIfNeeded(
         AppDataPaths paths)
     {
         ArgumentNullException.ThrowIfNull(paths);
@@ -12,7 +15,12 @@ internal sealed class LegacyOverlayLayoutImportMigrator
             paths.DataDirectory,
             LegacyProfileImporter.ManifestFileName);
         var plottersPath = Path.Combine(paths.DataDirectory, "plotters.json");
-        if (!File.Exists(manifestPath) || !File.Exists(plottersPath))
+        var completionMarkerPath = Path.Combine(
+            paths.DataDirectory,
+            CompletionMarkerFileName);
+        if (File.Exists(completionMarkerPath)
+            || !File.Exists(manifestPath)
+            || !File.Exists(plottersPath))
         {
             return LegacyOverlayLayoutImportMigrationResult.NotRequired;
         }
@@ -28,6 +36,13 @@ internal sealed class LegacyOverlayLayoutImportMigrator
                 layout.Error);
         }
 
+        var normalized = GetNormalizedPlacements(layout);
+        return SaveMigration(store, normalized, completionMarkerPath);
+    }
+
+    private static Dictionary<string, LegacyOverlayPlacement>
+        GetNormalizedPlacements(LegacyOverlayLayout layout)
+    {
         var normalized = new Dictionary<string, LegacyOverlayPlacement>(
             StringComparer.Ordinal);
         foreach (var definition in OverlayLayoutCatalog.Supported)
@@ -35,40 +50,59 @@ internal sealed class LegacyOverlayLayoutImportMigrator
             if (!layout.Placements.TryGetValue(
                     definition.Name,
                     out var placement)
-                || placement.Horizontal is not LegacyHorizontalAnchor.Screen
-                    && placement.Vertical is not LegacyVerticalAnchor.Screen)
+                || !RequiresNormalization(placement))
             {
                 continue;
             }
 
-            var defaults = definition.DefaultPlacement;
-            normalized[definition.Name] = placement with
-            {
-                Horizontal = placement.Horizontal is LegacyHorizontalAnchor.Screen
-                    ? defaults.Horizontal
-                    : placement.Horizontal,
-                HorizontalOffset = placement.Horizontal
-                    is LegacyHorizontalAnchor.Screen
-                        ? defaults.HorizontalOffset
-                        : placement.HorizontalOffset,
-                Vertical = placement.Vertical is LegacyVerticalAnchor.Screen
-                    ? defaults.Vertical
-                    : placement.Vertical,
-                VerticalOffset = placement.Vertical
-                    is LegacyVerticalAnchor.Screen
-                        ? defaults.VerticalOffset
-                        : placement.VerticalOffset,
-            };
+            normalized[definition.Name] = NormalizePlacement(
+                placement,
+                definition.DefaultPlacement);
         }
 
-        if (normalized.Count == 0)
+        return normalized;
+    }
+
+    private static bool RequiresNormalization(LegacyOverlayPlacement placement) =>
+        placement.Horizontal is LegacyHorizontalAnchor.Screen
+        || placement.Vertical is LegacyVerticalAnchor.Screen;
+
+    private static LegacyOverlayPlacement NormalizePlacement(
+        LegacyOverlayPlacement placement,
+        LegacyOverlayPlacement defaults) =>
+        placement with
         {
-            return LegacyOverlayLayoutImportMigrationResult.NotRequired;
-        }
+            Horizontal = placement.Horizontal is LegacyHorizontalAnchor.Screen
+                ? defaults.Horizontal
+                : placement.Horizontal,
+            HorizontalOffset = placement.Horizontal
+                is LegacyHorizontalAnchor.Screen
+                    ? defaults.HorizontalOffset
+                    : placement.HorizontalOffset,
+            Vertical = placement.Vertical is LegacyVerticalAnchor.Screen
+                ? defaults.Vertical
+                : placement.Vertical,
+            VerticalOffset = placement.Vertical
+                is LegacyVerticalAnchor.Screen
+                    ? defaults.VerticalOffset
+                    : placement.VerticalOffset,
+        };
 
+    private static LegacyOverlayLayoutImportMigrationResult SaveMigration(
+        LegacyOverlayLayoutStore store,
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> normalized,
+        string completionMarkerPath)
+    {
         try
         {
+            if (normalized.Count == 0)
+            {
+                WriteCompletionMarker(completionMarkerPath);
+                return LegacyOverlayLayoutImportMigrationResult.NotRequired;
+            }
+
             var result = store.Save(normalized);
+            WriteCompletionMarker(completionMarkerPath);
             return new LegacyOverlayLayoutImportMigrationResult(
                 true,
                 result.UpdatedPlacementCount,
@@ -87,6 +121,23 @@ internal sealed class LegacyOverlayLayoutImportMigrator
                 0,
                 null,
                 exception.Message);
+        }
+    }
+
+    private static void WriteCompletionMarker(string completionMarkerPath)
+    {
+        var temporaryPath = $"{completionMarkerPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            File.WriteAllText(temporaryPath, "1");
+            File.Move(temporaryPath, completionMarkerPath, true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
         }
     }
 }
