@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -13,6 +14,10 @@ public sealed class OverlayWindowRegistry
     private readonly HashSet<string> userHiddenPlotters =
         new(StringComparer.Ordinal);
     private bool galaxyMapContextActive;
+    private bool editorSuppressed;
+    private bool manualSuppressed;
+    private bool suitSuppressed;
+    private bool sessionSuppressed;
 
     public static OverlayWindowRegistry Shared { get; } = new();
 
@@ -22,9 +27,10 @@ public sealed class OverlayWindowRegistry
 
     public void Register(Window window, string plotterName)
     {
+        Dispatcher.UIThread.VerifyAccess();
         ArgumentNullException.ThrowIfNull(window);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        _ = OverlayLayoutCatalog.GetRequired(plotterName);
+        var definition = OverlayLayoutCatalog.GetRequired(plotterName);
         if (registrations.TryGetValue(window, out var existing))
         {
             if (!string.Equals(
@@ -40,11 +46,18 @@ public sealed class OverlayWindowRegistry
             return;
         }
 
-        EventHandler opened = (_, _) => ApplySeparateWindowVisibility(window);
+        EventHandler opened = (_, _) => OnWindowOpened(window);
         EventHandler closed = (_, _) => Unregister(window);
+        var facts = CreateFacts(definition, requested: false);
         registrations.Add(
             window,
-            new Registration(plotterName, opened, closed));
+            new Registration(
+                definition.Id,
+                plotterName,
+                opened,
+                closed,
+                facts,
+                OverlayVisibilityPolicy.Evaluate(facts)));
         windows.Add(new WeakReference<Window>(window));
         window.Opened += opened;
         window.Closed += closed;
@@ -53,20 +66,14 @@ public sealed class OverlayWindowRegistry
 
     public void SetGalaxyMapContextActive(bool active)
     {
+        Dispatcher.UIThread.VerifyAccess();
         if (galaxyMapContextActive == active)
         {
             return;
         }
 
         galaxyMapContextActive = active;
-        foreach (var window in GetRegisteredWindows())
-        {
-            if (registrations.TryGetValue(window, out var registration))
-            {
-                ApplyGalaxyMapContext(window, registration);
-            }
-        }
-
+        ReconcileAll();
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -79,6 +86,7 @@ public sealed class OverlayWindowRegistry
 
     public void SetUserVisibility(string plotterName, bool visible)
     {
+        VerifyAccessWhenWindowsAreRegistered();
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         _ = OverlayLayoutCatalog.GetRequired(plotterName);
         var changed = visible
@@ -89,49 +97,41 @@ public sealed class OverlayWindowRegistry
             return;
         }
 
-        foreach (var window in GetRegisteredWindows())
-        {
-            if (!registrations.TryGetValue(window, out var registration)
-                || !string.Equals(
-                    registration.PlotterName,
-                    plotterName,
-                    StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            if (registration.PresentationVisual is not null)
-            {
-                registration.PresentationVisible = ResolvePresentationVisibility(
-                    registration.PlotterName,
-                    registration.RequestedPresentationVisible,
-                    galaxyMapContextActive,
-                    visible);
-            }
-            else
-            {
-                ApplySeparateWindowVisibility(window, registration);
-            }
-        }
-
+        ReconcileAll();
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    private void ApplyGalaxyMapContext(
-        Window window,
-        Registration registration)
+    internal void SetEditorSuppressed(bool suppressed)
     {
-        if (registration.PresentationVisual is not null)
+        Dispatcher.UIThread.VerifyAccess();
+        if (editorSuppressed == suppressed)
         {
-            registration.PresentationVisible = ResolvePresentationVisibility(
-                registration.PlotterName,
-                registration.RequestedPresentationVisible,
-                galaxyMapContextActive,
-                IsUserVisible(registration.PlotterName));
             return;
         }
 
-        ApplySeparateWindowVisibility(window, registration);
+        editorSuppressed = suppressed;
+        ReconcileAll();
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    internal void SetGlobalSuppression(
+        bool manualSuppressed,
+        bool suitSuppressed,
+        bool sessionSuppressed)
+    {
+        Dispatcher.UIThread.VerifyAccess();
+        if (this.manualSuppressed == manualSuppressed
+            && this.suitSuppressed == suitSuppressed
+            && this.sessionSuppressed == sessionSuppressed)
+        {
+            return;
+        }
+
+        this.manualSuppressed = manualSuppressed;
+        this.suitSuppressed = suitSuppressed;
+        this.sessionSuppressed = sessionSuppressed;
+        ReconcileAll();
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     public IReadOnlyList<RegisteredOverlayWindow> Snapshot()
@@ -174,8 +174,20 @@ public sealed class OverlayWindowRegistry
 
     internal bool ShouldPresent(string plotterName)
     {
-        return IsUserVisible(plotterName)
-            && ShouldPresentInContext(plotterName, galaxyMapContextActive);
+        var definition = OverlayLayoutCatalog.GetRequired(plotterName);
+        return OverlayVisibilityPolicy.Evaluate(
+            CreateFacts(definition, requested: true)).ShouldPresent;
+    }
+
+    internal bool ShouldPresent(Window window) => GetDecision(window).ShouldPresent;
+
+    internal OverlayVisibilityDecision GetDecision(Window window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        return registrations.TryGetValue(window, out var registration)
+            ? registration.Decision
+            : throw new InvalidOperationException(
+                $"{window.GetType().Name} is not registered as an overlay.");
     }
 
     internal static bool ShouldPresentInContext(
@@ -201,6 +213,7 @@ public sealed class OverlayWindowRegistry
         Window window,
         Visual? presentationVisual)
     {
+        Dispatcher.UIThread.VerifyAccess();
         ArgumentNullException.ThrowIfNull(window);
         if (!registrations.TryGetValue(window, out var registration))
         {
@@ -208,22 +221,17 @@ public sealed class OverlayWindowRegistry
         }
 
         registration.PresentationVisual = presentationVisual;
-        registration.RequestedPresentationVisible = presentationVisual is not null;
-        registration.PresentationVisible = ResolvePresentationVisibility(
-            registration.PlotterName,
-            presentationVisual is not null,
-            galaxyMapContextActive,
-            IsUserVisible(registration.PlotterName));
-        if (presentationVisual is not null)
+        registration.Facts = registration.Facts with
         {
-            registration.RestoreAfterGalaxyMap = false;
-        }
-
+            Requested = presentationVisual is not null,
+        };
+        ReconcileAll();
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
     internal void SetPresentationVisible(Window window, bool visible)
     {
+        Dispatcher.UIThread.VerifyAccess();
         ArgumentNullException.ThrowIfNull(window);
         if (!registrations.TryGetValue(window, out var registration)
             || registration.PresentationVisual is null)
@@ -231,79 +239,111 @@ public sealed class OverlayWindowRegistry
             return;
         }
 
-        registration.RequestedPresentationVisible = visible;
-        var effectiveVisibility = ResolvePresentationVisibility(
-            registration.PlotterName,
-            visible,
-            galaxyMapContextActive,
-            IsUserVisible(registration.PlotterName));
-        if (registration.PresentationVisible == effectiveVisibility)
+        if (registration.Facts.Requested == visible)
         {
             return;
         }
 
-        registration.PresentationVisible = effectiveVisibility;
+        registration.Facts = registration.Facts with { Requested = visible };
+        ReconcileAll();
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    private void ApplySeparateWindowVisibility(Window window)
+    private void OnWindowOpened(Window window)
     {
-        if (!registrations.TryGetValue(window, out var registration)
-            || registration.PresentationVisual is not null)
+        if (!registrations.TryGetValue(window, out var registration))
         {
             return;
         }
 
-        ApplySeparateWindowVisibility(window, registration);
+        registration.Facts = registration.Facts with { Requested = true };
+        ReconcileAll();
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    private void ApplySeparateWindowVisibility(
-        Window window,
-        Registration registration)
+    private OverlayVisibilityFacts CreateFacts(
+        OverlayLayoutDefinition definition,
+        bool requested)
     {
-        var userVisible = IsUserVisible(registration.PlotterName);
-        var contextVisible = ShouldPresentInContext(
-            registration.PlotterName,
-            galaxyMapContextActive);
-        if (!userVisible)
+        return new OverlayVisibilityFacts(
+            Requested: requested,
+            HostEligible: true,
+            UserEnabled: IsUserVisible(definition.Name),
+            GalaxyMapAllowed: !galaxyMapContextActive
+                || definition.ShowInGalaxyMap,
+            EditorSuppressed: editorSuppressed,
+            ManualSuppressed: manualSuppressed,
+            SuitSuppressed: suitSuppressed,
+            SessionSuppressed: sessionSuppressed,
+            PriorityObscured: false);
+    }
+
+    private void ReconcileAll()
+    {
+        var entries = new List<(Window Window, Registration Registration)>();
+        foreach (var window in GetRegisteredWindows())
         {
-            if (window.IsVisible)
+            if (registrations.TryGetValue(window, out var registration))
             {
-                registration.RestoreAfterUserVisibility = true;
-                window.Hide();
+                entries.Add((window, registration));
             }
-
-            return;
         }
-
-        if (!contextVisible)
+        foreach (var registration in entries.Select(entry =>
+                     entry.Registration))
         {
-            if (window.IsVisible)
-            {
-                registration.RestoreAfterGalaxyMap = true;
-                window.Hide();
-            }
+            var definition = OverlayLayoutCatalog.GetRequired(
+                registration.Id);
+            registration.Facts = CreateFacts(
+                definition,
+                registration.Facts.Requested);
+            registration.Decision = OverlayVisibilityPolicy.Evaluate(
+                registration.Facts);
+        }
 
+        foreach (var entry in entries.Where(entry =>
+                     !entry.Registration.Decision.ShouldPresent))
+        {
+            ApplyVisibility(entry.Window, entry.Registration, visible: false);
+        }
+
+        foreach (var entry in entries.Where(entry =>
+                     entry.Registration.Decision.ShouldPresent))
+        {
+            ApplyVisibility(entry.Window, entry.Registration, visible: true);
+        }
+    }
+
+    private static void ApplyVisibility(
+        Window window,
+        Registration registration,
+        bool visible)
+    {
+        if (registration.PresentationVisual is not null)
+        {
+            registration.PresentationVisible = visible;
             return;
         }
 
-        if (!registration.RestoreAfterUserVisibility
-            && !registration.RestoreAfterGalaxyMap)
+        if (window.IsVisible == visible)
         {
             return;
         }
 
-        registration.RestoreAfterUserVisibility = false;
-        registration.RestoreAfterGalaxyMap = false;
         try
         {
-            window.Show();
+            if (visible)
+            {
+                window.Show();
+            }
+            else
+            {
+                window.Hide();
+            }
         }
         catch (InvalidOperationException)
         {
-            // The owning coordinator closed the panel while it was suppressed.
+            // The owning coordinator closed the panel during reconciliation.
         }
-        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     private List<Window> GetRegisteredWindows()
@@ -324,8 +364,17 @@ public sealed class OverlayWindowRegistry
         return result;
     }
 
+    private void VerifyAccessWhenWindowsAreRegistered()
+    {
+        if (windows.Count > 0)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+        }
+    }
+
     private void Unregister(Window window)
     {
+        Dispatcher.UIThread.VerifyAccess();
         if (!registrations.TryGetValue(window, out var registration))
         {
             return;
@@ -347,10 +396,15 @@ public sealed class OverlayWindowRegistry
     }
 
     private sealed class Registration(
+        OverlayId id,
         string plotterName,
         EventHandler openedHandler,
-        EventHandler closedHandler)
+        EventHandler closedHandler,
+        OverlayVisibilityFacts facts,
+        OverlayVisibilityDecision decision)
     {
+        public OverlayId Id { get; } = id;
+
         public string PlotterName { get; } = plotterName;
 
         public EventHandler OpenedHandler { get; } = openedHandler;
@@ -361,11 +415,9 @@ public sealed class OverlayWindowRegistry
 
         public bool PresentationVisible { get; set; }
 
-        public bool RequestedPresentationVisible { get; set; }
+        public OverlayVisibilityFacts Facts { get; set; } = facts;
 
-        public bool RestoreAfterGalaxyMap { get; set; }
-
-        public bool RestoreAfterUserVisibility { get; set; }
+        public OverlayVisibilityDecision Decision { get; set; } = decision;
     }
 }
 

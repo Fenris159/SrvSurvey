@@ -1064,9 +1064,16 @@ public sealed partial class App : Application
             return;
         }
 
+        var suppressForSuit = viewModel.OverlayBehavior.ShouldSuppressForSuit;
+        var suppressForSession =
+            viewModel.OverlayBehavior.ShouldSuppressForSession;
+        OverlayWindowRegistry.Shared.SetGlobalSuppression(
+            manualOverlaySuppressed,
+            suppressForSuit,
+            suppressForSession);
         var suppress = manualOverlaySuppressed
-            || viewModel.OverlayBehavior.ShouldSuppressForSuit
-            || viewModel.OverlayBehavior.ShouldSuppressForSession;
+            || suppressForSuit
+            || suppressForSession;
         jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
         routeBioOverlayCoordinator?.SetSuppressed(suppress);
         fleetCarrierRouteOverlayCoordinator?.SetSuppressed(suppress);
