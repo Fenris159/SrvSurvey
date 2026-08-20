@@ -18,6 +18,10 @@ public sealed class OverlayWindowRegistry
     private bool manualSuppressed;
     private bool suitSuppressed;
     private bool sessionSuppressed;
+    private OverlayPriorityFact priorityFacts;
+    private bool isReconciling;
+    private bool reconcileAgain;
+    private bool changePending;
 
     public static OverlayWindowRegistry Shared { get; } = new();
 
@@ -61,7 +65,7 @@ public sealed class OverlayWindowRegistry
         windows.Add(new WeakReference<Window>(window));
         window.Opened += opened;
         window.Closed += closed;
-        Changed?.Invoke(this, EventArgs.Empty);
+        ReconcileAndNotify();
     }
 
     public void SetGalaxyMapContextActive(bool active)
@@ -73,8 +77,7 @@ public sealed class OverlayWindowRegistry
         }
 
         galaxyMapContextActive = active;
-        ReconcileAll();
-        Changed?.Invoke(this, EventArgs.Empty);
+        ReconcileAndNotify();
     }
 
     public bool IsUserVisible(string plotterName)
@@ -97,8 +100,7 @@ public sealed class OverlayWindowRegistry
             return;
         }
 
-        ReconcileAll();
-        Changed?.Invoke(this, EventArgs.Empty);
+        ReconcileAndNotify();
     }
 
     internal void SetEditorSuppressed(bool suppressed)
@@ -110,8 +112,7 @@ public sealed class OverlayWindowRegistry
         }
 
         editorSuppressed = suppressed;
-        ReconcileAll();
-        Changed?.Invoke(this, EventArgs.Empty);
+        ReconcileAndNotify();
     }
 
     internal void SetGlobalSuppression(
@@ -130,8 +131,19 @@ public sealed class OverlayWindowRegistry
         this.manualSuppressed = manualSuppressed;
         this.suitSuppressed = suitSuppressed;
         this.sessionSuppressed = sessionSuppressed;
-        ReconcileAll();
-        Changed?.Invoke(this, EventArgs.Empty);
+        ReconcileAndNotify();
+    }
+
+    internal void SetPriorityFacts(OverlayPriorityFact facts)
+    {
+        Dispatcher.UIThread.VerifyAccess();
+        if (priorityFacts == facts)
+        {
+            return;
+        }
+
+        priorityFacts = facts;
+        ReconcileAndNotify();
     }
 
     public IReadOnlyList<RegisteredOverlayWindow> Snapshot()
@@ -150,9 +162,7 @@ public sealed class OverlayWindowRegistry
                 window,
                 registration.PlotterName,
                 registration.PresentationVisual,
-                registration.PresentationVisual is null
-                    ? window.IsVisible
-                    : registration.PresentationVisible));
+                registration.Presented));
         }
 
         result.Reverse();
@@ -180,6 +190,13 @@ public sealed class OverlayWindowRegistry
     }
 
     internal bool ShouldPresent(Window window) => GetDecision(window).ShouldPresent;
+
+    internal bool ShouldHost(string plotterName)
+    {
+        var definition = OverlayLayoutCatalog.GetRequired(plotterName);
+        return OverlayVisibilityPolicy.Evaluate(
+            CreateFacts(definition, requested: true)).ShouldHost;
+    }
 
     internal OverlayVisibilityDecision GetDecision(Window window)
     {
@@ -225,8 +242,7 @@ public sealed class OverlayWindowRegistry
         {
             Requested = presentationVisual is not null,
         };
-        ReconcileAll();
-        Changed?.Invoke(this, EventArgs.Empty);
+        ReconcileAndNotify();
     }
 
     internal void SetPresentationVisible(Window window, bool visible)
@@ -245,8 +261,7 @@ public sealed class OverlayWindowRegistry
         }
 
         registration.Facts = registration.Facts with { Requested = visible };
-        ReconcileAll();
-        Changed?.Invoke(this, EventArgs.Empty);
+        ReconcileAndNotify();
     }
 
     private void OnWindowOpened(Window window)
@@ -257,8 +272,7 @@ public sealed class OverlayWindowRegistry
         }
 
         registration.Facts = registration.Facts with { Requested = true };
-        ReconcileAll();
-        Changed?.Invoke(this, EventArgs.Empty);
+        ReconcileAndNotify();
     }
 
     private OverlayVisibilityFacts CreateFacts(
@@ -275,10 +289,52 @@ public sealed class OverlayWindowRegistry
             ManualSuppressed: manualSuppressed,
             SuitSuppressed: suitSuppressed,
             SessionSuppressed: sessionSuppressed,
-            PriorityObscured: false);
+            PriorityObscured: OverlayPriorityRules.IsObscured(
+                definition.Id,
+                IsAnyPresented,
+                priorityFacts));
     }
 
-    private void ReconcileAll()
+    private bool IsAnyPresented(OverlayId id)
+    {
+        return GetRegisteredWindows().Any(window =>
+            registrations.TryGetValue(window, out var registration)
+            && registration.Id == id
+            && registration.Presented);
+    }
+
+    private void ReconcileAndNotify()
+    {
+        changePending = true;
+        if (isReconciling)
+        {
+            reconcileAgain = true;
+            return;
+        }
+
+        isReconciling = true;
+        try
+        {
+            do
+            {
+                reconcileAgain = false;
+                ReconcileCore();
+            }
+            while (reconcileAgain);
+        }
+        finally
+        {
+            isReconciling = false;
+        }
+
+        if (changePending)
+        {
+            changePending = false;
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private void ReconcileCore()
     {
         var entries = new List<(Window Window, Registration Registration)>();
         foreach (var window in GetRegisteredWindows())
@@ -288,27 +344,44 @@ public sealed class OverlayWindowRegistry
                 entries.Add((window, registration));
             }
         }
-        foreach (var entry in entries)
+        for (var pass = 0; pass <= entries.Count; pass++)
         {
-            var definition = OverlayLayoutCatalog.GetRequired(
-                entry.Registration.Id);
-            entry.Registration.Facts = CreateFacts(
-                definition,
-                entry.Registration.Facts.Requested);
-            entry.Registration.Decision = OverlayVisibilityPolicy.Evaluate(
-                entry.Registration.Facts);
-        }
+            var previousPresented = entries.Select(entry =>
+                entry.Registration.Presented).ToArray();
+            foreach (var entry in entries)
+            {
+                var definition = OverlayLayoutCatalog.GetRequired(
+                    entry.Registration.Id);
+                entry.Registration.Facts = CreateFacts(
+                    definition,
+                    entry.Registration.Facts.Requested);
+                entry.Registration.Decision = OverlayVisibilityPolicy.Evaluate(
+                    entry.Registration.Facts);
+            }
 
-        foreach (var entry in entries.Where(entry =>
-                     !entry.Registration.Decision.ShouldPresent))
-        {
-            ApplyVisibility(entry.Window, entry.Registration, visible: false);
-        }
+            foreach (var entry in entries.Where(entry =>
+                         !entry.Registration.Decision.ShouldPresent))
+            {
+                ApplyVisibility(
+                    entry.Window,
+                    entry.Registration,
+                    visible: false);
+            }
 
-        foreach (var entry in entries.Where(entry =>
-                     entry.Registration.Decision.ShouldPresent))
-        {
-            ApplyVisibility(entry.Window, entry.Registration, visible: true);
+            foreach (var entry in entries.Where(entry =>
+                         entry.Registration.Decision.ShouldPresent))
+            {
+                ApplyVisibility(
+                    entry.Window,
+                    entry.Registration,
+                    visible: true);
+            }
+
+            if (entries.Select(entry => entry.Registration.Presented)
+                .SequenceEqual(previousPresented))
+            {
+                break;
+            }
         }
     }
 
@@ -320,11 +393,13 @@ public sealed class OverlayWindowRegistry
         if (registration.PresentationVisual is not null)
         {
             registration.PresentationVisible = visible;
+            registration.Presented = visible;
             return;
         }
 
         if (window.IsVisible == visible)
         {
+            registration.Presented = window.IsVisible;
             return;
         }
 
@@ -343,6 +418,8 @@ public sealed class OverlayWindowRegistry
         {
             // The owning coordinator closed the panel during reconciliation.
         }
+
+        registration.Presented = window.IsVisible;
     }
 
     private List<Window> GetRegisteredWindows()
@@ -391,7 +468,7 @@ public sealed class OverlayWindowRegistry
             }
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        ReconcileAndNotify();
     }
 
     private sealed class Registration(
@@ -413,6 +490,8 @@ public sealed class OverlayWindowRegistry
         public Visual? PresentationVisual { get; set; }
 
         public bool PresentationVisible { get; set; }
+
+        public bool Presented { get; set; }
 
         public OverlayVisibilityFacts Facts { get; set; } = facts;
 

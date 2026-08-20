@@ -288,6 +288,92 @@ public sealed class OverlayWindowRegistryTests
         window.Close();
     }
 
+    [AvaloniaFact]
+    public void PriorityUsesPresentedStateAndRestoresWhenTheBlockerIsHidden()
+    {
+        var registry = new OverlayWindowRegistry();
+        var guardianWindow = new Window();
+        var biologyWindow = new Window();
+        registry.Register(guardianWindow, "PlotGuardians");
+        registry.Register(biologyWindow, "PlotBioSystem");
+        biologyWindow.Show();
+        guardianWindow.Show();
+
+        Assert.True(guardianWindow.IsVisible);
+        Assert.False(biologyWindow.IsVisible);
+        Assert.Equal(
+            OverlayVisibilityReason.PriorityObscured,
+            registry.GetDecision(biologyWindow).Reasons);
+
+        registry.SetUserVisibility("PlotGuardians", visible: false);
+
+        Assert.False(guardianWindow.IsVisible);
+        Assert.True(biologyWindow.IsVisible);
+        Assert.Equal(
+            OverlayVisibilityReason.None,
+            registry.GetDecision(biologyWindow).Reasons);
+        guardianWindow.Close();
+        biologyWindow.Close();
+    }
+
+    [AvaloniaFact]
+    public void PriorityAggregatesPresentedStateAcrossPlotterRegistrations()
+    {
+        var registry = new OverlayWindowRegistry();
+        var firstGuardianWindow = new Window();
+        var secondGuardianWindow = new Window();
+        var surfaceWindow = new Window();
+        registry.Register(firstGuardianWindow, "PlotGuardians");
+        registry.Register(secondGuardianWindow, "PlotGuardians");
+        registry.Register(surfaceWindow, "PlotGrounded");
+        surfaceWindow.Show();
+        firstGuardianWindow.Show();
+        secondGuardianWindow.Show();
+
+        firstGuardianWindow.Close();
+
+        Assert.False(surfaceWindow.IsVisible);
+        Assert.Equal(
+            OverlayVisibilityReason.PriorityObscured,
+            registry.GetDecision(surfaceWindow).Reasons);
+
+        secondGuardianWindow.Close();
+
+        Assert.True(surfaceWindow.IsVisible);
+        surfaceWindow.Close();
+    }
+
+    [AvaloniaFact]
+    public void ForcedSystemSurveyFactsOverrideTheGuardianSummaryPriority()
+    {
+        var registry = new OverlayWindowRegistry();
+        var guardianSummaryWindow = new Window();
+        var fssWindow = new Window();
+        registry.Register(guardianSummaryWindow, "PlotGuardianSystem");
+        registry.Register(fssWindow, "PlotFSSInfo");
+        fssWindow.Show();
+        guardianSummaryWindow.Show();
+
+        Assert.False(fssWindow.IsVisible);
+        Assert.True(guardianSummaryWindow.IsVisible);
+
+        registry.SetPriorityFacts(OverlayPriorityFact.FssInfoForced);
+
+        Assert.True(fssWindow.IsVisible);
+        Assert.False(guardianSummaryWindow.IsVisible);
+        Assert.Equal(
+            OverlayVisibilityReason.PriorityObscured,
+            registry.GetDecision(guardianSummaryWindow).Reasons);
+        guardianSummaryWindow.Close();
+        fssWindow.Close();
+    }
+
+    [Fact]
+    public void PriorityRulesAreAcyclic()
+    {
+        OverlayPriorityRules.ValidateAcyclic();
+    }
+
     [Fact]
     public void UserVisibilityParticipatesInPresentationResolution()
     {

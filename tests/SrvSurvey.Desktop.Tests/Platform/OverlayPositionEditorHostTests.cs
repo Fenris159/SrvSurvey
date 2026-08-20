@@ -83,7 +83,6 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         viewModel.Cancel();
 
         Assert.True(runtimeWindow.IsVisible);
-        Assert.Empty(platform.SuppressionStates);
         runtimeWindow.Close();
     }
 
@@ -401,15 +400,12 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         }
     }
 
-    private sealed class FakeOverlayPlatform
-        : IOverlayPlatformService, IOverlayPresentationControl
+    private sealed class FakeOverlayPlatform : IOverlayPlatformService
     {
         public OverlayPlatformCapabilities Capabilities { get; } =
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
 
         public List<Window> InteractiveWindows { get; } = [];
-
-        public List<bool> SuppressionStates { get; } = [];
 
         public OverlayPreparationResult PreparePassiveWindow(Window window)
         {
@@ -426,11 +422,6 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             }
 
             return new OverlayInteractionResult(true, interactive, "Prepared");
-        }
-
-        public void SetRuntimeOverlaysSuppressed(bool suppressed)
-        {
-            SuppressionStates.Add(suppressed);
         }
 
         public void Dispose()

@@ -15,6 +15,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly LegacyOverlayLayout overlayLayout;
+    private readonly OverlayWindowRegistry windowRegistry;
     private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private GuardianOverlayWindow? liveSiteWindow;
@@ -30,7 +31,8 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         GuardianViewModel guardian,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null)
+        LegacyOverlayLayout? overlayLayout = null,
+        OverlayWindowRegistry? windowRegistry = null)
     {
         this.guardian = guardian
             ?? throw new ArgumentNullException(nameof(guardian));
@@ -39,6 +41,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
+        this.windowRegistry = windowRegistry ?? OverlayWindowRegistry.Shared;
         viewModel = new GuardianOverlayViewModel(
             guardian,
             platform.Capabilities);
@@ -91,22 +94,6 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
         isSuppressed = value;
         SynchronizeWindows();
-    }
-
-    public void SetSystemSummaryObscured(bool value)
-    {
-        if (!disposed)
-        {
-            guardian.SetSystemSummaryObscured(value);
-        }
-    }
-
-    public void SetLiveStatusObscured(bool value)
-    {
-        if (!disposed)
-        {
-            guardian.SetLiveStatusObscured(value);
-        }
     }
 
     public bool AdjustZoom(bool zoomIn)
@@ -188,9 +175,12 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             && guardian.ShouldShowLiveSiteOverlay);
         SynchronizeGuardianStatusWindow(
             platformReady
-            && guardian.ShouldShowGuardianStatusOverlay);
+            && guardian.ShouldShowGuardianStatusOverlay
+            && windowRegistry.ShouldHost("PlotGuardianStatus"));
         SynchronizeSystemSummaryWindow(
-            platformReady && guardian.ShouldShowGuardianSystemSummary);
+            platformReady
+            && guardian.ShouldShowGuardianSystemSummary
+            && windowRegistry.ShouldHost("PlotGuardianSystem"));
         SynchronizeRamTahWindow(
             platformReady && guardian.ShouldShowRamTahOverlay);
     }
@@ -214,7 +204,8 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         OverlayThemeResources.Apply(
             overlay,
             overlayLayout,
-            GuardianPlotterName);
+            GuardianPlotterName,
+            windowRegistry);
         overlay.Opened += (_, _) =>
         {
             PrepareWindow(overlay, PositionLiveSite);
@@ -256,7 +247,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             overlay,
             overlayLayout,
             GuardianPlotterName);
-        OverlayWindowRegistry.Shared.Register(overlay, GuardianPlotterName);
+        windowRegistry.Register(overlay, GuardianPlotterName);
         overlay.Opened += (_, _) => PrepareZoomWindow(overlay);
         overlay.Closed += (_, _) =>
         {
@@ -306,7 +297,8 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         OverlayThemeResources.Apply(
             overlay,
             overlayLayout,
-            "PlotGuardianSystem");
+            "PlotGuardianSystem",
+            windowRegistry);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionSystemSummary);
@@ -343,7 +335,8 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         OverlayThemeResources.Apply(
             overlay,
             overlayLayout,
-            "PlotGuardianStatus");
+            "PlotGuardianStatus",
+            windowRegistry);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionGuardianStatus);
@@ -375,7 +368,11 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         var overlay = new RamTahOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotRamTah");
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotRamTah",
+            windowRegistry);
         overlay.Opened += (_, _) => PrepareWindow(overlay, PositionRamTah);
         overlay.Closed += (_, _) =>
         {

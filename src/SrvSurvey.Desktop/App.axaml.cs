@@ -366,17 +366,9 @@ public sealed partial class App : Application
                 () => desktop.Windows.Any(window => window.IsActive),
                 overlayLayout);
 
-        jumpInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
-            SynchronizeOverlayPriority();
-        systemSurveyOverlayCoordinator.VisibilityChanged += (_, _) =>
-            SynchronizeOverlayPriority();
-        guardianOverlayCoordinator.VisibilityChanged += (_, _) =>
-            SynchronizeOverlayPriority();
-        stationInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
-            SynchronizeOverlayPriority();
-        humanSiteOverlayCoordinator.VisibilityChanged += (_, _) =>
-            SynchronizeOverlayPriority();
-        SynchronizeOverlayPriority();
+        viewModel.SystemSurvey.PropertyChanged +=
+            HandleOverlayPriorityFactsChanged;
+        SynchronizeOverlayPriorityFacts();
         colonizationCommodityOverlayCoordinator =
             new ColonizationCommodityOverlayCoordinator(
                 viewModel.Colonization.CommodityOverlay,
@@ -683,6 +675,8 @@ public sealed partial class App : Application
             RestartAfterCommanderPreferenceChangeAsync;
         viewModel.OverlayBehavior.PropertyChanged -=
             HandleOverlayBehaviorChanged;
+        viewModel.SystemSurvey.PropertyChanged -=
+            HandleOverlayPriorityFactsChanged;
         viewModel.FrontierProfile.AuthorizationCallbackReceived -=
             HandleFrontierAuthorizationCallback;
         Dispatcher.UIThread.UnhandledException -= HandleUiException;
@@ -1021,7 +1015,7 @@ public sealed partial class App : Application
         eventArgs.SetObserved();
     }
 
-    private void SynchronizeOverlayPriority()
+    private void SynchronizeOverlayPriorityFacts()
     {
         var viewModel = mainViewModel;
         if (viewModel is null)
@@ -1029,31 +1023,29 @@ public sealed partial class App : Application
             return;
         }
 
-        var liveGuardianSite =
-            guardianOverlayCoordinator?.IsLiveSiteVisible == true;
-        var humanSite = humanSiteOverlayCoordinator?.IsVisible == true;
-        var guardianSystemSummary = guardianOverlayCoordinator
-            ?.IsSystemSummaryVisible == true;
-        systemSurveyOverlayCoordinator?.SetFssObscured(guardianSystemSummary);
-        systemSurveyOverlayCoordinator?.SetBodyInfoObscured(
-            guardianSystemSummary);
-        systemSurveyOverlayCoordinator?.SetBiologyObscured(
-            liveGuardianSite || humanSite);
-        systemSurveyOverlayCoordinator?.SetBiologyStatusObscured(
-            liveGuardianSite
-            || humanSite
-            || jumpInfoOverlayCoordinator?.IsVisible == true);
-        systemSurveyOverlayCoordinator?.SetPriorScansObscured(
-            liveGuardianSite
-            || humanSite
-            || stationInfoOverlayCoordinator?.IsVisible == true);
-        systemSurveyOverlayCoordinator?.SetSurfaceObscured(
-            liveGuardianSite || humanSite);
-        guardianOverlayCoordinator?.SetLiveStatusObscured(
-            jumpInfoOverlayCoordinator?.IsVisible == true);
-        guardianOverlayCoordinator?.SetSystemSummaryObscured(
-            viewModel.SystemSurvey.IsFssInfoForced
-            || viewModel.SystemSurvey.IsBodyInfoForced);
+        var facts = OverlayPriorityFact.None;
+        if (viewModel.SystemSurvey.IsFssInfoForced)
+        {
+            facts |= OverlayPriorityFact.FssInfoForced;
+        }
+
+        if (viewModel.SystemSurvey.IsBodyInfoForced)
+        {
+            facts |= OverlayPriorityFact.BodyInfoForced;
+        }
+
+        OverlayWindowRegistry.Shared.SetPriorityFacts(facts);
+    }
+
+    private void HandleOverlayPriorityFactsChanged(
+        object? sender,
+        System.ComponentModel.PropertyChangedEventArgs eventArgs)
+    {
+        if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.IsFssInfoForced)
+            or nameof(SystemSurveyViewModel.IsBodyInfoForced))
+        {
+            SynchronizeOverlayPriorityFacts();
+        }
     }
 
     private void ApplyOverlaySuppression()
