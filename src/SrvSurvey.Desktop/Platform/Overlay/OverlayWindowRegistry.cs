@@ -348,15 +348,16 @@ public sealed class OverlayWindowRegistry
         {
             var previousPresented = entries.Select(entry =>
                 entry.Registration.Presented).ToArray();
-            foreach (var entry in entries)
+            foreach (var registration in entries.Select(entry =>
+                         entry.Registration))
             {
                 var definition = OverlayLayoutCatalog.GetRequired(
-                    entry.Registration.Id);
-                entry.Registration.Facts = CreateFacts(
+                    registration.Id);
+                registration.Facts = CreateFacts(
                     definition,
-                    entry.Registration.Facts.Requested);
-                entry.Registration.Decision = OverlayVisibilityPolicy.Evaluate(
-                    entry.Registration.Facts);
+                    registration.Facts.Requested);
+                registration.Decision = OverlayVisibilityPolicy.Evaluate(
+                    registration.Facts);
             }
 
             foreach (var entry in entries.Where(entry =>

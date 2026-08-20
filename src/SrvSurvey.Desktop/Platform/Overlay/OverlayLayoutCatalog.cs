@@ -44,7 +44,7 @@ public static class OverlayLayoutCatalog
         Define("PlotPulse", "Journal activity and SCO status", "PulseOverlay.Enabled", OverlayLayoutCategory.StatusAndUtilities, OverlaySettingsCategory.Global, new(32, 32), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Bottom, 8)),
         Define("PlotQuestMini", "Quest indicator", "QuestWorkspace.IsEnabled", OverlayLayoutCategory.SitesAndQuests, OverlaySettingsCategory.Quests, new(220, 200), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8)),
         Define("PlotRamTah", "Ram Tah guidance", "Guardian.AutoShowRamTah", OverlayLayoutCategory.Guardian, OverlaySettingsCategory.Guardian, new(190, 224), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Middle, 0, MoveVerticalAnchor: LegacyVerticalAnchor.Top)),
-        Define("PlotSphericalSearch", "Spherical search", "Search, BoxelSearch, or Route active", OverlayLayoutCategory.ExplorationAndNavigation, OverlaySettingsCategory.Boxel, new(240, 240), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true), [OverlaySettingsCategory.Exploration, OverlaySettingsCategory.Travel]),
+        Define("PlotSphericalSearch", "Spherical search", "Search, BoxelSearch, or Route active", OverlayLayoutCategory.ExplorationAndNavigation, new OverlayLayoutSettingsCategories(OverlaySettingsCategory.Boxel, [OverlaySettingsCategory.Exploration, OverlaySettingsCategory.Travel]), new(240, 240), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)),
         Define("PlotStationInfo", "Station information", "StationInfo.AutoShow", OverlayLayoutCategory.CombatAndColonization, OverlaySettingsCategory.Travel, new(220, 300), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Middle, 0, ShowInGalaxyMap: true, MoveVerticalAnchor: LegacyVerticalAnchor.Top)),
         // Live/editor panel sizes to the shared content (up to 220 wide) with
         // DSS body chips and remaining biological signals. Keep the legacy
@@ -89,19 +89,16 @@ public static class OverlayLayoutCatalog
         string displayName,
         string configurationBinding,
         OverlayLayoutCategory category,
-        OverlaySettingsCategory settingsCategory,
+        OverlayLayoutSettingsCategories settingsCategories,
         OverlayLayoutPreview preview,
-        OverlayLayoutAnchor anchor,
-        IReadOnlyList<OverlaySettingsCategory>? additionalSettingsCategories = null)
+        OverlayLayoutAnchor anchor)
     {
         return new OverlayLayoutDefinition(
             name,
             displayName,
             configurationBinding,
             category,
-            additionalSettingsCategories is null
-                ? [settingsCategory]
-                : [settingsCategory, .. additionalSettingsCategories],
+            settingsCategories.All,
             new PixelSize(preview.Width, preview.Height),
             new LegacyOverlayPlacement(
                 anchor.Horizontal,
@@ -115,6 +112,18 @@ public static class OverlayLayoutCatalog
 }
 
 internal readonly record struct OverlayLayoutPreview(int Width, int Height);
+
+internal readonly record struct OverlayLayoutSettingsCategories(
+    OverlaySettingsCategory Primary,
+    IReadOnlyList<OverlaySettingsCategory>? Additional = null)
+{
+    internal IReadOnlyList<OverlaySettingsCategory> All => Additional is null
+        ? [Primary]
+        : [Primary, .. Additional];
+
+    public static implicit operator OverlayLayoutSettingsCategories(
+        OverlaySettingsCategory category) => new(category);
+}
 
 internal readonly record struct OverlayLayoutAnchor(
     LegacyHorizontalAnchor Horizontal,
