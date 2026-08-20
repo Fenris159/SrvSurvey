@@ -21,10 +21,10 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
         var groundTarget = await CreateGroundTargetAsync();
         var platform = new RecordingOverlayPlatform();
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
+        using var session = CreateSession(platform, tracker);
         using var coordinator = new GroundTargetOverlayCoordinator(
             groundTarget,
-            platform,
-            tracker);
+            session);
         var visibilityChanges = 0;
         coordinator.VisibilityChanged += (_, _) => visibilityChanges++;
 
@@ -132,6 +132,21 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
         IsVisible: true,
         IsForeground: true);
 
+    private static OverlayPresentationSession CreateSession(
+        IOverlayPlatformService platform,
+        IGameWindowTracker tracker)
+    {
+        return OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(
+                OverlayPresentationMode.MultipleWindows,
+                "Characterization session"),
+            new OverlayPresentationSessionDependencies(
+                () => platform,
+                () => tracker,
+                _ => new ManualHostedOverlayTimer(),
+                LegacyOverlayLayout.Empty));
+    }
+
     private sealed class RecordingOverlayPlatform : IOverlayPlatformService
     {
         public OverlayPlatformCapabilities Capabilities { get; } =
@@ -176,6 +191,27 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
         public void Dispose()
         {
             IsDisposed = true;
+        }
+    }
+
+    private sealed class ManualHostedOverlayTimer : IHostedOverlayTimer
+    {
+        public event EventHandler? Tick
+        {
+            add { }
+            remove { }
+        }
+
+        public void Start()
+        {
+        }
+
+        public void Stop()
+        {
+        }
+
+        public void Dispose()
+        {
         }
     }
 
