@@ -147,7 +147,7 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         OverlayThemeResources.Apply(
             overlay,
             overlayLayout,
-            PlotterName);
+            "PlotSphericalSearch");
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);

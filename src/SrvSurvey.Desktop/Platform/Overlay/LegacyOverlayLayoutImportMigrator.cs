@@ -90,7 +90,7 @@ internal static class LegacyOverlayLayoutImportMigrator
 
     private static LegacyOverlayLayoutImportMigrationResult SaveMigration(
         LegacyOverlayLayoutStore store,
-        IReadOnlyDictionary<string, LegacyOverlayPlacement> normalized,
+        Dictionary<string, LegacyOverlayPlacement> normalized,
         string completionMarkerPath)
     {
         try
