@@ -21,6 +21,10 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
     private readonly BoxelCompletionAuditor completionAuditor;
     private readonly BoxelSearchState state = new();
     private readonly SemaphoreSlim mutationGate = new(1, 1);
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "The gate may still be released by an in-flight refresh during asynchronous disposal.")]
     private readonly SemaphoreSlim refreshStartGate = new(1, 1);
     private readonly CancellationTokenSource lifetimeCancellation = new();
     private readonly object externalWorkSync = new();

@@ -115,7 +115,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
             BoxelSearchHealthSubsystem.ProfilePersistence,
             session.Current.Health.Issues.Keys);
         await WaitUntilAsync(() =>
-            profiles.Snapshots.Count == 1
+            profiles.Snapshots.Length == 1
             && session.Current.Health.IsHealthy);
         Assert.True(profiles.Snapshots[0].Active);
     }
@@ -260,7 +260,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
     {
         private readonly ConcurrentQueue<BoxelSearchSnapshot> snapshots = new();
 
-        public IReadOnlyList<BoxelSearchSnapshot> Snapshots => snapshots.ToArray();
+        public BoxelSearchSnapshot[] Snapshots => snapshots.ToArray();
 
         public Task SaveBoxelSearchAsync(
             string frontierId,
@@ -280,7 +280,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
         private readonly ConcurrentQueue<BoxelSearchSnapshot> snapshots = new();
         private int failuresRemaining = 2;
 
-        public IReadOnlyList<BoxelSearchSnapshot> Snapshots => snapshots.ToArray();
+        public BoxelSearchSnapshot[] Snapshots => snapshots.ToArray();
 
         public Task SaveBoxelSearchAsync(
             string frontierId,
