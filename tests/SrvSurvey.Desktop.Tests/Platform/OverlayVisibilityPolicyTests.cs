@@ -35,7 +35,7 @@ public sealed class OverlayVisibilityPolicyTests
 
         Assert.True(decision.ShouldHost);
         Assert.True(decision.ShouldPresent);
-        Assert.Equal(OverlayVisibilityReason.None, decision.Reasons);
+        Assert.Equal(OverlayVisibilityReasons.None, decision.Reasons);
     }
 
     [Fact]
@@ -59,26 +59,26 @@ public sealed class OverlayVisibilityPolicyTests
     [Fact]
     public void LifecycleBlockerPreventsHostingAndPresentation()
     {
-        (OverlayVisibilityFacts Facts, OverlayVisibilityReason Reason)[] cases =
+        (OverlayVisibilityFacts Facts, OverlayVisibilityReasons Reason)[] cases =
         {
             (
                 CreateVisibleFacts() with { Requested = false },
-                OverlayVisibilityReason.DomainNotRequested),
+                OverlayVisibilityReasons.DomainNotRequested),
             (
                 CreateVisibleFacts() with { HostEligible = false },
-                OverlayVisibilityReason.HostIneligible),
+                OverlayVisibilityReasons.HostIneligible),
             (
                 CreateVisibleFacts() with { ManualSuppressed = true },
-                OverlayVisibilityReason.ManualSuppressed),
+                OverlayVisibilityReasons.ManualSuppressed),
             (
                 CreateVisibleFacts() with { SuitSuppressed = true },
-                OverlayVisibilityReason.SuitSuppressed),
+                OverlayVisibilityReasons.SuitSuppressed),
             (
                 CreateVisibleFacts() with { SessionSuppressed = true },
-                OverlayVisibilityReason.SessionSuppressed),
+                OverlayVisibilityReasons.SessionSuppressed),
             (
                 CreateVisibleFacts() with { PriorityObscured = true },
-                OverlayVisibilityReason.PriorityObscured),
+                OverlayVisibilityReasons.PriorityObscured),
         };
 
         foreach (var (facts, expectedReason) in cases)
@@ -94,17 +94,17 @@ public sealed class OverlayVisibilityPolicyTests
     [Fact]
     public void PresentationBlockerKeepsTheHostedLifecycleAlive()
     {
-        (OverlayVisibilityFacts Facts, OverlayVisibilityReason Reason)[] cases =
+        (OverlayVisibilityFacts Facts, OverlayVisibilityReasons Reason)[] cases =
         {
             (
                 CreateVisibleFacts() with { UserEnabled = false },
-                OverlayVisibilityReason.UserDisabled),
+                OverlayVisibilityReasons.UserDisabled),
             (
                 CreateVisibleFacts() with { GalaxyMapAllowed = false },
-                OverlayVisibilityReason.GalaxyMapExcluded),
+                OverlayVisibilityReasons.GalaxyMapExcluded),
             (
                 CreateVisibleFacts() with { EditorSuppressed = true },
-                OverlayVisibilityReason.EditorSuppressed),
+                OverlayVisibilityReasons.EditorSuppressed),
         };
 
         foreach (var (facts, expectedReason) in cases)
@@ -137,14 +137,14 @@ public sealed class OverlayVisibilityPolicyTests
         Assert.False(decision.ShouldHost);
         Assert.False(decision.ShouldPresent);
         Assert.Equal(
-            OverlayVisibilityReason.HostIneligible
-                | OverlayVisibilityReason.UserDisabled
-                | OverlayVisibilityReason.GalaxyMapExcluded
-                | OverlayVisibilityReason.EditorSuppressed
-                | OverlayVisibilityReason.ManualSuppressed
-                | OverlayVisibilityReason.SuitSuppressed
-                | OverlayVisibilityReason.SessionSuppressed
-                | OverlayVisibilityReason.PriorityObscured,
+            OverlayVisibilityReasons.HostIneligible
+                | OverlayVisibilityReasons.UserDisabled
+                | OverlayVisibilityReasons.GalaxyMapExcluded
+                | OverlayVisibilityReasons.EditorSuppressed
+                | OverlayVisibilityReasons.ManualSuppressed
+                | OverlayVisibilityReasons.SuitSuppressed
+                | OverlayVisibilityReasons.SessionSuppressed
+                | OverlayVisibilityReasons.PriorityObscured,
             decision.Reasons);
     }
 
@@ -168,7 +168,7 @@ public sealed class OverlayVisibilityPolicyTests
         Assert.False(blocked.ShouldPresent);
         Assert.True(restored.ShouldHost);
         Assert.True(restored.ShouldPresent);
-        Assert.Equal(OverlayVisibilityReason.None, restored.Reasons);
+        Assert.Equal(OverlayVisibilityReasons.None, restored.Reasons);
     }
 
     private static OverlayVisibilityFacts CreateVisibleFacts() => new(
