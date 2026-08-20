@@ -6,14 +6,18 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 public sealed class OverlayPresentationSession : IDisposable
 {
     private readonly CombinedOverlayPresentationController? combinedController;
+    private readonly OverlayPresentationSessionDependencies hostDependencies;
+    private readonly HashSet<HostedOverlayWindow> hostedWindows = [];
     private bool disposed;
 
     private OverlayPresentationSession(
         OverlayPresentationDecision decision,
-        CombinedOverlayPresentationController? combinedController)
+        CombinedOverlayPresentationController? combinedController,
+        OverlayPresentationSessionDependencies hostDependencies)
     {
         Decision = decision;
         this.combinedController = combinedController;
+        this.hostDependencies = hostDependencies;
     }
 
     public OverlayPresentationDecision Decision { get; }
@@ -22,13 +26,37 @@ public sealed class OverlayPresentationSession : IDisposable
         IGameWindowTracker? gameWindowTracker = null,
         OverlayWindowRegistry? registry = null)
     {
+        return CreateCurrent(
+            gameWindowTracker,
+            registry,
+            LegacyOverlayLayout.Empty,
+            () => false,
+            diagnosticSink: null);
+    }
+
+    internal static OverlayPresentationSession CreateCurrent(
+        IGameWindowTracker? gameWindowTracker,
+        OverlayWindowRegistry? registry,
+        LegacyOverlayLayout overlayLayout,
+        Func<bool> keepWhenGameLosesFocus,
+        Action<OverlayHostDiagnostic>? diagnosticSink)
+    {
+        ArgumentNullException.ThrowIfNull(overlayLayout);
+        ArgumentNullException.ThrowIfNull(keepWhenGameLosesFocus);
         var capabilities = OverlayPlatformCapabilities.DetectCurrent();
         var decision = OverlayPresentationModeSelector.DetectCurrent(
             capabilities);
         if (decision.Mode != OverlayPresentationMode.CombinedWindow)
         {
             gameWindowTracker?.Dispose();
-            return new OverlayPresentationSession(decision, null);
+            return new OverlayPresentationSession(
+                decision,
+                null,
+                CreateHostDependencies(
+                    OverlayPlatformService.CreateCurrent,
+                    overlayLayout,
+                    keepWhenGameLosesFocus,
+                    diagnosticSink));
         }
 
         var nativePlatform = OverlayPlatformService.CreateCurrent();
@@ -41,14 +69,35 @@ public sealed class OverlayPresentationSession : IDisposable
                     OverlayPresentationMode.MultipleWindows,
                     decision.Reason
                         + " The native combined-host operations were unavailable, so separate windows remain active."),
-                null);
+                null,
+                CreateHostDependencies(
+                    OverlayPlatformService.CreateCurrent,
+                    overlayLayout,
+                    keepWhenGameLosesFocus,
+                    diagnosticSink));
         }
 
         var controller = new CombinedOverlayPresentationController(
             nativePlatform,
             gameWindowTracker ?? GameWindowTracker.CreateCurrent(),
             registry);
-        return new OverlayPresentationSession(decision, controller);
+        return new OverlayPresentationSession(
+            decision,
+            controller,
+            CreateHostDependencies(
+                () => new CombinedOverlayPlatformService(controller),
+                overlayLayout,
+                keepWhenGameLosesFocus,
+                diagnosticSink));
+    }
+
+    internal static OverlayPresentationSession CreateForAdapters(
+        OverlayPresentationDecision decision,
+        OverlayPresentationSessionDependencies dependencies)
+    {
+        ArgumentNullException.ThrowIfNull(decision);
+        ArgumentNullException.ThrowIfNull(dependencies);
+        return new OverlayPresentationSession(decision, null, dependencies);
     }
 
     public IOverlayPlatformService CreatePlatformService()
@@ -59,6 +108,19 @@ public sealed class OverlayPresentationSession : IDisposable
             : new CombinedOverlayPlatformService(combinedController);
     }
 
+    internal HostedOverlayWindow HostPassiveWindow(
+        PassiveOverlayWindowDefinition definition)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        ArgumentNullException.ThrowIfNull(definition);
+        var hosted = new HostedOverlayWindow(
+            definition,
+            hostDependencies,
+            RemoveHostedWindow);
+        hostedWindows.Add(hosted);
+        return hosted;
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -67,7 +129,34 @@ public sealed class OverlayPresentationSession : IDisposable
         }
 
         disposed = true;
+        foreach (var hosted in hostedWindows.ToArray())
+        {
+            hosted.Dispose();
+        }
+
+        hostedWindows.Clear();
         combinedController?.Dispose();
+    }
+
+    private static OverlayPresentationSessionDependencies CreateHostDependencies(
+        Func<IOverlayPlatformService> platformFactory,
+        LegacyOverlayLayout overlayLayout,
+        Func<bool> keepWhenGameLosesFocus,
+        Action<OverlayHostDiagnostic>? diagnosticSink)
+    {
+        return new OverlayPresentationSessionDependencies(
+            platformFactory,
+            () => new OverlayGameWindowTracker(
+                GameWindowTracker.CreateCurrent(),
+                keepWhenGameLosesFocus),
+            interval => new DispatcherHostedOverlayTimer(interval),
+            overlayLayout,
+            diagnosticSink);
+    }
+
+    private void RemoveHostedWindow(HostedOverlayWindow hosted)
+    {
+        hostedWindows.Remove(hosted);
     }
 
     private sealed class CombinedOverlayPlatformService(
