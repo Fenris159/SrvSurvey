@@ -207,7 +207,7 @@ public sealed class OverlayWindowRegistryTests
                 Assert.True(decision.ShouldHost);
                 Assert.False(decision.ShouldPresent);
                 Assert.Equal(
-                    OverlayVisibilityReason.EditorSuppressed,
+                    OverlayVisibilityReasons.EditorSuppressed,
                     decision.Reasons);
             });
         Assert.All(registry.Snapshot(), entry => Assert.False(entry.IsVisible));
@@ -237,9 +237,9 @@ public sealed class OverlayWindowRegistryTests
         Assert.False(decision.ShouldHost);
         Assert.False(decision.ShouldPresent);
         Assert.Equal(
-            OverlayVisibilityReason.ManualSuppressed
-            | OverlayVisibilityReason.SuitSuppressed
-            | OverlayVisibilityReason.SessionSuppressed,
+            OverlayVisibilityReasons.ManualSuppressed
+            | OverlayVisibilityReasons.SuitSuppressed
+            | OverlayVisibilityReasons.SessionSuppressed,
             decision.Reasons);
         Assert.False(window.IsVisible);
 
@@ -264,7 +264,7 @@ public sealed class OverlayWindowRegistryTests
 
         Assert.False(window.IsVisible);
         Assert.Equal(
-            OverlayVisibilityReason.DomainNotRequested,
+            OverlayVisibilityReasons.DomainNotRequested,
             registry.GetDecision(window).Reasons);
         window.Close();
     }
@@ -283,7 +283,7 @@ public sealed class OverlayWindowRegistryTests
 
         Assert.False(Assert.Single(registry.Snapshot()).IsVisible);
         Assert.Equal(
-            OverlayVisibilityReason.DomainNotRequested,
+            OverlayVisibilityReasons.DomainNotRequested,
             registry.GetDecision(window).Reasons);
         window.Close();
     }

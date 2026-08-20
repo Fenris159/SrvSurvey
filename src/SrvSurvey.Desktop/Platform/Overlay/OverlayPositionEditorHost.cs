@@ -56,7 +56,6 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     private PixelRect hostBounds;
     private double hostScaling = 1;
     private bool updatingPreviewLayout;
-    private bool keepRuntimeOverlaysVisible;
     private bool closing;
     private bool disposed;
     private OverlayInteractionViewModel? viewModel;
@@ -113,7 +112,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         hostBounds = preferred ?? screen.Bounds;
         hostScaling = screen.Scaling;
         editSession = session;
-        keepRuntimeOverlaysVisible = viewModel.IsLiveInteractionEnabled;
+        var keepRuntimeOverlaysVisible = viewModel.IsLiveInteractionEnabled;
         toolbar.SizeChanged += OnEditorSizeChanged;
         toolbar.Screens.Changed += OnScreensChanged;
         PositionEditorToolbar(toolbar);
@@ -254,7 +253,6 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
     public void SetRuntimeOverlaysVisibleDuringEditing(bool visible)
     {
-        keepRuntimeOverlaysVisible = visible;
         if (editor is null)
         {
             return;
@@ -309,7 +307,6 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         viewModel = null;
         editSession = null;
         runtimePlacementReferences.Clear();
-        keepRuntimeOverlaysVisible = false;
     }
 
     public void Dispose()
@@ -431,7 +428,6 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         ClosePreviews();
         registry.SetEditorSuppressed(suppressed: false);
         runtimePlacementReferences.Clear();
-        keepRuntimeOverlaysVisible = false;
         Closed?.Invoke(this, EventArgs.Empty);
     }
 
