@@ -5486,7 +5486,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/MultiGameCommanderOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/MultiGameCommanderOverlayPresentation.axaml"
   },
   {
     "Text": "CURRENT",
@@ -5652,7 +5652,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Cancel overlay position and opacity changes",
+    "Text": "Cancel overlay position, opacity, and scale changes",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -10937,7 +10937,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Edit the shared geometry used by every site of this type. Drafts preview locally; only an explicitly selected JSON export file is changed.",
@@ -12181,7 +12181,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/FlightWarningOverlayWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/FlightWarningOverlayPresentation.axaml"
   },
   {
     "Text": "FLOOR",
@@ -21697,6 +21697,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
+    "Text": "OPACITY",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
     "Text": "OPT-IN",
     "IsFormat": false,
     "SourceKinds": [
@@ -22885,14 +22893,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Overlay opacity",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
-  },
-  {
     "Text": "Overlay opacity must be from 0 to 1.",
     "IsFormat": false,
     "SourceKinds": [
@@ -22955,14 +22955,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
-  },
-  {
-    "Text": "Overlay position preview",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
   },
   {
     "Text": "Overlay position previews use an isolated simulated game state.",
@@ -23123,14 +23115,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Override this overlay only",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
   },
   {
     "Text": "Overview",
@@ -27733,6 +27717,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Right Click Panels to edit individual Opacity/Scale",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
+    "Text": "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
     "Text": "Ring",
     "IsFormat": false,
     "SourceKinds": [
@@ -28083,7 +28083,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
     "Text": "SCAN VALUE",
@@ -28343,7 +28343,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "SIMULATED GAME STATE \u2022 DRAG TO MOVE \u2022 RIGHT-CLICK FOR OPACITY",
+    "Text": "SIMULATED GAME STATE \u2022 DRAG TO MOVE \u2022 RIGHT-CLICK FOR OPACITY / SCALE",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -28905,7 +28905,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
-    "Text": "Save overlay positions and opacity",
+    "Text": "Save overlay positions, opacity, and scale",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -31577,6 +31577,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Snap every overlay in this category to the center",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
     "Text": "Software\\Classes\\{0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -31819,7 +31827,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/GalaxyMapOverlayWindow.axaml"
   },
   {
-    "Text": "SrvSurvey Galaxy Map search guidance",
+    "Text": "SrvSurvey Galaxy Map search guidance overlay",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -31827,7 +31835,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
   },
   {
-    "Text": "SrvSurvey Guardian map zoom",
+    "Text": "SrvSurvey Guardian map zoom overlay",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -31859,7 +31867,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/RamTahOverlayWindow.axaml"
   },
   {
-    "Text": "SrvSurvey active Commander",
+    "Text": "SrvSurvey active Commander overlay",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -31891,7 +31899,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml"
   },
   {
-    "Text": "SrvSurvey combined overlay host",
+    "Text": "SrvSurvey combined overlay",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -31979,7 +31987,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/GroundTargetOverlayWindow.axaml"
   },
   {
-    "Text": "SrvSurvey high-gravity warning",
+    "Text": "SrvSurvey high-gravity warning overlay",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -32043,12 +32051,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/JumpInfoOverlayWindow.axaml"
   },
   {
-    "Text": "SrvSurvey notifications",
+    "Text": "SrvSurvey notifications overlay",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/NotificationOverlayWindow.axaml"
+  },
+  {
+    "Text": "SrvSurvey position editor overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
+    "Text": "SrvSurvey position preview overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
   },
   {
     "Text": "SrvSurvey prior scans overlay",
@@ -32331,7 +32355,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
-    "Text": "SrvSurveyWindowOne",
+    "Text": "SrvSurveyWindowOne overlay",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -38887,7 +38911,15 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
+    "Text": "Use global scale",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
     "Text": "Use last updated time from Spansh not EDSM",

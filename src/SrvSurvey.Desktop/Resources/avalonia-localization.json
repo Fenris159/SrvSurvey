@@ -2821,8 +2821,8 @@
                    "translation":  "Mit „Prüfung abbrechen“ werden die bereits angewendeten Teilarbeiten sicher beibehalten. Der Fortschritt der verknüpften Bibliothek und ihr Änderungsdatum werden automatisch aktualisiert, wenn Prüfergebnisse angewendet werden."
                },
                {
-                   "source":  "Cancel overlay position and opacity changes",
-                   "translation":  "Überlagerungspositions- und Deckkraftänderungen abbrechen"
+                   "source":  "Cancel overlay position, opacity, and scale changes",
+                   "translation":  "Brechen Sie Änderungen an Überlagerungsposition, Deckkraft und Skalierung ab"
                },
                {
                    "source":  "Cancel polygon",
@@ -10821,6 +10821,10 @@
                    "translation":  "ZIEL"
                },
                {
+                   "source":  "OPACITY",
+                   "translation":  "OPAZITÄT"
+               },
+               {
                    "source":  "OPT-IN",
                    "translation":  "OPT-IN"
                },
@@ -11413,10 +11417,6 @@
                    "translation":  "Overlay fehlt: Überprüfen Sie die individuelle Sichtbarkeit und den Auslöser und testen Sie es dann unter Overlay-Positionen bearbeiten."
                },
                {
-                   "source":  "Overlay opacity",
-                   "translation":  "Deckkraft der Überlagerung"
-               },
-               {
                    "source":  "Overlay opacity must be from 0 to 1.",
                    "translation":  "Die Deckkraft der Überlagerung muss zwischen 0 und 1 liegen."
                },
@@ -11447,10 +11447,6 @@
                {
                    "source":  "Overlay position and opacity changes were cancelled.",
                    "translation":  "Änderungen an Overlay-Position und Deckkraft wurden abgebrochen."
-               },
-               {
-                   "source":  "Overlay position preview",
-                   "translation":  "Vorschau der Overlay-Position"
                },
                {
                    "source":  "Overlay position previews use an isolated simulated game state.",
@@ -11531,10 +11527,6 @@
                {
                    "source":  "Override the global overlay opacity",
                    "translation":  "Überschreiben Sie die globale Overlay-Deckkraft"
-               },
-               {
-                   "source":  "Override this overlay only",
-                   "translation":  "Überschreiben Sie nur dieses Overlay"
                },
                {
                    "source":  "Overview",
@@ -13833,6 +13825,14 @@
                    "translation":  "Belohnungen: 42,75 Mio. – 106 Mio"
                },
                {
+                   "source":  "Right Click Panels to edit individual Opacity/Scale",
+                   "translation":  "Klicken Sie mit der rechten Maustaste auf Panels, um einzelne Deckkraft/Skalierung zu bearbeiten"
+               },
+               {
+                   "source":  "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
+                   "translation":  "Klicken Sie mit der rechten Maustaste auf eine andere Vorschau, um diesen Bereich zu bearbeiten. Das Häkchen in der Symbolleiste speichert jede Änderung und schließt den Editor."
+               },
+               {
                    "source":  "Ring",
                    "translation":  "Klingeln"
                },
@@ -14137,8 +14137,8 @@
                    "translation":  "ZEIGEN"
                },
                {
-                   "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY",
-                   "translation":  "SIMULIERTER SPIELZUSTAND • ZUM BEWEGEN ZIEHEN • RECHTSKLICK FÜR DECKKRAFT"
+                   "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE",
+                   "translation":  "SIMULIERTER SPIELZUSTAND • ZUM BEWEGEN ZIEHEN • RECHTSKLICK FÜR DECKKRAFT/SKALIERUNG"
                },
                {
                    "source":  "SITE",
@@ -14417,8 +14417,8 @@
                    "translation":  "Speichern oder machen Sie die aktuelle Route-Workspace-Definition rückgängig und notieren Sie sich die Änderungen, bevor Sie sie deaktivieren."
                },
                {
-                   "source":  "Save overlay positions and opacity",
-                   "translation":  "Speichern Sie Overlay-Positionen und Deckkraft"
+                   "source":  "Save overlay positions, opacity, and scale",
+                   "translation":  "Speichern Sie Überlagerungspositionen, Deckkraft und Skalierung"
                },
                {
                    "source":  "Save route as",
@@ -15749,6 +15749,10 @@
                    "translation":  "Kleine Kreise (~100 m)"
                },
                {
+                   "source":  "Snap every overlay in this category to the center",
+                   "translation":  "Richten Sie jedes Overlay in dieser Kategorie in der Mitte aus"
+               },
+               {
                    "source":  "Software\\Classes\\{0}",
                    "translation":  "Software\\Klassen\\{0}"
                },
@@ -15869,12 +15873,12 @@
                    "translation":  "SrvSurvey Galaxy-Karten-Overlay"
                },
                {
-                   "source":  "SrvSurvey Galaxy Map search guidance",
-                   "translation":  "SrvSurvey Galaxy Map-Suchanleitung"
+                   "source":  "SrvSurvey Galaxy Map search guidance overlay",
+                   "translation":  "SrvSurvey Galaxy Map-Suchführungs-Overlay"
                },
                {
-                   "source":  "SrvSurvey Guardian map zoom",
-                   "translation":  "SrvSurvey Guardian-Kartenzoom"
+                   "source":  "SrvSurvey Guardian map zoom overlay",
+                   "translation":  "SrvSurvey Wächter-Kartenzoom-Overlay"
                },
                {
                    "source":  "SrvSurvey Guardian overlay",
@@ -15889,8 +15893,8 @@
                    "translation":  "SrvSurvey Ram Tah-Overlay"
                },
                {
-                   "source":  "SrvSurvey active Commander",
-                   "translation":  "SrvSurvey aktiver Kommandant"
+                   "source":  "SrvSurvey active Commander overlay",
+                   "translation":  "SrvSurvey aktives Commander-Overlay"
                },
                {
                    "source":  "SrvSurvey biology status overlay",
@@ -15905,8 +15909,8 @@
                    "translation":  "SrvSurvey Überlagerung von Körperinformationen"
                },
                {
-                   "source":  "SrvSurvey combined overlay host",
-                   "translation":  "SrvSurvey kombinierter Overlay-Host"
+                   "source":  "SrvSurvey combined overlay",
+                   "translation":  "SrvSurvey kombiniertes Overlay"
                },
                {
                    "source":  "SrvSurvey construction commodities overlay",
@@ -15949,8 +15953,8 @@
                    "translation":  "SrvSurvey Bodenziel-Overlay"
                },
                {
-                   "source":  "SrvSurvey high-gravity warning",
-                   "translation":  "SrvSurvey Warnung vor hoher Schwerkraft"
+                   "source":  "SrvSurvey high-gravity warning overlay",
+                   "translation":  "SrvSurvey Warnungs-Overlay für hohe Schwerkraft"
                },
                {
                    "source":  "SrvSurvey hit a problem",
@@ -15981,8 +15985,16 @@
                    "translation":  "SrvSurvey Overlay für den nächsten Sprung"
                },
                {
-                   "source":  "SrvSurvey notifications",
-                   "translation":  "SrvSurvey Benachrichtigungen"
+                   "source":  "SrvSurvey notifications overlay",
+                   "translation":  "SrvSurvey Benachrichtigungs-Overlay"
+               },
+               {
+                   "source":  "SrvSurvey position editor overlay",
+                   "translation":  "SrvSurvey Positionseditor-Overlay"
+               },
+               {
+                   "source":  "SrvSurvey position preview overlay",
+                   "translation":  "SrvSurvey Positionsvorschau-Overlay"
                },
                {
                    "source":  "SrvSurvey prior scans overlay",
@@ -16125,8 +16137,8 @@
                    "translation":  "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)"
                },
                {
-                   "source":  "SrvSurveyWindowOne",
-                   "translation":  "SrvSurveyWindowOne"
+                   "source":  "SrvSurveyWindowOne overlay",
+                   "translation":  "SrvSurveyWindowOne-Overlay"
                },
                {
                    "source":  "SrvZoom",
@@ -19399,6 +19411,10 @@
                {
                    "source":  "Use global opacity",
                    "translation":  "Verwenden Sie globale Deckkraft"
+               },
+               {
+                   "source":  "Use global scale",
+                   "translation":  "Nutzen Sie die globale Skalierung"
                },
                {
                    "source":  "Use last updated time from Spansh not EDSM",
@@ -25471,8 +25487,8 @@
                    "translation":  "Cancelar auditoría conserva de forma segura el trabajo parcial ya aplicado. El progreso de la biblioteca vinculada y su fecha de modificación se actualizan automáticamente a medida que se aplican los resultados de la auditoría."
                },
                {
-                   "source":  "Cancel overlay position and opacity changes",
-                   "translation":  "Cancelar los cambios de opacidad y posición de superposición"
+                   "source":  "Cancel overlay position, opacity, and scale changes",
+                   "translation":  "Cancelar cambios de posición, opacidad y escala de superposición"
                },
                {
                    "source":  "Cancel polygon",
@@ -33471,6 +33487,10 @@
                    "translation":  "OBJETIVO"
                },
                {
+                   "source":  "OPACITY",
+                   "translation":  "OPACIDAD"
+               },
+               {
                    "source":  "OPT-IN",
                    "translation":  "REGISTRARSE"
                },
@@ -34063,10 +34083,6 @@
                    "translation":  "Falta superposición: verifique su visibilidad individual y su activación, luego pruébelo en Editar posiciones de superposición."
                },
                {
-                   "source":  "Overlay opacity",
-                   "translation":  "Opacidad de superposición"
-               },
-               {
                    "source":  "Overlay opacity must be from 0 to 1.",
                    "translation":  "La opacidad de superposición debe ser de 0 a 1."
                },
@@ -34097,10 +34113,6 @@
                {
                    "source":  "Overlay position and opacity changes were cancelled.",
                    "translation":  "Se cancelaron los cambios de opacidad y posición de superposición."
-               },
-               {
-                   "source":  "Overlay position preview",
-                   "translation":  "Vista previa de la posición de superposición"
                },
                {
                    "source":  "Overlay position previews use an isolated simulated game state.",
@@ -34181,10 +34193,6 @@
                {
                    "source":  "Override the global overlay opacity",
                    "translation":  "Anular la opacidad de superposición global"
-               },
-               {
-                   "source":  "Override this overlay only",
-                   "translation":  "Anular solo esta superposición"
                },
                {
                    "source":  "Overview",
@@ -36483,6 +36491,14 @@
                    "translation":  "Recompensas: 42,75 millones - 106 millones"
                },
                {
+                   "source":  "Right Click Panels to edit individual Opacity/Scale",
+                   "translation":  "Paneles de clic derecho para editar opacidad/escala individuales"
+               },
+               {
+                   "source":  "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
+                   "translation":  "Haga clic derecho en otra vista previa para editar ese panel. La marca de verificación de la barra de herramientas guarda todos los cambios y cierra el editor."
+               },
+               {
                    "source":  "Ring",
                    "translation":  "anillo"
                },
@@ -36787,8 +36803,8 @@
                    "translation":  "MOSTRAR"
                },
                {
-                   "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY",
-                   "translation":  "ESTADO DEL JUEGO SIMULADO • ARRASTRA PARA MOVER • HAZ CLIC DERECHO PARA OPACIDAD"
+                   "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE",
+                   "translation":  "ESTADO DEL JUEGO SIMULADO • ARRASTRA PARA MOVER • HAZ CLIC DERECHO PARA OPACIDAD/ESCALA"
                },
                {
                    "source":  "SITE",
@@ -37067,8 +37083,8 @@
                    "translation":  "Guarde o deshaga la definición actual del espacio de trabajo de ruta y anote los cambios antes de desactivarla."
                },
                {
-                   "source":  "Save overlay positions and opacity",
-                   "translation":  "Guardar posiciones de superposición y opacidad"
+                   "source":  "Save overlay positions, opacity, and scale",
+                   "translation":  "Guarde posiciones de superposición, opacidad y escala"
                },
                {
                    "source":  "Save route as",
@@ -38399,6 +38415,10 @@
                    "translation":  "Círculos pequeños (~100 m)"
                },
                {
+                   "source":  "Snap every overlay in this category to the center",
+                   "translation":  "Ajusta cada superposición de esta categoría al centro"
+               },
+               {
                    "source":  "Software\\Classes\\{0}",
                    "translation":  "Software\\Clases\\{0}"
                },
@@ -38519,12 +38539,12 @@
                    "translation":  "SrvSurvey Superposición del mapa de galaxias"
                },
                {
-                   "source":  "SrvSurvey Galaxy Map search guidance",
-                   "translation":  "SrvSurvey Guía de búsqueda en Galaxy Map"
+                   "source":  "SrvSurvey Galaxy Map search guidance overlay",
+                   "translation":  "SrvSurvey Superposición de guía de búsqueda de Galaxy Map"
                },
                {
-                   "source":  "SrvSurvey Guardian map zoom",
-                   "translation":  "SrvSurvey Zoom del mapa guardián"
+                   "source":  "SrvSurvey Guardian map zoom overlay",
+                   "translation":  "SrvSurvey Superposición de zoom del mapa guardián"
                },
                {
                    "source":  "SrvSurvey Guardian overlay",
@@ -38539,8 +38559,8 @@
                    "translation":  "SrvSurvey Superposición de Ram Tah"
                },
                {
-                   "source":  "SrvSurvey active Commander",
-                   "translation":  "SrvSurvey comandante activo"
+                   "source":  "SrvSurvey active Commander overlay",
+                   "translation":  "SrvSurvey superposición de Commander activa"
                },
                {
                    "source":  "SrvSurvey biology status overlay",
@@ -38555,8 +38575,8 @@
                    "translation":  "SrvSurvey superposición de información del cuerpo"
                },
                {
-                   "source":  "SrvSurvey combined overlay host",
-                   "translation":  "SrvSurvey host de superposición combinado"
+                   "source":  "SrvSurvey combined overlay",
+                   "translation":  "SrvSurvey superposición combinada"
                },
                {
                    "source":  "SrvSurvey construction commodities overlay",
@@ -38599,8 +38619,8 @@
                    "translation":  "SrvSurvey superposición de objetivo terrestre"
                },
                {
-                   "source":  "SrvSurvey high-gravity warning",
-                   "translation":  "SrvSurvey advertencia de alta gravedad"
+                   "source":  "SrvSurvey high-gravity warning overlay",
+                   "translation":  "SrvSurvey superposición de advertencia de alta gravedad"
                },
                {
                    "source":  "SrvSurvey hit a problem",
@@ -38631,8 +38651,16 @@
                    "translation":  "SrvSurvey superposición del siguiente salto"
                },
                {
-                   "source":  "SrvSurvey notifications",
-                   "translation":  "SrvSurvey notificaciones"
+                   "source":  "SrvSurvey notifications overlay",
+                   "translation":  "SrvSurvey notificaciones superpuestas"
+               },
+               {
+                   "source":  "SrvSurvey position editor overlay",
+                   "translation":  "SrvSurvey superposición del editor de posición"
+               },
+               {
+                   "source":  "SrvSurvey position preview overlay",
+                   "translation":  "SrvSurvey superposición de vista previa de posición"
                },
                {
                    "source":  "SrvSurvey prior scans overlay",
@@ -38775,8 +38803,8 @@
                    "translation":  "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)"
                },
                {
-                   "source":  "SrvSurveyWindowOne",
-                   "translation":  "SrvEncuestaVentanaUno"
+                   "source":  "SrvSurveyWindowOne overlay",
+                   "translation":  "SrvSurveyWindowOne superpuesto"
                },
                {
                    "source":  "SrvZoom",
@@ -42049,6 +42077,10 @@
                {
                    "source":  "Use global opacity",
                    "translation":  "Usar opacidad global"
+               },
+               {
+                   "source":  "Use global scale",
+                   "translation":  "Usar escala global"
                },
                {
                    "source":  "Use last updated time from Spansh not EDSM",
@@ -48121,8 +48153,8 @@
                    "translation":  "Annuler l\u0027audit conserve en toute sécurité le travail partiel déjà appliqué. La progression de la bibliothèque liée et sa date de modification sont automatiquement mises à jour à mesure que les résultats de l\u0027audit sont appliqués."
                },
                {
-                   "source":  "Cancel overlay position and opacity changes",
-                   "translation":  "Annuler les modifications de position de superposition et d’opacité"
+                   "source":  "Cancel overlay position, opacity, and scale changes",
+                   "translation":  "Annuler les modifications de position de superposition, d\u0027opacité et d\u0027échelle"
                },
                {
                    "source":  "Cancel polygon",
@@ -56121,6 +56153,10 @@
                    "translation":  "OBJECTIF"
                },
                {
+                   "source":  "OPACITY",
+                   "translation":  "OPACITÉ"
+               },
+               {
                    "source":  "OPT-IN",
                    "translation":  "INSCRIPTION"
                },
@@ -56713,10 +56749,6 @@
                    "translation":  "Superposition manquante : vérifiez sa visibilité individuelle et son déclenchement, puis testez-la dans Modifier les positions de superposition."
                },
                {
-                   "source":  "Overlay opacity",
-                   "translation":  "Opacité de superposition"
-               },
-               {
                    "source":  "Overlay opacity must be from 0 to 1.",
                    "translation":  "L\u0027opacité de la superposition doit être comprise entre 0 et 1."
                },
@@ -56747,10 +56779,6 @@
                {
                    "source":  "Overlay position and opacity changes were cancelled.",
                    "translation":  "Les changements de position de superposition et d’opacité ont été annulés."
-               },
-               {
-                   "source":  "Overlay position preview",
-                   "translation":  "Aperçu de la position de superposition"
                },
                {
                    "source":  "Overlay position previews use an isolated simulated game state.",
@@ -56831,10 +56859,6 @@
                {
                    "source":  "Override the global overlay opacity",
                    "translation":  "Remplacer l\u0027opacité globale de la superposition"
-               },
-               {
-                   "source":  "Override this overlay only",
-                   "translation":  "Remplacer cette superposition uniquement"
                },
                {
                    "source":  "Overview",
@@ -59133,6 +59157,14 @@
                    "translation":  "Récompenses : 42,75 M - 106 M"
                },
                {
+                   "source":  "Right Click Panels to edit individual Opacity/Scale",
+                   "translation":  "Cliquez avec le bouton droit sur les panneaux pour modifier l\u0027opacité/l\u0027échelle individuelles."
+               },
+               {
+                   "source":  "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
+                   "translation":  "Cliquez avec le bouton droit sur un autre aperçu pour modifier ce volet. La coche de la barre d\u0027outils enregistre chaque modification et ferme l\u0027éditeur."
+               },
+               {
                    "source":  "Ring",
                    "translation":  "Bague"
                },
@@ -59437,8 +59469,8 @@
                    "translation":  "MONTRER"
                },
                {
-                   "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY",
-                   "translation":  "ÉTAT DE JEU SIMULÉ • GLISSEZ POUR DÉPLACER • CLIC DROIT POUR L\u0027OPACITÉ"
+                   "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE",
+                   "translation":  "ÉTAT DE JEU SIMULÉ • GLISSEZ POUR DÉPLACER • CLIC DROIT POUR L\u0027OPACITÉ / L\u0027ÉCHELLE"
                },
                {
                    "source":  "SITE",
@@ -59717,8 +59749,8 @@
                    "translation":  "Enregistrez ou annulez la définition actuelle de l\u0027espace de travail de route et notez les modifications avant de la désactiver."
                },
                {
-                   "source":  "Save overlay positions and opacity",
-                   "translation":  "Enregistrer les positions de superposition et l\u0027opacité"
+                   "source":  "Save overlay positions, opacity, and scale",
+                   "translation":  "Enregistrez les positions de superposition, l\u0027opacité et l\u0027échelle"
                },
                {
                    "source":  "Save route as",
@@ -61049,6 +61081,10 @@
                    "translation":  "Petits cercles (~100 m)"
                },
                {
+                   "source":  "Snap every overlay in this category to the center",
+                   "translation":  "Alignez chaque superposition de cette catégorie au centre"
+               },
+               {
                    "source":  "Software\\Classes\\{0}",
                    "translation":  "Logiciel\\Classes\\{0}"
                },
@@ -61169,12 +61205,12 @@
                    "translation":  "SrvSurvey Superposition de la carte Galaxy"
                },
                {
-                   "source":  "SrvSurvey Galaxy Map search guidance",
-                   "translation":  "SrvSurvey Guide de recherche sur la carte Galaxy"
+                   "source":  "SrvSurvey Galaxy Map search guidance overlay",
+                   "translation":  "SrvSurvey Superposition de guidage de recherche Galaxy Map"
                },
                {
-                   "source":  "SrvSurvey Guardian map zoom",
-                   "translation":  "SrvSurvey Zoom de la carte des Gardiens"
+                   "source":  "SrvSurvey Guardian map zoom overlay",
+                   "translation":  "SrvSurvey Superposition de zoom de la carte Gardien"
                },
                {
                    "source":  "SrvSurvey Guardian overlay",
@@ -61189,8 +61225,8 @@
                    "translation":  "SrvSurvey Superposition Ram Tah"
                },
                {
-                   "source":  "SrvSurvey active Commander",
-                   "translation":  "SrvSurvey Commandant actif"
+                   "source":  "SrvSurvey active Commander overlay",
+                   "translation":  "SrvSurvey superposition de commandant active"
                },
                {
                    "source":  "SrvSurvey biology status overlay",
@@ -61205,8 +61241,8 @@
                    "translation":  "SrvSurvey superposition d\u0027informations sur le corps"
                },
                {
-                   "source":  "SrvSurvey combined overlay host",
-                   "translation":  "SrvSurvey hôte de superposition combiné"
+                   "source":  "SrvSurvey combined overlay",
+                   "translation":  "SrvSurvey superposition combinée"
                },
                {
                    "source":  "SrvSurvey construction commodities overlay",
@@ -61249,8 +61285,8 @@
                    "translation":  "SrvSurvey superposition de cible au sol"
                },
                {
-                   "source":  "SrvSurvey high-gravity warning",
-                   "translation":  "SrvSurvey avertissement de haute gravité"
+                   "source":  "SrvSurvey high-gravity warning overlay",
+                   "translation":  "SrvSurvey superposition d\u0027avertissement de haute gravité"
                },
                {
                    "source":  "SrvSurvey hit a problem",
@@ -61281,8 +61317,16 @@
                    "translation":  "SrvSurvey superposition du saut suivant"
                },
                {
-                   "source":  "SrvSurvey notifications",
-                   "translation":  "SrvSurveynotifications"
+                   "source":  "SrvSurvey notifications overlay",
+                   "translation":  "SrvSurvey superposition des notifications"
+               },
+               {
+                   "source":  "SrvSurvey position editor overlay",
+                   "translation":  "SrvSurvey superposition de l\u0027éditeur de position"
+               },
+               {
+                   "source":  "SrvSurvey position preview overlay",
+                   "translation":  "SrvSurvey superposition d\u0027aperçu de position"
                },
                {
                    "source":  "SrvSurvey prior scans overlay",
@@ -61425,8 +61469,8 @@
                    "translation":  "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)"
                },
                {
-                   "source":  "SrvSurveyWindowOne",
-                   "translation":  "SrvSurveyWindowOne"
+                   "source":  "SrvSurveyWindowOne overlay",
+                   "translation":  "Superposition SrvSurveyWindowOne"
                },
                {
                    "source":  "SrvZoom",
@@ -64699,6 +64743,10 @@
                {
                    "source":  "Use global opacity",
                    "translation":  "Utiliser l\u0027opacité globale"
+               },
+               {
+                   "source":  "Use global scale",
+                   "translation":  "Utiliser l’échelle mondiale"
                },
                {
                    "source":  "Use last updated time from Spansh not EDSM",
@@ -70771,8 +70819,8 @@
                       "translation":  "Cancelar auditoria retém com segurança o trabalho parcial já aplicado. O progresso da biblioteca vinculada e sua data de modificação são atualizados automaticamente à medida que os resultados da auditoria são aplicados."
                   },
                   {
-                      "source":  "Cancel overlay position and opacity changes",
-                      "translation":  "Cancelar alterações de posição e opacidade da sobreposição"
+                      "source":  "Cancel overlay position, opacity, and scale changes",
+                      "translation":  "Cancelar alterações de posição, opacidade e escala da sobreposição"
                   },
                   {
                       "source":  "Cancel polygon",
@@ -78771,6 +78819,10 @@
                       "translation":  "OBJETIVO"
                   },
                   {
+                      "source":  "OPACITY",
+                      "translation":  "OPACIDADE"
+                  },
+                  {
                       "source":  "OPT-IN",
                       "translation":  "ATIVAR"
                   },
@@ -79363,10 +79415,6 @@
                       "translation":  "Sobreposição ausente: verifique sua visibilidade e acionamento individuais e teste-os em Editar posições de sobreposição."
                   },
                   {
-                      "source":  "Overlay opacity",
-                      "translation":  "Opacidade de sobreposição"
-                  },
-                  {
                       "source":  "Overlay opacity must be from 0 to 1.",
                       "translation":  "A opacidade da sobreposição deve ser de 0 a 1."
                   },
@@ -79397,10 +79445,6 @@
                   {
                       "source":  "Overlay position and opacity changes were cancelled.",
                       "translation":  "As alterações de posição e opacidade da sobreposição foram canceladas."
-                  },
-                  {
-                      "source":  "Overlay position preview",
-                      "translation":  "Visualização da posição da sobreposição"
                   },
                   {
                       "source":  "Overlay position previews use an isolated simulated game state.",
@@ -79481,10 +79525,6 @@
                   {
                       "source":  "Override the global overlay opacity",
                       "translation":  "Substituir a opacidade da sobreposição global"
-                  },
-                  {
-                      "source":  "Override this overlay only",
-                      "translation":  "Substituir apenas esta sobreposição"
                   },
                   {
                       "source":  "Overview",
@@ -81783,6 +81823,14 @@
                       "translation":  "Recompensas: 42,75 milhões - 106 milhões"
                   },
                   {
+                      "source":  "Right Click Panels to edit individual Opacity/Scale",
+                      "translation":  "Clique com o botão direito nos painéis para editar a opacidade/escala individual"
+                  },
+                  {
+                      "source":  "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
+                      "translation":  "Clique com o botão direito em outra visualização para editar esse painel. A marca de seleção da barra de ferramentas salva todas as alterações e fecha o editor."
+                  },
+                  {
                       "source":  "Ring",
                       "translation":  "Anel"
                   },
@@ -82087,8 +82135,8 @@
                       "translation":  "MOSTRAR"
                   },
                   {
-                      "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY",
-                      "translation":  "ESTADO DE JOGO SIMULADO • ARRASTE PARA MOVER • CLIQUE COM O DIREITO PARA OPACIDADE"
+                      "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE",
+                      "translation":  "ESTADO DO JOGO SIMULADO • ARRASTE PARA MOVER • CLIQUE COM O DIREITO PARA OPACIDADE / ESCALA"
                   },
                   {
                       "source":  "SITE",
@@ -82367,8 +82415,8 @@
                       "translation":  "Salve ou desfaça a definição atual do Route Workspace e anote as alterações antes de desativá-lo."
                   },
                   {
-                      "source":  "Save overlay positions and opacity",
-                      "translation":  "Salvar posições de sobreposição e opacidade"
+                      "source":  "Save overlay positions, opacity, and scale",
+                      "translation":  "Salve posições de sobreposição, opacidade e escala"
                   },
                   {
                       "source":  "Save route as",
@@ -83699,6 +83747,10 @@
                       "translation":  "Círculos pequenos (~100 m)"
                   },
                   {
+                      "source":  "Snap every overlay in this category to the center",
+                      "translation":  "Encaixe todas as sobreposições desta categoria no centro"
+                  },
+                  {
                       "source":  "Software\\Classes\\{0}",
                       "translation":  "Software\\Aulas\\{0}"
                   },
@@ -83819,12 +83871,12 @@
                       "translation":  "SrvSurvey Sobreposição do mapa da galáxia"
                   },
                   {
-                      "source":  "SrvSurvey Galaxy Map search guidance",
-                      "translation":  "SrvSurvey Orientação de pesquisa do Galaxy Map"
+                      "source":  "SrvSurvey Galaxy Map search guidance overlay",
+                      "translation":  "SrvSurvey Sobreposição de orientação de pesquisa do Galaxy Map"
                   },
                   {
-                      "source":  "SrvSurvey Guardian map zoom",
-                      "translation":  "SrvSurvey Zoom do mapa do Guardião"
+                      "source":  "SrvSurvey Guardian map zoom overlay",
+                      "translation":  "SrvSurvey Sobreposição de zoom do mapa do Guardião"
                   },
                   {
                       "source":  "SrvSurvey Guardian overlay",
@@ -83839,8 +83891,8 @@
                       "translation":  "SrvSurvey Sobreposição de Ram Tah"
                   },
                   {
-                      "source":  "SrvSurvey active Commander",
-                      "translation":  "SrvSurvey Comandante ativo"
+                      "source":  "SrvSurvey active Commander overlay",
+                      "translation":  "SrvSurvey sobreposição de comandante ativa"
                   },
                   {
                       "source":  "SrvSurvey biology status overlay",
@@ -83855,8 +83907,8 @@
                       "translation":  "SrvSurvey sobreposição de informações corporais"
                   },
                   {
-                      "source":  "SrvSurvey combined overlay host",
-                      "translation":  "SrvSurvey host de sobreposição combinado"
+                      "source":  "SrvSurvey combined overlay",
+                      "translation":  "SrvSurvey sobreposição combinada"
                   },
                   {
                       "source":  "SrvSurvey construction commodities overlay",
@@ -83899,8 +83951,8 @@
                       "translation":  "SrvSurvey sobreposição de alvo terrestre"
                   },
                   {
-                      "source":  "SrvSurvey high-gravity warning",
-                      "translation":  "SrvSurvey aviso de alta gravidade"
+                      "source":  "SrvSurvey high-gravity warning overlay",
+                      "translation":  "SrvSurvey sobreposição de aviso de alta gravidade"
                   },
                   {
                       "source":  "SrvSurvey hit a problem",
@@ -83931,8 +83983,16 @@
                       "translation":  "SrvSurvey sobreposição do próximo salto"
                   },
                   {
-                      "source":  "SrvSurvey notifications",
-                      "translation":  "SrvSurvey notificações"
+                      "source":  "SrvSurvey notifications overlay",
+                      "translation":  "SrvSurvey sobreposição de notificações"
+                  },
+                  {
+                      "source":  "SrvSurvey position editor overlay",
+                      "translation":  "SrvSurvey sobreposição do editor de posição"
+                  },
+                  {
+                      "source":  "SrvSurvey position preview overlay",
+                      "translation":  "SrvSurvey sobreposição de visualização de posição"
                   },
                   {
                       "source":  "SrvSurvey prior scans overlay",
@@ -84075,8 +84135,8 @@
                       "translation":  "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)"
                   },
                   {
-                      "source":  "SrvSurveyWindowOne",
-                      "translation":  "SrvSurveyWindowOne"
+                      "source":  "SrvSurveyWindowOne overlay",
+                      "translation":  "Sobreposição SrvSurveyWindowOne"
                   },
                   {
                       "source":  "SrvZoom",
@@ -87349,6 +87409,10 @@
                   {
                       "source":  "Use global opacity",
                       "translation":  "Usar opacidade global"
+                  },
+                  {
+                      "source":  "Use global scale",
+                      "translation":  "Usar escala global"
                   },
                   {
                       "source":  "Use last updated time from Spansh not EDSM",
@@ -93421,8 +93485,8 @@
                    "translation":  "Отмена аудита безопасно сохраняет уже выполненную частичную работу. Ход работы связанной библиотеки и дата ее изменения обновляются автоматически по мере применения результатов аудита."
                },
                {
-                   "source":  "Cancel overlay position and opacity changes",
-                   "translation":  "Отменить положение наложения и изменения непрозрачности"
+                   "source":  "Cancel overlay position, opacity, and scale changes",
+                   "translation":  "Отменить положение наложения, непрозрачность и изменения масштаба"
                },
                {
                    "source":  "Cancel polygon",
@@ -101421,6 +101485,10 @@
                    "translation":  "ЦЕЛЬ"
                },
                {
+                   "source":  "OPACITY",
+                   "translation":  "НЕпрозрачность"
+               },
+               {
                    "source":  "OPT-IN",
                    "translation":  "ОПТ-ИН"
                },
@@ -102013,10 +102081,6 @@
                    "translation":  "Наложение отсутствует: проверьте его индивидуальную видимость и триггер, затем проверьте его в разделе «Редактировать позиции наложения»."
                },
                {
-                   "source":  "Overlay opacity",
-                   "translation":  "Непрозрачность наложения"
-               },
-               {
                    "source":  "Overlay opacity must be from 0 to 1.",
                    "translation":  "Непрозрачность наложения должна быть от 0 до 1."
                },
@@ -102047,10 +102111,6 @@
                {
                    "source":  "Overlay position and opacity changes were cancelled.",
                    "translation":  "Изменения положения наложения и непрозрачности были отменены."
-               },
-               {
-                   "source":  "Overlay position preview",
-                   "translation":  "Предварительный просмотр положения наложения"
                },
                {
                    "source":  "Overlay position previews use an isolated simulated game state.",
@@ -102131,10 +102191,6 @@
                {
                    "source":  "Override the global overlay opacity",
                    "translation":  "Переопределить глобальную непрозрачность наложения"
-               },
-               {
-                   "source":  "Override this overlay only",
-                   "translation":  "Переопределить только это наложение"
                },
                {
                    "source":  "Overview",
@@ -104433,6 +104489,14 @@
                    "translation":  "Награды: 42,75 млн – 106 млн."
                },
                {
+                   "source":  "Right Click Panels to edit individual Opacity/Scale",
+                   "translation":  "Щелкните правой кнопкой мыши панели, чтобы изменить индивидуальную непрозрачность/масштаб."
+               },
+               {
+                   "source":  "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
+                   "translation":  "Щелкните правой кнопкой мыши другой предварительный просмотр, чтобы отредактировать эту панель. Галочка на панели инструментов сохраняет все изменения и закрывает редактор."
+               },
+               {
                    "source":  "Ring",
                    "translation":  "Кольцо"
                },
@@ -104737,8 +104801,8 @@
                    "translation":  "ПОКАЗАТЬ"
                },
                {
-                   "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY",
-                   "translation":  "МОДЕЛИРУЕМОЕ СОСТОЯНИЕ ИГРЫ • ПЕРЕТАЧИВАНИЕ ДЛЯ ПЕРЕМЕЩЕНИЯ • НАЖМИТЕ ПРАВУЮ ЩЕЛЧКУ, ЧТОБЫ ПРОЗРАЧНОСТЬ"
+                   "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE",
+                   "translation":  "МОДЕЛИРУЕМОЕ СОСТОЯНИЕ ИГРЫ • ПЕРЕТАЩИВАНИЕ ДЛЯ ПЕРЕМЕЩЕНИЯ • НАЖМИТЕ ПРАВУЮ ЩЕЛЧКУ ДЛЯ ПРОЗРАЧНОСТИ/МАСШТАБА."
                },
                {
                    "source":  "SITE",
@@ -105017,8 +105081,8 @@
                    "translation":  "Сохраните или отмените текущее определение рабочей области маршрута и запишите изменения, прежде чем деактивировать его."
                },
                {
-                   "source":  "Save overlay positions and opacity",
-                   "translation":  "Сохраните позиции наложения и непрозрачность."
+                   "source":  "Save overlay positions, opacity, and scale",
+                   "translation":  "Сохраняйте позиции наложения, непрозрачность и масштаб."
                },
                {
                    "source":  "Save route as",
@@ -106349,6 +106413,10 @@
                    "translation":  "Малые круги (~100 м)"
                },
                {
+                   "source":  "Snap every overlay in this category to the center",
+                   "translation":  "Прикрепите каждое наложение в этой категории к центру"
+               },
+               {
                    "source":  "Software\\Classes\\{0}",
                    "translation":  "Программное обеспечение\\Классы\\{0}"
                },
@@ -106469,12 +106537,12 @@
                    "translation":  "SrvSurvey Наложение карты Галактики"
                },
                {
-                   "source":  "SrvSurvey Galaxy Map search guidance",
-                   "translation":  "SrvSurvey Руководство по поиску на карте Галактики"
+                   "source":  "SrvSurvey Galaxy Map search guidance overlay",
+                   "translation":  "SrvSurvey Наложение инструкций по поиску на карте Галактики"
                },
                {
-                   "source":  "SrvSurvey Guardian map zoom",
-                   "translation":  "SrvSurvey Увеличение карты Стражей"
+                   "source":  "SrvSurvey Guardian map zoom overlay",
+                   "translation":  "SrvSurvey Наложение масштаба карты Guardian"
                },
                {
                    "source":  "SrvSurvey Guardian overlay",
@@ -106489,8 +106557,8 @@
                    "translation":  "SrvSurvey Наложение Рам Тах"
                },
                {
-                   "source":  "SrvSurvey active Commander",
-                   "translation":  "SrvSurvey активный командир"
+                   "source":  "SrvSurvey active Commander overlay",
+                   "translation":  "SrvSurvey активное наложение командира"
                },
                {
                    "source":  "SrvSurvey biology status overlay",
@@ -106505,8 +106573,8 @@
                    "translation":  "SrvSurvey наложение информации о теле"
                },
                {
-                   "source":  "SrvSurvey combined overlay host",
-                   "translation":  "SrvSurvey хост комбинированного оверлея"
+                   "source":  "SrvSurvey combined overlay",
+                   "translation":  "SrvSurvey комбинированное наложение"
                },
                {
                    "source":  "SrvSurvey construction commodities overlay",
@@ -106549,8 +106617,8 @@
                    "translation":  "SrvSurvey наложение наземной цели"
                },
                {
-                   "source":  "SrvSurvey high-gravity warning",
-                   "translation":  "SrvSurvey предупреждение о высокой гравитации"
+                   "source":  "SrvSurvey high-gravity warning overlay",
+                   "translation":  "SrvSurvey наложение предупреждения о высокой гравитации"
                },
                {
                    "source":  "SrvSurvey hit a problem",
@@ -106581,8 +106649,16 @@
                    "translation":  "SrvSurvey наложение следующего перехода"
                },
                {
-                   "source":  "SrvSurvey notifications",
-                   "translation":  "SrvSurvey уведомления"
+                   "source":  "SrvSurvey notifications overlay",
+                   "translation":  "SrvSurvey наложение уведомлений"
+               },
+               {
+                   "source":  "SrvSurvey position editor overlay",
+                   "translation":  "SrvSurvey наложение редактора позиций"
+               },
+               {
+                   "source":  "SrvSurvey position preview overlay",
+                   "translation":  "SrvSurvey наложение предварительного просмотра позиции"
                },
                {
                    "source":  "SrvSurvey prior scans overlay",
@@ -106725,8 +106801,8 @@
                    "translation":  "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)"
                },
                {
-                   "source":  "SrvSurveyWindowOne",
-                   "translation":  "СрвОбзорОкноОдин"
+                   "source":  "SrvSurveyWindowOne overlay",
+                   "translation":  "SrvSurveyWindowOne наложение"
                },
                {
                    "source":  "SrvZoom",
@@ -109999,6 +110075,10 @@
                {
                    "source":  "Use global opacity",
                    "translation":  "Использовать глобальную непрозрачность"
+               },
+               {
+                   "source":  "Use global scale",
+                   "translation":  "Используйте глобальный масштаб"
                },
                {
                    "source":  "Use last updated time from Spansh not EDSM",
@@ -116071,8 +116151,8 @@
                         "translation":  "取消审核可以安全地保留已应用的部分工作。应用审核结果时，链接库进度及其修改日期会自动更新。"
                     },
                     {
-                        "source":  "Cancel overlay position and opacity changes",
-                        "translation":  "取消叠加位置和不透明度更改"
+                        "source":  "Cancel overlay position, opacity, and scale changes",
+                        "translation":  "取消叠加位置、不透明度和比例更改"
                     },
                     {
                         "source":  "Cancel polygon",
@@ -124071,6 +124151,10 @@
                         "translation":  "目标"
                     },
                     {
+                        "source":  "OPACITY",
+                        "translation":  "不透明度"
+                    },
+                    {
                         "source":  "OPT-IN",
                         "translation":  "选择加入"
                     },
@@ -124663,10 +124747,6 @@
                         "translation":  "覆盖缺失：验证其单独的可见性和触发，然后在编辑覆盖位置中测试它。"
                     },
                     {
-                        "source":  "Overlay opacity",
-                        "translation":  "叠加不透明度"
-                    },
-                    {
                         "source":  "Overlay opacity must be from 0 to 1.",
                         "translation":  "叠加不透明度必须为 0 到 1。"
                     },
@@ -124697,10 +124777,6 @@
                     {
                         "source":  "Overlay position and opacity changes were cancelled.",
                         "translation":  "覆盖位置和不透明度更改已取消。"
-                    },
-                    {
-                        "source":  "Overlay position preview",
-                        "translation":  "叠加位置预览"
                     },
                     {
                         "source":  "Overlay position previews use an isolated simulated game state.",
@@ -124781,10 +124857,6 @@
                     {
                         "source":  "Override the global overlay opacity",
                         "translation":  "覆盖全局覆盖不透明度"
-                    },
-                    {
-                        "source":  "Override this overlay only",
-                        "translation":  "仅覆盖此覆盖"
                     },
                     {
                         "source":  "Overview",
@@ -127083,6 +127155,14 @@
                         "translation":  "奖励：42.75 M - 106 M"
                     },
                     {
+                        "source":  "Right Click Panels to edit individual Opacity/Scale",
+                        "translation":  "右键单击面板可编辑单独的不透明度/比例"
+                    },
+                    {
+                        "source":  "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
+                        "translation":  "右键单击另一个预览以编辑该窗格。工具栏复选标记会保存所有更改并关闭编辑器。"
+                    },
+                    {
                         "source":  "Ring",
                         "translation":  "戒指"
                     },
@@ -127387,8 +127467,8 @@
                         "translation":  "展会"
                     },
                     {
-                        "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY",
-                        "translation":  "模拟游戏状态• 拖动移动• 右键单击不透明度"
+                        "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE",
+                        "translation":  "模拟游戏状态• 拖动移动• 右键单击调整不透明度/比例"
                     },
                     {
                         "source":  "SITE",
@@ -127667,8 +127747,8 @@
                         "translation":  "保存或撤消当前的路径工作空间定义并在停用之前记下更改。"
                     },
                     {
-                        "source":  "Save overlay positions and opacity",
-                        "translation":  "保存叠加位置和不透明度"
+                        "source":  "Save overlay positions, opacity, and scale",
+                        "translation":  "保存叠加位置、不透明度和比例"
                     },
                     {
                         "source":  "Save route as",
@@ -128999,6 +129079,10 @@
                         "translation":  "小圆圈 (~100 m)"
                     },
                     {
+                        "source":  "Snap every overlay in this category to the center",
+                        "translation":  "将此类别中的每个叠加层对齐到中心"
+                    },
+                    {
                         "source":  "Software\\Classes\\{0}",
                         "translation":  "软件\\类\\{0}"
                     },
@@ -129119,12 +129203,12 @@
                         "translation":  "SrvSurvey 银河地图叠加"
                     },
                     {
-                        "source":  "SrvSurvey Galaxy Map search guidance",
-                        "translation":  "SrvSurvey 银河地图搜索指导"
+                        "source":  "SrvSurvey Galaxy Map search guidance overlay",
+                        "translation":  "SrvSurvey 银河地图搜索指导覆盖"
                     },
                     {
-                        "source":  "SrvSurvey Guardian map zoom",
-                        "translation":  "SrvSurvey守护者地图缩放"
+                        "source":  "SrvSurvey Guardian map zoom overlay",
+                        "translation":  "SrvSurvey 守护者地图缩放叠加"
                     },
                     {
                         "source":  "SrvSurvey Guardian overlay",
@@ -129139,8 +129223,8 @@
                         "translation":  "SrvSurvey Ram Tah 覆盖"
                     },
                     {
-                        "source":  "SrvSurvey active Commander",
-                        "translation":  "SrvSurvey 活跃指挥官"
+                        "source":  "SrvSurvey active Commander overlay",
+                        "translation":  "SrvSurvey 活动指挥官覆盖"
                     },
                     {
                         "source":  "SrvSurvey biology status overlay",
@@ -129155,8 +129239,8 @@
                         "translation":  "SrvSurvey 身体信息叠加"
                     },
                     {
-                        "source":  "SrvSurvey combined overlay host",
-                        "translation":  "SrvSurvey 组合覆盖主机"
+                        "source":  "SrvSurvey combined overlay",
+                        "translation":  "SrvSurvey 组合叠加"
                     },
                     {
                         "source":  "SrvSurvey construction commodities overlay",
@@ -129199,8 +129283,8 @@
                         "translation":  "SrvSurvey 地面目标叠加"
                     },
                     {
-                        "source":  "SrvSurvey high-gravity warning",
-                        "translation":  "SrvSurvey高重力警告"
+                        "source":  "SrvSurvey high-gravity warning overlay",
+                        "translation":  "SrvSurvey 高重力警告覆盖"
                     },
                     {
                         "source":  "SrvSurvey hit a problem",
@@ -129231,8 +129315,16 @@
                         "translation":  "SrvSurvey 下一跳叠加"
                     },
                     {
-                        "source":  "SrvSurvey notifications",
-                        "translation":  "SrvSurvey通知"
+                        "source":  "SrvSurvey notifications overlay",
+                        "translation":  "SrvSurvey 通知叠加"
+                    },
+                    {
+                        "source":  "SrvSurvey position editor overlay",
+                        "translation":  "SrvSurvey 位置编辑器覆盖"
+                    },
+                    {
+                        "source":  "SrvSurvey position preview overlay",
+                        "translation":  "SrvSurvey 位置预览叠加"
                     },
                     {
                         "source":  "SrvSurvey prior scans overlay",
@@ -129375,8 +129467,8 @@
                         "translation":  "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)"
                     },
                     {
-                        "source":  "SrvSurveyWindowOne",
-                        "translation":  "SrvSurveyWindowOne"
+                        "source":  "SrvSurveyWindowOne overlay",
+                        "translation":  "SrvSurveyWindowOne 覆盖"
                     },
                     {
                         "source":  "SrvZoom",
@@ -132649,6 +132741,10 @@
                     {
                         "source":  "Use global opacity",
                         "translation":  "使用全局不透明度"
+                    },
+                    {
+                        "source":  "Use global scale",
+                        "translation":  "使用全球规模"
                     },
                     {
                         "source":  "Use last updated time from Spansh not EDSM",
@@ -138721,8 +138817,8 @@
                    "translation":  "* CANCEL AUDIT SAFELY RETAINS THE PARTIAL WORK ALREADY APPLIED. LINKED LIBRARY PROGRESS AND ITS MODIFIED DATE UPDATE AUTOMATICALLY AS AUDIT RESULTS ARE APPLIED. \u003e\u003e\u003e!"
                },
                {
-                   "source":  "Cancel overlay position and opacity changes",
-                   "translation":  "* CANCEL OVERLAY POSITION AND OPACITY CHANGES \u003e\u003e\u003e!"
+                   "source":  "Cancel overlay position, opacity, and scale changes",
+                   "translation":  "* CANCEL OVERLAY POSITION, OPACITY, AND SCALE CHANGES \u003e\u003e\u003e!"
                },
                {
                    "source":  "Cancel polygon",
@@ -146721,6 +146817,10 @@
                    "translation":  "* OBJECTIVE \u003e\u003e\u003e!"
                },
                {
+                   "source":  "OPACITY",
+                   "translation":  "* OPACITY \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "OPT-IN",
                    "translation":  "* OPT-IN \u003e\u003e\u003e!"
                },
@@ -147313,10 +147413,6 @@
                    "translation":  "* OVERLAY MISSING: VERIFY ITS INDIVIDUAL VISIBILITY AND TRIGGER, THEN TEST IT IN EDIT OVERLAY POSITIONS. \u003e\u003e\u003e!"
                },
                {
-                   "source":  "Overlay opacity",
-                   "translation":  "* OVERLAY OPACITY \u003e\u003e\u003e!"
-               },
-               {
                    "source":  "Overlay opacity must be from 0 to 1.",
                    "translation":  "* OVERLAY OPACITY MUST BE FROM 0 TO 1. \u003e\u003e\u003e!"
                },
@@ -147347,10 +147443,6 @@
                {
                    "source":  "Overlay position and opacity changes were cancelled.",
                    "translation":  "* OVERLAY POSITION AND OPACITY CHANGES WERE CANCELLED. \u003e\u003e\u003e!"
-               },
-               {
-                   "source":  "Overlay position preview",
-                   "translation":  "* OVERLAY POSITION PREVIEW \u003e\u003e\u003e!"
                },
                {
                    "source":  "Overlay position previews use an isolated simulated game state.",
@@ -147431,10 +147523,6 @@
                {
                    "source":  "Override the global overlay opacity",
                    "translation":  "* OVERRIDE THE GLOBAL OVERLAY OPACITY \u003e\u003e\u003e!"
-               },
-               {
-                   "source":  "Override this overlay only",
-                   "translation":  "* OVERRIDE THIS OVERLAY ONLY \u003e\u003e\u003e!"
                },
                {
                    "source":  "Overview",
@@ -149733,6 +149821,14 @@
                    "translation":  "* REWARDS: 42.75 M - 106 M \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Right Click Panels to edit individual Opacity/Scale",
+                   "translation":  "* RIGHT CLICK PANELS TO EDIT INDIVIDUAL OPACITY/SCALE \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
+                   "translation":  "* RIGHT-CLICK ANOTHER PREVIEW TO EDIT THAT PANE. THE TOOLBAR CHECKMARK SAVES EVERY CHANGE AND CLOSES THE EDITOR. \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Ring",
                    "translation":  "* RING \u003e\u003e\u003e!"
                },
@@ -150037,8 +150133,8 @@
                    "translation":  "* SHOW \u003e\u003e\u003e!"
                },
                {
-                   "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY",
-                   "translation":  "* SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY \u003e\u003e\u003e!"
+                   "source":  "SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE",
+                   "translation":  "* SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE \u003e\u003e\u003e!"
                },
                {
                    "source":  "SITE",
@@ -150317,8 +150413,8 @@
                    "translation":  "* SAVE OR UNDO THE CURRENT ROUTE WORKSPACE DEFINITION AND NOTE CHANGES BEFORE DEACTIVATING IT. \u003e\u003e\u003e!"
                },
                {
-                   "source":  "Save overlay positions and opacity",
-                   "translation":  "* SAVE OVERLAY POSITIONS AND OPACITY \u003e\u003e\u003e!"
+                   "source":  "Save overlay positions, opacity, and scale",
+                   "translation":  "* SAVE OVERLAY POSITIONS, OPACITY, AND SCALE \u003e\u003e\u003e!"
                },
                {
                    "source":  "Save route as",
@@ -151649,6 +151745,10 @@
                    "translation":  "* SMALL CIRCLES (~100 M) \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Snap every overlay in this category to the center",
+                   "translation":  "* SNAP EVERY OVERLAY IN THIS CATEGORY TO THE CENTER \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Software\\Classes\\{0}",
                    "translation":  "* SOFTWARE\\CLASSES\\{0} \u003e\u003e\u003e!"
                },
@@ -151769,12 +151869,12 @@
                    "translation":  "* SRVSURVEY GALAXY MAP OVERLAY \u003e\u003e\u003e!"
                },
                {
-                   "source":  "SrvSurvey Galaxy Map search guidance",
-                   "translation":  "* SRVSURVEY GALAXY MAP SEARCH GUIDANCE \u003e\u003e\u003e!"
+                   "source":  "SrvSurvey Galaxy Map search guidance overlay",
+                   "translation":  "* SRVSURVEY GALAXY MAP SEARCH GUIDANCE OVERLAY \u003e\u003e\u003e!"
                },
                {
-                   "source":  "SrvSurvey Guardian map zoom",
-                   "translation":  "* SRVSURVEY GUARDIAN MAP ZOOM \u003e\u003e\u003e!"
+                   "source":  "SrvSurvey Guardian map zoom overlay",
+                   "translation":  "* SRVSURVEY GUARDIAN MAP ZOOM OVERLAY \u003e\u003e\u003e!"
                },
                {
                    "source":  "SrvSurvey Guardian overlay",
@@ -151789,8 +151889,8 @@
                    "translation":  "* SRVSURVEY RAM TAH OVERLAY \u003e\u003e\u003e!"
                },
                {
-                   "source":  "SrvSurvey active Commander",
-                   "translation":  "* SRVSURVEY ACTIVE COMMANDER \u003e\u003e\u003e!"
+                   "source":  "SrvSurvey active Commander overlay",
+                   "translation":  "* SRVSURVEY ACTIVE COMMANDER OVERLAY \u003e\u003e\u003e!"
                },
                {
                    "source":  "SrvSurvey biology status overlay",
@@ -151805,8 +151905,8 @@
                    "translation":  "* SRVSURVEY BODY INFORMATION OVERLAY \u003e\u003e\u003e!"
                },
                {
-                   "source":  "SrvSurvey combined overlay host",
-                   "translation":  "* SRVSURVEY COMBINED OVERLAY HOST \u003e\u003e\u003e!"
+                   "source":  "SrvSurvey combined overlay",
+                   "translation":  "* SRVSURVEY COMBINED OVERLAY \u003e\u003e\u003e!"
                },
                {
                    "source":  "SrvSurvey construction commodities overlay",
@@ -151849,8 +151949,8 @@
                    "translation":  "* SRVSURVEY GROUND-TARGET OVERLAY \u003e\u003e\u003e!"
                },
                {
-                   "source":  "SrvSurvey high-gravity warning",
-                   "translation":  "* SRVSURVEY HIGH-GRAVITY WARNING \u003e\u003e\u003e!"
+                   "source":  "SrvSurvey high-gravity warning overlay",
+                   "translation":  "* SRVSURVEY HIGH-GRAVITY WARNING OVERLAY \u003e\u003e\u003e!"
                },
                {
                    "source":  "SrvSurvey hit a problem",
@@ -151881,8 +151981,16 @@
                    "translation":  "* SRVSURVEY NEXT-JUMP OVERLAY \u003e\u003e\u003e!"
                },
                {
-                   "source":  "SrvSurvey notifications",
-                   "translation":  "* SRVSURVEY NOTIFICATIONS \u003e\u003e\u003e!"
+                   "source":  "SrvSurvey notifications overlay",
+                   "translation":  "* SRVSURVEY NOTIFICATIONS OVERLAY \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "SrvSurvey position editor overlay",
+                   "translation":  "* SRVSURVEY POSITION EDITOR OVERLAY \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "SrvSurvey position preview overlay",
+                   "translation":  "* SRVSURVEY POSITION PREVIEW OVERLAY \u003e\u003e\u003e!"
                },
                {
                    "source":  "SrvSurvey prior scans overlay",
@@ -152025,8 +152133,8 @@
                    "translation":  "* SRVSURVEY/{0} (+HTTPS://GITHUB.COM/NITHOMSON/SRVSURVEY) \u003e\u003e\u003e!"
                },
                {
-                   "source":  "SrvSurveyWindowOne",
-                   "translation":  "* SRVSURVEYWINDOWONE \u003e\u003e\u003e!"
+                   "source":  "SrvSurveyWindowOne overlay",
+                   "translation":  "* SRVSURVEYWINDOWONE OVERLAY \u003e\u003e\u003e!"
                },
                {
                    "source":  "SrvZoom",
@@ -155299,6 +155407,10 @@
                {
                    "source":  "Use global opacity",
                    "translation":  "* USE GLOBAL OPACITY \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Use global scale",
+                   "translation":  "* USE GLOBAL SCALE \u003e\u003e\u003e!"
                },
                {
                    "source":  "Use last updated time from Spansh not EDSM",

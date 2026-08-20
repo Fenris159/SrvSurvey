@@ -14,7 +14,7 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         ClipToBounds="False"
-        Title="Overlay position preview">
+        Title="SrvSurvey position preview overlay">
   <Window.Styles>
     <Style Selector="controls|BiologyRewardBandControl">
       <Setter Property="FilledSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedSegmentEdgeBrush}" />

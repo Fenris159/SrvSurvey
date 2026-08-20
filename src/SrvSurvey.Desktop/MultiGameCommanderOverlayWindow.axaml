@@ -20,7 +20,7 @@
         Background="Transparent"
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
-        Title="SrvSurvey active Commander">
+        Title="SrvSurvey active Commander overlay">
   <Border Background="Transparent"
           BorderThickness="0">
     <local:MultiGameCommanderOverlayPresentation />

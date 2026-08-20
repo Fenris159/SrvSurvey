@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Headless.XUnit;
 using SrvSurvey.Desktop.Localization;
 
 namespace SrvSurvey.Desktop.Tests.Localization;
@@ -53,6 +54,18 @@ public sealed class LocalizationBehaviorTests : IDisposable
         LocalizationBehavior.SetEnabled(button, true);
 
         Assert.Equal("Schließen", button.Content);
+    }
+
+    [AvaloniaFact]
+    public void EnabledBehaviorPreservesKdeOverlayWindowTitle()
+    {
+        const string title = "SrvSurvey Galaxy Map search guidance overlay";
+        LocalizationCatalog.Initialize("qps-ploc");
+        var window = new Window { Title = title };
+
+        LocalizationBehavior.SetEnabled(window, true);
+
+        Assert.Equal(title, window.Title);
     }
 
     public void Dispose()

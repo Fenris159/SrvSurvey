@@ -43,18 +43,18 @@ If overlays still remain behind Elite, use the following manual rule as a fallba
 | **Window class (application)** | Exact match → `SrvSurvey.Desktop SrvSurvey.Desktop` |
 | **Match whole window class** | Yes |
 | **Window types** | All window types |
-| **Window title** | Regular expression → `^(SrvSurvey .+|SrvSurveyWindowOne|Overlay position preview|Edit overlay positions)$` |
+| **Window title** | Regular expression → `^SrvSurvey.*overlay$` |
 | **Layer** | Force → **On-screen display** |
 
 ![KDE Plasma Window Rules configured for SrvSurvey overlays](kde-window-rules-srvsurvey-overlays.png)
 
-The screenshot was captured with an older build and may show **Normal window**. Use **All window types** as listed in the table because current builds can classify the overlay as an OSD window before the fallback rule is evaluated.
+The screenshot was captured with an older build and may show **Normal window** or the previous longer title expression. Use the exact values in the table: current builds can classify an overlay as an OSD window before the fallback rule is evaluated.
 
 4. Click **Apply**.
 
 You can also use **Detect Window Properties** while an overlay is visible to capture the class and title, then set the Layer to **On-screen display**.
 
-The regular expression matches the current runtime overlay titles and the two position-editor window titles without matching the main `SrvSurvey` window. If a future overlay uses a different title pattern you can widen the expression or add a second rule.
+Every runtime overlay, combined host, stream-capture surface, position preview, and position editor now starts with `SrvSurvey` and ends with `overlay`. The regular expression therefore covers all overlay surfaces without matching the main `SrvSurvey` window.
 
 After applying the rule, restart SrvSurvey (or simply close and re-open the affected overlays). The overlays should now appear above Elite Dangerous even when the game is exclusive full-screen.
 

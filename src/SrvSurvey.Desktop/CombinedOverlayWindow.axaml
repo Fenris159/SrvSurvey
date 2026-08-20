@@ -9,7 +9,7 @@
         Background="Transparent"
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
-        Title="SrvSurvey combined overlay host">
+        Title="SrvSurvey combined overlay">
   <Canvas x:Name="OverlayCanvas"
           Background="Transparent"
           ClipToBounds="True" />
