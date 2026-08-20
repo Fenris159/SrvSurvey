@@ -32,7 +32,6 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
                         StringComparison.Ordinal));
                 var panel = new OverlayPanelVisibilityEntryViewModel(
                     definition,
-                    ResolveCategory(definition.Name),
                     stored.GetValueOrDefault(definition.Name, true),
                     shortcut,
                     Save);
@@ -73,10 +72,8 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
     public IReadOnlyList<OverlayPanelVisibilityEntryViewModel> ForCategory(
         OverlaySettingsCategory category)
     {
-        return Panels.Where(panel => panel.Category == category
-            || (panel.PlotterName == "PlotSphericalSearch"
-                && category is OverlaySettingsCategory.Exploration
-                    or OverlaySettingsCategory.Travel)).ToArray();
+        return Panels.Where(panel =>
+            panel.SettingsCategories.Contains(category)).ToArray();
     }
 
     public bool Toggle(string plotterName)
@@ -116,27 +113,6 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
         }
     }
 
-    private static OverlaySettingsCategory ResolveCategory(string plotterName)
-    {
-        return plotterName switch
-        {
-            "PlotBioStatus" or "PlotBioSystem" or "PlotGrounded"
-                or "PlotMiniTrack" or "PlotPriorScans" or "PlotTrackTarget" =>
-                OverlaySettingsCategory.Exobiology,
-            "PlotBodyInfo" or "PlotFlightWarning" or "PlotFSS"
-                or "PlotFSSInfo" or "PlotGalMap" or "PlotSysStatus" =>
-                OverlaySettingsCategory.Exploration,
-            "PlotFleetCarrierRoute" or "PlotJumpInfo" or "PlotRouteBio"
-                or "PlotStationInfo" => OverlaySettingsCategory.Travel,
-            "PlotSphericalSearch" => OverlaySettingsCategory.Boxel,
-            "PlotGuardians" or "PlotGuardianStatus" or "PlotGuardianSystem"
-                or "PlotRamTah" => OverlaySettingsCategory.Guardian,
-            "PlotFootCombat" or "PlotHumanSite" or "PlotMassacre"
-                or "PlotQuestMini" => OverlaySettingsCategory.Quests,
-            "PlotBuildCommodities" => OverlaySettingsCategory.Colonization,
-            _ => OverlaySettingsCategory.Global,
-        };
-    }
 }
 
 public sealed class OverlayPanelVisibilityEntryViewModel
@@ -147,14 +123,12 @@ public sealed class OverlayPanelVisibilityEntryViewModel
 
     public OverlayPanelVisibilityEntryViewModel(
         OverlayLayoutDefinition definition,
-        OverlaySettingsCategory category,
         bool isEnabled,
         InputBindingViewModel shortcut,
         Action<OverlayPanelVisibilityEntryViewModel> save)
     {
         ArgumentNullException.ThrowIfNull(definition);
         Definition = definition;
-        Category = category;
         this.isEnabled = isEnabled;
         Shortcut = shortcut ?? throw new ArgumentNullException(nameof(shortcut));
         this.save = save ?? throw new ArgumentNullException(nameof(save));
@@ -171,7 +145,10 @@ public sealed class OverlayPanelVisibilityEntryViewModel
     public string Description =>
         $"When off, the {DisplayName} panel is rendered inactive and is not visible until toggled on.";
 
-    public OverlaySettingsCategory Category { get; }
+    public IReadOnlyList<OverlaySettingsCategory> SettingsCategories =>
+        Definition.SettingsCategories;
+
+    public OverlaySettingsCategory Category => SettingsCategories[0];
 
     public InputBindingViewModel Shortcut { get; }
 
