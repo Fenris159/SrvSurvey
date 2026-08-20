@@ -67,14 +67,50 @@ public sealed class BoxelSearchSessionTests : IDisposable
 
         var saved = await session.ExecuteAsync(
             new SaveBoxelSearchToLibrary("Survey bookmark", "notes"));
+        await session.ExecuteAsync(new MarkNextBoxelSystemEmpty());
+        var fileName = Assert.IsType<SavedBoxelSearchDocument>(
+            saved.SavedSearch).FileName;
+        var runningDocument = await library.LoadAsync("F123", fileName);
+        Assert.Equal(
+            ["Praea Euq IL-P c5-0"],
+            runningDocument.Search.EmptySystems);
         await session.ExecuteAsync(new StopBoxelSearch());
 
-        var fileName = Assert.IsType<SavedBoxelSearchDocument>(saved.SavedSearch).FileName;
         var document = await library.LoadAsync("F123", fileName);
         var profile = await profiles.LoadAsync("F123", true);
         Assert.False(document.Search.Active);
         Assert.Equal(fileName, document.Search.SavedSearchFileName);
         Assert.Equal(fileName, profile.Data!.BoxelSearch.SavedSearchFileName);
+    }
+
+    [Fact]
+    public async Task FailedProfilePersistenceRetriesAndRestoresHealth()
+    {
+        var profiles = new FlakyProfileStore();
+        await using var session = CreateSession(
+            profiles,
+            options: new BoxelSearchSessionOptions
+            {
+                InitialRetryDelay = TimeSpan.FromMilliseconds(25),
+                MaximumRetryDelay = TimeSpan.FromMilliseconds(25),
+            });
+        await session.SwitchProfileAsync(Profile(BoxelSearchSnapshot.Empty));
+
+        var outcome = await session.ExecuteAsync(new ActivateBoxelSearch(
+            Activation("Praea Euq IL-P c5-2")));
+
+        Assert.Contains(
+            outcome.Warnings ?? [],
+            warning => warning.Subsystem
+                == BoxelSearchHealthSubsystem.ProfilePersistence);
+        Assert.Equal(BoxelSearchOutcomeKind.AppliedNotPersisted, outcome.Kind);
+        Assert.Contains(
+            BoxelSearchHealthSubsystem.ProfilePersistence,
+            session.Current.Health.Issues.Keys);
+        await WaitUntilAsync(() =>
+            profiles.Snapshots.Count == 1
+            && session.Current.Health.IsHealthy);
+        Assert.True(profiles.Snapshots[0].Active);
     }
 
     [Fact]
@@ -151,7 +187,8 @@ public sealed class BoxelSearchSessionTests : IDisposable
     private BoxelSearchSession CreateSession(
         IBoxelSearchProfileStore profileStore,
         IBoxelSearchLibraryStore? library = null,
-        IBoxelClipboard? clipboard = null)
+        IBoxelClipboard? clipboard = null,
+        BoxelSearchSessionOptions? options = null)
     {
         Directory.CreateDirectory(temporaryDirectory);
         return new BoxelSearchSession(
@@ -160,7 +197,8 @@ public sealed class BoxelSearchSessionTests : IDisposable
             new EmptyBoxelStore(temporaryDirectory),
             library ?? new SavedBoxelSearchStore(temporaryDirectory),
             new StubResolver(),
-            clipboard);
+            clipboard,
+            options: options);
     }
 
     private static BoxelSearchProfile Profile(BoxelSearchSnapshot snapshot)
@@ -198,6 +236,30 @@ public sealed class BoxelSearchSessionTests : IDisposable
         }
     }
 
+    private sealed class FlakyProfileStore : IBoxelSearchProfileStore
+    {
+        private int failuresRemaining = 2;
+
+        public List<BoxelSearchSnapshot> Snapshots { get; } = [];
+
+        public Task SaveBoxelSearchAsync(
+            string frontierId,
+            string? commanderName,
+            bool isOdyssey,
+            BoxelSearchSnapshot boxelSearch,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (Interlocked.Decrement(ref failuresRemaining) >= 0)
+            {
+                throw new IOException("locked");
+            }
+
+            Snapshots.Add(boxelSearch);
+            return Task.CompletedTask;
+        }
+    }
+
     private sealed class RecordingClipboard : IBoxelClipboard
     {
         public bool IsReady { get; set; }
@@ -222,6 +284,15 @@ public sealed class BoxelSearchSessionTests : IDisposable
         {
             cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult<IReadOnlyList<BoxelSystemObservation>>([]);
+        }
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        while (!condition())
+        {
+            await Task.Delay(10, timeout.Token);
         }
     }
 }

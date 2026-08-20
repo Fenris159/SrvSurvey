@@ -371,6 +371,16 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
         var canConsiderAutomaticCopy = update.HasStatus && isGalaxyMapOpen;
         if (canConsiderAutomaticCopy
+            && !update.AllowAutoCopy
+            && state.IsActive
+            && state.AutoCopy
+            && state.NextSystem is not null
+            && IsCurrentSystemInsideSearchLocked())
+        {
+            automaticCopyEligibility = state.NextSystem + "|" + isGalaxyMapOpen;
+        }
+
+        if (canConsiderAutomaticCopy
             && update.AllowAutoCopy
             && state.IsActive
             && state.AutoCopy
@@ -785,13 +795,12 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
         }
 
         RaiseChanged(startedChange);
-        var progress = new Progress<BoxelCompletionAuditProgress>(ReportAuditProgress);
         BoxelCompletionAuditResult auditResult;
         try
         {
             auditResult = await completionAuditor.AuditAsync(
                     request.Request,
-                    progress,
+                    PublishAuditProgressAsync,
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -1889,7 +1898,8 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
     {
         var snapshot = Current;
         var kind = result.Kind;
-        if (kind == BoxelSearchOutcomeKind.Success
+        if ((kind == BoxelSearchOutcomeKind.Success
+                || kind == BoxelSearchOutcomeKind.AppliedWithWarnings)
             && result.Warnings is { Count: > 0 })
         {
             kind = result.Warnings.Any(warning =>
@@ -2048,22 +2058,14 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
                     StringComparison.Ordinal));
     }
 
-    private void ReportAuditProgress(BoxelCompletionAuditProgress progress)
-    {
-        if (disposed || disposing)
-        {
-            return;
-        }
-
-        _ = PublishAuditProgressAsync(progress);
-    }
-
-    private async Task PublishAuditProgressAsync(BoxelCompletionAuditProgress progress)
+    private async Task PublishAuditProgressAsync(
+        BoxelCompletionAuditProgress progress,
+        CancellationToken cancellationToken)
     {
         BoxelSearchSessionChangedEventArgs? change;
         try
         {
-            await mutationGate.WaitAsync(lifetimeCancellation.Token).ConfigureAwait(false);
+            await mutationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
