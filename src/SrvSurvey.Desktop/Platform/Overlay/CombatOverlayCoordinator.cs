@@ -231,12 +231,11 @@ public sealed class CombatOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var logicalHeight = window.Bounds.Height > 0
-            ? window.Bounds.Height
-            : window.MinHeight;
-        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var size = new PixelSize(width, Math.Max(height, 1));
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            window,
+            overlayLayout,
+            plotterName,
+            screen.Scaling);
         var position = overlayLayout.GetPosition(plotterName, gameBounds, size)
             ?? placement(gameBounds, size, 8);
         if (window.Position != position)

@@ -179,9 +179,11 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var height = (int)Math.Ceiling(window.Height * screen.Scaling);
-        var size = new PixelSize(width, height);
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            window,
+            overlayLayout,
+            "PlotBuildCommodities",
+            screen.Scaling);
         var position = overlayLayout.GetPosition(
                 "PlotBuildCommodities",
                 gameBounds,

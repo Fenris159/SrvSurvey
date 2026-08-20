@@ -150,9 +150,11 @@ public sealed class PulseOverlayCoordinator : IDisposable
             return;
         }
 
-        var size = new PixelSize(
-            (int)Math.Ceiling(overlay.Width * screen.Scaling),
-            (int)Math.Ceiling(overlay.Height * screen.Scaling));
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            overlay,
+            overlayLayout,
+            "PlotPulse",
+            screen.Scaling);
         var position = overlayLayout.GetPosition(
                 "PlotPulse",
                 gameWindow.ClientBounds,

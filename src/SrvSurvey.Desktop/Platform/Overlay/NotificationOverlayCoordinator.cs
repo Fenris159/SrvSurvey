@@ -155,12 +155,11 @@ public sealed class NotificationOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(overlay.Width * screen.Scaling);
-        var logicalHeight = overlay.Bounds.Height > 0
-            ? overlay.Bounds.Height
-            : overlay.MinHeight;
-        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var size = new PixelSize(width, Math.Max(height, 1));
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            overlay,
+            overlayLayout,
+            "PlotFloatie",
+            screen.Scaling);
         var position = overlayLayout.GetPosition(
                 "PlotFloatie",
                 gameWindow.ClientBounds,

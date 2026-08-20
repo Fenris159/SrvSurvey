@@ -152,12 +152,11 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(target.Width * screen.Scaling);
-        var logicalHeight = target.Bounds.Height > 0
-            ? target.Bounds.Height
-            : target.MinHeight;
-        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var size = new PixelSize(width, Math.Max(height, 1));
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            target,
+            overlayLayout,
+            "PlotRouteBio",
+            screen.Scaling);
         var position = overlayLayout.GetPosition("PlotRouteBio", gameBounds, size)
             ?? OverlayWindowPlacement.TopRight(gameBounds, size, margin: 8);
         if (target.Position != position)

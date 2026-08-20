@@ -159,12 +159,11 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var logicalHeight = window.Bounds.Height > 0
-            ? window.Bounds.Height
-            : window.MinHeight;
-        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var size = new PixelSize(width, Math.Max(height, 1));
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            window,
+            overlayLayout,
+            "PlotStationInfo",
+            screen.Scaling);
         var position = overlayLayout.GetPosition(
                 "PlotStationInfo",
                 gameBounds,

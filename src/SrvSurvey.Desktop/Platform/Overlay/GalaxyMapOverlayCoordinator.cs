@@ -167,13 +167,11 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
             return;
         }
 
-        var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var logicalHeight = window.Bounds.Height > 0
-            ? window.Bounds.Height
-            : window.MinHeight;
-        var size = new PixelSize(
-            width,
-            Math.Max((int)Math.Ceiling(logicalHeight * screen.Scaling), 1));
+        var size = OverlayWindowMetrics.PrepareForPlacement(
+            window,
+            overlayLayout,
+            "PlotGalMap",
+            screen.Scaling);
         var position = overlayLayout.GetPosition(
                 "PlotGalMap",
                 gameBounds,
