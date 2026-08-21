@@ -1328,7 +1328,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             : $"Copied {outcome.PrimaryValue} to the clipboard.";
     }
 
-    private void RunSessionAction(BoxelSearchAction action)
+    private void RunSessionAction(IBoxelSearchAction action)
     {
         pendingOptionUpdate = RunSessionActionAsync(pendingOptionUpdate, action);
     }
@@ -1349,7 +1349,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         return session.ApplyAsync(update, CancellationToken.None);
     }
 
-    private Task<BoxelSearchOutcome> ExecuteSessionActionAsync(BoxelSearchAction action)
+    private Task<BoxelSearchOutcome> ExecuteSessionActionAsync(IBoxelSearchAction action)
     {
         return session.ExecuteAsync(action, CancellationToken.None);
     }
@@ -1361,7 +1361,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private async Task RunSessionActionAsync(
         Task precedingUpdate,
-        BoxelSearchAction action)
+        IBoxelSearchAction action)
     {
         try
         {
@@ -1541,7 +1541,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         await ExecuteSystemActionAsync(new StartBoxelSurveyAt(systemName));
     }
 
-    private async Task ExecuteSystemActionAsync(BoxelSearchAction action)
+    private async Task ExecuteSystemActionAsync(IBoxelSearchAction action)
     {
         showNextSystemPageOnUpdate = true;
         var outcome = await ExecuteSessionActionAsync(action);

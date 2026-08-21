@@ -21,7 +21,7 @@ public interface IBoxelSearchSession : IAsyncDisposable
         CancellationToken cancellationToken = default);
 
     Task<BoxelSearchOutcome> ExecuteAsync(
-        BoxelSearchAction action,
+        IBoxelSearchAction action,
         CancellationToken cancellationToken = default);
 
     Task<BoxelSearchLibrarySnapshot> GetLibraryAsync(
@@ -155,64 +155,61 @@ public sealed record BoxelSearchUpdate
     public bool AllowAutoCopy { get; init; } = true;
 }
 
-public abstract record BoxelSearchAction;
+public interface IBoxelSearchAction;
 
 public sealed record ActivateBoxelSearch(BoxelSearchActivationRequest Request)
-    : BoxelSearchAction;
+    : IBoxelSearchAction;
 
-public sealed record StopBoxelSearch : BoxelSearchAction
+public sealed record StopBoxelSearch : IBoxelSearchAction
 {
-    public static StopBoxelSearch Instance { get; } = new(preservesProgress: true);
+    public static StopBoxelSearch Instance { get; } = new();
 
-    public bool PreservesProgress { get; }
-
-    private StopBoxelSearch(bool preservesProgress)
+    private StopBoxelSearch()
     {
-        PreservesProgress = preservesProgress;
     }
 }
 
-public sealed record SetBoxelAutoCopy(bool Enabled) : BoxelSearchAction;
+public sealed record SetBoxelAutoCopy(bool Enabled) : IBoxelSearchAction;
 
-public sealed record SetBoxelSortDirection(bool Descending) : BoxelSearchAction;
+public sealed record SetBoxelSortDirection(bool Descending) : IBoxelSearchAction;
 
-public sealed record RefreshCurrentBoxel : BoxelSearchAction;
+public sealed record RefreshCurrentBoxel : IBoxelSearchAction;
 
-public sealed record NavigateToBoxel(BoxelAddress Boxel) : BoxelSearchAction;
+public sealed record NavigateToBoxel(BoxelAddress Boxel) : IBoxelSearchAction;
 
-public sealed record SetExpectedSystemCount(int Count) : BoxelSearchAction;
+public sealed record SetExpectedSystemCount(int Count) : IBoxelSearchAction;
 
-public sealed record MarkNextBoxelSystemEmpty : BoxelSearchAction;
+public sealed record MarkNextBoxelSystemEmpty : IBoxelSearchAction;
 
-public sealed record CompleteBoxelSystem(string SystemName) : BoxelSearchAction;
+public sealed record CompleteBoxelSystem(string SystemName) : IBoxelSearchAction;
 
-public sealed record ReopenBoxelSystem(string SystemName) : BoxelSearchAction;
+public sealed record ReopenBoxelSystem(string SystemName) : IBoxelSearchAction;
 
-public sealed record DeferBoxelSystem(string SystemName) : BoxelSearchAction;
+public sealed record DeferBoxelSystem(string SystemName) : IBoxelSearchAction;
 
-public sealed record StartBoxelSurveyAt(string SystemName) : BoxelSearchAction;
+public sealed record StartBoxelSurveyAt(string SystemName) : IBoxelSearchAction;
 
-public sealed record AuditAllBoxels : BoxelSearchAction;
+public sealed record AuditAllBoxels : IBoxelSearchAction;
 
-public sealed record CancelBoxelAudit : BoxelSearchAction;
+public sealed record CancelBoxelAudit : IBoxelSearchAction;
 
-public sealed record CopyNextBoxelSystem(bool Automatic = false) : BoxelSearchAction;
+public sealed record CopyNextBoxelSystem(bool Automatic = false) : IBoxelSearchAction;
 
 public sealed record SaveBoxelSearchToLibrary(string? Name, string? Notes)
-    : BoxelSearchAction;
+    : IBoxelSearchAction;
 
-public sealed record ResumeSavedBoxelSearch(string FileName) : BoxelSearchAction;
+public sealed record ResumeSavedBoxelSearch(string FileName) : IBoxelSearchAction;
 
 public sealed record RenameSavedBoxelSearch(string FileName, string Name)
-    : BoxelSearchAction;
+    : IBoxelSearchAction;
 
 public sealed record UpdateSavedBoxelSearchNotes(string FileName, string? Notes)
-    : BoxelSearchAction;
+    : IBoxelSearchAction;
 
 public sealed record SetSavedBoxelSearchFavorite(string FileName, bool IsFavorite)
-    : BoxelSearchAction;
+    : IBoxelSearchAction;
 
-public sealed record DeleteSavedBoxelSearch(string FileName) : BoxelSearchAction;
+public sealed record DeleteSavedBoxelSearch(string FileName) : IBoxelSearchAction;
 
 public enum BoxelSearchOutcomeKind
 {

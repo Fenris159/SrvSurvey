@@ -643,7 +643,7 @@ internal static class OverlayEditorPreviewFactories
                 BoxelSearchMessageCode.SearchNotConfigured));
 
         public Task<BoxelSearchOutcome> ExecuteAsync(
-            BoxelSearchAction action,
+            IBoxelSearchAction action,
             CancellationToken cancellationToken = default) =>
             Task.FromResult(CreateRejectedOutcome(
                 BoxelSearchMessageCode.SearchNotConfigured));

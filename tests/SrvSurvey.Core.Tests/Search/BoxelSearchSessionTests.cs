@@ -81,7 +81,6 @@ public sealed class BoxelSearchSessionTests : IDisposable
         Assert.Equal(
             ["Praea Euq IL-P c5-0"],
             runningDocument.Search.EmptySystems);
-        Assert.True(StopBoxelSearch.Instance.PreservesProgress);
         await session.ExecuteAsync(StopBoxelSearch.Instance);
 
         var document = await library.LoadAsync("F123", fileName);
@@ -660,7 +659,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
         }
     }
 
-    private sealed record UnsupportedAction : BoxelSearchAction;
+    private sealed record UnsupportedAction : IBoxelSearchAction;
 
     private sealed class ThrowingClipboard : IBoxelClipboard
     {

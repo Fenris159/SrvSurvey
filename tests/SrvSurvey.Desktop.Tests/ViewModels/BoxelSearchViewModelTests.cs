@@ -1550,7 +1550,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         }
 
         public Task<BoxelSearchOutcome> ExecuteAsync(
-            BoxelSearchAction action,
+            IBoxelSearchAction action,
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult(NextOutcome);

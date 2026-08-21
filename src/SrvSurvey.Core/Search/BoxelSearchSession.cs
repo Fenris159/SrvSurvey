@@ -231,7 +231,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
     }
 
     public Task<BoxelSearchOutcome> ExecuteAsync(
-        BoxelSearchAction action,
+        IBoxelSearchAction action,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(action);
@@ -461,7 +461,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
     }
 
     private async Task<ActionResult> ExecuteLockedAsync(
-        BoxelSearchAction action,
+        IBoxelSearchAction action,
         CancellationToken cancellationToken)
     {
         var versionBefore = state.Version;
