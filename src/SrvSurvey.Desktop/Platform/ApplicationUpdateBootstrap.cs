@@ -18,8 +18,7 @@ internal sealed record ApplicationUpdateStartup(
     string? PlanPath,
     IReadOnlyList<string> ApplicationArguments);
 
-public sealed class ApplicationUpdateHandoffService
-    : IApplicationUpdateHandoffService
+internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandoff
 {
     private static readonly TimeSpan HelperReadyTimeout = TimeSpan.FromSeconds(30);
     private readonly ReleaseInstallationPlanStore planStore;
@@ -40,7 +39,21 @@ public sealed class ApplicationUpdateHandoffService
         this.startProcess = startProcess;
     }
 
-    public async Task<ReleaseInstallationHandoffPlan> StartHelperAsync(
+    Task<ApplicationUpdateHandoffResult>
+        IApplicationUpdateHandoff.StartHelperAttemptAsync(
+            string dataDirectory,
+            ReleaseInstallationPreparation preparation,
+            string stagedEntryPoint,
+            CancellationToken cancellationToken)
+    {
+        return StartHelperAttemptAsync(
+            dataDirectory,
+            preparation,
+            stagedEntryPoint,
+            cancellationToken);
+    }
+
+    private async Task<ApplicationUpdateHandoffResult> StartHelperAttemptAsync(
         string dataDirectory,
         ReleaseInstallationPreparation preparation,
         string stagedEntryPoint,
@@ -50,33 +63,65 @@ public sealed class ApplicationUpdateHandoffService
         var helperPath = Path.GetFullPath(stagedEntryPoint);
         if (!File.Exists(helperPath))
         {
-            throw new FileNotFoundException(
-                "The staged update helper entry point was not found.",
-                helperPath);
+            return new ApplicationUpdateHandoffResult(
+                ApplicationUpdateHandoffStatus.NotStarted,
+                null,
+                new FileNotFoundException(
+                    "The staged update helper entry point was not found.",
+                    helperPath));
         }
 
-        using var currentProcess = Process.GetCurrentProcess();
-        var plan = await planStore.CreateAsync(
-                dataDirectory,
-                preparation,
-                currentProcess.Id,
-                currentProcess.StartTime.ToUniversalTime(),
-                cancellationToken)
-            .ConfigureAwait(false);
-        var startInfo = CreateHelperStartInfo(
-            helperPath,
-            plan.PlanPath,
-            preparation.RequiresElevation);
-        using var helper = startProcess(startInfo)
-            ?? throw new InvalidOperationException(
-                "The staged SrvSurvey update helper did not start.");
-        if (preparation.RequiresElevation)
+        ReleaseInstallationHandoffPlan? plan = null;
+        Process? helper = null;
+        var helperStarted = false;
+        try
         {
-            await WaitForHelperReadyAsync(plan, helper, cancellationToken)
+            using var currentProcess = Process.GetCurrentProcess();
+            plan = await planStore.CreateAsync(
+                    dataDirectory,
+                    preparation,
+                    currentProcess.Id,
+                    currentProcess.StartTime.ToUniversalTime(),
+                    cancellationToken)
                 .ConfigureAwait(false);
-        }
+            var startInfo = CreateHelperStartInfo(
+                helperPath,
+                plan.PlanPath,
+                preparation.RequiresElevation);
+            helper = startProcess(startInfo);
+            if (helper is null)
+            {
+                return new ApplicationUpdateHandoffResult(
+                    ApplicationUpdateHandoffStatus.NotStarted,
+                    plan,
+                    new InvalidOperationException(
+                        "The staged SrvSurvey update helper did not start."));
+            }
 
-        return plan;
+            helperStarted = true;
+            if (preparation.RequiresElevation)
+            {
+                await WaitForHelperReadyAsync(plan, helper, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            return new ApplicationUpdateHandoffResult(
+                ApplicationUpdateHandoffStatus.Started,
+                plan);
+        }
+        catch (Exception exception) when (IsHandoffFailure(exception))
+        {
+            return new ApplicationUpdateHandoffResult(
+                helperStarted
+                    ? ApplicationUpdateHandoffStatus.StartedReadinessUnconfirmed
+                    : ApplicationUpdateHandoffStatus.NotStarted,
+                plan,
+                exception);
+        }
+        finally
+        {
+            helper?.Dispose();
+        }
     }
 
     internal static ProcessStartInfo CreateHelperStartInfo(
@@ -137,15 +182,17 @@ public sealed class ApplicationUpdateHandoffService
                 "The elevated update helper did not become ready in time.");
         }
     }
-}
 
-public interface IApplicationUpdateHandoffService
-{
-    Task<ReleaseInstallationHandoffPlan> StartHelperAsync(
-        string dataDirectory,
-        ReleaseInstallationPreparation preparation,
-        string stagedEntryPoint,
-        CancellationToken cancellationToken = default);
+    private static bool IsHandoffFailure(Exception exception)
+    {
+        return exception is IOException
+            or UnauthorizedAccessException
+            or InvalidDataException
+            or InvalidOperationException
+            or Win32Exception
+            or OperationCanceledException
+            or PlatformNotSupportedException;
+    }
 }
 
 internal static class ApplicationUpdateBootstrap
@@ -383,14 +430,22 @@ internal static class ApplicationUpdateBootstrap
         return RunHelperAsync(
             paths.DataDirectory,
             planPath,
-            cancellationToken);
+            cancellationToken: cancellationToken);
     }
 
     internal static async Task<int> RunHelperAsync(
         string dataDirectory,
         string planPath,
+        TimeSpan? parentExitTimeout = null,
         CancellationToken cancellationToken = default)
     {
+        if (parentExitTimeout is { } configuredTimeout)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(
+                configuredTimeout,
+                TimeSpan.Zero);
+        }
+
         var store = new ReleaseInstallationPlanStore();
         ReleaseInstallationHandoffPlan? plan = null;
         Process? validatedParent = null;
@@ -414,6 +469,7 @@ internal static class ApplicationUpdateBootstrap
                     store,
                     plan,
                     validatedParent,
+                    parentExitTimeout ?? ParentExitTimeout,
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -438,9 +494,14 @@ internal static class ApplicationUpdateBootstrap
         ReleaseInstallationPlanStore store,
         ReleaseInstallationHandoffPlan plan,
         Process? validatedParent,
+        TimeSpan parentExitTimeout,
         CancellationToken cancellationToken)
     {
-        await WaitForParentExitAsync(plan, validatedParent, cancellationToken)
+        await WaitForParentExitAsync(
+                plan,
+                validatedParent,
+                cancellationToken,
+                parentExitTimeout)
             .ConfigureAwait(false);
         var transaction = new ReleaseInstallationTransaction();
         var result = await transaction.ApplyAsync(
@@ -493,6 +554,18 @@ internal static class ApplicationUpdateBootstrap
             return;
         }
 
+        var error = exception.Message;
+        if (exception is UpdateParentStillRunningException)
+        {
+            var cleanupError = await AbortTimedOutCandidateAsync(plan.Preparation)
+                .ConfigureAwait(false);
+            if (cleanupError is not null)
+            {
+                error += " Candidate cleanup also failed: "
+                    + cleanupError.Message;
+            }
+        }
+
         try
         {
             await store.WriteOutcomeAsync(
@@ -508,7 +581,7 @@ internal static class ApplicationUpdateBootstrap
                         Directory.Exists(plan.Preparation.FailedDirectory)
                             ? plan.Preparation.FailedDirectory
                             : null,
-                        exception.Message),
+                        error),
                     CancellationToken.None)
                 .ConfigureAwait(false);
         }
@@ -521,6 +594,34 @@ internal static class ApplicationUpdateBootstrap
         }
 
         TryRestartOriginalInstallation(plan, exception);
+    }
+
+    private static async Task<Exception?> AbortTimedOutCandidateAsync(
+        ReleaseInstallationPreparation preparation)
+    {
+        try
+        {
+            await new ReleaseInstallationPreparer().AbortAsync(
+                    preparation,
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+            if (Directory.Exists(preparation.CandidateDirectory)
+                || File.Exists(preparation.CandidateDirectory))
+            {
+                return new IOException(
+                    "The prepared update candidate could not be removed.");
+            }
+
+            return null;
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException)
+        {
+            return exception;
+        }
     }
 
     private static void TryRestartOriginalInstallation(
@@ -613,8 +714,16 @@ internal static class ApplicationUpdateBootstrap
     internal static async Task WaitForParentExitAsync(
         ReleaseInstallationHandoffPlan plan,
         Process? validatedParent,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        TimeSpan? parentExitTimeout = null)
     {
+        if (parentExitTimeout is { } configuredTimeout)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(
+                configuredTimeout,
+                TimeSpan.Zero);
+        }
+
         Process? parent = validatedParent;
         var disposeParent = false;
         try
@@ -634,7 +743,7 @@ internal static class ApplicationUpdateBootstrap
 
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(
                 cancellationToken);
-            timeout.CancelAfter(ParentExitTimeout);
+            timeout.CancelAfter(parentExitTimeout ?? ParentExitTimeout);
             try
             {
                 await parent.WaitForExitAsync(timeout.Token).ConfigureAwait(false);

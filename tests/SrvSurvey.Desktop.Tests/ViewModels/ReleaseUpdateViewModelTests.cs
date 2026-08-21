@@ -27,358 +27,352 @@ public sealed class ReleaseUpdateViewModelTests
     }
 
     [Fact]
-    public async Task ConfirmedInstallRunsGuardedPipelineBeforeShutdown()
+    public async Task ConfirmedInstallProjectsWorkflowProgressAndHandoff()
     {
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-update-view-model-tests-{Guid.NewGuid():N}");
-        var installationDirectory = Path.Combine(temporaryDirectory, "install");
-        Directory.CreateDirectory(installationDirectory);
-        await File.WriteAllTextAsync(
-            Path.Combine(installationDirectory, "release-package.json"),
-            "{}");
-        var calls = new List<string>();
-        var shutdown = false;
-        try
-        {
-            var viewModel = new ReleaseUpdateViewModel(
-                new StubService(CreateResult(isAvailable: true)),
-                new Version(2, 0, 95, 0));
-            viewModel.ConfigureInstaller(
-                new ReleaseInstallerConfiguration
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            new ReleaseInstallationWorkflowResult(
+                ReleaseInstallationWorkflowStatus.HandoffStarted,
+                ReleaseInstallationWorkflowStage.AwaitingApplicationExit,
+                ReleaseInstallationCleanupStatus.Transferred),
+            [
+                new ReleaseInstallationWorkflowProgress(
+                    ReleaseInstallationWorkflowStage.Downloading)
                 {
-                    DownloadService = new StubDownloader(calls),
-                    StagingService = new StubStagingService(calls),
-                    InstallationPreparer = new StubPreparer(calls),
-                    HandoffService = new StubHandoff(calls),
-                    InstanceManager = new StubInstanceManager(0),
-                    ConfirmMultipleInstances = _ =>
-                        throw new InvalidOperationException(
-                            "Confirmation was not expected."),
-                    DataDirectory = temporaryDirectory,
-                    InstallationDirectory = installationDirectory,
-                    StartupArguments = ["--frontier-id", "F123"],
-                    Shutdown = () =>
-                                {
-                                    calls.Add("shutdown");
-                                    shutdown = true;
-                                    return Task.CompletedTask;
-                                }
-                });
-            await viewModel.CheckAsync();
-            viewModel.InstallConfirmed = true;
+                    DownloadedBytes = 1_024,
+                    TotalBytes = 1_024,
+                },
+                new ReleaseInstallationWorkflowProgress(
+                    ReleaseInstallationWorkflowStage.ValidatingArchive),
+                new ReleaseInstallationWorkflowProgress(
+                    ReleaseInstallationWorkflowStage.PreparingRollback)
+                {
+                    StagedFileCount = 12,
+                },
+                new ReleaseInstallationWorkflowProgress(
+                    ReleaseInstallationWorkflowStage.AwaitingApplicationExit),
+            ]);
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
 
-            await viewModel.InstallAsync();
+        await viewModel.InstallAsync();
 
-            Assert.Equal(
-                ["download", "stage", "prepare", "handoff", "shutdown"],
-                calls);
-            Assert.True(shutdown);
-            Assert.True(viewModel.IsInstalling);
-            Assert.False(viewModel.InstallConfirmed);
-            Assert.Equal(100, viewModel.InstallProgressPercent);
-            Assert.Contains("helper is waiting", viewModel.StatusMessage);
-        }
-        finally
-        {
-            Directory.Delete(temporaryDirectory, recursive: true);
-        }
+        Assert.Single(workflow.Requests);
+        Assert.True(viewModel.IsInstalling);
+        Assert.False(viewModel.InstallConfirmed);
+        Assert.Equal(100, viewModel.InstallProgressPercent);
+        Assert.Contains("Close SrvSurvey", viewModel.StatusMessage);
     }
 
     [Fact]
     public async Task ReadOnlyBundleKeepsReleaseAvailableWithoutOfferingReplacement()
     {
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-update-view-model-tests-{Guid.NewGuid():N}");
-        var installationDirectory = Path.Combine(temporaryDirectory, "install");
-        Directory.CreateDirectory(installationDirectory);
-        await File.WriteAllTextAsync(
-            Path.Combine(installationDirectory, "release-package.json"),
-            "{}");
-        try
-        {
-            var viewModel = new ReleaseUpdateViewModel(
-                new StubService(CreateResult(isAvailable: true)),
-                new Version(2, 0, 95, 0));
-            var calls = new List<string>();
-            viewModel.ConfigureInstaller(
-                new ReleaseInstallerConfiguration
-                {
-                    DownloadService = new StubDownloader(calls),
-                    StagingService = new StubStagingService(calls),
-                    InstallationPreparer = new StubPreparer(calls),
-                    HandoffService = new StubHandoff(calls),
-                    InstanceManager = new StubInstanceManager(0),
-                    ConfirmMultipleInstances = _ =>
-                        throw new InvalidOperationException(
-                            "Confirmation was not expected."),
-                    DataDirectory = temporaryDirectory,
-                    InstallationDirectory = installationDirectory,
-                    StartupArguments = [],
-                    Shutdown = () => Task.CompletedTask,
-                    AutomaticInstallationUnavailableReason = "This AppImage is mounted read-only and cannot replace itself; use Open releases to download the new AppImage.",
-                    IsAppImage = true
-                });
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.ReadOnlyAppImage);
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
 
-            await viewModel.CheckAsync();
+        await viewModel.CheckAsync();
 
-            Assert.True(viewModel.IsUpdateAvailable);
-            Assert.False(viewModel.CanInstallCurrentInstallation);
-            Assert.True(viewModel.ShowInstallUnavailable);
-            Assert.False(viewModel.ShowGenericInstallUnavailable);
-            Assert.True(viewModel.ShowAppImageManualInstall);
-            Assert.False(viewModel.InstallCommand.CanExecute(null));
-            Assert.Contains("AppImage is mounted read-only", viewModel.StatusMessage);
-            Assert.Contains("Open releases", viewModel.StatusMessage);
-            Assert.Contains(
-                "replace your existing AppImage",
-                ReleaseUpdateViewModel.AppImageManualInstallInstructions);
-            Assert.Empty(calls);
-        }
-        finally
-        {
-            Directory.Delete(temporaryDirectory, recursive: true);
-        }
+        Assert.True(viewModel.IsUpdateAvailable);
+        Assert.False(viewModel.CanInstallCurrentInstallation);
+        Assert.True(viewModel.ShowInstallUnavailable);
+        Assert.False(viewModel.ShowGenericInstallUnavailable);
+        Assert.True(viewModel.ShowAppImageManualInstall);
+        Assert.False(viewModel.InstallCommand.CanExecute(null));
+        Assert.Contains("AppImage is mounted read-only", viewModel.StatusMessage);
+        Assert.Contains("selected release", viewModel.StatusMessage);
+        Assert.Contains(
+            "replace your existing AppImage",
+            ReleaseUpdateViewModel.AppImageManualInstallInstructions);
+        Assert.Empty(workflow.Requests);
     }
 
     [Fact]
-    public async Task MultipleInstancesCloseBeforeTheDownloadAfterConfirmation()
+    public async Task InstanceProgressProjectsConfirmationAndClosingText()
     {
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-update-instance-tests-{Guid.NewGuid():N}");
-        var installationDirectory = Path.Combine(temporaryDirectory, "install");
-        Directory.CreateDirectory(installationDirectory);
-        await File.WriteAllTextAsync(
-            Path.Combine(installationDirectory, "release-package.json"),
-            "{}");
-        var calls = new List<string>();
-        try
-        {
-            var viewModel = new ReleaseUpdateViewModel(
-                new StubService(CreateResult(isAvailable: true)),
-                new Version(2, 0, 95, 0));
-            viewModel.ConfigureInstaller(
-                new ReleaseInstallerConfiguration
+        string? confirmationText = null;
+        string? closingText = null;
+        ReleaseUpdateViewModel? viewModel = null;
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            new ReleaseInstallationWorkflowResult(
+                ReleaseInstallationWorkflowStatus.Rejected,
+                ReleaseInstallationWorkflowStage.ScanningInstances,
+                ReleaseInstallationCleanupStatus.NotRequired,
+                ReleaseInstallationRejectionReason.InstancesDeclined),
+            [
+                new ReleaseInstallationWorkflowProgress(
+                    ReleaseInstallationWorkflowStage.AwaitingInstanceConfirmation)
                 {
-                    DownloadService = new StubDownloader(calls),
-                    StagingService = new StubStagingService(calls),
-                    InstallationPreparer = new StubPreparer(calls),
-                    HandoffService = new StubHandoff(calls),
-                    InstanceManager = new StubInstanceManager(2, calls),
-                    ConfirmMultipleInstances = scan =>
-                    {
-                        calls.Add($"confirm:{scan.TotalCount}");
-                        return Task.FromResult(true);
-                    },
-                    DataDirectory = temporaryDirectory,
-                    InstallationDirectory = installationDirectory,
-                    StartupArguments = [],
-                    Shutdown = () =>
-                    {
-                        calls.Add("shutdown");
-                        return Task.CompletedTask;
-                    },
-                });
-            await viewModel.CheckAsync();
-            viewModel.InstallConfirmed = true;
+                    Checkpoint = ReleaseInstallationCheckpoint.BeforeDownload,
+                    InstanceScan = new ApplicationInstanceScan(2, 0),
+                },
+                new ReleaseInstallationWorkflowProgress(
+                    ReleaseInstallationWorkflowStage.ClosingInstances)
+                {
+                    Checkpoint = ReleaseInstallationCheckpoint.BeforeDownload,
+                    InstanceScan = new ApplicationInstanceScan(2, 0),
+                },
+            ],
+            index =>
+            {
+                if (index == 0)
+                {
+                    confirmationText = viewModel?.StatusMessage;
+                }
+                else
+                {
+                    closingText = viewModel?.InstallProgressText;
+                }
+            });
+        viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
 
-            await viewModel.InstallAsync();
+        await viewModel.InstallAsync();
 
-            Assert.Equal(
-                [
-                    "detect",
-                    "confirm:2",
-                    "close",
-                    "download",
-                    "stage",
-                    "prepare",
-                    "detect",
-                    "handoff",
-                    "shutdown",
-                ],
-                calls);
-        }
-        finally
-        {
-            Directory.Delete(temporaryDirectory, recursive: true);
-        }
+        Assert.Contains("2 other SrvSurvey instances", confirmationText);
+        Assert.Equal("Closing 2 other SrvSurvey instances...", closingText);
     }
 
     [Fact]
     public async Task DecliningMultipleInstanceWarningDoesNotCloseOrDownload()
     {
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-update-instance-tests-{Guid.NewGuid():N}");
-        var installationDirectory = Path.Combine(temporaryDirectory, "install");
-        Directory.CreateDirectory(installationDirectory);
-        await File.WriteAllTextAsync(
-            Path.Combine(installationDirectory, "release-package.json"),
-            "{}");
-        var calls = new List<string>();
-        try
-        {
-            var viewModel = new ReleaseUpdateViewModel(
-                new StubService(CreateResult(isAvailable: true)),
-                new Version(2, 0, 95, 0));
-            viewModel.ConfigureInstaller(
-                new ReleaseInstallerConfiguration
-                {
-                    DownloadService = new StubDownloader(calls),
-                    StagingService = new StubStagingService(calls),
-                    InstallationPreparer = new StubPreparer(calls),
-                    HandoffService = new StubHandoff(calls),
-                    InstanceManager = new StubInstanceManager(1, calls),
-                    ConfirmMultipleInstances = scan =>
-                    {
-                        calls.Add($"confirm:{scan.TotalCount}");
-                        return Task.FromResult(false);
-                    },
-                    DataDirectory = temporaryDirectory,
-                    InstallationDirectory = installationDirectory,
-                    StartupArguments = [],
-                    Shutdown = () => Task.CompletedTask,
-                });
-            await viewModel.CheckAsync();
-            viewModel.InstallConfirmed = true;
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            new ReleaseInstallationWorkflowResult(
+                ReleaseInstallationWorkflowStatus.Rejected,
+                ReleaseInstallationWorkflowStage.ScanningInstances,
+                ReleaseInstallationCleanupStatus.NotRequired,
+                ReleaseInstallationRejectionReason.InstancesDeclined));
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
 
-            await viewModel.InstallAsync();
+        await viewModel.InstallAsync();
 
-            Assert.Equal(["detect", "confirm:1"], calls);
-            Assert.False(viewModel.IsInstalling);
-            Assert.True(viewModel.InstallConfirmed);
-            Assert.Contains("no files were changed", viewModel.StatusMessage);
-        }
-        finally
-        {
-            Directory.Delete(temporaryDirectory, recursive: true);
-        }
+        Assert.False(viewModel.IsInstalling);
+        Assert.True(viewModel.InstallConfirmed);
+        Assert.Equal("Update canceled before download.", viewModel.InstallProgressText);
+        Assert.Contains("no files were changed", viewModel.StatusMessage);
     }
 
     [Fact]
     public async Task UnverifiedInstanceWarningExplainsSafeUpdateBlock()
     {
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-update-unverified-tests-{Guid.NewGuid():N}");
-        var installationDirectory = Path.Combine(temporaryDirectory, "install");
-        Directory.CreateDirectory(installationDirectory);
-        await File.WriteAllTextAsync(
-            Path.Combine(installationDirectory, "release-package.json"),
-            "{}");
-        var calls = new List<string>();
         string? warningStatus = null;
-        try
-        {
-            var viewModel = new ReleaseUpdateViewModel(
-                new StubService(CreateResult(isAvailable: true)),
-                new Version(2, 0, 95, 0));
-            viewModel.ConfigureInstaller(
-                new ReleaseInstallerConfiguration
+        ReleaseUpdateViewModel? viewModel = null;
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            new ReleaseInstallationWorkflowResult(
+                ReleaseInstallationWorkflowStatus.Failed,
+                ReleaseInstallationWorkflowStage.ClosingInstances,
+                ReleaseInstallationCleanupStatus.NotRequired,
+                Error: new IOException(
+                    "A matching SrvSurvey process remains unverified.")),
+            [
+                new ReleaseInstallationWorkflowProgress(
+                    ReleaseInstallationWorkflowStage.AwaitingInstanceConfirmation)
                 {
-                    DownloadService = new StubDownloader(calls),
-                    StagingService = new StubStagingService(calls),
-                    InstallationPreparer = new StubPreparer(calls),
-                    HandoffService = new StubHandoff(calls),
-                    InstanceManager = new StubInstanceManager(
-                        otherCount: 1,
-                        calls,
-                        unverifiedCount: 1,
-                        throwOnClose: true),
-                    ConfirmMultipleInstances = _ =>
-                    {
-                        warningStatus = viewModel.StatusMessage;
-                        calls.Add("confirm");
-                        return Task.FromResult(true);
-                    },
-                    DataDirectory = temporaryDirectory,
-                    InstallationDirectory = installationDirectory,
-                    StartupArguments = [],
-                    Shutdown = () => Task.CompletedTask,
-                });
-            await viewModel.CheckAsync();
-            viewModel.InstallConfirmed = true;
+                    Checkpoint = ReleaseInstallationCheckpoint.BeforeDownload,
+                    InstanceScan = new ApplicationInstanceScan(0, 1),
+                },
+            ],
+            _ => warningStatus = viewModel?.StatusMessage);
+        viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
 
-            await viewModel.InstallAsync();
+        await viewModel.InstallAsync();
 
-            Assert.Contains("would not let it verify", warningStatus);
-            Assert.Equal(["detect", "confirm", "close"], calls);
-            Assert.Contains("remains unverified", viewModel.StatusMessage);
-            Assert.Equal("Update preparation stopped safely.", viewModel.InstallProgressText);
-        }
-        finally
-        {
-            Directory.Delete(temporaryDirectory, recursive: true);
-        }
+        Assert.Contains("would not let it verify", warningStatus);
+        Assert.Contains("remains unverified", viewModel.StatusMessage);
+        Assert.Equal("Update preparation stopped safely.", viewModel.InstallProgressText);
     }
 
     [Fact]
     public async Task DecliningPreHandoffRecheckAbortsPreparedCandidate()
     {
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-update-handoff-cancel-tests-{Guid.NewGuid():N}");
-        var installationDirectory = Path.Combine(temporaryDirectory, "install");
-        Directory.CreateDirectory(installationDirectory);
-        await File.WriteAllTextAsync(
-            Path.Combine(installationDirectory, "release-package.json"),
-            "{}");
-        var calls = new List<string>();
-        try
-        {
-            var viewModel = new ReleaseUpdateViewModel(
-                new StubService(CreateResult(isAvailable: true)),
-                new Version(2, 0, 95, 0));
-            viewModel.ConfigureInstaller(
-                new ReleaseInstallerConfiguration
-                {
-                    DownloadService = new StubDownloader(calls),
-                    StagingService = new StubStagingService(calls),
-                    InstallationPreparer = new StubPreparer(calls),
-                    HandoffService = new StubHandoff(calls),
-                    InstanceManager = new StubInstanceManager(
-                        [
-                            new ApplicationInstanceScan(0, 0),
-                            new ApplicationInstanceScan(1, 0),
-                        ],
-                        calls),
-                    ConfirmMultipleInstances = _ =>
-                    {
-                        calls.Add("confirm");
-                        return Task.FromResult(false);
-                    },
-                    DataDirectory = temporaryDirectory,
-                    InstallationDirectory = installationDirectory,
-                    StartupArguments = [],
-                    Shutdown = () => Task.CompletedTask,
-                });
-            await viewModel.CheckAsync();
-            viewModel.InstallConfirmed = true;
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            new ReleaseInstallationWorkflowResult(
+                ReleaseInstallationWorkflowStatus.Rejected,
+                ReleaseInstallationWorkflowStage.ScanningInstances,
+                ReleaseInstallationCleanupStatus.Succeeded,
+                ReleaseInstallationRejectionReason.InstancesDeclined));
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
 
-            await viewModel.InstallAsync();
+        await viewModel.InstallAsync();
 
-            Assert.Equal(
-                [
-                    "detect",
-                    "download",
-                    "stage",
-                    "prepare",
-                    "detect",
-                    "confirm",
-                    "abort",
-                ],
-                calls);
-            Assert.Equal(
-                "Update canceled before installation handoff.",
-                viewModel.InstallProgressText);
-            Assert.Contains("no files were changed", viewModel.StatusMessage);
-        }
-        finally
-        {
-            Directory.Delete(temporaryDirectory, recursive: true);
-        }
+        Assert.Equal(
+            "Update canceled before installation handoff.",
+            viewModel.InstallProgressText);
+        Assert.Contains("prepared candidate was removed", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task ConfirmedHelperTimeoutAllowsAConfirmedRetry()
+    {
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            new ReleaseInstallationWorkflowResult(
+                ReleaseInstallationWorkflowStatus.Failed,
+                ReleaseInstallationWorkflowStage.AwaitingApplicationExit,
+                ReleaseInstallationCleanupStatus.Succeeded,
+                Error: new IOException("Parent remained active.")));
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
+
+        await viewModel.InstallAsync();
+
+        Assert.False(viewModel.IsInstalling);
+        Assert.False(viewModel.InstallConfirmed);
+        Assert.Contains("did not close", viewModel.StatusMessage);
+        Assert.Contains("Confirm again to retry", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task UnresolvedHelperOwnershipKeepsInstallationDisabled()
+    {
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            new ReleaseInstallationWorkflowResult(
+                ReleaseInstallationWorkflowStatus.OwnershipUnresolved,
+                ReleaseInstallationWorkflowStage.AwaitingApplicationExit,
+                ReleaseInstallationCleanupStatus.Transferred,
+                Error: new InvalidDataException("Outcome could not be read.")));
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
+
+        await viewModel.InstallAsync();
+
+        Assert.True(viewModel.IsInstalling);
+        Assert.False(viewModel.InstallConfirmed);
+        Assert.False(viewModel.InstallCommand.CanExecute(null));
+        Assert.Contains("status could not be confirmed", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task CleanupFailureKeepsInstallationDisabledAndPreservesErrors()
+    {
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            new ReleaseInstallationWorkflowResult(
+                ReleaseInstallationWorkflowStatus.CleanupFailed,
+                ReleaseInstallationWorkflowStage.ScanningInstances,
+                ReleaseInstallationCleanupStatus.Failed,
+                Error: new IOException("Instance scan failed."),
+                CleanupError: new UnauthorizedAccessException(
+                    "Candidate is locked.")));
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
+
+        await viewModel.InstallAsync();
+
+        Assert.True(viewModel.IsInstalling);
+        Assert.False(viewModel.InstallConfirmed);
+        Assert.Contains("Update Diagnostics", viewModel.StatusMessage);
+        Assert.Contains("Instance scan failed", viewModel.StatusMessage);
+        Assert.Contains("Candidate is locked", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task WorkflowExceptionRestoresControlsWithGuardedStatus()
+    {
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            exception: new IOException("workflow adapter failed"));
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
+
+        await viewModel.InstallAsync();
+
+        Assert.False(viewModel.IsInstalling);
+        Assert.True(viewModel.InstallCommand.CanExecute(null));
+        Assert.Contains("workflow adapter failed", viewModel.StatusMessage);
+        Assert.Contains("Update Diagnostics", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task CancelledWorkflowRestoresControls()
+    {
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            new ReleaseInstallationWorkflowResult(
+                ReleaseInstallationWorkflowStatus.Cancelled,
+                ReleaseInstallationWorkflowStage.Downloading,
+                ReleaseInstallationCleanupStatus.Succeeded));
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
+
+        await viewModel.InstallAsync();
+
+        Assert.False(viewModel.IsInstalling);
+        Assert.Equal("Update preparation stopped safely.", viewModel.InstallProgressText);
+        Assert.Contains("was canceled", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task UnknownWorkflowResultRestoresControlsWithDiagnosticStatus()
+    {
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            new ReleaseInstallationWorkflowResult(
+                (ReleaseInstallationWorkflowStatus)(-1),
+                ReleaseInstallationWorkflowStage.None,
+                ReleaseInstallationCleanupStatus.NotRequired));
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
+
+        await viewModel.InstallAsync();
+
+        Assert.False(viewModel.IsInstalling);
+        Assert.Contains("Unsupported installation result", viewModel.StatusMessage);
     }
 
     [Fact]
@@ -591,194 +585,55 @@ public sealed class ReleaseUpdateViewModelTests
         }
     }
 
-    private sealed class StubDownloader(List<string> calls)
-        : IReleasePackageDownloadService
+    private sealed class StubWorkflow : IReleaseInstallationWorkflow
     {
-        public Task<ReleasePackageDownloadResult> DownloadAsync(
-            ReleaseVersion version,
-            CrossPlatformReleasePackage package,
-            string dataDirectory,
-            IProgress<ReleasePackageDownloadProgress>? progress = null,
-            CancellationToken cancellationToken = default)
-        {
-            calls.Add("download");
-            progress?.Report(new ReleasePackageDownloadProgress(1_024, 1_024));
-            return Task.FromResult(new ReleasePackageDownloadResult(
-                Path.Combine(dataDirectory, package.ArchiveName),
-                true,
-                package.Size,
-                package.Sha256));
-        }
-    }
+        private readonly ReleaseInstallationWorkflowResult result;
+        private readonly IReadOnlyList<ReleaseInstallationWorkflowProgress> progress;
+        private readonly Action<int>? afterProgress;
+        private readonly Exception? exception;
 
-    private sealed class StubInstanceManager : IApplicationInstanceManager
-    {
-        private readonly List<string>? calls;
-        private readonly Queue<ApplicationInstanceScan> scans;
-        private readonly bool throwOnClose;
-        private ApplicationInstanceScan currentScan;
-
-        public StubInstanceManager(
-            int otherCount,
-            List<string>? calls = null,
-            int unverifiedCount = 0,
-            bool throwOnClose = false)
-            : this(
-                [new ApplicationInstanceScan(otherCount, unverifiedCount)],
-                calls,
-                throwOnClose)
+        public StubWorkflow(
+            ReleaseInstallationCapabilityStatus capabilityStatus,
+            ReleaseInstallationWorkflowResult? result = null,
+            IReadOnlyList<ReleaseInstallationWorkflowProgress>? progress = null,
+            Action<int>? afterProgress = null,
+            Exception? exception = null)
         {
+            Capability = new ReleaseInstallationCapability(capabilityStatus);
+            this.result = result ?? new ReleaseInstallationWorkflowResult(
+                ReleaseInstallationWorkflowStatus.Rejected,
+                ReleaseInstallationWorkflowStage.None,
+                ReleaseInstallationCleanupStatus.NotRequired,
+                ReleaseInstallationRejectionReason.Unsupported);
+            this.progress = progress ?? [];
+            this.afterProgress = afterProgress;
+            this.exception = exception;
         }
 
-        public StubInstanceManager(
-            IEnumerable<ApplicationInstanceScan> scans,
-            List<string>? calls = null,
-            bool throwOnClose = false)
-        {
-            this.scans = new Queue<ApplicationInstanceScan>(scans);
-            currentScan = this.scans.Count > 0
-                ? this.scans.Peek()
-                : new ApplicationInstanceScan(0, 0);
-            this.calls = calls;
-            this.throwOnClose = throwOnClose;
-        }
+        public ReleaseInstallationCapability Capability { get; }
 
-        public Task<ApplicationInstanceScan> ScanOtherInstancesAsync(
+        public List<ReleaseInstallationRequest> Requests { get; } = [];
+
+        public Task<ReleaseInstallationWorkflowResult> ExecuteAsync(
+            ReleaseInstallationRequest request,
+            IProgress<ReleaseInstallationWorkflowProgress>? progress = null,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            calls?.Add("detect");
-            if (scans.Count > 1)
+            Requests.Add(request);
+            for (var index = 0; index < this.progress.Count; index++)
             {
-                currentScan = scans.Dequeue();
-            }
-            else if (scans.Count == 1)
-            {
-                currentScan = scans.Peek();
+                progress?.Report(this.progress[index]);
+                afterProgress?.Invoke(index);
             }
 
-            return Task.FromResult(currentScan);
-        }
-
-        public async Task<int> CountOtherInstancesAsync(
-            CancellationToken cancellationToken = default)
-        {
-            var scan = await ScanOtherInstancesAsync(cancellationToken);
-            return scan.TotalCount;
-        }
-
-        public Task CloseOtherInstancesAsync(
-            CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            calls?.Add("close");
-            if (throwOnClose && currentScan.UnverifiedCount > 0)
+            if (exception is not null)
             {
-                throw new IOException(
-                    "A matching SrvSurvey process remains unverified.");
+                return Task.FromException<ReleaseInstallationWorkflowResult>(
+                    exception);
             }
 
-            scans.Clear();
-            currentScan = new ApplicationInstanceScan(0, 0);
-            scans.Enqueue(currentScan);
-            return Task.CompletedTask;
-        }
-    }
-
-    private sealed class StubStagingService(List<string> calls)
-        : IReleasePackageStagingService
-    {
-        public Task<ReleasePackageStagingResult> StageAsync(
-            ReleaseVersion version,
-            CrossPlatformReleasePackage package,
-            string archivePath,
-            string dataDirectory,
-            CancellationToken cancellationToken = default)
-        {
-            calls.Add("stage");
-            var ready = Path.Combine(dataDirectory, "ready");
-            return Task.FromResult(new ReleasePackageStagingResult(
-                ready,
-                Path.Combine(ready, "SrvSurvey.Desktop.exe"),
-                false,
-                12,
-                4_096,
-                new string('c', 64)));
-        }
-
-        public Task<ReleasePackageStagingResult> VerifyReadyAsync(
-            ReleaseVersion version,
-            string runtimeIdentifier,
-            string readyDirectory,
-            string manifestSha256,
-            CancellationToken cancellationToken = default)
-        {
-            throw new NotSupportedException();
-        }
-    }
-
-    private sealed class StubPreparer(List<string> calls)
-        : IReleaseInstallationPreparer
-    {
-        public Task AbortAsync(
-            ReleaseInstallationPreparation preparation,
-            CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            calls.Add("abort");
-            return Task.CompletedTask;
-        }
-
-        public Task<ReleaseInstallationPreparation> PrepareAsync(
-            ReleaseVersion version,
-            string runtimeIdentifier,
-            string readyDirectory,
-            string manifestSha256,
-            string installationDirectory,
-            IReadOnlyList<string> startupArguments,
-            CancellationToken cancellationToken = default)
-        {
-            calls.Add("prepare");
-            var requestId = Guid.NewGuid();
-            var parent = Directory.GetParent(installationDirectory)!.FullName;
-            return Task.FromResult(new ReleaseInstallationPreparation(
-                requestId,
-                version,
-                runtimeIdentifier,
-                installationDirectory,
-                readyDirectory,
-                Path.Combine(parent, $".install-update-{requestId:N}"),
-                Path.Combine(parent, $".install-backup-{requestId:N}"),
-                Path.Combine(parent, $".install-failed-{requestId:N}"),
-                "SrvSurvey.Desktop.exe",
-                manifestSha256,
-                new string('d', 64),
-                false,
-                startupArguments));
-        }
-    }
-
-    private sealed class StubHandoff(List<string> calls)
-        : IApplicationUpdateHandoffService
-    {
-        public Task<ReleaseInstallationHandoffPlan> StartHelperAsync(
-            string dataDirectory,
-            ReleaseInstallationPreparation preparation,
-            string stagedEntryPoint,
-            CancellationToken cancellationToken = default)
-        {
-            calls.Add("handoff");
-            var planDirectory = Path.Combine(dataDirectory, "plan");
-            return Task.FromResult(new ReleaseInstallationHandoffPlan(
-                Path.Combine(planDirectory, "plan.json"),
-                Path.Combine(planDirectory, "helper-ready.json"),
-                Path.Combine(planDirectory, "health.json"),
-                Path.Combine(planDirectory, "outcome.json"),
-                DateTimeOffset.UtcNow,
-                123,
-                DateTimeOffset.UtcNow.UtcTicks,
-                new string('e', 64),
-                preparation));
+            return Task.FromResult(result);
         }
     }
 }
