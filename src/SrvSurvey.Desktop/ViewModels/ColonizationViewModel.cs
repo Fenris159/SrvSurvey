@@ -1544,7 +1544,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         IsFleetCarrierSyncBusy = true;
         try
         {
-            await PersistRavenApiKeyAsync().ConfigureAwait(false);
+            await PersistRavenApiKeyAsync();
         }
         catch (Exception exception) when (
             exception is IOException
@@ -1573,8 +1573,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         if (normalized is not null
             && !await TryValidateRavenApiKeyAsync(
                     normalized,
-                    commander => validatedCommander = commander)
-                .ConfigureAwait(false))
+                    commander => validatedCommander = commander))
         {
             return;
         }

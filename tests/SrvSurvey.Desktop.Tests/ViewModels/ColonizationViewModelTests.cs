@@ -1,3 +1,5 @@
+using Avalonia.Controls;
+using Avalonia.Headless.XUnit;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
@@ -7,6 +9,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class ColonizationViewModelTests : IDisposable
 {
     private readonly string directory = Path.Combine(
@@ -1032,6 +1035,45 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.DoesNotContain("secret-key", viewModel.RavenCredentialStatus);
     }
 
+    [AvaloniaFact]
+    public async Task SavingRavenKeyKeepsCommandStateOnTheUiThread()
+    {
+        var validation = new TaskCompletionSource<string?>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var client = new StubRavenColonialClient
+        {
+            ApiKeyValidation = validation,
+        };
+        var viewModel = Create(client);
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: null);
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.RavenApiKey = "secret-key";
+        var button = new Button
+        {
+            Command = viewModel.SaveRavenApiKeyCommand,
+        };
+        var window = new Window { Content = button };
+        window.Show();
+
+        try
+        {
+            var save = viewModel.SaveRavenApiKeyAsync();
+            Assert.True(viewModel.IsFleetCarrierSyncBusy);
+
+            await Task.Run(() => validation.SetResult("Test Cmdr"));
+            await save;
+
+            Assert.False(viewModel.IsFleetCarrierSyncBusy);
+            Assert.Equal("secret-key", viewModel.RavenApiKey);
+        }
+        finally
+        {
+            window.Close();
+        }
+
+        GC.KeepAlive(button);
+    }
+
     [Fact]
     public async Task RefusesRavenKeyOwnedByDifferentCommander()
     {
@@ -1893,6 +1935,8 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public string? ValidatedCommanderName { get; set; } = "Test Cmdr";
 
+        public TaskCompletionSource<string?>? ApiKeyValidation { get; set; }
+
         public int LoadCount { get; private set; }
 
         public int SaveCount { get; private set; }
@@ -1970,7 +2014,8 @@ public sealed class ColonizationViewModelTests : IDisposable
             CancellationToken cancellationToken = default)
         {
             ValidateApiKeyCount++;
-            return Task.FromResult(ValidatedCommanderName);
+            return ApiKeyValidation?.Task
+                ?? Task.FromResult(ValidatedCommanderName);
         }
 
         public Task<IReadOnlyList<string>> SaveHiddenProjectIdsAsync(
