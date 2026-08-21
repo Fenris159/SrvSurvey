@@ -1,9 +1,20 @@
+using Avalonia.Headless.XUnit;
+using SrvSurvey.Desktop.Views;
 using System.Xml.Linq;
 
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class BoxelViewMarkupTests
 {
+    [AvaloniaFact]
+    public void ConstructorLoadsTheBoxelWorkspace()
+    {
+        var view = new BoxelView();
+
+        Assert.NotNull(view.Content);
+    }
+
     [Fact]
     public void SelectedSystemPageUsesAccentForegroundForText()
     {

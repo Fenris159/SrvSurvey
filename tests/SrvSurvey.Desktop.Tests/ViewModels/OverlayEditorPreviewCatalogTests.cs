@@ -12,9 +12,21 @@ public sealed class OverlayEditorPreviewCatalogTests
             OverlayEditorPreviewCatalog.Create("PlotSphericalSearch", 0));
 
         var outcome = await preview.Boxel.Session.ExecuteAsync(
-            new StopBoxelSearch());
+            StopBoxelSearch.Instance);
         var cleared = await preview.Boxel.Session.ClearProfileAsync(
             BoxelSearchMessageCode.ProfileUnavailable);
+        var switched = await preview.Boxel.Session.SwitchProfileAsync(
+            new BoxelSearchProfile(
+                "F123",
+                "Preview",
+                true,
+                BoxelSearchSnapshot.Empty));
+        var applied = await preview.Boxel.Session.ApplyAsync(new BoxelSearchUpdate());
+        var library = await preview.Boxel.Session.GetLibraryAsync();
+        EventHandler<BoxelSearchSessionChangedEventArgs> handler = (_, _) =>
+            throw new InvalidOperationException("Preview sessions never publish changes.");
+        preview.Boxel.Session.Changed += handler;
+        preview.Boxel.Session.Changed -= handler;
 
         Assert.Equal(BoxelSearchOutcomeKind.Rejected, outcome.Kind);
         Assert.Equal(
@@ -23,6 +35,9 @@ public sealed class OverlayEditorPreviewCatalogTests
         Assert.Equal(preview.Boxel.Session.Current.Version, outcome.SessionVersion);
         Assert.Equal(BoxelSearchOutcomeKind.Rejected, cleared.Kind);
         Assert.Equal(BoxelSearchMessageCode.ProfileUnavailable, cleared.Code);
+        Assert.Equal(BoxelSearchOutcomeKind.Rejected, switched.Kind);
+        Assert.Equal(BoxelSearchOutcomeKind.Rejected, applied.Kind);
+        Assert.Empty(library.Entries);
     }
 
     [Fact]

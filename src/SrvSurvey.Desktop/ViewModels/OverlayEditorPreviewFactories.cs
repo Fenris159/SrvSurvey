@@ -621,8 +621,8 @@ internal static class OverlayEditorPreviewFactories
 
         public event EventHandler<BoxelSearchSessionChangedEventArgs>? Changed
         {
-            add { }
-            remove { }
+            add => _ = value;
+            remove => _ = value;
         }
 
         public Task<BoxelSearchOutcome> SwitchProfileAsync(

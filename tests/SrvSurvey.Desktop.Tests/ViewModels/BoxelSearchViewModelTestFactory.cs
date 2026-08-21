@@ -52,9 +52,12 @@ internal static class BoxelSearchViewModelTestFactory
             savedSearchStore
                 ?? new SavedBoxelSearchStore(profileStore.ProfileDirectory),
             systemResolver,
-            clipboardWriter is null
-                ? null
-                : new DelegateClipboard(clipboardWriter));
+            new BoxelSearchSessionServices
+            {
+                Clipboard = clipboardWriter is null
+                    ? null
+                    : new DelegateClipboard(clipboardWriter),
+            });
         return new BoxelSearchViewModel(
             session,
             knownSystems,

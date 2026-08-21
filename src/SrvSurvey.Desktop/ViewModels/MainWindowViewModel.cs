@@ -69,7 +69,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         Justification = "The system-body worker disposes the captured source in its finally block.")]
     private CancellationTokenSource? systemBodyDataCancellation;
     private readonly RouteAutoCopyCoordinator routeAutoCopyCoordinator;
-    private readonly IBoxelSearchSession boxelSearchSession;
+    private readonly BoxelSearchSession boxelSearchSession;
     private readonly BoxelSurveyStatsCoordinator boxelSurveyStats;
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
@@ -468,11 +468,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             new EmptyBoxelStore(AppDataPaths.DataDirectory),
             new SavedBoxelSearchStore(AppDataPaths.DataDirectory),
             boxelSystemResolver ?? new SpanshBoxelClient(),
-            BoxelClipboard,
-            resolvedApplicationLogService is null
-                ? null
-                : new ApplicationLogBoxelSearchDiagnosticSink(
-                    resolvedApplicationLogService));
+            new BoxelSearchSessionServices
+            {
+                Clipboard = BoxelClipboard,
+                Diagnostics = resolvedApplicationLogService is null
+                    ? null
+                    : new ApplicationLogBoxelSearchDiagnosticSink(
+                        resolvedApplicationLogService),
+            });
         BoxelSearch = new BoxelSearchViewModel(
             boxelSearchSession,
             knownSystems: knownSystems,

@@ -203,6 +203,265 @@ public sealed class BoxelSearchSessionTests : IDisposable
         Assert.Equal(["Praea Euq IL-P c5-0"], clipboard.Writes);
     }
 
+    [Fact]
+    public async Task CommandsWithoutAProfileReturnStableRejectedOutcomes()
+    {
+        await using var session = CreateSession(new RecordingProfileStore());
+
+        Assert.Empty((await session.GetLibraryAsync()).Entries);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.NoChange,
+            (await session.ExecuteAsync(StopBoxelSearch.Instance)).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Rejected,
+            (await session.ExecuteAsync(new SetExpectedSystemCount(3))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Rejected,
+            (await session.ExecuteAsync(new MarkNextBoxelSystemEmpty())).Kind);
+        Assert.Equal(
+            BoxelSearchMessageCode.SearchNotConfigured,
+            (await session.ExecuteAsync(
+                new SaveBoxelSearchToLibrary("Later", null))).Code);
+        Assert.Equal(
+            BoxelSearchMessageCode.ProfileUnavailable,
+            (await session.ExecuteAsync(new ResumeSavedBoxelSearch("missing.json"))).Code);
+        Assert.Equal(
+            BoxelSearchMessageCode.ProfileUnavailable,
+            (await session.ExecuteAsync(new DeleteSavedBoxelSearch("missing.json"))).Code);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Rejected,
+            (await session.ExecuteAsync(
+                new RenameSavedBoxelSearch("missing.json", "Renamed"))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Rejected,
+            (await session.ExecuteAsync(
+                new UpdateSavedBoxelSearchNotes("missing.json", "notes"))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Rejected,
+            (await session.ExecuteAsync(
+                new SetSavedBoxelSearchFavorite("missing.json", true))).Kind);
+
+        var cleared = await session.ClearProfileAsync(
+            BoxelSearchMessageCode.ProfileUnavailable);
+
+        Assert.Equal(BoxelSearchOutcomeKind.Success, cleared.Kind);
+        Assert.Null(session.Current.Context.Profile);
+    }
+
+    [Fact]
+    public async Task ActiveSessionCommandsCoverSearchAndLibraryLifecycle()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var profiles = new CommanderProfileStore(temporaryDirectory);
+        var library = new SavedBoxelSearchStore(temporaryDirectory);
+        var clipboard = new RecordingClipboard { IsReady = true };
+        await using var session = CreateSession(
+            profiles,
+            library,
+            clipboard,
+            new StaticResolver(
+            [
+                Observation("Praea Euq IL-P c5-0", 100),
+                Observation("Praea Euq IL-P c5-1", 101),
+                Observation("Praea Euq IL-P c5-2", 102),
+            ]));
+        await session.SwitchProfileAsync(Profile(BoxelSearchSnapshot.Empty));
+        await session.ExecuteAsync(new ActivateBoxelSearch(
+            Activation("Praea Euq IL-P c5-2")));
+
+        Assert.Equal(
+            BoxelSearchOutcomeKind.NoChange,
+            (await session.ExecuteAsync(new SetBoxelAutoCopy(false))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(new SetBoxelAutoCopy(true))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(new SetBoxelAutoCopy(false))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.NoChange,
+            (await session.ExecuteAsync(new SetBoxelSortDirection(false))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(new SetBoxelSortDirection(true))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Rejected,
+            (await session.ExecuteAsync(new SetExpectedSystemCount(0))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.NoChange,
+            (await session.ExecuteAsync(new SetExpectedSystemCount(3))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(new SetExpectedSystemCount(4))).Kind);
+
+        const string first = "Praea Euq IL-P c5-0";
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(new CompleteBoxelSystem(first))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(new ReopenBoxelSystem(first))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(new DeferBoxelSystem(first))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(new ReopenBoxelSystem(first))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(new MarkNextBoxelSystemEmpty())).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(new ReopenBoxelSystem(first))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(
+                new StartBoxelSurveyAt("Praea Euq IL-P c5-1"))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(new CopyNextBoxelSystem())).Kind);
+        Assert.NotEmpty(clipboard.Writes);
+
+        Assert.Equal(
+            BoxelSearchMessageCode.LibraryDetailsRequired,
+            (await session.ExecuteAsync(
+                new SaveBoxelSearchToLibrary(null, null))).Code);
+        var saved = await session.ExecuteAsync(
+            new SaveBoxelSearchToLibrary("Survey bookmark", "notes"));
+        var document = Assert.IsType<SavedBoxelSearchDocument>(saved.SavedSearch);
+        Assert.Equal(
+            BoxelSearchMessageCode.SearchAlreadySavedToLibrary,
+            (await session.ExecuteAsync(
+                new SaveBoxelSearchToLibrary("Duplicate", null))).Code);
+        Assert.Equal(
+            "Renamed",
+            (await session.ExecuteAsync(new RenameSavedBoxelSearch(
+                document.FileName,
+                "Renamed"))).SavedSearch?.Name);
+        Assert.Equal(
+            "updated",
+            (await session.ExecuteAsync(new UpdateSavedBoxelSearchNotes(
+                document.FileName,
+                "updated"))).SavedSearch?.Notes);
+        Assert.True((await session.ExecuteAsync(new SetSavedBoxelSearchFavorite(
+            document.FileName,
+            true))).SavedSearch?.IsFavorite);
+        Assert.Single((await session.GetLibraryAsync()).Entries);
+
+        await session.ExecuteAsync(StopBoxelSearch.Instance);
+        Assert.Equal(
+            BoxelSearchMessageCode.SavedSearchResumed,
+            (await session.ExecuteAsync(
+                new ResumeSavedBoxelSearch(document.FileName))).Code);
+        Assert.Equal(
+            BoxelSearchMessageCode.SavedSearchDeleted,
+            (await session.ExecuteAsync(
+                new DeleteSavedBoxelSearch(document.FileName))).Code);
+        Assert.Empty((await session.GetLibraryAsync()).Entries);
+    }
+
+    [Fact]
+    public async Task InvalidAndUnavailableCommandsReturnSpecificOutcomes()
+    {
+        var diagnostics = new RecordingDiagnosticSink();
+        await using var session = CreateSession(
+            new RecordingProfileStore(),
+            diagnostics: diagnostics);
+        session.Changed += (_, _) => throw new InvalidOperationException("subscriber");
+
+        Assert.Equal(
+            BoxelSearchMessageCode.ProfileUnavailable,
+            (await session.ExecuteAsync(new ActivateBoxelSearch(
+                Activation("Praea Euq IL-P c5-2")))).Code);
+        Assert.Equal(
+            BoxelSearchMessageCode.RefreshFailed,
+            (await session.ExecuteAsync(new RefreshCurrentBoxel())).Code);
+        Assert.Equal(
+            BoxelSearchMessageCode.AuditFailed,
+            (await session.ExecuteAsync(new AuditAllBoxels())).Code);
+        Assert.Equal(
+            BoxelSearchMessageCode.NextSystemCopied,
+            (await session.ExecuteAsync(new CopyNextBoxelSystem())).Code);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            session.ExecuteAsync(new UnsupportedAction()));
+
+        await session.SwitchProfileAsync(Profile(BoxelSearchSnapshot.Empty));
+        var invalidActivation = new BoxelSearchActivationRequest
+        {
+            TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-2"),
+            LowMassCode = 'z',
+            StartedOn = DateTimeOffset.Parse("2026-08-20T00:00:00Z"),
+        };
+        Assert.Equal(
+            BoxelSearchMessageCode.SearchInvalid,
+            (await session.ExecuteAsync(
+                new ActivateBoxelSearch(invalidActivation))).Code);
+        await session.ExecuteAsync(new ActivateBoxelSearch(
+            Activation("Praea Euq IL-P c5-2")));
+        var current = Assert.IsType<BoxelAddress>(session.Current.Search.CurrentBoxel);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Success,
+            (await session.ExecuteAsync(new NavigateToBoxel(current))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Rejected,
+            (await session.ExecuteAsync(new NavigateToBoxel(
+                BoxelAddress.Parse("Bleia Dryiae AA-A h0")))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Rejected,
+            (await session.ExecuteAsync(new CompleteBoxelSystem("invalid"))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Rejected,
+            (await session.ExecuteAsync(new ReopenBoxelSystem("invalid"))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Rejected,
+            (await session.ExecuteAsync(new DeferBoxelSystem("invalid"))).Kind);
+        Assert.Equal(
+            BoxelSearchOutcomeKind.Rejected,
+            (await session.ExecuteAsync(new StartBoxelSurveyAt("invalid"))).Kind);
+
+        Assert.Contains(
+            diagnostics.Items,
+            diagnostic => diagnostic.Context == "Changed subscriber");
+    }
+
+    [Fact]
+    public async Task ExternalFailuresBecomeWarningsAndDiagnostics()
+    {
+        var diagnostics = new RecordingDiagnosticSink();
+        await using var session = CreateSession(
+            new RecordingProfileStore(),
+            clipboard: new ThrowingClipboard(),
+            systemResolver: new ThrowingResolver(),
+            localSystemReader: new FaultingLocalSystemReader(),
+            emptyBoxelStore: new ThrowingEmptyStore(),
+            diagnostics: diagnostics);
+        await session.SwitchProfileAsync(Profile(BoxelSearchSnapshot.Empty));
+
+        var activation = await session.ExecuteAsync(new ActivateBoxelSearch(
+            Activation("Praea Euq IL-P c5-2")));
+        var copy = await session.ExecuteAsync(new CopyNextBoxelSystem());
+        var audit = await session.ExecuteAsync(new AuditAllBoxels());
+
+        Assert.Equal(BoxelSearchOutcomeKind.AppliedWithWarnings, activation.Kind);
+        Assert.Contains(
+            activation.Warnings ?? [],
+            warning => warning.Subsystem == BoxelSearchHealthSubsystem.Resolver);
+        Assert.Contains(
+            activation.Warnings ?? [],
+            warning => warning.Subsystem == BoxelSearchHealthSubsystem.LocalData);
+        Assert.Equal(BoxelSearchMessageCode.ClipboardFailed, copy.Code);
+        Assert.Equal(BoxelSearchMessageCode.AuditFailed, audit.Code);
+        Assert.Contains(
+            diagnostics.Items,
+            diagnostic => diagnostic.Subsystem == BoxelSearchHealthSubsystem.Resolver);
+        Assert.Contains(
+            diagnostics.Items,
+            diagnostic => diagnostic.Subsystem == BoxelSearchHealthSubsystem.Clipboard);
+        Assert.Contains(
+            diagnostics.Items,
+            diagnostic => diagnostic.Code == BoxelSearchMessageCode.AuditFailed);
+    }
+
     public void Dispose()
     {
         try
@@ -225,17 +484,24 @@ public sealed class BoxelSearchSessionTests : IDisposable
         IBoxelSearchLibraryStore? library = null,
         IBoxelClipboard? clipboard = null,
         IBoxelSystemResolver? systemResolver = null,
-        BoxelSearchSessionOptions? options = null)
+        BoxelSearchSessionOptions? options = null,
+        IBoxelLocalSystemReader? localSystemReader = null,
+        IBoxelEmptyStore? emptyBoxelStore = null,
+        IBoxelSearchDiagnosticSink? diagnostics = null)
     {
         Directory.CreateDirectory(temporaryDirectory);
         return new BoxelSearchSession(
             profileStore,
-            new LegacySystemDataReader(temporaryDirectory),
-            new EmptyBoxelStore(temporaryDirectory),
+            localSystemReader ?? new LegacySystemDataReader(temporaryDirectory),
+            emptyBoxelStore ?? new EmptyBoxelStore(temporaryDirectory),
             library ?? new SavedBoxelSearchStore(temporaryDirectory),
             systemResolver ?? new StubResolver(),
-            clipboard,
-            options: options);
+            new BoxelSearchSessionServices
+            {
+                Clipboard = clipboard,
+                Diagnostics = diagnostics,
+                Options = options,
+            });
     }
 
     private static BoxelSearchProfile Profile(BoxelSearchSnapshot snapshot)
@@ -254,6 +520,16 @@ public sealed class BoxelSearchSessionTests : IDisposable
             StartedOn = DateTimeOffset.Parse("2026-08-20T00:00:00Z"),
             AutoCopy = autoCopy,
         };
+    }
+
+    private static BoxelSystemObservation Observation(string name, long address)
+    {
+        return new BoxelSystemObservation(
+            BoxelAddress.Parse(name) with { SystemAddress = address },
+            new GalacticCoordinate(address, 0, 0),
+            null,
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+            HasKnownBodies: true);
     }
 
     private sealed class RecordingProfileStore : IBoxelSearchProfileStore
@@ -334,6 +610,18 @@ public sealed class BoxelSearchSessionTests : IDisposable
         }
     }
 
+    private sealed class StaticResolver(
+        IReadOnlyList<BoxelSystemObservation> systems) : IBoxelSystemResolver
+    {
+        public Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
+            BoxelAddress boxel,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(systems);
+        }
+    }
+
     private sealed class BlockingRefreshResolver : IBoxelSystemResolver
     {
         private readonly TaskCompletionSource blocked = new(
@@ -368,6 +656,72 @@ public sealed class BoxelSearchSessionTests : IDisposable
                 Interlocked.Increment(ref cancellationsObserved);
                 throw;
             }
+        }
+    }
+
+    private sealed record UnsupportedAction : BoxelSearchAction;
+
+    private sealed class ThrowingClipboard : IBoxelClipboard
+    {
+        public bool IsReady => true;
+
+        public Task WriteTextAsync(
+            string text,
+            CancellationToken cancellationToken = default)
+        {
+            throw new IOException("clipboard unavailable");
+        }
+    }
+
+    private sealed class ThrowingResolver : IBoxelSystemResolver
+    {
+        public Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
+            BoxelAddress boxel,
+            CancellationToken cancellationToken = default)
+        {
+            throw new HttpRequestException("resolver unavailable");
+        }
+    }
+
+    private sealed class FaultingLocalSystemReader : IBoxelLocalSystemReader
+    {
+        public Task<LegacySystemDataReadResult> ReadAsync(
+            string frontierId,
+            BoxelAddress boxel,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new LegacySystemDataReadResult(
+                [],
+                ["local history could not be read"]));
+        }
+
+        public Task<LegacySystemDataReadResult> ReadAllAsync(
+            string frontierId,
+            CancellationToken cancellationToken = default)
+        {
+            throw new IOException("local history unavailable");
+        }
+    }
+
+    private sealed class ThrowingEmptyStore : IBoxelEmptyStore
+    {
+        public Task<IReadOnlySet<string>> LoadGroupAsync(
+            BoxelAddress boxel,
+            CancellationToken cancellationToken = default)
+        {
+            throw new InvalidDataException("empty-boxel data is invalid");
+        }
+    }
+
+    private sealed class RecordingDiagnosticSink : IBoxelSearchDiagnosticSink
+    {
+        private readonly ConcurrentQueue<BoxelSearchDiagnostic> items = new();
+
+        public IReadOnlyList<BoxelSearchDiagnostic> Items => items.ToArray();
+
+        public void Report(BoxelSearchDiagnostic diagnostic)
+        {
+            items.Enqueue(diagnostic);
         }
     }
 

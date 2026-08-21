@@ -160,7 +160,10 @@ public abstract record BoxelSearchAction;
 public sealed record ActivateBoxelSearch(BoxelSearchActivationRequest Request)
     : BoxelSearchAction;
 
-public sealed record StopBoxelSearch : BoxelSearchAction;
+public sealed record StopBoxelSearch : BoxelSearchAction
+{
+    public static StopBoxelSearch Instance { get; } = new();
+}
 
 public sealed record SetBoxelAutoCopy(bool Enabled) : BoxelSearchAction;
 
@@ -529,6 +532,17 @@ public sealed record BoxelSearchSessionOptions
     public TimeSpan InitialRetryDelay { get; init; } = TimeSpan.FromSeconds(1);
 
     public TimeSpan MaximumRetryDelay { get; init; } = TimeSpan.FromSeconds(30);
+}
+
+public sealed record BoxelSearchSessionServices
+{
+    public IBoxelClipboard? Clipboard { get; init; }
+
+    public IBoxelSearchDiagnosticSink? Diagnostics { get; init; }
+
+    public TimeProvider? TimeProvider { get; init; }
+
+    public BoxelSearchSessionOptions? Options { get; init; }
 }
 
 public sealed class NullBoxelSearchDiagnosticSink : IBoxelSearchDiagnosticSink
