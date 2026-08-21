@@ -858,9 +858,19 @@ internal sealed partial class DesktopRuntime
     private Task DisposeDesktopInfrastructureAsync()
     {
         DisposeResource(ref overlayPresentationSession);
+        TryCleanup(ResetOverlayRegistryState);
         TryCleanup(releaseHistoryCleanupCancellation.Dispose);
         applicationLogService?.Append("Application exit");
         return Task.CompletedTask;
+    }
+
+    private static void ResetOverlayRegistryState()
+    {
+        OverlayWindowRegistry.Shared.SetGlobalSuppression(
+            manualSuppressed: false,
+            suitSuppressed: false,
+            sessionSuppressed: false);
+        OverlayWindowRegistry.Shared.SetPriorityFacts(default);
     }
 
     private void DisposeResource<T>(ref T? resource)

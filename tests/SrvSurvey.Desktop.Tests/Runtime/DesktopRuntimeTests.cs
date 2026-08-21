@@ -5,6 +5,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop.Tests.Runtime;
@@ -194,6 +195,10 @@ public sealed class DesktopRuntimeTests
                 applicationLog.Text,
                 StringComparison.Ordinal);
             Assert.Null(desktop.MainWindow);
+            Assert.Empty(OverlayWindowRegistry.Shared.Snapshot());
+            Assert.True(
+                OverlayWindowRegistry.Shared.ShouldPresent(
+                    "PlotBuildCommodities"));
         }
         finally
         {
