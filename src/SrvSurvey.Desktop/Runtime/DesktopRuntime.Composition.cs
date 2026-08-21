@@ -72,6 +72,9 @@ internal sealed partial class DesktopRuntime
     private Task? releaseHistoryCleanupTask;
     private GlobalInputSettingsViewModel? globalInputSettings;
     private IGameTextInputService? gameTextInputService;
+    private OverlayInteractionViewModel? pendingOverlayInteraction;
+    private IFirstFootfallInferenceService?
+        pendingFirstFootfallInferenceService;
     private readonly JournalMonitorSession journalMonitorSession = new();
     private bool manualOverlaySuppressed;
 
@@ -124,11 +127,12 @@ internal sealed partial class DesktopRuntime
         applicationLog.Append(
             $"Overlay presentation: {overlayPresentation.Decision.Mode}. "
             + overlayPresentation.Decision.Reason);
-        var overlayInteraction = new OverlayInteractionViewModel(
+        pendingOverlayInteraction = new OverlayInteractionViewModel(
             overlayPresentation.CreatePlatformService(),
             GameWindowTracker.CreateCurrent(),
             overlayLayoutStore,
             overlayLayout);
+        var overlayInteraction = pendingOverlayInteraction;
         gameTextInputService = GameTextInputService.CreateCurrent();
         var configuredJournalDirectory = StartupOptions.GetJournalDirectory(
             startup.Arguments);
@@ -150,8 +154,10 @@ internal sealed partial class DesktopRuntime
 
         var targetFrontierId =
             commanderPreferenceResolution.TargetFrontierId;
-        var firstFootfallInferenceService =
+        pendingFirstFootfallInferenceService =
             FirstFootfallInferenceService.CreateCurrent();
+        var firstFootfallInferenceService =
+            pendingFirstFootfallInferenceService;
         var canonnHumanSiteClient = new CanonnHumanSiteClient();
         mainViewModel = new MainWindowViewModel(
             configuredJournalDirectory,
@@ -176,6 +182,8 @@ internal sealed partial class DesktopRuntime
                 CanonnHumanSiteClient = canonnHumanSiteClient,
                 CanonnHumanSitePublisher = canonnHumanSiteClient,
             });
+        pendingOverlayInteraction = null;
+        pendingFirstFootfallInferenceService = null;
         var viewModel = mainViewModel;
         mainWindow = new MainWindow(viewModel);
         mainWindow.Opened += HandleMainWindowOpened;
@@ -184,7 +192,6 @@ internal sealed partial class DesktopRuntime
             StopJournalMonitorForProfileImportAsync;
         viewModel.BoxelClipboard.SetWriter(WriteClipboardAsync);
         desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-        desktop.MainWindow = mainWindow;
 
         viewModel.FrontierProfile.AuthorizationCallbackReceived +=
             HandleFrontierAuthorizationCallback;
@@ -376,6 +383,7 @@ internal sealed partial class DesktopRuntime
             appDataPaths,
             applicationLog,
             releaseHistoryCleanupCancellation.Token);
+        desktop.MainWindow = mainWindow;
     }
 
     private void HandleMainWindowOpened(object? sender, EventArgs eventArgs)
@@ -725,6 +733,8 @@ internal sealed partial class DesktopRuntime
                 HandleOverlayPriorityFactssChanged;
             viewModel.FrontierProfile.AuthorizationCallbackReceived -=
                 HandleFrontierAuthorizationCallback;
+            viewModel.ReferenceDataUpdates.SetRestartHandler(null);
+            viewModel.Localization.SetRestartHandler(null);
         }
 
         Dispatcher.UIThread.UnhandledException -= HandleUiException;
@@ -807,6 +817,9 @@ internal sealed partial class DesktopRuntime
         {
             await TryCleanupAsync(() => viewModel.DisposeAsync().AsTask());
         }
+
+        DisposeResource(ref pendingFirstFootfallInferenceService);
+        DisposeResource(ref pendingOverlayInteraction);
     }
 
     private Task DisposeDesktopInfrastructureAsync()

@@ -38,7 +38,7 @@ public sealed partial class MainWindow : Window
     {
     }
 
-    private MainWindow(
+    internal MainWindow(
         MainWindowViewModel viewModel,
         bool ownsApplicationLifetime)
     {

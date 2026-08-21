@@ -120,11 +120,21 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         DesktopShutdownReason reason,
         int exitCode = 0)
     {
+        TaskCompletionSource completion;
         lock (sync)
         {
-            shutdownTask ??= StopAsync(reason, exitCode);
-            return shutdownTask;
+            if (shutdownTask is not null)
+            {
+                return shutdownTask;
+            }
+
+            completion = new TaskCompletionSource(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            shutdownTask = completion.Task;
         }
+
+        _ = CompleteStopAsync(completion, reason, exitCode);
+        return completion.Task;
     }
 
     internal void AttachMainWindow(Window window)
@@ -176,6 +186,22 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         await TryRunAsync(phases.DisposeViewModelAsync);
         await TryRunAsync(phases.DisposeInfrastructureAsync);
         TryRun(() => lifetime.Shutdown(exitCode));
+    }
+
+    private async Task CompleteStopAsync(
+        TaskCompletionSource completion,
+        DesktopShutdownReason reason,
+        int exitCode)
+    {
+        try
+        {
+            await StopAsync(reason, exitCode);
+            completion.SetResult();
+        }
+        catch (Exception exception)
+        {
+            completion.SetException(exception);
+        }
     }
 
     private void HandleMainWindowClosing(

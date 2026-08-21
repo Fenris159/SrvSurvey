@@ -39,6 +39,32 @@ public sealed class DesktopRuntimeTests
     }
 
     [Fact]
+    public async Task ReentrantShutdownRequestJoinsTheStopAlreadyInProgress()
+    {
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+        Task? reentrantRequest = null;
+        phases.OnQuiesce = _ =>
+            reentrantRequest = runtime.RequestShutdownAsync(
+                DesktopShutdownReason.UpdateHandoff);
+
+        var first = runtime.RequestShutdownAsync(
+            DesktopShutdownReason.MainWindowClose);
+
+        Assert.Same(first, reentrantRequest);
+        phases.AllowProducerStop.SetResult();
+        await first;
+        Assert.Equal(1, events.Count(item => item.StartsWith(
+            "quiesce:",
+            StringComparison.Ordinal)));
+        Assert.Equal(1, events.Count(item => item == "shutdown:0"));
+    }
+
+    [Fact]
     public async Task FailureReportingCannotPreventRemainingShutdownPhases()
     {
         List<string> events = [];
@@ -77,26 +103,36 @@ public sealed class DesktopRuntimeTests
         var phases = new RecordingDesktopRuntimePhases(events);
         phases.AllowProducerStop.SetResult();
         var expected = new InvalidOperationException("Startup failed.");
+        var acquiredResource = new RecordingDisposable(
+            () => events.Add("dispose-startup-resource"));
+        phases.OnDisposeViewModel = acquiredResource.Dispose;
 
         await using var runtime = DesktopRuntime.StartForTests(
             lifetime,
             phases,
-            () => throw expected);
+            () =>
+            {
+                events.Add("acquire-startup-resource");
+                throw expected;
+            });
         await runtime.RequestShutdownAsync(
             DesktopShutdownReason.StartupFailure);
 
         Assert.Same(expected, phases.StartupFailure);
         Assert.Equal(
             [
+                "acquire-startup-resource",
                 "startup-failure:Startup failed.",
                 "quiesce:StartupFailure",
                 "stop-producers",
                 "dispose-dependents",
                 "dispose-view-model",
+                "dispose-startup-resource",
                 "dispose-infrastructure",
                 "shutdown:1",
             ],
             events);
+        Assert.True(acquiredResource.IsDisposed);
     }
 
     [AvaloniaFact]
@@ -147,6 +183,28 @@ public sealed class DesktopRuntimeTests
             DesktopShutdownReason.OperatingSystemShutdown);
     }
 
+    [Theory]
+    [InlineData((int)DesktopShutdownReason.JournalCommand)]
+    [InlineData((int)DesktopShutdownReason.RemoteInstanceRequest)]
+    [InlineData((int)DesktopShutdownReason.LinuxTermination)]
+    public async Task InternalExitReasonEntersTheSharedStopPipeline(
+        int reasonValue)
+    {
+        var reason = (DesktopShutdownReason)reasonValue;
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        phases.AllowProducerStop.SetResult();
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+
+        await runtime.RequestShutdownAsync(reason);
+
+        Assert.Equal($"quiesce:{reason}", events[0]);
+        Assert.Equal("shutdown:0", events[^1]);
+    }
+
     [AvaloniaFact]
     public async Task RestartLaunchFailureLeavesTheRuntimeRunning()
     {
@@ -193,6 +251,33 @@ public sealed class DesktopRuntimeTests
         await restarting;
     }
 
+    [AvaloniaFact]
+    public async Task UpdateHandoffHidesTheRetiringWindowBeforeSlowCleanup()
+    {
+        List<string> events = [];
+        var window = new Window();
+        var lifetime = new RecordingDesktopLifetime(events, window.Close);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+        runtime.AttachMainWindow(window);
+        window.Show();
+
+        var stopping = runtime.RequestShutdownAsync(
+            DesktopShutdownReason.UpdateHandoff);
+
+        Assert.False(window.IsVisible);
+        Assert.Equal(
+            [
+                "quiesce:UpdateHandoff",
+                "stop-producers",
+            ],
+            events);
+        phases.AllowProducerStop.SetResult();
+        await stopping;
+    }
+
     private sealed class RecordingDesktopRuntimePhases
         : IDesktopRuntimePhases
     {
@@ -212,9 +297,14 @@ public sealed class DesktopRuntimeTests
 
         public Exception? StartupFailure { get; private set; }
 
+        public Action<DesktopShutdownReason>? OnQuiesce { get; set; }
+
+        public Action? OnDisposeViewModel { get; set; }
+
         public void Quiesce(DesktopShutdownReason reason)
         {
             events.Add($"quiesce:{reason}");
+            OnQuiesce?.Invoke(reason);
         }
 
         public async Task StopProducersAsync()
@@ -236,6 +326,7 @@ public sealed class DesktopRuntimeTests
         public Task DisposeViewModelAsync()
         {
             events.Add("dispose-view-model");
+            OnDisposeViewModel?.Invoke();
             return Task.CompletedTask;
         }
 
@@ -280,6 +371,17 @@ public sealed class DesktopRuntimeTests
         {
             events.Add($"shutdown:{exitCode}");
             shutdown?.Invoke();
+        }
+    }
+
+    private sealed class RecordingDisposable(Action dispose) : IDisposable
+    {
+        public bool IsDisposed { get; private set; }
+
+        public void Dispose()
+        {
+            IsDisposed = true;
+            dispose();
         }
     }
 }
