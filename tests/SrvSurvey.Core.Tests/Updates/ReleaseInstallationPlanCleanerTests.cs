@@ -17,7 +17,9 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
         var recentPlan = CreatePlan(Guid.NewGuid(), Now.AddHours(-4));
         var planRoot = Path.GetDirectoryName(oldPlan)!;
         var unrelated = Path.Combine(planRoot, "notes");
+        var emptyRequest = Path.Combine(planRoot, Guid.Empty.ToString("N"));
         var nestedPlan = Path.Combine(unrelated, Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(emptyRequest);
         Directory.CreateDirectory(nestedPlan);
         Directory.SetLastWriteTimeUtc(
             unrelated,
@@ -32,7 +34,19 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
         Assert.False(Directory.Exists(oldPlan));
         Assert.True(Directory.Exists(recentPlan));
         Assert.True(Directory.Exists(unrelated));
+        Assert.True(Directory.Exists(emptyRequest));
         Assert.True(Directory.Exists(nestedPlan));
+    }
+
+    [Fact]
+    public void CleanReturnsAnEmptyResultWhenThePlanRootDoesNotExist()
+    {
+        var result = new ReleaseInstallationPlanCleaner(
+            new FixedTimeProvider(Now)).Clean(root);
+
+        Assert.Equal(0, result.DeletedPlans);
+        Assert.Equal(0, result.RetainedPlans);
+        Assert.Empty(result.Failures);
     }
 
     [Fact]

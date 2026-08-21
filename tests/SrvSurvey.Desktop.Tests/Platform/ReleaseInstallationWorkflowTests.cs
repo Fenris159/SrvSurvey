@@ -176,6 +176,29 @@ public sealed class ReleaseInstallationWorkflowTests
     }
 
     [Fact]
+    public async Task ProgrammingAndCleanupFailuresEscapeTogetherAndBlockRetry()
+    {
+        var programmingFailure = new ArgumentException("invalid adapter state");
+        var cleanupFailure = new IOException("candidate is locked");
+        var fixture = new WorkflowFixture
+        {
+            ScanFailureCall = 2,
+            ScanFailure = programmingFailure,
+            AbortFailure = cleanupFailure,
+        };
+        var workflow = fixture.CreateWorkflow();
+
+        var exception = await Assert.ThrowsAsync<AggregateException>(() =>
+            workflow.ExecuteAsync(fixture.Request));
+        var retry = await workflow.ExecuteAsync(fixture.Request);
+
+        Assert.Contains(programmingFailure, exception.InnerExceptions);
+        Assert.Contains(cleanupFailure, exception.InnerExceptions);
+        Assert.Equal(ReleaseInstallationWorkflowStatus.Rejected, retry.Status);
+        Assert.Equal(ReleaseInstallationRejectionReason.Busy, retry.RejectionReason);
+    }
+
+    [Fact]
     public async Task HelperAbortAfterTransferredOwnershipAllowsRetryAfterCleanup()
     {
         var fixture = new WorkflowFixture
@@ -226,6 +249,68 @@ public sealed class ReleaseInstallationWorkflowTests
         Assert.Equal(ReleaseInstallationCleanupStatus.Transferred, first.CleanupStatus);
         Assert.Equal(ReleaseInstallationWorkflowStatus.Rejected, second.Status);
         Assert.Equal(ReleaseInstallationRejectionReason.Busy, second.RejectionReason);
+        Assert.DoesNotContain("abort", fixture.Calls);
+    }
+
+    [Fact]
+    public async Task CompletedOutcomeWhileParentIsActiveBlocksRetry()
+    {
+        var fixture = new WorkflowFixture
+        {
+            CurrentProcessRunning = true,
+        };
+        fixture.Outcome = fixture.CreateOutcome(
+            ReleaseInstallationOutcomeStatus.Installed);
+        var workflow = fixture.CreateWorkflow();
+
+        var first = await workflow.ExecuteAsync(fixture.Request);
+        var second = await workflow.ExecuteAsync(fixture.Request);
+
+        Assert.Equal(
+            ReleaseInstallationWorkflowStatus.OwnershipUnresolved,
+            first.Status);
+        Assert.Contains("parent remained active", first.Error?.Message);
+        Assert.Equal(ReleaseInstallationWorkflowStatus.Rejected, second.Status);
+        Assert.Equal(ReleaseInstallationRejectionReason.Busy, second.RejectionReason);
+    }
+
+    [Fact]
+    public async Task HelperAbortWithCandidateStillPresentBlocksRetry()
+    {
+        var fixture = new WorkflowFixture
+        {
+            CurrentProcessRunning = true,
+            CandidateExists = true,
+        };
+        fixture.Outcome = fixture.CreateOutcome(
+            ReleaseInstallationOutcomeStatus.Aborted,
+            "parent remained active");
+        var workflow = fixture.CreateWorkflow();
+
+        var first = await workflow.ExecuteAsync(fixture.Request);
+        var second = await workflow.ExecuteAsync(fixture.Request);
+
+        Assert.Equal(ReleaseInstallationWorkflowStatus.CleanupFailed, first.Status);
+        Assert.Contains("still exists", first.CleanupError?.Message);
+        Assert.Equal(ReleaseInstallationWorkflowStatus.Rejected, second.Status);
+        Assert.Equal(ReleaseInstallationRejectionReason.Busy, second.RejectionReason);
+    }
+
+    [Fact]
+    public async Task ShutdownFailureAfterHandoffPreservesTransferredOwnership()
+    {
+        var fixture = new WorkflowFixture
+        {
+            ShutdownFailure = new IOException("shutdown request failed"),
+        };
+
+        var result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
+
+        Assert.Equal(
+            ReleaseInstallationWorkflowStatus.HandoffStarted,
+            result.Status);
+        Assert.Equal(ReleaseInstallationCleanupStatus.Transferred, result.CleanupStatus);
+        Assert.Same(fixture.ShutdownFailure, result.Error);
         Assert.DoesNotContain("abort", fixture.Calls);
     }
 
@@ -290,6 +375,115 @@ public sealed class ReleaseInstallationWorkflowTests
             ReleaseInstallationRejectionReason.Unsupported,
             result.RejectionReason);
         Assert.Empty(fixture.Calls);
+    }
+
+    [Fact]
+    public void DetectedCapabilityDistinguishesSupportedAndReadOnlyInstallations()
+    {
+        var fixture = new WorkflowFixture();
+        var installationDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-workflow-capability-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(installationDirectory);
+        try
+        {
+            var manifestPath = Path.Combine(
+                installationDirectory,
+                "release-package.json");
+            File.WriteAllText(manifestPath, "{}");
+
+            var packaged = fixture.CreateWorkflowWithDetectedCapability(
+                installationDirectory,
+                isAppImage: false);
+            File.Delete(manifestPath);
+            var unpackaged = fixture.CreateWorkflowWithDetectedCapability(
+                installationDirectory,
+                isAppImage: false);
+            var appImage = fixture.CreateWorkflowWithDetectedCapability(
+                installationDirectory,
+                isAppImage: true);
+
+            Assert.Equal(
+                ReleaseInstallationCapabilityStatus.Supported,
+                packaged.Capability.Status);
+            Assert.Equal(
+                ReleaseInstallationCapabilityStatus.Unpackaged,
+                unpackaged.Capability.Status);
+            Assert.Equal(
+                ReleaseInstallationCapabilityStatus.ReadOnlyAppImage,
+                appImage.Capability.Status);
+        }
+        finally
+        {
+            Directory.Delete(installationDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task OutcomeMonitorReadsACompletedHelperOutcome()
+    {
+        var fixture = new WorkflowFixture();
+        var planDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-workflow-outcome-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(planDirectory);
+        try
+        {
+            var plan = fixture.Plan with
+            {
+                OutcomePath = Path.Combine(planDirectory, "outcome.json"),
+            };
+            var expected = new ReleaseInstallationOutcome(
+                ReleaseInstallationOutcomeStatus.Aborted,
+                plan.Preparation.RequestId,
+                plan.Preparation.Version,
+                DateTimeOffset.UtcNow,
+                null,
+                null,
+                "parent remained active");
+            var store = new ReleaseInstallationPlanStore();
+            await store.WriteOutcomeAsync(plan, expected);
+            var monitor = new ReleaseInstallationOutcomeMonitor(
+                store,
+                pollInterval: TimeSpan.Zero,
+                timeout: TimeSpan.FromSeconds(1));
+
+            var actual = await monitor.WaitForOutcomeAsync(plan);
+
+            Assert.Equal(expected.Status, actual?.Status);
+            Assert.Equal(expected.RequestId, actual?.RequestId);
+            Assert.Equal(expected.Error, actual?.Error);
+        }
+        finally
+        {
+            Directory.Delete(planDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task OutcomeMonitorReportsTimeoutAndHonorsCancellation()
+    {
+        var fixture = new WorkflowFixture();
+        string? message = null;
+        var timedOutMonitor = new ReleaseInstallationOutcomeMonitor(
+            pollInterval: TimeSpan.Zero,
+            timeout: TimeSpan.Zero,
+            log: value => message = value);
+
+        var outcome = await timedOutMonitor.WaitForOutcomeAsync(fixture.Plan);
+
+        Assert.Null(outcome);
+        Assert.Contains(fixture.Preparation.RequestId.ToString("N"), message);
+
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+        var cancellableMonitor = new ReleaseInstallationOutcomeMonitor(
+            pollInterval: TimeSpan.Zero,
+            timeout: TimeSpan.FromMinutes(1));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            cancellableMonitor.WaitForOutcomeAsync(
+                fixture.Plan,
+                cancellation.Token));
     }
 
     private sealed class RecordingProgress
@@ -364,6 +558,8 @@ public sealed class ReleaseInstallationWorkflowTests
 
         public Exception? CurrentProcessProbeFailure { get; init; }
 
+        public Exception? ShutdownFailure { get; init; }
+
         public bool CandidateExists { get; init; }
 
         public ReleaseInstallationOutcome? Outcome { get; set; }
@@ -376,6 +572,20 @@ public sealed class ReleaseInstallationWorkflowTests
         public ReleaseInstallationPreparation Preparation { get; }
 
         public ReleaseInstallationHandoffPlan Plan { get; }
+
+        public ReleaseInstallationOutcome CreateOutcome(
+            ReleaseInstallationOutcomeStatus status,
+            string? error = null)
+        {
+            return new ReleaseInstallationOutcome(
+                status,
+                Preparation.RequestId,
+                Preparation.Version,
+                DateTimeOffset.UtcNow,
+                null,
+                null,
+                error);
+        }
 
         public ReleaseInstallationRequest Request { get; } = new(
             new Version(2, 1, 3, 1),
@@ -390,19 +600,8 @@ public sealed class ReleaseInstallationWorkflowTests
         public ReleaseInstallationWorkflow CreateWorkflow()
         {
             return new ReleaseInstallationWorkflow(
-                new ReleaseInstallationWorkflowAdapters(
-                    new Downloader(this),
-                    new Stager(this),
-                    new Preparer(this),
-                    new Handoff(this),
-                    new InstanceManager(this),
-                    ConfirmAsync),
-                new ReleaseInstallationWorkflowContext(
-                    "C:\\data",
-                    "C:\\SrvSurvey",
-                    Preparation.StartupArguments,
-                    ShutdownAsync,
-                    IsAppImage: false),
+                CreateAdapters(),
+                CreateContext("C:\\SrvSurvey", isAppImage: false),
                 new ReleaseInstallationWorkflowSeams(
                     new OutcomeMonitor(this),
                     () => CurrentProcessProbeFailure is null
@@ -410,6 +609,38 @@ public sealed class ReleaseInstallationWorkflowTests
                         : throw CurrentProcessProbeFailure,
                     _ => CandidateExists,
                     Capability));
+        }
+
+        public ReleaseInstallationWorkflow CreateWorkflowWithDetectedCapability(
+            string installationDirectory,
+            bool isAppImage)
+        {
+            return new ReleaseInstallationWorkflow(
+                CreateAdapters(),
+                CreateContext(installationDirectory, isAppImage));
+        }
+
+        private ReleaseInstallationWorkflowAdapters CreateAdapters()
+        {
+            return new ReleaseInstallationWorkflowAdapters(
+                new Downloader(this),
+                new Stager(this),
+                new Preparer(this),
+                new Handoff(this),
+                new InstanceManager(this),
+                ConfirmAsync);
+        }
+
+        private ReleaseInstallationWorkflowContext CreateContext(
+            string installationDirectory,
+            bool isAppImage)
+        {
+            return new ReleaseInstallationWorkflowContext(
+                "C:\\data",
+                installationDirectory,
+                Preparation.StartupArguments,
+                ShutdownAsync,
+                isAppImage);
         }
 
         private Task<bool> ConfirmAsync(
@@ -425,7 +656,9 @@ public sealed class ReleaseInstallationWorkflowTests
         private Task ShutdownAsync(CancellationToken cancellationToken)
         {
             Calls.Add("shutdown");
-            return Task.CompletedTask;
+            return ShutdownFailure is null
+                ? Task.CompletedTask
+                : Task.FromException(ShutdownFailure);
         }
 
         private sealed class InstanceManager(WorkflowFixture owner)

@@ -419,6 +419,14 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
                 progress);
             ApplyInstallationResult(result);
         }
+        catch (Exception exception) when (IsExpectedFailure(exception))
+        {
+            IsInstalling = false;
+            InstallProgressText = "Update preparation stopped safely.";
+            StatusMessage = "The update workflow could not complete: "
+                + exception.Message
+                + " Review Update Diagnostics before retrying.";
+        }
         finally
         {
             progress.Close();
@@ -688,6 +696,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
     {
         return exception is HttpRequestException
             or IOException
+            or UnauthorizedAccessException
             or Win32Exception
             or InvalidDataException
             or JsonException

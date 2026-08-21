@@ -185,6 +185,9 @@ internal sealed record ReleaseInstallationWorkflowSeams(
 
 internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
 {
+    private const string MissingTransferredPlanMessage =
+        "Transferred update ownership has no installation plan.";
+
     private readonly IReleasePackageDownloadService downloadService;
     private readonly IReleasePackageStagingService stagingService;
     private readonly IReleaseInstallationPreparer installationPreparer;
@@ -225,34 +228,22 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         ArgumentNullException.ThrowIfNull(adapters);
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(seams);
-        downloadService = adapters.DownloadService
-            ?? throw new ArgumentNullException(nameof(adapters.DownloadService));
-        stagingService = adapters.StagingService
-            ?? throw new ArgumentNullException(nameof(adapters.StagingService));
-        installationPreparer = adapters.InstallationPreparer
-            ?? throw new ArgumentNullException(nameof(adapters.InstallationPreparer));
-        handoff = adapters.Handoff
-            ?? throw new ArgumentNullException(nameof(adapters.Handoff));
-        instanceManager = adapters.InstanceManager
-            ?? throw new ArgumentNullException(nameof(adapters.InstanceManager));
-        confirmInstances = adapters.ConfirmInstances
-            ?? throw new ArgumentNullException(nameof(adapters.ConfirmInstances));
-        requestShutdown = context.RequestShutdown
-            ?? throw new ArgumentNullException(nameof(context.RequestShutdown));
-        outcomeMonitor = seams.OutcomeMonitor
-            ?? throw new ArgumentNullException(nameof(seams.OutcomeMonitor));
-        isCurrentProcessRunning = seams.IsCurrentProcessRunning
-            ?? throw new ArgumentNullException(nameof(seams.IsCurrentProcessRunning));
-        pathExists = seams.PathExists
-            ?? throw new ArgumentNullException(nameof(seams.PathExists));
-        Capability = seams.Capability
-            ?? throw new ArgumentNullException(nameof(seams.Capability));
+        downloadService = adapters.DownloadService;
+        stagingService = adapters.StagingService;
+        installationPreparer = adapters.InstallationPreparer;
+        handoff = adapters.Handoff;
+        instanceManager = adapters.InstanceManager;
+        confirmInstances = adapters.ConfirmInstances;
+        requestShutdown = context.RequestShutdown;
+        outcomeMonitor = seams.OutcomeMonitor;
+        isCurrentProcessRunning = seams.IsCurrentProcessRunning;
+        pathExists = seams.PathExists;
+        Capability = seams.Capability;
         ArgumentException.ThrowIfNullOrWhiteSpace(context.DataDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(context.InstallationDirectory);
         dataDirectory = Path.GetFullPath(context.DataDirectory);
         installationDirectory = Path.GetFullPath(context.InstallationDirectory);
-        startupArguments = context.StartupArguments?.ToArray()
-            ?? throw new ArgumentNullException(nameof(context.StartupArguments));
+        startupArguments = context.StartupArguments.ToArray();
     }
 
     public ReleaseInstallationCapability Capability { get; }
@@ -319,7 +310,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
                 state.Stage,
                 exception,
                 state.Plan ?? throw new UnreachableException(
-                    "Transferred update ownership has no installation plan."));
+                    MissingTransferredPlanMessage));
         }
         catch when (state.OwnershipTransferred)
         {
@@ -506,7 +497,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         {
             var outcome = await outcomeMonitor.WaitForOutcomeAsync(
                     state.Plan ?? throw new UnreachableException(
-                        "Transferred update ownership has no installation plan."),
+                        MissingTransferredPlanMessage),
                     CancellationToken.None)
                 .ConfigureAwait(false);
             return InterpretTransferredOutcome(
@@ -522,7 +513,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
                 state.Stage,
                 exception,
                 state.Plan ?? throw new UnreachableException(
-                    "Transferred update ownership has no installation plan."));
+                    MissingTransferredPlanMessage));
         }
     }
 
@@ -533,7 +524,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         Exception? handoffError)
     {
         var plan = state.Plan ?? throw new UnreachableException(
-            "Transferred update ownership has no installation plan.");
+            MissingTransferredPlanMessage);
         if (outcome is null)
         {
             retryBlocked = true;
@@ -711,6 +702,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
     {
         return exception is HttpRequestException
             or IOException
+            or UnauthorizedAccessException
             or Win32Exception
             or InvalidDataException
             or JsonException

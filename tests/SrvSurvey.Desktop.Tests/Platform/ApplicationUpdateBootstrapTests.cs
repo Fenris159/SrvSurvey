@@ -191,11 +191,14 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
             });
         var preparation = CreatePlan().Preparation;
 
-        var plan = await service.StartHelperAsync(
+        IApplicationUpdateHandoff handoff = service;
+        var result = await handoff.StartHelperAttemptAsync(
             temporaryDirectory,
             preparation,
             stagedEntryPoint);
+        var plan = Assert.IsType<ReleaseInstallationHandoffPlan>(result.Plan);
 
+        Assert.Equal(ApplicationUpdateHandoffStatus.Started, result.Status);
         Assert.True(File.Exists(plan.PlanPath));
         Assert.NotNull(captured);
         Assert.Equal(Path.GetFullPath(stagedEntryPoint), captured.FileName);
@@ -240,11 +243,14 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
             RequiresElevation = true,
         };
 
-        var plan = await service.StartHelperAsync(
+        IApplicationUpdateHandoff handoff = service;
+        var result = await handoff.StartHelperAttemptAsync(
             temporaryDirectory,
             preparation,
             stagedEntryPoint);
+        var plan = Assert.IsType<ReleaseInstallationHandoffPlan>(result.Plan);
 
+        Assert.Equal(ApplicationUpdateHandoffStatus.Started, result.Status);
         Assert.NotNull(captured);
         Assert.Equal(OperatingSystem.IsWindows(), captured.UseShellExecute);
         Assert.True(await store.IsHelperReadyAsync(plan));
@@ -350,8 +356,8 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
         var exitCode = await ApplicationUpdateBootstrap.RunHelperAsync(
             temporaryDirectory,
             plan.PlanPath,
-            CancellationToken.None,
-            TimeSpan.Zero);
+            parentExitTimeout: TimeSpan.Zero,
+            cancellationToken: CancellationToken.None);
 
         Assert.Equal(2, exitCode);
         Assert.False(Directory.Exists(preparation.CandidateDirectory));
@@ -396,32 +402,6 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
             Path.Combine(temporaryDirectory, "missing-plan.json"));
 
         Assert.Equal(2, exitCode);
-    }
-
-    [Fact]
-    public async Task ElevatedHandoffRejectsAHelperThatExitsBeforeValidation()
-    {
-        var stagedEntryPoint = Path.Combine(
-            temporaryDirectory,
-            "staged-exited",
-            "SrvSurvey.Desktop.exe");
-        Directory.CreateDirectory(Path.GetDirectoryName(stagedEntryPoint)!);
-        await File.WriteAllTextAsync(stagedEntryPoint, "helper");
-        var service = new ApplicationUpdateHandoffService(
-            new ReleaseInstallationPlanStore(),
-            _ => StartExitedProcess());
-        var preparation = CreatePlan().Preparation with
-        {
-            RequiresElevation = true,
-        };
-
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            service.StartHelperAsync(
-                temporaryDirectory,
-                preparation,
-                stagedEntryPoint));
-
-        Assert.Contains("exited before validating", exception.Message);
     }
 
     [Fact]

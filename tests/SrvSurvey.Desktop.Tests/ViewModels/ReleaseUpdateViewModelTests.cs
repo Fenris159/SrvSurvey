@@ -310,6 +310,72 @@ public sealed class ReleaseUpdateViewModelTests
     }
 
     [Fact]
+    public async Task WorkflowExceptionRestoresControlsWithGuardedStatus()
+    {
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            exception: new IOException("workflow adapter failed"));
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
+
+        await viewModel.InstallAsync();
+
+        Assert.False(viewModel.IsInstalling);
+        Assert.True(viewModel.InstallCommand.CanExecute(null));
+        Assert.Contains("workflow adapter failed", viewModel.StatusMessage);
+        Assert.Contains("Update Diagnostics", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task CancelledWorkflowRestoresControls()
+    {
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            new ReleaseInstallationWorkflowResult(
+                ReleaseInstallationWorkflowStatus.Cancelled,
+                ReleaseInstallationWorkflowStage.Downloading,
+                ReleaseInstallationCleanupStatus.Succeeded));
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
+
+        await viewModel.InstallAsync();
+
+        Assert.False(viewModel.IsInstalling);
+        Assert.Equal("Update preparation stopped safely.", viewModel.InstallProgressText);
+        Assert.Contains("was canceled", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task UnknownWorkflowResultRestoresControlsWithDiagnosticStatus()
+    {
+        var workflow = new StubWorkflow(
+            ReleaseInstallationCapabilityStatus.Supported,
+            new ReleaseInstallationWorkflowResult(
+                (ReleaseInstallationWorkflowStatus)(-1),
+                ReleaseInstallationWorkflowStage.None,
+                ReleaseInstallationCleanupStatus.NotRequired));
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0));
+        viewModel.ConfigureInstallationWorkflow(workflow);
+        await viewModel.CheckAsync();
+        viewModel.InstallConfirmed = true;
+
+        await viewModel.InstallAsync();
+
+        Assert.False(viewModel.IsInstalling);
+        Assert.Contains("Unsupported installation result", viewModel.StatusMessage);
+    }
+
+    [Fact]
     public async Task OpenReleaseUsesConfiguredPlatformLauncher()
     {
         var viewModel = new ReleaseUpdateViewModel(
@@ -524,12 +590,14 @@ public sealed class ReleaseUpdateViewModelTests
         private readonly ReleaseInstallationWorkflowResult result;
         private readonly IReadOnlyList<ReleaseInstallationWorkflowProgress> progress;
         private readonly Action<int>? afterProgress;
+        private readonly Exception? exception;
 
         public StubWorkflow(
             ReleaseInstallationCapabilityStatus capabilityStatus,
             ReleaseInstallationWorkflowResult? result = null,
             IReadOnlyList<ReleaseInstallationWorkflowProgress>? progress = null,
-            Action<int>? afterProgress = null)
+            Action<int>? afterProgress = null,
+            Exception? exception = null)
         {
             Capability = new ReleaseInstallationCapability(capabilityStatus);
             this.result = result ?? new ReleaseInstallationWorkflowResult(
@@ -539,6 +607,7 @@ public sealed class ReleaseUpdateViewModelTests
                 ReleaseInstallationRejectionReason.Unsupported);
             this.progress = progress ?? [];
             this.afterProgress = afterProgress;
+            this.exception = exception;
         }
 
         public ReleaseInstallationCapability Capability { get; }
@@ -556,6 +625,12 @@ public sealed class ReleaseUpdateViewModelTests
             {
                 progress?.Report(this.progress[index]);
                 afterProgress?.Invoke(index);
+            }
+
+            if (exception is not null)
+            {
+                return Task.FromException<ReleaseInstallationWorkflowResult>(
+                    exception);
             }
 
             return Task.FromResult(result);

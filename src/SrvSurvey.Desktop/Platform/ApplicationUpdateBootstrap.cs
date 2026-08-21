@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.ExceptionServices;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Updates;
 
@@ -38,30 +37,6 @@ internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandof
     {
         this.planStore = planStore;
         this.startProcess = startProcess;
-    }
-
-    internal async Task<ReleaseInstallationHandoffPlan> StartHelperAsync(
-        string dataDirectory,
-        ReleaseInstallationPreparation preparation,
-        string stagedEntryPoint,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await StartHelperAttemptAsync(
-                dataDirectory,
-                preparation,
-                stagedEntryPoint,
-                cancellationToken)
-            .ConfigureAwait(false);
-        if (result.Status == ApplicationUpdateHandoffStatus.Started
-            && result.Plan is not null)
-        {
-            return result.Plan;
-        }
-
-        ExceptionDispatchInfo.Capture(result.Error
-            ?? new InvalidOperationException(
-                "The SrvSurvey update helper did not start.")).Throw();
-        throw new UnreachableException();
     }
 
     Task<ApplicationUpdateHandoffResult>
@@ -455,14 +430,14 @@ internal static class ApplicationUpdateBootstrap
         return RunHelperAsync(
             paths.DataDirectory,
             planPath,
-            cancellationToken);
+            cancellationToken: cancellationToken);
     }
 
     internal static async Task<int> RunHelperAsync(
         string dataDirectory,
         string planPath,
-        CancellationToken cancellationToken = default,
-        TimeSpan? parentExitTimeout = null)
+        TimeSpan? parentExitTimeout = null,
+        CancellationToken cancellationToken = default)
     {
         if (parentExitTimeout is { } configuredTimeout)
         {
