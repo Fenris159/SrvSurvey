@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Updates;
 
@@ -19,7 +20,7 @@ internal sealed record ApplicationUpdateStartup(
     IReadOnlyList<string> ApplicationArguments);
 
 public sealed class ApplicationUpdateHandoffService
-    : IApplicationUpdateHandoffService
+    : IApplicationUpdateHandoffService, IApplicationUpdateHandoff
 {
     private static readonly TimeSpan HelperReadyTimeout = TimeSpan.FromSeconds(30);
     private readonly ReleaseInstallationPlanStore planStore;
@@ -46,37 +47,107 @@ public sealed class ApplicationUpdateHandoffService
         string stagedEntryPoint,
         CancellationToken cancellationToken = default)
     {
+        var result = await StartHelperAttemptAsync(
+                dataDirectory,
+                preparation,
+                stagedEntryPoint,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (result.Status == ApplicationUpdateHandoffStatus.Started
+            && result.Plan is not null)
+        {
+            return result.Plan;
+        }
+
+        ExceptionDispatchInfo.Capture(result.Error
+            ?? new InvalidOperationException(
+                "The SrvSurvey update helper did not start.")).Throw();
+        throw new UnreachableException();
+    }
+
+    Task<ApplicationUpdateHandoffResult>
+        IApplicationUpdateHandoff.StartHelperAttemptAsync(
+            string dataDirectory,
+            ReleaseInstallationPreparation preparation,
+            string stagedEntryPoint,
+            CancellationToken cancellationToken)
+    {
+        return StartHelperAttemptAsync(
+            dataDirectory,
+            preparation,
+            stagedEntryPoint,
+            cancellationToken);
+    }
+
+    private async Task<ApplicationUpdateHandoffResult> StartHelperAttemptAsync(
+        string dataDirectory,
+        ReleaseInstallationPreparation preparation,
+        string stagedEntryPoint,
+        CancellationToken cancellationToken = default)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(stagedEntryPoint);
         var helperPath = Path.GetFullPath(stagedEntryPoint);
         if (!File.Exists(helperPath))
         {
-            throw new FileNotFoundException(
-                "The staged update helper entry point was not found.",
-                helperPath);
+            return new ApplicationUpdateHandoffResult(
+                ApplicationUpdateHandoffStatus.NotStarted,
+                null,
+                new FileNotFoundException(
+                    "The staged update helper entry point was not found.",
+                    helperPath));
         }
 
-        using var currentProcess = Process.GetCurrentProcess();
-        var plan = await planStore.CreateAsync(
-                dataDirectory,
-                preparation,
-                currentProcess.Id,
-                currentProcess.StartTime.ToUniversalTime(),
-                cancellationToken)
-            .ConfigureAwait(false);
-        var startInfo = CreateHelperStartInfo(
-            helperPath,
-            plan.PlanPath,
-            preparation.RequiresElevation);
-        using var helper = startProcess(startInfo)
-            ?? throw new InvalidOperationException(
-                "The staged SrvSurvey update helper did not start.");
-        if (preparation.RequiresElevation)
+        ReleaseInstallationHandoffPlan? plan = null;
+        Process? helper = null;
+        var helperStarted = false;
+        try
         {
-            await WaitForHelperReadyAsync(plan, helper, cancellationToken)
+            using var currentProcess = Process.GetCurrentProcess();
+            plan = await planStore.CreateAsync(
+                    dataDirectory,
+                    preparation,
+                    currentProcess.Id,
+                    currentProcess.StartTime.ToUniversalTime(),
+                    cancellationToken)
                 .ConfigureAwait(false);
-        }
+            var startInfo = CreateHelperStartInfo(
+                helperPath,
+                plan.PlanPath,
+                preparation.RequiresElevation);
+            helper = startProcess(startInfo);
+            if (helper is null)
+            {
+                return new ApplicationUpdateHandoffResult(
+                    ApplicationUpdateHandoffStatus.NotStarted,
+                    plan,
+                    new InvalidOperationException(
+                        "The staged SrvSurvey update helper did not start."));
+            }
 
-        return plan;
+            helperStarted = true;
+            if (preparation.RequiresElevation)
+            {
+                await WaitForHelperReadyAsync(plan, helper, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            return new ApplicationUpdateHandoffResult(
+                ApplicationUpdateHandoffStatus.Started,
+                plan);
+        }
+        catch (Exception exception) when (IsHandoffFailure(exception))
+        {
+            return new ApplicationUpdateHandoffResult(
+                helperStarted
+                    ? ApplicationUpdateHandoffStatus.StartedReadinessUnconfirmed
+                    : ApplicationUpdateHandoffStatus.NotStarted,
+                plan,
+                exception);
+        }
+        finally
+        {
+            helper?.Dispose();
+        }
     }
 
     internal static ProcessStartInfo CreateHelperStartInfo(
@@ -136,6 +207,17 @@ public sealed class ApplicationUpdateHandoffService
             throw new InvalidOperationException(
                 "The elevated update helper did not become ready in time.");
         }
+    }
+
+    private static bool IsHandoffFailure(Exception exception)
+    {
+        return exception is IOException
+            or UnauthorizedAccessException
+            or InvalidDataException
+            or InvalidOperationException
+            or Win32Exception
+            or OperationCanceledException
+            or PlatformNotSupportedException;
     }
 }
 

@@ -394,6 +394,36 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
         Assert.Contains("exited before validating", exception.Message);
     }
 
+    [Fact]
+    public async Task TypedHandoffPreservesOwnershipWhenStartedHelperIsUnconfirmed()
+    {
+        var stagedEntryPoint = Path.Combine(
+            temporaryDirectory,
+            "staged-unconfirmed",
+            "SrvSurvey.Desktop.exe");
+        Directory.CreateDirectory(Path.GetDirectoryName(stagedEntryPoint)!);
+        await File.WriteAllTextAsync(stagedEntryPoint, "helper");
+        IApplicationUpdateHandoff handoff = new ApplicationUpdateHandoffService(
+            new ReleaseInstallationPlanStore(),
+            _ => StartExitedProcess());
+        var preparation = CreatePlan().Preparation with
+        {
+            RequiresElevation = true,
+        };
+
+        var result = await handoff.StartHelperAttemptAsync(
+            temporaryDirectory,
+            preparation,
+            stagedEntryPoint);
+
+        Assert.Equal(
+            ApplicationUpdateHandoffStatus.StartedReadinessUnconfirmed,
+            result.Status);
+        Assert.NotNull(result.Plan);
+        var error = Assert.IsType<InvalidOperationException>(result.Error);
+        Assert.Contains("exited before validating", error.Message);
+    }
+
     public void Dispose()
     {
         ApplicationUpdateBootstrap.SetPendingConfirmation(null);
