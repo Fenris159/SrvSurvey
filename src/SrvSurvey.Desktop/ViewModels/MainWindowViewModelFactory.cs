@@ -372,23 +372,24 @@ internal sealed class MainWindowViewModelConstructionRollback(
     }
 }
 
-internal sealed class MainWindowViewModelConstructionOwnership<T>(T? resource)
+internal sealed class MainWindowViewModelConstructionOwnership<T>(
+    T? initialResource)
     : IDisposable
     where T : class, IDisposable
 {
-    private T? ownedResource = resource;
+    private T? ownedResource = initialResource;
 
-    public void Own(T resource)
+    public void Own(T candidateResource)
     {
-        ArgumentNullException.ThrowIfNull(resource);
+        ArgumentNullException.ThrowIfNull(candidateResource);
         if (ownedResource is not null
-            && !ReferenceEquals(ownedResource, resource))
+            && !ReferenceEquals(ownedResource, candidateResource))
         {
             throw new InvalidOperationException(
                 "Construction ownership cannot replace an owned resource.");
         }
 
-        ownedResource = resource;
+        ownedResource = candidateResource;
     }
 
     public void Transfer()
@@ -398,8 +399,8 @@ internal sealed class MainWindowViewModelConstructionOwnership<T>(T? resource)
 
     public void Dispose()
     {
-        var resource = ownedResource;
+        var disposingResource = ownedResource;
         ownedResource = null;
-        resource?.Dispose();
+        disposingResource?.Dispose();
     }
 }
