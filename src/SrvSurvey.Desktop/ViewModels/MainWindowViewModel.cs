@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Windows.Input;
 using SrvSurvey.Core.Combat;
@@ -4488,39 +4489,84 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         }
 
         disposed = true;
-        routeAutoCopyCoordinator.Dispose();
-        await boxelSurveyStats.DisposeAsync();
-        BoxelSearch.CancelPendingOperations();
-        await boxelSearchSession.DisposeAsync();
-        JournalPostProcessor.Cancel();
-        CancelSystemBodyDataRequest();
-        await firstFootfallInferenceCancellation.CancelAsync();
-        firstFootfallInferenceService.Dispose();
-        firstFootfallInferenceCancellation.Dispose();
-        Colonization.Dispose();
-        GalaxyMap.Dispose();
-        Guardian.Dispose();
-        QuestWorkspace.Dispose();
+        List<Exception> failures = [];
+
+        void TryDispose(Action cleanup)
+        {
+            try
+            {
+                cleanup();
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
+        }
+
+        async Task TryDisposeAsync(Func<ValueTask> cleanup)
+        {
+            try
+            {
+                await cleanup();
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
+        }
+
+        TryDispose(routeAutoCopyCoordinator.Dispose);
+        await TryDisposeAsync(boxelSurveyStats.DisposeAsync);
+        TryDispose(BoxelSearch.CancelPendingOperations);
+        await TryDisposeAsync(boxelSearchSession.DisposeAsync);
+        TryDispose(JournalPostProcessor.Cancel);
+        TryDispose(CancelSystemBodyDataRequest);
+        await TryDisposeAsync(() => new ValueTask(
+            firstFootfallInferenceCancellation.CancelAsync()));
+        TryDispose(firstFootfallInferenceService.Dispose);
+        TryDispose(firstFootfallInferenceCancellation.Dispose);
+        TryDispose(DiagnosticsLog.Dispose);
+        TryDispose(JumpInfo.Dispose);
+        TryDispose(BiologyPredictions.Dispose);
+        TryDispose(BiologyCodex.Dispose);
+        TryDispose(SurfaceSurvey.Dispose);
+        TryDispose(CodexBingo.Dispose);
+        TryDispose(StationInfo.Dispose);
+        TryDispose(Colonization.Dispose);
+        TryDispose(GalaxyMap.Dispose);
+        TryDispose(Guardian.Dispose);
+        TryDispose(QuestWorkspace.Dispose);
         Inara.UploadDisabled -= OnInaraUploadDisabled;
-        inaraPublisher.Dispose();
+        TryDispose(inaraPublisher.Dispose);
         CommanderInstances.PropertyChanged -= OnCommanderInstancesPropertyChanged;
-        CommanderInstances.Dispose();
+        TryDispose(CommanderInstances.Dispose);
         BiologyRewards.PropertyChanged -= OnBiologyRewardsChanged;
-        OverlayInteraction.Dispose();
-        FrontierProfile.Dispose();
-        visitedStarsHttpClient?.Dispose();
+        TryDispose(OverlayInteraction.Dispose);
+        TryDispose(FrontierProfile.Dispose);
+        TryDispose(() => visitedStarsHttpClient?.Dispose());
         NetworkPrivacy.EddnUploadEnabledChanged -= OnEddnUploadEnabledChanged;
         if (eddnPublisher is IDisposable disposableEddnPublisher)
         {
-            disposableEddnPublisher.Dispose();
+            TryDispose(disposableEddnPublisher.Dispose);
         }
         VoxStellar.UploadEnabledChanged -= OnVoxStellarUploadEnabledChanged;
         if (voxStellarPublisher is IDisposable disposableVoxStellarPublisher)
         {
-            disposableVoxStellarPublisher.Dispose();
+            TryDispose(disposableVoxStellarPublisher.Dispose);
         }
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
-        await questRuntimeCoordinator.DisposeAsync();
+        await TryDisposeAsync(questRuntimeCoordinator.DisposeAsync);
+        if (failures.Count == 1)
+        {
+            ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        }
+
+        if (failures.Count > 1)
+        {
+            throw new AggregateException(
+                "One or more main-window resources failed to dispose.",
+                failures);
+        }
     }
 
     private void OnEddnUploadEnabledChanged(bool enabled)
