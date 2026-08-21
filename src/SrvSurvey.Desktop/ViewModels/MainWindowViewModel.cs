@@ -4565,7 +4565,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         ThrowDisposalFailures(failures);
     }
 
-    private static void ThrowDisposalFailures(IReadOnlyList<Exception> failures)
+    private static void ThrowDisposalFailures(List<Exception> failures)
     {
         if (failures.Count == 0)
         {
