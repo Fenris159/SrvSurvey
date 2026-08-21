@@ -166,13 +166,11 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
                 []);
-            using var viewModel = new MainWindowViewModel(
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    TargetFrontierId = "F123",
-                });
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithTargetFrontierId("F123"));
 
             await viewModel.RefreshAsync();
             Assert.False(viewModel.OverlayBehavior.ShouldSuppressForSession);
@@ -238,11 +236,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []);
 
-            using var viewModel = new MainWindowViewModel(Path.Combine(root, "journals"),
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "journals"),
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             Assert.Contains(
                 "Imported regional Codex candidates: 1.",
@@ -288,11 +285,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
                 []);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
             long? selectedAtOpen = null;
             viewModel.BiologyCodex.SetWindowOpener(() =>
             {
@@ -351,14 +347,14 @@ public sealed class MainWindowViewModelTests
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Save(
                 new NetworkPrivacyPreferences(false, true, true));
             var client = new RecordingGreenGasGiantClient();
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    GreenGasGiantPublicationCoordinator = new GreenGasGiantPublicationCoordinator(
-                        GreenGasGiantCriteriaCatalog.LoadEmbedded(),
-                        client),
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithGreenGasGiantPublicationCoordinator(
+                        new GreenGasGiantPublicationCoordinator(
+                            GreenGasGiantCriteriaCatalog.LoadEmbedded(),
+                            client)));
 
             await viewModel.RefreshAsync();
 
@@ -411,12 +407,11 @@ public sealed class MainWindowViewModelTests
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Save(
                 new NetworkPrivacyPreferences(true, true, false));
             var publisher = new RecordingEddnPublisher();
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    EddnPublisher = publisher,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithEddnPublisher(publisher));
 
             await viewModel.RefreshAsync();
 
@@ -475,12 +470,11 @@ public sealed class MainWindowViewModelTests
             new VoxStellarSettingsStore(paths.UiSettingsPath).Save(
                 new VoxStellarPreferences(true));
             var publisher = new RecordingVoxStellarPublisher();
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    VoxStellarPublisher = publisher,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithVoxStellarPublisher(publisher));
 
             await viewModel.RefreshAsync();
 
@@ -553,13 +547,12 @@ public sealed class MainWindowViewModelTests
             {
                 AvailableWindowCount = 2,
             };
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    GameWindowSwitcher = gameWindows,
-                    InaraPublisher = publisher,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithGameWindowSwitcher(gameWindows)
+                    .WithInaraPublisher(publisher));
 
             await viewModel.RefreshAsync();
 
@@ -618,12 +611,11 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
                 []);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    InaraPublisher = new ThrowingInaraPublisher(),
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithInaraPublisher(new ThrowingInaraPublisher()));
 
             await viewModel.RefreshAsync();
 
@@ -656,12 +648,11 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []);
             var publisher = new RecordingInaraPublisher();
-            using var viewModel = new MainWindowViewModel(null,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    InaraPublisher = publisher,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                null,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithInaraPublisher(publisher));
 
             viewModel.Inara.UploadEnabled = true;
             Assert.Equal(0, publisher.CancellationCount);
@@ -702,16 +693,16 @@ public sealed class MainWindowViewModelTests
                 ShowMapNotes: false,
                 ShowMapLegend: false));
 
-            var viewModel = new MainWindowViewModel(Path.Combine(root, "missing-journals"),
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = new AppDataPaths(
-                    Path.Combine(root, "config"),
-                    Path.Combine(root, "data"),
-                    Path.Combine(root, "cache"),
-                    []),
-                    GuardianOverlaySettingsStore = settingsStore,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder
+                    .WithAppDataPaths(
+                        new AppDataPaths(
+                            Path.Combine(root, "config"),
+                            Path.Combine(root, "data"),
+                            Path.Combine(root, "cache"),
+                            []))
+                    .WithGuardianOverlaySettingsStore(settingsStore));
 
             Assert.False(viewModel.Guardian.EnableGuardianSites);
             Assert.False(viewModel.Guardian.AutoShowGuardianSummary);
@@ -748,16 +739,16 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "ui-settings.json"));
             settingsStore.Save(new StationInfoPreferences(AutoShow: false));
 
-            var viewModel = new MainWindowViewModel(Path.Combine(root, "missing-journals"),
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = new AppDataPaths(
-                    Path.Combine(root, "config"),
-                    Path.Combine(root, "data"),
-                    Path.Combine(root, "cache"),
-                    []),
-                    StationInfoSettingsStore = settingsStore,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder
+                    .WithAppDataPaths(
+                        new AppDataPaths(
+                            Path.Combine(root, "config"),
+                            Path.Combine(root, "data"),
+                            Path.Combine(root, "cache"),
+                            []))
+                    .WithStationInfoSettingsStore(settingsStore));
 
             Assert.False(viewModel.StationInfo.AutoShow);
             viewModel.StationInfo.Dispose();
@@ -788,16 +779,16 @@ public sealed class MainWindowViewModelTests
                 ShowMedkits = false,
             });
 
-            var viewModel = new MainWindowViewModel(Path.Combine(root, "missing-journals"),
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = new AppDataPaths(
-                    Path.Combine(root, "config"),
-                    Path.Combine(root, "data"),
-                    Path.Combine(root, "cache"),
-                    []),
-                    HumanSiteSettingsStore = settingsStore,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder
+                    .WithAppDataPaths(
+                        new AppDataPaths(
+                            Path.Combine(root, "config"),
+                            Path.Combine(root, "data"),
+                            Path.Combine(root, "cache"),
+                            []))
+                    .WithHumanSiteSettingsStore(settingsStore));
 
             Assert.False(viewModel.HumanSite.AutoShow);
             Assert.Equal(3, viewModel.HumanSite.FootZoom);
@@ -836,11 +827,10 @@ public sealed class MainWindowViewModelTests
                 data,
                 Path.Combine(root, "cache"),
                 [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]);
-            var viewModel = new MainWindowViewModel(Path.Combine(root, "missing-journals"),
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             Assert.Equal(source, viewModel.LegacyProfileSourcePath);
             await viewModel.ImportLegacyProfileAsync();
@@ -904,11 +894,10 @@ public sealed class MainWindowViewModelTests
                 [new LegacyProfileCandidate(
                     LegacyProfileLocationKind.Desktop,
                     source)]);
-            var viewModel = new MainWindowViewModel(Path.Combine(root, "missing-journals"),
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.ImportLegacyProfileAsync();
 
@@ -963,11 +952,10 @@ public sealed class MainWindowViewModelTests
             const string currentSettings =
                 "{\"Version\":1,\"Theme\":\"green-light\"}";
             await File.WriteAllTextAsync(paths.UiSettingsPath, currentSettings);
-            var viewModel = new MainWindowViewModel(Path.Combine(root, "missing-journals"),
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.ImportLegacyProfileAsync();
 
@@ -1011,11 +999,10 @@ public sealed class MainWindowViewModelTests
                 data,
                 Path.Combine(root, "cache"),
                 [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]);
-            var viewModel = new MainWindowViewModel(Path.Combine(root, "missing-journals"),
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder
+                    .WithAppDataPaths(paths));
             var monitorStopped = false;
             viewModel.ProfileImportPreparing += async () =>
             {
@@ -1064,11 +1051,10 @@ public sealed class MainWindowViewModelTests
                 [new LegacyProfileCandidate(
                     LegacyProfileLocationKind.Desktop,
                     source)]);
-            var viewModel = new MainWindowViewModel(Path.Combine(root, "missing-journals"),
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder
+                    .WithAppDataPaths(paths));
             var restartRequested = false;
             viewModel.ProfileImportCompleted += () =>
             {
@@ -1114,11 +1100,10 @@ public sealed class MainWindowViewModelTests
                 data,
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(Path.Combine(root, "missing-journals"),
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             Assert.Empty(viewModel.LegacyProfiles);
             Assert.False(viewModel.ImportLegacyProfileCommand.CanExecute(null));
@@ -1163,11 +1148,10 @@ public sealed class MainWindowViewModelTests
             new JournalSettingsStore(paths.UiSettingsPath).Save(
                 new JournalPreferences(journals));
 
-            var viewModel = new MainWindowViewModel(null,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                null,
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             Assert.Equal(journals, viewModel.JournalFolderPath);
             Assert.Equal(journals, viewModel.JournalSettings.DirectoryPath);
@@ -1203,11 +1187,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(root,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                root,
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -1267,12 +1250,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(
+            var viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -1310,12 +1291,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(
+            var viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
             await File.WriteAllTextAsync(
@@ -1359,12 +1338,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(
+            var viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
             viewModel.SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear = true;
@@ -1411,12 +1388,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(
+            var viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
             viewModel.SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear = true;
@@ -1471,12 +1446,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(
+            var viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
             Assert.Equal("Nomad", viewModel.VehicleState);
@@ -1555,11 +1528,10 @@ public sealed class MainWindowViewModelTests
                 profile,
                 Path.Combine(root, "cache"),
                 []);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -1634,12 +1606,11 @@ public sealed class MainWindowViewModelTests
                 profile,
                 Path.Combine(root, "cache"),
                 []);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    SystemBodyDataClient = external,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithSystemBodyDataClient(external));
 
             viewModel.SystemSurvey.UseExternalData = false;
             await viewModel.RefreshAsync();
@@ -1716,13 +1687,12 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
                 []);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    SystemBodyDataClient = external,
-                    SystemBodyDataRetryDelay = TimeSpan.Zero,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithSystemBodyDataClient(external)
+                    .WithSystemBodyDataRetryDelay(TimeSpan.Zero));
 
             await viewModel.RefreshAsync();
             await viewModel.PendingSystemBodyDataLoad;
@@ -1767,12 +1737,11 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
                 []);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    SystemBodyDataClient = client,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithSystemBodyDataClient(client));
 
             await viewModel.RefreshAsync();
             Assert.Equal([42], client.RequestedAddresses);
@@ -1815,13 +1784,11 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(
+            var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    SystemBodyDataClient = client,
-                });
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithSystemBodyDataClient(client));
 
             await viewModel.RefreshAsync();
             var pendingLoad = viewModel.PendingSystemBodyDataLoad;
@@ -1857,13 +1824,11 @@ public sealed class MainWindowViewModelTests
                     0,
                     null),
                 expected);
-            var viewModel = new MainWindowViewModel(
+            var viewModel = MainWindowViewModelTestBuilder.Create(
                 configuredJournalDirectory: null,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = CreateAppDataPaths(root),
-                    FirstFootfallInferenceService = inference,
-                });
+                builder => builder
+                    .WithAppDataPaths(CreateAppDataPaths(root))
+                    .WithFirstFootfallInferenceService(inference));
 
             var actual = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => viewModel.DisposeAsync().AsTask());
@@ -1898,15 +1863,12 @@ public sealed class MainWindowViewModelTests
                     0,
                     null),
                 inferenceFailure);
-            var viewModel = new MainWindowViewModel(
+            var viewModel = MainWindowViewModelTestBuilder.Create(
                 configuredJournalDirectory: null,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = CreateAppDataPaths(root),
-                    FirstFootfallInferenceService = inference,
-                    InaraPublisher =
-                        new ThrowingInaraPublisher(publisherFailure),
-                });
+                builder => builder
+                    .WithAppDataPaths(CreateAppDataPaths(root))
+                    .WithFirstFootfallInferenceService(inference)
+                    .WithInaraPublisher(new ThrowingInaraPublisher(publisherFailure)));
 
             var actual = await Assert.ThrowsAsync<AggregateException>(
                 () => viewModel.DisposeAsync().AsTask());
@@ -1947,11 +1909,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(root,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                root,
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -1994,11 +1955,10 @@ public sealed class MainWindowViewModelTests
                 profile,
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -2071,11 +2031,10 @@ public sealed class MainWindowViewModelTests
                 profile,
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -2154,15 +2113,15 @@ public sealed class MainWindowViewModelTests
                 profile,
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    BoxelSystemResolver = new StubBoxelResolver(
-                [
-                    BoxelObservation("Praea Euq IL-P c5-0", 100),
-                ]),
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithBoxelSystemResolver(
+                        new StubBoxelResolver(
+                            [
+                                BoxelObservation("Praea Euq IL-P c5-0", 100),
+                            ])));
 
             await viewModel.RefreshAsync();
 
@@ -2221,11 +2180,10 @@ public sealed class MainWindowViewModelTests
                 profile,
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -2305,11 +2263,10 @@ public sealed class MainWindowViewModelTests
                 profile,
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -2369,11 +2326,10 @@ public sealed class MainWindowViewModelTests
                 profile,
                 Path.Combine(root, "cache"),
                 []);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
             Assert.NotNull(viewModel.ClearSurfaceTrackersCommand);
             Assert.False(
                 viewModel.ClearSurfaceTrackersCommand.CanExecute(null),
@@ -2431,11 +2387,10 @@ public sealed class MainWindowViewModelTests
                 profile,
                 Path.Combine(root, "cache"),
                 []);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
             await viewModel.RefreshAsync();
             Assert.Equal("Not first footfall", viewModel.BioFirstFootfall);
             var originalReward = viewModel.UnclaimedBioRewards;
@@ -2491,11 +2446,10 @@ public sealed class MainWindowViewModelTests
                 profile,
                 Path.Combine(root, "cache"),
                 []);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
             await viewModel.RefreshAsync();
             Assert.Equal(1, viewModel.SystemSurvey.Snapshot.CurrentBodyId);
 
@@ -2563,11 +2517,10 @@ public sealed class MainWindowViewModelTests
                 {
                     TargetFolder = screenshots,
                 });
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
             DirectoryInfo? launchedDirectory = null;
             var shutdownCount = 0;
             viewModel.SetJournalCommandPlatformServices(
@@ -2692,12 +2645,11 @@ public sealed class MainWindowViewModelTests
                     DateTimeOffset.Parse("2026-07-25T12:00:04Z")),
                 HumanSiteGeometrySource.ManualFoot);
             var log = new ApplicationLogService(profile);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    ApplicationLogService = log,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithApplicationLogService(log));
             var clipboardWrites = new List<string>();
             viewModel.SetJournalCommandPlatformServices(
                 null,
@@ -2778,12 +2730,11 @@ public sealed class MainWindowViewModelTests
                     0.004,
                     2,
                     null));
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    FirstFootfallInferenceService = inference,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithFirstFootfallInferenceService(inference));
             await viewModel.RefreshAsync();
             Assert.Equal(0, inference.CallCount);
 
@@ -2866,12 +2817,11 @@ public sealed class MainWindowViewModelTests
                     1,
                     1,
                     null));
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    FirstFootfallInferenceService = inference,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithFirstFootfallInferenceService(inference));
 
             await viewModel.RefreshAsync();
 
@@ -2919,11 +2869,10 @@ public sealed class MainWindowViewModelTests
                 profile,
                 Path.Combine(root, "cache"),
                 []);
-            var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
             await WriteSurfaceStatusAsync(statusPath, 2, 3);
@@ -2995,12 +2944,11 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []);
             var processor = new CountingScreenshotProcessor();
-            var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    ScreenshotProcessingService = processor,
-                });
+            var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithScreenshotProcessingService(processor));
 
             await viewModel.RefreshAsync();
 
@@ -3091,11 +3039,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []);
             new QuestSettingsStore(paths.UiSettingsPath).SaveEnabled(true);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -3176,13 +3123,12 @@ public sealed class MainWindowViewModelTests
                 AvailableWindowCount = 2,
             };
             var eddnPublisher = new RecordingEddnPublisher();
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    GameWindowSwitcher = switcher,
-                    EddnPublisher = eddnPublisher,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithGameWindowSwitcher(switcher)
+                    .WithEddnPublisher(eddnPublisher));
 
             Assert.True(viewModel.IsSharedCargoSuppressed);
             Assert.True(viewModel.DockToDock.SharedCargoSuppressed);
@@ -3261,12 +3207,11 @@ public sealed class MainWindowViewModelTests
             {
                 AvailableWindowCount = 1,
             };
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    GameWindowSwitcher = switcher,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithGameWindowSwitcher(switcher));
 
             await viewModel.RefreshAsync();
             Assert.Equal(2, viewModel.CurrentCargo?.GetCount("gold"));
@@ -3344,12 +3289,11 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []);
             var publisher = new RecordingEddnPublisher();
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    EddnPublisher = publisher,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithEddnPublisher(publisher));
             await viewModel.RefreshAsync();
             var statusBefore = viewModel.StatusMessage;
             var lastUpdatedBefore = viewModel.LastUpdated;
@@ -3397,11 +3341,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
                 []);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
             await viewModel.RefreshAsync();
@@ -3477,15 +3420,15 @@ public sealed class MainWindowViewModelTests
                 """
                 {"timestamp":"2026-07-25T12:00:02Z","event":"ShipLocker","Items":[{"Name":"healthmonitor","Count":2}],"Components":[],"Consumables":[],"Data":[]}
                 """);
-            using var viewModel = new MainWindowViewModel(journals,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = new AppDataPaths(
-                    Path.Combine(root, "config"),
-                    Path.Combine(root, "profile"),
-                    Path.Combine(root, "cache"),
-                    []),
-                });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(
+                        new AppDataPaths(
+                            Path.Combine(root, "config"),
+                            Path.Combine(root, "profile"),
+                            Path.Combine(root, "cache"),
+                            [])));
 
             await viewModel.RefreshAsync();
             Assert.Equal(2, viewModel.CurrentCargo?.GetCount("gold"));

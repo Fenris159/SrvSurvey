@@ -1,6 +1,9 @@
 using Avalonia.Headless.XUnit;
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Runtime;
@@ -64,6 +67,208 @@ public sealed class MainWindowViewModelOwnershipTests
             context.ViewModel.DiagnosticsLog.LogText);
     }
 
+    [AvaloniaTheory]
+    [InlineData((int)MainWindowViewModelConstructionCheckpoint.FoundationReady)]
+    [InlineData((int)MainWindowViewModelConstructionCheckpoint.OverlayReady)]
+    [InlineData((int)MainWindowViewModelConstructionCheckpoint.ExplorationReady)]
+    [InlineData((int)MainWindowViewModelConstructionCheckpoint.TravelReady)]
+    [InlineData((int)MainWindowViewModelConstructionCheckpoint.OnlineAndShellReady)]
+    public void ConstructionFailureRollsBackEveryCompletedFamily(
+        int checkpointValue)
+    {
+        var root = CreateTemporaryRoot();
+        try
+        {
+            List<string> disposalOrder = [];
+            var inference = new RecordingFirstFootfallInferenceService(
+                disposalOrder);
+            var publisher = new RecordingInaraPublisher(disposalOrder);
+            var switcher = new RecordingGameWindowSwitcher(disposalOrder);
+            var failure = new InvalidOperationException("construction failed");
+
+            var thrown = Assert.Throws<InvalidOperationException>(() =>
+                MainWindowViewModelTestBuilder.Create(
+                    configuredJournalDirectory: null,
+                    builder => builder
+                        .WithAppDataPaths(CreatePaths(root))
+                        .WithFirstFootfallInferenceService(inference)
+                        .WithInaraPublisher(publisher)
+                        .WithGameWindowSwitcher(switcher)
+                        .FailAt(
+                            (MainWindowViewModelConstructionCheckpoint)
+                                checkpointValue,
+                            failure)));
+
+            Assert.Same(failure, thrown);
+            Assert.True(inference.IsDisposed);
+            Assert.Equal(
+                ["inara", "game-window-switcher", "first-footfall"],
+                disposalOrder);
+        }
+        finally
+        {
+            DeleteTemporaryRoot(root);
+        }
+    }
+
+    [AvaloniaFact]
+    public void ConstructionRollbackIsReversedAndPreservesPrimaryFailure()
+    {
+        var root = CreateTemporaryRoot();
+        try
+        {
+            List<string> disposalOrder = [];
+            var cleanupFailure = new InvalidOperationException(
+                "first-footfall cleanup failed");
+            var inference = new RecordingFirstFootfallInferenceService(
+                disposalOrder,
+                cleanupFailure);
+            var publisher = new RecordingInaraPublisher(disposalOrder);
+            var switcher = new RecordingGameWindowSwitcher(disposalOrder);
+            var applicationLog = new ApplicationLogService(
+                CreatePaths(root).DataDirectory);
+            var primaryFailure = new InvalidOperationException(
+                "primary construction failure");
+
+            var thrown = Assert.Throws<InvalidOperationException>(() =>
+                MainWindowViewModelTestBuilder.Create(
+                    configuredJournalDirectory: null,
+                    builder => builder
+                        .WithAppDataPaths(CreatePaths(root))
+                        .WithApplicationLogService(applicationLog)
+                        .WithFirstFootfallInferenceService(inference)
+                        .WithInaraPublisher(publisher)
+                        .WithGameWindowSwitcher(switcher)
+                        .FailAt(
+                            MainWindowViewModelConstructionCheckpoint
+                                .OnlineAndShellReady,
+                            primaryFailure)));
+
+            Assert.Same(primaryFailure, thrown);
+            Assert.Equal(
+                ["inara", "game-window-switcher", "first-footfall"],
+                disposalOrder);
+            Assert.Contains(
+                "first-footfall cleanup failed",
+                applicationLog.Text,
+                StringComparison.Ordinal);
+        }
+        finally
+        {
+            DeleteTemporaryRoot(root);
+        }
+    }
+
+    private static string CreateTemporaryRoot()
+    {
+        return Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-runtime-owner-{Guid.NewGuid():N}");
+    }
+
+    private static AppDataPaths CreatePaths(string root)
+    {
+        return new AppDataPaths(
+            Path.Combine(root, "config"),
+            Path.Combine(root, "data"),
+            Path.Combine(root, "cache"),
+            []);
+    }
+
+    private static void DeleteTemporaryRoot(string root)
+    {
+        try
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+        catch (IOException)
+        {
+            // Best-effort test cleanup.
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Best-effort test cleanup.
+        }
+    }
+
+    private sealed class RecordingFirstFootfallInferenceService(
+        List<string> disposalOrder,
+        Exception? disposeFailure = null)
+        : IFirstFootfallInferenceService
+    {
+        public bool IsAvailable => true;
+
+        public string? UnavailableReason => null;
+
+        public bool IsDisposed { get; private set; }
+
+        public Task<FirstFootfallInferenceResult> DetectAsync(
+            FirstFootfallInferencePreferences preferences,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new FirstFootfallInferenceResult(
+                FirstFootfallInferenceOutcome.NotDetected,
+                0,
+                0,
+                null));
+        }
+
+        public void Dispose()
+        {
+            IsDisposed = true;
+            disposalOrder.Add("first-footfall");
+            if (disposeFailure is not null)
+            {
+                throw disposeFailure;
+            }
+        }
+    }
+
+    private sealed class RecordingInaraPublisher(List<string> disposalOrder)
+        : IInaraPublisher
+    {
+        public Task<InaraPublicationResult> ApplyAsync(
+            InaraPublicationUpdate update,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(InaraPublicationResult.Empty);
+        }
+
+        public Task<InaraPublicationResult> FlushAsync(
+            InaraPublicationOptions options,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(InaraPublicationResult.Empty);
+        }
+
+        public void CancelPendingPublication()
+        {
+        }
+
+        public void Dispose()
+        {
+            disposalOrder.Add("inara");
+        }
+    }
+
+    private sealed class RecordingGameWindowSwitcher(List<string> disposalOrder)
+        : IGameWindowSwitcher
+    {
+        public int GetAvailableWindowCount() => 0;
+
+        public bool TryActivateCurrent() => false;
+
+        public bool TryActivateNext() => false;
+
+        public void Dispose()
+        {
+            disposalOrder.Add("game-window-switcher");
+        }
+    }
+
     private sealed class TestViewModelContext : IAsyncDisposable
     {
         private readonly string root = Path.Combine(
@@ -78,13 +283,11 @@ public sealed class MainWindowViewModelOwnershipTests
                 Path.Combine(root, "cache"),
                 []);
             ApplicationLog = new ApplicationLogService(paths.DataDirectory);
-            ViewModel = new MainWindowViewModel(
+            ViewModel = MainWindowViewModelTestBuilder.Create(
                 configuredJournalDirectory: null,
-                new MainWindowViewModelOptions
-                {
-                    AppDataPaths = paths,
-                    ApplicationLogService = ApplicationLog,
-                });
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithApplicationLogService(ApplicationLog));
         }
 
         public ApplicationLogService ApplicationLog { get; }

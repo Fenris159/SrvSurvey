@@ -26,19 +26,17 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
             temporaryDirectory,
             "config",
             "cross-platform-ui.json");
-        using var viewModel = new MainWindowViewModel(
+        using var viewModel = MainWindowViewModelTestBuilder.Create(
             Path.Combine(temporaryDirectory, "journals"),
-            new MainWindowViewModelOptions
-            {
-                AppDataPaths = new AppDataPaths(
-                    Path.Combine(temporaryDirectory, "config"),
-                    Path.Combine(temporaryDirectory, "data"),
-                    Path.Combine(temporaryDirectory, "cache"),
-                    []),
-                DesktopBehaviorSettingsStore =
-                    new DesktopBehaviorSettingsStore(settingsPath),
-                GameWindowSwitcher = new UnavailableGameWindowSwitcher(),
-            });
+            builder => builder
+                .WithAppDataPaths(
+                    new AppDataPaths(
+                        Path.Combine(temporaryDirectory, "config"),
+                        Path.Combine(temporaryDirectory, "data"),
+                        Path.Combine(temporaryDirectory, "cache"),
+                        []))
+                .WithDesktopBehaviorSettingsStore(new DesktopBehaviorSettingsStore(settingsPath))
+                .WithGameWindowSwitcher(new UnavailableGameWindowSwitcher()));
         var secondaryMonitor = new ApplicationMonitorOption(
             "DISPLAY2",
             "DISPLAY2 - 2560 x 1440 - 100%");

@@ -76,8 +76,6 @@ internal sealed partial class DesktopRuntime
     private Task? releaseHistoryCleanupTask;
     private GlobalInputSettingsViewModel? globalInputSettings;
     private IGameTextInputService? gameTextInputService;
-    private IDisposable? pendingOverlayInteraction;
-    private IDisposable? pendingFirstFootfallInferenceService;
     private readonly JournalMonitorSession journalMonitorSession = new();
     private bool manualOverlaySuppressed;
 
@@ -136,7 +134,12 @@ internal sealed partial class DesktopRuntime
             GameWindowTracker.CreateCurrent(),
             overlayLayoutStore,
             overlayLayout);
-        RegisterPendingOverlayInteraction(overlayInteraction);
+        using var overlayInteractionOwnership =
+            new MainWindowViewModelStartupResource<OverlayInteractionViewModel>(
+                overlayInteraction,
+                exception => applicationLog.Append(
+                    "Main window startup cleanup failed: "
+                    + exception.Message));
         gameTextInputService = GameTextInputService.CreateCurrent();
         startup.Checkpoint?.Invoke(
             DesktopStartupCheckpoint.OverlayInfrastructureReady);
@@ -162,35 +165,43 @@ internal sealed partial class DesktopRuntime
             commanderPreferenceResolution.TargetFrontierId;
         var firstFootfallInferenceService =
             FirstFootfallInferenceService.CreateCurrent();
-        RegisterPendingFirstFootfallInferenceService(
-            firstFootfallInferenceService);
-        startup.Checkpoint?.Invoke(
-            DesktopStartupCheckpoint.MainViewModelDependenciesReady);
         var canonnHumanSiteClient = new CanonnHumanSiteClient();
-        mainViewModel = new MainWindowViewModel(
+        using var mainViewModelStartup = new MainWindowViewModelStartup(
             configuredJournalDirectory,
-            new MainWindowViewModelOptions
+            new MainWindowFoundationInputs
             {
                 ThemeService = themeService,
                 AppDataPaths = appDataPaths,
                 InputSettings = inputSettings,
                 ApplicationLogService = applicationLog,
-                OverlayLayoutStore = overlayLayoutStore,
-                OverlayLayout = overlayLayout,
-                OverlayInteraction = overlayInteraction,
                 TargetFrontierId = targetFrontierId,
                 CommanderPreferenceSettingsStore = commanderPreferenceStore,
                 CommanderPreferenceCommandLineOverride =
                     commanderPreferenceResolution.IsCommandLineOverride,
                 CommanderPreferenceInitialStatus =
                     commanderPreferenceResolution.StatusMessage,
+            },
+            new MainWindowOverlayInputs
+            {
+                OverlayLayoutStore = overlayLayoutStore,
+                OverlayLayout = overlayLayout,
+                OverlayInteraction = overlayInteractionOwnership.Transfer(),
+            },
+            new MainWindowExplorationInputs
+            {
                 FirstFootfallInferenceService =
                     firstFootfallInferenceService,
                 SystemBodyDataClient = new SystemBodyDataClient(),
+            },
+            new MainWindowOnlineInputs
+            {
                 CanonnHumanSiteClient = canonnHumanSiteClient,
                 CanonnHumanSitePublisher = canonnHumanSiteClient,
             });
-        TransferPendingMainViewModelDependencies();
+        startup.Checkpoint?.Invoke(
+            DesktopStartupCheckpoint.MainViewModelDependenciesReady);
+        mainViewModel = MainWindowViewModelFactory.Create(
+            mainViewModelStartup);
         var viewModel = mainViewModel;
         mainWindow = new MainWindow(viewModel);
         mainWindow.Opened += HandleMainWindowOpened;
@@ -529,25 +540,6 @@ internal sealed partial class DesktopRuntime
         });
     }
 
-    private void RegisterPendingOverlayInteraction(IDisposable resource)
-    {
-        pendingOverlayInteraction = resource
-            ?? throw new ArgumentNullException(nameof(resource));
-    }
-
-    private void RegisterPendingFirstFootfallInferenceService(
-        IDisposable resource)
-    {
-        pendingFirstFootfallInferenceService = resource
-            ?? throw new ArgumentNullException(nameof(resource));
-    }
-
-    private void TransferPendingMainViewModelDependencies()
-    {
-        pendingFirstFootfallInferenceService = null;
-        pendingOverlayInteraction = null;
-    }
-
     private static void MigrateLegacyUiSettings(
         AppDataPaths appDataPaths,
         ApplicationLogService applicationLog)
@@ -857,8 +849,6 @@ internal sealed partial class DesktopRuntime
             await TryCleanupAsync(() => viewModel.DisposeAsync().AsTask());
         }
 
-        DisposeResource(ref pendingFirstFootfallInferenceService);
-        DisposeResource(ref pendingOverlayInteraction);
     }
 
     private Task DisposeDesktopInfrastructureAsync()
