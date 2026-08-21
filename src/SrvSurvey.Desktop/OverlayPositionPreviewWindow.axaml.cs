@@ -50,7 +50,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         EnsureEditorFolderTab(definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
-        Title = $"{definition.DisplayName} position preview";
+        Title = $"SrvSurvey {definition.DisplayName} position preview overlay";
     }
 
     /// <summary>

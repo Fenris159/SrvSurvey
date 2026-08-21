@@ -1,10 +1,13 @@
 using SrvSurvey.Desktop.Platform.Overlay;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
 public sealed class OverlayPresentationContractTests
 {
+    private const string KdeOverlayTitlePattern = "^SrvSurvey.*overlay$";
+
     private static readonly IReadOnlyDictionary<string, string> FixedHeaders =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -195,6 +198,34 @@ public sealed class OverlayPresentationContractTests
                 Assert.Contains(token, production, StringComparison.Ordinal);
             }
         }
+    }
+
+    [Fact]
+    public void EveryRuntimeOverlayWindowTitleMatchesTheDocumentedKdeRule()
+    {
+        var root = FindRepositoryRoot();
+        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        var overlayFiles = Directory.GetFiles(
+            desktop,
+            "*OverlayWindow.axaml",
+            SearchOption.TopDirectoryOnly);
+
+        Assert.NotEmpty(overlayFiles);
+        foreach (var overlayFile in overlayFiles)
+        {
+            var title = XDocument.Load(overlayFile).Root?.Attribute("Title")?.Value;
+            Assert.NotNull(title);
+            Assert.Matches(KdeOverlayTitlePattern, title);
+        }
+
+        var troubleshooting = File.ReadAllText(Path.Combine(
+            root,
+            "docs",
+            "Overlay_Troubleshooting.md"));
+        Assert.Contains(
+            $"`{KdeOverlayTitlePattern}`",
+            troubleshooting,
+            StringComparison.Ordinal);
     }
 
     [Fact]

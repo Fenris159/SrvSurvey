@@ -145,7 +145,7 @@ public static class LocalizationBehavior
         string? current,
         TranslationState state)
     {
-        if (state.IsApplying)
+        if (state.IsApplying || IsInvariantOverlayWindowTitle(target, property, current))
         {
             return;
         }
@@ -163,6 +163,18 @@ public static class LocalizationBehavior
                 state.IsApplying = false;
             }
         }
+    }
+
+    private static bool IsInvariantOverlayWindowTitle(
+        AvaloniaObject target,
+        StyledProperty<string?> property,
+        string? value)
+    {
+        return target is Window
+            && property == Window.TitleProperty
+            && value is not null
+            && value.StartsWith("SrvSurvey", StringComparison.Ordinal)
+            && value.EndsWith("overlay", StringComparison.Ordinal);
     }
 
     private static void TranslateObjectProperty(

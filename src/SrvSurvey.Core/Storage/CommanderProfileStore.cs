@@ -13,7 +13,7 @@ namespace SrvSurvey.Core.Storage;
     "Design",
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "The store is profile-scoped and its semaphore may still have in-flight waiters.")]
-public sealed class CommanderProfileStore(string profileDirectory)
+public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearchProfileStore
 {
     private const string ActiveProperty = "active";
     private const string RadiusProperty = "radius";

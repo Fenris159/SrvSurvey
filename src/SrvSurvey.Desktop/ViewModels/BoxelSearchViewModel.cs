@@ -5,14 +5,9 @@ using System.Windows.Input;
 using Avalonia.Threading;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
-using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Design",
-    "CA1001:Types that own disposable fields should be disposable",
-    Justification = "The view model is application-scoped; its background workers own their cancellation sources.")]
 public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 {
     private const string Unavailable = "\u2014";
@@ -20,20 +15,14 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private const int MaximumLastSystemAvailable = 99_999;
     private const int LargeAuditConfirmationThreshold = 1_000;
 
-    private readonly CommanderProfileStore profileStore;
-    private readonly LegacySystemDataReader localSystemReader;
-    private readonly EmptyBoxelStore emptyBoxelStore;
-    private readonly SavedBoxelSearchStore savedSearchStore;
-    private readonly IBoxelSystemResolver systemResolver;
+    private readonly IBoxelSearchSession session;
     private readonly ISystemNameSuggestionClient? systemNameSuggestionClient;
     private readonly TimeSpan systemSuggestionDelay;
     private readonly KnownSystemAddressCatalog knownSystems;
-    private readonly BoxelCompletionAuditor completionAuditor;
     private readonly BoxelSurveyStatsCoordinator? surveyStats;
-    private readonly BoxelSearchState state = new();
+    private BoxelSearchSessionSearchSnapshot searchState;
     private readonly Dictionary<string, BoxelNavigationOptionViewModel>
         navigationOptions = new(StringComparer.Ordinal);
-    private readonly SemaphoreSlim operationLock = new(1, 1);
     private readonly AsyncCommand activateCommand;
     private readonly AsyncCommand disableCommand;
     private readonly AsyncCommand refreshCommand;
@@ -74,6 +63,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private string nextSystem = Unavailable;
     private string lastSystemAvailable = "0";
     private bool hasUnappliedLastSystemAvailableEdit;
+    private volatile bool isActivating;
     private string systemProgress = "0 of 0 complete";
     private string boxelProgress = "0 of 0 boxels complete";
     private string searchSize = "Enter a generated system name.";
@@ -103,11 +93,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private BoxelNavigationOptionViewModel? previousSiblingBoxel;
     private BoxelNavigationOptionViewModel? nextSiblingBoxel;
     private string siblingPosition = "Search root";
-    private string? frontierId;
     private IReadOnlyList<string> searchPrefixes = [];
     private bool surveyStatsUnsubscribed;
-    private string? commanderName;
-    private bool isOdyssey = true;
+    private bool sessionUnsubscribed;
+    private Task pendingOptionUpdate = Task.CompletedTask;
+    private long appliedSessionVersion = -1;
+    private long appliedProfileGeneration = -1;
     private NavRouteSnapshot? latestRoute;
     private EliteStatus? status;
     private string? musicTrack;
@@ -115,34 +106,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private string destinationStatus = "No Galaxy Map destination selected";
     private bool isDestinationValid;
     private string? lastCopiedSystemName;
-    private Func<string, Task>? clipboardWriter;
-    private CancellationTokenSource? auditCancellation;
     private string statsGlanceText = string.Empty;
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Maintainability",
-        "S107:Methods should not have too many parameters",
-        Justification = "The constructor composes independent optional services; grouping them would only move the same dependencies into a parameter object.")]
     public BoxelSearchViewModel(
-        CommanderProfileStore profileStore,
-        LegacySystemDataReader localSystemReader,
-        EmptyBoxelStore emptyBoxelStore,
-        IBoxelSystemResolver systemResolver,
-        Func<string, Task>? clipboardWriter = null,
+        IBoxelSearchSession session,
         KnownSystemAddressCatalog? knownSystems = null,
-        SavedBoxelSearchStore? savedSearchStore = null,
         ISystemNameSuggestionClient? systemNameSuggestionClient = null,
         TimeSpan? systemSuggestionDelay = null,
         BoxelSurveyStatsCoordinator? surveyStats = null)
     {
-        this.profileStore = profileStore
-            ?? throw new ArgumentNullException(nameof(profileStore));
-        this.localSystemReader = localSystemReader
-            ?? throw new ArgumentNullException(nameof(localSystemReader));
-        this.emptyBoxelStore = emptyBoxelStore
-            ?? throw new ArgumentNullException(nameof(emptyBoxelStore));
-        this.systemResolver = systemResolver
-            ?? throw new ArgumentNullException(nameof(systemResolver));
+        this.session = session ?? throw new ArgumentNullException(nameof(session));
+        searchState = session.Current.Search;
+        this.session.Changed += OnSessionChanged;
         this.surveyStats = surveyStats;
         if (this.surveyStats is not null)
         {
@@ -155,14 +130,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         ArgumentOutOfRangeException.ThrowIfLessThan(
             this.systemSuggestionDelay,
             TimeSpan.Zero);
-        this.savedSearchStore = savedSearchStore
-            ?? new SavedBoxelSearchStore(this.profileStore.ProfileDirectory);
         this.knownSystems = knownSystems
             ?? KnownSystemAddressCatalog.Empty;
-        completionAuditor = new BoxelCompletionAuditor(
-            this.localSystemReader,
-            this.systemResolver);
-        this.clipboardWriter = clipboardWriter;
         activateCommand = new AsyncCommand(ActivateAsync, CanActivate);
         ActivateCommand = activateCommand;
         disableCommand = new AsyncCommand(DisableAsync, CanDisable);
@@ -207,14 +176,13 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         AuditAllCommand = auditAllCommand;
         cancelAuditCommand = new AsyncCommand(
             CancelAuditAsync,
-            () => IsAuditing && auditCancellation is not null);
+            () => IsAuditing);
         CancelAuditCommand = cancelAuditCommand;
+        ApplySessionSnapshot(session.Current);
         UpdateDisplay();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
-
-    internal event EventHandler? AutoCopySelected;
 
     public IReadOnlyList<string> MassCodes { get; } =
         ["a", "b", "c", "d", "e", "f", "g"];
@@ -312,22 +280,24 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public bool AutoCopy
     {
-        get => autoCopy;
+        get => searchState.TopBoxel is not null && pendingOptionUpdate.IsCompleted
+            ? session.Current.Search.AutoCopy
+            : autoCopy;
         set
         {
-            if (!SetField(ref autoCopy, value) || suppressOptionPersistence)
+            if (AutoCopy == value || suppressOptionPersistence)
             {
                 return;
             }
 
-            state.SetAutoCopy(value);
-            OnPropertyChanged(nameof(NextSystemClipboardStatus));
-            OnPropertyChanged(nameof(RequiresManualCopy));
-            _ = SaveAsync();
-            if (value)
+            SetField(ref autoCopy, value);
+            RaiseOverlayProperties();
+            if (searchState.TopBoxel is null)
             {
-                AutoCopySelected?.Invoke(this, EventArgs.Empty);
+                return;
             }
+
+            RunSessionAction(new SetBoxelAutoCopy(value));
         }
     }
 
@@ -336,15 +306,21 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         get => sortDescending;
         set
         {
-            if (!SetField(ref sortDescending, value) || suppressOptionPersistence)
+            if (SortDescending == value || suppressOptionPersistence)
             {
                 return;
             }
 
-            state.SetSortDescending(value);
+            SetField(ref sortDescending, value);
             showNextSystemPageOnUpdate = true;
-            UpdateDisplay();
-            _ = SaveAsync();
+            NextSystem = GetPresentedNextSystem() ?? Unavailable;
+            UpdateSystemRows();
+            if (searchState.TopBoxel is null)
+            {
+                return;
+            }
+
+            RunSessionAction(new SetBoxelSortDirection(value));
         }
     }
 
@@ -407,17 +383,19 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool IsActive => state.IsActive;
+    public bool IsActive => searchState.IsActive;
 
     public BoxelSurveyStatsCoordinator? SurveyStats => surveyStats;
 
+    internal IBoxelSearchSession Session => session;
+
     public IReadOnlyList<string> SearchPrefixes => searchPrefixes;
 
-    public char SearchLowMassCode => state.LowMassCode;
+    public char SearchLowMassCode => searchState.LowMassCode;
 
-    public string? CurrentBoxelPrefix => state.Current?.Prefix;
+    public string? CurrentBoxelPrefix => searchState.CurrentBoxel?.Prefix;
 
-    public int CurrentExpectedSystemCount => state.CurrentCount;
+    public int CurrentExpectedSystemCount => searchState.CurrentCount;
 
     public string StatsGlanceText
     {
@@ -436,25 +414,25 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public BoxelSearchNotificationState CreateNotificationState()
     {
         return new BoxelSearchNotificationState(
-            state.IsActive,
-            state.CompletionMode,
-            state.CompletedSystemCount,
-            Math.Max(state.CurrentCount, state.Systems.Count),
-            state.CurrentSystemsComplete,
-            state.NextSystem);
+            searchState.IsActive,
+            searchState.CompletionMode,
+            searchState.CompletedSystemCount,
+            Math.Max(searchState.CurrentCount, searchState.Systems.Count),
+            searchState.CurrentSystemsComplete,
+            searchState.NextSystem);
     }
 
-    public bool ShouldShowGalaxyMapOverlay => IsGalaxyMapOpen && state.IsActive;
+    public bool ShouldShowGalaxyMapOverlay => IsGalaxyMapOpen && searchState.IsActive;
 
     private bool IsGalaxyMapOpen => OverlayGameModeResolver.Resolve(
         status,
         musicTrack: musicTrack) == OverlayGameMode.GalaxyMap;
 
-    public string? NextSystemForInput => state.NextSystem;
+    public string? NextSystemForInput => searchState.NextSystem;
 
     public bool ShouldPasteNextSystem => ShouldShowGalaxyMapOverlay
         && !AutoCopy
-        && state.NextSystem is not null
+        && searchState.NextSystem is not null
         && IsCurrentSystemInsideSearch();
 
     public string DestinationStatus
@@ -471,24 +449,24 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public string NextSystemClipboardStatus => string.Equals(
         lastCopiedSystemName,
-        state.NextSystem,
+        GetPresentedNextSystem(),
         StringComparison.Ordinal)
             ? "NEXT SEARCH COPIED"
-            : (state.AutoCopy) switch
+            : AutoCopy switch
             {
                 true => "AUTO-COPY READY",
                 false => "MANUAL COPY"
             };
 
-    public bool RequiresManualCopy => !state.AutoCopy
+    public bool RequiresManualCopy => !AutoCopy
         && !string.Equals(
             lastCopiedSystemName,
-            state.NextSystem,
+            GetPresentedNextSystem(),
             StringComparison.Ordinal);
 
-    public bool IsCurrentEmpty => state.CurrentIsEmpty;
+    public bool IsCurrentEmpty => searchState.CurrentIsEmpty;
 
-    public string StatusLabel => state.IsActive ? "ACTIVE" : "INACTIVE";
+    public string StatusLabel => searchState.IsActive ? "ACTIVE" : "INACTIVE";
 
     public string RefreshButtonText => IsBusy && !IsAuditing
         ? "Refreshing\u2026"
@@ -496,7 +474,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public string AuditButtonText => IsAuditing ? "Auditing\u2026" : "Audit all boxels";
 
-    public bool ShowLargeAuditConfirmation => state.TotalBoxelCount
+    public bool ShowLargeAuditConfirmation => searchState.TotalBoxelCount
         > LargeAuditConfirmationThreshold;
 
     public string StatusMessage
@@ -538,7 +516,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public bool HasLastSystemAvailableError =>
         hasUnappliedLastSystemAvailableEdit
         && (!TryParseLastSystemAvailable(LastSystemAvailable, out var parsed)
-            || parsed < state.CurrentMaximumSystemNumber);
+            || parsed < searchState.CurrentMaximumSystemNumber);
 
     public string LastSystemAvailableValidationMessage =>
         GetLastSystemAvailableValidationMessage();
@@ -723,8 +701,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         private set => SetField(ref siblingPosition, value);
     }
 
-    public bool CanNavigateSearchTree => state.IsActive
-        && state.TotalBoxelCount > 1;
+    public bool CanNavigateSearchTree => searchState.IsActive
+        && searchState.TotalBoxelCount > 1;
 
     public bool CanNavigateParent => GetParent() is not null;
 
@@ -760,16 +738,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public ICommand CancelAuditCommand { get; }
 
-    public bool CanSaveProgress => frontierId is not null && state.TopBoxel is not null;
+    public bool CanSaveProgress => session.Current.Context.Profile is not null
+        && searchState.TopBoxel is not null
+        && searchState.SavedSearchFileName is null;
 
-    public string SuggestedSaveName => state.TopBoxel?.Name
+    public bool IsSavedToLibrary => searchState.SavedSearchFileName is not null;
+
+    public string LibrarySaveButtonText => IsSavedToLibrary
+        ? "Saved to Library"
+        : "Save to Library";
+
+    public string SuggestedSaveName => searchState.TopBoxel?.Name
         ?? TopBoxelText.Trim();
-
-    public void SetClipboardWriter(Func<string, Task>? writer)
-    {
-        clipboardWriter = writer;
-        copyNextCommand.RaiseCanExecuteChanged();
-    }
 
     public void MoveSystemSuggestionSelection(int offset)
     {
@@ -827,40 +807,19 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         bool profileIsOdyssey,
         BoxelSearchSnapshot snapshot)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(profileFrontierId);
-        ArgumentNullException.ThrowIfNull(snapshot);
-        if (auditCancellation is not null)
-        {
-            await auditCancellation.CancelAsync();
-        }
-
-        frontierId = profileFrontierId;
-        commanderName = profileCommanderName;
-        isOdyssey = profileIsOdyssey;
-        await ApplySnapshotAsync(snapshot);
-
-        UpdateDisplay();
-        if (state.IsActive)
-        {
-            await RefreshCurrentAsync();
-        }
-        else
-        {
-            StatusMessage = state.TopBoxel is null
-                ? "No boxel search is configured for this commander."
-                : "Loaded the saved boxel search; it is currently disabled.";
-        }
+        var outcome = await SwitchSessionProfileAsync(new BoxelSearchProfile(
+            profileFrontierId,
+            profileCommanderName,
+            profileIsOdyssey,
+            snapshot));
+        ApplyOutcome(outcome);
     }
 
-    public void SetProfileError(string message)
+    public async Task SetProfileErrorAsync(string message)
     {
-        auditCancellation?.Cancel();
-        frontierId = null;
-        SetLastSystemAvailableEditState(false);
-        state.Reset();
-        navigationOptions.Clear();
+        await ClearSessionProfileAsync();
+        ApplySessionSnapshot(session.Current);
         StatusMessage = message;
-        UpdateDisplay();
     }
 
     public void ReportSaveProgressFailure(string message)
@@ -868,89 +827,41 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         StatusMessage = "The boxel search could not be saved: " + message;
     }
 
-    public void UpdateCurrentSystem(
+    public async Task UpdateCurrentSystemAsync(
         string? systemName,
         GalacticCoordinate? position,
         long? systemAddress = null)
     {
-        var nextSystemName = string.IsNullOrWhiteSpace(systemName)
-            ? Unavailable
-            : systemName;
-        var nextSystemAddress = systemAddress is > 0 ? systemAddress : null;
-        if (string.Equals(
-                currentSystemName,
-                nextSystemName,
-                StringComparison.OrdinalIgnoreCase)
-            && currentPosition == position
-            && currentSystemAddress == nextSystemAddress)
+        await ApplySessionUpdateAsync(new BoxelSearchUpdate
         {
-            return;
-        }
-
-        CurrentSystemName = nextSystemName;
-        currentPosition = position;
-        currentSystemAddress = nextSystemAddress;
-        OnPropertyChanged(nameof(HasCurrentSystemAddress));
-        OnPropertyChanged(nameof(CurrentSystemAddress));
-        OnPropertyChanged(nameof(CurrentSystemAddressText));
-        UpdateSystemRows();
+            HasCurrentSystem = true,
+            CurrentSystemName = systemName,
+            CurrentPosition = position,
+            CurrentSystemAddress = systemAddress,
+        });
+        ApplySessionSnapshot(session.Current);
     }
 
     public async Task UpdateRouteAsync(NavRouteSnapshot? route)
     {
-        latestRoute = route;
-        UpdateDestinationStatus();
-        if (!state.IsActive || route is null)
+        await ApplySessionUpdateAsync(new BoxelSearchUpdate
         {
-            return;
-        }
-
-        await operationLock.WaitAsync(CancellationToken.None);
-        try
-        {
-            var changed = state.MergeRoute(route.Route
-                .Select(entry => entry.ToBoxelObservation())
-                .OfType<BoxelSystemObservation>());
-            if (changed)
-            {
-                UpdateDisplay();
-                await SaveAsync();
-            }
-        }
-        finally
-        {
-            operationLock.Release();
-        }
+            HasRoute = true,
+            Route = route,
+        });
+        ApplySessionSnapshot(session.Current);
     }
 
     public async Task ApplyJournalEventsAsync(
         IEnumerable<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        if (!state.IsActive)
+        await ApplySessionUpdateAsync(new BoxelSearchUpdate
         {
-            return;
-        }
-
-        await operationLock.WaitAsync(CancellationToken.None);
-        try
-        {
-            var changed = false;
-            foreach (var journalEvent in journalEvents)
-            {
-                changed |= state.Apply(journalEvent);
-            }
-
-            if (changed)
-            {
-                UpdateDisplay();
-                await SaveAsync();
-            }
-        }
-        finally
-        {
-            operationLock.Release();
-        }
+            JournalEvents = journalEvents as IReadOnlyList<JournalEventEnvelope>
+                ?? journalEvents.ToArray(),
+        });
+        ApplySessionSnapshot(session.Current);
     }
 
     public async Task UpdateStatusAsync(
@@ -959,28 +870,17 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         string? nextMusicTrack = null)
     {
         ArgumentNullException.ThrowIfNull(nextStatus);
-        var wasGalaxyMapOpen = IsGalaxyMapOpen;
-        status = nextStatus;
-        musicTrack = nextMusicTrack;
-        var enteredGalaxyMap = !wasGalaxyMapOpen && IsGalaxyMapOpen;
-        lastDestination = nextStatus.Destination;
-        if (!IsGalaxyMapOpen)
+        var outcome = await ApplySessionUpdateAsync(new BoxelSearchUpdate
         {
-            lastCopiedSystemName = null;
-        }
-
-        UpdateDestinationStatus();
-        RaiseOverlayProperties();
-        if (!enteredGalaxyMap
-            || !allowAutoCopy
-            || !state.IsActive
-            || !state.AutoCopy
-            || !IsCurrentSystemInsideSearch())
-        {
-            return;
-        }
-
-        await CopyNextSystemAsync();
+            HasStatus = true,
+            Status = nextStatus,
+            MusicTrack = nextMusicTrack,
+            IsGalaxyMapOpen = OverlayGameModeResolver.Resolve(
+                nextStatus,
+                musicTrack: nextMusicTrack) == OverlayGameMode.GalaxyMap,
+            AllowAutoCopy = allowAutoCopy,
+        });
+        ApplyOutcome(outcome);
     }
 
     public async Task ActivateAsync()
@@ -994,7 +894,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         var selectedMassCode = string.IsNullOrWhiteSpace(LowMassCode)
             ? '\0'
             : char.ToLowerInvariant(LowMassCode[0]);
-        if (!state.TryActivate(
+        SetLastSystemAvailableEditState(false);
+        isActivating = true;
+        try
+        {
+            var outcome = await ExecuteSessionActionAsync(new ActivateBoxelSearch(
                 new BoxelSearchActivationRequest
                 {
                     TopBoxel = topBoxel,
@@ -1006,173 +910,241 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                         ? BoxelCompletionMode.FssAllBodies
                         : BoxelCompletionMode.EnterSystem,
                     AutoCopy = AutoCopy,
-                    SortDescending = SortDescending
-                },
-                out var error))
-        {
-            StatusMessage = error ?? "The boxel search configuration is invalid.";
-            return;
-        }
+                    SortDescending = SortDescending,
+                }));
 
-        SetLastSystemAvailableEditState(false);
-        await RefreshCurrentAsync(preserveLastSystemAvailableEdit: false);
+            ApplySessionSnapshot(session.Current);
+            SetField(
+                ref lastSystemAvailable,
+                FormatLastSystemAvailable(),
+                nameof(LastSystemAvailable));
+            ApplyOutcome(outcome);
+        }
+        finally
+        {
+            isActivating = false;
+        }
     }
 
     public async Task DisableAsync()
     {
-        state.Disable();
         SetLastSystemAvailableEditState(false);
-        UpdateDisplay();
-        await SaveAsync("Boxel search disabled; its progress was retained.");
+        ApplyOutcome(await ExecuteSessionActionAsync(StopBoxelSearch.Instance));
     }
 
     public async Task<SaveBoxelProgressResult> SaveProgressAsync(
         string? name = null,
         string? notes = null)
     {
-        if (!CanSaveProgress || frontierId is null)
+        var outcome = await ExecuteSessionActionAsync(
+            new SaveBoxelSearchToLibrary(name, notes));
+        ApplyOutcome(outcome);
+        return outcome.Code switch
         {
-            StatusMessage = "Start a boxel search before saving its progress.";
-            return SaveBoxelProgressResult.Unavailable;
-        }
-
-        if (state.SavedSearchFileName is { } linkedFileName)
-        {
-            if (await savedSearchStore.ExistsAsync(
-                    frontierId,
-                    linkedFileName,
-                    CancellationToken.None))
-            {
-                await SaveAsync("Saved the current boxel search progress.");
-                return SaveBoxelProgressResult.Saved;
-            }
-
-            state.SetSavedSearchFileName(null);
-            await profileStore.SaveBoxelSearchAsync(
-                frontierId,
-                commanderName,
-                isOdyssey,
-                state.CreateSnapshot(),
-                CancellationToken.None);
-        }
-
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return SaveBoxelProgressResult.RequiresDetails;
-        }
-
-        try
-        {
-            var saved = await savedSearchStore.CreateAsync(
-                frontierId,
-                name,
-                notes,
-                state.CreateSnapshot(),
-                CancellationToken.None);
-            state.SetSavedSearchFileName(saved.FileName);
-            await SaveAsync($"Saved boxel search as {saved.Name}.");
-            return SaveBoxelProgressResult.Saved;
-        }
-        catch (Exception exception) when (IsExpectedSavedSearchException(exception))
-        {
-            StatusMessage = "The boxel search could not be saved: "
-                + exception.Message;
-            return SaveBoxelProgressResult.Failed;
-        }
+            BoxelSearchMessageCode.LibraryDetailsRequired =>
+                SaveBoxelProgressResult.RequiresDetails,
+            BoxelSearchMessageCode.SearchSavedToLibrary
+                or BoxelSearchMessageCode.SearchAlreadySavedToLibrary =>
+                SaveBoxelProgressResult.Saved,
+            BoxelSearchMessageCode.SearchNotConfigured =>
+                SaveBoxelProgressResult.Unavailable,
+            _ => SaveBoxelProgressResult.Failed,
+        };
     }
 
-    public Task<IReadOnlyList<SavedBoxelSearchCatalogEntry>> ListSavedSearchesAsync()
+    public async Task<IReadOnlyList<SavedBoxelSearchCatalogEntry>>
+        ListSavedSearchesAsync()
     {
-        return frontierId is null
-            ? Task.FromResult<IReadOnlyList<SavedBoxelSearchCatalogEntry>>([])
-            : savedSearchStore.ListAsync(frontierId, CancellationToken.None);
+        return (await GetSessionLibraryAsync()).Entries;
     }
 
-    public Task<SavedBoxelSearchDocument> RenameSavedSearchAsync(
+    public async Task<SavedBoxelSearchDocument> RenameSavedSearchAsync(
         string fileName,
         string name)
     {
-        return savedSearchStore.RenameAsync(
-            RequireFrontierId(),
-            fileName,
-            name,
-            CancellationToken.None);
+        return RequireSavedSearch(await ExecuteSessionActionAsync(
+            new RenameSavedBoxelSearch(fileName, name)));
     }
 
-    public Task<SavedBoxelSearchDocument> SaveSavedSearchNotesAsync(
+    public async Task<SavedBoxelSearchDocument> SaveSavedSearchNotesAsync(
         string fileName,
         string? notes)
     {
-        return savedSearchStore.SaveNotesAsync(
-            RequireFrontierId(),
-            fileName,
-            notes,
-            CancellationToken.None);
+        return RequireSavedSearch(await ExecuteSessionActionAsync(
+            new UpdateSavedBoxelSearchNotes(fileName, notes)));
     }
 
-    public Task<SavedBoxelSearchDocument> SetSavedSearchFavoriteAsync(
+    public async Task<SavedBoxelSearchDocument> SetSavedSearchFavoriteAsync(
         string fileName,
         bool isFavorite)
     {
-        return savedSearchStore.SetFavoriteAsync(
-            RequireFrontierId(),
-            fileName,
-            isFavorite,
-            CancellationToken.None);
+        return RequireSavedSearch(await ExecuteSessionActionAsync(
+            new SetSavedBoxelSearchFavorite(fileName, isFavorite)));
     }
 
     public async Task DeleteSavedSearchAsync(string fileName)
     {
-        var activeFrontierId = RequireFrontierId();
-        await savedSearchStore.DeleteAsync(
-            activeFrontierId,
-            fileName,
-            CancellationToken.None);
-        if (string.Equals(
-                state.SavedSearchFileName,
-                fileName,
-                StringComparison.OrdinalIgnoreCase))
-        {
-            state.SetSavedSearchFileName(null);
-            await profileStore.SaveBoxelSearchAsync(
-                activeFrontierId,
-                commanderName,
-                isOdyssey,
-                state.CreateSnapshot(),
-                CancellationToken.None);
-        }
+        var outcome = await ExecuteSessionActionAsync(new DeleteSavedBoxelSearch(fileName));
+        ApplyOutcome(outcome);
+        ThrowForRejectedLibraryOutcome(outcome);
     }
 
     public async Task ResumeSavedSearchAsync(string fileName)
     {
-        var document = await savedSearchStore.LoadAsync(
-            RequireFrontierId(),
-            fileName,
-            CancellationToken.None);
-        var snapshot = document.Search with
-        {
-            Active = true,
-            SavedSearchFileName = document.FileName
-        };
-        await ApplySnapshotAsync(snapshot);
-        UpdateDisplay();
-        await SaveAsync($"Resumed saved boxel search {document.Name}.");
-        if (AutoCopy)
-        {
-            AutoCopySelected?.Invoke(this, EventArgs.Empty);
-        }
-
-        await RefreshCurrentAsync();
+        var outcome = await ExecuteSessionActionAsync(new ResumeSavedBoxelSearch(fileName));
+        ApplyOutcome(outcome);
+        ThrowForRejectedLibraryOutcome(outcome);
     }
 
-    private async Task ApplySnapshotAsync(BoxelSearchSnapshot snapshot)
+    public async Task DisableAutoCopyForCompetingRouteAsync()
     {
-        SetLastSystemAvailableEditState(false);
-        state.Reset(snapshot);
-        navigationOptions.Clear();
-        ConfirmLargeAudit = false;
-        AuditProcessed = 0;
-        AuditProgress = "No full-area audit has run in this session.";
+        if (!AutoCopy)
+        {
+            return;
+        }
+
+        var outcome = await ExecuteSessionActionAsync(new SetBoxelAutoCopy(false));
+        ApplyOutcome(outcome, competingAutoCopy: true);
+    }
+
+    public async Task RefreshCurrentAsync()
+    {
+        ApplyOutcome(await ExecuteSessionActionAsync(new RefreshCurrentBoxel()));
+    }
+
+    public async Task AuditAllAsync()
+    {
+        if (!CanAuditAll())
+        {
+            StatusMessage = GetAuditUnavailableStatus();
+            return;
+        }
+
+        ApplyOutcome(await ExecuteSessionActionAsync(new AuditAllBoxels()));
+    }
+
+    private string GetAuditUnavailableStatus()
+    {
+        return ShowLargeAuditConfirmation && !ConfirmLargeAudit
+            ? "Confirm the large network audit before starting it."
+            : "Activate a boxel search before auditing its full area.";
+    }
+
+    public async Task CancelAuditAsync()
+    {
+        ApplyOutcome(await ExecuteSessionActionAsync(new CancelBoxelAudit()));
+    }
+
+    public void CancelPendingOperations()
+    {
+        CancelSystemSuggestions();
+        if (!sessionUnsubscribed)
+        {
+            session.Changed -= OnSessionChanged;
+            sessionUnsubscribed = true;
+        }
+
+        if (surveyStatsUnsubscribed || surveyStats is null)
+        {
+            return;
+        }
+
+        surveyStats.Changed -= OnSurveyStatsChanged;
+        surveyStatsUnsubscribed = true;
+    }
+
+    public void ReportStatisticsFailure(string message)
+    {
+        StatusMessage = "Could not open boxel statistics: " + message;
+    }
+
+    private void OnSessionChanged(
+        object? sender,
+        BoxelSearchSessionChangedEventArgs eventArgs)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            ApplySessionSnapshot(eventArgs.Current, eventArgs.Previous);
+            return;
+        }
+
+        Dispatcher.UIThread.Post(
+            () => ApplySessionSnapshot(eventArgs.Current, eventArgs.Previous));
+    }
+
+    private void ApplySessionSnapshot(
+        BoxelSearchSessionSnapshot snapshot,
+        BoxelSearchSessionSnapshot? previous = null)
+    {
+        if (snapshot.Version <= appliedSessionVersion)
+        {
+            return;
+        }
+
+        appliedSessionVersion = snapshot.Version;
+        var profileGeneration = snapshot.Context.Profile?.Generation ?? -1;
+        if (profileGeneration != appliedProfileGeneration)
+        {
+            navigationOptions.Clear();
+            appliedProfileGeneration = profileGeneration;
+        }
+
+        var searchChanged = !ReferenceEquals(searchState, snapshot.Search);
+        searchState = snapshot.Search;
+        latestRoute = snapshot.Context.Route;
+        status = snapshot.Context.Status;
+        musicTrack = snapshot.Context.MusicTrack;
+        lastDestination = snapshot.Context.Status?.Destination;
+        lastCopiedSystemName = snapshot.Context.LastCopiedSystemName;
+        currentPosition = snapshot.Context.CurrentPosition;
+        currentSystemAddress = snapshot.Context.CurrentSystemAddress;
+        CurrentSystemName = string.IsNullOrWhiteSpace(snapshot.Context.CurrentSystemName)
+            ? Unavailable
+            : snapshot.Context.CurrentSystemName;
+        OnPropertyChanged(nameof(HasCurrentSystemAddress));
+        OnPropertyChanged(nameof(CurrentSystemAddress));
+        OnPropertyChanged(nameof(CurrentSystemAddressText));
+
+        if (searchChanged)
+        {
+            ApplySearchConfiguration(snapshot.Search.Persistence);
+            UpdateDisplay();
+        }
+        else
+        {
+            UpdateSystemRows();
+            RaiseOverlayProperties();
+        }
+
+        UpdateDestinationStatus();
+
+        var activity = snapshot.Activity;
+        IsAuditing = activity.Kind is BoxelSearchActivityKind.Auditing
+            or BoxelSearchActivityKind.CancellingAudit;
+        IsBusy = activity.Kind != BoxelSearchActivityKind.Idle;
+        AuditProcessed = activity.Processed;
+        AuditTotal = Math.Max(1, activity.Total);
+        AuditProgress = activity.Kind switch
+        {
+            BoxelSearchActivityKind.Auditing =>
+                $"Audited {activity.Processed:N0} of {activity.Total:N0}: {activity.Prefix}",
+            BoxelSearchActivityKind.CancellingAudit =>
+                "Cancelling the full-area audit after the current request…",
+            _ when activity.Total > 0 =>
+                $"Audited {activity.Processed:N0} of {activity.Total:N0} boxels.",
+            _ => AuditProgress,
+        };
+
+        if (previous is not null
+            && !previous.Health.IsHealthy
+            && snapshot.Health.IsHealthy)
+        {
+            StatusMessage = "Boxel search synchronization restored.";
+        }
+    }
+
+    private void ApplySearchConfiguration(BoxelSearchSnapshot snapshot)
+    {
         suppressOptionPersistence = true;
         try
         {
@@ -1190,312 +1162,242 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             SkipKnownToSpansh = snapshot.SkipKnownToSpansh;
             CompleteOnFssAllBodies =
                 snapshot.CompletionMode == BoxelCompletionMode.FssAllBodies;
-            AutoCopy = snapshot.AutoCopy;
-            SortDescending = snapshot.SortDescending;
-            state.SetAutoCopy(AutoCopy);
+            SetField(ref autoCopy, snapshot.AutoCopy, nameof(AutoCopy));
+            SetField(ref sortDescending, snapshot.SortDescending, nameof(SortDescending));
         }
         finally
         {
             suppressOptionPersistence = false;
         }
+    }
 
-        if (state.TopBoxel is null)
+    private void ApplyOutcome(
+        BoxelSearchOutcome outcome,
+        bool competingAutoCopy = false)
+    {
+        ApplySessionSnapshot(session.Current);
+        ApplyAuditOutcome(outcome);
+        StatusMessage = GetOutcomeStatus(outcome, competingAutoCopy);
+    }
+
+    private void ApplyAuditOutcome(BoxelSearchOutcome outcome)
+    {
+        if (outcome.Code is not (BoxelSearchMessageCode.AuditCompleted
+            or BoxelSearchMessageCode.AuditCancelled))
         {
             return;
         }
 
+        AuditProcessed = outcome.Count;
+        AuditTotal = Math.Max(1, outcome.Total);
+        AuditProgress = GetAuditOutcomeStatus(outcome);
+    }
+
+    private string GetOutcomeStatus(
+        BoxelSearchOutcome outcome,
+        bool competingAutoCopy)
+    {
+        return outcome.Code switch
+        {
+            BoxelSearchMessageCode.SearchNotConfigured =>
+                "No boxel search is configured for this commander.",
+            BoxelSearchMessageCode.SearchLoadedInactive =>
+                "Loaded the saved boxel search; it is currently disabled.",
+            BoxelSearchMessageCode.ProfileLoaded =>
+                "Loaded the active boxel search.",
+            BoxelSearchMessageCode.ProfileUnavailable =>
+                "Waiting for a commander profile.",
+            BoxelSearchMessageCode.SearchInvalid =>
+                outcome.PrimaryValue ?? "The boxel search configuration is invalid.",
+            BoxelSearchMessageCode.SearchStopped =>
+                "Boxel search disabled; its progress was retained.",
+            BoxelSearchMessageCode.SearchSavedToLibrary =>
+                $"Saved boxel search as {outcome.PrimaryValue}.",
+            BoxelSearchMessageCode.SearchAlreadySavedToLibrary =>
+                "This boxel search is already saved to the library.",
+            BoxelSearchMessageCode.LibraryDetailsRequired =>
+                StatusMessage,
+            BoxelSearchMessageCode.LibraryUnavailable =>
+                "The saved boxel search library is temporarily unavailable.",
+            BoxelSearchMessageCode.SavedSearchResumed =>
+                $"Resumed saved boxel search {outcome.PrimaryValue}.",
+            BoxelSearchMessageCode.RefreshCompleted when outcome.Warnings is { Count: > 0 } =>
+                $"Refreshed {outcome.Count:N0} known systems with warnings.",
+            BoxelSearchMessageCode.RefreshCompleted =>
+                $"Refreshed {outcome.Count:N0} known systems in {outcome.PrimaryValue}.",
+            BoxelSearchMessageCode.RefreshFailed =>
+                "The boxel refresh could not be completed.",
+            BoxelSearchMessageCode.AuditCompleted when outcome.Warnings is { Count: > 0 } =>
+                $"Audited all {outcome.Total:N0} boxels with {outcome.Warnings.Count:N0} warnings.",
+            BoxelSearchMessageCode.AuditCompleted =>
+                $"Audited all {outcome.Total:N0} boxels and saved the refreshed progress.",
+            BoxelSearchMessageCode.AuditCancelled =>
+                GetAuditOutcomeStatus(outcome),
+            BoxelSearchMessageCode.AuditFailed =>
+                "The full-area audit could not be completed.",
+            BoxelSearchMessageCode.ExpectedSystemCountChanged =>
+                GetExpectedSystemCountStatus(outcome),
+            BoxelSearchMessageCode.SystemCompleted =>
+                GetSystemCompletedStatus(outcome),
+            BoxelSearchMessageCode.SystemReopened =>
+                GetSystemReopenedStatus(outcome),
+            BoxelSearchMessageCode.SystemDeferred =>
+                GetSystemDeferredStatus(outcome),
+            BoxelSearchMessageCode.SurveyStartChanged =>
+                GetSurveyStartStatus(outcome),
+            BoxelSearchMessageCode.NextSystemMarkedEmpty =>
+                GetNextSystemMarkedEmptyStatus(outcome),
+            BoxelSearchMessageCode.NextSystemCopied =>
+                GetNextSystemCopiedStatus(outcome),
+            BoxelSearchMessageCode.ClipboardNotReady =>
+                "The desktop clipboard is not available.",
+            BoxelSearchMessageCode.ClipboardFailed =>
+                "The next system could not be copied.",
+            BoxelSearchMessageCode.AutoCopyChanged when competingAutoCopy =>
+                "Boxel auto-copy was disabled because another Galaxy Map auto-copy setting was selected.",
+            BoxelSearchMessageCode.SynchronizationDegraded =>
+                "The boxel search changed for this session but could not be saved.",
+            _ => StatusMessage,
+        };
+    }
+
+    private static string GetAuditOutcomeStatus(BoxelSearchOutcome outcome)
+    {
+        return outcome.Code == BoxelSearchMessageCode.AuditCancelled
+            ? $"Audit cancelled after {outcome.Count:N0} of {outcome.Total:N0} boxels; partial progress was saved."
+            : $"Audited all {outcome.Total:N0} boxels and saved the refreshed progress.";
+    }
+
+    private static string GetExpectedSystemCountStatus(BoxelSearchOutcome outcome)
+    {
+        return outcome.Kind == BoxelSearchOutcomeKind.Rejected
+            ? $"Last system available cannot be below recorded suffix {outcome.Count:N0}."
+            : $"Last system available updated to {outcome.Count:N0}.";
+    }
+
+    private static string GetSystemCompletedStatus(BoxelSearchOutcome outcome)
+    {
+        return outcome.Kind == BoxelSearchOutcomeKind.Rejected
+            ? outcome.PrimaryValue ?? "The system was not marked complete."
+            : $"Marked {outcome.PrimaryValue} complete.";
+    }
+
+    private static string GetSystemReopenedStatus(BoxelSearchOutcome outcome)
+    {
+        return outcome.Kind == BoxelSearchOutcomeKind.Rejected
+            ? outcome.PrimaryValue ?? "The system was not reopened."
+            : $"Reopened {outcome.PrimaryValue}.";
+    }
+
+    private static string GetSystemDeferredStatus(BoxelSearchOutcome outcome)
+    {
+        return outcome.Kind == BoxelSearchOutcomeKind.Rejected
+            ? outcome.PrimaryValue ?? "The system was not deferred."
+            : $"Deferred {outcome.PrimaryValue}.";
+    }
+
+    private static string GetSurveyStartStatus(BoxelSearchOutcome outcome)
+    {
+        if (outcome.Kind == BoxelSearchOutcomeKind.Rejected)
+        {
+            return outcome.PrimaryValue ?? "The survey start point was not changed.";
+        }
+
+        return outcome.Count == 0
+            ? $"Survey will start at {outcome.PrimaryValue}."
+            : $"Survey will start at {outcome.PrimaryValue}; deferred {outcome.Count:N0} earlier systems.";
+    }
+
+    private static string GetNextSystemMarkedEmptyStatus(BoxelSearchOutcome outcome)
+    {
+        if (outcome.Kind == BoxelSearchOutcomeKind.Rejected)
+        {
+            return outcome.PrimaryValue
+                ?? "The next incomplete system was not marked empty.";
+        }
+
+        return string.IsNullOrWhiteSpace(outcome.SecondaryValue)
+            ? $"Marked {outcome.PrimaryValue} empty. No incomplete systems remain."
+            : $"Marked {outcome.PrimaryValue} empty. Next incomplete system: {outcome.SecondaryValue}.";
+    }
+
+    private static string GetNextSystemCopiedStatus(BoxelSearchOutcome outcome)
+    {
+        return outcome.Kind == BoxelSearchOutcomeKind.Rejected
+            ? "No next boxel system is available to copy."
+            : $"Copied {outcome.PrimaryValue} to the clipboard.";
+    }
+
+    private void RunSessionAction(IBoxelSearchAction action)
+    {
+        pendingOptionUpdate = RunSessionActionAsync(pendingOptionUpdate, action);
+    }
+
+    private Task<BoxelSearchOutcome> SwitchSessionProfileAsync(
+        BoxelSearchProfile profile)
+    {
+        return session.SwitchProfileAsync(profile, CancellationToken.None);
+    }
+
+    private Task<BoxelSearchOutcome> ClearSessionProfileAsync()
+    {
+        return session.ClearProfileAsync(cancellationToken: CancellationToken.None);
+    }
+
+    private Task<BoxelSearchOutcome> ApplySessionUpdateAsync(BoxelSearchUpdate update)
+    {
+        return session.ApplyAsync(update, CancellationToken.None);
+    }
+
+    private Task<BoxelSearchOutcome> ExecuteSessionActionAsync(IBoxelSearchAction action)
+    {
+        return session.ExecuteAsync(action, CancellationToken.None);
+    }
+
+    private Task<BoxelSearchLibrarySnapshot> GetSessionLibraryAsync()
+    {
+        return session.GetLibraryAsync(CancellationToken.None);
+    }
+
+    private async Task RunSessionActionAsync(
+        Task precedingUpdate,
+        IBoxelSearchAction action)
+    {
         try
         {
-            state.ApplyEmptyBoxels(
-                await emptyBoxelStore.LoadGroupAsync(
-                    state.TopBoxel,
-                    CancellationToken.None));
+            await precedingUpdate;
+            ApplyOutcome(await ExecuteSessionActionAsync(action));
         }
-        catch (InvalidDataException exception)
+        catch (ObjectDisposedException)
         {
-            StatusMessage = exception.Message;
-        }
-    }
-
-    public async Task DisableAutoCopyForCompetingRouteAsync()
-    {
-        if (!AutoCopy)
-        {
-            return;
-        }
-
-        SetField(ref autoCopy, false, nameof(AutoCopy));
-        state.SetAutoCopy(false);
-        await SaveAsync(
-            "Boxel auto-copy was disabled because another Galaxy Map auto-copy setting was selected.");
-    }
-
-    public Task RefreshCurrentAsync()
-    {
-        return RefreshCurrentAsync(preserveLastSystemAvailableEdit: true);
-    }
-
-    private async Task RefreshCurrentAsync(bool preserveLastSystemAvailableEdit)
-    {
-        if (!state.IsActive || state.Current is null)
-        {
-            StatusMessage = "Activate a boxel search before refreshing systems.";
-            return;
-        }
-
-        await operationLock.WaitAsync(CancellationToken.None);
-        try
-        {
-            IsBusy = true;
-            StatusMessage = $"Refreshing {state.Current.Prefix}\u2026";
-            var warnings = new List<string>();
-            try
-            {
-                state.ApplyEmptyBoxels(
-                    await emptyBoxelStore.LoadGroupAsync(
-                        state.Current,
-                        CancellationToken.None));
-            }
-            catch (InvalidDataException exception)
-            {
-                warnings.Add(exception.Message);
-            }
-
-            if (!state.CurrentIsEmpty)
-            {
-                var local = await localSystemReader.ReadAsync(
-                    frontierId!,
-                    state.Current,
-                    CancellationToken.None);
-                state.MergeLocalSystems(local.Systems);
-                warnings.AddRange(local.Errors);
-                if (latestRoute is not null)
-                {
-                    state.MergeRoute(latestRoute.Route
-                        .Select(entry => entry.ToBoxelObservation())
-                        .OfType<BoxelSystemObservation>());
-                }
-
-                try
-                {
-                    state.MergeSpanshSystems(
-                        await systemResolver.SearchAsync(
-                            state.Current,
-                            CancellationToken.None));
-                }
-                catch (Exception exception) when (
-                    exception is HttpRequestException
-                        or TaskCanceledException
-                        or InvalidDataException
-                        or System.Text.Json.JsonException)
-                {
-                    warnings.Add("Spansh refresh failed: " + exception.Message);
-                }
-            }
-
-            if (!preserveLastSystemAvailableEdit)
-            {
-                SetLastSystemAvailableEditState(false);
-            }
-
-            UpdateDisplay();
-            await SaveAsync();
-            StatusMessage = warnings.Count == 0
-                ? $"Refreshed {state.Systems.Count:N0} known systems in "
-                    + state.Current.Prefix
-                    + "."
-                : string.Join(Environment.NewLine, warnings);
+            // The app-scoped session owns shutdown and drains accepted work.
         }
         catch (Exception exception) when (
             exception is IOException
                 or UnauthorizedAccessException
                 or InvalidDataException)
         {
-            StatusMessage = "The boxel refresh could not be completed: "
+            StatusMessage = "The boxel search option could not be saved: "
                 + exception.Message;
         }
-        finally
+    }
+
+    private static SavedBoxelSearchDocument RequireSavedSearch(
+        BoxelSearchOutcome outcome)
+    {
+        ThrowForRejectedLibraryOutcome(outcome);
+        return outcome.SavedSearch
+            ?? throw new InvalidOperationException(
+                "The library action did not return a saved search.");
+    }
+
+    private static void ThrowForRejectedLibraryOutcome(BoxelSearchOutcome outcome)
+    {
+        if (outcome.Kind == BoxelSearchOutcomeKind.Rejected)
         {
-            IsBusy = false;
-            operationLock.Release();
+            throw new InvalidOperationException(
+                "The saved boxel search action could not be completed.");
         }
-    }
-
-    public async Task AuditAllAsync()
-    {
-        if (!CanAuditAll()
-            || frontierId is null
-            || state.TopBoxel is null)
-        {
-            StatusMessage = GetAuditUnavailableStatus();
-            return;
-        }
-
-        BeginAuditProgress();
-        var cancellation = auditCancellation!;
-        var auditFrontierId = frontierId;
-        var auditTopPrefix = state.TopBoxel.Prefix;
-        var request = CreateCompletionAuditRequest(auditFrontierId);
-        var progress = CreateAuditProgressReporter(cancellation);
-
-        try
-        {
-            var result = await completionAuditor.AuditAsync(
-                request,
-                progress,
-                cancellation.Token);
-            await ApplyAuditResultAsync(result, auditFrontierId, auditTopPrefix, cancellation);
-        }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
-        {
-            AuditProgress = $"Audit stopped after {AuditProcessed:N0} boxels.";
-            StatusMessage = "The full-area audit could not be completed: "
-                + exception.Message;
-        }
-        finally
-        {
-            CompleteAudit(cancellation);
-        }
-    }
-
-    private string GetAuditUnavailableStatus()
-    {
-        return ShowLargeAuditConfirmation && !ConfirmLargeAudit
-            ? "Confirm the large network audit before starting it."
-            : "Activate a boxel search before auditing its full area.";
-    }
-
-    private void BeginAuditProgress()
-    {
-        IsBusy = true;
-        IsAuditing = true;
-        AuditProcessed = 0;
-        AuditTotal = Math.Max(1, state.TotalBoxelCount);
-        AuditProgress = $"Preparing to audit {state.TotalBoxelCount:N0} boxels\u2026";
-        StatusMessage = "The full-area audit is running in the background.";
-        auditCancellation = new CancellationTokenSource();
-    }
-
-    private BoxelCompletionAuditRequest CreateCompletionAuditRequest(
-        string auditFrontierId)
-    {
-        var snapshot = state.CreateSnapshot();
-        var routeSystems = latestRoute?.Route
-            .Select(entry => entry.ToBoxelObservation())
-            .OfType<BoxelSystemObservation>()
-            .ToArray() ?? [];
-        return new BoxelCompletionAuditRequest(
-            auditFrontierId,
-            state.Boxels,
-            state.EmptyBoxelPrefixes,
-            state.Current?.Prefix,
-            snapshot.StartedOn,
-            snapshot.SkipAlreadyVisited,
-            snapshot.SkipKnownToSpansh,
-            snapshot.CompletionMode,
-            routeSystems);
-    }
-
-    private Progress<BoxelCompletionAuditProgress> CreateAuditProgressReporter(
-        CancellationTokenSource cancellation)
-    {
-        return new Progress<BoxelCompletionAuditProgress>(update =>
-        {
-            if (!IsAuditing || !ReferenceEquals(auditCancellation, cancellation))
-            {
-                return;
-            }
-
-            if (update.Processed <= AuditProcessed)
-            {
-                return;
-            }
-
-            AuditProcessed = update.Processed;
-            AuditProgress = $"Audited {update.Processed:N0} of {update.Total:N0}: "
-                + update.Prefix;
-        });
-    }
-
-    private async Task ApplyAuditResultAsync(
-        BoxelCompletionAuditResult result,
-        string auditFrontierId,
-        string auditTopPrefix,
-        CancellationTokenSource cancellation)
-    {
-        AuditProcessed = result.Processed;
-        AuditTotal = Math.Max(1, result.Total);
-        await operationLock.WaitAsync(cancellation.Token);
-        try
-        {
-            if (!IsAuditStillCurrent(auditFrontierId, auditTopPrefix))
-            {
-                StatusMessage = "The audit finished for a profile that is no longer active; its results were not applied.";
-                return;
-            }
-
-            state.ApplyCompletionAudit(result.Entries);
-            showNextSystemPageOnUpdate = true;
-            UpdateDisplay();
-            await SaveAsync();
-        }
-        finally
-        {
-            operationLock.Release();
-        }
-
-        AuditProgress = result.WasCancelled
-            ? $"Cancelled after {result.Processed:N0} of {result.Total:N0} boxels."
-            : $"Audited all {result.Total:N0} boxels.";
-        StatusMessage = BuildAuditStatus(result);
-    }
-
-    private bool IsAuditStillCurrent(string auditFrontierId, string auditTopPrefix)
-    {
-        return string.Equals(frontierId, auditFrontierId, StringComparison.Ordinal)
-            && string.Equals(
-                state.TopBoxel?.Prefix,
-                auditTopPrefix,
-                StringComparison.Ordinal);
-    }
-
-    private void CompleteAudit(CancellationTokenSource cancellation)
-    {
-        cancellation.Dispose();
-        if (ReferenceEquals(auditCancellation, cancellation))
-        {
-            auditCancellation = null;
-        }
-
-        IsAuditing = false;
-        IsBusy = false;
-    }
-
-    public Task CancelAuditAsync()
-    {
-        auditCancellation?.Cancel();
-        StatusMessage = "Cancelling the full-area audit after the current request\u2026";
-        return Task.CompletedTask;
-    }
-
-    public void CancelPendingOperations()
-    {
-        auditCancellation?.Cancel();
-        if (surveyStatsUnsubscribed || surveyStats is null)
-        {
-            return;
-        }
-
-        surveyStats.Changed -= OnSurveyStatsChanged;
-        surveyStatsUnsubscribed = true;
-    }
-
-    public void ReportStatisticsFailure(string message)
-    {
-        StatusMessage = "Could not open boxel statistics: " + message;
     }
 
     private void OnSurveyStatsChanged(object? sender, EventArgs eventArgs)
@@ -1541,18 +1443,17 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (parsedLastSystemAvailable < state.CurrentMaximumSystemNumber)
+        if (parsedLastSystemAvailable < searchState.CurrentMaximumSystemNumber)
         {
             StatusMessage = $"Last system available cannot be below recorded suffix "
-                + $"{state.CurrentMaximumSystemNumber:N0}.";
+                + $"{searchState.CurrentMaximumSystemNumber:N0}.";
             return;
         }
 
-        state.SetExpectedSystemCount(parsedLastSystemAvailable + 1);
         SetLastSystemAvailableEditState(false);
         showNextSystemPageOnUpdate = true;
-        UpdateDisplay();
-        await SaveAsync($"Last system available updated to {parsedLastSystemAvailable:N0}.");
+        ApplyOutcome(await ExecuteSessionActionAsync(
+            new SetExpectedSystemCount(parsedLastSystemAvailable + 1)));
     }
 
     public void RestoreLastSystemAvailable()
@@ -1571,73 +1472,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public async Task MarkNextEmptyAsync()
     {
-        if (!state.IsActive)
-        {
-            return;
-        }
-
-        await operationLock.WaitAsync(CancellationToken.None);
-        try
-        {
-            IsBusy = true;
-            if (!state.TryMarkNextSystemEmpty(out var markedSystem, out var error))
-            {
-                StatusMessage = error ?? "The next incomplete system was not marked empty.";
-                return;
-            }
-
-            showNextSystemPageOnUpdate = true;
-            UpdateDisplay();
-            var next = state.NextSystem;
-            await SaveAsync(string.IsNullOrWhiteSpace(next)
-                ? $"Marked {markedSystem} empty. No incomplete systems remain."
-                : $"Marked {markedSystem} empty. Next incomplete system: {next}.");
-            if (state.AutoCopy && !string.IsNullOrWhiteSpace(next))
-            {
-                await CopyNextSystemAsync();
-            }
-        }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
-        {
-            StatusMessage = "The empty-system marker was not changed: "
-                + exception.Message;
-        }
-        finally
-        {
-            IsBusy = false;
-            operationLock.Release();
-        }
+        await ExecuteSystemActionAsync(new MarkNextBoxelSystemEmpty());
     }
 
     public async Task CopyNextSystemAsync()
     {
-        if (state.NextSystem is null)
-        {
-            StatusMessage = "No next boxel system is available to copy.";
-            return;
-        }
-
-        if (clipboardWriter is null)
-        {
-            StatusMessage = "The desktop clipboard is not available.";
-            return;
-        }
-
-        try
-        {
-            await clipboardWriter(state.NextSystem);
-            lastCopiedSystemName = state.NextSystem;
-            StatusMessage = $"Copied {state.NextSystem} to the clipboard.";
-            OnPropertyChanged(nameof(NextSystemClipboardStatus));
-        }
-        catch (Exception exception)
-        {
-            StatusMessage = "The next system could not be copied: "
-                + exception.Message;
-        }
+        ApplyOutcome(await ExecuteSessionActionAsync(new CopyNextBoxelSystem()));
     }
 
     private async Task NavigateParentAsync()
@@ -1669,147 +1509,75 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private async Task NavigateAsync(BoxelAddress boxel)
     {
-        if (!state.TrySetCurrent(boxel, out var error))
-        {
-            StatusMessage = error ?? "The selected boxel could not be opened.";
-            return;
-        }
-
         showNextSystemPageOnUpdate = true;
-        UpdateDisplay();
-        await SaveAsync();
-        await RefreshCurrentAsync();
+        ApplyOutcome(await ExecuteSessionActionAsync(new NavigateToBoxel(boxel)));
     }
 
-    private Task CompleteSystemAsync(string systemName)
+    private async Task CompleteSystemAsync(string systemName)
     {
-        return RunSystemActionAsync(async () =>
-        {
-            if (!state.TrySetSystemComplete(systemName, true, out var error))
-            {
-                StatusMessage = error ?? "The system was not marked complete.";
-                return;
-            }
-
-            await FinishSystemActionAsync($"Marked {systemName} complete.");
-        });
+        await ExecuteSystemActionAsync(new CompleteBoxelSystem(systemName));
     }
 
-    private Task ReopenSystemAsync(string systemName)
+    private async Task ReopenSystemAsync(string systemName)
     {
-        return RunSystemActionAsync(async () =>
-        {
-            bool changed;
-            string? error;
-            if (state.IsSystemDeferred(systemName))
-            {
-                changed = state.TrySetSystemDeferred(systemName, false, out error);
-            }
-            else if (state.IsSystemEmpty(systemName))
-            {
-                changed = state.TrySetSystemEmpty(systemName, false, out error);
-            }
-            else
-            {
-                changed = state.TrySetSystemComplete(systemName, false, out error);
-            }
-            if (!changed)
-            {
-                StatusMessage = error ?? "The system was not reopened.";
-                return;
-            }
-
-            await FinishSystemActionAsync($"Reopened {systemName}.");
-        });
+        await ExecuteSystemActionAsync(new ReopenBoxelSystem(systemName));
     }
 
-    private Task DeferSystemAsync(string systemName)
+    private async Task DeferSystemAsync(string systemName)
     {
-        return RunSystemActionAsync(async () =>
-        {
-            if (!state.TrySetSystemDeferred(systemName, true, out var error))
-            {
-                StatusMessage = error ?? "The system was not deferred.";
-                return;
-            }
-
-            await FinishSystemActionAsync($"Deferred {systemName}.");
-        });
+        await ExecuteSystemActionAsync(new DeferBoxelSystem(systemName));
     }
 
-    private Task StartAtSystemAsync(string systemName)
+    private async Task StartAtSystemAsync(string systemName)
     {
-        return RunSystemActionAsync(async () =>
-        {
-            if (!state.TryStartAtSystem(systemName, out var deferredCount, out var error))
-            {
-                StatusMessage = error ?? "The survey start point was not changed.";
-                return;
-            }
-
-            var message = deferredCount == 0
-                ? $"Survey will start at {systemName}."
-                : $"Survey will start at {systemName}; deferred {deferredCount:N0} earlier systems.";
-            await FinishSystemActionAsync(message);
-        });
+        await ExecuteSystemActionAsync(new StartBoxelSurveyAt(systemName));
     }
 
-    private async Task RunSystemActionAsync(Func<Task> action)
-    {
-        await operationLock.WaitAsync(CancellationToken.None);
-        try
-        {
-            await action();
-        }
-        finally
-        {
-            operationLock.Release();
-        }
-    }
-
-    private async Task FinishSystemActionAsync(string message)
+    private async Task ExecuteSystemActionAsync(IBoxelSearchAction action)
     {
         showNextSystemPageOnUpdate = true;
-        UpdateDisplay();
-        await SaveAsync(message);
-        if (state.AutoCopy && !string.IsNullOrWhiteSpace(state.NextSystem))
+        var outcome = await ExecuteSessionActionAsync(action);
+        ApplyOutcome(outcome);
+        if (outcome.Kind != BoxelSearchOutcomeKind.Rejected
+            && searchState.AutoCopy
+            && !string.IsNullOrWhiteSpace(searchState.NextSystem))
         {
-            await CopyNextSystemAsync();
+            ApplyOutcome(await ExecuteSessionActionAsync(new CopyNextBoxelSystem()));
         }
     }
 
     private BoxelAddress? GetParent()
     {
-        if (state.TopBoxel is null
-            || state.Current is null
+        if (searchState.TopBoxel is null
+            || searchState.CurrentBoxel is null
             || string.Equals(
-                state.TopBoxel.Prefix,
-                state.Current.Prefix,
+                searchState.TopBoxel.Prefix,
+                searchState.CurrentBoxel.Prefix,
                 StringComparison.Ordinal))
         {
             return null;
         }
 
-        var parent = state.Current.Parent;
-        return state.TopBoxel.Contains(parent) ? parent : null;
+        var parent = searchState.CurrentBoxel.Parent;
+        return searchState.TopBoxel.Contains(parent) ? parent : null;
     }
 
     private BoxelAddress? GetSibling(int offset)
     {
-        if (state.TopBoxel is null
-            || state.Current is null
+        if (searchState.TopBoxel is null
+            || searchState.CurrentBoxel is null
             || string.Equals(
-                state.TopBoxel.Prefix,
-                state.Current.Prefix,
+                searchState.TopBoxel.Prefix,
+                searchState.CurrentBoxel.Prefix,
                 StringComparison.Ordinal))
         {
             return null;
         }
 
-        var siblings = state.Current.Parent.Children;
+        var siblings = searchState.CurrentBoxel.Parent.Children;
         var index = siblings.ToList().FindIndex(sibling => string.Equals(
             sibling.Prefix,
-            state.Current.Prefix,
+            searchState.CurrentBoxel.Prefix,
             StringComparison.Ordinal));
         var targetIndex = index + offset;
         return targetIndex >= 0 && targetIndex < siblings.Count
@@ -1819,27 +1587,31 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private bool IsCurrentSystemInsideSearch()
     {
-        return state.TopBoxel is not null
+        return searchState.TopBoxel is not null
             && TryParseBoxelInput(CurrentSystemName, out var currentSystem)
-            && state.TopBoxel.Contains(currentSystem);
+            && searchState.TopBoxel.Contains(currentSystem);
     }
 
     private bool CanActivate()
     {
         return !IsBusy
-            && frontierId is not null
-            && !state.IsActive
+            && session.Current.Context.Profile is not null
+            && !searchState.IsActive
             && !string.IsNullOrWhiteSpace(TopBoxelText);
     }
 
     private bool CanDisable()
     {
-        return !IsBusy && frontierId is not null && state.IsActive;
+        return !IsBusy
+            && session.Current.Context.Profile is not null
+            && searchState.IsActive;
     }
 
     private bool CanUseActiveSearch()
     {
-        return !IsBusy && frontierId is not null && state.IsActive;
+        return !IsBusy
+            && session.Current.Context.Profile is not null
+            && searchState.IsActive;
     }
 
     private bool CanApplyLastSystemAvailable()
@@ -1848,110 +1620,42 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             && TryParseLastSystemAvailable(
                 LastSystemAvailable,
                 out var parsedLastSystemAvailable)
-            && parsedLastSystemAvailable >= state.CurrentMaximumSystemNumber
-            && parsedLastSystemAvailable != Math.Max(0, state.CurrentCount - 1);
+            && parsedLastSystemAvailable >= searchState.CurrentMaximumSystemNumber
+            && parsedLastSystemAvailable != Math.Max(0, searchState.CurrentCount - 1);
     }
 
     private bool CanCopyNext()
     {
         return !IsBusy
-            && state.IsActive
-            && state.NextSystem is not null
-            && clipboardWriter is not null;
+            && searchState.IsActive
+            && searchState.NextSystem is not null;
     }
 
     private bool CanAuditAll()
     {
         return !IsBusy
-            && frontierId is not null
-            && state.IsActive
-            && state.TopBoxel is not null
+            && session.Current.Context.Profile is not null
+            && searchState.IsActive
+            && searchState.TopBoxel is not null
             && (!ShowLargeAuditConfirmation || ConfirmLargeAudit);
-    }
-
-    private static string BuildAuditStatus(BoxelCompletionAuditResult result)
-    {
-        var outcome = result.WasCancelled
-            ? $"Audit cancelled after {result.Processed:N0} of {result.Total:N0} boxels; partial progress was saved."
-            : $"Audited all {result.Total:N0} boxels and saved the refreshed progress.";
-        return result.Errors.Count == 0
-            ? outcome
-            : outcome + $" {result.Errors.Count:N0} warning"
-                + ((result.Errors.Count == 1) switch
-                {
-                    true => string.Empty,
-                    false => "s"
-                })
-                + $" occurred. First: {result.Errors[0]}";
-    }
-
-    private async Task SaveAsync(string? successMessage = null)
-    {
-        if (frontierId is null || state.TopBoxel is null)
-        {
-            return;
-        }
-
-        try
-        {
-            var snapshot = state.CreateSnapshot();
-            await profileStore.SaveBoxelSearchAsync(
-                frontierId,
-                commanderName,
-                isOdyssey,
-                snapshot,
-                CancellationToken.None);
-            if (state.SavedSearchFileName is { } savedFileName)
-            {
-                try
-                {
-                    await savedSearchStore.SaveProgressAsync(
-                        frontierId,
-                        savedFileName,
-                        snapshot,
-                        CancellationToken.None);
-                }
-                catch (FileNotFoundException)
-                {
-                    state.SetSavedSearchFileName(null);
-                    await profileStore.SaveBoxelSearchAsync(
-                        frontierId,
-                        commanderName,
-                        isOdyssey,
-                        state.CreateSnapshot(),
-                        CancellationToken.None);
-                }
-            }
-
-            if (successMessage is not null)
-            {
-                StatusMessage = successMessage;
-            }
-        }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
-        {
-            StatusMessage = "The boxel search changed for this session but could not be saved: "
-                + exception.Message;
-        }
     }
 
     private void UpdateDisplay()
     {
-        searchPrefixes = state.Boxels.Select(boxel => boxel.Prefix).ToArray();
+        searchPrefixes = searchState.Boxels.Select(boxel => boxel.Prefix).ToArray();
         OnPropertyChanged(nameof(SearchPrefixes));
         OnPropertyChanged(nameof(CanSaveProgress));
+        OnPropertyChanged(nameof(IsSavedToLibrary));
+        OnPropertyChanged(nameof(LibrarySaveButtonText));
         OnPropertyChanged(nameof(SuggestedSaveName));
-        CurrentBoxelName = state.Current?.Prefix ?? Unavailable;
-        CurrentBoxelDescription = state.Current is null
+        CurrentBoxelName = searchState.CurrentBoxel?.Prefix ?? Unavailable;
+        CurrentBoxelDescription = searchState.CurrentBoxel is null
             ? string.Empty
-            : $"System-name range: {state.Current.WithSystemNumber(0).Name} through "
-                + state.Current.WithSystemNumber(
-                    Math.Max(0, state.CurrentCount - 1)).Name;
-        NextSystem = state.NextSystem ?? Unavailable;
-        if (!hasUnappliedLastSystemAvailableEdit)
+            : $"System-name range: {searchState.CurrentBoxel.WithSystemNumber(0).Name} through "
+                + searchState.CurrentBoxel.WithSystemNumber(
+                    Math.Max(0, searchState.CurrentCount - 1)).Name;
+        NextSystem = GetPresentedNextSystem() ?? Unavailable;
+        if (!hasUnappliedLastSystemAvailableEdit && !isActivating)
         {
             SetField(
                 ref lastSystemAvailable,
@@ -1959,14 +1663,14 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 nameof(LastSystemAvailable));
         }
         SetLastSystemAvailableEditState(hasUnappliedLastSystemAvailableEdit);
-        SystemProgress = $"{state.CompletedSystemCount:N0} of "
-            + $"{Math.Max(state.CurrentCount, state.Systems.Count):N0} systems complete";
-        BoxelProgress = $"{state.CompletedBoxelCount:N0} of "
-            + $"{state.TotalBoxelCount:N0} boxels complete";
-        AuditTotal = Math.Max(1, state.TotalBoxelCount);
-        AuditDescription = state.IsActive
+        SystemProgress = $"{searchState.CompletedSystemCount:N0} of "
+            + $"{Math.Max(searchState.CurrentCount, searchState.Systems.Count):N0} systems complete";
+        BoxelProgress = $"{searchState.CompletedBoxelCount:N0} of "
+            + $"{searchState.TotalBoxelCount:N0} boxels complete";
+        AuditTotal = Math.Max(1, searchState.TotalBoxelCount);
+        AuditDescription = searchState.IsActive
             ? $"Checks saved system history, the current NavRoute, empty-boxel records, "
-                + $"and Spansh across all {state.TotalBoxelCount:N0} boxels. Network requests "
+                + $"and Spansh across all {searchState.TotalBoxelCount:N0} boxels. Network requests "
                 + "run sequentially; cancellation keeps completed audit progress."
             : "Activate a boxel search to audit its full area.";
         OnPropertyChanged(nameof(IsActive));
@@ -1981,22 +1685,6 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         UpdateSystemRows();
         UpdateNavigation();
         RaiseCommandStates();
-    }
-
-    private string RequireFrontierId()
-    {
-        return frontierId
-            ?? throw new InvalidOperationException(
-                "A commander profile must be loaded first.");
-    }
-
-    private static bool IsExpectedSavedSearchException(Exception exception)
-    {
-        return exception is IOException
-            or UnauthorizedAccessException
-            or InvalidDataException
-            or ArgumentException
-            or System.Text.Json.JsonException;
     }
 
     private void UpdateDestinationStatus()
@@ -2032,21 +1720,21 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (state.TopBoxel is null || !state.TopBoxel.Contains(destinationBoxel))
+        if (searchState.TopBoxel is null || !searchState.TopBoxel.Contains(destinationBoxel))
         {
             DestinationStatus = $"{destinationBoxel.Prefix} · outside search boxel";
             IsDestinationValid = false;
             return;
         }
 
-        if (destinationBoxel.MassCode < state.LowMassCode)
+        if (destinationBoxel.MassCode < searchState.LowMassCode)
         {
             DestinationStatus = $"{destinationBoxel.Prefix} · mass code too low";
             IsDestinationValid = false;
             return;
         }
 
-        if (state.Systems.Any(system =>
+        if (searchState.Systems.Any(system =>
                 system.IsComplete
                 && string.Equals(
                     system.Boxel.Name,
@@ -2066,14 +1754,15 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
         OnPropertyChanged(nameof(NextSystemClipboardStatus));
+        OnPropertyChanged(nameof(RequiresManualCopy));
     }
 
     private void UpdateSystemRows()
     {
-        if (!state.IsActive || state.Current is null || state.CurrentIsEmpty)
+        if (!searchState.IsActive || searchState.CurrentBoxel is null || searchState.CurrentIsEmpty)
         {
             systemPageIndex = 0;
-            systemPagePrefix = state.IsActive ? state.Current?.Prefix : null;
+            systemPagePrefix = searchState.IsActive ? searchState.CurrentBoxel?.Prefix : null;
             systemPageTarget = null;
             systemPageTargetIndex = null;
             showNextSystemPageOnUpdate = false;
@@ -2087,7 +1776,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        var systemsByNumber = state.Systems.ToDictionary(
+        var systemsByNumber = searchState.Systems.ToDictionary(
             system => system.Boxel.N2);
         var totalRowCount = Math.Max(1, GetSystemRowCount());
         (orderedSystemNumbers, currentDeferredSystemCount) =
@@ -2098,16 +1787,17 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 .Select((number, position) => (number, position))
                 .ToDictionary(entry => entry.number, entry => entry.position);
         var rowCount = orderedSystemNumbers.Length;
+        var presentedNextSystem = GetPresentedNextSystem();
         var nextSystemPageIndex = GetNextSystemPageIndex();
         var nextSystemLocationChanged = !string.Equals(
                 systemPageTarget,
-                state.NextSystem,
+                presentedNextSystem,
                 StringComparison.Ordinal)
             || systemPageTargetIndex != nextSystemPageIndex;
         if (!ShowOnlyDeferred
             && (!string.Equals(
                 systemPagePrefix,
-                state.Current.Prefix,
+                searchState.CurrentBoxel.Prefix,
                 StringComparison.Ordinal)
                 || showNextSystemPageOnUpdate
                 || nextSystemLocationChanged))
@@ -2115,8 +1805,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             systemPageIndex = nextSystemPageIndex;
         }
 
-        systemPagePrefix = state.Current.Prefix;
-        systemPageTarget = state.NextSystem;
+        systemPagePrefix = searchState.CurrentBoxel.Prefix;
+        systemPageTarget = presentedNextSystem;
         systemPageTargetIndex = nextSystemPageIndex;
         showNextSystemPageOnUpdate = false;
         var pageCount = Math.Max(1, (rowCount + SystemsPerPage - 1) / SystemsPerPage);
@@ -2140,12 +1830,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 out var currentSystem)
             ? currentSystem?.Name
             : null;
-        var nextSystemName = state.NextSystem;
+        var nextSystemName = presentedNextSystem;
         Systems = rowNumbers
             .Select(number =>
             {
                 systemsByNumber.TryGetValue(number, out var system);
-                var boxel = system?.Boxel ?? state.Current.WithSystemNumber(number);
+                var boxel = system?.Boxel ?? searchState.CurrentBoxel.WithSystemNumber(number);
                 var distance = system?.Position is { } position
                     && currentPosition is { } from
                         ? $"{from.DistanceTo(position):N2} ly"
@@ -2160,8 +1850,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                         Name = boxel.Name,
                         IsComplete = system?.IsComplete == true,
                         IsKnown = system is not null,
-                        IsEmpty = state.EmptySystems.Contains(boxel.GeneratedName),
-                        IsDeferred = state.IsSystemDeferred(boxel.Prefix, boxel.N2),
+                        IsEmpty = searchState.EmptySystems.Contains(boxel.GeneratedName),
+                        IsDeferred = searchState.IsSystemDeferred(boxel.Prefix, boxel.N2),
                         IsCurrent = isCurrent,
                         IsNextIncomplete = string.Equals(
                             nextSystemName,
@@ -2182,9 +1872,16 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private int GetSystemRowCount()
     {
-        return state.Current is null || state.CurrentIsEmpty
+        return searchState.CurrentBoxel is null || searchState.CurrentIsEmpty
             ? 0
-            : Math.Max(state.CurrentCount, state.CurrentMaximumSystemNumber + 1);
+            : Math.Max(searchState.CurrentCount, searchState.CurrentMaximumSystemNumber + 1);
+    }
+
+    private string? GetPresentedNextSystem()
+    {
+        return SortDescending
+            ? searchState.NextSystemDescending
+            : searchState.NextSystemAscending;
     }
 
     private (int[] Numbers, int DeferredCount) GetOrderedSystemNumbers(
@@ -2194,13 +1891,13 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             ? Enumerable.Range(0, rowCount).Reverse()
             : Enumerable.Range(0, rowCount);
         var ordered = numbers.ToArray();
-        if (state.Current is null)
+        if (searchState.CurrentBoxel is null)
         {
             return (ordered, 0);
         }
 
         var deferredNumbers = ordered
-            .Where(number => state.IsSystemDeferred(state.Current.Prefix, number))
+            .Where(number => searchState.IsSystemDeferred(searchState.CurrentBoxel.Prefix, number))
             .ToArray();
         if (ShowOnlyDeferred)
         {
@@ -2257,25 +1954,26 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private int GetNextSystemPageIndex()
     {
-        if (state.Current is null || string.IsNullOrWhiteSpace(state.NextSystem))
+        var nextSystemName = GetPresentedNextSystem();
+        if (searchState.CurrentBoxel is null || string.IsNullOrWhiteSpace(nextSystemName))
         {
             return 0;
         }
 
-        var known = state.Systems.FirstOrDefault(system =>
-            string.Equals(system.Boxel.Name, state.NextSystem, StringComparison.Ordinal)
+        var known = searchState.Systems.FirstOrDefault(system =>
+            string.Equals(system.Boxel.Name, nextSystemName, StringComparison.Ordinal)
             || string.Equals(
                 system.Boxel.GeneratedName,
-                state.NextSystem,
+                nextSystemName,
                 StringComparison.Ordinal));
         if (known is not null)
         {
             return GetSystemPageIndex(known.Boxel.N2);
         }
 
-        return BoxelAddress.TryParse(state.NextSystem, out var next)
+        return BoxelAddress.TryParse(nextSystemName, out var next)
             && next is not null
-            && string.Equals(next.Prefix, state.Current.Prefix, StringComparison.Ordinal)
+            && string.Equals(next.Prefix, searchState.CurrentBoxel.Prefix, StringComparison.Ordinal)
                 ? GetSystemPageIndex(next.N2)
                 : 0;
     }
@@ -2300,7 +1998,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private string FormatLastSystemAvailable()
     {
-        return Math.Max(0, state.CurrentCount - 1)
+        return Math.Max(0, searchState.CurrentCount - 1)
             .ToString(CultureInfo.CurrentCulture);
     }
 
@@ -2328,8 +2026,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return "Enter numbers only, from 0 to 99,999.";
         }
 
-        return parsed < state.CurrentMaximumSystemNumber
-            ? $"Enter {state.CurrentMaximumSystemNumber:N0} or higher; that suffix is already recorded."
+        return parsed < searchState.CurrentMaximumSystemNumber
+            ? $"Enter {searchState.CurrentMaximumSystemNumber:N0} or higher; that suffix is already recorded."
             : string.Empty;
     }
 
@@ -2356,7 +2054,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         return !IsBusy
             && HasSystems
             && !ShowOnlyDeferred
-            && !string.IsNullOrWhiteSpace(state.NextSystem)
+            && !string.IsNullOrWhiteSpace(searchState.NextSystem)
             && systemPageIndex != GetNextSystemPageIndex();
     }
 
@@ -2388,7 +2086,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private void UpdateNavigation()
     {
-        if (state.TopBoxel is null || state.Current is null)
+        if (searchState.TopBoxel is null || searchState.CurrentBoxel is null)
         {
             SetBreadcrumbBoxels([]);
             ChildBoxels = [];
@@ -2401,7 +2099,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        var path = GetBreadcrumbPath(state.TopBoxel, state.Current);
+        var path = GetBreadcrumbPath(searchState.TopBoxel, searchState.CurrentBoxel);
         var breadcrumbs = path
             .Select(GetNavigationOption)
             .ToArray();
@@ -2415,10 +2113,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         var siblingIndex = -1;
         if (ParentBoxel is not null)
         {
-            siblings = state.Current.Parent.Children.ToArray();
+            siblings = searchState.CurrentBoxel.Parent.Children.ToArray();
             siblingIndex = Array.FindIndex(siblings, sibling => string.Equals(
                 sibling.Prefix,
-                state.Current.Prefix,
+                searchState.CurrentBoxel.Prefix,
                 StringComparison.Ordinal));
         }
 
@@ -2433,8 +2131,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             ? $"{siblingIndex + 1:N0} of {siblings.Length:N0} at this level"
             : "Search root";
 
-        ChildBoxels = state.Current.MassCode > state.LowMassCode
-            ? state.Current.Children
+        ChildBoxels = searchState.CurrentBoxel.MassCode > searchState.LowMassCode
+            ? searchState.CurrentBoxel.Children
                 .Select(GetNavigationOption)
                 .ToArray()
             : [];
@@ -2461,9 +2159,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         }
 
         option.Update(
-            state.GetProgress(boxel),
+            searchState.GetProgress(boxel),
             string.Equals(
-                state.Current?.Prefix,
+                searchState.CurrentBoxel?.Prefix,
                 boxel.Prefix,
                 StringComparison.Ordinal));
         return option;

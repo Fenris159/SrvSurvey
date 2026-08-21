@@ -14,6 +14,6 @@
         Background="Transparent"
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
-        Title="SrvSurvey Guardian map zoom">
+        Title="SrvSurvey Guardian map zoom overlay">
   <local:GuardianZoomOverlayPresentation />
 </Window>

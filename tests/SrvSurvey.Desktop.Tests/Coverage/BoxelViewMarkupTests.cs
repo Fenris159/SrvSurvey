@@ -1,9 +1,20 @@
+using Avalonia.Headless.XUnit;
+using SrvSurvey.Desktop.Views;
 using System.Xml.Linq;
 
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class BoxelViewMarkupTests
 {
+    [AvaloniaFact]
+    public void ConstructorLoadsTheBoxelWorkspace()
+    {
+        var view = new BoxelView();
+
+        Assert.NotNull(view.Content);
+    }
+
     [Fact]
     public void SelectedSystemPageUsesAccentForegroundForText()
     {
@@ -41,8 +52,10 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("{Binding BoxelSearch.AutoCopy, Mode=TwoWay}", boxelBindings);
         Assert.Contains("{Binding BoxelSearch.AuditAllCommand}", boxelBindings);
         Assert.Contains("{Binding BoxelSearch.Systems}", boxelBindings);
-        Assert.Contains("Save Progress", boxelBindings);
-        Assert.Contains("Resume Search", boxelBindings);
+        Assert.Contains(
+            "{Binding BoxelSearch.LibrarySaveButtonText}",
+            boxelBindings);
+        Assert.Contains("Open Library", boxelBindings);
         Assert.Contains("Boxel Stats", boxelBindings);
         Assert.Contains("BoxelStats_Click", boxelBindings);
         Assert.Contains("Open stats", boxelBindings);
@@ -484,7 +497,7 @@ public sealed class BoxelViewMarkupTests
             .Select(attribute => attribute.Value)
             .ToArray();
 
-        Assert.Contains("Open Selected", values);
+        Assert.Contains("Resume Selected", values);
         Assert.Contains("Favorites first", values);
         Assert.Contains("SELECT", values);
         Assert.Contains("NAME", values);

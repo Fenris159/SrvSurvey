@@ -35,6 +35,24 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void EditorAndPreviewTitlesMatchTheKdeOverlayRule()
+    {
+        var editor = new OverlayPositionEditorWindow();
+        var preview = new OverlayPositionPreviewWindow(
+            OverlayLayoutCatalog.Supported[0]);
+        try
+        {
+            Assert.Matches("^SrvSurvey.*overlay$", editor.Title);
+            Assert.Matches("^SrvSurvey.*overlay$", preview.Title);
+        }
+        finally
+        {
+            preview.Close();
+            editor.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void EditorOpensPreviewsSuppressesRuntimeWindowsAndRestoresThem()
     {
         Directory.CreateDirectory(temporaryDirectory);

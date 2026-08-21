@@ -8,8 +8,9 @@ using static SrvSurvey.Desktop.Tests.JournalEventEnvelopeTestParser;
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
-public sealed class BoxelSearchViewModelTests : IDisposable
+public sealed class BoxelSearchViewModelTests : IAsyncLifetime
 {
+    private readonly List<BoxelSearchSession> sessions = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-boxel-vm-tests-{Guid.NewGuid():N}");
@@ -54,7 +55,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         var originalStart = DateTimeOffset.Parse("2026-05-04T00:00:00-05:00");
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var savedStore = new SavedBoxelSearchStore(temporaryDirectory);
-        var first = new BoxelSearchViewModel(
+        var first = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -69,7 +70,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             SaveBoxelProgressResult.Saved,
             await first.SaveProgressAsync("Original configuration", null));
         var saved = Assert.Single(await savedStore.ListAsync("F123"));
-        var resumed = new BoxelSearchViewModel(
+        var resumed = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -96,6 +97,8 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
         viewModel.LowMassCode = "c";
         await viewModel.ActivateAsync();
+        Assert.True(viewModel.CanSaveProgress);
+        Assert.Equal("Save to Library", viewModel.LibrarySaveButtonText);
         var changedProperties = new List<string?>();
         viewModel.PropertyChanged += (_, eventArgs) =>
             changedProperties.Add(eventArgs.PropertyName);
@@ -203,7 +206,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal('c', saved.Data?.BoxelSearch.LowMassCode);
         Assert.True(saved.Data?.BoxelSearch.SkipAlreadyVisited);
 
-        viewModel.UpdateCurrentSystem(
+        await viewModel.UpdateCurrentSystemAsync(
             "Praea Euq IL-P c5-0",
             new GalacticCoordinate(1, 2, 3),
             100);
@@ -213,7 +216,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         viewModel.PropertyChanged += (_, eventArgs) =>
             notifications.Add(eventArgs.PropertyName);
 
-        viewModel.UpdateCurrentSystem(
+        await viewModel.UpdateCurrentSystemAsync(
             "Praea Euq IL-P c5-0",
             new GalacticCoordinate(1, 2, 3),
             100);
@@ -221,7 +224,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Same(rows, viewModel.Systems);
         Assert.Empty(notifications);
 
-        viewModel.UpdateCurrentSystem(
+        await viewModel.UpdateCurrentSystemAsync(
             "Praea Euq IL-P c5-1",
             new GalacticCoordinate(1, 2, 3),
             101);
@@ -465,7 +468,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -520,7 +523,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -702,7 +705,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             "known_systems = {\n  \"sol\": 10477373803,\n}\n"
                 + "known_missing = [\n]\n");
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -736,7 +739,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             new SystemNameSuggestion("Sol", 10477373803, "EDSM"),
             new SystemNameSuggestion("Solati", 1458376315610, "EDSM"),
         ]);
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -778,7 +781,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var copied = new List<string>();
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -801,7 +804,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         viewModel.LowMassCode = "c";
         viewModel.AutoCopy = true;
         await viewModel.ActivateAsync();
-        viewModel.UpdateCurrentSystem(
+        await viewModel.UpdateCurrentSystemAsync(
             "Praea Euq IL-P c5-1",
             new GalacticCoordinate(1, 2, 3));
         await viewModel.ApplyJournalEventsAsync(
@@ -827,7 +830,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var copied = new List<string>();
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -850,7 +853,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         viewModel.LowMassCode = "c";
         viewModel.AutoCopy = true;
         await viewModel.ActivateAsync();
-        viewModel.UpdateCurrentSystem(
+        await viewModel.UpdateCurrentSystemAsync(
             "Praea Euq IL-P c5-0",
             new GalacticCoordinate(1, 2, 3));
 
@@ -951,7 +954,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -1070,7 +1073,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal(rootChildren[3].Label, viewModel.CurrentHierarchyBoxel?.Label);
         Assert.Equal("4 of 8 at this level", viewModel.SiblingPosition);
 
-        viewModel.SetProfileError("Profile unavailable.");
+        await viewModel.SetProfileErrorAsync("Profile unavailable.");
         await viewModel.LoadProfileAsync(
             "F123",
             "Drew",
@@ -1187,7 +1190,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var savedStore = new SavedBoxelSearchStore(temporaryDirectory);
-        var viewModel = new BoxelSearchViewModel(
+        var viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -1212,6 +1215,9 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal(
             SaveBoxelProgressResult.Saved,
             await viewModel.SaveProgressAsync("Return later", "Test notes"));
+        Assert.False(viewModel.CanSaveProgress);
+        Assert.True(viewModel.IsSavedToLibrary);
+        Assert.Equal("Saved to Library", viewModel.LibrarySaveButtonText);
         var entry = Assert.Single(await savedStore.ListAsync("F123"));
 
         await viewModel.ApplyJournalEventsAsync(
@@ -1233,6 +1239,9 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.Equal(
             SaveBoxelProgressResult.RequiresDetails,
             await viewModel.SaveProgressAsync());
+        Assert.True(viewModel.CanSaveProgress);
+        Assert.False(viewModel.IsSavedToLibrary);
+        Assert.Equal("Save to Library", viewModel.LibrarySaveButtonText);
         var active = await profileStore.LoadAsync("F123", true);
         Assert.Null(active.Data?.BoxelSearch.SavedSearchFileName);
     }
@@ -1274,12 +1283,190 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.True(restarted.Systems[1].IsComplete);
     }
 
-    public void Dispose()
+    [Fact]
+    public async Task SessionOutcomesProduceSpecificStatusMessages()
     {
-        if (Directory.Exists(temporaryDirectory))
+        var session = new ProgrammableSession();
+        var viewModel = new BoxelSearchViewModel(session);
+        var warning = new BoxelSearchWarning(
+            BoxelSearchHealthSubsystem.Resolver,
+            BoxelSearchMessageCode.RefreshFailed);
+        var cases = new (BoxelSearchOutcome Outcome, string Expected)[]
         {
-            Directory.Delete(temporaryDirectory, true);
+            (Outcome(BoxelSearchMessageCode.SearchNotConfigured),
+                "No boxel search is configured for this commander."),
+            (Outcome(BoxelSearchMessageCode.SearchLoadedInactive),
+                "Loaded the saved boxel search; it is currently disabled."),
+            (Outcome(BoxelSearchMessageCode.ProfileLoaded),
+                "Loaded the active boxel search."),
+            (Outcome(BoxelSearchMessageCode.ProfileUnavailable),
+                "Waiting for a commander profile."),
+            (Outcome(BoxelSearchMessageCode.SearchInvalid, primaryValue: "Invalid range."),
+                "Invalid range."),
+            (Outcome(BoxelSearchMessageCode.SearchInvalid),
+                "The boxel search configuration is invalid."),
+            (Outcome(BoxelSearchMessageCode.SearchStopped),
+                "Boxel search disabled; its progress was retained."),
+            (Outcome(BoxelSearchMessageCode.SearchSavedToLibrary, primaryValue: "Survey"),
+                "Saved boxel search as Survey."),
+            (Outcome(BoxelSearchMessageCode.SearchAlreadySavedToLibrary),
+                "This boxel search is already saved to the library."),
+            (Outcome(BoxelSearchMessageCode.LibraryUnavailable),
+                "The saved boxel search library is temporarily unavailable."),
+            (Outcome(BoxelSearchMessageCode.SavedSearchResumed, primaryValue: "Survey"),
+                "Resumed saved boxel search Survey."),
+            (Outcome(BoxelSearchMessageCode.RefreshCompleted, primaryValue: "boxel", count: 12),
+                "Refreshed 12 known systems in boxel."),
+            (Outcome(BoxelSearchMessageCode.RefreshCompleted, count: 12, warnings: [warning]),
+                "Refreshed 12 known systems with warnings."),
+            (Outcome(BoxelSearchMessageCode.RefreshFailed),
+                "The boxel refresh could not be completed."),
+            (Outcome(BoxelSearchMessageCode.AuditCompleted, total: 4),
+                "Audited all 4 boxels and saved the refreshed progress."),
+            (Outcome(BoxelSearchMessageCode.AuditCompleted, total: 4, warnings: [warning]),
+                "Audited all 4 boxels with 1 warnings."),
+            (Outcome(BoxelSearchMessageCode.AuditCancelled, count: 2, total: 4),
+                "Audit cancelled after 2 of 4 boxels; partial progress was saved."),
+            (Outcome(BoxelSearchMessageCode.AuditFailed),
+                "The full-area audit could not be completed."),
+            (Outcome(BoxelSearchMessageCode.ExpectedSystemCountChanged, count: 9),
+                "Last system available updated to 9."),
+            (Outcome(BoxelSearchMessageCode.ExpectedSystemCountChanged, count: 9,
+                kind: BoxelSearchOutcomeKind.Rejected),
+                "Last system available cannot be below recorded suffix 9."),
+            (Outcome(BoxelSearchMessageCode.SystemCompleted, primaryValue: "c5-1"),
+                "Marked c5-1 complete."),
+            (Outcome(BoxelSearchMessageCode.SystemCompleted,
+                kind: BoxelSearchOutcomeKind.Rejected),
+                "The system was not marked complete."),
+            (Outcome(BoxelSearchMessageCode.SystemReopened, primaryValue: "c5-1"),
+                "Reopened c5-1."),
+            (Outcome(BoxelSearchMessageCode.SystemReopened,
+                kind: BoxelSearchOutcomeKind.Rejected),
+                "The system was not reopened."),
+            (Outcome(BoxelSearchMessageCode.SystemDeferred, primaryValue: "c5-1"),
+                "Deferred c5-1."),
+            (Outcome(BoxelSearchMessageCode.SystemDeferred,
+                kind: BoxelSearchOutcomeKind.Rejected),
+                "The system was not deferred."),
+            (Outcome(BoxelSearchMessageCode.SurveyStartChanged, primaryValue: "c5-1"),
+                "Survey will start at c5-1."),
+            (Outcome(BoxelSearchMessageCode.SurveyStartChanged, primaryValue: "c5-1", count: 3),
+                "Survey will start at c5-1; deferred 3 earlier systems."),
+            (Outcome(BoxelSearchMessageCode.SurveyStartChanged,
+                kind: BoxelSearchOutcomeKind.Rejected),
+                "The survey start point was not changed."),
+            (Outcome(BoxelSearchMessageCode.NextSystemMarkedEmpty, primaryValue: "c5-1"),
+                "Marked c5-1 empty. No incomplete systems remain."),
+            (Outcome(BoxelSearchMessageCode.NextSystemMarkedEmpty,
+                primaryValue: "c5-1", secondaryValue: "c5-2"),
+                "Marked c5-1 empty. Next incomplete system: c5-2."),
+            (Outcome(BoxelSearchMessageCode.NextSystemMarkedEmpty,
+                kind: BoxelSearchOutcomeKind.Rejected),
+                "The next incomplete system was not marked empty."),
+            (Outcome(BoxelSearchMessageCode.NextSystemCopied, primaryValue: "c5-1"),
+                "Copied c5-1 to the clipboard."),
+            (Outcome(BoxelSearchMessageCode.NextSystemCopied,
+                kind: BoxelSearchOutcomeKind.Rejected),
+                "No next boxel system is available to copy."),
+            (Outcome(BoxelSearchMessageCode.ClipboardNotReady),
+                "The desktop clipboard is not available."),
+            (Outcome(BoxelSearchMessageCode.ClipboardFailed),
+                "The next system could not be copied."),
+            (Outcome(BoxelSearchMessageCode.SynchronizationDegraded),
+                "The boxel search changed for this session but could not be saved."),
+        };
+
+        foreach (var testCase in cases)
+        {
+            session.NextOutcome = testCase.Outcome;
+
+            await viewModel.CopyNextSystemAsync();
+
+            Assert.Equal(testCase.Expected, viewModel.StatusMessage);
         }
+
+        Assert.Equal(4, viewModel.AuditTotal);
+        Assert.Equal(2, viewModel.AuditProcessed);
+        viewModel.CancelPendingOperations();
+    }
+
+    [Fact]
+    public async Task CompetingAutoCopyOutcomeExplainsWhyItWasDisabled()
+    {
+        var search = BoxelSearchSessionSearchSnapshot.Empty with
+        {
+            Persistence = BoxelSearchSnapshot.Empty with
+            {
+                TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
+                AutoCopy = true,
+            },
+        };
+        var session = new ProgrammableSession
+        {
+            Current = BoxelSearchSessionSnapshot.Empty with { Search = search },
+            NextOutcome = Outcome(BoxelSearchMessageCode.AutoCopyChanged),
+        };
+        var viewModel = new BoxelSearchViewModel(session);
+
+        await viewModel.DisableAutoCopyForCompetingRouteAsync();
+
+        Assert.Equal(
+            "Boxel auto-copy was disabled because another Galaxy Map auto-copy setting was selected.",
+            viewModel.StatusMessage);
+        viewModel.CancelPendingOperations();
+    }
+
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+
+    public async ValueTask DisposeAsync()
+    {
+        foreach (var session in sessions.AsEnumerable().Reverse())
+        {
+            await session.DisposeAsync();
+        }
+
+        try
+        {
+            if (Directory.Exists(temporaryDirectory))
+            {
+                Directory.Delete(temporaryDirectory, true);
+            }
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+    }
+
+    private BoxelSearchViewModel CreateTrackedViewModel(
+        CommanderProfileStore profileStore,
+        LegacySystemDataReader localSystemReader,
+        EmptyBoxelStore emptyBoxelStore,
+        IBoxelSystemResolver systemResolver,
+        Func<string, Task>? clipboardWriter = null,
+        KnownSystemAddressCatalog? knownSystems = null,
+        SavedBoxelSearchStore? savedSearchStore = null,
+        ISystemNameSuggestionClient? systemNameSuggestionClient = null,
+        TimeSpan? systemSuggestionDelay = null,
+        BoxelSurveyStatsCoordinator? surveyStats = null)
+    {
+        var viewModel = BoxelSearchViewModelTestFactory.Create(
+            profileStore,
+            localSystemReader,
+            emptyBoxelStore,
+            systemResolver,
+            out var session,
+            clipboardWriter,
+            knownSystems,
+            savedSearchStore,
+            systemNameSuggestionClient,
+            systemSuggestionDelay,
+            surveyStats);
+        sessions.Add(session);
+        return viewModel;
     }
 
     private BoxelSearchViewModel CreateViewModel(
@@ -1288,7 +1475,7 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         ISystemNameSuggestionClient? suggestionClient = null,
         BoxelSurveyStatsCoordinator? surveyStats = null)
     {
-        return new BoxelSearchViewModel(
+        return CreateTrackedViewModel(
             store,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -1309,6 +1496,85 @@ public sealed class BoxelSearchViewModelTests : IDisposable
             null,
             DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
             hasKnownBodies);
+    }
+
+    private static BoxelSearchOutcome Outcome(
+        BoxelSearchMessageCode code,
+        string? primaryValue = null,
+        string? secondaryValue = null,
+        int count = 0,
+        int total = 0,
+        IReadOnlyList<BoxelSearchWarning>? warnings = null,
+        BoxelSearchOutcomeKind kind = BoxelSearchOutcomeKind.Success)
+    {
+        return new BoxelSearchOutcome(
+            kind,
+            code,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            primaryValue,
+            secondaryValue,
+            count,
+            total,
+            Warnings: warnings);
+    }
+
+    private sealed class ProgrammableSession : IBoxelSearchSession
+    {
+        public BoxelSearchSessionSnapshot Current { get; set; } =
+            BoxelSearchSessionSnapshot.Empty;
+
+        public BoxelSearchOutcome NextOutcome { get; set; } =
+            Outcome(BoxelSearchMessageCode.None);
+
+        public event EventHandler<BoxelSearchSessionChangedEventArgs>? Changed
+        {
+            add => _ = value;
+            remove => _ = value;
+        }
+
+        public Task<BoxelSearchOutcome> SwitchProfileAsync(
+            BoxelSearchProfile profile,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(NextOutcome);
+        }
+
+        public Task<BoxelSearchOutcome> ClearProfileAsync(
+            BoxelSearchMessageCode reason = BoxelSearchMessageCode.ProfileUnavailable,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(NextOutcome);
+        }
+
+        public Task<BoxelSearchOutcome> ApplyAsync(
+            BoxelSearchUpdate update,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(NextOutcome);
+        }
+
+        public Task<BoxelSearchOutcome> ExecuteAsync(
+            IBoxelSearchAction action,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(NextOutcome);
+        }
+
+        public Task<BoxelSearchLibrarySnapshot> GetLibraryAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new BoxelSearchLibrarySnapshot(0, []));
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            return ValueTask.CompletedTask;
+        }
     }
 
     private sealed class CountingSuggestionClient : ISystemNameSuggestionClient

@@ -315,11 +315,11 @@ public static class GuideCatalog
                         "Save, resume, and audit a boxel project",
                         "Saved searches let one Commander pause several independent boxel surveys and return to each without replacing its progress.",
                         [
-                            "Select Save Progress. The first save asks for a name and notes, preloading the top system as the name. Later saves update that same entry directly.",
-                            "Select Resume Search to browse one saved search at a time by favorite, name, creation date, last modified date, completion, and notes. Open Selected restores its tree, options, and completed systems.",
-                            "Use Stop search when you want the live Boxel workflow inactive while retaining its current profile state. Save Progress is the clearer choice when you intend to switch among several named projects.",
+                            "Select Save to Library. The first save asks for a name and notes, preloading the top system as the name. Progress then syncs to that library entry automatically.",
+                            "Select Open Library to browse saved searches by favorite, name, creation date, last modified date, completion, and notes. Resume Selected restores its tree, options, and completed systems.",
+                            "Use Stop search when you want the live Boxel workflow inactive while retaining both its current profile state and its linked library progress.",
                             "Use Audit all boxels when you need every branch refreshed against local history and Spansh rather than only the current boxel. Large audits require explicit confirmation because they can make more than 1,000 requests.",
-                            "Cancel audit safely retains the partial work already applied. Save again after reviewing the result so the saved library entry records the newest progress and modified date.",
+                            "Cancel audit safely retains the partial work already applied. Linked library progress and its modified date update automatically as audit results are applied.",
                         ],
                         [
                             "External timestamps describe when a community service last received data, not guaranteed first-discovery or current in-game completeness. Treat skip rules as workflow filters rather than proof that a system has nothing left to discover.",

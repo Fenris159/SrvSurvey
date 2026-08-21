@@ -491,11 +491,7 @@ internal static class OverlayEditorPreviewFactories
             new EmptySpanshRouteClient());
         var vm = new SphericalSearchOverlayViewModel(
             new SphereLimitViewModel(profileStore, resolver),
-            new BoxelSearchViewModel(
-                profileStore,
-                new LegacySystemDataReader(temporaryDirectory),
-                new EmptyBoxelStore(temporaryDirectory),
-                new EmptyBoxelResolver()),
+            new BoxelSearchViewModel(PreviewBoxelSearchSession.Instance),
             route,
             Caps());
         vm.InstallEditorPreview(
@@ -616,11 +612,61 @@ internal static class OverlayEditorPreviewFactories
             Task.CompletedTask;
     }
 
-    private sealed class EmptyBoxelResolver : IBoxelSystemResolver
+    private sealed class PreviewBoxelSearchSession : IBoxelSearchSession
     {
-        public Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
-            BoxelAddress boxel,
+        public static PreviewBoxelSearchSession Instance { get; } = new();
+
+        public BoxelSearchSessionSnapshot Current =>
+            BoxelSearchSessionSnapshot.Empty;
+
+        public event EventHandler<BoxelSearchSessionChangedEventArgs>? Changed
+        {
+            add => _ = value;
+            remove => _ = value;
+        }
+
+        public Task<BoxelSearchOutcome> SwitchProfileAsync(
+            BoxelSearchProfile profile,
             CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<BoxelSystemObservation>>([]);
+            Task.FromResult(CreateRejectedOutcome(
+                BoxelSearchMessageCode.SearchNotConfigured));
+
+        public Task<BoxelSearchOutcome> ClearProfileAsync(
+            BoxelSearchMessageCode reason = BoxelSearchMessageCode.ProfileUnavailable,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(CreateRejectedOutcome(reason));
+
+        public Task<BoxelSearchOutcome> ApplyAsync(
+            BoxelSearchUpdate update,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(CreateRejectedOutcome(
+                BoxelSearchMessageCode.SearchNotConfigured));
+
+        public Task<BoxelSearchOutcome> ExecuteAsync(
+            IBoxelSearchAction action,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(CreateRejectedOutcome(
+                BoxelSearchMessageCode.SearchNotConfigured));
+
+        public Task<BoxelSearchLibrarySnapshot> GetLibraryAsync(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new BoxelSearchLibrarySnapshot(0, []));
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+        private BoxelSearchOutcome CreateRejectedOutcome(
+            BoxelSearchMessageCode code)
+        {
+            var snapshot = Current;
+            return new BoxelSearchOutcome(
+                BoxelSearchOutcomeKind.Rejected,
+                code,
+                snapshot.Version,
+                snapshot.Search.Version,
+                snapshot.Context.Version,
+                snapshot.Activity.Version,
+                snapshot.Health.Version,
+                snapshot.LibraryRevision);
+        }
     }
 }

@@ -22,7 +22,7 @@
         Background="Transparent"
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
-        Title="SrvSurvey notifications">
+        Title="SrvSurvey notifications overlay">
   <Border Background="Transparent"
           BorderThickness="0">
     <local:NotificationOverlayPresentation />

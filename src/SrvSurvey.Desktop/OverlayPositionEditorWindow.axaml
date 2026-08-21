@@ -13,7 +13,7 @@
         Background="Transparent"
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
-        Title="Edit overlay positions">
+        Title="SrvSurvey position editor overlay">
   <Border Margin="4"
           Padding="12,10"
           Background="{DynamicResource RavenSurfaceBrush}"

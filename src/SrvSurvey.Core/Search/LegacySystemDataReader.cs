@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace SrvSurvey.Core.Search;
 
-public sealed class LegacySystemDataReader(string dataDirectory)
+public sealed class LegacySystemDataReader(string dataDirectory) : IBoxelLocalSystemReader
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {

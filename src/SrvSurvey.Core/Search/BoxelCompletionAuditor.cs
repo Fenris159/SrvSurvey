@@ -4,11 +4,11 @@ namespace SrvSurvey.Core.Search;
 
 public sealed class BoxelCompletionAuditor
 {
-    private readonly LegacySystemDataReader localSystemReader;
+    private readonly IBoxelLocalSystemReader localSystemReader;
     private readonly IBoxelSystemResolver systemResolver;
 
     public BoxelCompletionAuditor(
-        LegacySystemDataReader localSystemReader,
+        IBoxelLocalSystemReader localSystemReader,
         IBoxelSystemResolver systemResolver)
     {
         this.localSystemReader = localSystemReader
@@ -19,7 +19,7 @@ public sealed class BoxelCompletionAuditor
 
     public async Task<BoxelCompletionAuditResult> AuditAsync(
         BoxelCompletionAuditRequest request,
-        IProgress<BoxelCompletionAuditProgress>? progress = null,
+        Func<BoxelCompletionAuditProgress, CancellationToken, Task>? progress = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -64,11 +64,17 @@ public sealed class BoxelCompletionAuditor
                 }
 
                 processed++;
-                progress?.Report(new BoxelCompletionAuditProgress(
-                    processed,
-                    request.Boxels.Count,
-                    boxel.Prefix,
-                    entry));
+                if (progress is not null)
+                {
+                    await progress(
+                            new BoxelCompletionAuditProgress(
+                                processed,
+                                request.Boxels.Count,
+                                boxel.Prefix,
+                                entry),
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

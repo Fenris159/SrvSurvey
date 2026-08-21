@@ -1,9 +1,53 @@
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class OverlayEditorPreviewCatalogTests
 {
+    [Fact]
+    public async Task SphericalPreviewRejectsSessionMutationsWithoutFaulting()
+    {
+        using var preview = Assert.IsType<SphericalSearchOverlayViewModel>(
+            OverlayEditorPreviewCatalog.Create("PlotSphericalSearch", 0));
+        EventHandler<BoxelSearchSessionChangedEventArgs> handler = (_, _) =>
+            throw new InvalidOperationException("Preview sessions never publish changes.");
+        preview.Boxel.Session.Changed += handler;
+        try
+        {
+            var outcome = await preview.Boxel.Session.ExecuteAsync(
+                StopBoxelSearch.Instance);
+            var cleared = await preview.Boxel.Session.ClearProfileAsync(
+                BoxelSearchMessageCode.ProfileUnavailable);
+            var switched = await preview.Boxel.Session.SwitchProfileAsync(
+                new BoxelSearchProfile(
+                    "F123",
+                    "Preview",
+                    true,
+                    BoxelSearchSnapshot.Empty));
+            var applied = await preview.Boxel.Session.ApplyAsync(
+                new BoxelSearchUpdate());
+            var library = await preview.Boxel.Session.GetLibraryAsync();
+
+            Assert.Equal(BoxelSearchOutcomeKind.Rejected, outcome.Kind);
+            Assert.Equal(
+                BoxelSearchMessageCode.SearchNotConfigured,
+                outcome.Code);
+            Assert.Equal(
+                preview.Boxel.Session.Current.Version,
+                outcome.SessionVersion);
+            Assert.Equal(BoxelSearchOutcomeKind.Rejected, cleared.Kind);
+            Assert.Equal(BoxelSearchMessageCode.ProfileUnavailable, cleared.Code);
+            Assert.Equal(BoxelSearchOutcomeKind.Rejected, switched.Kind);
+            Assert.Equal(BoxelSearchOutcomeKind.Rejected, applied.Kind);
+            Assert.Empty(library.Entries);
+        }
+        finally
+        {
+            preview.Boxel.Session.Changed -= handler;
+        }
+    }
+
     [Fact]
     public void FlightWarningPreviewStatesUseDifficultyNames()
     {

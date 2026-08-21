@@ -11,7 +11,7 @@
   <Grid RowDefinitions="Auto,*,Auto" Margin="24">
     <StackPanel Spacing="5">
       <TextBlock Classes="eyebrow" Text="BOXEL SEARCH" />
-      <TextBlock Classes="page-title" FontSize="24" Text="Save progress" />
+      <TextBlock Classes="page-title" FontSize="24" Text="Save to Library" />
       <TextBlock Classes="muted"
                  Text="Name this search so you can resume it later."
                  TextWrapping="Wrap" />
@@ -42,7 +42,7 @@
                 Orientation="Horizontal"
                 Spacing="10">
       <Button Classes="secondary" Click="Cancel_Click" Content="Cancel" />
-      <Button Classes="primary" Click="Confirm_Click" Content="Save progress" />
+      <Button Classes="primary" Click="Confirm_Click" Content="Save to Library" />
     </StackPanel>
   </Grid>
 </Window>
