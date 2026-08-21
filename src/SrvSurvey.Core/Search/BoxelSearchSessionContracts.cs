@@ -162,9 +162,14 @@ public sealed record ActivateBoxelSearch(BoxelSearchActivationRequest Request)
 
 public sealed record StopBoxelSearch : BoxelSearchAction
 {
-    public static StopBoxelSearch Instance { get; } = new();
+    public static StopBoxelSearch Instance { get; } = new(preservesProgress: true);
 
-    public bool PreservesProgress => true;
+    public bool PreservesProgress { get; }
+
+    private StopBoxelSearch(bool preservesProgress)
+    {
+        PreservesProgress = preservesProgress;
+    }
 }
 
 public sealed record SetBoxelAutoCopy(bool Enabled) : BoxelSearchAction;
