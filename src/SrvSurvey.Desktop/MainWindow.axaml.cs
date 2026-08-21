@@ -240,7 +240,10 @@ public sealed partial class MainWindow : Window
 
     private async Task StopMonitorForProfileImportAsync()
     {
-        await monitorSession!.StopAsync();
+        var session = monitorSession
+            ?? throw new InvalidOperationException(
+                "An application-owned window requires a monitor session.");
+        await session.StopAsync();
     }
 
     protected override void OnClosing(WindowClosingEventArgs e)
@@ -278,7 +281,10 @@ public sealed partial class MainWindow : Window
     {
         try
         {
-            await monitorSession!.StopAsync();
+            var session = monitorSession
+                ?? throw new InvalidOperationException(
+                    "An application-owned window requires a monitor session.");
+            await session.StopAsync();
         }
         catch (Exception exception)
         {

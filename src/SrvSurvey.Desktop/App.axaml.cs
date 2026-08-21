@@ -7,6 +7,10 @@ namespace SrvSurvey.Desktop;
 
 public sealed partial class App : Application
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "CodeQuality",
+        "S4487:Unread private fields should be removed",
+        Justification = "The Avalonia adapter retains the runtime for the desktop application lifetime.")]
     private DesktopRuntime? desktopRuntime;
 
     public override void Initialize()

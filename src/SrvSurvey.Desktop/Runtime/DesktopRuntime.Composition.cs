@@ -24,6 +24,9 @@ namespace SrvSurvey.Desktop.Runtime;
 
 internal sealed partial class DesktopRuntime
 {
+    // Production phases dispose these resources through failure-isolating
+    // helpers. CA2213 cannot follow that delegated ownership boundary.
+#pragma warning disable CA2213
     private GuardianOverlayCoordinator? guardianOverlayCoordinator;
     private PosixSignalRegistration? linuxTerminationRegistration;
     private ColonizationCommodityOverlayCoordinator?
@@ -67,6 +70,7 @@ internal sealed partial class DesktopRuntime
     private ApplicationInstanceManager? applicationInstanceManager;
     private readonly CancellationTokenSource releaseHistoryCleanupCancellation =
         new();
+#pragma warning restore CA2213
     private readonly ReleaseUpdateHistoryCleanupCoordinator releaseHistoryCleanup =
         new();
     private Task? releaseHistoryCleanupTask;
@@ -218,7 +222,8 @@ internal sealed partial class DesktopRuntime
             directory => mainWindow.Launcher.LaunchDirectoryInfoAsync(
                 directory),
             () => RequestShutdownOnUiThreadAsync(
-                DesktopShutdownReason.JournalCommand),
+                DesktopShutdownReason.JournalCommand,
+                CancellationToken.None),
             WriteClipboardAsync);
 
         var errorReports = new ErrorReportWindowCoordinator(
@@ -366,8 +371,8 @@ internal sealed partial class DesktopRuntime
                 overlayLayout);
 
         viewModel.SystemSurvey.PropertyChanged +=
-            HandleOverlayPriorityFactssChanged;
-        SynchronizeOverlayPriorityFactss();
+            HandleOverlayPriorityFactsChanged;
+        SynchronizeOverlayPriorityFacts();
         colonizationCommodityOverlayCoordinator =
             new ColonizationCommodityOverlayCoordinator(
                 viewModel.Colonization.CommodityOverlay,
@@ -442,7 +447,8 @@ internal sealed partial class DesktopRuntime
         applicationInstanceManager = new ApplicationInstanceManager(
             appDataPaths.DataDirectory,
             () => RequestShutdownOnUiThreadAsync(
-                DesktopShutdownReason.RemoteInstanceRequest),
+                DesktopShutdownReason.RemoteInstanceRequest,
+                CancellationToken.None),
             message => applicationLog.Append(message));
         var installationWorkflow = new ReleaseInstallationWorkflow(
             new ReleaseInstallationWorkflowAdapters(
@@ -763,7 +769,7 @@ internal sealed partial class DesktopRuntime
             viewModel.OverlayBehavior.PropertyChanged -=
                 HandleOverlayBehaviorChanged;
             viewModel.SystemSurvey.PropertyChanged -=
-                HandleOverlayPriorityFactssChanged;
+                HandleOverlayPriorityFactsChanged;
             viewModel.FrontierProfile.AuthorizationCallbackReceived -=
                 HandleFrontierAuthorizationCallback;
             viewModel.ReferenceDataUpdates.SetRestartHandler(null);
@@ -1156,11 +1162,11 @@ internal sealed partial class DesktopRuntime
             return;
         }
 
-        var shutdownTask = await Dispatcher.UIThread.InvokeAsync(
+        var dispatchedShutdownTask = await Dispatcher.UIThread.InvokeAsync(
             () => RequestShutdownAsync(reason),
             DispatcherPriority.Normal,
             cancellationToken);
-        await shutdownTask;
+        await dispatchedShutdownTask;
     }
 
     private Task RestartAfterProfileImportAsync()
@@ -1211,7 +1217,7 @@ internal sealed partial class DesktopRuntime
         eventArgs.SetObserved();
     }
 
-    private void SynchronizeOverlayPriorityFactss()
+    private void SynchronizeOverlayPriorityFacts()
     {
         var viewModel = mainViewModel;
         if (viewModel is null)
@@ -1233,14 +1239,14 @@ internal sealed partial class DesktopRuntime
         OverlayWindowRegistry.Shared.SetPriorityFacts(facts);
     }
 
-    private void HandleOverlayPriorityFactssChanged(
+    private void HandleOverlayPriorityFactsChanged(
         object? sender,
         System.ComponentModel.PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.IsFssInfoForced)
             or nameof(SystemSurveyViewModel.IsBodyInfoForced))
         {
-            SynchronizeOverlayPriorityFactss();
+            SynchronizeOverlayPriorityFacts();
         }
     }
 

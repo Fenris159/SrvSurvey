@@ -62,6 +62,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         firstFootfallInferenceSettingsStore;
     private readonly IFirstFootfallInferenceService
         firstFootfallInferenceService;
+    // DisposeAsync releases these owned resources through failure-isolating
+    // helpers. The analyzers cannot follow the delegated cleanup calls.
+#pragma warning disable CA2213, S2930
     private readonly CancellationTokenSource firstFootfallInferenceCancellation =
         new();
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
@@ -72,6 +75,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private readonly RouteAutoCopyCoordinator routeAutoCopyCoordinator;
     private readonly BoxelSearchSession boxelSearchSession;
     private readonly BoxelSurveyStatsCoordinator boxelSurveyStats;
+#pragma warning restore CA2213, S2930
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
     private readonly IEddnPublisher eddnPublisher;
@@ -4521,6 +4525,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         await TryDisposeAsync(boxelSearchSession.DisposeAsync);
         TryDispose(JournalPostProcessor.Cancel);
         TryDispose(CancelSystemBodyDataRequest);
+        await TryDisposeAsync(
+            () => new ValueTask(PendingSystemBodyDataLoad));
         await TryDisposeAsync(() => new ValueTask(
             firstFootfallInferenceCancellation.CancelAsync()));
         TryDispose(firstFootfallInferenceService.Dispose);
@@ -4556,17 +4562,24 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         }
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         await TryDisposeAsync(questRuntimeCoordinator.DisposeAsync);
+        ThrowDisposalFailures(failures);
+    }
+
+    private static void ThrowDisposalFailures(IReadOnlyList<Exception> failures)
+    {
+        if (failures.Count == 0)
+        {
+            return;
+        }
+
         if (failures.Count == 1)
         {
             ExceptionDispatchInfo.Capture(failures[0]).Throw();
         }
 
-        if (failures.Count > 1)
-        {
-            throw new AggregateException(
-                "One or more main-window resources failed to dispose.",
-                failures);
-        }
+        throw new AggregateException(
+            "One or more main-window resources failed to dispose.",
+            failures);
     }
 
     private void OnEddnUploadEnabledChanged(bool enabled)

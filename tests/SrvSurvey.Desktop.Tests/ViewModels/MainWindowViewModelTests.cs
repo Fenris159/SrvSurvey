@@ -1796,6 +1796,135 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task DisposeWaitsForCanceledExternalBodyRequest()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-system-body-dispose-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+            var client = new BlockingSystemBodyDataClient();
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(
+                journals,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = paths,
+                    SystemBodyDataClient = client,
+                });
+
+            await viewModel.RefreshAsync();
+            var pendingLoad = viewModel.PendingSystemBodyDataLoad;
+
+            await viewModel.DisposeAsync();
+
+            Assert.True(pendingLoad.IsCompletedSuccessfully);
+            Assert.Equal([42], client.CanceledAddresses);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task DisposePreservesSingleCleanupFailure()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-disposal-failure-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var expected =
+                new InvalidOperationException("inference disposal failed");
+            var inference = new StubFirstFootfallInferenceService(
+                new FirstFootfallInferenceResult(
+                    FirstFootfallInferenceOutcome.Disabled,
+                    0,
+                    0,
+                    null),
+                expected);
+            var viewModel = new MainWindowViewModel(
+                configuredJournalDirectory: null,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = CreateAppDataPaths(root),
+                    FirstFootfallInferenceService = inference,
+                });
+
+            var actual = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => viewModel.DisposeAsync().AsTask());
+
+            Assert.Same(expected, actual);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task DisposeAggregatesMultipleCleanupFailures()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-disposal-aggregate-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var inferenceFailure =
+                new InvalidOperationException("inference disposal failed");
+            var publisherFailure =
+                new InvalidOperationException("publisher disposal failed");
+            var inference = new StubFirstFootfallInferenceService(
+                new FirstFootfallInferenceResult(
+                    FirstFootfallInferenceOutcome.Disabled,
+                    0,
+                    0,
+                    null),
+                inferenceFailure);
+            var viewModel = new MainWindowViewModel(
+                configuredJournalDirectory: null,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = CreateAppDataPaths(root),
+                    FirstFootfallInferenceService = inference,
+                    InaraPublisher =
+                        new ThrowingInaraPublisher(publisherFailure),
+                });
+
+            var actual = await Assert.ThrowsAsync<AggregateException>(
+                () => viewModel.DisposeAsync().AsTask());
+
+            Assert.Equal(
+                [inferenceFailure, publisherFailure],
+                actual.InnerExceptions);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task RefreshFeedsHumanSettlementJournalAndStatusPipeline()
     {
         var root = Path.Combine(
@@ -3432,6 +3561,15 @@ public sealed class MainWindowViewModelTests
             true);
     }
 
+    private static AppDataPaths CreateAppDataPaths(string root)
+    {
+        return new AppDataPaths(
+            Path.Combine(root, "config"),
+            Path.Combine(root, "data"),
+            Path.Combine(root, "cache"),
+            []);
+    }
+
     private static JournalEventEnvelope ParseJournalEvent(string json)
     {
         Assert.True(
@@ -3603,7 +3741,8 @@ public sealed class MainWindowViewModelTests
         }
     }
 
-    private sealed class ThrowingInaraPublisher : IInaraPublisher
+    private sealed class ThrowingInaraPublisher(
+        Exception? disposeException = null) : IInaraPublisher
     {
         public Task<InaraPublicationResult> ApplyAsync(
             InaraPublicationUpdate update,
@@ -3625,6 +3764,10 @@ public sealed class MainWindowViewModelTests
 
         public void Dispose()
         {
+            if (disposeException is not null)
+            {
+                throw disposeException;
+            }
         }
     }
 
@@ -3738,7 +3881,8 @@ public sealed class MainWindowViewModelTests
     }
 
     private sealed class StubFirstFootfallInferenceService(
-        FirstFootfallInferenceResult result)
+        FirstFootfallInferenceResult result,
+        Exception? disposeException = null)
         : IFirstFootfallInferenceService
     {
         public int CallCount { get; private set; }
@@ -3757,6 +3901,10 @@ public sealed class MainWindowViewModelTests
 
         public void Dispose()
         {
+            if (disposeException is not null)
+            {
+                throw disposeException;
+            }
         }
     }
 

@@ -71,12 +71,28 @@ public sealed class DesktopRuntimeTests
     }
 
     [Fact]
+    public async Task DisposingRuntimeUsesDedicatedShutdownReason()
+    {
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        phases.AllowProducerStop.SetResult();
+        var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
+
+        await runtime.DisposeAsync();
+
+        Assert.Equal("quiesce:RuntimeDisposed", events[0]);
+        Assert.Equal("shutdown:0", events[^1]);
+    }
+
+    [Fact]
     public async Task FailureReportingCannotPreventRemainingShutdownPhases()
     {
         List<string> events = [];
         var lifetime = new RecordingDesktopLifetime(events);
         var phases = new RecordingDesktopRuntimePhases(events)
         {
+            ThrowWhenQuiescing = true,
             ThrowWhenStoppingProducers = true,
             ThrowWhenReportingFailure = true,
         };
@@ -91,6 +107,7 @@ public sealed class DesktopRuntimeTests
         Assert.Equal(
             [
                 "quiesce:MainWindowClose",
+                "report:Quiesce failed.",
                 "stop-producers",
                 "report:Producer stop failed.",
                 "dispose-dependents",
@@ -99,6 +116,28 @@ public sealed class DesktopRuntimeTests
                 "shutdown:0",
             ],
             events);
+    }
+
+    [AvaloniaFact]
+    public async Task AttachingASecondMainWindowIsRejected()
+    {
+        List<string> events = [];
+        var phases = new RecordingDesktopRuntimePhases(events);
+        var runtime = DesktopRuntime.CreateForTests(
+            new RecordingDesktopLifetime(events),
+            phases);
+        var first = new Window();
+        runtime.AttachMainWindow(first);
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => runtime.AttachMainWindow(new Window()));
+
+        Assert.Contains(
+            "already has a main window",
+            exception.Message,
+            StringComparison.Ordinal);
+        phases.AllowProducerStop.SetResult();
+        await runtime.DisposeAsync();
     }
 
     [Fact]
@@ -407,6 +446,8 @@ public sealed class DesktopRuntimeTests
 
         public bool ThrowWhenStoppingProducers { get; init; }
 
+        public bool ThrowWhenQuiescing { get; init; }
+
         public bool ThrowWhenReportingFailure { get; init; }
 
         public Exception? StartupFailure { get; private set; }
@@ -419,6 +460,10 @@ public sealed class DesktopRuntimeTests
         {
             events.Add($"quiesce:{reason}");
             OnQuiesce?.Invoke(reason);
+            if (ThrowWhenQuiescing)
+            {
+                throw new InvalidOperationException("Quiesce failed.");
+            }
         }
 
         public async Task StopProducersAsync()

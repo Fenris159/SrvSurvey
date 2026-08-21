@@ -34,6 +34,7 @@ internal enum DesktopShutdownReason
     RemoteInstanceRequest,
     LinuxTermination,
     OperatingSystemShutdown,
+    RuntimeDisposed,
 }
 
 internal interface IDesktopRuntimeLifetime
@@ -225,12 +226,14 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(startReplacement);
         startReplacement();
-        await RequestShutdownOnUiThreadAsync(DesktopShutdownReason.Restart);
+        await RequestShutdownOnUiThreadAsync(
+            DesktopShutdownReason.Restart,
+            CancellationToken.None);
     }
 
     public async ValueTask DisposeAsync()
     {
-        await RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
+        await RequestShutdownAsync(DesktopShutdownReason.RuntimeDisposed);
     }
 
     private async Task StopAsync(
