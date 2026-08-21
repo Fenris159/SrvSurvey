@@ -1,5 +1,10 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
+using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop.Tests.Runtime;
@@ -135,6 +140,81 @@ public sealed class DesktopRuntimeTests
         Assert.True(acquiredResource.IsDisposed);
     }
 
+    [AvaloniaTheory]
+    [InlineData((int)DesktopStartupCheckpoint.OverlayInfrastructureReady)]
+    [InlineData((int)DesktopStartupCheckpoint.MainViewModelDependenciesReady)]
+    [InlineData((int)DesktopStartupCheckpoint.MainWindowReady)]
+    [InlineData((int)DesktopStartupCheckpoint.OverlayDependentsReady)]
+    [InlineData((int)DesktopStartupCheckpoint.ProducersReady)]
+    public async Task ProductionStartupCheckpointRollsBackAcquiredResources(
+        int checkpointValue)
+    {
+        var checkpoint = (DesktopStartupCheckpoint)checkpointValue;
+        var application = Application.Current
+            ?? throw new InvalidOperationException(
+                "The Headless application is unavailable.");
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-runtime-startup-{Guid.NewGuid():N}");
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        try
+        {
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            var applicationLog = new ApplicationLogService(
+                paths.DataDirectory);
+            await using var runtime = DesktopRuntime.StartCompositionForTests(
+                application,
+                desktop,
+                new DesktopStartup([], applicationLog)
+                {
+                    AppDataPathsOverride = paths,
+                },
+                lifetime,
+                checkpoint);
+            await runtime.RequestShutdownAsync(
+                DesktopShutdownReason.StartupFailure);
+
+            Assert.Equal(["shutdown:1"], events);
+            Assert.Contains(
+                $"Startup failed at {checkpoint}.",
+                applicationLog.Text,
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "Application exit",
+                applicationLog.Text,
+                StringComparison.Ordinal);
+            Assert.DoesNotContain(
+                "Desktop runtime shutdown failed",
+                applicationLog.Text,
+                StringComparison.Ordinal);
+            Assert.Null(desktop.MainWindow);
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(root))
+                {
+                    Directory.Delete(root, recursive: true);
+                }
+            }
+            catch (IOException)
+            {
+                // Best-effort test cleanup.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Best-effort test cleanup.
+            }
+        }
+    }
+
     [AvaloniaFact]
     public async Task MainWindowCloseWaitsForRuntimeCleanup()
     {
@@ -186,7 +266,6 @@ public sealed class DesktopRuntimeTests
     [Theory]
     [InlineData((int)DesktopShutdownReason.JournalCommand)]
     [InlineData((int)DesktopShutdownReason.RemoteInstanceRequest)]
-    [InlineData((int)DesktopShutdownReason.LinuxTermination)]
     public async Task InternalExitReasonEntersTheSharedStopPipeline(
         int reasonValue)
     {
@@ -203,6 +282,36 @@ public sealed class DesktopRuntimeTests
 
         Assert.Equal($"quiesce:{reason}", events[0]);
         Assert.Equal("shutdown:0", events[^1]);
+    }
+
+    [AvaloniaFact]
+    public async Task LinuxTerminationIsPostedToTheUiDispatcher()
+    {
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        var entered = new TaskCompletionSource<DesktopShutdownReason>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var ranOnUiThread = false;
+        phases.OnQuiesce = reason =>
+        {
+            ranOnUiThread = Dispatcher.UIThread.CheckAccess();
+            entered.SetResult(reason);
+        };
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+
+        await Task.Run(() => runtime.PostShutdownOnUiThread(
+            DesktopShutdownReason.LinuxTermination));
+        var actualReason = await entered.Task.WaitAsync(
+            TimeSpan.FromSeconds(5));
+
+        Assert.Equal(DesktopShutdownReason.LinuxTermination, actualReason);
+        Assert.True(ranOnUiThread);
+        phases.AllowProducerStop.SetResult();
+        await runtime.RequestShutdownAsync(
+            DesktopShutdownReason.LinuxTermination);
     }
 
     [AvaloniaFact]

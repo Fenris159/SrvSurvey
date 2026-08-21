@@ -72,9 +72,8 @@ internal sealed partial class DesktopRuntime
     private Task? releaseHistoryCleanupTask;
     private GlobalInputSettingsViewModel? globalInputSettings;
     private IGameTextInputService? gameTextInputService;
-    private OverlayInteractionViewModel? pendingOverlayInteraction;
-    private IFirstFootfallInferenceService?
-        pendingFirstFootfallInferenceService;
+    private IDisposable? pendingOverlayInteraction;
+    private IDisposable? pendingFirstFootfallInferenceService;
     private readonly JournalMonitorSession journalMonitorSession = new();
     private bool manualOverlaySuppressed;
 
@@ -84,7 +83,8 @@ internal sealed partial class DesktopRuntime
         DesktopStartup startup)
     {
 
-        var appDataPaths = AppDataPaths.ResolveCurrent();
+        var appDataPaths = startup.AppDataPathsOverride
+            ?? AppDataPaths.ResolveCurrent();
         var applicationLog = startup.ApplicationLog
             ?? new ApplicationLogService(appDataPaths.DataDirectory);
         applicationLogService = applicationLog;
@@ -127,13 +127,15 @@ internal sealed partial class DesktopRuntime
         applicationLog.Append(
             $"Overlay presentation: {overlayPresentation.Decision.Mode}. "
             + overlayPresentation.Decision.Reason);
-        pendingOverlayInteraction = new OverlayInteractionViewModel(
+        var overlayInteraction = new OverlayInteractionViewModel(
             overlayPresentation.CreatePlatformService(),
             GameWindowTracker.CreateCurrent(),
             overlayLayoutStore,
             overlayLayout);
-        var overlayInteraction = pendingOverlayInteraction;
+        RegisterPendingOverlayInteraction(overlayInteraction);
         gameTextInputService = GameTextInputService.CreateCurrent();
+        startup.Checkpoint?.Invoke(
+            DesktopStartupCheckpoint.OverlayInfrastructureReady);
         var configuredJournalDirectory = StartupOptions.GetJournalDirectory(
             startup.Arguments);
         var commandLineFrontierId = StartupOptions.GetFrontierId(
@@ -154,10 +156,12 @@ internal sealed partial class DesktopRuntime
 
         var targetFrontierId =
             commanderPreferenceResolution.TargetFrontierId;
-        pendingFirstFootfallInferenceService =
-            FirstFootfallInferenceService.CreateCurrent();
         var firstFootfallInferenceService =
-            pendingFirstFootfallInferenceService;
+            FirstFootfallInferenceService.CreateCurrent();
+        RegisterPendingFirstFootfallInferenceService(
+            firstFootfallInferenceService);
+        startup.Checkpoint?.Invoke(
+            DesktopStartupCheckpoint.MainViewModelDependenciesReady);
         var canonnHumanSiteClient = new CanonnHumanSiteClient();
         mainViewModel = new MainWindowViewModel(
             configuredJournalDirectory,
@@ -182,8 +186,7 @@ internal sealed partial class DesktopRuntime
                 CanonnHumanSiteClient = canonnHumanSiteClient,
                 CanonnHumanSitePublisher = canonnHumanSiteClient,
             });
-        pendingOverlayInteraction = null;
-        pendingFirstFootfallInferenceService = null;
+        TransferPendingMainViewModelDependencies();
         var viewModel = mainViewModel;
         mainWindow = new MainWindow(viewModel);
         mainWindow.Opened += HandleMainWindowOpened;
@@ -231,6 +234,8 @@ internal sealed partial class DesktopRuntime
         Dispatcher.UIThread.UnhandledException += HandleUiException;
         TaskScheduler.UnobservedTaskException +=
             HandleUnobservedTaskException;
+        startup.Checkpoint?.Invoke(
+            DesktopStartupCheckpoint.MainWindowReady);
         systemNotesWindowCoordinator = new SystemNotesWindowCoordinator(
             viewModel.SystemNotes,
             mainWindow);
@@ -372,6 +377,8 @@ internal sealed partial class DesktopRuntime
         viewModel.OverlayBehavior.PropertyChanged +=
             HandleOverlayBehaviorChanged;
         ApplyOverlaySuppression();
+        startup.Checkpoint?.Invoke(
+            DesktopStartupCheckpoint.OverlayDependentsReady);
         StartGlobalInputServices(
             inputSettings,
             capabilities,
@@ -383,6 +390,8 @@ internal sealed partial class DesktopRuntime
             appDataPaths,
             applicationLog,
             releaseHistoryCleanupCancellation.Token);
+        startup.Checkpoint?.Invoke(
+            DesktopStartupCheckpoint.ProducersReady);
         desktop.MainWindow = mainWindow;
     }
 
@@ -501,12 +510,36 @@ internal sealed partial class DesktopRuntime
             context =>
             {
                 context.Cancel = true;
-                Dispatcher.UIThread.Post(() =>
-                {
-                    _ = RequestShutdownAsync(
-                        DesktopShutdownReason.LinuxTermination);
-                });
+                PostShutdownOnUiThread(
+                    DesktopShutdownReason.LinuxTermination);
             });
+    }
+
+    internal void PostShutdownOnUiThread(DesktopShutdownReason reason)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            _ = RequestShutdownAsync(reason);
+        });
+    }
+
+    private void RegisterPendingOverlayInteraction(IDisposable resource)
+    {
+        pendingOverlayInteraction = resource
+            ?? throw new ArgumentNullException(nameof(resource));
+    }
+
+    private void RegisterPendingFirstFootfallInferenceService(
+        IDisposable resource)
+    {
+        pendingFirstFootfallInferenceService = resource
+            ?? throw new ArgumentNullException(nameof(resource));
+    }
+
+    private void TransferPendingMainViewModelDependencies()
+    {
+        pendingFirstFootfallInferenceService = null;
+        pendingOverlayInteraction = null;
     }
 
     private static void MigrateLegacyUiSettings(

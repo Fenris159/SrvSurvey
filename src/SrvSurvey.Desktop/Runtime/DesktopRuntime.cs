@@ -2,12 +2,27 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.Runtime;
 
 internal sealed record DesktopStartup(
     string[] Arguments,
-    ApplicationLogService? ApplicationLog);
+    ApplicationLogService? ApplicationLog)
+{
+    internal AppDataPaths? AppDataPathsOverride { get; init; }
+
+    internal Action<DesktopStartupCheckpoint>? Checkpoint { get; init; }
+}
+
+internal enum DesktopStartupCheckpoint
+{
+    OverlayInfrastructureReady,
+    MainViewModelDependenciesReady,
+    MainWindowReady,
+    OverlayDependentsReady,
+    ProducersReady,
+}
 
 internal enum DesktopShutdownReason
 {
@@ -61,10 +76,16 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
             ?? throw new ArgumentNullException(nameof(phases));
     }
 
-    private DesktopRuntime(IClassicDesktopStyleApplicationLifetime lifetime)
+    private DesktopRuntime(IDesktopRuntimeLifetime lifetime)
     {
-        this.lifetime = new AvaloniaDesktopRuntimeLifetime(lifetime);
+        this.lifetime = lifetime
+            ?? throw new ArgumentNullException(nameof(lifetime));
         phases = new ProductionDesktopRuntimePhases(this);
+    }
+
+    private DesktopRuntime(IClassicDesktopStyleApplicationLifetime lifetime)
+        : this(new AvaloniaDesktopRuntimeLifetime(lifetime))
+    {
     }
 
     internal static DesktopRuntime Start(
@@ -107,6 +128,43 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         try
         {
             initialize();
+        }
+        catch (Exception exception)
+        {
+            runtime.BeginStartupFailure(exception);
+        }
+
+        return runtime;
+    }
+
+    internal static DesktopRuntime StartCompositionForTests(
+        Application application,
+        IClassicDesktopStyleApplicationLifetime desktop,
+        DesktopStartup startup,
+        IDesktopRuntimeLifetime lifetime,
+        DesktopStartupCheckpoint failureCheckpoint)
+    {
+        ArgumentNullException.ThrowIfNull(application);
+        ArgumentNullException.ThrowIfNull(desktop);
+        ArgumentNullException.ThrowIfNull(startup);
+        var runtime = new DesktopRuntime(lifetime);
+        runtime.applicationLogService = startup.ApplicationLog;
+        try
+        {
+            runtime.InitializeDesktopApplication(
+                application,
+                desktop,
+                startup with
+                {
+                    Checkpoint = checkpoint =>
+                    {
+                        if (checkpoint == failureCheckpoint)
+                        {
+                            throw new InvalidOperationException(
+                                $"Startup failed at {checkpoint}.");
+                        }
+                    },
+                });
         }
         catch (Exception exception)
         {
