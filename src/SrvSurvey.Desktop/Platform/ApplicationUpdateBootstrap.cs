@@ -461,8 +461,16 @@ internal static class ApplicationUpdateBootstrap
     internal static async Task<int> RunHelperAsync(
         string dataDirectory,
         string planPath,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        TimeSpan? parentExitTimeout = null)
     {
+        if (parentExitTimeout is { } configuredTimeout)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(
+                configuredTimeout,
+                TimeSpan.Zero);
+        }
+
         var store = new ReleaseInstallationPlanStore();
         ReleaseInstallationHandoffPlan? plan = null;
         Process? validatedParent = null;
@@ -486,6 +494,7 @@ internal static class ApplicationUpdateBootstrap
                     store,
                     plan,
                     validatedParent,
+                    parentExitTimeout ?? ParentExitTimeout,
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -510,9 +519,14 @@ internal static class ApplicationUpdateBootstrap
         ReleaseInstallationPlanStore store,
         ReleaseInstallationHandoffPlan plan,
         Process? validatedParent,
+        TimeSpan parentExitTimeout,
         CancellationToken cancellationToken)
     {
-        await WaitForParentExitAsync(plan, validatedParent, cancellationToken)
+        await WaitForParentExitAsync(
+                plan,
+                validatedParent,
+                cancellationToken,
+                parentExitTimeout)
             .ConfigureAwait(false);
         var transaction = new ReleaseInstallationTransaction();
         var result = await transaction.ApplyAsync(
@@ -565,6 +579,18 @@ internal static class ApplicationUpdateBootstrap
             return;
         }
 
+        var error = exception.Message;
+        if (exception is UpdateParentStillRunningException)
+        {
+            var cleanupError = await AbortTimedOutCandidateAsync(plan.Preparation)
+                .ConfigureAwait(false);
+            if (cleanupError is not null)
+            {
+                error += " Candidate cleanup also failed: "
+                    + cleanupError.Message;
+            }
+        }
+
         try
         {
             await store.WriteOutcomeAsync(
@@ -580,7 +606,7 @@ internal static class ApplicationUpdateBootstrap
                         Directory.Exists(plan.Preparation.FailedDirectory)
                             ? plan.Preparation.FailedDirectory
                             : null,
-                        exception.Message),
+                        error),
                     CancellationToken.None)
                 .ConfigureAwait(false);
         }
@@ -593,6 +619,34 @@ internal static class ApplicationUpdateBootstrap
         }
 
         TryRestartOriginalInstallation(plan, exception);
+    }
+
+    private static async Task<Exception?> AbortTimedOutCandidateAsync(
+        ReleaseInstallationPreparation preparation)
+    {
+        try
+        {
+            await new ReleaseInstallationPreparer().AbortAsync(
+                    preparation,
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+            if (Directory.Exists(preparation.CandidateDirectory)
+                || File.Exists(preparation.CandidateDirectory))
+            {
+                return new IOException(
+                    "The prepared update candidate could not be removed.");
+            }
+
+            return null;
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException)
+        {
+            return exception;
+        }
     }
 
     private static void TryRestartOriginalInstallation(
@@ -685,8 +739,16 @@ internal static class ApplicationUpdateBootstrap
     internal static async Task WaitForParentExitAsync(
         ReleaseInstallationHandoffPlan plan,
         Process? validatedParent,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        TimeSpan? parentExitTimeout = null)
     {
+        if (parentExitTimeout is { } configuredTimeout)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(
+                configuredTimeout,
+                TimeSpan.Zero);
+        }
+
         Process? parent = validatedParent;
         var disposeParent = false;
         try
@@ -706,7 +768,7 @@ internal static class ApplicationUpdateBootstrap
 
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(
                 cancellationToken);
-            timeout.CancelAfter(ParentExitTimeout);
+            timeout.CancelAfter(parentExitTimeout ?? ParentExitTimeout);
             try
             {
                 await parent.WaitForExitAsync(timeout.Token).ConfigureAwait(false);

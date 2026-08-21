@@ -378,6 +378,24 @@ public sealed class ReleaseUpdateHistoryCleanupCoordinator
         }
     }
 
+    public async Task<ReleaseInstallationPlanCleanupResult> CleanPlansAsync(
+        ReleaseInstallationPlanCleaner cleaner,
+        string dataDirectory,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(cleaner);
+        _ = await gate.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await cleaner.CleanAsync(dataDirectory, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            ReleaseGate();
+        }
+    }
+
     private static Channel<bool> CreateGate()
     {
         var channel = Channel.CreateBounded<bool>(new BoundedChannelOptions(1)

@@ -332,6 +332,36 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     }
 
     [Fact]
+    public async Task ParentTimeoutAbortsTheInactivePreparedCandidate()
+    {
+        using var current = Process.GetCurrentProcess();
+        var store = new ReleaseInstallationPlanStore();
+        var preparation = CreatePlan().Preparation;
+        Directory.CreateDirectory(preparation.CandidateDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(preparation.CandidateDirectory, "candidate.txt"),
+            "candidate");
+        var plan = await store.CreateAsync(
+            temporaryDirectory,
+            preparation,
+            current.Id,
+            current.StartTime.ToUniversalTime());
+
+        var exitCode = await ApplicationUpdateBootstrap.RunHelperAsync(
+            temporaryDirectory,
+            plan.PlanPath,
+            CancellationToken.None,
+            TimeSpan.Zero);
+
+        Assert.Equal(2, exitCode);
+        Assert.False(Directory.Exists(preparation.CandidateDirectory));
+        var outcome = await store.ReadOutcomeAsync(plan);
+        Assert.Equal(ReleaseInstallationOutcomeStatus.Aborted, outcome.Status);
+        Assert.Contains("did not exit", outcome.Error);
+        Assert.DoesNotContain("cleanup also failed", outcome.Error);
+    }
+
+    [Fact]
     public async Task ElevatedHelperFailureWritesAnAbortedOutcome()
     {
         using var current = Process.GetCurrentProcess();

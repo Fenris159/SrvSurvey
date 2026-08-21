@@ -832,6 +832,24 @@ public sealed partial class App : Application
                     + failure);
             }
 
+            var planResult = await releaseHistoryCleanup.CleanPlansAsync(
+                    new ReleaseInstallationPlanCleaner(),
+                    appDataPaths.DataDirectory,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (planResult.DeletedPlans > 0)
+            {
+                applicationLog.Append(
+                    $"Removed {planResult.DeletedPlans:N0} stale installation plans.");
+            }
+
+            foreach (var failure in planResult.Failures)
+            {
+                applicationLog.Append(
+                    "Installation-plan cleanup retained an inaccessible directory: "
+                    + failure);
+            }
+
             if (!File.Exists(Path.Combine(
                 AppContext.BaseDirectory,
                 "release-package.json")))
