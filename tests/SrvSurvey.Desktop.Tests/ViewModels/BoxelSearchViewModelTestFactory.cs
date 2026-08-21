@@ -11,32 +11,6 @@ internal static class BoxelSearchViewModelTestFactory
         LegacySystemDataReader localSystemReader,
         EmptyBoxelStore emptyBoxelStore,
         IBoxelSystemResolver systemResolver,
-        Func<string, Task>? clipboardWriter = null,
-        KnownSystemAddressCatalog? knownSystems = null,
-        SavedBoxelSearchStore? savedSearchStore = null,
-        ISystemNameSuggestionClient? systemNameSuggestionClient = null,
-        TimeSpan? systemSuggestionDelay = null,
-        BoxelSurveyStatsCoordinator? surveyStats = null)
-    {
-        return Create(
-            profileStore,
-            localSystemReader,
-            emptyBoxelStore,
-            systemResolver,
-            out _,
-            clipboardWriter,
-            knownSystems,
-            savedSearchStore,
-            systemNameSuggestionClient,
-            systemSuggestionDelay,
-            surveyStats);
-    }
-
-    public static BoxelSearchViewModel Create(
-        CommanderProfileStore profileStore,
-        LegacySystemDataReader localSystemReader,
-        EmptyBoxelStore emptyBoxelStore,
-        IBoxelSystemResolver systemResolver,
         out BoxelSearchSession session,
         Func<string, Task>? clipboardWriter = null,
         KnownSystemAddressCatalog? knownSystems = null,

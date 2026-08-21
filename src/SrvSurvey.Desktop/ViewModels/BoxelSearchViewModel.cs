@@ -1472,15 +1472,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public async Task MarkNextEmptyAsync()
     {
-        showNextSystemPageOnUpdate = true;
-        var outcome = await ExecuteSessionActionAsync(new MarkNextBoxelSystemEmpty());
-        ApplyOutcome(outcome);
-        if (outcome.Kind != BoxelSearchOutcomeKind.Rejected
-            && searchState.AutoCopy
-            && !string.IsNullOrWhiteSpace(searchState.NextSystem))
-        {
-            ApplyOutcome(await ExecuteSessionActionAsync(new CopyNextBoxelSystem()));
-        }
+        await ExecuteSystemActionAsync(new MarkNextBoxelSystemEmpty());
     }
 
     public async Task CopyNextSystemAsync()

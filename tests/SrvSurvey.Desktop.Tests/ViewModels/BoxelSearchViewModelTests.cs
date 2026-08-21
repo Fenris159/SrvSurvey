@@ -1426,9 +1426,18 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
             await session.DisposeAsync();
         }
 
-        if (Directory.Exists(temporaryDirectory))
+        try
         {
-            Directory.Delete(temporaryDirectory, true);
+            if (Directory.Exists(temporaryDirectory))
+            {
+                Directory.Delete(temporaryDirectory, true);
+            }
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
         }
     }
 

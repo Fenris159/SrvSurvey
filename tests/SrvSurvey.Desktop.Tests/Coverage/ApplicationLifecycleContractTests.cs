@@ -71,6 +71,10 @@ public sealed class ApplicationLifecycleContractTests
             "await DisposeDesktopServicesAsync(viewModel);",
             StringComparison.Ordinal);
 
+        Assert.True(windowCreated >= 0);
+        Assert.True(writerRegistered >= 0);
+        Assert.True(writerCleared >= 0);
+        Assert.True(servicesDisposed >= 0);
         Assert.True(writerRegistered > windowCreated);
         Assert.True(writerCleared > writerRegistered);
         Assert.True(servicesDisposed > writerCleared);

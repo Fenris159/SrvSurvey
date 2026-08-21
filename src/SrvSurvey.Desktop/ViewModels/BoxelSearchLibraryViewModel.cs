@@ -422,6 +422,8 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
+        var refreshAfterDelete = refreshPending;
+        refreshPending = false;
         CloseDialogs();
         try
         {
@@ -441,6 +443,10 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDispo
         finally
         {
             IsBusy = false;
+            if (refreshAfterDelete)
+            {
+                QueueRefresh();
+            }
         }
     }
 

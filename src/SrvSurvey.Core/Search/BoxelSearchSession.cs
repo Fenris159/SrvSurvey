@@ -129,6 +129,13 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
                 profile.CommanderName,
                 profile.IsOdyssey);
             state.Reset(profile.Search);
+            currentSystemName = null;
+            currentPosition = null;
+            currentSystemAddress = null;
+            latestRoute = null;
+            latestStatus = null;
+            musicTrack = null;
+            isGalaxyMapOpen = false;
             lastCopiedSystemName = null;
             automaticCopyEligibility = null;
             TouchContextLocked();
@@ -2141,17 +2148,30 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
     private void UpdateRefreshHealthLocked(IReadOnlyList<BoxelSearchWarning> warnings)
     {
-        if (!warnings.Any(warning =>
-                warning.Subsystem == BoxelSearchHealthSubsystem.Resolver))
+        UpdateRefreshHealthSubsystemLocked(
+            warnings,
+            BoxelSearchHealthSubsystem.Resolver);
+        UpdateRefreshHealthSubsystemLocked(
+            warnings,
+            BoxelSearchHealthSubsystem.LocalData);
+    }
+
+    private void UpdateRefreshHealthSubsystemLocked(
+        IReadOnlyList<BoxelSearchWarning> warnings,
+        BoxelSearchHealthSubsystem subsystem)
+    {
+        var warning = warnings.LastOrDefault(candidate =>
+            candidate.Subsystem == subsystem);
+        if (warning is null)
         {
-            RemoveHealthLocked(BoxelSearchHealthSubsystem.Resolver);
+            RemoveHealthLocked(subsystem);
+            return;
         }
 
-        if (!warnings.Any(warning =>
-                warning.Subsystem == BoxelSearchHealthSubsystem.LocalData))
-        {
-            RemoveHealthLocked(BoxelSearchHealthSubsystem.LocalData);
-        }
+        AddHealthLocked(
+            subsystem,
+            BoxelSearchHealthSeverity.Warning,
+            warning.Code);
     }
 
     private bool IsCurrentSystemInsideSearchLocked()
@@ -2488,11 +2508,25 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
                 && left.CompletedSystems.SequenceEqual(right.CompletedSystems)
                 && left.EmptySystems.SequenceEqual(right.EmptySystems)
                 && left.DeferredSystems.SequenceEqual(right.DeferredSystems)
-                && left.DeferredRanges.SequenceEqual(right.DeferredRanges)
+                && left.DeferredRanges.Count == right.DeferredRanges.Count
+                && left.DeferredRanges.Select((range, index) =>
+                    DeferredRangeEquals(
+                        range,
+                        right.DeferredRanges[index])).All(equal => equal)
                 && left.ProgressByPrefix.Count == right.ProgressByPrefix.Count
                 && left.ProgressByPrefix.All(entry =>
                     right.ProgressByPrefix.TryGetValue(entry.Key, out var value)
                     && value == entry.Value);
+        }
+
+        private static bool DeferredRangeEquals(
+            BoxelDeferredRangeSnapshot left,
+            BoxelDeferredRangeSnapshot right)
+        {
+            return string.Equals(left.Prefix, right.Prefix, StringComparison.Ordinal)
+                && left.StartSystemNumber == right.StartSystemNumber
+                && left.SortDescending == right.SortDescending
+                && left.Exceptions.SequenceEqual(right.Exceptions);
         }
     }
 }

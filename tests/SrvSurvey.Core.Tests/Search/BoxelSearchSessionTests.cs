@@ -62,6 +62,42 @@ public sealed class BoxelSearchSessionTests : IDisposable
     }
 
     [Fact]
+    public async Task SwitchingProfilesClearsPreviousProfileContext()
+    {
+        await using var session = CreateSession(new RecordingProfileStore());
+        await session.SwitchProfileAsync(Profile(BoxelSearchSnapshot.Empty));
+        await session.ApplyAsync(new BoxelSearchUpdate
+        {
+            HasCurrentSystem = true,
+            CurrentSystemName = "Praea Euq IL-P c5-0",
+            CurrentPosition = new GalacticCoordinate(1, 2, 3),
+            CurrentSystemAddress = 123,
+            HasRoute = true,
+            Route = new NavRouteSnapshot(DateTimeOffset.UtcNow, "NavRoute", []),
+            HasStatus = true,
+            Status = new EliteStatus(),
+            MusicTrack = "GalaxyMap",
+            IsGalaxyMapOpen = true,
+        });
+
+        await session.SwitchProfileAsync(new BoxelSearchProfile(
+            "F456",
+            "Aisling",
+            true,
+            BoxelSearchSnapshot.Empty));
+
+        var context = session.Current.Context;
+        Assert.Equal("F456", context.Profile?.FrontierId);
+        Assert.Null(context.CurrentSystemName);
+        Assert.Null(context.CurrentPosition);
+        Assert.Null(context.CurrentSystemAddress);
+        Assert.Null(context.Route);
+        Assert.Null(context.Status);
+        Assert.Null(context.MusicTrack);
+        Assert.False(context.IsGalaxyMapOpen);
+    }
+
+    [Fact]
     public async Task LinkedSearchAutomaticallyReceivesStoppedProgress()
     {
         Directory.CreateDirectory(temporaryDirectory);
@@ -153,6 +189,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
         await session.SwitchProfileAsync(Profile(BoxelSearchSnapshot.Empty));
         await session.ExecuteAsync(new ActivateBoxelSearch(
             Activation("Praea Euq IL-P c5-2")));
+        resolver.Arm();
 
         var cancelledRefresh = session.ExecuteAsync(new RefreshCurrentBoxel());
         await resolver.Blocked.WaitAsync(TimeSpan.FromSeconds(2));
@@ -449,6 +486,13 @@ public sealed class BoxelSearchSessionTests : IDisposable
         Assert.Contains(
             activation.Warnings ?? [],
             warning => warning.Subsystem == BoxelSearchHealthSubsystem.LocalData);
+        Assert.False(session.Current.Health.IsHealthy);
+        Assert.Contains(
+            BoxelSearchHealthSubsystem.Resolver,
+            session.Current.Health.Issues.Keys);
+        Assert.Contains(
+            BoxelSearchHealthSubsystem.LocalData,
+            session.Current.Health.Issues.Keys);
         Assert.Equal(BoxelSearchMessageCode.ClipboardFailed, copy.Code);
         Assert.Equal(BoxelSearchMessageCode.AuditFailed, audit.Code);
         Assert.Contains(
@@ -626,7 +670,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
     {
         private readonly TaskCompletionSource blocked = new(
             TaskCreationOptions.RunContinuationsAsynchronously);
-        private int calls;
+        private int armed;
         private int cancellationsObserved;
 
         public Task Blocked => blocked.Task;
@@ -634,12 +678,16 @@ public sealed class BoxelSearchSessionTests : IDisposable
         public int CancellationsObserved =>
             Volatile.Read(ref cancellationsObserved);
 
+        public void Arm()
+        {
+            Volatile.Write(ref armed, 1);
+        }
+
         public async Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
             BoxelAddress boxel,
             CancellationToken cancellationToken = default)
         {
-            var call = Interlocked.Increment(ref calls);
-            if (call is not (2 or 3))
+            if (Volatile.Read(ref armed) == 0)
             {
                 return [];
             }
@@ -653,7 +701,11 @@ public sealed class BoxelSearchSessionTests : IDisposable
             catch (OperationCanceledException)
                 when (cancellationToken.IsCancellationRequested)
             {
-                Interlocked.Increment(ref cancellationsObserved);
+                if (Interlocked.Increment(ref cancellationsObserved) == 2)
+                {
+                    Volatile.Write(ref armed, 0);
+                }
+
                 throw;
             }
         }
