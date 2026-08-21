@@ -1,0 +1,546 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
+using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.Runtime;
+
+namespace SrvSurvey.Desktop.Tests.Runtime;
+
+[Collection(AvaloniaHeadlessTestCollection.Name)]
+public sealed class DesktopRuntimeTests
+{
+    [Fact]
+    public async Task ConcurrentShutdownRequestsShareOneOrderedStop()
+    {
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+
+        var first = runtime.RequestShutdownAsync(
+            DesktopShutdownReason.MainWindowClose);
+        var second = runtime.RequestShutdownAsync(
+            DesktopShutdownReason.MainWindowClose);
+
+        Assert.Same(first, second);
+        phases.AllowProducerStop.SetResult();
+        await first;
+
+        Assert.Equal(
+            [
+                "quiesce:MainWindowClose",
+                "stop-producers",
+                "dispose-dependents",
+                "dispose-view-model",
+                "dispose-infrastructure",
+                "shutdown:0",
+            ],
+            events);
+    }
+
+    [Fact]
+    public async Task ReentrantShutdownRequestJoinsTheStopAlreadyInProgress()
+    {
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+        Task? reentrantRequest = null;
+        phases.OnQuiesce = _ =>
+            reentrantRequest = runtime.RequestShutdownAsync(
+                DesktopShutdownReason.UpdateHandoff);
+
+        var first = runtime.RequestShutdownAsync(
+            DesktopShutdownReason.MainWindowClose);
+
+        Assert.Same(first, reentrantRequest);
+        phases.AllowProducerStop.SetResult();
+        await first;
+        Assert.Equal(1, events.Count(item => item.StartsWith(
+            "quiesce:",
+            StringComparison.Ordinal)));
+        Assert.Equal(1, events.Count(item => item == "shutdown:0"));
+    }
+
+    [Fact]
+    public async Task DisposingRuntimeUsesDedicatedShutdownReason()
+    {
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        phases.AllowProducerStop.SetResult();
+        var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
+
+        await runtime.DisposeAsync();
+
+        Assert.Equal("quiesce:RuntimeDisposed", events[0]);
+        Assert.Equal("shutdown:0", events[^1]);
+    }
+
+    [Fact]
+    public async Task FailureReportingCannotPreventRemainingShutdownPhases()
+    {
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events)
+        {
+            ThrowWhenQuiescing = true,
+            ThrowWhenStoppingProducers = true,
+            ThrowWhenReportingFailure = true,
+        };
+        phases.AllowProducerStop.SetResult();
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+
+        await runtime.RequestShutdownAsync(
+            DesktopShutdownReason.MainWindowClose);
+
+        Assert.Equal(
+            [
+                "quiesce:MainWindowClose",
+                "report:Quiesce failed.",
+                "stop-producers",
+                "report:Producer stop failed.",
+                "dispose-dependents",
+                "dispose-view-model",
+                "dispose-infrastructure",
+                "shutdown:0",
+            ],
+            events);
+    }
+
+    [AvaloniaFact]
+    public async Task AttachingASecondMainWindowIsRejected()
+    {
+        List<string> events = [];
+        var phases = new RecordingDesktopRuntimePhases(events);
+        var runtime = DesktopRuntime.CreateForTests(
+            new RecordingDesktopLifetime(events),
+            phases);
+        var first = new Window();
+        runtime.AttachMainWindow(first);
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => runtime.AttachMainWindow(new Window()));
+
+        Assert.Contains(
+            "already has a main window",
+            exception.Message,
+            StringComparison.Ordinal);
+        phases.AllowProducerStop.SetResult();
+        await runtime.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task StartupFailureIsPreservedWhileAcquiredRuntimeIsRolledBack()
+    {
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        phases.AllowProducerStop.SetResult();
+        var expected = new InvalidOperationException("Startup failed.");
+        var acquiredResource = new RecordingDisposable(
+            () => events.Add("dispose-startup-resource"));
+        phases.OnDisposeViewModel = acquiredResource.Dispose;
+
+        await using var runtime = DesktopRuntime.StartForTests(
+            lifetime,
+            phases,
+            () =>
+            {
+                events.Add("acquire-startup-resource");
+                throw expected;
+            });
+        await runtime.RequestShutdownAsync(
+            DesktopShutdownReason.StartupFailure);
+
+        Assert.Same(expected, phases.StartupFailure);
+        Assert.Equal(
+            [
+                "acquire-startup-resource",
+                "startup-failure:Startup failed.",
+                "quiesce:StartupFailure",
+                "stop-producers",
+                "dispose-dependents",
+                "dispose-view-model",
+                "dispose-startup-resource",
+                "dispose-infrastructure",
+                "shutdown:1",
+            ],
+            events);
+        Assert.True(acquiredResource.IsDisposed);
+    }
+
+    [AvaloniaTheory]
+    [InlineData((int)DesktopStartupCheckpoint.OverlayInfrastructureReady)]
+    [InlineData((int)DesktopStartupCheckpoint.MainViewModelDependenciesReady)]
+    [InlineData((int)DesktopStartupCheckpoint.MainWindowReady)]
+    [InlineData((int)DesktopStartupCheckpoint.OverlayDependentsReady)]
+    [InlineData((int)DesktopStartupCheckpoint.ProducersReady)]
+    public async Task ProductionStartupCheckpointRollsBackAcquiredResources(
+        int checkpointValue)
+    {
+        var checkpoint = (DesktopStartupCheckpoint)checkpointValue;
+        var application = Application.Current
+            ?? throw new InvalidOperationException(
+                "The Headless application is unavailable.");
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-runtime-startup-{Guid.NewGuid():N}");
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        try
+        {
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            var applicationLog = new ApplicationLogService(
+                paths.DataDirectory);
+            await using var runtime = DesktopRuntime.StartCompositionForTests(
+                application,
+                desktop,
+                new DesktopStartup([], applicationLog)
+                {
+                    AppDataPathsOverride = paths,
+                },
+                lifetime,
+                checkpoint);
+            await runtime.RequestShutdownAsync(
+                DesktopShutdownReason.StartupFailure);
+
+            Assert.Equal(["shutdown:1"], events);
+            Assert.Contains(
+                $"Startup failed at {checkpoint}.",
+                applicationLog.Text,
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "Application exit",
+                applicationLog.Text,
+                StringComparison.Ordinal);
+            Assert.DoesNotContain(
+                "Desktop runtime shutdown failed",
+                applicationLog.Text,
+                StringComparison.Ordinal);
+            Assert.Null(desktop.MainWindow);
+            Assert.Empty(OverlayWindowRegistry.Shared.Snapshot());
+            Assert.True(
+                OverlayWindowRegistry.Shared.ShouldPresent(
+                    "PlotBuildCommodities"));
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(root))
+                {
+                    Directory.Delete(root, recursive: true);
+                }
+            }
+            catch (IOException)
+            {
+                // Best-effort test cleanup.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Best-effort test cleanup.
+            }
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task MainWindowCloseWaitsForRuntimeCleanup()
+    {
+        List<string> events = [];
+        var window = new Window();
+        var lifetime = new RecordingDesktopLifetime(events, window.Close);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+        runtime.AttachMainWindow(window);
+        window.Show();
+
+        window.Close();
+
+        Assert.True(window.IsVisible);
+        Assert.False(window.IsEnabled);
+        phases.AllowProducerStop.SetResult();
+        await runtime.RequestShutdownAsync(
+            DesktopShutdownReason.MainWindowClose);
+        Assert.False(window.IsVisible);
+    }
+
+    [Fact]
+    public async Task OperatingSystemShutdownIsNotCancelled()
+    {
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+
+        var cancel = runtime.RequestMainWindowClose(
+            WindowCloseReason.OSShutdown);
+
+        Assert.False(cancel);
+        Assert.Equal(
+            [
+                "quiesce:OperatingSystemShutdown",
+                "stop-producers",
+            ],
+            events);
+        phases.AllowProducerStop.SetResult();
+        await runtime.RequestShutdownAsync(
+            DesktopShutdownReason.OperatingSystemShutdown);
+    }
+
+    [Theory]
+    [InlineData((int)DesktopShutdownReason.JournalCommand)]
+    [InlineData((int)DesktopShutdownReason.RemoteInstanceRequest)]
+    public async Task InternalExitReasonEntersTheSharedStopPipeline(
+        int reasonValue)
+    {
+        var reason = (DesktopShutdownReason)reasonValue;
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        phases.AllowProducerStop.SetResult();
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+
+        await runtime.RequestShutdownAsync(reason);
+
+        Assert.Equal($"quiesce:{reason}", events[0]);
+        Assert.Equal("shutdown:0", events[^1]);
+    }
+
+    [AvaloniaFact]
+    public async Task LinuxTerminationIsPostedToTheUiDispatcher()
+    {
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        var entered = new TaskCompletionSource<DesktopShutdownReason>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var ranOnUiThread = false;
+        phases.OnQuiesce = reason =>
+        {
+            ranOnUiThread = Dispatcher.UIThread.CheckAccess();
+            entered.SetResult(reason);
+        };
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+
+        await Task.Run(() => runtime.PostShutdownOnUiThread(
+            DesktopShutdownReason.LinuxTermination));
+        var actualReason = await entered.Task.WaitAsync(
+            TimeSpan.FromSeconds(5));
+
+        Assert.Equal(DesktopShutdownReason.LinuxTermination, actualReason);
+        Assert.True(ranOnUiThread);
+        phases.AllowProducerStop.SetResult();
+        await runtime.RequestShutdownAsync(
+            DesktopShutdownReason.LinuxTermination);
+    }
+
+    [AvaloniaFact]
+    public async Task RestartLaunchFailureLeavesTheRuntimeRunning()
+    {
+        List<string> events = [];
+        var lifetime = new RecordingDesktopLifetime(events);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+        var expected = new InvalidOperationException("Launch failed.");
+
+        var actual = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => runtime.RestartAsync(() => throw expected));
+
+        Assert.Same(expected, actual);
+        Assert.Empty(events);
+        phases.AllowProducerStop.SetResult();
+    }
+
+    [AvaloniaFact]
+    public async Task SuccessfulRestartHidesTheRetiringWindowBeforeSlowCleanup()
+    {
+        List<string> events = [];
+        var window = new Window();
+        var lifetime = new RecordingDesktopLifetime(events, window.Close);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+        runtime.AttachMainWindow(window);
+        window.Show();
+
+        var restarting = runtime.RestartAsync(() => events.Add("launch"));
+
+        Assert.False(window.IsVisible);
+        Assert.Equal(
+            [
+                "launch",
+                "quiesce:Restart",
+                "stop-producers",
+            ],
+            events);
+        phases.AllowProducerStop.SetResult();
+        await restarting;
+    }
+
+    [AvaloniaFact]
+    public async Task UpdateHandoffHidesTheRetiringWindowBeforeSlowCleanup()
+    {
+        List<string> events = [];
+        var window = new Window();
+        var lifetime = new RecordingDesktopLifetime(events, window.Close);
+        var phases = new RecordingDesktopRuntimePhases(events);
+        await using var runtime = DesktopRuntime.CreateForTests(
+            lifetime,
+            phases);
+        runtime.AttachMainWindow(window);
+        window.Show();
+
+        var stopping = runtime.RequestShutdownAsync(
+            DesktopShutdownReason.UpdateHandoff);
+
+        Assert.False(window.IsVisible);
+        Assert.Equal(
+            [
+                "quiesce:UpdateHandoff",
+                "stop-producers",
+            ],
+            events);
+        phases.AllowProducerStop.SetResult();
+        await stopping;
+    }
+
+    private sealed class RecordingDesktopRuntimePhases
+        : IDesktopRuntimePhases
+    {
+        private readonly List<string> events;
+
+        public RecordingDesktopRuntimePhases(List<string> events)
+        {
+            this.events = events;
+        }
+
+        public TaskCompletionSource AllowProducerStop { get; } = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public bool ThrowWhenStoppingProducers { get; init; }
+
+        public bool ThrowWhenQuiescing { get; init; }
+
+        public bool ThrowWhenReportingFailure { get; init; }
+
+        public Exception? StartupFailure { get; private set; }
+
+        public Action<DesktopShutdownReason>? OnQuiesce { get; set; }
+
+        public Action? OnDisposeViewModel { get; set; }
+
+        public void Quiesce(DesktopShutdownReason reason)
+        {
+            events.Add($"quiesce:{reason}");
+            OnQuiesce?.Invoke(reason);
+            if (ThrowWhenQuiescing)
+            {
+                throw new InvalidOperationException("Quiesce failed.");
+            }
+        }
+
+        public async Task StopProducersAsync()
+        {
+            events.Add("stop-producers");
+            await AllowProducerStop.Task;
+            if (ThrowWhenStoppingProducers)
+            {
+                throw new InvalidOperationException("Producer stop failed.");
+            }
+        }
+
+        public Task DisposeDependentsAsync()
+        {
+            events.Add("dispose-dependents");
+            return Task.CompletedTask;
+        }
+
+        public Task DisposeViewModelAsync()
+        {
+            events.Add("dispose-view-model");
+            OnDisposeViewModel?.Invoke();
+            return Task.CompletedTask;
+        }
+
+        public Task DisposeInfrastructureAsync()
+        {
+            events.Add("dispose-infrastructure");
+            return Task.CompletedTask;
+        }
+
+        public void ReportShutdownFailure(Exception exception)
+        {
+            events.Add("report:" + exception.Message);
+            if (ThrowWhenReportingFailure)
+            {
+                throw new InvalidOperationException(
+                    "Failure reporting failed.");
+            }
+        }
+
+        public void ReportStartupFailure(Exception exception)
+        {
+            StartupFailure = exception;
+            events.Add("startup-failure:" + exception.Message);
+        }
+    }
+
+    private sealed class RecordingDesktopLifetime
+        : IDesktopRuntimeLifetime
+    {
+        private readonly List<string> events;
+        private readonly Action? shutdown;
+
+        public RecordingDesktopLifetime(
+            List<string> events,
+            Action? shutdown = null)
+        {
+            this.events = events;
+            this.shutdown = shutdown;
+        }
+
+        public void Shutdown(int exitCode = 0)
+        {
+            events.Add($"shutdown:{exitCode}");
+            shutdown?.Invoke();
+        }
+    }
+
+    private sealed class RecordingDisposable(Action dispose) : IDisposable
+    {
+        public bool IsDisposed { get; private set; }
+
+        public void Dispose()
+        {
+            IsDisposed = true;
+            dispose();
+        }
+    }
+}

@@ -15,9 +15,10 @@ namespace SrvSurvey.Desktop;
 public sealed partial class MainWindow : Window
 {
     private readonly MainWindowViewModel viewModel;
+    private readonly bool ownsApplicationLifetime;
     private readonly Dictionary<OverlaySettingsCategory, OverlayCategorySettingsWindow>
         overlaySettingsWindows = [];
-    private readonly JournalMonitorSession monitorSession = new();
+    private readonly JournalMonitorSession? monitorSession;
     private IReadOnlyList<MainWindowMonitor> applicationMonitors = [];
     private PixelPoint? lastNormalPosition;
     private Task? closePreparationTask;
@@ -26,13 +27,26 @@ public sealed partial class MainWindow : Window
     private TrayIcon? trayIcon;
 
     public MainWindow()
-        : this(new MainWindowViewModel(configuredJournalDirectory: null))
+        : this(
+            new MainWindowViewModel(configuredJournalDirectory: null),
+            ownsApplicationLifetime: true)
     {
     }
 
-    public MainWindow(MainWindowViewModel viewModel)
+    internal MainWindow(MainWindowViewModel viewModel)
+        : this(viewModel, ownsApplicationLifetime: false)
+    {
+    }
+
+    internal MainWindow(
+        MainWindowViewModel viewModel,
+        bool ownsApplicationLifetime)
     {
         this.viewModel = viewModel;
+        this.ownsApplicationLifetime = ownsApplicationLifetime;
+        monitorSession = ownsApplicationLifetime
+            ? new JournalMonitorSession()
+            : null;
         InputContext = new ApplicationInputContext();
         InitializeComponent();
         DataContext = viewModel;
@@ -46,7 +60,10 @@ public sealed partial class MainWindow : Window
         viewModel.ReleaseUpdates.SetDiagnosticsNavigator(
             NavigateToReleaseUpdates);
         Opened += OnOpened;
-        viewModel.ProfileImportPreparing += StopMonitorForProfileImportAsync;
+        if (ownsApplicationLifetime)
+        {
+            viewModel.ProfileImportPreparing += StopMonitorForProfileImportAsync;
+        }
         Activated += (_, _) => InputContext.SetActive(true);
         Deactivated += (_, _) => InputContext.SetActive(false);
         AddHandler(
@@ -95,7 +112,12 @@ public sealed partial class MainWindow : Window
             lastNormalPosition = Position;
         }
 
-        _ = monitorSession.Start(
+        if (!ownsApplicationLifetime)
+        {
+            return;
+        }
+
+        _ = monitorSession!.Start(
             RunMonitorAsync,
             exception => Program.ApplicationLog?.Append(
                 "Journal monitor stopped unexpectedly: " + exception));
@@ -218,16 +240,20 @@ public sealed partial class MainWindow : Window
 
     private async Task StopMonitorForProfileImportAsync()
     {
-        await monitorSession.StopAsync();
+        var session = monitorSession
+            ?? throw new InvalidOperationException(
+                "An application-owned window requires a monitor session.");
+        await session.StopAsync();
     }
 
     protected override void OnClosing(WindowClosingEventArgs e)
     {
-        if (!applicationWindowPositionSaved
-            && GetCurrentApplicationWindowPosition() is { } position)
+        RememberCurrentPositionForShutdown();
+
+        if (!ownsApplicationLifetime)
         {
-            applicationWindowPositionSaved = true;
-            viewModel.DesktopBehavior.RememberApplicationWindowPosition(position);
+            base.OnClosing(e);
+            return;
         }
 
         if (!closeReady)
@@ -241,11 +267,24 @@ public sealed partial class MainWindow : Window
         base.OnClosing(e);
     }
 
+    internal void RememberCurrentPositionForShutdown()
+    {
+        if (!applicationWindowPositionSaved
+            && GetCurrentApplicationWindowPosition() is { } position)
+        {
+            applicationWindowPositionSaved = true;
+            viewModel.DesktopBehavior.RememberApplicationWindowPosition(position);
+        }
+    }
+
     private async Task PrepareToCloseAsync()
     {
         try
         {
-            await monitorSession.StopAsync();
+            var session = monitorSession
+                ?? throw new InvalidOperationException(
+                    "An application-owned window requires a monitor session.");
+            await session.StopAsync();
         }
         catch (Exception exception)
         {
@@ -271,6 +310,12 @@ public sealed partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        ReleaseRuntimeDependents();
+        base.OnClosed(e);
+    }
+
+    internal void ReleaseRuntimeDependents()
+    {
         foreach (var window in overlaySettingsWindows.Values.ToArray())
         {
             window.Close();
@@ -279,7 +324,10 @@ public sealed partial class MainWindow : Window
         overlaySettingsWindows.Clear();
         InputContext.SetActive(false);
         InputContext.SetTextInputActive(false);
-        viewModel.ProfileImportPreparing -= StopMonitorForProfileImportAsync;
+        if (ownsApplicationLifetime)
+        {
+            viewModel.ProfileImportPreparing -= StopMonitorForProfileImportAsync;
+        }
         viewModel.DesktopBehavior.ApplicationWindowPreferencesChanged -=
             OnApplicationWindowPreferencesChanged;
         Screens.Changed -= OnScreensChanged;
@@ -287,7 +335,6 @@ public sealed partial class MainWindow : Window
         viewModel.ReleaseUpdates.SetDiagnosticsNavigator(null);
         trayIcon?.Dispose();
         trayIcon = null;
-        base.OnClosed(e);
     }
 
     private TrayIcon? CreateTrayIcon()
