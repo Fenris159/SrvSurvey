@@ -8,35 +8,6 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class ReleaseInstallerConfiguration
-{
-    public required IReleasePackageDownloadService DownloadService { get; init; }
-
-    public required IReleasePackageStagingService StagingService { get; init; }
-
-    public required IReleaseInstallationPreparer InstallationPreparer { get; init; }
-
-    public required IApplicationUpdateHandoffService HandoffService { get; init; }
-
-    public required IApplicationInstanceManager InstanceManager { get; init; }
-
-    public required Func<ApplicationInstanceScan, Task<bool>>
-        ConfirmMultipleInstances
-    { get; init; }
-
-    public required string DataDirectory { get; init; }
-
-    public required string InstallationDirectory { get; init; }
-
-    public required IReadOnlyList<string> StartupArguments { get; init; }
-
-    public required Func<Task> Shutdown { get; init; }
-
-    public string? AutomaticInstallationUnavailableReason { get; init; }
-
-    public bool IsAppImage { get; init; }
-}
-
 public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
 {
     private readonly IReleaseUpdateService service;
@@ -49,7 +20,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
     private readonly AsyncCommand openUpdateDiagnosticsCommand;
     private Func<Uri, Task<bool>>? uriLauncher;
     private Action? diagnosticsNavigator;
-    private InstallerContext? installer;
+    private IReleaseInstallationWorkflow? installationWorkflow;
     private Uri? releaseUri;
     private CrossPlatformReleasePackage? releasePackage;
     private ReleaseVersion? releaseVersion;
@@ -252,20 +223,21 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         private set => SetField(ref installProgressText, value);
     }
 
-    public bool CanInstallCurrentInstallation => installer is
-    {
-        IsPackaged: true,
-        AutomaticInstallationUnavailableReason: null,
-    };
+    public bool CanInstallCurrentInstallation =>
+        installationWorkflow?.Capability.CanInstall == true;
 
     public bool ShowInstallUnavailable =>
         IsUpdateAvailable && !CanInstallCurrentInstallation;
 
     public bool ShowGenericInstallUnavailable =>
-        ShowInstallUnavailable && installer?.IsAppImage != true;
+        ShowInstallUnavailable
+        && installationWorkflow?.Capability.Status
+            != ReleaseInstallationCapabilityStatus.ReadOnlyAppImage;
 
     public bool ShowAppImageManualInstall =>
-        IsUpdateAvailable && installer?.IsAppImage == true;
+        IsUpdateAvailable
+        && installationWorkflow?.Capability.Status
+            == ReleaseInstallationCapabilityStatus.ReadOnlyAppImage;
 
     public static string AppImageManualInstallInstructions =>
         "Download the AppImage from this release, make it executable, replace your existing AppImage file, and launch it again.";
@@ -317,42 +289,11 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         openUpdateDiagnosticsCommand.RaiseCanExecuteChanged();
     }
 
-    public void ConfigureInstaller(ReleaseInstallerConfiguration configuration)
+    internal void ConfigureInstallationWorkflow(
+        IReleaseInstallationWorkflow workflow)
     {
-        ArgumentNullException.ThrowIfNull(configuration);
-        ArgumentNullException.ThrowIfNull(configuration.DownloadService);
-        ArgumentNullException.ThrowIfNull(configuration.StagingService);
-        ArgumentNullException.ThrowIfNull(configuration.InstallationPreparer);
-        ArgumentNullException.ThrowIfNull(configuration.HandoffService);
-        ArgumentNullException.ThrowIfNull(configuration.InstanceManager);
-        ArgumentNullException.ThrowIfNull(configuration.ConfirmMultipleInstances);
-        ArgumentException.ThrowIfNullOrWhiteSpace(configuration.DataDirectory);
-        ArgumentException.ThrowIfNullOrWhiteSpace(configuration.InstallationDirectory);
-        ArgumentNullException.ThrowIfNull(configuration.StartupArguments);
-        ArgumentNullException.ThrowIfNull(configuration.Shutdown);
-        var fullInstallationDirectory = Path.GetFullPath(
-            configuration.InstallationDirectory);
-        installer = new InstallerContext
-        {
-            DownloadService = configuration.DownloadService,
-            StagingService = configuration.StagingService,
-            InstallationPreparer = configuration.InstallationPreparer,
-            HandoffService = configuration.HandoffService,
-            InstanceManager = configuration.InstanceManager,
-            ConfirmMultipleInstances = configuration.ConfirmMultipleInstances,
-            DataDirectory = Path.GetFullPath(configuration.DataDirectory),
-            InstallationDirectory = fullInstallationDirectory,
-            StartupArguments = configuration.StartupArguments.ToArray(),
-            Shutdown = configuration.Shutdown,
-            IsPackaged = File.Exists(Path.Combine(
-                fullInstallationDirectory,
-                "release-package.json")),
-            AutomaticInstallationUnavailableReason = string.IsNullOrWhiteSpace(
-                configuration.AutomaticInstallationUnavailableReason)
-                ? null
-                : configuration.AutomaticInstallationUnavailableReason.Trim(),
-            IsAppImage = configuration.IsAppImage,
-        };
+        installationWorkflow = workflow
+            ?? throw new ArgumentNullException(nameof(workflow));
         OnPropertyChanged(nameof(CanInstallCurrentInstallation));
         OnPropertyChanged(nameof(ShowInstallUnavailable));
         OnPropertyChanged(nameof(ShowGenericInstallUnavailable));
@@ -454,7 +395,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
     public async Task InstallAsync()
     {
         if (!CanInstall
-            || installer is null
+            || installationWorkflow is null
             || releasePackage is null
             || releaseVersion is null)
         {
@@ -469,117 +410,118 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         InstallProgressPercent = 0;
         InstallProgressText = "Checking for other running SrvSurvey instances...";
         StatusMessage = "Checking whether another SrvSurvey instance must close before the update.";
-        var handoffStarted = false;
-        var progress = new GuardedProgress<ReleasePackageDownloadProgress>(value =>
-        {
-            InstallProgressPercent = value.TotalBytes <= 0
-                ? 0
-                : value.DownloadedBytes * 100d / value.TotalBytes;
-            InstallProgressText = $"Downloaded {value.DownloadedBytes:N0} of "
-                + $"{value.TotalBytes:N0} bytes";
-        });
+        var progress = new GuardedProgress<ReleaseInstallationWorkflowProgress>(
+            ApplyInstallationProgress);
         try
         {
-            if (!await CloseOtherInstancesBeforeUpdateAsync(installer))
-            {
-                InstallProgressText = "Update canceled before download.";
-                return;
-            }
-
-            InstallProgressText = "Starting verified package download...";
-            StatusMessage =
-                "Downloading into the update cache. The installation and profile are still untouched.";
-            var download = await installer.DownloadService.DownloadAsync(
-                targetVersion,
-                releasePackage,
-                installer.DataDirectory,
+            var result = await installationWorkflow.ExecuteAsync(
+                new ReleaseInstallationRequest(targetVersion, releasePackage),
                 progress);
-            progress.Close();
-            InstallProgressPercent = 100;
-            InstallProgressText = "Download hash verified; validating archive files...";
-            StatusMessage =
-                "The package hash is valid. Extracting to an isolated staging directory.";
-            var staged = await installer.StagingService.StageAsync(
-                targetVersion,
-                releasePackage,
-                download.ArchivePath,
-                installer.DataDirectory);
-            InstallProgressText =
-                $"Verified {staged.FileCount:N0} staged files; preparing rollback...";
-            StatusMessage =
-                "The staged package is valid. Preparing a same-volume candidate without changing the running installation.";
-            var preparation = await installer.InstallationPreparer.PrepareAsync(
-                targetVersion,
-                releasePackage.RuntimeIdentifier,
-                staged.ReadyDirectory,
-                staged.ManifestSha256,
-                installer.InstallationDirectory,
-                installer.StartupArguments);
-            InstallProgressText =
-                "Rechecking for SrvSurvey instances before update handoff...";
-            if (!await CloseOtherInstancesBeforeUpdateAsync(installer))
-            {
-                await installer.InstallationPreparer.AbortAsync(preparation);
-                InstallProgressText = "Update canceled before installation handoff.";
-                return;
-            }
-
-            InstallProgressText = preparation.RequiresElevation
-                ? "Starting elevated update helper; approve the Windows prompt..."
-                : "Rollback candidate verified; starting external helper...";
-            if (preparation.RequiresElevation)
-            {
-                StatusMessage =
-                    "Windows administrator approval is required to update this protected installation. The player profile remains untouched.";
-            }
-
-            await installer.HandoffService.StartHelperAsync(
-                installer.DataDirectory,
-                preparation,
-                staged.EntryPointPath);
-            handoffStarted = true;
-            InstallConfirmed = false;
-            StatusMessage =
-                "The verified update helper is waiting. SrvSurvey will now close; the old installation remains available for automatic rollback.";
-            await installer.Shutdown();
-        }
-        catch (Exception exception) when (IsExpectedFailure(exception))
-        {
-            progress.Close();
-            StatusMessage = "The guarded update was not started: "
-                + exception.Message
-                + " The active installation and player profile were not changed.";
-            InstallProgressText = "Update preparation stopped safely.";
+            ApplyInstallationResult(result);
         }
         finally
         {
             progress.Close();
-            if (!handoffStarted)
-            {
-                IsInstalling = false;
-            }
         }
     }
 
-    private async Task<bool> CloseOtherInstancesBeforeUpdateAsync(
-        InstallerContext currentInstaller)
+    private void ApplyInstallationProgress(
+        ReleaseInstallationWorkflowProgress progress)
     {
-        var scan = await currentInstaller.InstanceManager
-            .ScanOtherInstancesAsync(CancellationToken.None);
-        var otherCount = scan.TotalCount;
-        if (otherCount == 0)
+        switch (progress.Stage)
         {
-            return true;
+            case ReleaseInstallationWorkflowStage.ScanningInstances:
+                if (progress.Checkpoint == ReleaseInstallationCheckpoint.BeforeDownload)
+                {
+                    InstallProgressText =
+                        "Checking for other running SrvSurvey instances...";
+                    StatusMessage =
+                        "Checking whether another SrvSurvey instance must close before the update.";
+                }
+                else
+                {
+                    InstallProgressText =
+                        "Rechecking for SrvSurvey instances before update handoff...";
+                }
+
+                break;
+            case ReleaseInstallationWorkflowStage.AwaitingInstanceConfirmation:
+                ApplyInstanceConfirmationProgress(progress.InstanceScan);
+                break;
+            case ReleaseInstallationWorkflowStage.ClosingInstances:
+                ApplyInstanceClosingProgress(progress.InstanceScan);
+                break;
+            case ReleaseInstallationWorkflowStage.Downloading:
+                ApplyDownloadProgress(progress);
+                break;
+            case ReleaseInstallationWorkflowStage.ValidatingArchive:
+                InstallProgressPercent = 100;
+                InstallProgressText =
+                    "Download hash verified; validating archive files...";
+                StatusMessage =
+                    "The package hash is valid. Extracting to an isolated staging directory.";
+                break;
+            case ReleaseInstallationWorkflowStage.Staging:
+                break;
+            case ReleaseInstallationWorkflowStage.PreparingRollback:
+                InstallProgressText =
+                    $"Verified {progress.StagedFileCount:N0} staged files; preparing rollback...";
+                StatusMessage =
+                    "The staged package is valid. Preparing a same-volume candidate without changing the running installation.";
+                break;
+            case ReleaseInstallationWorkflowStage.StartingHelper:
+                InstallProgressText = progress.RequiresElevation
+                    ? "Starting elevated update helper; approve the Windows prompt..."
+                    : "Rollback candidate verified; starting external helper...";
+                if (progress.RequiresElevation)
+                {
+                    StatusMessage =
+                        "Windows administrator approval is required to update this protected installation. The player profile remains untouched.";
+                }
+
+                break;
+            case ReleaseInstallationWorkflowStage.AwaitingApplicationExit:
+                InstallConfirmed = false;
+                StatusMessage =
+                    "The verified update helper is waiting. Close SrvSurvey to continue the update; the current installation remains available for rollback.";
+                break;
+            case ReleaseInstallationWorkflowStage.None:
+            default:
+                break;
+        }
+    }
+
+    private void ApplyDownloadProgress(ReleaseInstallationWorkflowProgress progress)
+    {
+        if (progress.TotalBytes <= 0)
+        {
+            InstallProgressText = "Starting verified package download...";
+            StatusMessage =
+                "Downloading into the update cache. The installation and profile are still untouched.";
+            return;
+        }
+
+        InstallProgressPercent = progress.DownloadedBytes * 100d
+            / progress.TotalBytes;
+        InstallProgressText = $"Downloaded {progress.DownloadedBytes:N0} of "
+            + $"{progress.TotalBytes:N0} bytes";
+    }
+
+    private void ApplyInstanceConfirmationProgress(ApplicationInstanceScan? scan)
+    {
+        if (scan is null)
+        {
+            return;
         }
 
         if (scan.UnverifiedCount > 0)
         {
             StatusMessage =
-                $"SrvSurvey found {otherCount:N0} matching process(es), including "
+                $"SrvSurvey found {scan.TotalCount:N0} matching process(es), including "
                 + $"{scan.UnverifiedCount:N0} that the operating system would not let it verify. "
                 + "Confirm the warning; the update will stop safely if any process remains unverified.";
         }
-        else if (otherCount == 1)
+        else if (scan.TotalCount == 1)
         {
             StatusMessage =
                 "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.";
@@ -587,23 +529,114 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         else
         {
             StatusMessage =
-                $"{otherCount:N0} other SrvSurvey instances are running. Confirm whether all instances should close before updating.";
+                $"{scan.TotalCount:N0} other SrvSurvey instances are running. Confirm whether all instances should close before updating.";
         }
-        if (!await currentInstaller.ConfirmMultipleInstances(scan))
+    }
+
+    private void ApplyInstanceClosingProgress(ApplicationInstanceScan? scan)
+    {
+        if (scan is null)
         {
-            StatusMessage =
-                "Update canceled. The other SrvSurvey instances remain open and no files were changed.";
-            return false;
+            return;
         }
 
-        InstallProgressText = otherCount == 1
+        InstallProgressText = scan.TotalCount == 1
             ? "Closing the other SrvSurvey instance..."
-            : $"Closing {otherCount:N0} other SrvSurvey instances...";
+            : $"Closing {scan.TotalCount:N0} other SrvSurvey instances...";
         StatusMessage =
             "Closing other SrvSurvey instances before continuing the update.";
-        await currentInstaller.InstanceManager
-            .CloseOtherInstancesAsync(CancellationToken.None);
-        return true;
+    }
+
+    private void ApplyInstallationResult(ReleaseInstallationWorkflowResult result)
+    {
+        switch (result.Status)
+        {
+            case ReleaseInstallationWorkflowStatus.HandoffStarted:
+                InstallConfirmed = false;
+                break;
+            case ReleaseInstallationWorkflowStatus.OwnershipUnresolved:
+                InstallConfirmed = false;
+                StatusMessage =
+                    "The update helper started, but its status could not be confirmed. Close SrvSurvey before retrying; do not start another update.";
+                InstallProgressText = "Update helper ownership is unresolved.";
+                break;
+            case ReleaseInstallationWorkflowStatus.CleanupFailed:
+                InstallConfirmed = false;
+                StatusMessage =
+                    "The update stopped, but its prepared files could not be cleaned up safely. Restart SrvSurvey or inspect Update Diagnostics before retrying. "
+                    + GetInstallationError(result);
+                InstallProgressText = "Update candidate cleanup requires attention.";
+                break;
+            case ReleaseInstallationWorkflowStatus.Rejected:
+                ApplyRejectedInstallationResult(result);
+                IsInstalling = false;
+                break;
+            case ReleaseInstallationWorkflowStatus.Cancelled:
+                StatusMessage =
+                    "The guarded update was canceled. The active installation and player profile were not changed.";
+                InstallProgressText = "Update preparation stopped safely.";
+                IsInstalling = false;
+                break;
+            case ReleaseInstallationWorkflowStatus.Failed:
+                ApplyFailedInstallationResult(result);
+                IsInstalling = false;
+                break;
+            default:
+                throw new InvalidOperationException(
+                    $"Unsupported installation result: {result.Status}");
+        }
+    }
+
+    private void ApplyRejectedInstallationResult(
+        ReleaseInstallationWorkflowResult result)
+    {
+        if (result.RejectionReason == ReleaseInstallationRejectionReason.InstancesDeclined)
+        {
+            var afterPreparation = result.CleanupStatus
+                == ReleaseInstallationCleanupStatus.Succeeded;
+            InstallProgressText = afterPreparation
+                ? "Update canceled before installation handoff."
+                : "Update canceled before download.";
+            StatusMessage = afterPreparation
+                ? "Update canceled before installation handoff. The prepared candidate was removed and no files were changed."
+                : "Update canceled. The other SrvSurvey instances remain open and no files were changed.";
+            return;
+        }
+
+        StatusMessage = result.RejectionReason
+            == ReleaseInstallationRejectionReason.Unsupported
+            ? GetInstallationUnavailableMessage() + " No files were changed."
+            : "Another update operation is already active.";
+        InstallProgressText = "Update was not started.";
+    }
+
+    private void ApplyFailedInstallationResult(
+        ReleaseInstallationWorkflowResult result)
+    {
+        if (result.Stage
+            == ReleaseInstallationWorkflowStage.AwaitingApplicationExit
+            && result.CleanupStatus == ReleaseInstallationCleanupStatus.Succeeded)
+        {
+            InstallConfirmed = false;
+            StatusMessage =
+                "The update helper stopped because SrvSurvey did not close. The prepared update was removed and no installation files were changed. Confirm again to retry.";
+            InstallProgressText = "Update helper stopped safely.";
+            return;
+        }
+
+        StatusMessage = "The guarded update was not started: "
+            + GetInstallationError(result)
+            + " The active installation and player profile were not changed.";
+        InstallProgressText = "Update preparation stopped safely.";
+    }
+
+    private static string GetInstallationError(
+        ReleaseInstallationWorkflowResult result)
+    {
+        var error = result.Error?.Message ?? "The operation did not complete.";
+        return result.CleanupError is null
+            ? error
+            : error + " Cleanup also failed: " + result.CleanupError.Message;
     }
 
     private async Task OpenReleaseAsync()
@@ -706,8 +739,10 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
 
     private string GetInstallationUnavailableMessage()
     {
-        return installer?.AutomaticInstallationUnavailableReason
-            ?? "This development or unpackaged build cannot replace itself; use Open releases.";
+        return installationWorkflow?.Capability.Status
+            == ReleaseInstallationCapabilityStatus.ReadOnlyAppImage
+            ? "This AppImage is mounted read-only and cannot replace itself; open the selected release and install its AppImage manually."
+            : "This development or unpackaged build cannot replace itself; use Open releases.";
     }
 
     private bool SetField<T>(
@@ -730,48 +765,17 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class InstallerContext
-    {
-        public required IReleasePackageDownloadService DownloadService { get; init; }
-
-        public required IReleasePackageStagingService StagingService { get; init; }
-
-        public required IReleaseInstallationPreparer InstallationPreparer { get; init; }
-
-        public required IApplicationUpdateHandoffService HandoffService { get; init; }
-
-        public required IApplicationInstanceManager InstanceManager { get; init; }
-
-        public required Func<ApplicationInstanceScan, Task<bool>>
-            ConfirmMultipleInstances
-        { get; init; }
-
-        public required string DataDirectory { get; init; }
-
-        public required string InstallationDirectory { get; init; }
-
-        public required IReadOnlyList<string> StartupArguments { get; init; }
-
-        public required Func<Task> Shutdown { get; init; }
-
-        public bool IsPackaged { get; init; }
-
-        public string? AutomaticInstallationUnavailableReason { get; init; }
-
-        public bool IsAppImage { get; init; }
-    }
-
     private sealed class GuardedProgress<T> : IProgress<T>
     {
         private readonly object gate = new();
         private readonly Action<T> report;
-        private readonly Progress<T> progress;
+        private readonly SynchronizationContext? synchronizationContext;
         private bool closed;
 
         public GuardedProgress(Action<T> report)
         {
-            this.report = report;
-            progress = new Progress<T>(ReportIfOpen);
+            this.report = report ?? throw new ArgumentNullException(nameof(report));
+            synchronizationContext = SynchronizationContext.Current;
         }
 
         public void Report(T value)
@@ -784,7 +788,16 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
                 }
             }
 
-            ((IProgress<T>)progress).Report(value);
+            if (synchronizationContext is null
+                || ReferenceEquals(
+                    SynchronizationContext.Current,
+                    synchronizationContext))
+            {
+                ReportIfOpen(value);
+                return;
+            }
+
+            synchronizationContext.Send(_ => ReportIfOpen(value), null);
         }
 
         public void Close()

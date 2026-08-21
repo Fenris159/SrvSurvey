@@ -19,8 +19,7 @@ internal sealed record ApplicationUpdateStartup(
     string? PlanPath,
     IReadOnlyList<string> ApplicationArguments);
 
-public sealed class ApplicationUpdateHandoffService
-    : IApplicationUpdateHandoffService, IApplicationUpdateHandoff
+internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandoff
 {
     private static readonly TimeSpan HelperReadyTimeout = TimeSpan.FromSeconds(30);
     private readonly ReleaseInstallationPlanStore planStore;
@@ -41,7 +40,7 @@ public sealed class ApplicationUpdateHandoffService
         this.startProcess = startProcess;
     }
 
-    public async Task<ReleaseInstallationHandoffPlan> StartHelperAsync(
+    internal async Task<ReleaseInstallationHandoffPlan> StartHelperAsync(
         string dataDirectory,
         ReleaseInstallationPreparation preparation,
         string stagedEntryPoint,
@@ -219,15 +218,6 @@ public sealed class ApplicationUpdateHandoffService
             or OperationCanceledException
             or PlatformNotSupportedException;
     }
-}
-
-public interface IApplicationUpdateHandoffService
-{
-    Task<ReleaseInstallationHandoffPlan> StartHelperAsync(
-        string dataDirectory,
-        ReleaseInstallationPreparation preparation,
-        string stagedEntryPoint,
-        CancellationToken cancellationToken = default);
 }
 
 internal static class ApplicationUpdateBootstrap

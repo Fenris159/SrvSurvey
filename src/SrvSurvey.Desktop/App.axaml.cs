@@ -406,42 +406,50 @@ public sealed partial class App : Application
             async () => await Dispatcher.UIThread.InvokeAsync(
                 () => desktop.Shutdown()),
             message => applicationLog.Append(message));
-        viewModel.ReleaseUpdates.ConfigureInstaller(
-            new ReleaseInstallerConfiguration
-            {
-                DownloadService = new ReleasePackageDownloadService(),
-                StagingService = new ReleasePackageStagingService(),
-                InstallationPreparer = new ReleaseInstallationPreparer(
+        var installationWorkflow = new ReleaseInstallationWorkflow(
+            new ReleaseInstallationWorkflowAdapters(
+                new ReleasePackageDownloadService(),
+                new ReleasePackageStagingService(),
+                new ReleaseInstallationPreparer(
                     historyCleanup: releaseHistoryCleanup),
-                HandoffService = new ApplicationUpdateHandoffService(),
-                InstanceManager = applicationInstanceManager,
-                ConfirmMultipleInstances = scan =>
+                new ApplicationUpdateHandoffService(),
+                applicationInstanceManager,
+                (scan, _, cancellationToken) =>
                     ConfirmMultipleApplicationInstancesAsync(
                         desktop,
-                        scan),
-                DataDirectory = appDataPaths.DataDirectory,
-                InstallationDirectory = AppContext.BaseDirectory,
-                StartupArguments = Program.StartupArguments,
-                Shutdown = async () => await Dispatcher.UIThread.InvokeAsync(
-                    () => desktop.Shutdown()),
-                AutomaticInstallationUnavailableReason =
-                    string.IsNullOrWhiteSpace(appImagePath)
-                        ? null
-                        : "This AppImage is mounted read-only and cannot replace itself; open the selected release and install its AppImage manually.",
-                IsAppImage = !string.IsNullOrWhiteSpace(appImagePath),
-            });
+                        scan,
+                        cancellationToken)),
+            new ReleaseInstallationWorkflowContext(
+                appDataPaths.DataDirectory,
+                AppContext.BaseDirectory,
+                Program.StartupArguments,
+                async cancellationToken => await Dispatcher.UIThread.InvokeAsync(
+                    () => desktop.Shutdown(),
+                    DispatcherPriority.Normal,
+                    cancellationToken),
+                !string.IsNullOrWhiteSpace(appImagePath),
+                message => applicationLog.Append(message)));
+        viewModel.ReleaseUpdates.ConfigureInstallationWorkflow(
+            installationWorkflow);
     }
 
     private static async Task<bool> ConfirmMultipleApplicationInstancesAsync(
         IClassicDesktopStyleApplicationLifetime desktop,
-        ApplicationInstanceScan scan)
+        ApplicationInstanceScan scan,
+        CancellationToken cancellationToken)
     {
         if (!Dispatcher.UIThread.CheckAccess())
         {
-            throw new InvalidOperationException(
-                "The update confirmation must be displayed on the UI thread.");
+            return await await Dispatcher.UIThread.InvokeAsync(
+                () => ConfirmMultipleApplicationInstancesAsync(
+                    desktop,
+                    scan,
+                    cancellationToken),
+                DispatcherPriority.Normal,
+                cancellationToken);
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         if (desktop.MainWindow is not Window owner)
         {
             return false;
