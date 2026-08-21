@@ -83,6 +83,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private readonly IInaraPublisher inaraPublisher;
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification =
+            "DisposeAsync awaits this coordinator through the failure-isolating cleanup helper.")]
     private readonly QuestRuntimeCoordinator questRuntimeCoordinator;
     private readonly QuestSettingsStore questSettingsStore;
     private readonly HttpClient? visitedStarsHttpClient;
@@ -221,40 +226,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         var rollback = new MainWindowViewModelConstructionRollback(
             resolvedApplicationLogService);
         rollback.Add(firstFootfallInferenceCancellation.Dispose);
-        if (frontierProfile is not null)
-        {
-            rollback.Add(frontierProfile.Dispose);
-        }
-
-        if (overlayInteraction is not null)
-        {
-            rollback.Add(overlayInteraction.Dispose);
-        }
-
-        if (resolvedFirstFootfallInferenceService is not null)
-        {
-            rollback.Add(resolvedFirstFootfallInferenceService.Dispose);
-        }
-
-        if (gameWindowSwitcher is not null)
-        {
-            rollback.Add(gameWindowSwitcher.Dispose);
-        }
-
-        if (resolvedInaraPublisher is not null)
-        {
-            rollback.Add(resolvedInaraPublisher.Dispose);
-        }
-
-        if (resolvedEddnPublisher is IDisposable injectedEddnPublisher)
-        {
-            rollback.Add(injectedEddnPublisher.Dispose);
-        }
-
-        if (resolvedVoxStellarPublisher is IDisposable injectedVoxPublisher)
-        {
-            rollback.Add(injectedVoxPublisher.Dispose);
-        }
+        rollback.Add(frontierProfile);
+        rollback.Add(overlayInteraction);
+        rollback.Add(resolvedFirstFootfallInferenceService);
+        var gameWindowOwnership =
+            new MainWindowViewModelConstructionOwnership<IGameWindowSwitcher>(
+                gameWindowSwitcher);
+        rollback.Add(gameWindowOwnership);
+        rollback.Add(resolvedInaraPublisher);
+        rollback.Add(resolvedEddnPublisher as IDisposable);
+        rollback.Add(resolvedVoxStellarPublisher as IDisposable);
 
         try
         {
@@ -271,10 +252,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 FrontierAccountService.CreateCurrent(AppDataPaths.DataDirectory),
                 communityGoalHistoryReader: CreateCommunityGoalHistoryReader(
                     folderResolution));
-            if (frontierProfile is null)
-            {
-                rollback.Add(FrontierProfile.Dispose);
-            }
+            rollback.AddIfCreated(frontierProfile, FrontierProfile);
             var legacyReferences = LegacyReferenceCatalogLoader.Load(
                 AppDataPaths.DataDirectory);
             var regionalCodexCandidates = RegionalCodexCandidateCatalog.Load(
@@ -349,10 +327,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     AppDataPaths.UiSettingsPath);
             this.firstFootfallInferenceService = resolvedFirstFootfallInferenceService
                 ?? new UnavailableFirstFootfallInferenceService();
-            if (resolvedFirstFootfallInferenceService is null)
-            {
-                rollback.Add(this.firstFootfallInferenceService.Dispose);
-            }
+            rollback.AddIfCreated(
+                resolvedFirstFootfallInferenceService,
+                this.firstFootfallInferenceService);
             construction.Checkpoint?.Invoke(
                 MainWindowViewModelConstructionCheckpoint.FoundationReady);
             InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
@@ -363,10 +340,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 InputSettings);
             var sharedGameWindowSwitcher = gameWindowSwitcher
                 ?? GameWindowSwitcher.CreateCurrent();
-            if (gameWindowSwitcher is null)
-            {
-                rollback.Add(sharedGameWindowSwitcher.Dispose);
-            }
+            gameWindowOwnership.Own(sharedGameWindowSwitcher);
             DesktopBehavior = new DesktopBehaviorViewModel(
                 desktopBehaviorSettingsStore
                     ?? new DesktopBehaviorSettingsStore(AppDataPaths.UiSettingsPath),
@@ -385,10 +359,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 new OverlayBehaviorSettingsStore(AppDataPaths.UiSettingsPath));
             OverlayInteraction = overlayInteraction ?? new OverlayInteractionViewModel(
                 OverlayPlatformCapabilities.DetectCurrent());
-            if (overlayInteraction is null)
-            {
-                rollback.Add(OverlayInteraction.Dispose);
-            }
+            rollback.AddIfCreated(overlayInteraction, OverlayInteraction);
             OverlayInteractionBinding = InputSettings.Bindings.Single(binding =>
                 binding.Definition.Action
                     == GlobalInputAction.ToggleOverlayInteraction);
@@ -426,10 +397,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             this.inaraPublisher = resolvedInaraPublisher ?? new InaraPublisher(
                 (typeof(MainWindowViewModel).Assembly.GetName().Version
                     ?? new Version(0, 0)).ToString());
-            if (resolvedInaraPublisher is null)
-            {
-                rollback.Add(this.inaraPublisher.Dispose);
-            }
+            rollback.AddIfCreated(resolvedInaraPublisher, this.inaraPublisher);
             Inara.UploadDisabled += OnInaraUploadDisabled;
             rollback.Add(() => Inara.UploadDisabled -= OnInaraUploadDisabled);
             this.eddnPublisher = resolvedEddnPublisher ?? new EddnPublisher(
@@ -439,11 +407,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     AppDataPaths.DataDirectory,
                     "eddn-outbox-v1.json"),
                 log: message => resolvedApplicationLogService?.Append(message));
-            if (resolvedEddnPublisher is null
-                && this.eddnPublisher is IDisposable disposableEddnPublisher)
-            {
-                rollback.Add(disposableEddnPublisher.Dispose);
-            }
+            rollback.AddIfCreated(
+                resolvedEddnPublisher,
+                this.eddnPublisher as IDisposable);
             NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
             rollback.Add(() =>
                 NetworkPrivacy.EddnUploadEnabledChanged -=
@@ -458,11 +424,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             VoxStellar = new VoxStellarSharingViewModel(
                 new VoxStellarSettingsStore(AppDataPaths.UiSettingsPath),
                 this.voxStellarPublisher.IsConfigured);
-            if (resolvedVoxStellarPublisher is null
-                && this.voxStellarPublisher is IDisposable disposableVoxPublisher)
-            {
-                rollback.Add(disposableVoxPublisher.Dispose);
-            }
+            rollback.AddIfCreated(
+                resolvedVoxStellarPublisher,
+                this.voxStellarPublisher as IDisposable);
             VoxStellar.UploadEnabledChanged += OnVoxStellarUploadEnabledChanged;
             rollback.Add(() =>
                 VoxStellar.UploadEnabledChanged -= OnVoxStellarUploadEnabledChanged);
@@ -717,15 +681,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                         ScreenshotProcessing.TargetFolder,
                 });
             rollback.Add(Guardian.Dispose);
-            ScreenshotProcessing.PropertyChanged += (_, eventArgs) =>
-            {
-                Guardian.RefreshAerialGuidance();
-                if (eventArgs.PropertyName == nameof(
-                        ScreenshotProcessingViewModel.TargetFolder))
-                {
-                    Guardian.RefreshScreenshotAvailability();
-                }
-            };
+            ScreenshotProcessing.PropertyChanged += OnScreenshotProcessingChanged;
+            rollback.Add(() =>
+                ScreenshotProcessing.PropertyChanged -=
+                    OnScreenshotProcessingChanged);
             exobiologyState = new ExobiologyState(sharedExobiologyCatalog);
             LegacyProfiles = LegacyProfileLocator.Discover(
                     AppDataPaths.LegacyProfileCandidates)
@@ -758,19 +717,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 TargetFrontierId,
                 sharedGameWindowSwitcher);
             CommanderInstances.PropertyChanged += OnCommanderInstancesPropertyChanged;
+            rollback.Add(CommanderInstances.Dispose);
             rollback.Add(() =>
                 CommanderInstances.PropertyChanged -=
                     OnCommanderInstancesPropertyChanged);
+            gameWindowOwnership.Transfer();
             SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
             this.eddnPublisher.SetSuspended(
                 CommanderInstances.HasMultipleGameWindows);
             (visitedStarsHttpClient, VisitedStarsCache) = CreateVisitedStarsCache(
                 provided: null,
                 appDataPaths: AppDataPaths);
-            if (visitedStarsHttpClient is not null)
-            {
-                rollback.Add(visitedStarsHttpClient.Dispose);
-            }
+            rollback.Add(visitedStarsHttpClient);
             statusMessage = BuildJournalReadyStatus(
                 folderResolution.IsFound,
                 TargetFrontierId);
@@ -4616,6 +4574,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(StationInfo.Dispose);
         TryDispose(Colonization.Dispose);
         TryDispose(GalaxyMap.Dispose);
+        ScreenshotProcessing.PropertyChanged -= OnScreenshotProcessingChanged;
         TryDispose(Guardian.Dispose);
         TryDispose(QuestWorkspace.Dispose);
         Inara.UploadDisabled -= OnInaraUploadDisabled;
@@ -4661,6 +4620,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private void OnEddnUploadEnabledChanged(bool enabled)
     {
         eddnPublisher.SetEnabled(enabled);
+    }
+
+    private void OnScreenshotProcessingChanged(
+        object? sender,
+        PropertyChangedEventArgs eventArgs)
+    {
+        Guardian.RefreshAerialGuidance();
+        if (eventArgs.PropertyName == nameof(
+                ScreenshotProcessingViewModel.TargetFolder))
+        {
+            Guardian.RefreshScreenshotAvailability();
+        }
     }
 
     private void OnCommanderInstancesPropertyChanged(

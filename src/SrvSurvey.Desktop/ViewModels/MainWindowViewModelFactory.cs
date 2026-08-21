@@ -312,6 +312,22 @@ internal sealed class MainWindowViewModelConstructionRollback(
         cleanup.Push(action);
     }
 
+    public void Add(IDisposable? resource)
+    {
+        if (resource is not null)
+        {
+            Add(resource.Dispose);
+        }
+    }
+
+    public void AddIfCreated(object? provided, IDisposable? created)
+    {
+        if (provided is null)
+        {
+            Add(created);
+        }
+    }
+
     public void Commit()
     {
         cleanup.Clear();
@@ -353,5 +369,37 @@ internal sealed class MainWindowViewModelConstructionRollback(
         }
 
         return failures;
+    }
+}
+
+internal sealed class MainWindowViewModelConstructionOwnership<T>(T? resource)
+    : IDisposable
+    where T : class, IDisposable
+{
+    private T? ownedResource = resource;
+
+    public void Own(T resource)
+    {
+        ArgumentNullException.ThrowIfNull(resource);
+        if (ownedResource is not null
+            && !ReferenceEquals(ownedResource, resource))
+        {
+            throw new InvalidOperationException(
+                "Construction ownership cannot replace an owned resource.");
+        }
+
+        ownedResource = resource;
+    }
+
+    public void Transfer()
+    {
+        ownedResource = null;
+    }
+
+    public void Dispose()
+    {
+        var resource = ownedResource;
+        ownedResource = null;
+        resource?.Dispose();
     }
 }

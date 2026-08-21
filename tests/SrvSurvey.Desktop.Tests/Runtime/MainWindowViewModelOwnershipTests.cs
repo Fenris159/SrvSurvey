@@ -31,6 +31,22 @@ public sealed class MainWindowViewModelOwnershipTests
     }
 
     [AvaloniaFact]
+    public async Task DisposingParentDetachesScreenshotProjection()
+    {
+        await using var context = new TestViewModelContext();
+        await context.ViewModel.DisposeAsync();
+        var guardianNotifications = 0;
+        context.ViewModel.Guardian.PropertyChanged += (_, _) =>
+            guardianNotifications++;
+
+        context.ViewModel.ScreenshotProcessing.TargetFolder = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-screenshot-target-{Guid.NewGuid():N}");
+
+        Assert.Equal(0, guardianNotifications);
+    }
+
+    [AvaloniaFact]
     public async Task InjectedWindowLeavesViewModelLifetimeToDesktopRuntime()
     {
         await using var context = new TestViewModelContext();
@@ -101,8 +117,23 @@ public sealed class MainWindowViewModelOwnershipTests
 
             Assert.Same(failure, thrown);
             Assert.True(inference.IsDisposed);
+            string[] expectedDisposalOrder =
+                checkpointValue == (int)
+                    MainWindowViewModelConstructionCheckpoint.OnlineAndShellReady
+                    ?
+                    [
+                        "game-window-switcher",
+                        "inara",
+                        "first-footfall",
+                    ]
+                    :
+                    [
+                        "inara",
+                        "game-window-switcher",
+                        "first-footfall",
+                    ];
             Assert.Equal(
-                ["inara", "game-window-switcher", "first-footfall"],
+                expectedDisposalOrder,
                 disposalOrder);
         }
         finally
@@ -146,7 +177,7 @@ public sealed class MainWindowViewModelOwnershipTests
 
             Assert.Same(primaryFailure, thrown);
             Assert.Equal(
-                ["inara", "game-window-switcher", "first-footfall"],
+                ["game-window-switcher", "inara", "first-footfall"],
                 disposalOrder);
             Assert.Contains(
                 "first-footfall cleanup failed",
