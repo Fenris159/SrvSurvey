@@ -81,7 +81,8 @@ public sealed class BoxelSearchSessionTests : IDisposable
         Assert.Equal(
             ["Praea Euq IL-P c5-0"],
             runningDocument.Search.EmptySystems);
-        await session.ExecuteAsync(new StopBoxelSearch());
+        Assert.True(StopBoxelSearch.Instance.PreservesProgress);
+        await session.ExecuteAsync(StopBoxelSearch.Instance);
 
         var document = await library.LoadAsync("F123", fileName);
         var profile = await profiles.LoadAsync("F123", true);

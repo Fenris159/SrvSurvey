@@ -314,9 +314,10 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
         CancellationToken cancellationToken)
     {
         var stateVersionBefore = state.Version;
-        var contextChanged = ApplyCurrentSystemContextLocked(update)
-            | ApplyRouteContextLocked(update)
-            | ApplyStatusContextLocked(update);
+        var currentSystemChanged = ApplyCurrentSystemContextLocked(update);
+        var routeChanged = ApplyRouteContextLocked(update);
+        var statusChanged = ApplyStatusContextLocked(update);
+        var contextChanged = currentSystemChanged || routeChanged || statusChanged;
         ApplyJournalEventsLocked(update);
 
         if (contextChanged)
