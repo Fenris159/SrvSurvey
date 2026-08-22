@@ -732,23 +732,21 @@
 
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
             <StackPanel Spacing="12">
-              <CheckBox IsChecked="{Binding Inara.UploadEnabled, Mode=TwoWay}"
-                        Content="Upload supported commander data to Inara" />
-              <CheckBox IsChecked="{Binding Inara.DeveloperTestMode, Mode=TwoWay}"
-                        IsEnabled="{Binding Inara.UploadEnabled}"
-                        Content="Developer test mode" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="Developer test mode is off by default. Enable it for the initial live verification; once Artie confirms the application for production on Inara, leave it off." />
+                         Text="Saving a personal API key enables supported Inara uploads only for the commander shown. Removing that key disables uploads for that commander." />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="New live events are batched for about 35 seconds. Credit changes are reconstructed from journal transactions and coalesced to Inara's hourly recommendation, with session-boundary updates." />
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         TextWrapping="Wrap"
+                         Text="Enable Inara uploads in only one application at a time to avoid duplicate commander events." />
             </StackPanel>
 
             <StackPanel Grid.Column="1" Spacing="10">
               <TextBlock FontWeight="SemiBold"
                          Text="{Binding Inara.CommanderDisplayName}" />
-              <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                 <TextBox Text="{Binding Inara.ApiKey, Mode=TwoWay}"
                          PasswordChar="*"
                          IsEnabled="{Binding Inara.HasCommanderProfile}"
@@ -757,11 +755,28 @@
                         Classes="secondary"
                         Command="{Binding Inara.SaveApiKeyCommand}"
                         Content="Save key" />
-                <Button Grid.Column="2"
-                        Classes="secondary"
+              </Grid>
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Classes="secondary"
+                        Command="{Binding Inara.RequestClearApiKeyCommand}"
+                        IsVisible="{Binding Inara.HasStoredApiKey}"
+                        Content="Clear key" />
+                <Button Classes="secondary"
                         Click="OpenInaraApiKeyPage_Click"
                         Content="Get API key" />
-              </Grid>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal"
+                          Spacing="10"
+                          IsVisible="{Binding Inara.IsClearKeyConfirmationVisible}">
+                <TextBlock VerticalAlignment="Center"
+                           Text="Remove this commander's saved Inara API key?" />
+                <Button Classes="danger"
+                        Command="{Binding Inara.ConfirmClearApiKeyCommand}"
+                        Content="Remove key" />
+                <Button Classes="secondary"
+                        Command="{Binding Inara.CancelClearApiKeyCommand}"
+                        Content="Cancel" />
+              </StackPanel>
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="{Binding Inara.CredentialStatus}" />

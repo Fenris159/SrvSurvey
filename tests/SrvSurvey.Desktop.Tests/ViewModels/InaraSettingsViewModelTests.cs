@@ -1,6 +1,5 @@
 using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Storage;
-using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -12,26 +11,9 @@ public sealed class InaraSettingsViewModelTests : IDisposable
         "SrvSurvey-InaraViewModel-" + Guid.NewGuid().ToString("N"));
 
     [Fact]
-    public void PublicationPreferencesAreOptInAndPersistImmediately()
-    {
-        var viewModel = CreateViewModel();
-
-        Assert.False(viewModel.UploadEnabled);
-        Assert.False(viewModel.DeveloperTestMode);
-
-        viewModel.UploadEnabled = true;
-        viewModel.DeveloperTestMode = true;
-
-        var reloaded = CreateViewModel();
-        Assert.True(reloaded.UploadEnabled);
-        Assert.True(reloaded.DeveloperTestMode);
-    }
-
-    [Fact]
     public async Task PersonalKeyIsSavedOnlyToTheCommanderProfile()
     {
         var viewModel = CreateViewModel();
-        viewModel.UploadEnabled = true;
         viewModel.SetCommanderProfile(
             "F123",
             "Test Commander",
@@ -46,11 +28,36 @@ public sealed class InaraSettingsViewModelTests : IDisposable
         var profile = await new CommanderProfileStore(temporaryDirectory)
             .LoadAsync("F123", isOdyssey: true);
         Assert.Equal("personal-key", profile.Data?.InaraApiKey);
-        Assert.DoesNotContain(
-            "personal-key",
-            File.ReadAllText(Path.Combine(
-                temporaryDirectory,
-                "ui-settings.json")));
+        Assert.False(File.Exists(Path.Combine(
+            temporaryDirectory,
+            "ui-settings.json")));
+    }
+
+    [Fact]
+    public async Task ClearingAKeyRequiresConfirmationAndRaisesAChange()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.SetCommanderProfile(
+            "F123",
+            "Test Commander",
+            isOdyssey: true,
+            inaraApiKey: "personal-key");
+        var changes = 0;
+        viewModel.ApiKeyChanged += (_, _) => changes++;
+
+        viewModel.RequestClearApiKeyCommand.Execute(null);
+
+        Assert.True(viewModel.IsClearKeyConfirmationVisible);
+        Assert.Equal("personal-key", viewModel.StoredApiKey);
+
+        viewModel.ConfirmClearApiKeyCommand.Execute(null);
+        await WaitForAsync(() => !viewModel.HasStoredApiKey);
+
+        var profile = await new CommanderProfileStore(temporaryDirectory)
+            .LoadAsync("F123", isOdyssey: true);
+        Assert.Null(profile.Data?.InaraApiKey);
+        Assert.Equal(1, changes);
+        Assert.False(viewModel.IsClearKeyConfirmationVisible);
     }
 
     [Fact]
@@ -134,9 +141,6 @@ public sealed class InaraSettingsViewModelTests : IDisposable
             saveInaraApiKeyAsync = null)
     {
         return new InaraSettingsViewModel(
-            new InaraSettingsStore(Path.Combine(
-                temporaryDirectory,
-                "ui-settings.json")),
             new CommanderProfileStore(temporaryDirectory),
             saveInaraApiKeyAsync);
     }

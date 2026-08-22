@@ -3,80 +3,71 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Storage;
-using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class InaraSettingsViewModel : INotifyPropertyChanged
 {
-    private readonly InaraSettingsStore settingsStore;
     private readonly Func<string, string?, bool, string?, CancellationToken, Task>
         saveInaraApiKeyAsync;
     private readonly AsyncCommand saveApiKeyCommand;
-    private InaraPreferences preferences;
+    private readonly AsyncCommand confirmClearApiKeyCommand;
+    private readonly DelegateCommand requestClearApiKeyCommand;
+    private readonly DelegateCommand cancelClearApiKeyCommand;
     private string apiKey = string.Empty;
     private string? storedApiKey;
     private string? profileFrontierId;
     private string? commanderName;
     private bool profileIsOdyssey = true;
     private int profileGeneration;
+    private bool isClearKeyConfirmationVisible;
     private string credentialStatus =
         "Load a commander profile to configure an Inara API key.";
     private string publicationStatus = string.Empty;
 
     public InaraSettingsViewModel(
-        InaraSettingsStore settingsStore,
         CommanderProfileStore commanderProfileStore)
-        : this(settingsStore, commanderProfileStore, null)
+        : this(commanderProfileStore, null)
     {
     }
 
     internal InaraSettingsViewModel(
-        InaraSettingsStore settingsStore,
         CommanderProfileStore commanderProfileStore,
         Func<string, string?, bool, string?, CancellationToken, Task>?
             saveInaraApiKeyAsync)
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
         ArgumentNullException.ThrowIfNull(commanderProfileStore);
         this.saveInaraApiKeyAsync = saveInaraApiKeyAsync
             ?? commanderProfileStore.SaveInaraApiKeyAsync;
-        preferences = settingsStore.Load();
         saveApiKeyCommand = new AsyncCommand(
-            SaveApiKeyAsync,
+            () => SaveApiKeyAsync(ApiKey.Trim()),
             CanSaveApiKey);
+        confirmClearApiKeyCommand = new AsyncCommand(
+            () => SaveApiKeyAsync(apiKey: null),
+            () => HasStoredApiKey && IsClearKeyConfirmationVisible);
+        requestClearApiKeyCommand = new DelegateCommand(
+            RequestClearApiKey,
+            () => HasStoredApiKey && !IsClearKeyConfirmationVisible);
+        cancelClearApiKeyCommand = new DelegateCommand(
+            CancelClearApiKey,
+            () => IsClearKeyConfirmationVisible);
         SaveApiKeyCommand = saveApiKeyCommand;
+        ConfirmClearApiKeyCommand = confirmClearApiKeyCommand;
+        RequestClearApiKeyCommand = requestClearApiKeyCommand;
+        CancelClearApiKeyCommand = cancelClearApiKeyCommand;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public event EventHandler? UploadDisabled;
+    public event EventHandler? ApiKeyChanged;
 
     public ICommand SaveApiKeyCommand { get; }
 
-    public bool UploadEnabled
-    {
-        get => preferences.UploadEnabled;
-        set
-        {
-            var wasEnabled = preferences.UploadEnabled;
-            UpdatePreferences(preferences with { UploadEnabled = value });
-            if (wasEnabled && !value)
-            {
-                UploadDisabled?.Invoke(this, EventArgs.Empty);
-            }
-        }
-    }
+    public ICommand RequestClearApiKeyCommand { get; }
 
-    public bool DeveloperTestMode
-    {
-        get => preferences.DeveloperTestMode;
-        set => UpdatePreferences(preferences with
-        {
-            DeveloperTestMode = value,
-        });
-    }
+    public ICommand ConfirmClearApiKeyCommand { get; }
+
+    public ICommand CancelClearApiKeyCommand { get; }
 
     public string ApiKey
     {
@@ -95,6 +86,22 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
     public bool HasCommanderProfile => profileFrontierId is not null;
 
     public bool HasStoredApiKey => storedApiKey is not null;
+
+    public bool IsClearKeyConfirmationVisible
+    {
+        get => isClearKeyConfirmationVisible;
+        private set
+        {
+            if (!SetField(ref isClearKeyConfirmationVisible, value))
+            {
+                return;
+            }
+
+            confirmClearApiKeyCommand.RaiseCanExecuteChanged();
+            requestClearApiKeyCommand.RaiseCanExecuteChanged();
+            cancelClearApiKeyCommand.RaiseCanExecuteChanged();
+        }
+    }
 
     public string CommanderDisplayName => commanderName ?? "No commander loaded";
 
@@ -141,6 +148,7 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
             ? null
             : inaraApiKey.Trim();
         apiKey = storedApiKey ?? string.Empty;
+        IsClearKeyConfirmationVisible = false;
 
         OnPropertyChanged(nameof(ApiKey));
         OnPropertyChanged(nameof(HasCommanderProfile));
@@ -158,6 +166,8 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
                 : $"An Inara API key is saved for {CommanderDisplayName}.";
         }
         saveApiKeyCommand.RaiseCanExecuteChanged();
+        confirmClearApiKeyCommand.RaiseCanExecuteChanged();
+        requestClearApiKeyCommand.RaiseCanExecuteChanged();
     }
 
     public void ReportPublicationResult(InaraPublicationResult result)
@@ -190,16 +200,26 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
             + exception.Message;
     }
 
-    private async Task SaveApiKeyAsync()
+    private void RequestClearApiKey()
+    {
+        IsClearKeyConfirmationVisible = true;
+    }
+
+    private void CancelClearApiKey()
+    {
+        IsClearKeyConfirmationVisible = false;
+    }
+
+    private async Task SaveApiKeyAsync(string? apiKey)
     {
         if (profileFrontierId is null)
         {
             return;
         }
 
-        var normalized = string.IsNullOrWhiteSpace(ApiKey)
+        var normalized = string.IsNullOrWhiteSpace(apiKey)
             ? null
-            : ApiKey.Trim();
+            : apiKey.Trim();
         var saveGeneration = profileGeneration;
         var saveFrontierId = profileFrontierId;
         var saveCommanderName = commanderName;
@@ -219,10 +239,14 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
 
             storedApiKey = normalized;
             ApiKey = normalized ?? string.Empty;
+            IsClearKeyConfirmationVisible = false;
             OnPropertyChanged(nameof(HasStoredApiKey));
+            confirmClearApiKeyCommand.RaiseCanExecuteChanged();
+            requestClearApiKeyCommand.RaiseCanExecuteChanged();
             CredentialStatus = normalized is null
                 ? $"The Inara API key was removed from {CommanderDisplayName}."
                 : $"The Inara API key was saved for {CommanderDisplayName}.";
+            ApiKeyChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception exception) when (
             exception is IOException
@@ -247,36 +271,11 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
             ? null
             : ApiKey.Trim();
         return profileFrontierId is not null
+            && normalized is not null
             && !string.Equals(
                 normalized,
                 storedApiKey,
                 StringComparison.Ordinal);
-    }
-
-    private void UpdatePreferences(InaraPreferences updated)
-    {
-        if (preferences == updated)
-        {
-            return;
-        }
-
-        preferences = updated;
-        OnPropertyChanged(string.Empty);
-        try
-        {
-            settingsStore.Save(preferences);
-            PublicationStatus = string.Empty;
-        }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException)
-        {
-            PublicationStatus =
-                "The Inara preference changed for this session but could not be saved: "
-                + exception.Message;
-        }
     }
 
     private bool SetField<T>(
@@ -332,6 +331,28 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
             {
                 isExecuting = false;
                 RaiseCanExecuteChanged();
+            }
+        }
+
+        public void RaiseCanExecuteChanged()
+        {
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private sealed class DelegateCommand(
+        Action execute,
+        Func<bool> canExecute) : ICommand
+    {
+        public event EventHandler? CanExecuteChanged;
+
+        public bool CanExecute(object? parameter) => canExecute();
+
+        public void Execute(object? parameter)
+        {
+            if (CanExecute(parameter))
+            {
+                execute();
             }
         }
 

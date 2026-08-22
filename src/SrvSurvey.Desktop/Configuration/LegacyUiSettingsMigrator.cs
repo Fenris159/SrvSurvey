@@ -260,11 +260,6 @@ public sealed class LegacyUiSettingsMigrator
                     ("uploadGGG", "UploadGreenGasGiantCandidates"),
                 ]);
                 mappedCount += MapLegacyEddnSchemaMode(legacy, root);
-                mappedCount += MapSection(legacy, root, "Inara",
-                [
-                    ("inaraUpload", "UploadEnabled"),
-                    ("inaraDeveloperTestMode", "DeveloperTestMode"),
-                ]);
                 mappedCount += MapSection(legacy, root, "Localization",
                 [
                     ("lang", "Language"),
@@ -334,8 +329,6 @@ public sealed class LegacyUiSettingsMigrator
             ("OverlayBehavior", "hideMultiFloatie", "HideMultiGameCommanderOverlay"),
             ("RavenService", "buildProjectsUrl_TEST", "ServiceUri"),
             ("JumpInfo", "useLastUpdatedFromSpanshNotEDSM", "UseSpanshLastUpdated"),
-            ("Inara", "inaraUpload", "UploadEnabled"),
-            ("Inara", "inaraDeveloperTestMode", "DeveloperTestMode"),
         };
         var pending = mappings.Where(mapping =>
             legacy[mapping.Legacy] is not null

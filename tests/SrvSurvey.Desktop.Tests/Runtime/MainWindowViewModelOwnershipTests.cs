@@ -268,10 +268,10 @@ public sealed class MainWindowViewModelOwnershipTests
             return Task.FromResult(InaraPublicationResult.Empty);
         }
 
-        public Task<InaraPublicationResult> FlushAsync(
-            InaraPublicationOptions options,
+        public Task<InaraPublicationResult> StopAsync(
             CancellationToken cancellationToken = default)
         {
+            disposalOrder.Add("inara");
             return Task.FromResult(InaraPublicationResult.Empty);
         }
 

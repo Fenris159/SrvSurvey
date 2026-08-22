@@ -1,8 +1,84 @@
 using Newtonsoft.Json.Linq;
 
+// Behavioral reference:
+// https://github.com/EDCD/EDMarketConnector/blob/2b6a0ce1ee3ba60c21f3f4e9fa093046da8825e4/plugins/inara.py
+// Copyright (c) EDCD, licensed under GNU GPL v2 or later.
+
 namespace SrvSurvey.Core.Inara
 {
-    internal sealed record InaraCredentials(string Commander, string FrontierId, string ApiKey);
+    internal sealed record InaraCredentials(
+        string Commander,
+        string FrontierId,
+        string ApiKey)
+    {
+        public override string ToString() =>
+            $"InaraCredentials {{ Commander = {Commander}, FrontierId = {FrontierId} }}";
+    }
+
+    /// <summary>
+    /// Stable identity and eligibility for one initialized journal session.
+    /// </summary>
+    internal sealed record InaraSession(
+        string Commander,
+        string FrontierId,
+        string? JournalPath,
+        bool IsLive,
+        bool IsBeta)
+    {
+        public static InaraSession? Create(
+            InaraPublicationOptions options,
+            string? journalPath)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+            var commander = options.CommanderName?.Trim();
+            var frontierId = options.FrontierId?.Trim();
+            var version = options.GameVersion?.Trim();
+            if (string.IsNullOrWhiteSpace(commander)
+                || string.IsNullOrWhiteSpace(frontierId)
+                || string.IsNullOrWhiteSpace(version))
+            {
+                return null;
+            }
+
+            return new InaraSession(
+                commander,
+                frontierId,
+                string.IsNullOrWhiteSpace(journalPath)
+                    ? null
+                    : journalPath,
+                InaraPublisher.IsLiveVersion(version, options.IsOdyssey),
+                InaraPublisher.IsBetaVersion(version));
+        }
+
+        public bool Matches(InaraSession other)
+        {
+            var pathComparison = OperatingSystem.IsWindows()
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
+            return string.Equals(
+                    Commander,
+                    other.Commander,
+                    StringComparison.OrdinalIgnoreCase)
+                && string.Equals(
+                    FrontierId,
+                    other.FrontierId,
+                    StringComparison.OrdinalIgnoreCase)
+                && string.Equals(
+                    JournalPath,
+                    other.JournalPath,
+                    pathComparison)
+                && IsLive == other.IsLive
+                && IsBeta == other.IsBeta;
+        }
+
+        public InaraCredentials? GetCredentials(string? apiKey)
+        {
+            var normalized = apiKey?.Trim();
+            return string.IsNullOrWhiteSpace(normalized)
+                ? null
+                : new InaraCredentials(Commander, FrontierId, normalized);
+        }
+    }
 
     internal sealed record InaraContext(
         string? Commander,
@@ -22,21 +98,24 @@ namespace SrvSurvey.Core.Inara
         JToken Data,
         string? ReplaceKey = null);
 
-    internal sealed record InaraQueuedEvent(InaraCredentials Credentials, InaraEvent Event);
+    internal sealed record InaraQueuedEvent(string ApiKey, InaraEvent Event)
+    {
+        public override string ToString() =>
+            $"InaraQueuedEvent {{ Event = {Event.Name} }}";
+    }
 
     internal static class InaraPayloadBuilder
     {
         public static JObject Build(
             string appVersion,
             InaraCredentials credentials,
-            IReadOnlyCollection<InaraEvent> events,
-            bool isBeingDeveloped)
+            IReadOnlyCollection<InaraEvent> events)
         {
             var header = new JObject
             {
                 ["appName"] = "SrvSurvey",
                 ["appVersion"] = appVersion,
-                ["isBeingDeveloped"] = isBeingDeveloped,
+                ["isBeingDeveloped"] = true,
                 ["APIkey"] = credentials.ApiKey,
                 ["commanderName"] = credentials.Commander,
             };
@@ -73,7 +152,7 @@ namespace SrvSurvey.Core.Inara
         }
 
         public int Enqueue(
-            InaraCredentials credentials,
+            string apiKey,
             IEnumerable<InaraEvent> events,
             int maximumCount = DefaultMaximumCount)
         {
@@ -84,35 +163,32 @@ namespace SrvSurvey.Core.Inara
                     if (!string.IsNullOrWhiteSpace(entry.ReplaceKey))
                     {
                         pending.RemoveAll(item =>
-                            item.Credentials == credentials
+                            item.ApiKey == apiKey
                             && item.Event.ReplaceKey == entry.ReplaceKey);
                     }
 
-                    pending.Add(new InaraQueuedEvent(credentials, entry));
+                    pending.Add(new InaraQueuedEvent(apiKey, entry));
                 }
 
                 return trimToMaximum(maximumCount);
             }
         }
 
-        public List<InaraQueuedEvent> TakeBatch(int maximumCount)
+        public List<InaraQueuedEvent> TakeBatch(
+            string? apiKey,
+            int maximumCount,
+            out int discarded)
         {
             ArgumentOutOfRangeException.ThrowIfLessThan(maximumCount, 1);
             lock (sync)
             {
+                discarded = pending.RemoveAll(item => item.ApiKey != apiKey);
                 if (pending.Count == 0)
                     return [];
 
-                var credentials = pending[0].Credentials;
-                var indexes = pending
-                    .Select((item, index) => (item, index))
-                    .Where(pair => pair.item.Credentials == credentials)
-                    .Take(maximumCount)
-                    .Select(pair => pair.index)
-                    .ToArray();
-                var batch = indexes.Select(index => pending[index]).ToList();
-                foreach (var index in indexes.Reverse())
-                    pending.RemoveAt(index);
+                var count = Math.Min(pending.Count, maximumCount);
+                var batch = pending.GetRange(0, count);
+                pending.RemoveRange(0, count);
                 return batch;
             }
         }
@@ -135,11 +211,19 @@ namespace SrvSurvey.Core.Inara
             {
                 var retained = events
                     .Where(item => string.IsNullOrWhiteSpace(item.Event.ReplaceKey)
-                        || !pending.Any(current => current.Credentials == item.Credentials
+                        || !pending.Any(current => current.ApiKey == item.ApiKey
                             && current.Event.ReplaceKey == item.Event.ReplaceKey))
                     .ToList();
                 pending.InsertRange(0, retained);
                 return trimToMaximum(maximumCount);
+            }
+        }
+
+        public int DiscardExcept(string? apiKey)
+        {
+            lock (sync)
+            {
+                return pending.RemoveAll(item => item.ApiKey != apiKey);
             }
         }
 

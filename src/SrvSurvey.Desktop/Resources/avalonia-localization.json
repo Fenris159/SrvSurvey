@@ -3309,6 +3309,10 @@
                    "translation":  "Klar gestempelt; Nicht beanspruchte Belohnungen wurden nicht geändert."
                },
                {
+                   "source":  "Clear key",
+                   "translation":  "Schlüssel löschen"
+               },
+               {
                    "source":  "Clear mission 1 progress",
                    "translation":  "Erledige den Fortschritt von Mission 1"
                },
@@ -4937,24 +4941,12 @@
                    "translation":  "Entwicklerdateiformate werden hier als Player-Aufgaben zusammengefasst; Diagnose- und Repository-Dokumentation bewahren die Beweise auf niedrigerer Ebene."
                },
                {
-                   "source":  "Developer test mode",
-                   "translation":  "Entwicklertestmodus"
-               },
-               {
-                   "source":  "Developer test mode is off by default. Enable it for the initial live verification; once Artie confirms the application for production on Inara, leave it off.",
-                   "translation":  "Der Entwicklertestmodus ist standardmäßig deaktiviert. Aktivieren Sie es für die erste Live-Verifizierung; Sobald Artie den Antrag auf Produktion am Inara bestätigt, lassen Sie ihn weg."
-               },
-               {
                    "source":  "Developer tools",
                    "translation":  "Entwicklertools"
                },
                {
                    "source":  "Developer tools for capturing live Odyssey settlement geometry.",
                    "translation":  "Entwicklertools zur Live-Erfassung der Odyssey-Siedlungsgeometrie."
-               },
-               {
-                   "source":  "DeveloperTestMode",
-                   "translation":  "DeveloperTestMode"
                },
                {
                    "source":  "Development quest action failed: {0}",
@@ -5531,6 +5523,10 @@
                {
                    "source":  "Enable Guardian Ruins features",
                    "translation":  "Aktivieren Sie die Funktionen von Guardian Ruins"
+               },
+               {
+                   "source":  "Enable Inara uploads in only one application at a time to avoid duplicate commander events.",
+                   "translation":  "Aktivieren Sie Inara-Uploads jeweils nur in einer Anwendung, um doppelte Commander-Ereignisse zu vermeiden."
                },
                {
                    "source":  "Enable OpenVR overlays before resetting headset orientation.",
@@ -13441,6 +13437,10 @@
                    "translation":  "Entwicklungsquest entfernen"
                },
                {
+                   "source":  "Remove key",
+                   "translation":  "Schlüssel abziehen"
+               },
+               {
                    "source":  "Remove local raw point",
                    "translation":  "Lokalen Rohpunkt entfernen"
                },
@@ -13471,6 +13471,10 @@
                {
                    "source":  "Remove the locationless manual/imported discovery for",
                    "translation":  "Entfernen Sie die standortlose manuelle/importierte Erkennung für"
+               },
+               {
+                   "source":  "Remove this commander\u0027s saved Inara API key?",
+                   "translation":  "Den gespeicherten API-Schlüssel Inara dieses Kommandanten entfernen?"
                },
                {
                    "source":  "Removed \u0027{0}\u0027 locally.",
@@ -14547,6 +14551,10 @@
                {
                    "source":  "Saved {0}.",
                    "translation":  "Gespeichert {0}."
+               },
+               {
+                   "source":  "Saving a personal API key enables supported Inara uploads only for the commander shown. Removing that key disables uploads for that commander.",
+                   "translation":  "Das Speichern eines persönlichen API-Schlüssels ermöglicht unterstützte Inara-Uploads nur für den angezeigten Kommandanten. Durch das Entfernen dieses Schlüssels werden Uploads für diesen Kommandanten deaktiviert."
                },
                {
                    "source":  "Saving project visibility to Raven Colonial...",
@@ -17053,10 +17061,6 @@
                    "translation":  "Der Inara API-Schlüssel wurde für {0} gespeichert."
                },
                {
-                   "source":  "The Inara preference changed for this session but could not be saved: {0}",
-                   "translation":  "Die Inara-Einstellung wurde für diese Sitzung geändert, konnte aber nicht gespeichert werden: {0}"
-               },
-               {
                    "source":  "The Journey could not be reprocessed: {0}",
                    "translation":  "Die Reise konnte nicht erneut verarbeitet werden: {0}"
                },
@@ -19279,14 +19283,6 @@
                {
                    "source":  "Upload newly calculated settlement geometry to Canonn",
                    "translation":  "Neu berechnete Siedlungsgeometrie auf Canonn hochladen"
-               },
-               {
-                   "source":  "Upload supported commander data to Inara",
-                   "translation":  "Unterstützte Kommandantendaten auf Inara hochladen"
-               },
-               {
-                   "source":  "UploadEnabled",
-                   "translation":  "UploadEnabled"
                },
                {
                    "source":  "UploadGreenGasGiantCandidates",
@@ -25975,6 +25971,10 @@
                    "translation":  "Borrar cancelado; Las recompensas no reclamadas no fueron cambiadas."
                },
                {
+                   "source":  "Clear key",
+                   "translation":  "Borrar clave"
+               },
+               {
                    "source":  "Clear mission 1 progress",
                    "translation":  "Borrar el progreso de la misión 1."
                },
@@ -27603,24 +27603,12 @@
                    "translation":  "Los formatos de archivos del desarrollador se resumen aquí como tareas del reproductor; La documentación de diagnóstico y repositorio conserva la evidencia de nivel inferior."
                },
                {
-                   "source":  "Developer test mode",
-                   "translation":  "Modo de prueba de desarrollador"
-               },
-               {
-                   "source":  "Developer test mode is off by default. Enable it for the initial live verification; once Artie confirms the application for production on Inara, leave it off.",
-                   "translation":  "El modo de prueba de desarrollador está desactivado de forma predeterminada. Habilítelo para la verificación inicial en vivo; Una vez que Artie confirme la solicitud de producción en Inara, déjala desactivada."
-               },
-               {
                    "source":  "Developer tools",
                    "translation":  "Herramientas de desarrollador"
                },
                {
                    "source":  "Developer tools for capturing live Odyssey settlement geometry.",
                    "translation":  "Herramientas de desarrollo para capturar la geometría de los asentamientos de Odyssey en vivo."
-               },
-               {
-                   "source":  "DeveloperTestMode",
-                   "translation":  "Modo de prueba de desarrollador"
                },
                {
                    "source":  "Development quest action failed: {0}",
@@ -28197,6 +28185,10 @@
                {
                    "source":  "Enable Guardian Ruins features",
                    "translation":  "Habilitar las funciones de Guardian Ruins"
+               },
+               {
+                   "source":  "Enable Inara uploads in only one application at a time to avoid duplicate commander events.",
+                   "translation":  "Habilite las cargas de Inara en una sola aplicación a la vez para evitar eventos duplicados del comandante."
                },
                {
                    "source":  "Enable OpenVR overlays before resetting headset orientation.",
@@ -36107,6 +36099,10 @@
                    "translation":  "Eliminar misión de desarrollo"
                },
                {
+                   "source":  "Remove key",
+                   "translation":  "Quitar clave"
+               },
+               {
                    "source":  "Remove local raw point",
                    "translation":  "Eliminar punto bruto local"
                },
@@ -36137,6 +36133,10 @@
                {
                    "source":  "Remove the locationless manual/imported discovery for",
                    "translation":  "Elimine el descubrimiento manual/importado sin ubicación para"
+               },
+               {
+                   "source":  "Remove this commander\u0027s saved Inara API key?",
+                   "translation":  "¿Eliminar la clave API Inara guardada de este comandante?"
                },
                {
                    "source":  "Removed \u0027{0}\u0027 locally.",
@@ -37213,6 +37213,10 @@
                {
                    "source":  "Saved {0}.",
                    "translation":  "Guardado {0}."
+               },
+               {
+                   "source":  "Saving a personal API key enables supported Inara uploads only for the commander shown. Removing that key disables uploads for that commander.",
+                   "translation":  "Guardar una clave API personal habilita las cargas Inara admitidas solo para el comandante que se muestra. Quitar esa clave deshabilita las cargas para ese comandante."
                },
                {
                    "source":  "Saving project visibility to Raven Colonial...",
@@ -39719,10 +39723,6 @@
                    "translation":  "La clave API Inara se guardó para {0}."
                },
                {
-                   "source":  "The Inara preference changed for this session but could not be saved: {0}",
-                   "translation":  "La preferencia Inara cambió para esta sesión pero no se pudo guardar: {0}"
-               },
-               {
                    "source":  "The Journey could not be reprocessed: {0}",
                    "translation":  "No se pudo reprocesar el Journey: {0}"
                },
@@ -41945,14 +41945,6 @@
                {
                    "source":  "Upload newly calculated settlement geometry to Canonn",
                    "translation":  "Cargue la geometría de liquidación recién calculada a Canonn"
-               },
-               {
-                   "source":  "Upload supported commander data to Inara",
-                   "translation":  "Cargue datos de comandante admitidos a Inara"
-               },
-               {
-                   "source":  "UploadEnabled",
-                   "translation":  "Subir habilitado"
                },
                {
                    "source":  "UploadGreenGasGiantCandidates",
@@ -48641,6 +48633,10 @@
                    "translation":  "Effacement annulé ; les récompenses non réclamées n\u0027ont pas été modifiées."
                },
                {
+                   "source":  "Clear key",
+                   "translation":  "Effacer la clé"
+               },
+               {
                    "source":  "Clear mission 1 progress",
                    "translation":  "Terminer la progression de la mission 1"
                },
@@ -50269,24 +50265,12 @@
                    "translation":  "Les formats de fichiers de développeur sont résumés ici sous forme de tâches du joueur ; Les diagnostics et la documentation du référentiel conservent les preuves de niveau inférieur."
                },
                {
-                   "source":  "Developer test mode",
-                   "translation":  "Mode test développeur"
-               },
-               {
-                   "source":  "Developer test mode is off by default. Enable it for the initial live verification; once Artie confirms the application for production on Inara, leave it off.",
-                   "translation":  "Le mode test du développeur est désactivé par défaut. Activez-le pour la vérification initiale en direct ; une fois qu\u0027Artie a confirmé la demande de production sur Inara, laissez-la de côté."
-               },
-               {
                    "source":  "Developer tools",
                    "translation":  "Outils de développement"
                },
                {
                    "source":  "Developer tools for capturing live Odyssey settlement geometry.",
                    "translation":  "Outils de développement pour capturer la géométrie des colonies Odyssey en direct."
-               },
-               {
-                   "source":  "DeveloperTestMode",
-                   "translation":  "DéveloppeurTestMode"
                },
                {
                    "source":  "Development quest action failed: {0}",
@@ -50863,6 +50847,10 @@
                {
                    "source":  "Enable Guardian Ruins features",
                    "translation":  "Activer les fonctionnalités des ruines gardiennes"
+               },
+               {
+                   "source":  "Enable Inara uploads in only one application at a time to avoid duplicate commander events.",
+                   "translation":  "Activez les téléchargements Inara dans une seule application à la fois pour éviter les événements de commandant en double."
                },
                {
                    "source":  "Enable OpenVR overlays before resetting headset orientation.",
@@ -58773,6 +58761,10 @@
                    "translation":  "Supprimer la quête de développement"
                },
                {
+                   "source":  "Remove key",
+                   "translation":  "Supprimer la clé"
+               },
+               {
                    "source":  "Remove local raw point",
                    "translation":  "Supprimer le point brut local"
                },
@@ -58803,6 +58795,10 @@
                {
                    "source":  "Remove the locationless manual/imported discovery for",
                    "translation":  "Supprimez la découverte manuelle/importée sans emplacement pour"
+               },
+               {
+                   "source":  "Remove this commander\u0027s saved Inara API key?",
+                   "translation":  "Supprimer la clé API Inara enregistrée de ce commandant ?"
                },
                {
                    "source":  "Removed \u0027{0}\u0027 locally.",
@@ -59879,6 +59875,10 @@
                {
                    "source":  "Saved {0}.",
                    "translation":  "{0} enregistré."
+               },
+               {
+                   "source":  "Saving a personal API key enables supported Inara uploads only for the commander shown. Removing that key disables uploads for that commander.",
+                   "translation":  "L\u0027enregistrement d\u0027une clé API personnelle permet les téléchargements Inara pris en charge uniquement pour le commandant affiché. La suppression de cette clé désactive les téléchargements pour ce commandant."
                },
                {
                    "source":  "Saving project visibility to Raven Colonial...",
@@ -62385,10 +62385,6 @@
                    "translation":  "La clé API Inara a été enregistrée pour {0}."
                },
                {
-                   "source":  "The Inara preference changed for this session but could not be saved: {0}",
-                   "translation":  "La préférence Inara a été modifiée pour cette session mais n\u0027a pas pu être enregistrée : {0}"
-               },
-               {
                    "source":  "The Journey could not be reprocessed: {0}",
                    "translation":  "Le parcours n\u0027a pas pu être retraité : {0}"
                },
@@ -64611,14 +64607,6 @@
                {
                    "source":  "Upload newly calculated settlement geometry to Canonn",
                    "translation":  "Téléchargez la géométrie de tassement nouvellement calculée dans Canonn"
-               },
-               {
-                   "source":  "Upload supported commander data to Inara",
-                   "translation":  "Téléchargez les données du commandant prises en charge sur Inara"
-               },
-               {
-                   "source":  "UploadEnabled",
-                   "translation":  "Téléchargement activé"
                },
                {
                    "source":  "UploadGreenGasGiantCandidates",
@@ -71307,6 +71295,10 @@
                       "translation":  "Limpar cancelado; recompensas não reclamadas não foram alteradas."
                   },
                   {
+                      "source":  "Clear key",
+                      "translation":  "Limpar chave"
+                  },
+                  {
                       "source":  "Clear mission 1 progress",
                       "translation":  "Limpar o progresso da missão 1"
                   },
@@ -72935,24 +72927,12 @@
                       "translation":  "Os formatos de arquivo do desenvolvedor são resumidos aqui como tarefas do jogador; Os diagnósticos e a documentação do repositório retêm as evidências de nível inferior."
                   },
                   {
-                      "source":  "Developer test mode",
-                      "translation":  "Modo de teste do desenvolvedor"
-                  },
-                  {
-                      "source":  "Developer test mode is off by default. Enable it for the initial live verification; once Artie confirms the application for production on Inara, leave it off.",
-                      "translation":  "O modo de teste do desenvolvedor está desativado por padrão. Habilite-o para a verificação inicial ao vivo; assim que Artie confirmar o pedido de produção em Inara, deixe-o desativado."
-                  },
-                  {
                       "source":  "Developer tools",
                       "translation":  "Ferramentas de desenvolvedor"
                   },
                   {
                       "source":  "Developer tools for capturing live Odyssey settlement geometry.",
                       "translation":  "Ferramentas de desenvolvedor para capturar geometria de assentamento do Odyssey ao vivo."
-                  },
-                  {
-                      "source":  "DeveloperTestMode",
-                      "translation":  "DesenvolvedorTestMode"
                   },
                   {
                       "source":  "Development quest action failed: {0}",
@@ -73529,6 +73509,10 @@
                   {
                       "source":  "Enable Guardian Ruins features",
                       "translation":  "Ativar recursos das Ruínas do Guardião"
+                  },
+                  {
+                      "source":  "Enable Inara uploads in only one application at a time to avoid duplicate commander events.",
+                      "translation":  "Habilite uploads de Inara em apenas um aplicativo por vez para evitar eventos duplicados do comandante."
                   },
                   {
                       "source":  "Enable OpenVR overlays before resetting headset orientation.",
@@ -81439,6 +81423,10 @@
                       "translation":  "Remover missão de desenvolvimento"
                   },
                   {
+                      "source":  "Remove key",
+                      "translation":  "Remover chave"
+                  },
+                  {
                       "source":  "Remove local raw point",
                       "translation":  "Remover ponto bruto local"
                   },
@@ -81469,6 +81457,10 @@
                   {
                       "source":  "Remove the locationless manual/imported discovery for",
                       "translation":  "Remova a descoberta manual/importada sem localização para"
+                  },
+                  {
+                      "source":  "Remove this commander\u0027s saved Inara API key?",
+                      "translation":  "Remover a chave de API Inara salva deste comandante?"
                   },
                   {
                       "source":  "Removed \u0027{0}\u0027 locally.",
@@ -82545,6 +82537,10 @@
                   {
                       "source":  "Saved {0}.",
                       "translation":  "Salvo {0}."
+                  },
+                  {
+                      "source":  "Saving a personal API key enables supported Inara uploads only for the commander shown. Removing that key disables uploads for that commander.",
+                      "translation":  "Salvar uma chave de API pessoal permite uploads Inara suportados apenas para o comandante mostrado. A remoção dessa chave desativa os uploads desse comandante."
                   },
                   {
                       "source":  "Saving project visibility to Raven Colonial...",
@@ -85051,10 +85047,6 @@
                       "translation":  "A chave de API Inara foi salva para {0}."
                   },
                   {
-                      "source":  "The Inara preference changed for this session but could not be saved: {0}",
-                      "translation":  "A preferência Inara foi alterada para esta sessão, mas não pôde ser salva: {0}"
-                  },
-                  {
                       "source":  "The Journey could not be reprocessed: {0}",
                       "translation":  "A jornada não pôde ser reprocessada: {0}"
                   },
@@ -87277,14 +87269,6 @@
                   {
                       "source":  "Upload newly calculated settlement geometry to Canonn",
                       "translation":  "Carregue a geometria de assentamento recém-calculada para Canonn"
-                  },
-                  {
-                      "source":  "Upload supported commander data to Inara",
-                      "translation":  "Faça upload dos dados do comandante compatível para Inara"
-                  },
-                  {
-                      "source":  "UploadEnabled",
-                      "translation":  "Upload habilitado"
                   },
                   {
                       "source":  "UploadGreenGasGiantCandidates",
@@ -93973,6 +93957,10 @@
                    "translation":  "Очистить отменено; невостребованные награды не изменены."
                },
                {
+                   "source":  "Clear key",
+                   "translation":  "Очистить ключ"
+               },
+               {
                    "source":  "Clear mission 1 progress",
                    "translation":  "Очистить прогресс миссии 1"
                },
@@ -95601,24 +95589,12 @@
                    "translation":  "Форматы файлов разработчика обобщены здесь как задачи проигрывателя; Документация по диагностике и хранилищу сохраняет доказательства более низкого уровня."
                },
                {
-                   "source":  "Developer test mode",
-                   "translation":  "Тестовый режим для разработчиков"
-               },
-               {
-                   "source":  "Developer test mode is off by default. Enable it for the initial live verification; once Artie confirms the application for production on Inara, leave it off.",
-                   "translation":  "По умолчанию тестовый режим разработчика отключен. Включите его для первоначальной проверки в реальном времени; как только Арти подтвердит заявку на производство на Inara, оставьте ее."
-               },
-               {
                    "source":  "Developer tools",
                    "translation":  "Инструменты разработчика"
                },
                {
                    "source":  "Developer tools for capturing live Odyssey settlement geometry.",
                    "translation":  "Инструменты разработчика для создания живой геометрии поселений Одиссея."
-               },
-               {
-                   "source":  "DeveloperTestMode",
-                   "translation":  "РазработчикTestMode"
                },
                {
                    "source":  "Development quest action failed: {0}",
@@ -96195,6 +96171,10 @@
                {
                    "source":  "Enable Guardian Ruins features",
                    "translation":  "Включить функции Guardian Ruins"
+               },
+               {
+                   "source":  "Enable Inara uploads in only one application at a time to avoid duplicate commander events.",
+                   "translation":  "Включите загрузку Inara только в одном приложении одновременно, чтобы избежать дублирования событий командира."
                },
                {
                    "source":  "Enable OpenVR overlays before resetting headset orientation.",
@@ -104105,6 +104085,10 @@
                    "translation":  "Удалить квест на разработку"
                },
                {
+                   "source":  "Remove key",
+                   "translation":  "Удалить ключ"
+               },
+               {
                    "source":  "Remove local raw point",
                    "translation":  "Удалить локальную исходную точку"
                },
@@ -104135,6 +104119,10 @@
                {
                    "source":  "Remove the locationless manual/imported discovery for",
                    "translation":  "Удалите обнаружение вручную/импортировано без указания местоположения для"
+               },
+               {
+                   "source":  "Remove this commander\u0027s saved Inara API key?",
+                   "translation":  "Удалить сохраненный API-ключ Inara этого командира?"
                },
                {
                    "source":  "Removed \u0027{0}\u0027 locally.",
@@ -105211,6 +105199,10 @@
                {
                    "source":  "Saved {0}.",
                    "translation":  "Сохранено {0}."
+               },
+               {
+                   "source":  "Saving a personal API key enables supported Inara uploads only for the commander shown. Removing that key disables uploads for that commander.",
+                   "translation":  "Сохранение личного ключа API позволяет поддерживать загрузку Inara только для показанного командира. Удаление этого ключа отключает загрузку для этого командира."
                },
                {
                    "source":  "Saving project visibility to Raven Colonial...",
@@ -107717,10 +107709,6 @@
                    "translation":  "Ключ API Inara был сохранен для {0}."
                },
                {
-                   "source":  "The Inara preference changed for this session but could not be saved: {0}",
-                   "translation":  "Предпочтение Inara изменилось для этого сеанса, но не удалось сохранить: {0}"
-               },
-               {
                    "source":  "The Journey could not be reprocessed: {0}",
                    "translation":  "Не удалось повторно обработать «Путешествие»: {0}"
                },
@@ -109943,14 +109931,6 @@
                {
                    "source":  "Upload newly calculated settlement geometry to Canonn",
                    "translation":  "Загрузите вновь рассчитанную расчетную геометрию в Canonn"
-               },
-               {
-                   "source":  "Upload supported commander data to Inara",
-                   "translation":  "Загрузите поддерживаемые данные командира в Inara"
-               },
-               {
-                   "source":  "UploadEnabled",
-                   "translation":  "Загрузка включена"
                },
                {
                    "source":  "UploadGreenGasGiantCandidates",
@@ -116639,6 +116619,10 @@
                         "translation":  "清除取消；无人认领的奖励没有改变。"
                     },
                     {
+                        "source":  "Clear key",
+                        "translation":  "清除键"
+                    },
+                    {
                         "source":  "Clear mission 1 progress",
                         "translation":  "清除任务1进度"
                     },
@@ -118267,24 +118251,12 @@
                         "translation":  "开发者文件格式在这里总结为玩家任务；诊断和存储库文档保留较低级别的证据。"
                     },
                     {
-                        "source":  "Developer test mode",
-                        "translation":  "开发者测试模式"
-                    },
-                    {
-                        "source":  "Developer test mode is off by default. Enable it for the initial live verification; once Artie confirms the application for production on Inara, leave it off.",
-                        "translation":  "开发者测试模式默认关闭。启用它以进行初始实时验证；一旦 Artie 确认了 Inara 上的生产申请，就将其保留。"
-                    },
-                    {
                         "source":  "Developer tools",
                         "translation":  "开发者工具"
                     },
                     {
                         "source":  "Developer tools for capturing live Odyssey settlement geometry.",
                         "translation":  "用于捕获实时奥德赛定居点几何形状的开发工具。"
-                    },
-                    {
-                        "source":  "DeveloperTestMode",
-                        "translation":  "开发者测试模式"
                     },
                     {
                         "source":  "Development quest action failed: {0}",
@@ -118861,6 +118833,10 @@
                     {
                         "source":  "Enable Guardian Ruins features",
                         "translation":  "启用守护者废墟功能"
+                    },
+                    {
+                        "source":  "Enable Inara uploads in only one application at a time to avoid duplicate commander events.",
+                        "translation":  "一次仅在一个应用程序中启用 Inara 上传，以避免重复的指挥官事件。"
                     },
                     {
                         "source":  "Enable OpenVR overlays before resetting headset orientation.",
@@ -126771,6 +126747,10 @@
                         "translation":  "删除开发任务"
                     },
                     {
+                        "source":  "Remove key",
+                        "translation":  "移除钥匙"
+                    },
+                    {
                         "source":  "Remove local raw point",
                         "translation":  "删除本地原始点"
                     },
@@ -126801,6 +126781,10 @@
                     {
                         "source":  "Remove the locationless manual/imported discovery for",
                         "translation":  "删除无位置手动/导入的发现"
+                    },
+                    {
+                        "source":  "Remove this commander\u0027s saved Inara API key?",
+                        "translation":  "删除该指挥官保存的 Inara API 密钥？"
                     },
                     {
                         "source":  "Removed \u0027{0}\u0027 locally.",
@@ -127877,6 +127861,10 @@
                     {
                         "source":  "Saved {0}.",
                         "translation":  "已保存 {0}。"
+                    },
+                    {
+                        "source":  "Saving a personal API key enables supported Inara uploads only for the commander shown. Removing that key disables uploads for that commander.",
+                        "translation":  "保存个人 API 密钥只会为显示的指挥官启用受支持的 Inara 上传。删除该密钥将禁用该指挥官的上传。"
                     },
                     {
                         "source":  "Saving project visibility to Raven Colonial...",
@@ -130383,10 +130371,6 @@
                         "translation":  "已为 {0} 保存 Inara API 密钥。"
                     },
                     {
-                        "source":  "The Inara preference changed for this session but could not be saved: {0}",
-                        "translation":  "此会话的 Inara 首选项已更改，但无法保存：{0}"
-                    },
-                    {
                         "source":  "The Journey could not be reprocessed: {0}",
                         "translation":  "无法重新处理旅程：{0}"
                     },
@@ -132609,14 +132593,6 @@
                     {
                         "source":  "Upload newly calculated settlement geometry to Canonn",
                         "translation":  "将新计算的沉降几何形状上传到 Canonn"
-                    },
-                    {
-                        "source":  "Upload supported commander data to Inara",
-                        "translation":  "将支持的指挥官数据上传到 Inara"
-                    },
-                    {
-                        "source":  "UploadEnabled",
-                        "translation":  "上传启用"
                     },
                     {
                         "source":  "UploadGreenGasGiantCandidates",
@@ -139305,6 +139281,10 @@
                    "translation":  "* CLEAR CANCELLED; UNCLAIMED REWARDS WERE NOT CHANGED. \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Clear key",
+                   "translation":  "* CLEAR KEY \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Clear mission 1 progress",
                    "translation":  "* CLEAR MISSION 1 PROGRESS \u003e\u003e\u003e!"
                },
@@ -140933,24 +140913,12 @@
                    "translation":  "* DEVELOPER FILE FORMATS ARE SUMMARIZED AS PLAYER TASKS HERE; DIAGNOSTICS AND REPOSITORY DOCUMENTATION RETAIN THE LOWER-LEVEL EVIDENCE. \u003e\u003e\u003e!"
                },
                {
-                   "source":  "Developer test mode",
-                   "translation":  "* DEVELOPER TEST MODE \u003e\u003e\u003e!"
-               },
-               {
-                   "source":  "Developer test mode is off by default. Enable it for the initial live verification; once Artie confirms the application for production on Inara, leave it off.",
-                   "translation":  "* DEVELOPER TEST MODE IS OFF BY DEFAULT. ENABLE IT FOR THE INITIAL LIVE VERIFICATION; ONCE ARTIE CONFIRMS THE APPLICATION FOR PRODUCTION ON INARA, LEAVE IT OFF. \u003e\u003e\u003e!"
-               },
-               {
                    "source":  "Developer tools",
                    "translation":  "* DEVELOPER TOOLS \u003e\u003e\u003e!"
                },
                {
                    "source":  "Developer tools for capturing live Odyssey settlement geometry.",
                    "translation":  "* DEVELOPER TOOLS FOR CAPTURING LIVE ODYSSEY SETTLEMENT GEOMETRY. \u003e\u003e\u003e!"
-               },
-               {
-                   "source":  "DeveloperTestMode",
-                   "translation":  "* DEVELOPERTESTMODE \u003e\u003e\u003e!"
                },
                {
                    "source":  "Development quest action failed: {0}",
@@ -141527,6 +141495,10 @@
                {
                    "source":  "Enable Guardian Ruins features",
                    "translation":  "* ENABLE GUARDIAN RUINS FEATURES \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Enable Inara uploads in only one application at a time to avoid duplicate commander events.",
+                   "translation":  "* ENABLE INARA UPLOADS IN ONLY ONE APPLICATION AT A TIME TO AVOID DUPLICATE COMMANDER EVENTS. \u003e\u003e\u003e!"
                },
                {
                    "source":  "Enable OpenVR overlays before resetting headset orientation.",
@@ -149437,6 +149409,10 @@
                    "translation":  "* REMOVE DEVELOPMENT QUEST \u003e\u003e\u003e!"
                },
                {
+                   "source":  "Remove key",
+                   "translation":  "* REMOVE KEY \u003e\u003e\u003e!"
+               },
+               {
                    "source":  "Remove local raw point",
                    "translation":  "* REMOVE LOCAL RAW POINT \u003e\u003e\u003e!"
                },
@@ -149467,6 +149443,10 @@
                {
                    "source":  "Remove the locationless manual/imported discovery for",
                    "translation":  "* REMOVE THE LOCATIONLESS MANUAL/IMPORTED DISCOVERY FOR \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Remove this commander\u0027s saved Inara API key?",
+                   "translation":  "* REMOVE THIS COMMANDER\u0027S SAVED INARA API KEY? \u003e\u003e\u003e!"
                },
                {
                    "source":  "Removed \u0027{0}\u0027 locally.",
@@ -150543,6 +150523,10 @@
                {
                    "source":  "Saved {0}.",
                    "translation":  "* SAVED {0}. \u003e\u003e\u003e!"
+               },
+               {
+                   "source":  "Saving a personal API key enables supported Inara uploads only for the commander shown. Removing that key disables uploads for that commander.",
+                   "translation":  "* SAVING A PERSONAL API KEY ENABLES SUPPORTED INARA UPLOADS ONLY FOR THE COMMANDER SHOWN. REMOVING THAT KEY DISABLES UPLOADS FOR THAT COMMANDER. \u003e\u003e\u003e!"
                },
                {
                    "source":  "Saving project visibility to Raven Colonial...",
@@ -153049,10 +153033,6 @@
                    "translation":  "* THE INARA API KEY WAS SAVED FOR {0}. \u003e\u003e\u003e!"
                },
                {
-                   "source":  "The Inara preference changed for this session but could not be saved: {0}",
-                   "translation":  "* THE INARA PREFERENCE CHANGED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} \u003e\u003e\u003e!"
-               },
-               {
                    "source":  "The Journey could not be reprocessed: {0}",
                    "translation":  "* THE JOURNEY COULD NOT BE REPROCESSED: {0} \u003e\u003e\u003e!"
                },
@@ -155275,14 +155255,6 @@
                {
                    "source":  "Upload newly calculated settlement geometry to Canonn",
                    "translation":  "* UPLOAD NEWLY CALCULATED SETTLEMENT GEOMETRY TO CANONN \u003e\u003e\u003e!"
-               },
-               {
-                   "source":  "Upload supported commander data to Inara",
-                   "translation":  "* UPLOAD SUPPORTED COMMANDER DATA TO INARA \u003e\u003e\u003e!"
-               },
-               {
-                   "source":  "UploadEnabled",
-                   "translation":  "* UPLOADENABLED \u003e\u003e\u003e!"
                },
                {
                    "source":  "UploadGreenGasGiantCandidates",
