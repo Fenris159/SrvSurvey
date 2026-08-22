@@ -51,9 +51,10 @@ public sealed class EddnOutboxTests
     }
 
     [Theory]
+    [InlineData("live")]
     [InlineData("beta")]
     [InlineData("dev")]
-    public async Task LegacyNonLiveQueueUsesTestSchemasOnLiveGateway(
+    public async Task LegacyQueueUsesTestSchemasOnLiveGateway(
         string legacyEnvironment)
     {
         using var folder = new TemporaryFolder();
