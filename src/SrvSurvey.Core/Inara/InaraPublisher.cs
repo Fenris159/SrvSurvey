@@ -383,7 +383,8 @@ public sealed class InaraPublisher : IInaraPublisher
             disposed = true;
             ClearPublicationAuthorization();
             queue.TakeAll();
-            lifetimeCancellation.Cancel();
+            await lifetimeCancellation.CancelAsync().ConfigureAwait(false);
+            DisposeActiveSendCancellation();
             if (ownsHttpClient)
             {
                 httpClient.Dispose();
@@ -391,6 +392,18 @@ public sealed class InaraPublisher : IInaraPublisher
 
             lifetimeCancellation.Dispose();
         }
+    }
+
+    private void DisposeActiveSendCancellation()
+    {
+        CancellationTokenSource? cancellation;
+        lock (sendStateSync)
+        {
+            cancellation = activeSendCancellation;
+            activeSendCancellation = null;
+        }
+
+        cancellation?.Dispose();
     }
 
     public void Dispose()
@@ -461,11 +474,12 @@ public sealed class InaraPublisher : IInaraPublisher
         }
 
         var eventName = entry.Value<string>("event");
-        var commander = eventName == "Commander"
-            ? entry.Value<string>("Name")
-            : eventName == "LoadGame"
-                ? entry.Value<string>("Commander")
-                : null;
+        var commander = eventName switch
+        {
+            "Commander" => entry.Value<string>("Name"),
+            "LoadGame" => entry.Value<string>("Commander"),
+            _ => null,
+        };
         var frontierId = eventName is "Commander" or "LoadGame"
             ? entry.Value<string>("FID")
             : null;
