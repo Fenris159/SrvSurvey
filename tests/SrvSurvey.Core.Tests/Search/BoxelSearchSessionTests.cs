@@ -506,6 +506,30 @@ public sealed class BoxelSearchSessionTests : IDisposable
             diagnostic => diagnostic.Code == BoxelSearchMessageCode.AuditFailed);
     }
 
+    [Fact]
+    public async Task ResolverTimeoutCompletesRefreshWithAWarning()
+    {
+        var diagnostics = new RecordingDiagnosticSink();
+        await using var session = CreateSession(
+            new RecordingProfileStore(),
+            systemResolver: new TimeoutResolver(),
+            diagnostics: diagnostics);
+        await session.SwitchProfileAsync(Profile(BoxelSearchSnapshot.Empty));
+
+        var activation = await session.ExecuteAsync(new ActivateBoxelSearch(
+            Activation("Praea Euq IL-P c5-2")));
+
+        Assert.Equal(BoxelSearchOutcomeKind.AppliedWithWarnings, activation.Kind);
+        Assert.Equal(BoxelSearchMessageCode.SearchActivated, activation.Code);
+        Assert.Equal(BoxelSearchActivityKind.Idle, session.Current.Activity.Kind);
+        Assert.Contains(
+            BoxelSearchHealthSubsystem.Resolver,
+            session.Current.Health.Issues.Keys);
+        Assert.Contains(
+            diagnostics.Items,
+            diagnostic => diagnostic.Exception is TaskCanceledException);
+    }
+
     public void Dispose()
     {
         try
@@ -732,6 +756,18 @@ public sealed class BoxelSearchSessionTests : IDisposable
             CancellationToken cancellationToken = default)
         {
             throw new HttpRequestException("resolver unavailable");
+        }
+    }
+
+    private sealed class TimeoutResolver : IBoxelSystemResolver
+    {
+        public Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
+            BoxelAddress boxel,
+            CancellationToken cancellationToken = default)
+        {
+            throw new TaskCanceledException(
+                "The request timed out.",
+                new TimeoutException("The operation was canceled."));
         }
     }
 

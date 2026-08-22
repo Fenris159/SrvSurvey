@@ -17,8 +17,15 @@ public sealed class ApplicationLogBoxelSearchDiagnosticSink(
             : $" ({diagnostic.Context})";
         var detail = diagnostic.Exception is null
             ? string.Empty
-            : ": " + diagnostic.Exception;
+            : ": " + FormatException(diagnostic.Exception);
         applicationLog.Append(
             $"Boxel search {diagnostic.Subsystem}/{diagnostic.Code}{context}{detail}");
+    }
+
+    private static string FormatException(Exception exception)
+    {
+        return exception is TaskCanceledException { InnerException: TimeoutException }
+            ? exception.Message
+            : exception.ToString();
     }
 }
