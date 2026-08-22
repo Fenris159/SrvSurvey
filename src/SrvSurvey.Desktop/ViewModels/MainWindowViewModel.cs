@@ -3082,12 +3082,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     JournalEvents = update.JournalEvents,
                     Status = latestStatus,
                     Enabled = NetworkPrivacy.EddnUploadEnabled,
-                    UseTestSchemas = NetworkPrivacy.EddnUseTestSchemas,
                     AllowPublishing = !update.IsBootstrapRead
                         && !hasMultipleGameWindows,
                     JournalDirectory = folderResolution.SelectedPath,
                     JournalPath = update.JournalPath,
-                    AllowSharedData = !hasMultipleGameWindows
+                    AllowSharedData = !hasMultipleGameWindows,
+                    CommanderName = journalState.CommanderName,
+                    FrontierId = journalState.FrontierId,
+                    GameVersion = journalState.GameVersion,
+                    GameBuild = journalState.GameBuild,
                 },
                 cancellationToken: CancellationToken.None);
             NetworkPrivacy.ReportPublicationResult(eddnResult);

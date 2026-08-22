@@ -27,22 +27,27 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
     public bool EddnUploadEnabled
     {
         get => preferences.EddnUploadEnabled;
-        set
-        {
-            if (preferences.EddnUploadEnabled == value)
-            {
-                return;
-            }
-
-            Update(preferences with { EddnUploadEnabled = value });
-            EddnUploadEnabledChanged?.Invoke(value);
-        }
+        set => TrySetEddnUploadEnabled(value);
     }
 
-    public bool EddnUseTestSchemas
+    public string EddnConsentSummary => EddnUploadEnabled
+        ? "EDDN sharing is enabled for live Commander sessions."
+        : "EDDN sharing is disabled.";
+
+    public bool TrySetEddnUploadEnabled(bool value)
     {
-        get => preferences.EddnUseTestSchemas;
-        set => Update(preferences with { EddnUseTestSchemas = value });
+        if (preferences.EddnUploadEnabled == value)
+        {
+            return true;
+        }
+
+        if (Update(preferences with { EddnUploadEnabled = value }))
+        {
+            EddnUploadEnabledChanged?.Invoke(value);
+            return true;
+        }
+
+        return false;
     }
 
     public bool UploadGreenGasGiantCandidates
@@ -110,20 +115,14 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
         else if (result.Published.Count == 1)
         {
-            var schemaMode = result.Published[0].UsesTestSchemas
-                ? "test"
-                : "live";
             StatusMessage =
-                $"Queued {result.Published[0].EventName} for EDDN ({schemaMode} schemas).";
+                $"Queued {result.Published[0].EventName} for EDDN (test schemas).";
         }
         else if (result.Published.Count > 1)
         {
-            var schemaMode = result.Published[0].UsesTestSchemas
-                ? "test"
-                : "live";
             StatusMessage =
                 $"Queued {result.Published.Count:N0} journal events for EDDN "
-                + $"({schemaMode} schemas).";
+                + "(test schemas).";
         }
     }
 
@@ -142,19 +141,20 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
     }
 
-    private void Update(NetworkPrivacyPreferences updated)
+    private bool Update(NetworkPrivacyPreferences updated)
     {
         if (preferences == updated)
         {
-            return;
+            return true;
         }
 
-        preferences = updated;
-        OnPropertyChanged(string.Empty);
         try
         {
-            settingsStore.Save(preferences);
+            settingsStore.Save(updated);
+            preferences = updated;
+            OnPropertyChanged(string.Empty);
             StatusMessage = string.Empty;
+            return true;
         }
         catch (Exception exception) when (
             exception is IOException
@@ -163,8 +163,9 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
                 or InvalidOperationException)
         {
             StatusMessage =
-                "The privacy preference changed for this session but could not be saved: "
+                "The privacy preference was not changed because it could not be saved: "
                 + exception.Message;
+            return false;
         }
     }
 

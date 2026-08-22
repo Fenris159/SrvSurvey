@@ -6,6 +6,35 @@ exobiology, colonization, quest, and route tracking do not depend on Inara.
 The Community Goals dashboard can make a separate read-only Inara request for
 public global-goal details as described below.
 
+## EDDN
+
+EDDN upload is disabled by default. **Configure EDDN Sharing** opens a dedicated
+disclosure and opt-in window immediately above the Inara settings. When enabled,
+SrvSurvey sends supported new live journal events plus validated Market,
+Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data.
+Startup history, multicrew activity, localized fields, and Commander-specific
+fields prohibited by the EDDN schemas are not uploaded.
+
+EDDN needs no account, API key, OAuth token, or Authorization header. Each
+journal session uses that session's Commander name as EDDN's required uploader
+identifier, which EDDN obfuscates before redistribution. Journal series,
+Commander name, and Frontier ID changes replace the session. Queued messages
+retain their captured Commander header, and unfinished companion reads are
+cancelled, so mutable state cannot cross between Commanders.
+
+Accepted messages are stored as individual records in a bounded durable local
+retry queue under SrvSurvey's application-data directory. They are removed
+after delivery, permanent rejection, or opt-out. Only one SrvSurvey process can
+own the queue. Queueing and delivery pause while multiple Elite windows make
+shared state ambiguous; already-pending records remain local until attribution
+is safe.
+
+This release sends to EDDN's Live gateway using `/test` schema references fixed
+internally. Test-schema messages are not consumed as production data, and there
+is no user-selectable production/test toggle. Enable EDDN uploads in only one
+application at a time, such as SrvSurvey or EDMC, because multiple uploaders can
+create duplicate submissions.
+
 ## Inara
 
 Inara upload is disabled by default. Saving a personal API key opts in only the
@@ -134,6 +163,6 @@ details.
 
 ## Other publishers
 
-EDDN, VoxStellar, Raven Colonial, Canonn settlement geometry, and Green Gas Giant
+VoxStellar, Raven Colonial, Canonn settlement geometry, and Green Gas Giant
 publication retain their existing independent opt-in controls and payload
-rules. Enabling Inara does not enable or modify any of them.
+rules. Enabling EDDN or Inara does not enable or modify any of them.

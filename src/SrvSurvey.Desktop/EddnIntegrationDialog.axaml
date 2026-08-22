@@ -1,0 +1,100 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SrvSurvey.Desktop.EddnIntegrationDialog"
+        Width="760"
+        Height="720"
+        MinWidth="620"
+        MinHeight="560"
+        CanResize="True"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Title="Configure EDDN Sharing">
+  <Grid RowDefinitions="Auto,*,Auto" Margin="24">
+    <StackPanel Spacing="5">
+      <TextBlock Classes="eyebrow" Text="OPTIONAL DATA SHARING" />
+      <TextBlock Classes="page-title"
+                 FontSize="24"
+                 Text="Configure EDDN Sharing" />
+      <TextBlock Classes="muted"
+                 TextWrapping="Wrap"
+                 Text="EDDN is a third-party community relay for public Elite Dangerous game-world data. Sharing is global for this SrvSurvey installation and remains off until you opt in below." />
+    </StackPanel>
+
+    <ScrollViewer Grid.Row="1" Margin="0,20,0,0">
+      <StackPanel Spacing="16">
+        <Border Classes="card" Padding="16">
+          <StackPanel Spacing="10">
+            <TextBlock FontSize="18"
+                       FontWeight="SemiBold"
+                       Text="What SrvSurvey sends" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded." />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Localized and Commander-specific fields prohibited by EDDN schemas are removed before a message is stored. Companion files are checked against the triggering live journal event before queueing." />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card" Padding="16">
+          <StackPanel Spacing="10">
+            <TextBlock FontSize="18"
+                       FontWeight="SemiBold"
+                       Text="Commander identity and credentials" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="Each journal session uses that session's Commander name as EDDN's required uploader identifier. EDDN obfuscates the identifier before relaying the data. Changing Commanders creates a new isolated session; queued messages retain the Commander header captured when they were created." />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="EDDN requires no account, personal API key, OAuth flow, access token, or Authorization header." />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card" Padding="16">
+          <StackPanel Spacing="10">
+            <TextBlock FontSize="18"
+                       FontWeight="SemiBold"
+                       Text="Delivery and local storage" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="Messages are placed in a durable local retry queue under SrvSurvey's application-data folder before delivery. They are removed after successful delivery, permanent rejection, or when you disable sharing." />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Only one SrvSurvey process can own the queue. Queueing and delivery pause while multiple Elite windows make shared Status and companion files ambiguous; pending messages remain local until attribution is safe." />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="This release uses EDDN's Live upload gateway with /test schema references fixed internally. Test-schema messages are not consumed as production data." />
+          </StackPanel>
+        </Border>
+
+        <Border Background="{DynamicResource RavenSurfaceBrush}"
+                CornerRadius="8"
+                Padding="14">
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontWeight="SemiBold"
+                     TextWrapping="Wrap"
+                     Text="Enable EDDN uploads in only one application at a time; for example, SrvSurvey or EDMC. Using multiple uploaders can create duplicate submissions." />
+        </Border>
+
+        <CheckBox x:Name="EddnUploadEnabledCheckBox"
+                  FontWeight="SemiBold"
+                  Content="Enable EDDN sharing for live Commander sessions" />
+
+        <TextBlock x:Name="SaveErrorText"
+                   Foreground="{DynamicResource RavenWarningBrush}"
+                   IsVisible="False"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <StackPanel Grid.Row="2"
+                Margin="0,20,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="10">
+      <Button Classes="secondary"
+              Click="Cancel_Click"
+              Content="Cancel" />
+      <Button Classes="primary"
+              Click="Save_Click"
+              Content="Save" />
+    </StackPanel>
+  </Grid>
+</Window>
