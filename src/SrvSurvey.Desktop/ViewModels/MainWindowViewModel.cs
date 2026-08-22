@@ -4574,9 +4574,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(Guardian.Dispose);
         TryDispose(QuestWorkspace.Dispose);
         Inara.ApiKeyChanged -= OnInaraApiKeyChanged;
+        using var inaraShutdownCancellation = new CancellationTokenSource(
+            TimeSpan.FromSeconds(45));
         await TryDisposeAsync(
             () => new ValueTask(
-                inaraPublisher.StopAsync(CancellationToken.None)));
+                inaraPublisher.StopAsync(inaraShutdownCancellation.Token)));
         CommanderInstances.PropertyChanged -= OnCommanderInstancesPropertyChanged;
         TryDispose(CommanderInstances.Dispose);
         BiologyRewards.PropertyChanged -= OnBiologyRewardsChanged;

@@ -319,6 +319,53 @@ public sealed class InaraPublisherTests
 
         Assert.True(stopped.AcceptedEventCount > 0);
         Assert.False(handler.RequestCancelled.Task.IsCompleted);
+        var requestCount = handler.RequestCount;
+        var repeatedStop = publisher.StopAsync();
+        Assert.Same(stopTask, repeatedStop);
+        await repeatedStop;
+        publisher.Dispose();
+        Assert.Equal(requestCount, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task CancellingAStopWaiterDoesNotCancelSharedShutdown()
+    {
+        var handler = new BlockingInaraHandler();
+        var publisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(handler));
+        await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:00:00Z",
+                      "event": "LoadGame",
+                      "Credits": 1000
+                    }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:01:00Z",
+                      "event": "Shutdown"
+                    }
+                    """),
+            ],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+        await handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+
+        using var cancellation = new CancellationTokenSource();
+        var cancelledWait = publisher.StopAsync(cancellation.Token);
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => cancelledWait);
+        Assert.False(handler.RequestCancelled.Task.IsCompleted);
+
+        handler.ReleaseResponse();
+        var stopped = await publisher.StopAsync().WaitAsync(TimeSpan.FromSeconds(1));
+        Assert.True(stopped.AcceptedEventCount > 0);
+        publisher.Dispose();
     }
 
     [Fact]
@@ -962,8 +1009,11 @@ public sealed class InaraPublisherTests
 
     private sealed class BlockingInaraHandler : HttpMessageHandler
     {
+        private int requestCount;
         private readonly TaskCompletionSource releaseResponse = new(
             TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int RequestCount => Volatile.Read(ref requestCount);
 
         public TaskCompletionSource RequestStarted { get; } = new(
             TaskCreationOptions.RunContinuationsAsynchronously);
@@ -980,6 +1030,7 @@ public sealed class InaraPublisherTests
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
+            Interlocked.Increment(ref requestCount);
             RequestStarted.TrySetResult();
             try
             {

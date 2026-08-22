@@ -32,6 +32,7 @@ public sealed class InaraPublisher : IInaraPublisher
 {
     public const string Endpoint = "https://inara.cz/inapi/v1/";
     public static readonly TimeSpan SendInterval = TimeSpan.FromSeconds(35);
+    private static readonly TimeSpan ShutdownTimeout = TimeSpan.FromSeconds(45);
     private const int MaximumEventsPerRequest = 128;
     private const int MaximumPayloadBytes = 1024 * 1024;
     private const int MaximumResponseBytes = 1024 * 1024;
@@ -42,6 +43,11 @@ public sealed class InaraPublisher : IInaraPublisher
     private readonly TimeProvider timeProvider;
     private readonly InaraEventMapper mapper = new();
     private readonly InaraEventQueue queue = new();
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "SemaphoreSlim does not allocate a wait handle here and may still have shutdown waiters.")]
+    private readonly SemaphoreSlim lifecycleGate = new(1, 1);
     private readonly object sendStateSync = new();
     private readonly object stopSync = new();
     private readonly CancellationTokenSource lifetimeCancellation = new();
@@ -92,6 +98,27 @@ public sealed class InaraPublisher : IInaraPublisher
             return InaraPublicationResult.Empty;
         }
 
+        await lifecycleGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (stopping || disposed)
+            {
+                return InaraPublicationResult.Empty;
+            }
+
+            return await ApplyCoreAsync(update, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            lifecycleGate.Release();
+        }
+    }
+
+    private async Task<InaraPublicationResult> ApplyCoreAsync(
+        InaraPublicationUpdate update,
+        CancellationToken cancellationToken)
+    {
         var warnings = new List<string>();
         var options = update.Options;
         var sessionTransition = await EnsureSessionAsync(
@@ -314,6 +341,23 @@ public sealed class InaraPublisher : IInaraPublisher
     {
         ObjectDisposedException.ThrowIf(disposed, this);
 
+        await lifecycleGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ObjectDisposedException.ThrowIf(disposed, this);
+            return stopping
+                ? InaraPublicationResult.Empty
+                : await FlushCoreAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            lifecycleGate.Release();
+        }
+    }
+
+    private async Task<InaraPublicationResult> FlushCoreAsync(
+        CancellationToken cancellationToken)
+    {
         var completed = TakeCompletedSendResult();
         Task<InaraPublicationResult>? active;
         lock (sendStateSync)
@@ -352,10 +396,15 @@ public sealed class InaraPublisher : IInaraPublisher
     public Task<InaraPublicationResult> StopAsync(
         CancellationToken cancellationToken = default)
     {
+        Task<InaraPublicationResult> sharedStop;
         lock (stopSync)
         {
-            return stopTask ??= StopCoreAsync(cancellationToken);
+            sharedStop = stopTask ??= StopCoreAsync();
         }
+
+        return cancellationToken.CanBeCanceled
+            ? sharedStop.WaitAsync(cancellationToken)
+            : sharedStop;
     }
 
     public void CancelPendingPublication()
@@ -369,28 +418,37 @@ public sealed class InaraPublisher : IInaraPublisher
         queue.TakeAll();
     }
 
-    private async Task<InaraPublicationResult> StopCoreAsync(
-        CancellationToken cancellationToken)
+    private async Task<InaraPublicationResult> StopCoreAsync()
     {
         stopping = true;
+        await lifecycleGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+        using var shutdownCancellation = new CancellationTokenSource(
+            ShutdownTimeout);
         try
         {
-            return await FinalizeCurrentSessionAsync(cancellationToken)
+            return await FinalizeCurrentSessionAsync(shutdownCancellation.Token)
                 .ConfigureAwait(false);
         }
         finally
         {
-            disposed = true;
-            ClearPublicationAuthorization();
-            queue.TakeAll();
-            await lifetimeCancellation.CancelAsync().ConfigureAwait(false);
-            DisposeActiveSendCancellation();
-            if (ownsHttpClient)
+            try
             {
-                httpClient.Dispose();
-            }
+                disposed = true;
+                ClearPublicationAuthorization();
+                queue.TakeAll();
+                await lifetimeCancellation.CancelAsync().ConfigureAwait(false);
+                DisposeActiveSendCancellation();
+                if (ownsHttpClient)
+                {
+                    httpClient.Dispose();
+                }
 
-            lifetimeCancellation.Dispose();
+                lifetimeCancellation.Dispose();
+            }
+            finally
+            {
+                lifecycleGate.Release();
+            }
         }
     }
 
@@ -408,13 +466,15 @@ public sealed class InaraPublisher : IInaraPublisher
 
     public void Dispose()
     {
+        using var shutdownCancellation = new CancellationTokenSource(
+            ShutdownTimeout);
         try
         {
-            StopAsync(CancellationToken.None).GetAwaiter().GetResult();
+            StopAsync(shutdownCancellation.Token).GetAwaiter().GetResult();
         }
         catch (OperationCanceledException)
         {
-            // A caller explicitly cancelled graceful shutdown.
+            // The shared stop continues safely after the bounded synchronous wait.
         }
     }
 
@@ -633,6 +693,12 @@ public sealed class InaraPublisher : IInaraPublisher
                 return false;
             }
 
+            var sendSession = session;
+            if (sendSession is null)
+            {
+                return false;
+            }
+
             var generation = authorizationGeneration;
             activeSendCancellation =
                 CancellationTokenSource.CreateLinkedTokenSource(
@@ -640,6 +706,7 @@ public sealed class InaraPublisher : IInaraPublisher
             var sendCancellation = activeSendCancellation;
             activeSendTask = Task.Run(
                 () => SendPendingAsync(
+                    sendSession,
                     apiKey,
                     generation,
                     sendCancellation.Token),
@@ -751,7 +818,7 @@ public sealed class InaraPublisher : IInaraPublisher
             }
         }
 
-        var flushed = await FlushAsync(cancellationToken).ConfigureAwait(false);
+        var flushed = await FlushCoreAsync(cancellationToken).ConfigureAwait(false);
         return Combine(completed, flushed);
     }
 
@@ -768,6 +835,7 @@ public sealed class InaraPublisher : IInaraPublisher
     }
 
     private async Task<InaraPublicationResult> SendPendingAsync(
+        InaraSession sendSession,
         string apiKey,
         long generation,
         CancellationToken cancellationToken)
@@ -800,6 +868,7 @@ public sealed class InaraPublisher : IInaraPublisher
         try
         {
             return await SendBatchAsync(
+                    sendSession,
                     apiKey,
                     generation,
                     batch,
@@ -826,6 +895,7 @@ public sealed class InaraPublisher : IInaraPublisher
     }
 
     private async Task<InaraPublicationResult> SendBatchAsync(
+        InaraSession sendSession,
         string apiKey,
         long generation,
         List<InaraQueuedEvent> batch,
@@ -837,11 +907,10 @@ public sealed class InaraPublisher : IInaraPublisher
             return DiscardUnauthorizedBatch(batch, warnings);
         }
 
-        if (session is null
-            || !CanPrepareUpload(
+        if (!CanPrepareUpload(
                 apiKey,
-                session.IsLive,
-                session.IsBeta))
+                sendSession.IsLive,
+                sendSession.IsBeta))
         {
             return InaraPublicationResult.Empty;
         }
@@ -858,7 +927,7 @@ public sealed class InaraPublisher : IInaraPublisher
             return CreateSendResult(0, warnings);
         }
 
-        var credentials = session.GetCredentials(apiKey);
+        var credentials = sendSession.GetCredentials(apiKey);
         if (credentials is null)
         {
             return InaraPublicationResult.Empty;
