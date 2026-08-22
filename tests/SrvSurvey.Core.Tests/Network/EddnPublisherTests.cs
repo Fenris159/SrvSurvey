@@ -29,7 +29,10 @@ public sealed class EddnPublisherTests
             ],
             Status = null,
             Enabled = true,
-            UseTestSchemas = true,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = false
         });
         var live = await publisher.ApplyAsync(new EddnApplyRequest
@@ -39,7 +42,10 @@ public sealed class EddnPublisherTests
                 """)],
             Status = null,
             Enabled = true,
-            UseTestSchemas = true,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
         await publisher.ProcessPendingAsync();
@@ -87,7 +93,7 @@ public sealed class EddnPublisherTests
     }
 
     [Fact]
-    public async Task LiveJournalMessageStripsCommanderSpecificFieldsRecursively()
+    public async Task JournalMessageStripsCommanderSpecificFieldsRecursively()
     {
         var requests = new List<RecordedRequest>();
         var publisher = CreatePublisher(requests);
@@ -100,7 +106,10 @@ public sealed class EddnPublisherTests
                 """)],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
         await publisher.ProcessPendingAsync();
@@ -109,7 +118,7 @@ public sealed class EddnPublisherTests
         using var json = JsonDocument.Parse(Assert.Single(requests).Content);
         var root = json.RootElement;
         Assert.Equal(
-            "https://eddn.edcd.io/schemas/journal/1",
+            "https://eddn.edcd.io/schemas/journal/1/test",
             root.GetProperty("$schemaRef").GetString());
         var message = root.GetProperty("message");
         Assert.False(message.TryGetProperty("Wanted", out _));
@@ -141,7 +150,10 @@ public sealed class EddnPublisherTests
             ],
             Status = null,
             Enabled = true,
-            UseTestSchemas = true,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
         await publisher.ProcessPendingAsync();
@@ -180,7 +192,10 @@ public sealed class EddnPublisherTests
             JournalEvents = [CodexEvent("2026-07-25T12:03:00Z")],
             Status = new EliteStatus { BodyName = "Test A 1" },
             Enabled = true,
-            UseTestSchemas = true,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
         await publisher.ProcessPendingAsync();
@@ -189,7 +204,10 @@ public sealed class EddnPublisherTests
             JournalEvents = [CodexEvent("2026-07-25T12:04:00Z")],
             Status = new EliteStatus { BodyName = "Test A 2" },
             Enabled = true,
-            UseTestSchemas = true,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
         await publisher.ApplyAsync(new EddnApplyRequest
@@ -197,7 +215,10 @@ public sealed class EddnPublisherTests
             JournalEvents = [CodexEvent("2026-07-25T12:05:00Z")],
             Status = new EliteStatus(),
             Enabled = true,
-            UseTestSchemas = true,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
         await publisher.ProcessPendingAsync();
@@ -235,7 +256,10 @@ public sealed class EddnPublisherTests
                 """)],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
 
@@ -258,7 +282,10 @@ public sealed class EddnPublisherTests
                 """)],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
 
@@ -298,7 +325,10 @@ public sealed class EddnPublisherTests
             ],
             Status = null,
             Enabled = true,
-            UseTestSchemas = true,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
         await publisher.ProcessPendingAsync();
@@ -334,7 +364,10 @@ public sealed class EddnPublisherTests
                 ],
                 Status = null,
                 Enabled = true,
-                UseTestSchemas = true,
+                CommanderName = "Test Cmdr",
+                FrontierId = "F123",
+                GameVersion = "4.1.2.3",
+                GameBuild = "r123/r0 ",
                 AllowPublishing = false,
                 JournalDirectory = directory
             });
@@ -344,7 +377,10 @@ public sealed class EddnPublisherTests
                 JournalEvents = [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"Market","MarketID":42}""")],
                 Status = null,
                 Enabled = true,
-                UseTestSchemas = true,
+                CommanderName = "Test Cmdr",
+                FrontierId = "F123",
+                GameVersion = "4.1.2.3",
+                GameBuild = "r123/r0 ",
                 AllowPublishing = true,
                 JournalDirectory = directory
             });
@@ -383,7 +419,10 @@ public sealed class EddnPublisherTests
             ],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
         var shared = await publisher.ApplyAsync(new EddnApplyRequest
@@ -394,7 +433,10 @@ public sealed class EddnPublisherTests
             ],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true,
             JournalDirectory = Path.GetTempPath(),
             AllowSharedData = false
@@ -422,7 +464,10 @@ public sealed class EddnPublisherTests
             JournalEvents = [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"DockingGranted","MarketID":1,"StationName":"Port","LandingPad":2}""")],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
 
@@ -446,7 +491,10 @@ public sealed class EddnPublisherTests
             JournalEvents = [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"DockingGranted","MarketID":1,"StationName":"First Port","LandingPad":2}""")],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
         Assert.Single(queued.Published);
@@ -457,7 +505,10 @@ public sealed class EddnPublisherTests
             JournalEvents = [Event("""{"timestamp":"2026-07-25T12:02:00Z","event":"DockingGranted","MarketID":2,"StationName":"Second Port","LandingPad":3}""")],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true
         });
         await publisher.ProcessPendingAsync();
@@ -476,6 +527,60 @@ public sealed class EddnPublisherTests
 
         Assert.Equal(0, publisher.PendingCount);
         Assert.Single(requests);
+    }
+
+    [Fact]
+    public async Task QueuedMessagesRetainTheirCapturedCommanderAcrossSessionSwitch()
+    {
+        var requests = new List<RecordedRequest>();
+        using var publisher = CreatePublisher(requests);
+        await publisher.ApplyAsync(new EddnApplyRequest
+        {
+            JournalEvents =
+            [
+                Event("""{"timestamp":"2026-07-25T12:00:00Z","event":"LoadGame","Commander":"First Cmdr","FID":"F1","Odyssey":true}"""),
+                Event("""{"timestamp":"2026-07-25T12:00:01Z","event":"DockingGranted","MarketID":1,"StationName":"First Port","LandingPad":2}"""),
+            ],
+            Enabled = true,
+            AllowPublishing = true,
+            CommanderName = "First Cmdr",
+            FrontierId = "F1",
+            GameVersion = "4.1",
+            GameBuild = "r1",
+            JournalPath = Path.Combine(
+                Path.GetTempPath(),
+                "Journal.2026-07-25T120000.01.log"),
+        });
+        await publisher.ApplyAsync(new EddnApplyRequest
+        {
+            JournalEvents =
+            [
+                Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"LoadGame","Commander":"Second Cmdr","FID":"F2","Odyssey":true}"""),
+                Event("""{"timestamp":"2026-07-25T12:01:01Z","event":"DockingGranted","MarketID":2,"StationName":"Second Port","LandingPad":3}"""),
+            ],
+            Enabled = true,
+            AllowPublishing = true,
+            CommanderName = "Second Cmdr",
+            FrontierId = "F2",
+            GameVersion = "4.1",
+            GameBuild = "r2",
+            JournalPath = Path.Combine(
+                Path.GetTempPath(),
+                "Journal.2026-07-25T120100.01.log"),
+        });
+
+        await publisher.ProcessPendingAsync();
+
+        Assert.Equal(2, requests.Count);
+        Assert.Equal(
+            ["First Cmdr", "Second Cmdr"],
+            requests.Select(request => JsonDocument.Parse(request.Content))
+                .Select(payload => payload.RootElement
+                    .GetProperty("header")
+                    .GetProperty("uploaderID")
+                    .GetString())
+                .OfType<string>()
+                .ToArray());
     }
 
     [Fact]
@@ -498,7 +603,10 @@ public sealed class EddnPublisherTests
             ],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = false,
             JournalPath = firstPath
         });
@@ -510,7 +618,10 @@ public sealed class EddnPublisherTests
             ],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = false,
             JournalPath = secondPath
         });
@@ -520,7 +631,10 @@ public sealed class EddnPublisherTests
             JournalEvents = [Event("""{"timestamp":"2026-07-25T12:11:00Z","event":"FSSBodySignals","SystemAddress":123,"BodyName":"Test A 1","BodyID":4,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}]}""")],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = true,
             JournalPath = secondPath
         });
@@ -530,7 +644,9 @@ public sealed class EddnPublisherTests
         using var payload = JsonDocument.Parse(Assert.Single(requests).Content);
         var header = payload.RootElement.GetProperty("header");
         Assert.Equal("Test Cmdr", header.GetProperty("uploaderID").GetString());
-        Assert.Equal("r2", header.GetProperty("gamebuild").GetString());
+        Assert.Equal(
+            "r123/r0 ",
+            header.GetProperty("gamebuild").GetString());
         Assert.Equal(
             "Test A",
             payload.RootElement.GetProperty("message")
@@ -555,7 +671,10 @@ public sealed class EddnPublisherTests
             ],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r1",
             AllowPublishing = false,
             JournalPath = Path.Combine(
                 Path.GetTempPath(),
@@ -569,7 +688,6 @@ public sealed class EddnPublisherTests
             ],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
             AllowPublishing = false,
             JournalPath = Path.Combine(
                 Path.GetTempPath(),
@@ -581,7 +699,6 @@ public sealed class EddnPublisherTests
             JournalEvents = [Event("""{"timestamp":"2026-07-25T12:11:00Z","event":"DockingGranted","MarketID":1,"StationName":"Port","LandingPad":2}""")],
             Status = null,
             Enabled = true,
-            UseTestSchemas = false,
             AllowPublishing = true
         });
         await publisher.ProcessPendingAsync();
@@ -611,7 +728,10 @@ public sealed class EddnPublisherTests
                 ],
                 Status = null,
                 Enabled = true,
-                UseTestSchemas = false,
+                CommanderName = "First Cmdr",
+                FrontierId = "F123",
+                GameVersion = "4.1.2.3",
+                GameBuild = "r1",
                 AllowPublishing = false,
                 JournalDirectory = directory
             });
@@ -620,7 +740,10 @@ public sealed class EddnPublisherTests
                 JournalEvents = [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"Market","MarketID":42}""")],
                 Status = null,
                 Enabled = true,
-                UseTestSchemas = false,
+                CommanderName = "First Cmdr",
+                FrontierId = "F123",
+                GameVersion = "4.1.2.3",
+                GameBuild = "r1",
                 AllowPublishing = true,
                 JournalDirectory = directory
             });
@@ -630,7 +753,10 @@ public sealed class EddnPublisherTests
                 JournalEvents = [Event("""{"timestamp":"2026-07-25T12:02:00Z","event":"Fileheader","gameversion":"4.1","build":"r2"}""")],
                 Status = null,
                 Enabled = true,
-                UseTestSchemas = false,
+                CommanderName = "Second Cmdr",
+                FrontierId = "F234",
+                GameVersion = "4.1.2.3",
+                GameBuild = "r2",
                 AllowPublishing = false,
                 JournalDirectory = directory
             });
@@ -707,7 +833,10 @@ public sealed class EddnPublisherTests
             ],
             Status = null,
             Enabled = true,
-            UseTestSchemas = true,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
             AllowPublishing = false
         });
     }
