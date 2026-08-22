@@ -410,7 +410,7 @@ public sealed class InaraPublisher : IInaraPublisher
     {
         try
         {
-            StopAsync().GetAwaiter().GetResult();
+            StopAsync(CancellationToken.None).GetAwaiter().GetResult();
         }
         catch (OperationCanceledException)
         {
