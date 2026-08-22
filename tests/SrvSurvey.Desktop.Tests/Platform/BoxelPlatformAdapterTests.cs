@@ -71,6 +71,33 @@ public sealed class BoxelPlatformAdapterTests : IDisposable
             new ApplicationLogBoxelSearchDiagnosticSink(null!));
     }
 
+    [Fact]
+    public void DiagnosticSinkKeepsExpectedResolverTimeoutsConcise()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var log = new ApplicationLogService(temporaryDirectory);
+        var sink = new ApplicationLogBoxelSearchDiagnosticSink(log);
+        var timeout = new TaskCanceledException(
+            "The request was canceled due to the configured HttpClient.Timeout "
+                + "of 20 seconds elapsing.",
+            new TimeoutException("The operation was canceled."));
+
+        sink.Report(new BoxelSearchDiagnostic(
+            BoxelSearchHealthSubsystem.Resolver,
+            BoxelSearchMessageCode.RefreshFailed,
+            timeout,
+            DateTimeOffset.UtcNow,
+            "Leamae UK-C b2-"));
+
+        var entry = Assert.Single(log.Entries);
+        Assert.Contains(timeout.Message, entry, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            nameof(TaskCanceledException),
+            entry,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(Environment.NewLine, entry, StringComparison.Ordinal);
+    }
+
     public void Dispose()
     {
         try
