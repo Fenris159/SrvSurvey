@@ -140,6 +140,20 @@ public sealed partial class SettingsView : UserControl
             "the Inara API key page");
     }
 
+    private async void ConfigureEddnSharing_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (TopLevel.GetTopLevel(this) is not Window owner
+            || DataContext is not MainWindowViewModel viewModel)
+        {
+            return;
+        }
+
+        var dialog = new EddnIntegrationDialog(viewModel.NetworkPrivacy);
+        await dialog.ShowDialog<bool>(owner);
+    }
+
     private async Task OpenSettingsUriAsync(Uri uri, string description)
     {
         if (DataContext is not MainWindowViewModel viewModel)

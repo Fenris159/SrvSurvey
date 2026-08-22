@@ -651,31 +651,6 @@
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
             <StackPanel Spacing="12">
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                <TextBlock Classes="card-title" Text="EDDN" />
-                <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
-                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                             FontWeight="SemiBold"
-                             Text="OPT-IN" />
-                </Border>
-              </Grid>
-              <CheckBox IsChecked="{Binding NetworkPrivacy.EddnUploadEnabled, Mode=TwoWay}"
-                        Content="Share supported live data with EDDN" />
-              <CheckBox IsChecked="{Binding NetworkPrivacy.EddnUseTestSchemas, Mode=TwoWay}"
-                        IsEnabled="{Binding NetworkPrivacy.EddnUploadEnabled}"
-                        Content="Use EDDN test schemas" />
-              <TextBlock Classes="muted"
-                         TextWrapping="Wrap"
-                         Text="Shares supported new journal events, signal batches, market, outfitting, shipyard, Fleet Carrier material, and navigation-route data. Startup history and multicrew activity are never uploaded." />
-              <TextBlock Classes="muted"
-                          TextWrapping="Wrap"
-                          Text="All uploads use the live EDDN gateway. Enable test schemas only for uploader testing or non-live game data; test-schema messages are not consumed as production data. No EDDN account, API key, or token is required." />
-              <TextBlock Classes="muted"
-                         TextWrapping="Wrap"
-                         Text="When multiple Elite windows are detected, EDDN queueing and delivery pause without deleting pending uploads. Only one SrvSurvey process can own the durable outbox at a time." />
-            </StackPanel>
-
-            <StackPanel Grid.Column="1" Spacing="12">
               <TextBlock Classes="card-title" Text="Spansh lookup" />
               <CheckBox IsChecked="{Binding JumpInfo.UseSpanshLastUpdated, Mode=TwoWay}"
                         Content="Use last updated time from Spansh not EDSM" />
@@ -694,16 +669,16 @@
                       Click="OpenGreenGasGiantGuide_Click"
                       Content="Open Green Gas Giant guide" />
             </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="12">
+              <TextBlock Classes="card-title" Text="Human settlements" />
+              <CheckBox IsChecked="{Binding NetworkPrivacy.UploadHumanSettlementGeometry, Mode=TwoWay}"
+                        Content="Upload newly calculated settlement geometry to Canonn" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="When enabled, only a new live docking or manual alignment uploads the settlement identity, coordinates, pad layout, commander position, ship type, and calculated heading. Imported data, startup history, and Canonn lookups are never republished." />
+            </StackPanel>
           </Grid>
-          <Separator />
-          <StackPanel Spacing="8">
-            <TextBlock Classes="card-title" Text="Human settlements" />
-            <CheckBox IsChecked="{Binding NetworkPrivacy.UploadHumanSettlementGeometry, Mode=TwoWay}"
-                      Content="Upload newly calculated settlement geometry to Canonn" />
-            <TextBlock Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="When enabled, only a new live docking or manual alignment uploads the settlement identity, coordinates, pad layout, commander position, ship type, and calculated heading. Imported data, startup history, and Canonn lookups are never republished." />
-          </StackPanel>
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      IsVisible="{Binding NetworkPrivacy.HasStatusMessage}"
                      TextWrapping="Wrap"
@@ -712,6 +687,34 @@
                      TextWrapping="Wrap"
                      Text="{Binding SettingsLinkStatusMessage}" />
         </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
+          <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="12">
+              <TextBlock Classes="card-title" Text="EDDN" />
+              <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                           FontWeight="SemiBold"
+                           Text="OPT-IN" />
+              </Border>
+            </Grid>
+            <TextBlock TextWrapping="Wrap"
+                       Text="Share supported live journal and companion-file data with the Elite Dangerous Data Network." />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding NetworkPrivacy.EddnConsentSummary}" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Review the data, Commander identity, retry storage, multi-client pause, and duplicate-uploader warning before changing this global setting." />
+          </StackPanel>
+          <Button Grid.Column="1"
+                  Classes="primary"
+                  VerticalAlignment="Center"
+                  Click="ConfigureEddnSharing_Click"
+                  Content="Configure EDDN Sharing" />
+        </Grid>
       </Border>
 
       <Border Classes="card raised">

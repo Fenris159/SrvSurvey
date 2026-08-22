@@ -289,7 +289,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             new SystemNicknameSettingsStore(paths.UiSettingsPath).LoadEnabled());
         Assert.True(new QuestSettingsStore(paths.UiSettingsPath).LoadEnabled());
         Assert.Equal(
-            new NetworkPrivacyPreferences(true, true, true),
+            new NetworkPrivacyPreferences(true, true, false),
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new ScreenshotProcessingPreferences(
