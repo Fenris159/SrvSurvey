@@ -11,7 +11,7 @@ namespace SrvSurvey.Core.Tests.Network;
 public sealed class EddnTransportTests
 {
     [Fact]
-    public async Task UploadUsesGzipExactHttp11AndNoAuthentication()
+    public async Task UploadUsesGzipExactHttp11NoAuthenticationAndTestSchema()
     {
         RecordedRequest? recorded = null;
         var transport = createTransport(async request =>
@@ -23,11 +23,10 @@ public sealed class EddnTransportTests
         var result = await transport.upload(
             message(),
             "https://eddn.edcd.io/schemas/dockinggranted/1",
-            header(),
-            useTestSchemas: false);
+            header());
 
         Assert.True(result.isSuccess);
-        Assert.False(result.useTestSchemas);
+        Assert.True(result.useTestSchemas);
         Assert.NotNull(recorded);
         Assert.Equal("https://live.example.test/upload/", recorded.uri.ToString());
         Assert.Equal(HttpVersion.Version11, recorded.version);
@@ -39,7 +38,7 @@ public sealed class EddnTransportTests
 
         var payload = JObject.Parse(recorded.content);
         Assert.Equal(
-            "https://eddn.edcd.io/schemas/dockinggranted/1",
+            "https://eddn.edcd.io/schemas/dockinggranted/1/test",
             payload.Value<string>("$schemaRef"));
         var payloadHeader = Assert.IsType<JObject>(payload["header"]);
         Assert.Equal("Test Cmdr", payloadHeader.Value<string>("uploaderID"));
@@ -49,7 +48,7 @@ public sealed class EddnTransportTests
     }
 
     [Fact]
-    public async Task TestSchemaUploadStillUsesTheLiveGateway()
+    public async Task ExistingTestSuffixIsNotDuplicated()
     {
         RecordedRequest? recorded = null;
         var transport = createTransport(async request =>
@@ -60,9 +59,8 @@ public sealed class EddnTransportTests
 
         var result = await transport.upload(
             message(),
-            "https://eddn.edcd.io/schemas/dockinggranted/1",
-            header(),
-            useTestSchemas: true);
+            "https://eddn.edcd.io/schemas/dockinggranted/1/test/test",
+            header());
 
         Assert.True(result.isSuccess);
         Assert.True(result.useTestSchemas);
@@ -90,8 +88,7 @@ public sealed class EddnTransportTests
         var result = await transport.upload(
             oversized,
             "https://eddn.edcd.io/schemas/dockinggranted/1",
-            header(),
-            useTestSchemas: false);
+            header());
 
         Assert.Equal(0, calls);
         Assert.False(result.isSuccess);
@@ -115,8 +112,7 @@ public sealed class EddnTransportTests
         var result = await transport.upload(
             oversized,
             "https://eddn.edcd.io/schemas/dockinggranted/1",
-            header(),
-            useTestSchemas: false);
+            header());
 
         Assert.Equal(0, calls);
         Assert.False(result.isSuccess);
@@ -140,8 +136,7 @@ public sealed class EddnTransportTests
         var result = await transport.upload(
             message(),
             "https://eddn.edcd.io/schemas/dockinggranted/1",
-            header(),
-            useTestSchemas: false);
+            header());
 
         Assert.Equal(expectedRetryable, result.isRetryable);
     }
@@ -158,8 +153,7 @@ public sealed class EddnTransportTests
         var result = await transport.upload(
             message(),
             "https://eddn.edcd.io/schemas/dockinggranted/1",
-            header(),
-            useTestSchemas: false);
+            header());
 
         Assert.False(result.isSuccess);
         Assert.Equal(HttpStatusCode.BadRequest, result.statusCode);

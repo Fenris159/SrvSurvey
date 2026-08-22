@@ -23,9 +23,10 @@ public sealed class EddnOutboxTests
         {
             first.setEnabled(true, discardPendingWhenDisabled: false);
             Assert.True(first.enqueue(queued(now)));
-            Assert.True(File.Exists(path));
+            Assert.True(Directory.Exists(storeFolder(path)));
             Assert.Equal(1, first.pendingCount);
-            var persisted = await File.ReadAllTextAsync(path);
+            var persisted = await File.ReadAllTextAsync(
+                Assert.Single(Directory.GetFiles(storeFolder(path), "*.json")));
             Assert.Contains("\"useTestSchemas\"", persisted);
             Assert.DoesNotContain("\"environment\"", persisted);
         }
@@ -46,7 +47,7 @@ public sealed class EddnOutboxTests
 
         Assert.Equal(1, calls);
         Assert.Equal(0, restarted.pendingCount);
-        Assert.False(File.Exists(path));
+        Assert.False(Directory.Exists(storeFolder(path)));
     }
 
     [Theory]
@@ -100,7 +101,7 @@ public sealed class EddnOutboxTests
     }
 
     [Fact]
-    public async Task TransientFailureWaitsAtLeastOneMinuteAndPreservesOrder()
+    public async Task TransientFailuresBackOffWithoutBlockingOtherMessages()
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
@@ -120,27 +121,25 @@ public sealed class EddnOutboxTests
             automaticProcessing: false);
         queue.setEnabled(true, discardPendingWhenDisabled: false);
         Assert.True(queue.enqueue(queued(now, "first")));
-        Assert.True(queue.enqueue(queued(now.AddSeconds(1), "second")));
+        Assert.True(queue.enqueue(queued(now, "second")));
 
         await queue.processDue();
 
-        Assert.Equal(1, calls);
+        Assert.Equal(2, calls);
         Assert.Equal(2, queue.pendingCount);
-        var saved = JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(
-            await File.ReadAllTextAsync(path));
-        Assert.NotNull(saved);
+        var saved = loadSaved(path);
         Assert.True(saved[0].nextAttempt >= now.AddMinutes(1));
-        Assert.Equal(now.AddSeconds(1), saved[1].nextAttempt);
+        Assert.True(saved[1].nextAttempt >= now.AddMinutes(1));
         Assert.Equal(1, saved[0].attempts);
-        Assert.Equal(0, saved[1].attempts);
+        Assert.Equal(1, saved[1].attempts);
         Assert.Contains(logs, line => line.Contains("will retry", StringComparison.Ordinal));
 
         await queue.processDue();
-        Assert.Equal(1, calls);
+        Assert.Equal(2, calls);
     }
 
     [Fact]
-    public async Task NewlyQueuedMessageCannotOvertakeRetriedHead()
+    public async Task NewlyQueuedMessageCanProceedWhileEarlierMessageBacksOff()
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
@@ -162,10 +161,11 @@ public sealed class EddnOutboxTests
 
         await queue.processDue();
         Assert.Equal(1, calls);
+        Assert.Equal(1, queue.pendingCount);
         Assert.True(queue.enqueue(queued(now, "Second Port")));
 
         await queue.processDue();
-        Assert.Equal(1, calls);
+        Assert.Equal(2, calls);
 
         now = now.AddMinutes(1);
         await queue.processDue();
@@ -197,7 +197,7 @@ public sealed class EddnOutboxTests
 
         Assert.Equal(0, calls);
         Assert.Equal(1, queue.pendingCount);
-        Assert.True(File.Exists(path));
+        Assert.True(Directory.Exists(storeFolder(path)));
         Assert.False(queue.enqueue(queued(now, "Blocked Port")));
 
         queue.setSuspended(false);
@@ -205,7 +205,7 @@ public sealed class EddnOutboxTests
 
         Assert.Equal(1, calls);
         Assert.Equal(0, queue.pendingCount);
-        Assert.False(File.Exists(path));
+        Assert.False(Directory.Exists(storeFolder(path)));
     }
 
     [Fact]
@@ -228,9 +228,7 @@ public sealed class EddnOutboxTests
         queue.setSuspended(true);
         await processing.WaitAsync(TimeSpan.FromSeconds(2));
 
-        var saved = Assert.Single(
-            JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(
-                await File.ReadAllTextAsync(path))!);
+        var saved = Assert.Single(loadSaved(path));
         Assert.Equal(0, saved.attempts);
         Assert.Equal(now, saved.nextAttempt);
 
@@ -259,8 +257,7 @@ public sealed class EddnOutboxTests
             Assert.False(second.hasExclusiveOwnership);
             Assert.True(first.enqueue(queued(now, "First Port")));
             Assert.False(second.enqueue(queued(now, "Second Port")));
-            Assert.Single(JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(
-                File.ReadAllText(path))!);
+            Assert.Single(loadSaved(path));
 
             first.Dispose();
             second.setEnabled(true, discardPendingWhenDisabled: false);
@@ -268,10 +265,7 @@ public sealed class EddnOutboxTests
             Assert.True(second.hasExclusiveOwnership);
             Assert.Equal(1, second.pendingCount);
             Assert.True(second.enqueue(queued(now, "Second Port")));
-            Assert.Equal(
-                2,
-                JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(
-                    File.ReadAllText(path))!.Count);
+            Assert.Equal(2, loadSaved(path).Count);
         }
         finally
         {
@@ -303,7 +297,8 @@ public sealed class EddnOutboxTests
 
         await processing.WaitAsync(TimeSpan.FromSeconds(2));
         await waitUntil(
-            () => owner.pendingCount == 0 && !File.Exists(path),
+            () => owner.pendingCount == 0
+                && !Directory.Exists(storeFolder(path)),
             TimeSpan.FromSeconds(2));
         owner.setEnabled(true, discardPendingWhenDisabled: false);
 
@@ -386,6 +381,38 @@ public sealed class EddnOutboxTests
     }
 
     [Fact]
+    public void CorruptMessageFileIsQuarantinedWithoutDiscardingValidMessages()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var messageFolder = storeFolder(path);
+        Directory.CreateDirectory(messageFolder);
+        File.WriteAllText(
+            Path.Combine(messageFolder, "valid.json"),
+            JsonConvert.SerializeObject(queued(
+                DateTimeOffset.Parse("2026-07-28T12:00:00Z"))));
+        File.WriteAllText(
+            Path.Combine(messageFolder, "corrupt.json"),
+            "{not-json");
+        var logs = new List<string>();
+
+        using var queue = new EddnOutbox(
+            path,
+            EddnTransportTests.createTransport(_ => Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK))),
+            logs.Add,
+            automaticProcessing: false);
+
+        Assert.Equal(1, queue.pendingCount);
+        Assert.Single(Directory.GetFiles(messageFolder, "*.bad-*"));
+        Assert.Contains(
+            logs,
+            line => line.Contains(
+                "could not load a pending upload",
+                StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void NullSchemaInPersistedQueueIsQuarantinedWithoutCrashing()
     {
         using var folder = new TemporaryFolder();
@@ -414,7 +441,7 @@ public sealed class EddnOutboxTests
             automaticProcessing: false);
 
         Assert.Equal(0, queue.pendingCount);
-        Assert.False(File.Exists(path));
+        Assert.False(Directory.Exists(storeFolder(path)));
         Assert.Single(Directory.GetFiles(folder.path, "*.bad-*"));
         Assert.Contains(
             logs,
@@ -441,7 +468,7 @@ public sealed class EddnOutboxTests
         await queue.processDue();
 
         Assert.Equal(0, queue.pendingCount);
-        Assert.False(File.Exists(path));
+        Assert.False(Directory.Exists(storeFolder(path)));
     }
 
     [Fact]
@@ -461,7 +488,7 @@ public sealed class EddnOutboxTests
         queue.setEnabled(false, discardPendingWhenDisabled: true);
 
         Assert.Equal(0, queue.pendingCount);
-        Assert.False(File.Exists(path));
+        Assert.False(Directory.Exists(storeFolder(path)));
     }
 
     [Fact]
@@ -584,6 +611,25 @@ public sealed class EddnOutboxTests
                 ["StationName"] = stationName,
             },
         };
+    }
+
+    private static List<EddnQueuedMessage> loadSaved(string path)
+    {
+        if (!Directory.Exists(storeFolder(path)))
+        {
+            return [];
+        }
+
+        return Directory.GetFiles(storeFolder(path), "*.json")
+            .Select(File.ReadAllText)
+            .Select(json => JsonConvert.DeserializeObject<EddnQueuedMessage>(json)!)
+            .OrderBy(message => message.created)
+            .ToList();
+    }
+
+    private static string storeFolder(string path)
+    {
+        return path + ".d";
     }
 
     private static async Task waitUntil(

@@ -12,6 +12,7 @@ namespace SrvSurvey.Core.Network
         internal const int MaximumPayloadBytes = 1024 * 1024;
         internal const int MaximumUncompressedPayloadBytes = 10 * 1024 * 1024;
         internal const int MaximumResponseDetailBytes = 2048;
+        internal const bool TestSchemasEnabled = true;
 
         private static readonly Uri defaultEndpoint =
             new("https://eddn.edcd.io:4430/upload/");
@@ -32,27 +33,20 @@ namespace SrvSurvey.Core.Network
         internal static EddnQueuedMessage prepare(
             JObject message,
             string schemaRef,
-            UploadPayloadHeader header,
-            bool useTestSchemas)
+            UploadPayloadHeader header)
         {
             ArgumentNullException.ThrowIfNull(message);
             ArgumentException.ThrowIfNullOrWhiteSpace(schemaRef);
             ArgumentNullException.ThrowIfNull(header);
 
-            useTestSchemas = useTestSchemas
-                || schemaRef.EndsWith("/test", StringComparison.Ordinal);
-            if (useTestSchemas
-                && !schemaRef.EndsWith("/test", StringComparison.Ordinal))
-            {
-                schemaRef += "/test";
-            }
+            schemaRef = NormalizeSchemaReference(schemaRef);
 
             return new EddnQueuedMessage
             {
                 id = Guid.NewGuid(),
                 created = DateTimeOffset.UtcNow,
                 nextAttempt = DateTimeOffset.UtcNow,
-                useTestSchemas = useTestSchemas,
+                useTestSchemas = TestSchemasEnabled,
                 schemaRef = schemaRef,
                 header = header.clone(),
                 message = new JObject(message),
@@ -63,12 +57,22 @@ namespace SrvSurvey.Core.Network
             JObject message,
             string schemaRef,
             UploadPayloadHeader header,
-            bool useTestSchemas,
             CancellationToken cancellationToken = default)
         {
             return await upload(
-                prepare(message, schemaRef, header, useTestSchemas),
+                prepare(message, schemaRef, header),
                 cancellationToken).ConfigureAwait(false);
+        }
+
+        internal static string NormalizeSchemaReference(string schemaRef)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(schemaRef);
+            while (schemaRef.EndsWith("/test", StringComparison.Ordinal))
+            {
+                schemaRef = schemaRef[..^"/test".Length];
+            }
+
+            return TestSchemasEnabled ? schemaRef + "/test" : schemaRef;
         }
 
         internal async Task<EddnUploadResult> upload(
@@ -227,26 +231,12 @@ namespace SrvSurvey.Core.Network
 
         internal void normalizeSchemaMode()
         {
-            var schemaUsesTestSchemas = schemaRef?.EndsWith(
-                "/test",
-                StringComparison.Ordinal) == true;
-            if (schemaUsesTestSchemas
-                || (!string.IsNullOrWhiteSpace(legacyEnvironment)
-                    && !string.Equals(
-                        legacyEnvironment.Trim(),
-                        "live",
-                        StringComparison.OrdinalIgnoreCase)))
+            if (!string.IsNullOrWhiteSpace(schemaRef))
             {
-                useTestSchemas = true;
+                schemaRef = EddnTransport.NormalizeSchemaReference(schemaRef);
             }
 
-            if (useTestSchemas
-                && !string.IsNullOrWhiteSpace(schemaRef)
-                && !schemaUsesTestSchemas)
-            {
-                schemaRef += "/test";
-            }
-
+            useTestSchemas = EddnTransport.TestSchemasEnabled;
             legacyEnvironment = null;
         }
 
