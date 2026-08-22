@@ -35,8 +35,7 @@ public sealed class InaraMapperTests
         var payload = InaraPayloadBuilder.Build(
             "2.0.95.0",
             credentials,
-            events,
-            false);
+            events);
         var header = Assert.IsType<JObject>(payload["header"]);
 
         Assert.Equal("SrvSurvey", header.Value<string>("appName"));
@@ -47,54 +46,56 @@ public sealed class InaraMapperTests
         Assert.Equal(
             "F123456",
             header.Value<string>("commanderFrontierID"));
-        Assert.False(header.Value<bool>("isBeingDeveloped"));
+        Assert.True(header.Value<bool>("isBeingDeveloped"));
         Assert.Null(header["applicationKey"]);
         Assert.Null(header["applicationAccessToken"]);
     }
 
     [Fact]
-    public void DeveloperTestModeIsSentOnlyWhenEnabled()
+    public void DiagnosticFormattingDoesNotExposeThePersonalApiKey()
     {
-        var payload = InaraPayloadBuilder.Build(
-            "2.0.95.0",
-            new InaraCredentials(
-                "Test Commander",
-                "F123456",
-                "personal-key"),
-            [
-                new InaraEvent(
-                    "getCommanderProfile",
-                    "2026-07-28T12:00:00Z",
-                    new JObject()),
-            ],
-            true);
+        const string apiKey = "secret-personal-key";
+        var credentials = new InaraCredentials(
+            "Test Commander",
+            "F123456",
+            apiKey);
+        var options = new InaraPublicationOptions(
+            apiKey,
+            "Test Commander",
+            "F123456",
+            "4.1.0.100",
+            IsOdyssey: true);
+        var queued = new InaraQueuedEvent(
+            apiKey,
+            new InaraEvent(
+                "getCommanderProfile",
+                "2026-07-28T12:00:00Z",
+                new JObject()));
 
-        var header = Assert.IsType<JObject>(payload["header"]);
-        Assert.True(header.Value<bool>("isBeingDeveloped"));
+        Assert.DoesNotContain(apiKey, credentials.ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain(apiKey, options.ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain(apiKey, queued.ToString(), StringComparison.Ordinal);
     }
 
     [Theory]
-    [InlineData(true, "key", "4.0.0.1900", false, false, true)]
-    [InlineData(false, "key", "4.0.0.1900", false, false, false)]
-    [InlineData(true, null, "4.0.0.1900", false, false, false)]
-    [InlineData(true, "key", "3.8.0.0", false, false, false)]
-    [InlineData(true, "key", "4.0 Beta", false, false, false)]
-    [InlineData(true, "key", "4.0.0.1900", false, true, false)]
-    public void UploadPolicyRequiresExplicitSafeConditions(
-        bool enabled,
+    [InlineData("key", true, false, false, true)]
+    [InlineData(null, true, false, false, false)]
+    [InlineData("key", false, false, false, false)]
+    [InlineData("key", true, true, false, false)]
+    [InlineData("key", true, false, true, false)]
+    public void UploadPolicyRequiresAKeyAndSafeSessionConditions(
         string? apiKey,
-        string gameVersion,
-        bool isOdyssey,
+        bool isLive,
+        bool isBeta,
         bool inMulticrew,
         bool expected)
     {
         Assert.Equal(
             expected,
             InaraPublisher.CanUpload(
-                enabled,
                 apiKey,
-                gameVersion,
-                isOdyssey,
+                isLive,
+                isBeta,
                 inMulticrew));
     }
 
@@ -214,7 +215,7 @@ public sealed class InaraMapperTests
             }
             """), Context, true);
         queue.Enqueue(
-            credentials,
+            credentials.ApiKey,
             initial.Where(item => item.ReplaceKey == "inventory:cargo"));
 
         var changed = mapper.Process(JObject.Parse("""
@@ -227,7 +228,7 @@ public sealed class InaraMapperTests
             }
             """), Context, true);
         queue.Enqueue(
-            credentials,
+            credentials.ApiKey,
             changed.Where(item => item.ReplaceKey == "inventory:cargo"));
 
         var queued = Assert.Single(queue.TakeAll());
@@ -239,14 +240,14 @@ public sealed class InaraMapperTests
     }
 
     [Fact]
-    public void EventQueueBoundsBacklogAndTakesOneCommanderBatch()
+    public void EventQueueBoundsBacklogAndRejectsAReplacedKey()
     {
         var first = new InaraCredentials("First", "F1", "key-1");
         var second = new InaraCredentials("Second", "F2", "key-2");
         var queue = new InaraEventQueue();
 
         var dropped = queue.Enqueue(
-            first,
+            first.ApiKey,
             Enumerable.Range(0, 5).Select(index => new InaraEvent(
                 $"first-{index}",
                 "2026-07-28T12:00:00Z",
@@ -254,18 +255,19 @@ public sealed class InaraMapperTests
             maximumCount: 4);
         Assert.Equal(1, dropped);
         queue.Enqueue(
-            second,
+            second.ApiKey,
             [new InaraEvent(
                 "second",
                 "2026-07-28T12:00:00Z",
                 new JObject())],
             maximumCount: 5);
 
-        var batch = queue.TakeBatch(2);
+        var batch = queue.TakeBatch(second.ApiKey, 2, out var discarded);
 
-        Assert.Equal(["first-1", "first-2"], batch.Select(item => item.Event.Name));
-        Assert.All(batch, item => Assert.Equal(first, item.Credentials));
-        Assert.Equal(3, queue.Count);
+        Assert.Equal(4, discarded);
+        Assert.Equal("second", Assert.Single(batch).Event.Name);
+        Assert.All(batch, item => Assert.Equal(second.ApiKey, item.ApiKey));
+        Assert.Equal(0, queue.Count);
     }
 
     [Theory]
@@ -292,7 +294,7 @@ public sealed class InaraMapperTests
               "DestinationSystem": "Sirius"
             }
             """), Context, true);
-        queue.Enqueue(credentials, accepted);
+        queue.Enqueue(credentials.ApiKey, accepted);
         var terminal = mapper.Process(JObject.Parse($$"""
             {
               "timestamp": "2026-07-28T12:01:00Z",
@@ -300,7 +302,7 @@ public sealed class InaraMapperTests
               "MissionID": 42
             }
             """), Context, true);
-        queue.Enqueue(credentials, terminal);
+        queue.Enqueue(credentials.ApiKey, terminal);
 
         var missionEvents = queue.TakeAll()
             .Where(item => item.Event.Name.Contains(

@@ -8,25 +8,31 @@ public global-goal details as described below.
 
 ## Inara
 
-Inara upload is disabled by default. Enabling it sends only supported, mapped
-live-game events after startup. It does not replay historical journal activity,
-and it does not upload Legacy, alpha, beta, or multicrew activity.
+Inara upload is disabled by default. Saving a personal API key opts in only the
+displayed commander and sends only supported, mapped live-game events after
+startup. Removing that commander's key disables their uploads. It does not
+replay historical journal activity, and it does not upload Legacy, alpha, beta,
+or multicrew activity.
 
 Write events use the commander's personal Inara API key. The key is stored in
 that commander's local profile and is placed in Inara's `APIkey` message header.
 SrvSurvey identifies itself with `appName: SrvSurvey`; it does not embed or send
-an application access token. A queued event is discarded if the active
-commander's key changes before transmission.
+an application access token. Commander name, Frontier ID, journal path, and
+live/beta eligibility are bound for the journal session. A queued event is
+discarded if that commander's key changes before transmission, so credentials
+and events cannot cross between commander sessions.
 
 Events are buffered for about 35 seconds. Commander credit changes are derived
 from journal balance snapshots and transaction deltas, then coalesced to an
 hourly cadence or a session boundary instead of uploading every transaction.
 Transient HTTP failures retain the batch for a later retry.
 
-Developer test mode is a separate setting and is disabled by default. During
-initial live verification it sets `isBeingDeveloped: true`. Once Artie confirms
-the application is approved for production on Inara, users should leave this
-setting off so requests use `isBeingDeveloped: false`.
+SrvSurvey currently sends `isBeingDeveloped: true` on commander write requests
+while the integration is being validated. This is an application-owned protocol
+setting, not a user preference.
+
+Enable Inara uploads in only one application at a time to avoid duplicate
+commander events.
 
 The Community Goals dashboard uses Inara's generic application API key to read
 the public `getCommunityGoalsRecent` feed. This request is independent of the

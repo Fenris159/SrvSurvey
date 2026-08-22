@@ -6632,6 +6632,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Clear key",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Clear mission 1 progress",
     "IsFormat": false,
     "SourceKinds": [
@@ -9897,22 +9905,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Developer test mode",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "Developer test mode is off by default. Enable it for the initial live verification; once Artie confirms the application for production on Inara, leave it off.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
     "Text": "Developer tools",
     "IsFormat": false,
     "SourceKinds": [
@@ -9927,14 +9919,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "DeveloperTestMode",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/InaraSettingsStore.cs"
   },
   {
     "Text": "Development quest action failed: {0}",
@@ -11091,6 +11075,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Enable Inara uploads in only one application at a time to avoid duplicate commander events.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Enable OpenVR overlays before resetting headset orientation.",
@@ -16119,7 +16111,6 @@
     "Text": "Inara",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
@@ -26949,6 +26940,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestDeveloperViewModel.cs"
   },
   {
+    "Text": "Remove key",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Remove local raw point",
     "IsFormat": false,
     "SourceKinds": [
@@ -27011,6 +27010,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "Remove this commander\u0027s saved Inara API key?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Removed \u0027{0}\u0027 locally.",
@@ -29168,6 +29175,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Saving a personal API key enables supported Inara uploads only for the commander shown. Removing that key disables uploads for that commander.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Saving project visibility to Raven Colonial...",
@@ -34191,14 +34206,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/InaraSettingsViewModel.cs"
   },
   {
-    "Text": "The Inara preference changed for this session but could not be saved: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/InaraSettingsViewModel.cs"
-  },
-  {
     "Text": "The Journey could not be reprocessed: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -38648,22 +38655,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "Upload supported commander data to Inara",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "UploadEnabled",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/InaraSettingsStore.cs"
   },
   {
     "Text": "UploadGreenGasGiantCandidates",

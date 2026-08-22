@@ -532,10 +532,6 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
                 []);
-            new InaraSettingsStore(paths.UiSettingsPath).Save(
-                new InaraPreferences(
-                    UploadEnabled: true,
-                    DeveloperTestMode: true));
             await new CommanderProfileStore(paths.DataDirectory)
                 .SaveInaraApiKeyAsync(
                     "F123",
@@ -559,8 +555,6 @@ public sealed class MainWindowViewModelTests
             var bootstrap = Assert.Single(publisher.Calls);
             Assert.False(bootstrap.AllowPublishing);
             Assert.False(bootstrap.AllowSharedData);
-            Assert.True(bootstrap.Options.Enabled);
-            Assert.True(bootstrap.Options.DeveloperTestMode);
             Assert.Equal("personal-key", bootstrap.Options.ApiKey);
             Assert.Equal("Test Cmdr", bootstrap.Options.CommanderName);
             Assert.Equal("F123", bootstrap.Options.FrontierId);
@@ -635,7 +629,7 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
-    public void DisablingInaraImmediatelyCancelsPendingPublication()
+    public async Task ClearingInaraKeyImmediatelyCancelsPendingPublication()
     {
         var root = Path.Combine(
             Path.GetTempPath(),
@@ -654,9 +648,21 @@ public sealed class MainWindowViewModelTests
                     .WithAppDataPaths(paths)
                     .WithInaraPublisher(publisher));
 
-            viewModel.Inara.UploadEnabled = true;
+            viewModel.Inara.SetCommanderProfile(
+                "F123",
+                "Test Cmdr",
+                isOdyssey: true,
+                inaraApiKey: "personal-key");
             Assert.Equal(0, publisher.CancellationCount);
-            viewModel.Inara.UploadEnabled = false;
+            viewModel.Inara.RequestClearApiKeyCommand.Execute(null);
+            viewModel.Inara.ConfirmClearApiKeyCommand.Execute(null);
+
+            var timeout = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(2);
+            while (publisher.CancellationCount == 0
+                && DateTimeOffset.UtcNow < timeout)
+            {
+                await Task.Delay(10);
+            }
 
             Assert.Equal(1, publisher.CancellationCount);
         }
@@ -3667,8 +3673,7 @@ public sealed class MainWindowViewModelTests
                 Warnings: []));
         }
 
-        public Task<InaraPublicationResult> FlushAsync(
-            InaraPublicationOptions options,
+        public Task<InaraPublicationResult> StopAsync(
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult(InaraPublicationResult.Empty);
@@ -3694,11 +3699,15 @@ public sealed class MainWindowViewModelTests
             throw new InvalidOperationException("simulated Inara failure");
         }
 
-        public Task<InaraPublicationResult> FlushAsync(
-            InaraPublicationOptions options,
+        public Task<InaraPublicationResult> StopAsync(
             CancellationToken cancellationToken = default)
         {
-            throw new InvalidOperationException("simulated Inara failure");
+            if (disposeException is not null)
+            {
+                throw disposeException;
+            }
+
+            return Task.FromResult(InaraPublicationResult.Empty);
         }
 
         public void CancelPendingPublication()
@@ -3707,10 +3716,6 @@ public sealed class MainWindowViewModelTests
 
         public void Dispose()
         {
-            if (disposeException is not null)
-            {
-                throw disposeException;
-            }
         }
     }
 

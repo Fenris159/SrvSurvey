@@ -391,15 +391,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 new VrOverlayCalibrationStore(AppDataPaths.DataDirectory));
             NetworkPrivacy = new NetworkPrivacyViewModel(
                 new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
-            Inara = new InaraSettingsViewModel(
-                new InaraSettingsStore(AppDataPaths.UiSettingsPath),
-                commanderProfileStore);
+            Inara = new InaraSettingsViewModel(commanderProfileStore);
             this.inaraPublisher = resolvedInaraPublisher ?? new InaraPublisher(
                 (typeof(MainWindowViewModel).Assembly.GetName().Version
                     ?? new Version(0, 0)).ToString());
             rollback.AddIfCreated(resolvedInaraPublisher, this.inaraPublisher);
-            Inara.UploadDisabled += OnInaraUploadDisabled;
-            rollback.Add(() => Inara.UploadDisabled -= OnInaraUploadDisabled);
+            Inara.ApiKeyChanged += OnInaraApiKeyChanged;
+            rollback.Add(() => Inara.ApiKeyChanged -= OnInaraApiKeyChanged);
             this.eddnPublisher = resolvedEddnPublisher ?? new EddnPublisher(
                 (typeof(MainWindowViewModel).Assembly.GetName().Version
                     ?? new Version(0, 0)).ToString(),
@@ -2900,8 +2898,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     journalState.ShipName,
                     journalState.ShipIdent,
                     new InaraPublicationOptions(
-                        Inara.UploadEnabled,
-                        Inara.DeveloperTestMode,
                         Inara.StoredApiKey,
                         activeProfileCommanderName
                             ?? journalState.CommanderName,
@@ -4502,7 +4498,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         return string.IsNullOrWhiteSpace(value) ? Unavailable : value;
     }
 
-    private void OnInaraUploadDisabled(object? sender, EventArgs eventArgs)
+    private void OnInaraApiKeyChanged(object? sender, EventArgs eventArgs)
     {
         inaraPublisher.CancelPendingPublication();
     }
@@ -4577,8 +4573,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         ScreenshotProcessing.PropertyChanged -= OnScreenshotProcessingChanged;
         TryDispose(Guardian.Dispose);
         TryDispose(QuestWorkspace.Dispose);
-        Inara.UploadDisabled -= OnInaraUploadDisabled;
-        TryDispose(inaraPublisher.Dispose);
+        Inara.ApiKeyChanged -= OnInaraApiKeyChanged;
+        using var inaraShutdownCancellation = new CancellationTokenSource(
+            TimeSpan.FromSeconds(45));
+        await TryDisposeAsync(
+            () => new ValueTask(
+                inaraPublisher.StopAsync(inaraShutdownCancellation.Token)));
         CommanderInstances.PropertyChanged -= OnCommanderInstancesPropertyChanged;
         TryDispose(CommanderInstances.Dispose);
         BiologyRewards.PropertyChanged -= OnBiologyRewardsChanged;
