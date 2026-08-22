@@ -83,6 +83,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private readonly IInaraPublisher inaraPublisher;
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification =
+            "DisposeAsync awaits this coordinator through the failure-isolating cleanup helper.")]
     private readonly QuestRuntimeCoordinator questRuntimeCoordinator;
     private readonly QuestSettingsStore questSettingsStore;
     private readonly HttpClient? visitedStarsHttpClient;
@@ -165,604 +170,633 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private bool isAwaitingCommanderIdentity;
     private bool disposed;
 
-    public MainWindowViewModel(
-        string? configuredJournalDirectory,
-        MainWindowViewModelOptions? options = null)
+    public MainWindowViewModel(string? configuredJournalDirectory)
+        : this(
+            configuredJournalDirectory,
+            new MainWindowViewModelConstructionContext())
     {
-        options ??= new MainWindowViewModelOptions();
+    }
+
+    internal MainWindowViewModel(
+        string? configuredJournalDirectory,
+        MainWindowViewModelConstructionContext construction)
+    {
+        ArgumentNullException.ThrowIfNull(construction);
+        var foundation = construction.Foundation;
+        var overlay = construction.Overlay;
+        var exploration = construction.Exploration;
+        var travel = construction.Travel;
+        var online = construction.Online;
         // Locals that would shadow instance fields use a resolved* prefix (S1117).
-        var resolvedThemeService = options.ThemeService;
-        var appDataPaths = options.AppDataPaths;
-        var resolvedProfileImporter = options.ProfileImporter;
-        var exobiologyCatalog = options.ExobiologyCatalog;
-        var starSystemResolver = options.StarSystemResolver;
-        var boxelSystemResolver = options.BoxelSystemResolver;
-        var systemNameSuggestionClient = options.SystemNameSuggestionClient;
-        var inputSettings = options.InputSettings;
-        var colonization = options.Colonization;
-        var nearestSystemsClient = options.NearestSystemsClient;
-        var systemSummaryClient = options.SystemSummaryClient;
-        var jumpInfoSettingsStore = options.JumpInfoSettingsStore;
-        var systemSurveySettingsStore = options.SystemSurveySettingsStore;
-        var biologyPredictionsSettingsStore =
-            options.BiologyPredictionsSettingsStore;
-        var combatSettingsStore = options.CombatSettingsStore;
-        var guardianOverlaySettingsStore = options.GuardianOverlaySettingsStore;
-        var stationInfoSettingsStore = options.StationInfoSettingsStore;
-        var humanSiteSettingsStore = options.HumanSiteSettingsStore;
-        var resolvedApplicationLogService = options.ApplicationLogService;
-        var overlayLayoutStore = options.OverlayLayoutStore;
-        var overlayLayout = options.OverlayLayout;
-        var screenshotProcessingService = options.ScreenshotProcessingService;
-        var resolvedQuestRuntimeCoordinator = options.QuestRuntimeCoordinator;
-        var resolvedQuestSettingsStore = options.QuestSettingsStore;
-        var targetFrontierId = options.TargetFrontierId;
-        var commanderInstanceLauncher = options.CommanderInstanceLauncher;
-        var gameWindowSwitcher = options.GameWindowSwitcher;
-        var visitedStarsCache = options.VisitedStarsCache;
+        var resolvedThemeService = foundation.ThemeService;
+        var appDataPaths = foundation.AppDataPaths;
+        var boxelSystemResolver = exploration.BoxelSystemResolver;
+        var inputSettings = foundation.InputSettings;
+        var guardianOverlaySettingsStore = overlay.GuardianOverlaySettingsStore;
+        var stationInfoSettingsStore = travel.StationInfoSettingsStore;
+        var humanSiteSettingsStore = exploration.HumanSiteSettingsStore;
+        var resolvedApplicationLogService = foundation.ApplicationLogService;
+        var overlayLayoutStore = overlay.OverlayLayoutStore;
+        var overlayLayout = overlay.OverlayLayout;
+        var screenshotProcessingService = overlay.ScreenshotProcessingService;
+        var targetFrontierId = foundation.TargetFrontierId;
+        var gameWindowSwitcher = travel.GameWindowSwitcher;
         var resolvedGreenGasGiantPublicationCoordinator =
-            options.GreenGasGiantPublicationCoordinator;
-        var notificationSettingsStore = options.NotificationSettingsStore;
-        var streamOverlaySettingsStore = options.StreamOverlaySettingsStore;
-        var vrOverlaySettingsStore = options.VrOverlaySettingsStore;
-        var vrOverlayCalibrationStore = options.VrOverlayCalibrationStore;
-        var galaxyMapSettingsStore = options.GalaxyMapSettingsStore;
-        var pulseOverlaySettingsStore = options.PulseOverlaySettingsStore;
-        var overlayBehaviorSettingsStore = options.OverlayBehaviorSettingsStore;
-        var overlayScaleSettingsStore = options.OverlayScaleSettingsStore;
-        var journalSettingsStore = options.JournalSettingsStore;
-        var resolvedSystemScanPersistenceStore = options.SystemScanPersistenceStore;
-        var codexImageSettingsStore = options.CodexImageSettingsStore;
-        var dockToDockSettingsStore = options.DockToDockSettingsStore;
-        var dockToDockLogService = options.DockToDockLogService;
-        var desktopBehaviorSettingsStore = options.DesktopBehaviorSettingsStore;
-        var biologyRewardSettingsStore = options.BiologyRewardSettingsStore;
+            online.GreenGasGiantPublicationCoordinator;
+        var desktopBehaviorSettingsStore =
+            overlay.DesktopBehaviorSettingsStore;
         var commanderPreferenceSettingsStore =
-            options.CommanderPreferenceSettingsStore;
+            foundation.CommanderPreferenceSettingsStore;
         var commanderPreferenceCommandLineOverride =
-            options.CommanderPreferenceCommandLineOverride;
+            foundation.CommanderPreferenceCommandLineOverride;
         var commanderPreferenceInitialStatus =
-            options.CommanderPreferenceInitialStatus;
-        var resolvedFirstFootfallInferenceSettingsStore =
-            options.FirstFootfallInferenceSettingsStore;
+            foundation.CommanderPreferenceInitialStatus;
         var resolvedFirstFootfallInferenceService =
-            options.FirstFootfallInferenceService;
-        var ravenServiceSettingsStore = options.RavenServiceSettingsStore;
-        var releaseUpdates = options.ReleaseUpdates;
-        var referenceDataUpdates = options.ReferenceDataUpdates;
-        var localization = options.Localization;
-        var overlayThemeSettings = options.OverlayThemeSettings;
-        var overlayInteraction = options.OverlayInteraction;
-        var canonnHumanSiteClient = options.CanonnHumanSiteClient;
-        var canonnHumanSitePublisher = options.CanonnHumanSitePublisher;
-        var resolvedEddnPublisher = options.EddnPublisher;
-        var resolvedVoxStellarPublisher = options.VoxStellarPublisher;
-        var resolvedSystemBodyDataClient = options.SystemBodyDataClient;
-        var resolvedInaraPublisher = options.InaraPublisher;
-        var frontierProfile = options.FrontierProfile;
+            exploration.FirstFootfallInferenceService;
+        var overlayThemeSettings = overlay.OverlayThemeSettings;
+        var overlayInteraction = overlay.OverlayInteraction;
+        var canonnHumanSiteClient = online.CanonnHumanSiteClient;
+        var canonnHumanSitePublisher = online.CanonnHumanSitePublisher;
+        var resolvedEddnPublisher = online.EddnPublisher;
+        var resolvedVoxStellarPublisher = online.VoxStellarPublisher;
+        var resolvedSystemBodyDataClient = exploration.SystemBodyDataClient;
+        var resolvedInaraPublisher = online.InaraPublisher;
+        var frontierProfile = foundation.FrontierProfile;
 
-        this.themeService = resolvedThemeService;
-        this.profileImporter = resolvedProfileImporter ?? new LegacyProfileImporter();
-        this.applicationLogService = resolvedApplicationLogService;
-        AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
-        var sharedJournalSettingsStore = journalSettingsStore
-            ?? new JournalSettingsStore(AppDataPaths.UiSettingsPath);
-        folderResolution = JournalFolderLocator.ResolveCurrent(
-            configuredJournalDirectory
-                ?? sharedJournalSettingsStore.Load().Directory);
-        FrontierProfile = frontierProfile ?? new CommanderProfileViewModel(
-            FrontierAccountService.CreateCurrent(AppDataPaths.DataDirectory),
-            communityGoalHistoryReader: CreateCommunityGoalHistoryReader(
-                folderResolution));
-        var legacyReferences = LegacyReferenceCatalogLoader.Load(
-            AppDataPaths.DataDirectory);
-        var regionalCodexCandidates = RegionalCodexCandidateCatalog.Load(
-            AppDataPaths.DataDirectory);
-        var knownSystems = KnownSystemAddressCatalog.Load(
-            AppDataPaths.DataDirectory);
-        AppendReferenceCatalogWarnings(
-            resolvedApplicationLogService,
-            legacyReferences.Warnings,
-            regionalCodexCandidates.Warnings,
-            knownSystems.Warnings);
-        ReferenceDataStatus = BuildReferenceDataStatus(
-            legacyReferences,
-            regionalCodexCandidates,
-            knownSystems);
+        var rollback = new MainWindowViewModelConstructionRollback(
+            resolvedApplicationLogService);
+        rollback.Add(firstFootfallInferenceCancellation.Dispose);
+        rollback.Add(frontierProfile);
+        rollback.Add(overlayInteraction);
+        rollback.Add(resolvedFirstFootfallInferenceService);
+        var gameWindowOwnership =
+            new MainWindowViewModelConstructionOwnership<IGameWindowSwitcher>(
+                gameWindowSwitcher);
+        rollback.Add(gameWindowOwnership);
+        rollback.Add(resolvedInaraPublisher);
+        rollback.Add(resolvedEddnPublisher as IDisposable);
+        rollback.Add(resolvedVoxStellarPublisher as IDisposable);
 
-        ReferenceDataUpdates = referenceDataUpdates
-            ?? new ReferenceDataUpdateViewModel(
+        try
+        {
+            this.themeService = resolvedThemeService;
+            this.profileImporter = new LegacyProfileImporter();
+            this.applicationLogService = resolvedApplicationLogService;
+            AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+            var sharedJournalSettingsStore = new JournalSettingsStore(
+                AppDataPaths.UiSettingsPath);
+            folderResolution = JournalFolderLocator.ResolveCurrent(
+                configuredJournalDirectory
+                    ?? sharedJournalSettingsStore.Load().Directory);
+            FrontierProfile = frontierProfile ?? new CommanderProfileViewModel(
+                FrontierAccountService.CreateCurrent(AppDataPaths.DataDirectory),
+                communityGoalHistoryReader: CreateCommunityGoalHistoryReader(
+                    folderResolution));
+            rollback.AddIfCreated(frontierProfile, FrontierProfile);
+            var legacyReferences = LegacyReferenceCatalogLoader.Load(
+                AppDataPaths.DataDirectory);
+            var regionalCodexCandidates = RegionalCodexCandidateCatalog.Load(
+                AppDataPaths.DataDirectory);
+            var knownSystems = KnownSystemAddressCatalog.Load(
+                AppDataPaths.DataDirectory);
+            AppendReferenceCatalogWarnings(
+                resolvedApplicationLogService,
+                legacyReferences.Warnings,
+                regionalCodexCandidates.Warnings,
+                knownSystems.Warnings);
+            ReferenceDataStatus = BuildReferenceDataStatus(
+                legacyReferences,
+                regionalCodexCandidates,
+                knownSystems);
+
+            ReferenceDataUpdates = new ReferenceDataUpdateViewModel(
                 new PublishedReferenceUpdateService(),
                 AppDataPaths.DataDirectory,
                 ReferenceDataStatus,
                 CreateReferenceUpdateLogger(resolvedApplicationLogService));
-        Localization = localization ?? new LocalizationViewModel(
-            new LocalizationSettingsStore(
-                AppDataPaths.UiSettingsPath,
-                AppDataPaths.DataDirectory));
+            Localization = new LocalizationViewModel(
+                new LocalizationSettingsStore(
+                    AppDataPaths.UiSettingsPath,
+                    AppDataPaths.DataDirectory));
 
-        var ravenServiceUri = (ravenServiceSettingsStore
-                ?? new RavenServiceSettingsStore(AppDataPaths.UiSettingsPath))
-            .LoadServiceUri();
-        this.questSettingsStore = resolvedQuestSettingsStore
-            ?? new QuestSettingsStore(AppDataPaths.UiSettingsPath);
-        this.questRuntimeCoordinator = resolvedQuestRuntimeCoordinator
-            ?? new QuestRuntimeCoordinator(
+            var ravenServiceUri = new RavenServiceSettingsStore(
+                    AppDataPaths.UiSettingsPath)
+                .LoadServiceUri();
+            this.questSettingsStore = new QuestSettingsStore(
+                AppDataPaths.UiSettingsPath);
+            this.questRuntimeCoordinator = new QuestRuntimeCoordinator(
                 new LegacyQuestStateStore(AppDataPaths.DataDirectory),
                 new RavenQuestClient(serviceUri: ravenServiceUri),
                 message => resolvedApplicationLogService?.Append(message));
-        QuestWorkspace = new QuestWorkspaceViewModel(
-            this.questRuntimeCoordinator,
-            this.questSettingsStore);
-        QuestIndicator = new QuestIndicatorViewModel();
-        this.questRuntimeCoordinator.Changed += OnQuestCoordinatorChanged;
-        SystemNicknames = new SystemNicknameViewModel(
-            SystemNicknameCatalog.Load(AppDataPaths.DataDirectory),
-            new SystemNicknameSettingsStore(AppDataPaths.UiSettingsPath));
-        DiagnosticsLog = new DiagnosticsLogViewModel(resolvedApplicationLogService);
-        ReleaseUpdates = releaseUpdates ?? new ReleaseUpdateViewModel(
-            new ReleaseUpdateService(),
-            ReleaseVersion.FromAssembly(typeof(MainWindowViewModel).Assembly),
-            new ReleaseUpdateSettingsStore(AppDataPaths.UiSettingsPath));
-        JournalInspector = new JournalInspectorViewModel(
-            ReplayQuestJournalEventAsync);
-        JournalSettings = new JournalSettingsViewModel(
-            sharedJournalSettingsStore,
-            configuredJournalDirectory);
-        commanderProfileStore = new CommanderProfileStore(
-            AppDataPaths.DataDirectory);
-        commanderCodexStore = new CommanderCodexStore(
-            AppDataPaths.DataDirectory);
-        commanderCodexJournalTracker = new CommanderCodexJournalTracker(
-            commanderCodexStore);
-        this.systemScanPersistenceStore = resolvedSystemScanPersistenceStore
-            ?? new SystemScanPersistenceStore(AppDataPaths.DataDirectory);
-        this.systemBodyDataClient = resolvedSystemBodyDataClient;
-        systemBodyDataRetryDelay = options.SystemBodyDataRetryDelay
-            ?? DefaultSystemBodyDataRetryDelay;
-        this.firstFootfallInferenceSettingsStore =
-            resolvedFirstFootfallInferenceSettingsStore
-                ?? new FirstFootfallInferenceSettingsStore(
+            rollback.Add(this.questRuntimeCoordinator.DisposeAsync);
+            QuestWorkspace = new QuestWorkspaceViewModel(
+                this.questRuntimeCoordinator,
+                this.questSettingsStore);
+            rollback.Add(QuestWorkspace.Dispose);
+            QuestIndicator = new QuestIndicatorViewModel();
+            this.questRuntimeCoordinator.Changed += OnQuestCoordinatorChanged;
+            rollback.Add(() =>
+                this.questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged);
+            SystemNicknames = new SystemNicknameViewModel(
+                SystemNicknameCatalog.Load(AppDataPaths.DataDirectory),
+                new SystemNicknameSettingsStore(AppDataPaths.UiSettingsPath));
+            DiagnosticsLog = new DiagnosticsLogViewModel(resolvedApplicationLogService);
+            rollback.Add(DiagnosticsLog.Dispose);
+            ReleaseUpdates = new ReleaseUpdateViewModel(
+                new ReleaseUpdateService(),
+                ReleaseVersion.FromAssembly(typeof(MainWindowViewModel).Assembly),
+                new ReleaseUpdateSettingsStore(AppDataPaths.UiSettingsPath));
+            JournalInspector = new JournalInspectorViewModel(
+                ReplayQuestJournalEventAsync);
+            JournalSettings = new JournalSettingsViewModel(
+                sharedJournalSettingsStore,
+                configuredJournalDirectory);
+            commanderProfileStore = new CommanderProfileStore(
+                AppDataPaths.DataDirectory);
+            commanderCodexStore = new CommanderCodexStore(
+                AppDataPaths.DataDirectory);
+            commanderCodexJournalTracker = new CommanderCodexJournalTracker(
+                commanderCodexStore);
+            this.systemScanPersistenceStore = new SystemScanPersistenceStore(
+                AppDataPaths.DataDirectory);
+            this.systemBodyDataClient = resolvedSystemBodyDataClient;
+            systemBodyDataRetryDelay = exploration.SystemBodyDataRetryDelay
+                ?? DefaultSystemBodyDataRetryDelay;
+            this.firstFootfallInferenceSettingsStore =
+                new FirstFootfallInferenceSettingsStore(
                     AppDataPaths.UiSettingsPath);
-        this.firstFootfallInferenceService = resolvedFirstFootfallInferenceService
-            ?? new UnavailableFirstFootfallInferenceService();
-        InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
-            new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
-            OverlayPlatformCapabilities.DetectCurrent());
-        OverlayPanelVisibility = new OverlayPanelVisibilityViewModel(
-            new OverlayPanelVisibilitySettingsStore(AppDataPaths.UiSettingsPath),
-            InputSettings);
-        var sharedGameWindowSwitcher = gameWindowSwitcher
-            ?? GameWindowSwitcher.CreateCurrent();
-        DesktopBehavior = new DesktopBehaviorViewModel(
-            desktopBehaviorSettingsStore
-                ?? new DesktopBehaviorSettingsStore(AppDataPaths.UiSettingsPath),
-            sharedGameWindowSwitcher);
-        var sharedOverlayLayoutStore = overlayLayoutStore
-            ?? new LegacyOverlayLayoutStore(AppDataPaths.DataDirectory);
-        var activeOverlayLayout = overlayLayout
-            ?? sharedOverlayLayoutStore.Load();
-        OverlayLayout = new OverlayLayoutSettingsViewModel(
-            sharedOverlayLayoutStore,
-            activeOverlayLayout);
-        OverlayScale = new OverlayScaleSettingsViewModel(
-            overlayScaleSettingsStore
-                ?? new OverlayScaleSettingsStore(AppDataPaths.UiSettingsPath),
-            activeOverlayLayout);
-        OverlayBehavior = new OverlayBehaviorViewModel(
-            overlayBehaviorSettingsStore
-                ?? new OverlayBehaviorSettingsStore(AppDataPaths.UiSettingsPath));
-        OverlayInteraction = overlayInteraction ?? new OverlayInteractionViewModel(
-            OverlayPlatformCapabilities.DetectCurrent());
-        OverlayInteractionBinding = InputSettings.Bindings.Single(binding =>
-            binding.Definition.Action
-                == GlobalInputAction.ToggleOverlayInteraction);
-        OverlayTheme = overlayThemeSettings ?? new OverlayThemeSettingsViewModel(
-            new LegacyOverlayThemeStore(
-                Path.Combine(AppDataPaths.DataDirectory, "theme.json")),
-            new OverlayThemeStateStore(
-                Path.Combine(
-                    AppDataPaths.DataDirectory,
-                    "overlay-theme-states.json")),
-            resolvedThemeService);
-        ScreenshotProcessing = new ScreenshotProcessingViewModel(
-            new ScreenshotProcessingSettingsStore(AppDataPaths.UiSettingsPath),
-            screenshotProcessingService);
-        DockToDock = new DockToDockViewModel(
-            dockToDockSettingsStore
-                ?? new DockToDockSettingsStore(AppDataPaths.UiSettingsPath),
-            dockToDockLogService
-                ?? new DockToDockLogService(
+            this.firstFootfallInferenceService = resolvedFirstFootfallInferenceService
+                ?? new UnavailableFirstFootfallInferenceService();
+            rollback.AddIfCreated(
+                resolvedFirstFootfallInferenceService,
+                this.firstFootfallInferenceService);
+            construction.Checkpoint?.Invoke(
+                MainWindowViewModelConstructionCheckpoint.FoundationReady);
+            InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
+                new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
+                OverlayPlatformCapabilities.DetectCurrent());
+            OverlayPanelVisibility = new OverlayPanelVisibilityViewModel(
+                new OverlayPanelVisibilitySettingsStore(AppDataPaths.UiSettingsPath),
+                InputSettings);
+            var sharedGameWindowSwitcher = gameWindowSwitcher
+                ?? GameWindowSwitcher.CreateCurrent();
+            gameWindowOwnership.Own(sharedGameWindowSwitcher);
+            DesktopBehavior = new DesktopBehaviorViewModel(
+                desktopBehaviorSettingsStore
+                    ?? new DesktopBehaviorSettingsStore(AppDataPaths.UiSettingsPath),
+                sharedGameWindowSwitcher);
+            var sharedOverlayLayoutStore = overlayLayoutStore
+                ?? new LegacyOverlayLayoutStore(AppDataPaths.DataDirectory);
+            var activeOverlayLayout = overlayLayout
+                ?? sharedOverlayLayoutStore.Load();
+            OverlayLayout = new OverlayLayoutSettingsViewModel(
+                sharedOverlayLayoutStore,
+                activeOverlayLayout);
+            OverlayScale = new OverlayScaleSettingsViewModel(
+                new OverlayScaleSettingsStore(AppDataPaths.UiSettingsPath),
+                activeOverlayLayout);
+            OverlayBehavior = new OverlayBehaviorViewModel(
+                new OverlayBehaviorSettingsStore(AppDataPaths.UiSettingsPath));
+            OverlayInteraction = overlayInteraction ?? new OverlayInteractionViewModel(
+                OverlayPlatformCapabilities.DetectCurrent());
+            rollback.AddIfCreated(overlayInteraction, OverlayInteraction);
+            OverlayInteractionBinding = InputSettings.Bindings.Single(binding =>
+                binding.Definition.Action
+                    == GlobalInputAction.ToggleOverlayInteraction);
+            OverlayTheme = overlayThemeSettings ?? new OverlayThemeSettingsViewModel(
+                new LegacyOverlayThemeStore(
+                    Path.Combine(AppDataPaths.DataDirectory, "theme.json")),
+                new OverlayThemeStateStore(
+                    Path.Combine(
+                        AppDataPaths.DataDirectory,
+                        "overlay-theme-states.json")),
+                resolvedThemeService);
+            ScreenshotProcessing = new ScreenshotProcessingViewModel(
+                new ScreenshotProcessingSettingsStore(AppDataPaths.UiSettingsPath),
+                screenshotProcessingService);
+            construction.Checkpoint?.Invoke(
+                MainWindowViewModelConstructionCheckpoint.OverlayReady);
+            DockToDock = new DockToDockViewModel(
+                new DockToDockSettingsStore(AppDataPaths.UiSettingsPath),
+                new DockToDockLogService(
                     DockToDockCsvWriter.GetDefaultPath()));
-        Notifications = new NotificationViewModel(
-            notificationSettingsStore
-                ?? new NotificationSettingsStore(AppDataPaths.UiSettingsPath));
-        PulseOverlay = new PulseOverlayViewModel(
-            pulseOverlaySettingsStore
-                ?? new PulseOverlaySettingsStore(AppDataPaths.UiSettingsPath));
-        StreamOverlay = new StreamOverlayViewModel(
-            streamOverlaySettingsStore
-                ?? new StreamOverlaySettingsStore(AppDataPaths.UiSettingsPath));
-        VrOverlay = new VrOverlayViewModel(
-            vrOverlaySettingsStore
-                ?? new VrOverlaySettingsStore(AppDataPaths.UiSettingsPath),
-            vrOverlayCalibrationStore
-                ?? new VrOverlayCalibrationStore(AppDataPaths.DataDirectory));
-        NetworkPrivacy = new NetworkPrivacyViewModel(
-            new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
-        Inara = new InaraSettingsViewModel(
-            new InaraSettingsStore(AppDataPaths.UiSettingsPath),
-            commanderProfileStore);
-        this.inaraPublisher = resolvedInaraPublisher ?? new InaraPublisher(
-            (typeof(MainWindowViewModel).Assembly.GetName().Version
-                ?? new Version(0, 0)).ToString());
-        Inara.UploadDisabled += OnInaraUploadDisabled;
-        this.eddnPublisher = resolvedEddnPublisher ?? new EddnPublisher(
-            (typeof(MainWindowViewModel).Assembly.GetName().Version
-                ?? new Version(0, 0)).ToString(),
-            outboxPath: Path.Combine(
-                AppDataPaths.DataDirectory,
-                "eddn-outbox-v1.json"),
-            log: message => resolvedApplicationLogService?.Append(message));
-        NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
-        this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
-        this.voxStellarPublisher = resolvedVoxStellarPublisher
-            ?? new VoxStellarPublisher(
+            Notifications = new NotificationViewModel(
+                new NotificationSettingsStore(AppDataPaths.UiSettingsPath));
+            PulseOverlay = new PulseOverlayViewModel(
+                new PulseOverlaySettingsStore(AppDataPaths.UiSettingsPath));
+            StreamOverlay = new StreamOverlayViewModel(
+                new StreamOverlaySettingsStore(AppDataPaths.UiSettingsPath));
+            VrOverlay = new VrOverlayViewModel(
+                new VrOverlaySettingsStore(AppDataPaths.UiSettingsPath),
+                new VrOverlayCalibrationStore(AppDataPaths.DataDirectory));
+            NetworkPrivacy = new NetworkPrivacyViewModel(
+                new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
+            Inara = new InaraSettingsViewModel(
+                new InaraSettingsStore(AppDataPaths.UiSettingsPath),
+                commanderProfileStore);
+            this.inaraPublisher = resolvedInaraPublisher ?? new InaraPublisher(
+                (typeof(MainWindowViewModel).Assembly.GetName().Version
+                    ?? new Version(0, 0)).ToString());
+            rollback.AddIfCreated(resolvedInaraPublisher, this.inaraPublisher);
+            Inara.UploadDisabled += OnInaraUploadDisabled;
+            rollback.Add(() => Inara.UploadDisabled -= OnInaraUploadDisabled);
+            this.eddnPublisher = resolvedEddnPublisher ?? new EddnPublisher(
                 (typeof(MainWindowViewModel).Assembly.GetName().Version
                     ?? new Version(0, 0)).ToString(),
-                VoxStellarSharedKeyProvider.GetSharedKey(),
+                outboxPath: Path.Combine(
+                    AppDataPaths.DataDirectory,
+                    "eddn-outbox-v1.json"),
                 log: message => resolvedApplicationLogService?.Append(message));
-        VoxStellar = new VoxStellarSharingViewModel(
-            new VoxStellarSettingsStore(AppDataPaths.UiSettingsPath),
-            this.voxStellarPublisher.IsConfigured);
-        VoxStellar.UploadEnabledChanged += OnVoxStellarUploadEnabledChanged;
-        this.voxStellarPublisher.SetEnabled(
-            VoxStellar.JournalUploadEnabled);
-        this.greenGasGiantPublicationCoordinator =
-            resolvedGreenGasGiantPublicationCoordinator
-                ?? new GreenGasGiantPublicationCoordinator(
-                    legacyReferences.GreenGasGiants,
-                    new GreenGasGiantClient(serviceUri: ravenServiceUri));
-        Colonization = colonization ?? new ColonizationViewModel(
-            new ColonizationSettingsStore(AppDataPaths.UiSettingsPath),
-            client: new RavenColonialClient(serviceUri: ravenServiceUri),
-            commanderProfileStore: commanderProfileStore,
-            legacyProfileStore: new LegacyColonizationProfileStore(
-                AppDataPaths.DataDirectory));
-        var sharedSystemResolver = starSystemResolver
-            ?? new SpanshStarSystemResolver();
-        var sharedExobiologyCatalog = exobiologyCatalog
-            ?? legacyReferences.Exobiology;
-        var defaultCodexImageCache = Path.Combine(
-            AppDataPaths.CacheDirectory,
-            "codex-images");
-        CodexImages = new CodexImageSettingsViewModel(
-            codexImageSettingsStore
-                ?? new CodexImageSettingsStore(
+            rollback.AddIfCreated(
+                resolvedEddnPublisher,
+                this.eddnPublisher as IDisposable);
+            NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
+            rollback.Add(() =>
+                NetworkPrivacy.EddnUploadEnabledChanged -=
+                    OnEddnUploadEnabledChanged);
+            this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
+            this.voxStellarPublisher = resolvedVoxStellarPublisher
+                ?? new VoxStellarPublisher(
+                    (typeof(MainWindowViewModel).Assembly.GetName().Version
+                        ?? new Version(0, 0)).ToString(),
+                    VoxStellarSharedKeyProvider.GetSharedKey(),
+                    log: message => resolvedApplicationLogService?.Append(message));
+            VoxStellar = new VoxStellarSharingViewModel(
+                new VoxStellarSettingsStore(AppDataPaths.UiSettingsPath),
+                this.voxStellarPublisher.IsConfigured);
+            rollback.AddIfCreated(
+                resolvedVoxStellarPublisher,
+                this.voxStellarPublisher as IDisposable);
+            VoxStellar.UploadEnabledChanged += OnVoxStellarUploadEnabledChanged;
+            rollback.Add(() =>
+                VoxStellar.UploadEnabledChanged -= OnVoxStellarUploadEnabledChanged);
+            this.voxStellarPublisher.SetEnabled(
+                VoxStellar.JournalUploadEnabled);
+            this.greenGasGiantPublicationCoordinator =
+                resolvedGreenGasGiantPublicationCoordinator
+                    ?? new GreenGasGiantPublicationCoordinator(
+                        legacyReferences.GreenGasGiants,
+                        new GreenGasGiantClient(serviceUri: ravenServiceUri));
+            Colonization = new ColonizationViewModel(
+                new ColonizationSettingsStore(AppDataPaths.UiSettingsPath),
+                client: new RavenColonialClient(serviceUri: ravenServiceUri),
+                commanderProfileStore: commanderProfileStore,
+                legacyProfileStore: new LegacyColonizationProfileStore(
+                    AppDataPaths.DataDirectory));
+            rollback.Add(Colonization.Dispose);
+            var sharedSystemResolver = new SpanshStarSystemResolver();
+            var sharedExobiologyCatalog = legacyReferences.Exobiology;
+            var defaultCodexImageCache = Path.Combine(
+                AppDataPaths.CacheDirectory,
+                "codex-images");
+            CodexImages = new CodexImageSettingsViewModel(
+                new CodexImageSettingsStore(
                     AppDataPaths.UiSettingsPath,
                     defaultCodexImageCache),
-            sharedExobiologyCatalog,
-            defaultCodexImageCache);
-        var systemNoteStore = new SystemNoteStore(AppDataPaths.DataDirectory);
-        var systemNotesSettingsStore = new SystemNotesSettingsStore(
-            AppDataPaths.DataDirectory);
-        var journeyService = new JourneyService(
-            new JourneyStore(AppDataPaths.DataDirectory),
-            new JourneyJournalHistoryReader(
-                ResolveJournalPathOrDefault(
-                    folderResolution,
-                    AppDataPaths.DataDirectory)),
-            commanderProfileStore,
-            sharedExobiologyCatalog);
-        Search = new SphereLimitViewModel(
-            commanderProfileStore,
-            sharedSystemResolver);
-        NearestSystems = new NearestSystemsViewModel(
-            nearestSystemsClient ?? new NearestSystemsClient(),
-            sharedSystemResolver);
-        boxelSurveyStats = new BoxelSurveyStatsCoordinator(
-            new BoxelSurveyStatsStore(AppDataPaths.DataDirectory));
-        boxelSurveyStats.TreatNavBeaconAsFullyScanned =
-            new BoxelSurveyStatsSettingsStore(AppDataPaths.UiSettingsPath)
-                .Load()
-                .TreatNavBeaconAsFullyScanned;
-        BoxelClipboard = new BoxelClipboardAdapter();
-        boxelSearchSession = new BoxelSearchSession(
-            commanderProfileStore,
-            new LegacySystemDataReader(AppDataPaths.DataDirectory),
-            new EmptyBoxelStore(AppDataPaths.DataDirectory),
-            new SavedBoxelSearchStore(AppDataPaths.DataDirectory),
-            boxelSystemResolver ?? new SpanshBoxelClient(),
-            new BoxelSearchSessionServices
-            {
-                Clipboard = BoxelClipboard,
-                Diagnostics = resolvedApplicationLogService is null
-                    ? null
-                    : new ApplicationLogBoxelSearchDiagnosticSink(
-                        resolvedApplicationLogService),
-            });
-        BoxelSearch = new BoxelSearchViewModel(
-            boxelSearchSession,
-            knownSystems: knownSystems,
-            systemNameSuggestionClient: systemNameSuggestionClient
-                ?? new FallbackSystemNameSuggestionClient(
-                    new EdsmSystemNameSuggestionClient(),
-                    new ArdentSystemNameSuggestionClient()),
-            surveyStats: boxelSurveyStats);
-        GroundTarget = new GroundTargetViewModel(
-            new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
-        SystemNotes = new SystemNotesViewModel(
-            systemNoteStore,
-            systemNotesSettingsStore,
-            journeyService);
-        Journey = new JourneyWorkspaceViewModel(
-            journeyService,
-            sharedSystemResolver,
-            systemNoteStore,
-            systemNotesSettingsStore);
-        var spanshRouteClient = new SpanshRouteClient();
-        var routeNameImporter = new RouteNameImporter(sharedSystemResolver);
-        var routeService = new FollowRouteService(
-            new FollowRouteStore(AppDataPaths.DataDirectory));
-        Route = new RouteWorkspaceViewModel(
-            routeService,
-            routeNameImporter,
-            spanshRouteClient);
-        RouteManager = new RouteManagerViewModel(routeService, Route);
-        var fleetCarrierRouteService = new FollowRouteService(
-            new FollowRouteStore(
-                AppDataPaths.DataDirectory,
-                FollowRouteKind.FleetCarrier));
-        FleetCarrierRoute = new RouteWorkspaceViewModel(
-            fleetCarrierRouteService,
-            routeNameImporter,
-            spanshRouteClient,
-            FollowRouteKind.FleetCarrier);
-        FleetCarrierRouteManager = new RouteManagerViewModel(
-            fleetCarrierRouteService,
-            FleetCarrierRoute);
-        routeAutoCopyCoordinator = new RouteAutoCopyCoordinator(
-            Route,
-            FleetCarrierRoute,
-            boxelSearchSession);
-        var sharedJumpInfoSettingsStore = jumpInfoSettingsStore
-            ?? new JumpInfoSettingsStore(AppDataPaths.UiSettingsPath);
-        var sharedSystemSummaryClient = systemSummaryClient
-            ?? new SystemSummaryClient(
+                sharedExobiologyCatalog,
+                defaultCodexImageCache);
+            var systemNoteStore = new SystemNoteStore(AppDataPaths.DataDirectory);
+            var systemNotesSettingsStore = new SystemNotesSettingsStore(
+                AppDataPaths.DataDirectory);
+            var journeyService = new JourneyService(
+                new JourneyStore(AppDataPaths.DataDirectory),
+                new JourneyJournalHistoryReader(
+                    ResolveJournalPathOrDefault(
+                        folderResolution,
+                        AppDataPaths.DataDirectory)),
+                commanderProfileStore,
+                sharedExobiologyCatalog);
+            Search = new SphereLimitViewModel(
+                commanderProfileStore,
+                sharedSystemResolver);
+            NearestSystems = new NearestSystemsViewModel(
+                new NearestSystemsClient(),
+                sharedSystemResolver);
+            boxelSurveyStats = new BoxelSurveyStatsCoordinator(
+                new BoxelSurveyStatsStore(AppDataPaths.DataDirectory));
+            rollback.Add(boxelSurveyStats.DisposeAsync);
+            boxelSurveyStats.TreatNavBeaconAsFullyScanned =
+                new BoxelSurveyStatsSettingsStore(AppDataPaths.UiSettingsPath)
+                    .Load()
+                    .TreatNavBeaconAsFullyScanned;
+            BoxelClipboard = new BoxelClipboardAdapter();
+            boxelSearchSession = new BoxelSearchSession(
+                commanderProfileStore,
+                new LegacySystemDataReader(AppDataPaths.DataDirectory),
+                new EmptyBoxelStore(AppDataPaths.DataDirectory),
+                new SavedBoxelSearchStore(AppDataPaths.DataDirectory),
+                boxelSystemResolver ?? new SpanshBoxelClient(),
+                new BoxelSearchSessionServices
+                {
+                    Clipboard = BoxelClipboard,
+                    Diagnostics = resolvedApplicationLogService is null
+                        ? null
+                        : new ApplicationLogBoxelSearchDiagnosticSink(
+                            resolvedApplicationLogService),
+                });
+            rollback.Add(boxelSearchSession.DisposeAsync);
+            BoxelSearch = new BoxelSearchViewModel(
+                boxelSearchSession,
+                knownSystems: knownSystems,
+                systemNameSuggestionClient:
+                    new FallbackSystemNameSuggestionClient(
+                        new EdsmSystemNameSuggestionClient(),
+                        new ArdentSystemNameSuggestionClient()),
+                surveyStats: boxelSurveyStats);
+            rollback.Add(BoxelSearch.CancelPendingOperations);
+            construction.Checkpoint?.Invoke(
+                MainWindowViewModelConstructionCheckpoint.ExplorationReady);
+            GroundTarget = new GroundTargetViewModel(
+                new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
+            SystemNotes = new SystemNotesViewModel(
+                systemNoteStore,
+                systemNotesSettingsStore,
+                journeyService);
+            Journey = new JourneyWorkspaceViewModel(
+                journeyService,
+                sharedSystemResolver,
+                systemNoteStore,
+                systemNotesSettingsStore);
+            var spanshRouteClient = new SpanshRouteClient();
+            var routeNameImporter = new RouteNameImporter(sharedSystemResolver);
+            var routeService = new FollowRouteService(
+                new FollowRouteStore(AppDataPaths.DataDirectory));
+            Route = new RouteWorkspaceViewModel(
+                routeService,
+                routeNameImporter,
+                spanshRouteClient);
+            RouteManager = new RouteManagerViewModel(routeService, Route);
+            var fleetCarrierRouteService = new FollowRouteService(
+                new FollowRouteStore(
+                    AppDataPaths.DataDirectory,
+                    FollowRouteKind.FleetCarrier));
+            FleetCarrierRoute = new RouteWorkspaceViewModel(
+                fleetCarrierRouteService,
+                routeNameImporter,
+                spanshRouteClient,
+                FollowRouteKind.FleetCarrier);
+            FleetCarrierRouteManager = new RouteManagerViewModel(
+                fleetCarrierRouteService,
+                FleetCarrierRoute);
+            routeAutoCopyCoordinator = new RouteAutoCopyCoordinator(
+                Route,
+                FleetCarrierRoute,
+                boxelSearchSession);
+            rollback.Add(routeAutoCopyCoordinator.Dispose);
+            var sharedJumpInfoSettingsStore = new JumpInfoSettingsStore(
+                AppDataPaths.UiSettingsPath);
+            var sharedSystemSummaryClient = new SystemSummaryClient(
                 useSpanshLastUpdated: () => sharedJumpInfoSettingsStore
                     .Load()
                     .UseSpanshLastUpdated);
-        JumpInfo = new JumpInfoViewModel(
-            sharedSystemSummaryClient,
-            sharedJumpInfoSettingsStore,
-            legacyReferences.GuardianSites);
-        GalaxyMap = new GalaxyMapOverlayViewModel(
-            sharedSystemSummaryClient,
-            galaxyMapSettingsStore
-                ?? new GalaxyMapSettingsStore(AppDataPaths.UiSettingsPath),
-            SystemNicknames);
-        StationInfo = new StationInfoViewModel(
-            sharedSystemSummaryClient,
-            stationInfoSettingsStore
-                ?? new StationInfoSettingsStore(AppDataPaths.UiSettingsPath));
-        BiologyRewards = new BiologyRewardSettingsViewModel(
-            biologyRewardSettingsStore
-                ?? new BiologyRewardSettingsStore(AppDataPaths.UiSettingsPath));
-        SystemSurvey = new SystemSurveyViewModel(
-            systemSurveySettingsStore
-                ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath),
-            biologyCatalog: sharedExobiologyCatalog,
-            biologyRewardThresholds: BiologyRewards.Thresholds,
-            biologyCriteria: legacyReferences.BiologyCriteria,
-            regionalCodexCandidates: regionalCodexCandidates);
-        HumanSite = new HumanSiteViewModel(
-            new HumanSiteViewModelOptions
-            {
-                SettingsStore = humanSiteSettingsStore
-                    ?? new HumanSiteSettingsStore(AppDataPaths.UiSettingsPath),
-                KnowledgeStore = new HumanSiteKnowledgeStore(
-                    AppDataPaths.DataDirectory),
-                MaterialStore = new HumanSiteMaterialStore(
-                    AppDataPaths.DataDirectory),
-                TemplateCatalog = legacyReferences.HumanSiteTemplates,
-                CanonnClient = canonnHumanSiteClient,
-                UseExternalData = () => SystemSurvey.UseExternalData,
-                CanonnPublisher = canonnHumanSitePublisher,
-                PublishCanonnGeometry = () =>
-                    NetworkPrivacy.UploadHumanSettlementGeometry,
-                ReportCanonnPublication = result =>
+            JumpInfo = new JumpInfoViewModel(
+                sharedSystemSummaryClient,
+                sharedJumpInfoSettingsStore,
+                legacyReferences.GuardianSites);
+            rollback.Add(JumpInfo.Dispose);
+            GalaxyMap = new GalaxyMapOverlayViewModel(
+                sharedSystemSummaryClient,
+                new GalaxyMapSettingsStore(AppDataPaths.UiSettingsPath),
+                SystemNicknames);
+            rollback.Add(GalaxyMap.Dispose);
+            StationInfo = new StationInfoViewModel(
+                sharedSystemSummaryClient,
+                stationInfoSettingsStore
+                    ?? new StationInfoSettingsStore(AppDataPaths.UiSettingsPath));
+            rollback.Add(StationInfo.Dispose);
+            construction.Checkpoint?.Invoke(
+                MainWindowViewModelConstructionCheckpoint.TravelReady);
+            BiologyRewards = new BiologyRewardSettingsViewModel(
+                new BiologyRewardSettingsStore(AppDataPaths.UiSettingsPath));
+            SystemSurvey = new SystemSurveyViewModel(
+                new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath),
+                biologyCatalog: sharedExobiologyCatalog,
+                biologyRewardThresholds: BiologyRewards.Thresholds,
+                biologyCriteria: legacyReferences.BiologyCriteria,
+                regionalCodexCandidates: regionalCodexCandidates);
+            HumanSite = new HumanSiteViewModel(
+                new HumanSiteViewModelOptions
                 {
-                    NetworkPrivacy.ReportPublicationResult(result);
-                    if (!string.IsNullOrWhiteSpace(result.Warning))
+                    SettingsStore = humanSiteSettingsStore
+                        ?? new HumanSiteSettingsStore(AppDataPaths.UiSettingsPath),
+                    KnowledgeStore = new HumanSiteKnowledgeStore(
+                        AppDataPaths.DataDirectory),
+                    MaterialStore = new HumanSiteMaterialStore(
+                        AppDataPaths.DataDirectory),
+                    TemplateCatalog = legacyReferences.HumanSiteTemplates,
+                    CanonnClient = canonnHumanSiteClient,
+                    UseExternalData = () => SystemSurvey.UseExternalData,
+                    CanonnPublisher = canonnHumanSitePublisher,
+                    PublishCanonnGeometry = () =>
+                        NetworkPrivacy.UploadHumanSettlementGeometry,
+                    ReportCanonnPublication = result =>
                     {
-                        applicationLogService?.Append(result.Warning);
-                    }
-                },
-            });
-        BiologyRewards.PropertyChanged += OnBiologyRewardsChanged;
-        Combat = new CombatViewModel(
-            combatSettingsStore
-                ?? new CombatSettingsStore(AppDataPaths.UiSettingsPath),
-            commanderProfileStore);
-        var systemSurfaceStore = new SystemSurfaceStore(
-            AppDataPaths.DataDirectory);
-        SurfaceSurvey = new SurfaceSurveyViewModel(
-            SystemSurvey,
-            systemSurfaceStore,
-            new SurfaceSurveyJournalTracker(
+                        NetworkPrivacy.ReportPublicationResult(result);
+                        if (!string.IsNullOrWhiteSpace(result.Warning))
+                        {
+                            applicationLogService?.Append(result.Warning);
+                        }
+                    },
+                });
+            BiologyRewards.PropertyChanged += OnBiologyRewardsChanged;
+            rollback.Add(() =>
+                BiologyRewards.PropertyChanged -= OnBiologyRewardsChanged);
+            Combat = new CombatViewModel(
+                new CombatSettingsStore(AppDataPaths.UiSettingsPath),
+                commanderProfileStore);
+            var systemSurfaceStore = new SystemSurfaceStore(
+                AppDataPaths.DataDirectory);
+            SurfaceSurvey = new SurfaceSurveyViewModel(
+                SystemSurvey,
                 systemSurfaceStore,
-                sharedExobiologyCatalog));
-        BiologyPredictions = new BiologyPredictionsViewModel(
-            SystemSurvey,
-            biologyPredictionsSettingsStore
-                ?? new BiologyPredictionsSettingsStore(
+                new SurfaceSurveyJournalTracker(
+                    systemSurfaceStore,
+                    sharedExobiologyCatalog));
+            rollback.Add(SurfaceSurvey.Dispose);
+            BiologyPredictions = new BiologyPredictionsViewModel(
+                SystemSurvey,
+                new BiologyPredictionsSettingsStore(
                     AppDataPaths.UiSettingsPath));
-        BiologyCodex = new BiologyCodexViewModel(
-            SystemSurvey,
-            sharedExobiologyCatalog,
-            legacyReferences.BiologyCriteria,
-            () => activeProfileCommanderName ?? journalState.CommanderName);
-        var journalImportDirectory = ResolveJournalPathOrDefault(
-            folderResolution,
-            AppDataPaths.DataDirectory);
-        ProfileBackupDirectory = Path.Combine(
-            Path.GetDirectoryName(AppDataPaths.DataDirectory)
-                ?? AppDataPaths.ConfigDirectory,
-            "legacy-backups");
-        CodexBingo = new BiologyCodexBingoViewModel(
-            commanderCodexStore,
-            sharedExobiologyCatalog,
-            new CanonnCodexChallengeImporter(
-                new CanonnCodexChallengeClient(),
+            rollback.Add(BiologyPredictions.Dispose);
+            BiologyCodex = new BiologyCodexViewModel(
+                SystemSurvey,
+                sharedExobiologyCatalog,
+                legacyReferences.BiologyCriteria,
+                () => activeProfileCommanderName ?? journalState.CommanderName);
+            rollback.Add(BiologyCodex.Dispose);
+            var journalImportDirectory = ResolveJournalPathOrDefault(
+                folderResolution,
+                AppDataPaths.DataDirectory);
+            ProfileBackupDirectory = Path.Combine(
+                Path.GetDirectoryName(AppDataPaths.DataDirectory)
+                    ?? AppDataPaths.ConfigDirectory,
+                "legacy-backups");
+            CodexBingo = new BiologyCodexBingoViewModel(
                 commanderCodexStore,
-                sharedExobiologyCatalog),
-            new CommanderCodexJournalImporter(
-                journalImportDirectory,
-                commanderCodexStore),
-            new CodexDiscoveryLocationClient());
-        JournalPostProcessor = new JournalPostProcessorViewModel(
-            new CommanderProfileCatalog(AppDataPaths.DataDirectory),
-            new JournalHistoryAnalyzer(journalImportDirectory),
-            new LegacySystemBiologyAnalyzer(AppDataPaths.DataDirectory),
-            new HistoricalSystemRebuildService(
+                sharedExobiologyCatalog,
+                new CanonnCodexChallengeImporter(
+                    new CanonnCodexChallengeClient(),
+                    commanderCodexStore,
+                    sharedExobiologyCatalog),
+                new CommanderCodexJournalImporter(
+                    journalImportDirectory,
+                    commanderCodexStore),
+                new CodexDiscoveryLocationClient());
+            rollback.Add(CodexBingo.Dispose);
+            JournalPostProcessor = new JournalPostProcessorViewModel(
+                new CommanderProfileCatalog(AppDataPaths.DataDirectory),
+                new JournalHistoryAnalyzer(journalImportDirectory),
+                new LegacySystemBiologyAnalyzer(AppDataPaths.DataDirectory),
+                new HistoricalSystemRebuildService(
+                    AppDataPaths.DataDirectory,
+                    journalImportDirectory,
+                    Path.Combine(
+                        ProfileBackupDirectory,
+                        "historical-systems")),
+                new CommanderCodexJournalImporter(
+                    journalImportDirectory,
+                    commanderCodexStore),
+                new GreenGasGiantClient(serviceUri: ravenServiceUri),
+                () => NetworkPrivacy.UploadGreenGasGiantCandidates);
+            rollback.Add(JournalPostProcessor.Cancel);
+            RamTah = new RamTahViewModel(commanderProfileStore);
+            Guardian = new GuardianViewModel(
                 AppDataPaths.DataDirectory,
-                journalImportDirectory,
-                Path.Combine(
-                    ProfileBackupDirectory,
-                    "historical-systems")),
-            new CommanderCodexJournalImporter(
-                journalImportDirectory,
-                commanderCodexStore),
-            new GreenGasGiantClient(serviceUri: ravenServiceUri),
-            () => NetworkPrivacy.UploadGreenGasGiantCandidates);
-        RamTah = new RamTahViewModel(commanderProfileStore);
-        Guardian = new GuardianViewModel(
-            AppDataPaths.DataDirectory,
-            new GuardianViewModelOptions
-            {
-                References = legacyReferences.GuardianSites,
-                PublishedSites = legacyReferences.GuardianPublishedSites,
-                Templates = legacyReferences.GuardianTemplates,
-                RamTah = RamTah,
-                OverlaySettingsStore = guardianOverlaySettingsStore
-                    ?? new GuardianOverlaySettingsStore(
+                new GuardianViewModelOptions
+                {
+                    References = legacyReferences.GuardianSites,
+                    PublishedSites = legacyReferences.GuardianPublishedSites,
+                    Templates = legacyReferences.GuardianTemplates,
+                    RamTah = RamTah,
+                    OverlaySettingsStore = guardianOverlaySettingsStore
+                        ?? new GuardianOverlaySettingsStore(
+                            AppDataPaths.UiSettingsPath),
+                    GesturePreferences = new GuardianGestureSettingsStore(
+                        AppDataPaths.UiSettingsPath).Load(),
+                    AerialAltitudeProvider = () => new GuardianAerialAltitudes(
+                        ScreenshotProcessing.AerialAltitudeAlpha,
+                        ScreenshotProcessing.AerialAltitudeBeta,
+                        ScreenshotProcessing.AerialAltitudeGamma),
+                    ScreenshotTargetFolderProvider = () =>
+                        ScreenshotProcessing.TargetFolder,
+                });
+            rollback.Add(Guardian.Dispose);
+            ScreenshotProcessing.PropertyChanged += OnScreenshotProcessingChanged;
+            rollback.Add(() =>
+                ScreenshotProcessing.PropertyChanged -=
+                    OnScreenshotProcessingChanged);
+            exobiologyState = new ExobiologyState(sharedExobiologyCatalog);
+            LegacyProfiles = LegacyProfileLocator.Discover(
+                    AppDataPaths.LegacyProfileCandidates)
+                .Select(discovery => new LegacyProfileOptionViewModel(discovery))
+                .ToArray();
+            selectedLegacyProfile = SelectInitialLegacyProfile(LegacyProfiles);
+            legacyProfileSourcePath = selectedLegacyProfile?.Path ?? string.Empty;
+            profileStatusMessage = GetInitialProfileStatus();
+            importLegacyProfileCommand = new AsyncCommand(
+                ImportLegacyProfileAsync,
+                CanImportLegacyProfile);
+            ImportLegacyProfileCommand = importLegacyProfileCommand;
+            JournalFolderPath = ResolvePrimaryJournalPath(folderResolution)
+                ?? "No journal location is configured.";
+            CandidatePaths = FormatCandidatePathsDisplay(folderResolution);
+            TargetFrontierId = NormalizeOptionalId(targetFrontierId);
+            var commanderProfileCatalog = new CommanderProfileCatalog(
+                AppDataPaths.DataDirectory);
+            CommanderPreference = new CommanderPreferenceViewModel(
+                commanderPreferenceSettingsStore
+                    ?? new CommanderPreferenceSettingsStore(
                         AppDataPaths.UiSettingsPath),
-                GesturePreferences = new GuardianGestureSettingsStore(
-                    AppDataPaths.UiSettingsPath).Load(),
-                AerialAltitudeProvider = () => new GuardianAerialAltitudes(
-                    ScreenshotProcessing.AerialAltitudeAlpha,
-                    ScreenshotProcessing.AerialAltitudeBeta,
-                    ScreenshotProcessing.AerialAltitudeGamma),
-                ScreenshotTargetFolderProvider = () =>
-                    ScreenshotProcessing.TargetFolder,
-            });
-        ScreenshotProcessing.PropertyChanged += (_, eventArgs) =>
+                commanderProfileCatalog,
+                commanderPreferenceCommandLineOverride,
+                commanderPreferenceInitialStatus);
+            CommanderInstances = new CommanderInstancesViewModel(
+                commanderProfileCatalog,
+                new ApplicationCommanderInstanceLauncher(),
+                JournalFolderPath,
+                TargetFrontierId,
+                sharedGameWindowSwitcher);
+            CommanderInstances.PropertyChanged += OnCommanderInstancesPropertyChanged;
+            rollback.Add(CommanderInstances.Dispose);
+            rollback.Add(() =>
+                CommanderInstances.PropertyChanged -=
+                    OnCommanderInstancesPropertyChanged);
+            gameWindowOwnership.Transfer();
+            SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
+            this.eddnPublisher.SetSuspended(
+                CommanderInstances.HasMultipleGameWindows);
+            (visitedStarsHttpClient, VisitedStarsCache) = CreateVisitedStarsCache(
+                provided: null,
+                appDataPaths: AppDataPaths);
+            rollback.Add(visitedStarsHttpClient);
+            statusMessage = BuildJournalReadyStatus(
+                folderResolution.IsFound,
+                TargetFrontierId);
+            journalMonitor = CreateJournalMonitor(folderResolution, TargetFrontierId);
+            RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
+            ShowProfileCommand = new AsyncCommand(ShowProfileAsync, () => true);
+            resetExplorationCommand = new AsyncCommand(
+                ResetExplorationAsync,
+                () => activeProfileFrontierId is not null);
+            ResetExplorationCommand = resetExplorationCommand;
+            cancelResetExplorationCommand = new AsyncCommand(
+                CancelResetExplorationAsync,
+                () => IsResetExplorationPending);
+            CancelResetExplorationCommand = cancelResetExplorationCommand;
+            resetExobiologyCommand = new AsyncCommand(
+                ResetExobiologyAsync,
+                () => activeProfileFrontierId is not null);
+            ResetExobiologyCommand = resetExobiologyCommand;
+            cancelResetExobiologyCommand = new AsyncCommand(
+                CancelResetExobiologyAsync,
+                () => IsResetExobiologyPending);
+            CancelResetExobiologyCommand = cancelResetExobiologyCommand;
+            clearSurfaceTrackersCommand = new AsyncCommand(
+                ClearSurfaceTrackersAsync,
+                () => activeProfileFrontierId is not null);
+            ClearSurfaceTrackersCommand = clearSurfaceTrackersCommand;
+            toggleFirstFootfallCommand = new AsyncCommand(
+                async () =>
+                {
+                    await ToggleCurrentBodyFirstFootfallAsync();
+                },
+                () => CanToggleCurrentBodyFirstFootfall);
+            ToggleFirstFootfallCommand = toggleFirstFootfallCommand;
+
+            NavigationItems =
+            [
+                new("overview", "Overview", "Commander and current journal state"),
+                new("exploration", "Exploration", "Trip totals and body scans", true),
+                new("exobiology", "Exobiology", "Organic scans and unclaimed rewards", true),
+                new("travel", "Travel", "Ground targets, journeys, and routes", true),
+                new("boxel", "Boxel", "Procedural boxel searches and completion tracking", true),
+                new("search", "Search", "Spherical limits and nearby biology"),
+                new("guardian", "Guardian", "Sites, maps, and Ram Tah", true),
+                new("quests", "Quests", "Communications and active objectives", true),
+                new("colonisation", "Colonization", "Raven Colonial projects", true),
+                new("diagnostics", "Diagnostics", "Journal source and parsed state"),
+                new(SettingsNavigationKey, "Settings", "Appearance and application options"),
+                new("guides", "Guides", "Help documentation and overlay icon glossary"),
+            ];
+            selectedNavigation = NavigationItems[0];
+            Guides = new GuidesViewModel(GuideCatalog.Create());
+
+            var currentTheme = themeService?.Current
+                ?? RavenThemeCatalog.Get(RavenThemeCatalog.DefaultThemeKey);
+            ThemeOptions = RavenThemeCatalog.All
+                .Select(theme => new ThemeOptionViewModel(theme, SelectTheme))
+                .ToArray();
+            selectedTheme = ThemeOptions.Single(
+                option => option.Definition.Key == currentTheme.Key);
+            construction.Checkpoint?.Invoke(
+                MainWindowViewModelConstructionCheckpoint.OnlineAndShellReady);
+            rollback.Commit();
+        }
+        catch
         {
-            Guardian.RefreshAerialGuidance();
-            if (eventArgs.PropertyName == nameof(
-                    ScreenshotProcessingViewModel.TargetFolder))
-            {
-                Guardian.RefreshScreenshotAvailability();
-            }
-        };
-        exobiologyState = new ExobiologyState(sharedExobiologyCatalog);
-        LegacyProfiles = LegacyProfileLocator.Discover(
-                AppDataPaths.LegacyProfileCandidates)
-            .Select(discovery => new LegacyProfileOptionViewModel(discovery))
-            .ToArray();
-        selectedLegacyProfile = SelectInitialLegacyProfile(LegacyProfiles);
-        legacyProfileSourcePath = selectedLegacyProfile?.Path ?? string.Empty;
-        profileStatusMessage = GetInitialProfileStatus();
-        importLegacyProfileCommand = new AsyncCommand(
-            ImportLegacyProfileAsync,
-            CanImportLegacyProfile);
-        ImportLegacyProfileCommand = importLegacyProfileCommand;
-        JournalFolderPath = ResolvePrimaryJournalPath(folderResolution)
-            ?? "No journal location is configured.";
-        CandidatePaths = FormatCandidatePathsDisplay(folderResolution);
-        TargetFrontierId = NormalizeOptionalId(targetFrontierId);
-        var commanderProfileCatalog = new CommanderProfileCatalog(
-            AppDataPaths.DataDirectory);
-        CommanderPreference = new CommanderPreferenceViewModel(
-            commanderPreferenceSettingsStore
-                ?? new CommanderPreferenceSettingsStore(
-                    AppDataPaths.UiSettingsPath),
-            commanderProfileCatalog,
-            commanderPreferenceCommandLineOverride,
-            commanderPreferenceInitialStatus);
-        CommanderInstances = new CommanderInstancesViewModel(
-            commanderProfileCatalog,
-            commanderInstanceLauncher
-                ?? new ApplicationCommanderInstanceLauncher(),
-            JournalFolderPath,
-            TargetFrontierId,
-            sharedGameWindowSwitcher);
-        CommanderInstances.PropertyChanged += OnCommanderInstancesPropertyChanged;
-        SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
-        this.eddnPublisher.SetSuspended(
-            CommanderInstances.HasMultipleGameWindows);
-        (visitedStarsHttpClient, VisitedStarsCache) = CreateVisitedStarsCache(
-            visitedStarsCache,
-            AppDataPaths);
-        statusMessage = BuildJournalReadyStatus(
-            folderResolution.IsFound,
-            TargetFrontierId);
-        journalMonitor = CreateJournalMonitor(folderResolution, TargetFrontierId);
-        RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
-        ShowProfileCommand = new AsyncCommand(ShowProfileAsync, () => true);
-        resetExplorationCommand = new AsyncCommand(
-            ResetExplorationAsync,
-            () => activeProfileFrontierId is not null);
-        ResetExplorationCommand = resetExplorationCommand;
-        cancelResetExplorationCommand = new AsyncCommand(
-            CancelResetExplorationAsync,
-            () => IsResetExplorationPending);
-        CancelResetExplorationCommand = cancelResetExplorationCommand;
-        resetExobiologyCommand = new AsyncCommand(
-            ResetExobiologyAsync,
-            () => activeProfileFrontierId is not null);
-        ResetExobiologyCommand = resetExobiologyCommand;
-        cancelResetExobiologyCommand = new AsyncCommand(
-            CancelResetExobiologyAsync,
-            () => IsResetExobiologyPending);
-        CancelResetExobiologyCommand = cancelResetExobiologyCommand;
-        clearSurfaceTrackersCommand = new AsyncCommand(
-            ClearSurfaceTrackersAsync,
-            () => activeProfileFrontierId is not null);
-        ClearSurfaceTrackersCommand = clearSurfaceTrackersCommand;
-        toggleFirstFootfallCommand = new AsyncCommand(
-            async () =>
-            {
-                await ToggleCurrentBodyFirstFootfallAsync();
-            },
-            () => CanToggleCurrentBodyFirstFootfall);
-        ToggleFirstFootfallCommand = toggleFirstFootfallCommand;
-
-        NavigationItems =
-        [
-            new("overview", "Overview", "Commander and current journal state"),
-            new("exploration", "Exploration", "Trip totals and body scans", true),
-            new("exobiology", "Exobiology", "Organic scans and unclaimed rewards", true),
-            new("travel", "Travel", "Ground targets, journeys, and routes", true),
-            new("boxel", "Boxel", "Procedural boxel searches and completion tracking", true),
-            new("search", "Search", "Spherical limits and nearby biology"),
-            new("guardian", "Guardian", "Sites, maps, and Ram Tah", true),
-            new("quests", "Quests", "Communications and active objectives", true),
-            new("colonisation", "Colonization", "Raven Colonial projects", true),
-            new("diagnostics", "Diagnostics", "Journal source and parsed state"),
-            new(SettingsNavigationKey, "Settings", "Appearance and application options"),
-            new("guides", "Guides", "Help documentation and overlay icon glossary"),
-        ];
-        selectedNavigation = NavigationItems[0];
-        Guides = new GuidesViewModel(GuideCatalog.Create());
-
-        var currentTheme = themeService?.Current
-            ?? RavenThemeCatalog.Get(RavenThemeCatalog.DefaultThemeKey);
-        ThemeOptions = RavenThemeCatalog.All
-            .Select(theme => new ThemeOptionViewModel(theme, SelectTheme))
-            .ToArray();
-        selectedTheme = ThemeOptions.Single(
-            option => option.Definition.Key == currentTheme.Key);
+            rollback.Rollback();
+            throw;
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -4540,6 +4574,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(StationInfo.Dispose);
         TryDispose(Colonization.Dispose);
         TryDispose(GalaxyMap.Dispose);
+        ScreenshotProcessing.PropertyChanged -= OnScreenshotProcessingChanged;
         TryDispose(Guardian.Dispose);
         TryDispose(QuestWorkspace.Dispose);
         Inara.UploadDisabled -= OnInaraUploadDisabled;
@@ -4585,6 +4620,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private void OnEddnUploadEnabledChanged(bool enabled)
     {
         eddnPublisher.SetEnabled(enabled);
+    }
+
+    private void OnScreenshotProcessingChanged(
+        object? sender,
+        PropertyChangedEventArgs eventArgs)
+    {
+        Guardian.RefreshAerialGuidance();
+        if (eventArgs.PropertyName == nameof(
+                ScreenshotProcessingViewModel.TargetFolder))
+        {
+            Guardian.RefreshScreenshotAvailability();
+        }
     }
 
     private void OnCommanderInstancesPropertyChanged(

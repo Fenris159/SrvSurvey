@@ -30,17 +30,16 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
             new OverlayThemeStateStore(
                 Path.Combine(temporaryDirectory, "states.json")),
             initialTheme: LegacyOverlayThemeStore.CreateDefault());
-        using var viewModel = new MainWindowViewModel(
+        using var viewModel = MainWindowViewModelTestBuilder.Create(
             Path.Combine(temporaryDirectory, "journals"),
-            new MainWindowViewModelOptions
-            {
-                AppDataPaths = new AppDataPaths(
-                    Path.Combine(temporaryDirectory, "config"),
-                    Path.Combine(temporaryDirectory, "data"),
-                    Path.Combine(temporaryDirectory, "cache"),
-                    []),
-                OverlayThemeSettings = overlayTheme,
-            });
+            builder => builder
+                .WithAppDataPaths(
+                    new AppDataPaths(
+                        Path.Combine(temporaryDirectory, "config"),
+                        Path.Combine(temporaryDirectory, "data"),
+                        Path.Combine(temporaryDirectory, "cache"),
+                        []))
+                .WithOverlayThemeSettings(overlayTheme));
         var settings = new SettingsView { DataContext = viewModel };
         var window = new Window
         {
