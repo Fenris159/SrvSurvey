@@ -118,15 +118,9 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
                 OnPropertyChanged(nameof(RangeFromDate));
                 OnPropertyChanged(nameof(RangeFromTime));
                 OnPropertyChanged(nameof(RangeToMaximumDate));
-                if (rangeFrom is { } from && rangeTo is { } to)
+                if (rangeTo is { } to)
                 {
-                    RangeTo = to < from
-                        ? from
-                        : DateTimeOffset.Compare(
-                            to,
-                            from + MaximumExportRange) > 0
-                                ? from + MaximumExportRange
-                                : to;
+                    RangeTo = ConstrainRangeTo(to);
                 }
 
                 OnPropertyChanged(nameof(ExportPreview));

@@ -669,45 +669,73 @@ public sealed class JournalReplayExporter
     {
         if (node is JsonObject objectNode)
         {
-            var objectSystemIdentity = ResolveSystemIdentity(
+            RedactObjectChildren(
                 objectNode,
+                identities,
+                locations,
                 systemIdentity);
-            foreach (var childName in objectNode
-                         .Select(property => property.Key)
-                         .ToArray())
-            {
-                if (objectNode[childName] is { } child)
-                {
-                    var redactedChild = RedactNode(
-                        child,
-                        childName,
-                        identities,
-                        locations,
-                        objectSystemIdentity);
-                    if (!ReferenceEquals(child, redactedChild))
-                    {
-                        objectNode[childName] = redactedChild;
-                    }
-                }
-            }
         }
         else if (node is JsonArray arrayNode)
         {
-            for (var index = 0; index < arrayNode.Count; index++)
+            RedactArrayChildren(
+                arrayNode,
+                identities,
+                locations,
+                systemIdentity);
+        }
+    }
+
+    private static void RedactObjectChildren(
+        JsonObject node,
+        IReadOnlyList<IdentityRedaction> identities,
+        LocationRedactionState locations,
+        string? systemIdentity)
+    {
+        var objectSystemIdentity = ResolveSystemIdentity(node, systemIdentity);
+        foreach (var childName in node
+                     .Select(property => property.Key)
+                     .ToArray())
+        {
+            if (node[childName] is not { } child)
             {
-                if (arrayNode[index] is { } child)
-                {
-                    var redactedChild = RedactNode(
-                        child,
-                        propertyName: null,
-                        identities,
-                        locations,
-                        systemIdentity);
-                    if (!ReferenceEquals(child, redactedChild))
-                    {
-                        arrayNode[index] = redactedChild;
-                    }
-                }
+                continue;
+            }
+
+            var redactedChild = RedactNode(
+                child,
+                childName,
+                identities,
+                locations,
+                objectSystemIdentity);
+            if (!ReferenceEquals(child, redactedChild))
+            {
+                node[childName] = redactedChild;
+            }
+        }
+    }
+
+    private static void RedactArrayChildren(
+        JsonArray node,
+        IReadOnlyList<IdentityRedaction> identities,
+        LocationRedactionState locations,
+        string? systemIdentity)
+    {
+        for (var index = 0; index < node.Count; index++)
+        {
+            if (node[index] is not { } child)
+            {
+                continue;
+            }
+
+            var redactedChild = RedactNode(
+                child,
+                propertyName: null,
+                identities,
+                locations,
+                systemIdentity);
+            if (!ReferenceEquals(child, redactedChild))
+            {
+                node[index] = redactedChild;
             }
         }
     }
