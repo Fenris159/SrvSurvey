@@ -28,7 +28,7 @@ public sealed class MainWindowViewModelTests
         var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
-        Assert.Equal(12, viewModel.NavigationItems.Count);
+        Assert.Equal(13, viewModel.NavigationItems.Count);
         Assert.Equal(
             [
                 "Overview",
@@ -42,6 +42,7 @@ public sealed class MainWindowViewModelTests
                 "Colonization",
                 "Diagnostics",
                 "Settings",
+                "Theme",
                 "Guides",
             ],
             viewModel.NavigationItems.Select(item => item.Label));
@@ -65,6 +66,24 @@ public sealed class MainWindowViewModelTests
             typeof(NavigationItemViewModel).GetProperties(),
             property => property.Name == "Glyph");
         Assert.True(viewModel.IsOverviewSelected);
+        Assert.Equal(
+            ["Overview"],
+            viewModel.OverviewNavigationItems.Select(item => item.Label));
+        Assert.Equal(
+            ["Exploration", "Exobiology", "Boxel"],
+            viewModel.SurveyNavigationItems.Select(item => item.Label));
+        Assert.Equal(
+            ["Travel", "Search"],
+            viewModel.NavigationWorkspaceItems.Select(item => item.Label));
+        Assert.Equal(
+            ["Guardian", "Quests", "Colonization"],
+            viewModel.ActivityNavigationItems.Select(item => item.Label));
+        Assert.Equal(
+            ["Settings", "Theme", "Guides", "Diagnostics"],
+            viewModel.UtilityNavigationItems.Select(item => item.Label));
+        Assert.True(viewModel.IsSurveyNavigationExpanded);
+        Assert.False(viewModel.IsNavigationNavigationExpanded);
+        Assert.False(viewModel.IsActivitiesNavigationExpanded);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "exobiology");
@@ -85,11 +104,17 @@ public sealed class MainWindowViewModelTests
             item => item.Key == "search");
 
         Assert.True(viewModel.IsSearchSelected);
+        Assert.False(viewModel.IsSurveyNavigationExpanded);
+        Assert.True(viewModel.IsNavigationNavigationExpanded);
+        Assert.False(viewModel.IsActivitiesNavigationExpanded);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "guardian");
 
         Assert.True(viewModel.IsGuardianSelected);
+        Assert.False(viewModel.IsSurveyNavigationExpanded);
+        Assert.False(viewModel.IsNavigationNavigationExpanded);
+        Assert.True(viewModel.IsActivitiesNavigationExpanded);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "quests");
@@ -102,9 +127,40 @@ public sealed class MainWindowViewModelTests
         Assert.True(viewModel.IsColonizationSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
+            item => item.Key == "theme");
+
+        Assert.True(viewModel.IsThemeSelected);
+
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "guides");
 
         Assert.True(viewModel.IsGuidesSelected);
+        Assert.True(viewModel.IsActivitiesNavigationExpanded);
+    }
+
+    [Fact]
+    public void NavigationAccordionIsExclusiveAndCanCollapseWithoutChevrons()
+    {
+        var viewModel = new MainWindowViewModel(
+            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+
+        viewModel.ToggleNavigationGroup("navigation");
+
+        Assert.False(viewModel.IsSurveyNavigationExpanded);
+        Assert.True(viewModel.IsNavigationNavigationExpanded);
+        Assert.False(viewModel.IsActivitiesNavigationExpanded);
+
+        viewModel.ToggleNavigationGroup("navigation");
+
+        Assert.False(viewModel.IsSurveyNavigationExpanded);
+        Assert.False(viewModel.IsNavigationNavigationExpanded);
+        Assert.False(viewModel.IsActivitiesNavigationExpanded);
+
+        viewModel.ToggleNavigationGroup("activities");
+
+        Assert.False(viewModel.IsSurveyNavigationExpanded);
+        Assert.False(viewModel.IsNavigationNavigationExpanded);
+        Assert.True(viewModel.IsActivitiesNavigationExpanded);
     }
 
     [Fact]
@@ -113,7 +169,10 @@ public sealed class MainWindowViewModelTests
         var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
-        Assert.Equal(5, viewModel.ThemeOptions.Count);
+        Assert.Equal(6, viewModel.ThemeOptions.Count);
+        Assert.Contains(
+            viewModel.ThemeOptions,
+            option => option.Definition.Key == "monochrome-dark");
         Assert.Equal("Blue (dark)", viewModel.SelectedThemeName);
     }
 

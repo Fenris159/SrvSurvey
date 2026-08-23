@@ -40,18 +40,18 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
                         Path.Combine(temporaryDirectory, "cache"),
                         []))
                 .WithOverlayThemeSettings(overlayTheme));
-        var settings = new SettingsView { DataContext = viewModel };
+        var theme = new ThemeView { DataContext = viewModel };
         var window = new Window
         {
             Width = 1100,
             Height = 800,
-            Content = settings,
+            Content = theme,
         };
 
         try
         {
             window.Show();
-            var overlayTab = settings.GetLogicalDescendants()
+            var overlayTab = theme.GetLogicalDescendants()
                 .OfType<TabItem>()
                 .Single(tab => string.Equals(
                     tab.Header?.ToString(),
@@ -59,13 +59,13 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
                     StringComparison.Ordinal));
             overlayTab.IsSelected = true;
             var frame = window.CaptureRenderedFrame();
-            var presetCard = settings.FindControl<Border>("OverlayThemePresetCard");
-            var actionsCard = settings.FindControl<Border>("OverlayThemeActionsCard");
-            var colorEditorList = settings.FindControl<ItemsControl>(
+            var presetCard = theme.FindControl<Border>("OverlayThemePresetCard");
+            var actionsCard = theme.FindControl<Border>("OverlayThemeActionsCard");
+            var colorEditorList = theme.FindControl<ItemsControl>(
                 "OverlayThemeColorEditorList");
-            var typographyEditorList = settings.FindControl<ItemsControl>(
+            var typographyEditorList = theme.FindControl<ItemsControl>(
                 "OverlayTypographyEditorList");
-            var rows = settings.GetVisualDescendants()
+            var rows = theme.GetVisualDescendants()
                 .OfType<Grid>()
                 .Where(grid => grid.Classes.Contains("overlay-theme-color-row"))
                 .ToArray();
@@ -87,16 +87,16 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
                 Assert.True(valueTextBox.Bounds.Width >= 40);
                 Assert.False(string.IsNullOrWhiteSpace(valueTextBox.Text));
             });
-            var presetOrigin = presetCard.TranslatePoint(default, settings);
-            var actionsOrigin = actionsCard.TranslatePoint(default, settings);
-            var colorEditorOrigin = colorEditorList.TranslatePoint(default, settings);
+            var presetOrigin = presetCard.TranslatePoint(default, theme);
+            var actionsOrigin = actionsCard.TranslatePoint(default, theme);
+            var colorEditorOrigin = colorEditorList.TranslatePoint(default, theme);
             Assert.NotNull(presetOrigin);
             Assert.NotNull(actionsOrigin);
             Assert.NotNull(colorEditorOrigin);
             Assert.True(presetOrigin.Value.Y < actionsOrigin.Value.Y);
             Assert.True(actionsOrigin.Value.Y < colorEditorOrigin.Value.Y);
             Assert.Equal(
-                overlayTheme.Categories.Sum(category => category.Colors.Count),
+                overlayTheme.Categories.Single(category => category.IsExpanded).Colors.Count,
                 rows.Length);
             Assert.All(rows, row =>
             {

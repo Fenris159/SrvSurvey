@@ -125,6 +125,113 @@ public sealed class GuardianViewMarkupTests
             element.Name.LocalName is "Border" or "Grid");
     }
 
+    [Fact]
+    public void SitesTableKeepsHeaderFixedAndColumnsAlignedWhileRowsScroll()
+    {
+        var document = LoadGuardianView();
+        var scroller = FindNamedElement(document, "GuardianSitesTableScroller");
+        var header = FindNamedElement(document, "GuardianSitesTableHeader");
+        var rows = scroller.Descendants().Single(element =>
+            element.Name.LocalName == "ListBox"
+            && element.Attribute("ItemsSource")?.Value
+                == "{Binding Guardian.Rows}");
+        var rowGrid = rows.Descendants().Single(element =>
+            element.Name.LocalName == "DataTemplate")
+            .Elements()
+            .Single(element => element.Name.LocalName == "Grid");
+
+        Assert.Equal("430", scroller.Attribute("Height")?.Value);
+        Assert.Equal(
+            "Auto",
+            scroller.Attribute("HorizontalScrollBarVisibility")?.Value);
+        Assert.Equal(
+            "Disabled",
+            scroller.Attribute("VerticalScrollBarVisibility")?.Value);
+        Assert.Equal(
+            "Disabled",
+            rows.Attributes().Single(attribute =>
+                attribute.Name.LocalName
+                    == "ScrollViewer.HorizontalScrollBarVisibility").Value);
+        Assert.Equal(
+            "Auto",
+            rows.Attributes().Single(attribute =>
+                attribute.Name.LocalName
+                    == "ScrollViewer.VerticalScrollBarVisibility").Value);
+        Assert.Equal("370", rows.Attribute("Height")?.Value);
+        Assert.Same(header.Parent, rows.Parent);
+        Assert.Equal("2", rows.Attribute("Grid.Row")?.Value);
+        Assert.Equal(
+            header.Attribute("ColumnDefinitions")?.Value,
+            rowGrid.Attribute("ColumnDefinitions")?.Value);
+        Assert.Equal(
+            header.Attribute("ColumnSpacing")?.Value,
+            rowGrid.Attribute("ColumnSpacing")?.Value);
+        Assert.Contains(
+            "table-rows",
+            (rows.Attribute("Classes")?.Value ?? string.Empty)
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    [Fact]
+    public void SitesTableSortHeadersMatchRouteManagerPresentation()
+    {
+        var document = LoadGuardianView();
+        var expectedParameters = new[]
+        {
+            "Id",
+            "System",
+            "Body",
+            "Distance",
+            "Arrival",
+            "Visited",
+            "Type",
+            "Index",
+            "Images",
+            "Survey",
+            "RamTah",
+            "Notes",
+        };
+        var sortHeaders = document.Descendants()
+            .Where(element =>
+                element.Name.LocalName == "Button"
+                && element.Attribute("Command")?.Value
+                    == "{Binding Guardian.SortSitesCommand}")
+            .ToArray();
+
+        Assert.Equal(expectedParameters.Length, sortHeaders.Length);
+        Assert.Equal(
+            expectedParameters,
+            sortHeaders.Select(header =>
+                header.Attribute("CommandParameter")?.Value));
+        Assert.All(sortHeaders, header =>
+        {
+            Assert.Contains(
+                "link",
+                (header.Attribute("Classes")?.Value ?? string.Empty)
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries));
+            Assert.Equal("0", header.Attribute("Padding")?.Value);
+            Assert.Equal(
+                "Left",
+                header.Attribute("HorizontalContentAlignment")?.Value);
+
+            var content = Assert.Single(header.Elements(), element =>
+                element.Name.LocalName == "StackPanel");
+            Assert.Equal("Horizontal", content.Attribute("Orientation")?.Value);
+            var textBlocks = content.Elements()
+                .Where(element => element.Name.LocalName == "TextBlock")
+                .ToArray();
+            Assert.Equal(2, textBlocks.Length);
+            var label = textBlocks[0];
+            Assert.Contains(
+                "table-heading",
+                (label.Attribute("Classes")?.Value ?? string.Empty)
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries));
+            Assert.Equal(
+                $"{{Binding Guardian.{header.Attribute("CommandParameter")?.Value}SortIndicator}}",
+                textBlocks[1].Attribute("Text")?.Value);
+        });
+    }
+
     private static XDocument LoadGuardianView() => XDocument.Load(Path.Combine(
         FindRepositoryRoot(),
         "src",

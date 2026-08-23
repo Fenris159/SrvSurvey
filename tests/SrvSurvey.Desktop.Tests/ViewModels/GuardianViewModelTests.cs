@@ -737,15 +737,22 @@ public sealed class GuardianViewModelTests
                 row.Reference == zulu).HasImages);
             Assert.False(viewModel.Rows.Single(row =>
                 row.Reference == alpha).HasImages);
+            Assert.Equal("▲", viewModel.DistanceSortIndicator);
+            Assert.Equal(string.Empty, viewModel.ImagesSortIndicator);
 
             viewModel.SortSitesCommand.Execute("Images");
             Assert.False(viewModel.Rows[0].HasImages);
+            Assert.Equal(string.Empty, viewModel.DistanceSortIndicator);
+            Assert.Equal("▲", viewModel.ImagesSortIndicator);
             viewModel.SortSitesCommand.Execute("Images");
             Assert.True(viewModel.Rows[0].HasImages);
             Assert.Contains("images descending", viewModel.SortStatusText);
+            Assert.Equal("▼", viewModel.ImagesSortIndicator);
 
             viewModel.SortSitesCommand.Execute("Id");
             Assert.Equal(alpha, viewModel.Rows[0].Reference);
+            Assert.Equal("▲", viewModel.IdSortIndicator);
+            Assert.Equal(string.Empty, viewModel.ImagesSortIndicator);
         }
         finally
         {

@@ -12,6 +12,84 @@ public sealed class RavenThemeServiceTests : IDisposable
         $"SrvSurvey-theme-service-tests-{Guid.NewGuid():N}");
 
     [Fact]
+    public void MonochromeThemeAppliesLayeredLowGlareRolesAndRemovesDepthShadows()
+    {
+        var application = new Application();
+        var store = new ThemePreferenceStore(
+            Path.Combine(temporaryDirectory, "ui.json"));
+        var service = new RavenThemeService(application, store);
+        service.ApplyCurrent();
+
+        service.Select("monochrome-dark");
+
+        var expected = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["RavenWindowBrush"] = "#0A0A0A",
+            ["RavenSidebarBrush"] = "#141414",
+            ["RavenSurfaceBrush"] = "#141414",
+            ["RavenRaisedSurfaceBrush"] = "#1C1C1C",
+            ["RavenHighestSurfaceBrush"] = "#242424",
+            ["RavenBorderBrush"] = "#2A2A2A",
+            ["RavenStrongBorderBrush"] = "#3A3A3A",
+            ["RavenTextBrush"] = "#EDEDED",
+            ["RavenMutedTextBrush"] = "#A3A3A3",
+            ["RavenTertiaryTextBrush"] = "#737373",
+            ["RavenAccentForegroundBrush"] = "#0A0A0A",
+            ["RavenAccentBrush"] = "#E6D59A",
+            ["RavenControlAccentBrush"] = "#F5F5F5",
+            ["RavenControlAccentHoverBrush"] = "#EDEDED",
+            ["RavenSecondaryFillBrush"] = "#262626",
+            ["RavenInteractiveHoverBrush"] = "#3A3A3A",
+            ["RavenFocusRingBrush"] = "#CCE6D59A",
+            ["RavenModalScrimBrush"] = "#8C000000",
+        };
+
+        foreach (var entry in expected)
+        {
+            var brush = Assert.IsType<SolidColorBrush>(
+                application.Resources[entry.Key]);
+            Assert.Equal(Color.Parse(entry.Value), brush.Color);
+        }
+
+        foreach (var resourceKey in new[]
+                 {
+                     "RavenSuccessBrush",
+                     "RavenWarningBrush",
+                 })
+        {
+            var color = Assert.IsType<SolidColorBrush>(
+                application.Resources[resourceKey]).Color;
+            Assert.Equal(color.R, color.G);
+            Assert.Equal(color.G, color.B);
+        }
+
+        Assert.Equal(
+            Color.Parse("#FF7B72"),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenDangerBrush"]).Color);
+
+        Assert.Equal(
+            Color.Parse("#F5F5F5"),
+            Assert.IsType<Color>(application.Resources["SystemAccentColor"]));
+        foreach (var resourceKey in new[]
+                 {
+                     "CheckBoxCheckGlyphForegroundChecked",
+                     "CheckBoxCheckGlyphForegroundCheckedPointerOver",
+                     "CheckBoxCheckGlyphForegroundCheckedPressed",
+                 })
+        {
+            var brush = Assert.IsType<SolidColorBrush>(
+                application.Resources[resourceKey]);
+            Assert.Equal(Color.Parse("#0A0A0A"), brush.Color);
+        }
+
+        Assert.Equal(0, Assert.IsType<BoxShadows>(
+            application.Resources["RavenWarningInsetShadow"]).Count);
+        Assert.Equal(0, Assert.IsType<BoxShadows>(
+            application.Resources["RavenFloatingPanelShadow"]).Count);
+    }
+
+    [Fact]
     public void EveryThemeUpdatesAvaloniaResourcesAndNativeMode()
     {
         var application = new Application();
@@ -35,14 +113,29 @@ public sealed class RavenThemeServiceTests : IDisposable
                 application.Resources["RavenWarningBrush"]);
             var warningShadow = Assert.IsType<BoxShadows>(
                 application.Resources["RavenWarningInsetShadow"]);
-            Assert.Equal(1, warningShadow.Count);
-            Assert.True(warningShadow[0].IsInset);
-            Assert.Equal(
-                Color.FromArgb(153, warning.Color.R, warning.Color.G, warning.Color.B),
-                warningShadow[0].Color);
+            var floatingShadow = Assert.IsType<BoxShadows>(
+                application.Resources["RavenFloatingPanelShadow"]);
+            if (theme.UseSurfaceOnlyDepth)
+            {
+                Assert.Equal(0, warningShadow.Count);
+                Assert.Equal(0, floatingShadow.Count);
+            }
+            else
+            {
+                Assert.Equal(1, warningShadow.Count);
+                Assert.True(warningShadow[0].IsInset);
+                Assert.Equal(
+                    Color.FromArgb(
+                        153,
+                        warning.Color.R,
+                        warning.Color.G,
+                        warning.Color.B),
+                    warningShadow[0].Color);
+                Assert.Equal(1, floatingShadow.Count);
+            }
         }
 
-        Assert.Equal("green-dark", store.LoadThemeKey());
+        Assert.Equal("monochrome-dark", store.LoadThemeKey());
     }
 
     [Fact]
@@ -235,7 +328,7 @@ public sealed class RavenThemeServiceTests : IDisposable
         service.OverlayThemeChanged += (_, _) => overlayChanges++;
         service.ApplyCurrent();
 
-        service.Select("green-light");
+        service.Select("monochrome-dark");
 
         Assert.Same(overlay, service.CurrentOverlayTheme);
         Assert.Equal(0, overlayChanges);
@@ -243,6 +336,10 @@ public sealed class RavenThemeServiceTests : IDisposable
             Color.FromArgb(255, 11, 22, 33),
             Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenOverlayAccentBrush"]).Color);
+        Assert.Equal(
+            Color.Parse("#E6D59A"),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenAccentBrush"]).Color);
     }
 
     public void Dispose()
