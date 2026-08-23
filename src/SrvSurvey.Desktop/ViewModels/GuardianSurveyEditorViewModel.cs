@@ -109,11 +109,20 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         }
     }
 
-    public string AvailabilityMessage => IsAvailable
-        ? templates.Find(SiteType) is null
-            ? "Choose a site type to load its map points and repair this survey."
-            : "Editing the selected commander survey. Save writes the legacy-compatible file atomically."
-        : "Reference map only. Visit the selected site before editing its commander survey.";
+    public string AvailabilityMessage
+    {
+        get
+        {
+            if (!IsAvailable)
+            {
+                return "Reference map only. Visit the selected site before editing its commander survey.";
+            }
+
+            return templates.Find(SiteType) is null
+                ? "Choose a site type to load its map points and repair this survey."
+                : "Editing the selected commander survey. Save writes the legacy-compatible file atomically.";
+        }
+    }
 
     public bool IsBusy
     {
@@ -482,7 +491,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var selectedPointName = SelectedPointName;
+        var previousSelectionName = SelectedPointName;
         var source = originalSurvey.Survey;
         if (preserveDraft && Points.Count > 0)
         {
@@ -507,7 +516,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         LoadPointRows(
             templates.Find(SiteType),
             source,
-            selectedPointName);
+            previousSelectionName);
     }
 
     public Task AddActiveObeliskAsync()
