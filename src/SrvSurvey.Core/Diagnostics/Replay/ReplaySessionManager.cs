@@ -387,12 +387,16 @@ public sealed class ReplaySessionManager
                     continue;
                 }
 
-                if (line.Length > 0 && line[^1] == '\r')
-                {
-                    line.Length--;
-                }
-
+                TrimCarriageReturn(line);
                 return line.ToString();
+            }
+        }
+
+        private static void TrimCarriageReturn(StringBuilder line)
+        {
+            if (line.Length > 0 && line[^1] == '\r')
+            {
+                line.Length--;
             }
         }
 

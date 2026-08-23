@@ -595,7 +595,6 @@ public sealed class JournalReplayExporter
 
         RedactChildren(
             node,
-            propertyName,
             identities,
             locations,
             systemIdentity);
@@ -664,7 +663,6 @@ public sealed class JournalReplayExporter
 
     private static void RedactChildren(
         JsonNode node,
-        string? propertyName,
         IReadOnlyList<IdentityRedaction> identities,
         LocationRedactionState locations,
         string? systemIdentity)
