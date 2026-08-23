@@ -106,11 +106,11 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
     public bool IsDataSelected => SelectedCategory.Key == DataCategoryKey;
 
     public SettingsSearchResultViewModel? SelectedSearchResult =>
-        FlattenedResults.ElementAtOrDefault(selectedSearchResultIndex);
+        GetFlattenedResults().ElementAtOrDefault(selectedSearchResultIndex);
 
     public void MoveSearchSelection(int delta)
     {
-        var results = FlattenedResults;
+        var results = GetFlattenedResults();
         if (results.Count == 0)
         {
             SetSelectedSearchResult(-1);
@@ -160,8 +160,10 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
         SelectedCategory = Categories.Single(category => category.Key == key);
     }
 
-    private IReadOnlyList<SettingsSearchResultViewModel> FlattenedResults =>
-        GroupedSearchResults.SelectMany(group => group.Results).ToArray();
+    private IReadOnlyList<SettingsSearchResultViewModel> GetFlattenedResults()
+    {
+        return GroupedSearchResults.SelectMany(group => group.Results).ToArray();
+    }
 
     private void RefreshSearchResults()
     {
@@ -192,7 +194,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
 
     private void SetSelectedSearchResult(int index)
     {
-        var results = FlattenedResults;
+        var results = GetFlattenedResults();
         for (var resultIndex = 0; resultIndex < results.Count; resultIndex++)
         {
             results[resultIndex].IsSelected = resultIndex == index;

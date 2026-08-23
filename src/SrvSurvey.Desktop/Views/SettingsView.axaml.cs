@@ -12,8 +12,8 @@ namespace SrvSurvey.Desktop.Views;
 public sealed partial class SettingsView : UserControl
 {
     private const string SearchHighlightClass = "settings-search-highlight";
-    private CancellationTokenSource? searchHighlightCancellation;
     private Control? highlightedControl;
+    private int searchHighlightVersion;
 
     public SettingsView()
     {
@@ -127,27 +127,19 @@ public sealed partial class SettingsView : UserControl
         }
 
         ClearSearchHighlight();
-        searchHighlightCancellation = new CancellationTokenSource();
-        var cancellationToken = searchHighlightCancellation.Token;
+        var highlightVersion = searchHighlightVersion;
         highlightedControl = highlight;
         highlight.Classes.Add(SearchHighlightClass);
-        try
+        await Task.Delay(TimeSpan.FromSeconds(1.4), CancellationToken.None);
+        if (highlightVersion == searchHighlightVersion)
         {
-            await Task.Delay(TimeSpan.FromSeconds(1.4), cancellationToken);
+            ClearSearchHighlight();
         }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
-
-        ClearSearchHighlight();
     }
 
     private void ClearSearchHighlight()
     {
-        searchHighlightCancellation?.Cancel();
-        searchHighlightCancellation?.Dispose();
-        searchHighlightCancellation = null;
+        searchHighlightVersion++;
         highlightedControl?.Classes.Remove(SearchHighlightClass);
         highlightedControl = null;
     }
