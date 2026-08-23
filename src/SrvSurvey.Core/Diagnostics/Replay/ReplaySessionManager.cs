@@ -373,28 +373,61 @@ public sealed class ReplaySessionManager
         IReadOnlyList<CompanionTimelineEntry> companionEntries,
         int companionBootstrapCount)
     {
-        var journal = journalEvents.Select(item => item with
-        {
-            Kind = ReplayInputKind.Journal,
-        });
-        var companions = companionEntries.Select(item => new JournalReplayEvent(
-            0,
-            item.Timestamp,
-            item.Kind.ToString(),
-            item.RawJson,
-            item.Kind));
+        var journal = CreateJournalTimelineItems(journalEvents);
+        var companions = companionEntries.Select((item, sourceIndex) =>
+            new TimelineItem(
+                new JournalReplayEvent(
+                    0,
+                    item.Timestamp,
+                    item.Kind.ToString(),
+                    item.RawJson,
+                    item.Kind),
+                item.Timestamp,
+                KindOrder: 1,
+                sourceIndex));
         var bootstrap = journal.Take(journalBootstrapCount)
             .Concat(companions.Take(companionBootstrapCount))
-            .OrderBy(item => item.Timestamp ?? DateTimeOffset.MinValue)
-            .ThenBy(item => item.Kind == ReplayInputKind.Journal ? 0 : 1);
+            .OrderBy(item => item.SortTimestamp)
+            .ThenBy(item => item.KindOrder)
+            .ThenBy(item => item.SourceIndex);
         var selected = journal.Skip(journalBootstrapCount)
             .Concat(companions.Skip(companionBootstrapCount))
-            .OrderBy(item => item.Timestamp ?? DateTimeOffset.MinValue)
-            .ThenBy(item => item.Kind == ReplayInputKind.Journal ? 0 : 1);
+            .OrderBy(item => item.SortTimestamp)
+            .ThenBy(item => item.KindOrder)
+            .ThenBy(item => item.SourceIndex);
         return bootstrap.Concat(selected)
-            .Select((item, index) => item with { Index = index })
+            .Select((item, index) => item.Event with { Index = index })
             .ToArray();
     }
+
+    private static IReadOnlyList<TimelineItem> CreateJournalTimelineItems(
+        IReadOnlyList<JournalReplayEvent> journalEvents)
+    {
+        var items = new List<TimelineItem>(journalEvents.Count);
+        var sortTimestamp = DateTimeOffset.MinValue;
+        for (var sourceIndex = 0; sourceIndex < journalEvents.Count; sourceIndex++)
+        {
+            var item = journalEvents[sourceIndex];
+            if (item.Timestamp is { } timestamp && timestamp > sortTimestamp)
+            {
+                sortTimestamp = timestamp;
+            }
+
+            items.Add(new TimelineItem(
+                item with { Kind = ReplayInputKind.Journal },
+                sortTimestamp,
+                KindOrder: 0,
+                sourceIndex));
+        }
+
+        return items;
+    }
+
+    private sealed record TimelineItem(
+        JournalReplayEvent Event,
+        DateTimeOffset SortTimestamp,
+        int KindOrder,
+        int SourceIndex);
 
     private static JournalReplayEvent? ParseReplayEvent(
         string line,
@@ -943,13 +976,10 @@ public sealed record DiagnosticReplaySession(
     ReplayPresentationSnapshot? PresentationSnapshot = null)
 {
     private static readonly string[] CompanionFileNames =
-    [
-        SrvSurvey.Core.Journal.StatusFileReader.FileName,
-        SrvSurvey.Core.Journal.CargoFileReader.FileName,
-        SrvSurvey.Core.Journal.ShipLockerFileReader.FileName,
-        SrvSurvey.Core.Journal.NavRouteFileReader.FileName,
-        SrvSurvey.Core.Journal.MarketFileReader.FileName,
-    ];
+        Enum.GetValues<ReplayInputKind>()
+            .Where(kind => kind != ReplayInputKind.Journal)
+            .Select(CompanionTimelineFileNames.Resolve)
+            .ToArray();
 
     public async Task ResetRuntimeAsync(CancellationToken cancellationToken)
     {

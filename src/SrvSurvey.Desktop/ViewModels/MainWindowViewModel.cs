@@ -62,6 +62,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     private readonly JournalFolderResolution folderResolution;
     private readonly JournalDirectoryMonitor? journalMonitor;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification =
+            "DisposeAsync releases this store through the failure-isolating cleanup helper.")]
     private readonly CompanionTimelineStore companionTimelineStore;
     private readonly JournalSessionState journalState = new();
     private readonly ExplorationState explorationState = new();
@@ -5302,7 +5307,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(firstFootfallInferenceCancellation.Dispose);
         TryDispose(DiagnosticsLog.Dispose);
         TryDispose(JournalHistory.Dispose);
-        companionTimelineStore.Dispose();
+        TryDispose(companionTimelineStore.Dispose);
         TryDispose(JumpInfo.Dispose);
         TryDispose(BiologyPredictions.Dispose);
         TryDispose(BiologyCodex.Dispose);

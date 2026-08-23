@@ -23,7 +23,12 @@ public sealed record CompanionTimelineEntry(
     ReplayInputKind Kind,
     string RawJson)
 {
-    public string FileName => Kind switch
+    public string FileName => CompanionTimelineFileNames.Resolve(Kind);
+}
+
+internal static class CompanionTimelineFileNames
+{
+    public static string Resolve(ReplayInputKind kind) => kind switch
     {
         ReplayInputKind.Status => StatusFileReader.FileName,
         ReplayInputKind.Cargo => CargoFileReader.FileName,
@@ -31,7 +36,7 @@ public sealed record CompanionTimelineEntry(
         ReplayInputKind.NavRoute => NavRouteFileReader.FileName,
         ReplayInputKind.Market => MarketFileReader.FileName,
         _ => throw new InvalidOperationException(
-            $"{Kind} is not a companion-file input."),
+            $"{kind} is not a companion-file input."),
     };
 }
 
@@ -204,27 +209,32 @@ public sealed class CompanionTimelineStore : IDisposable
         var temporaryPath = path + $".{Guid.NewGuid():N}.tmp";
         try
         {
-            await using var output = new FileStream(
-                temporaryPath,
-                FileMode.CreateNew,
-                FileAccess.Write,
-                FileShare.None,
-                bufferSize: 16 * 1024,
-                useAsync: true);
-            await foreach (var entry in StreamFileAsync(path, cancellationToken))
+            await using (var output = new FileStream(
+                             temporaryPath,
+                             FileMode.CreateNew,
+                             FileAccess.Write,
+                             FileShare.None,
+                             bufferSize: 16 * 1024,
+                             useAsync: true))
             {
-                if (entry.Timestamp < cutoff)
+                await foreach (var entry in StreamFileAsync(
+                                   path,
+                                   cancellationToken))
                 {
-                    continue;
+                    if (entry.Timestamp < cutoff)
+                    {
+                        continue;
+                    }
+
+                    var bytes = Encoding.UTF8.GetBytes(
+                        CompanionTimelineCodec.SerializeEntry(entry) + "\n");
+                    await output.WriteAsync(bytes, cancellationToken)
+                        .ConfigureAwait(false);
                 }
 
-                var bytes = Encoding.UTF8.GetBytes(
-                    CompanionTimelineCodec.SerializeEntry(entry) + "\n");
-                await output.WriteAsync(bytes, cancellationToken)
-                    .ConfigureAwait(false);
+                await output.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            await output.FlushAsync(cancellationToken).ConfigureAwait(false);
             File.Move(temporaryPath, path, overwrite: true);
         }
         finally

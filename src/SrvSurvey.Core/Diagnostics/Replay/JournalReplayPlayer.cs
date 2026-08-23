@@ -211,7 +211,9 @@ public sealed class JournalReplayPlayer : IDisposable
         var directory = Path.GetDirectoryName(session.PlaybackJournalPath)
             ?? throw new InvalidDataException(
                 "The diagnostic playback journal has no containing directory.");
-        var path = Path.Combine(directory, ResolveCompanionFileName(replayEvent.Kind));
+        var path = Path.Combine(
+            directory,
+            CompanionTimelineFileNames.Resolve(replayEvent.Kind));
         var temporaryPath = path + $".{Guid.NewGuid():N}.tmp";
         try
         {
@@ -240,21 +242,12 @@ public sealed class JournalReplayPlayer : IDisposable
         {
             if (kind != ReplayInputKind.Journal)
             {
-                File.Delete(Path.Combine(directory, ResolveCompanionFileName(kind)));
+                File.Delete(Path.Combine(
+                    directory,
+                    CompanionTimelineFileNames.Resolve(kind)));
             }
         }
     }
-
-    private static string ResolveCompanionFileName(ReplayInputKind kind) => kind switch
-    {
-        ReplayInputKind.Status => StatusFileReader.FileName,
-        ReplayInputKind.Cargo => CargoFileReader.FileName,
-        ReplayInputKind.ShipLocker => ShipLockerFileReader.FileName,
-        ReplayInputKind.NavRoute => NavRouteFileReader.FileName,
-        ReplayInputKind.Market => MarketFileReader.FileName,
-        _ => throw new InvalidOperationException(
-            $"{kind} is not a companion-file input."),
-    };
 
     private TimeSpan ResolveDelay(int nextPosition, double speed)
     {
