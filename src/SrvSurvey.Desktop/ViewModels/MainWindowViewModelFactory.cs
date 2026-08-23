@@ -248,6 +248,8 @@ internal sealed class MainWindowExplorationInputs
 
     public ISystemBodyDataClient? SystemBodyDataClient { get; init; }
 
+    public IEliteGameProcessDetector? EliteGameProcessDetector { get; init; }
+
     public TimeSpan? SystemBodyDataRetryDelay { get; init; }
 
     public HumanSiteSettingsStore? HumanSiteSettingsStore { get; init; }

@@ -1678,7 +1678,9 @@ public sealed class MainWindowViewModelTests
                 journals,
                 builder => builder
                     .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(external));
+                    .WithSystemBodyDataClient(external)
+                    .WithEliteGameProcessDetector(
+                        new StubEliteGameProcessDetector(true)));
 
             viewModel.SystemSurvey.UseExternalData = false;
             await viewModel.RefreshAsync();
@@ -1760,6 +1762,8 @@ public sealed class MainWindowViewModelTests
                 builder => builder
                     .WithAppDataPaths(paths)
                     .WithSystemBodyDataClient(external)
+                    .WithEliteGameProcessDetector(
+                        new StubEliteGameProcessDetector(true))
                     .WithSystemBodyDataRetryDelay(TimeSpan.Zero));
 
             await viewModel.RefreshAsync();
@@ -1772,6 +1776,307 @@ public sealed class MainWindowViewModelTests
 
             await viewModel.RefreshAsync();
             Assert.Equal(2, external.CallCount);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ExternalBodiesWaitForActiveEliteSession()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-system-body-session-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+            var external = new RecordingSystemBodyDataClient(
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
+            var detector = new StubEliteGameProcessDetector(false);
+            var paths = CreateAppDataPaths(root);
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithSystemBodyDataClient(external)
+                    .WithEliteGameProcessDetector(detector)
+                    .WithSystemBodyDataRetryDelay(TimeSpan.Zero));
+
+            await viewModel.RefreshAsync();
+            await viewModel.PendingSystemBodyDataLoad;
+            Assert.Equal(0, external.CallCount);
+
+            detector.IsGameRunning = true;
+            await viewModel.RefreshAsync();
+            await viewModel.PendingSystemBodyDataLoad;
+            Assert.Equal(0, external.CallCount);
+
+            var liveJournalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-24T110000.01.log");
+            await File.WriteAllTextAsync(
+                liveJournalPath,
+                "{\"timestamp\":\"2026-07-24T11:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n");
+            await viewModel.RefreshAsync();
+            await viewModel.PendingSystemBodyDataLoad;
+            Assert.Equal(0, external.CallCount);
+
+            await File.AppendAllTextAsync(
+                liveJournalPath,
+                "{\"timestamp\":\"2026-07-24T11:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"SideWinder\"}\n");
+            await viewModel.RefreshAsync();
+            await viewModel.PendingSystemBodyDataLoad;
+            Assert.Equal(0, external.CallCount);
+
+            await File.AppendAllTextAsync(
+                liveJournalPath,
+                "{\"timestamp\":\"2026-07-24T11:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+            await viewModel.RefreshAsync();
+            await viewModel.PendingSystemBodyDataLoad;
+            Assert.Equal(1, external.CallCount);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task NotIndexedExternalBodiesScheduleOnlyThreeRetries()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-system-body-limit-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+            var external = new RecordingSystemBodyDataClient(
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
+            var log = new ApplicationLogService(Path.Combine(root, "profile"));
+            var paths = CreateAppDataPaths(root);
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithApplicationLogService(log)
+                    .WithSystemBodyDataClient(external)
+                    .WithEliteGameProcessDetector(
+                        new StubEliteGameProcessDetector(true))
+                    .WithSystemBodyDataRetryDelay(TimeSpan.Zero));
+
+            for (var attempt = 0; attempt < 7; attempt++)
+            {
+                await viewModel.RefreshAsync();
+                await viewModel.PendingSystemBodyDataLoad;
+            }
+
+            Assert.Equal(4, external.CallCount);
+            Assert.Contains(log.Entries, entry =>
+                entry.Contains("retry 1 of 3", StringComparison.Ordinal));
+            Assert.Contains(log.Entries, entry =>
+                entry.Contains(
+                    "automatic retries are paused until the system context changes",
+                    StringComparison.Ordinal));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ExternalBodyRetryBudgetSurvivesRestartAndResetsOnReturnVisit()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-system-body-visit-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-24T100000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"SideWinder\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+            var paths = CreateAppDataPaths(root);
+            var detector = new StubEliteGameProcessDetector(true);
+            var firstClient = new RecordingSystemBodyDataClient(
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
+            await using (var first = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithSystemBodyDataClient(firstClient)
+                    .WithEliteGameProcessDetector(detector)
+                    .WithSystemBodyDataRetryDelay(TimeSpan.Zero)))
+            {
+                for (var attempt = 0; attempt < 6; attempt++)
+                {
+                    await first.RefreshAsync();
+                    await first.PendingSystemBodyDataLoad;
+                }
+            }
+
+            Assert.Equal(4, firstClient.CallCount);
+
+            var secondClient = new RecordingSystemBodyDataClient(
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
+            await using var second = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithSystemBodyDataClient(secondClient)
+                    .WithEliteGameProcessDetector(detector)
+                    .WithSystemBodyDataRetryDelay(TimeSpan.Zero));
+
+            await second.RefreshAsync();
+            await second.PendingSystemBodyDataLoad;
+            Assert.Equal(0, secondClient.CallCount);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-24T10:10:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Away\",\"SystemAddress\":84,\"StarPos\":[4,5,6]}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:20:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+            await second.RefreshAsync();
+            await second.PendingSystemBodyDataLoad;
+
+            Assert.Equal(1, secondClient.CallCount);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ExternalBodyRetryDelaySurvivesRestart()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-system-body-delay-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+            var paths = CreateAppDataPaths(root);
+            var detector = new StubEliteGameProcessDetector(true);
+            var firstClient = new RecordingSystemBodyDataClient(
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
+            await using (var first = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithSystemBodyDataClient(firstClient)
+                    .WithEliteGameProcessDetector(detector)
+                    .WithSystemBodyDataRetryDelay(TimeSpan.FromHours(1))))
+            {
+                await first.RefreshAsync();
+                await first.PendingSystemBodyDataLoad;
+            }
+
+            Assert.Equal(1, firstClient.CallCount);
+
+            var secondClient = new RecordingSystemBodyDataClient(
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
+            await using var second = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithSystemBodyDataClient(secondClient)
+                    .WithEliteGameProcessDetector(detector)
+                    .WithSystemBodyDataRetryDelay(TimeSpan.FromHours(1)));
+
+            await second.RefreshAsync();
+            await second.PendingSystemBodyDataLoad;
+
+            Assert.Equal(0, secondClient.CallCount);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task InFlightExternalBodyAttemptSurvivesRestart()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-system-body-in-flight-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+            var paths = CreateAppDataPaths(root);
+            var detector = new StubEliteGameProcessDetector(true);
+            var firstClient = new BlockingSystemBodyDataClient();
+            var first = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithSystemBodyDataClient(firstClient)
+                    .WithEliteGameProcessDetector(detector)
+                    .WithSystemBodyDataRetryDelay(TimeSpan.FromHours(1)));
+
+            await first.RefreshAsync();
+            await firstClient.FirstRequestStarted.WaitAsync(
+                TimeSpan.FromSeconds(2));
+            await first.DisposeAsync();
+
+            var secondClient = new RecordingSystemBodyDataClient(
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
+            await using var second = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithSystemBodyDataClient(secondClient)
+                    .WithEliteGameProcessDetector(detector)
+                    .WithSystemBodyDataRetryDelay(TimeSpan.FromHours(1)));
+
+            await second.RefreshAsync();
+            await second.PendingSystemBodyDataLoad;
+
+            Assert.Equal([42], firstClient.CanceledAddresses);
+            Assert.Equal(0, secondClient.CallCount);
         }
         finally
         {
@@ -1809,7 +2114,14 @@ public sealed class MainWindowViewModelTests
                 journals,
                 builder => builder
                     .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(client));
+                    .WithSystemBodyDataClient(client)
+                    .WithEliteGameProcessDetector(
+                        new StubEliteGameProcessDetector(true))
+                    .WithSystemBodyDataRetryDelay(TimeSpan.Zero));
+
+            await viewModel.RefreshAsync();
+            await client.FirstRequestStarted.WaitAsync(TimeSpan.FromSeconds(2));
+            Assert.Equal([42], client.RequestedAddresses);
 
             await viewModel.RefreshAsync();
             Assert.Equal([42], client.RequestedAddresses);
@@ -1856,7 +2168,9 @@ public sealed class MainWindowViewModelTests
                 journals,
                 builder => builder
                     .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(client));
+                    .WithSystemBodyDataClient(client)
+                    .WithEliteGameProcessDetector(
+                        new StubEliteGameProcessDetector(true)));
 
             await viewModel.RefreshAsync();
             var pendingLoad = viewModel.PendingSystemBodyDataLoad;
@@ -3607,6 +3921,14 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    private sealed class StubEliteGameProcessDetector(bool isGameRunning)
+        : IEliteGameProcessDetector
+    {
+        public bool IsGameRunning { get; set; } = isGameRunning;
+
+        public bool IsRunning() => IsGameRunning;
+    }
+
     private sealed class SequenceSystemBodyDataClient
         : ISystemBodyDataClient
     {
@@ -3635,6 +3957,10 @@ public sealed class MainWindowViewModelTests
         private readonly object sync = new();
         private readonly List<long> requestedAddresses = [];
         private readonly List<long> canceledAddresses = [];
+        private readonly TaskCompletionSource firstRequestStarted = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task FirstRequestStarted => firstRequestStarted.Task;
 
         public IReadOnlyList<long> RequestedAddresses
         {
@@ -3667,6 +3993,8 @@ public sealed class MainWindowViewModelTests
             {
                 requestedAddresses.Add(systemAddress);
             }
+
+            firstRequestStarted.TrySetResult();
 
             var completion = new TaskCompletionSource<SystemBodyDataLoadResult>(
                 TaskCreationOptions.RunContinuationsAsynchronously);
