@@ -347,6 +347,8 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         {
             session = replacement;
             sessionKey = descriptor.Key;
+            replacement.SetEnabled(sharingEnabled);
+            replacement.SetSuspended(publishingSuspended);
         }
 
         return replacement;
