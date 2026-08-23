@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:replay="using:SrvSurvey.Core.Diagnostics.Replay"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.Views.DiagnosticsView"
              x:DataType="vm:MainWindowViewModel"
@@ -11,6 +12,7 @@
     <TabControl Margin="32,24,32,0"
                 SelectedIndex="{Binding SelectedDiagnosticsTabIndex, Mode=TwoWay}">
       <TabItem Header="Source"><Border Height="0" /></TabItem>
+      <TabItem Header="History"><Border Height="0" /></TabItem>
       <TabItem Header="Updates"><Border Height="0" /></TabItem>
       <TabItem Header="Processing"><Border Height="0" /></TabItem>
       <TabItem Header="Inspector"><Border Height="0" /></TabItem>
@@ -36,6 +38,10 @@
           <TextBlock Classes="monospace"
                      TextWrapping="Wrap"
                      Text="{Binding JournalFolderPath}" />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontWeight="SemiBold"
+                     TextWrapping="Wrap"
+                     Text="{Binding DiagnosticReplayStatus}" />
           <Separator Margin="0,4" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
@@ -45,6 +51,129 @@
                   MinWidth="116"
                   Command="{Binding RefreshCommand}"
                   Content="{Binding RefreshButtonText}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card"
+              IsVisible="{Binding IsDiagnosticsHistorySelected}">
+        <StackPanel Spacing="14">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Journal history" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data." />
+          </StackPanel>
+
+          <TextBlock Classes="monospace muted"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Text="{Binding JournalHistory.JournalDirectory}" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding JournalHistory.Summary}" />
+
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <TextBox Text="{Binding JournalHistory.SearchText, Mode=TwoWay}"
+                     PlaceholderText="Search event, commander, system, file, or JSON" />
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Command="{Binding JournalHistory.RefreshCommand}"
+                    Content="Refresh" />
+          </Grid>
+
+          <Grid ColumnDefinitions="300,*" ColumnSpacing="14">
+            <ListBox x:Name="JournalHistoryEventList"
+                     MinHeight="320"
+                     MaxHeight="500"
+                     ItemsSource="{Binding JournalHistory.Events}"
+                     ScrollViewer.IsScrollChainingEnabled="False"
+                     SelectedItem="{Binding JournalHistory.SelectedEvent, Mode=TwoWay}">
+              <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel />
+                </ItemsPanelTemplate>
+              </ListBox.ItemsPanel>
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="replay:JournalHistoryEvent">
+                  <StackPanel Margin="4" Spacing="2">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                      <TextBlock FontWeight="SemiBold" Text="{Binding EventName}" />
+                      <TextBlock Grid.Column="1"
+                                 Classes="monospace muted"
+                                 FontSize="10"
+                                 Text="{Binding Index}" />
+                    </Grid>
+                    <TextBlock Classes="monospace muted"
+                               FontSize="10"
+                               Text="{Binding Timestamp}" />
+                    <TextBlock Classes="muted"
+                               FontSize="10"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding SystemName}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Grid.Column="1" Spacing="10">
+              <Grid ColumnDefinitions="Auto,*"
+                    RowDefinitions="Auto,Auto,Auto,Auto"
+                    ColumnSpacing="12"
+                    RowSpacing="6">
+                <TextBlock Classes="muted" Text="File" />
+                <TextBlock Grid.Column="1"
+                           Classes="monospace"
+                           Text="{Binding JournalHistory.SelectedEvent.FileName}" />
+                <TextBlock Grid.Row="1" Classes="muted" Text="Commander" />
+                <TextBlock Grid.Row="1" Grid.Column="1"
+                           Text="{Binding JournalHistory.SelectedEvent.CommanderName}" />
+                <TextBlock Grid.Row="2" Classes="muted" Text="System" />
+                <TextBlock Grid.Row="2" Grid.Column="1"
+                           Text="{Binding JournalHistory.SelectedEvent.SystemName}" />
+                <TextBlock Grid.Row="3" Classes="muted" Text="Timestamp" />
+                <TextBlock Grid.Row="3" Grid.Column="1"
+                           Classes="monospace"
+                           Text="{Binding JournalHistory.SelectedEvent.Timestamp}" />
+              </Grid>
+              <TextBox MinHeight="225"
+                       AcceptsReturn="True"
+                       IsReadOnly="True"
+                       TextWrapping="NoWrap"
+                       FontFamily="Consolas, Menlo, monospace"
+                       FontSize="11"
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.IsScrollChainingEnabled="False"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto"
+                       Text="{Binding JournalHistory.SelectedEvent.RawJson}" />
+            </StackPanel>
+          </Grid>
+
+          <Separator Margin="0,4" />
+          <TextBlock FontWeight="SemiBold" Text="Replay export range" />
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="muted" Text="From" />
+              <TextBox Text="{Binding JournalHistory.RangeFromText, Mode=TwoWay}"
+                       PlaceholderText="2026-08-21T18:00:00Z" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="4">
+              <TextBlock Classes="muted" Text="To" />
+              <TextBox Text="{Binding JournalHistory.RangeToText, Mode=TwoWay}"
+                       PlaceholderText="2026-08-21T18:30:00Z" />
+            </StackPanel>
+          </Grid>
+          <CheckBox IsChecked="{Binding JournalHistory.RedactExport, Mode=TwoWay}"
+                    Content="Redact commander identity and received-message text" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding JournalHistory.ExportPreview}" />
+          <Button Classes="primary"
+                  HorizontalAlignment="Left"
+                  Click="ExportJournalReplay_Click"
+                  Content="Export replay package" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding JournalHistory.StatusMessage}" />
         </StackPanel>
       </Border>
 

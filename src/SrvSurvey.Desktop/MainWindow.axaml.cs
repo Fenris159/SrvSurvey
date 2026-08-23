@@ -8,6 +8,7 @@ using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.Runtime;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
@@ -103,6 +104,13 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs eventArgs)
     {
+        if (!DesktopExternalEffectPolicy.IsAllowed)
+        {
+            Program.ApplicationLog?.Append(
+                DesktopExternalEffectPolicy.DisabledMessage);
+            return;
+        }
+
         try
         {
             await Launcher.LaunchUriAsync(

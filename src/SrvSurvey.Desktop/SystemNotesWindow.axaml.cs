@@ -3,6 +3,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop;
 
@@ -23,9 +24,12 @@ public sealed partial class SystemNotesWindow : Window
             ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
         DataContext = viewModel;
-        viewModel.SetPlatformServices(
-            LaunchUriAsync,
-            LaunchDirectoryAsync);
+        if (DesktopExternalEffectPolicy.IsAllowed)
+        {
+            viewModel.SetPlatformServices(
+                LaunchUriAsync,
+                LaunchDirectoryAsync);
+        }
         Closed += OnClosed;
     }
 

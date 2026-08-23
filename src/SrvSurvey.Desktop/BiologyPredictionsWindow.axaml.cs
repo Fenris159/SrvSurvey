@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop;
 
@@ -20,7 +21,10 @@ public sealed partial class BiologyPredictionsWindow : Window
             ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
         DataContext = viewModel;
-        viewModel.SetUriLauncher(LaunchUriAsync);
+        if (DesktopExternalEffectPolicy.IsAllowed)
+        {
+            viewModel.SetUriLauncher(LaunchUriAsync);
+        }
     }
 
     protected override void OnClosed(EventArgs e)

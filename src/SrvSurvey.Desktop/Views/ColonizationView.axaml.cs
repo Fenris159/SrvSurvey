@@ -3,6 +3,7 @@ using Avalonia.Interactivity;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -29,6 +30,7 @@ public sealed partial class ColonizationView : UserControl
 
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
                     DesktopLinkLauncherUnavailable);
@@ -53,6 +55,7 @@ public sealed partial class ColonizationView : UserControl
     {
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
                     DesktopLinkLauncherUnavailable);
@@ -88,6 +91,7 @@ public sealed partial class ColonizationView : UserControl
 
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
                     DesktopLinkLauncherUnavailable);
@@ -157,6 +161,7 @@ public sealed partial class ColonizationView : UserControl
     {
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
                     DesktopLinkLauncherUnavailable);

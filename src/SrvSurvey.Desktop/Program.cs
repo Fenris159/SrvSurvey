@@ -7,6 +7,7 @@ using SrvSurvey.Desktop.Localization;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Frontier;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop;
 
@@ -18,6 +19,8 @@ internal static class Program
     internal static string[] StartupArguments { get; private set; } = [];
 
     internal static ApplicationLogService? ApplicationLog { get; private set; }
+
+    internal static DesktopStartupContext? StartupContext { get; private set; }
 
     [STAThread]
     public static void Main(string[] args)
@@ -41,13 +44,41 @@ internal static class Program
             updateStartup.Mode == ApplicationUpdateStartupMode.Result
                 ? updateStartup.PlanPath
                 : null);
-        var appDataPaths = AppDataPaths.ResolveCurrent();
+        DesktopStartupContext startupContext;
+        try
+        {
+            startupContext = DesktopStartupContext.ResolveAsync(
+                    StartupArguments,
+                    AppDataPaths.ResolveCurrent,
+                    CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or InvalidDataException
+                or UnauthorizedAccessException
+                or ArgumentException)
+        {
+            Console.Error.WriteLine(
+                "SrvSurvey diagnostic replay could not start: "
+                + exception.Message);
+            Environment.ExitCode = 2;
+            return;
+        }
+
+        StartupContext = startupContext;
+        var appDataPaths = startupContext.AppDataPaths;
         var language = LocalizationSettingsStore.ResolveCurrent(appDataPaths);
         LocalizationCatalog.Initialize(language);
         LocalizationCatalog.ApplyCulture(language);
-        var applicationLog = new ApplicationLogService(appDataPaths.DataDirectory);
+        var applicationLog = new ApplicationLogService(
+            startupContext.DiagnosticReplay?.LogsDirectory
+                ?? appDataPaths.DataDirectory);
         ApplicationLog = applicationLog;
-        var frontierCallback = FrontierOAuthCallback.Find(StartupArguments);
+        var frontierCallback = startupContext.IsDiagnosticReplay
+            ? null
+            : FrontierOAuthCallback.Find(StartupArguments);
         if (frontierCallback is not null)
         {
             try
@@ -93,6 +124,15 @@ internal static class Program
             $"SrvSurvey {typeof(Program).Assembly.GetName().Version}");
         applicationLog.Append($"New log path: {applicationLog.CurrentLogPath}");
         applicationLog.Append($"Data folder: {appDataPaths.DataDirectory}");
+        if (startupContext.DiagnosticReplay is { } diagnosticReplay)
+        {
+            applicationLog.Append(
+                "Diagnostic replay mode: external effects disabled; "
+                + $"commander will be established by {diagnosticReplay.Commander.Name} "
+                + $"({diagnosticReplay.Commander.FrontierId}).");
+            applicationLog.Append(
+                $"Replay session: {diagnosticReplay.Session.SessionDirectory}");
+        }
         applicationLog.Append(
             $"Platform: {Environment.OSVersion.Platform} ({Environment.OSVersion.VersionString})");
         applicationLog.Append(

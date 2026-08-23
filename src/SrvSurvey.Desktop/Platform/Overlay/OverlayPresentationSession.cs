@@ -32,7 +32,8 @@ public sealed class OverlayPresentationSession : IDisposable
             registry,
             LegacyOverlayLayout.Empty,
             () => false,
-            diagnosticSink: null);
+            diagnosticSink: null,
+            gameWindowTrackerFactory: null);
     }
 
     internal static OverlayPresentationSession CreateCurrent(
@@ -40,11 +41,14 @@ public sealed class OverlayPresentationSession : IDisposable
         OverlayWindowRegistry? registry,
         LegacyOverlayLayout overlayLayout,
         Func<bool> keepWhenGameLosesFocus,
-        Action<OverlayHostDiagnostic>? diagnosticSink)
+        Action<OverlayHostDiagnostic>? diagnosticSink,
+        Func<IGameWindowTracker>? gameWindowTrackerFactory = null)
     {
         ArgumentNullException.ThrowIfNull(overlayLayout);
         ArgumentNullException.ThrowIfNull(keepWhenGameLosesFocus);
         var capabilities = OverlayPlatformCapabilities.DetectCurrent();
+        var trackerFactory = gameWindowTrackerFactory
+            ?? GameWindowTracker.CreateCurrent;
         var decision = OverlayPresentationModeSelector.DetectCurrent(
             capabilities);
         if (decision.Mode != OverlayPresentationMode.CombinedWindow)
@@ -58,7 +62,8 @@ public sealed class OverlayPresentationSession : IDisposable
                     registry,
                     overlayLayout,
                     keepWhenGameLosesFocus,
-                    diagnosticSink));
+                    diagnosticSink,
+                    trackerFactory));
         }
 
         var nativePlatform = OverlayPlatformService.CreateCurrent();
@@ -77,12 +82,13 @@ public sealed class OverlayPresentationSession : IDisposable
                     registry,
                     overlayLayout,
                     keepWhenGameLosesFocus,
-                    diagnosticSink));
+                    diagnosticSink,
+                    trackerFactory));
         }
 
         var controller = new CombinedOverlayPresentationController(
             nativePlatform,
-            gameWindowTracker ?? GameWindowTracker.CreateCurrent(),
+            gameWindowTracker ?? trackerFactory(),
             registry);
         return new OverlayPresentationSession(
             decision,
@@ -92,7 +98,8 @@ public sealed class OverlayPresentationSession : IDisposable
                 registry,
                 overlayLayout,
                 keepWhenGameLosesFocus,
-                diagnosticSink));
+                diagnosticSink,
+                trackerFactory));
     }
 
     internal static OverlayPresentationSession CreateForAdapters(
@@ -172,12 +179,13 @@ public sealed class OverlayPresentationSession : IDisposable
         OverlayWindowRegistry? registry,
         LegacyOverlayLayout overlayLayout,
         Func<bool> keepWhenGameLosesFocus,
-        Action<OverlayHostDiagnostic>? diagnosticSink)
+        Action<OverlayHostDiagnostic>? diagnosticSink,
+        Func<IGameWindowTracker> gameWindowTrackerFactory)
     {
         return new OverlayPresentationSessionDependencies(
             platformFactory,
             () => new OverlayGameWindowTracker(
-                GameWindowTracker.CreateCurrent(),
+                gameWindowTrackerFactory(),
                 keepWhenGameLosesFocus),
             interval => new DispatcherHostedOverlayTimer(interval),
             overlayLayout,

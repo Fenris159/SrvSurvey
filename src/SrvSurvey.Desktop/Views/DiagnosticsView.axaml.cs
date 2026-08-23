@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -29,11 +30,14 @@ public sealed partial class DiagnosticsView : UserControl
             connectedViewModel = viewModel.DiagnosticsLog;
             connectedInspector = viewModel.JournalInspector;
             connectedReleaseUpdates = viewModel.ReleaseUpdates;
-            connectedViewModel.SetPlatformServices(
-                WriteClipboardAsync,
-                LaunchDirectoryAsync);
-            connectedInspector.SetClipboardWriter(WriteClipboardAsync);
-            connectedReleaseUpdates.SetUriLauncher(LaunchUriAsync);
+            if (DesktopExternalEffectPolicy.IsAllowed)
+            {
+                connectedViewModel.SetPlatformServices(
+                    WriteClipboardAsync,
+                    LaunchDirectoryAsync);
+                connectedInspector.SetClipboardWriter(WriteClipboardAsync);
+                connectedReleaseUpdates.SetUriLauncher(LaunchUriAsync);
+            }
         }
     }
 
@@ -120,10 +124,49 @@ public sealed partial class DiagnosticsView : UserControl
         }
     }
 
+    private async void ExportJournalReplay_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel?.StorageProvider is null
+            || DataContext is not MainWindowViewModel viewModel
+            || !viewModel.JournalHistory.HasEvents)
+        {
+            return;
+        }
+
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+            new FilePickerSaveOptions
+            {
+                Title = "Export diagnostic journal replay",
+                SuggestedFileName = $"SrvSurvey-replay-{DateTime.UtcNow:yyyyMMdd-HHmmss}.srvreplay",
+                DefaultExtension = "srvreplay",
+                FileTypeChoices =
+                [
+                    new FilePickerFileType("SrvSurvey replay package")
+                    {
+                        Patterns = ["*.srvreplay"],
+                        MimeTypes = ["application/zip"],
+                    },
+                ],
+            });
+        var path = file?.TryGetLocalPath();
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            await viewModel.JournalHistory.ExportAsync(path);
+        }
+    }
+
     private async void OpenVisitedStarsWebsite_Click(
         object? sender,
         RoutedEventArgs eventArgs)
     {
+        if (!DesktopExternalEffectPolicy.IsAllowed)
+        {
+            return;
+        }
+
         var launcher = TopLevel.GetTopLevel(this)?.Launcher;
         if (launcher is not null)
         {

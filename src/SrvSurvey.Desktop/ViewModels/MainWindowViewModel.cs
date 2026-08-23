@@ -237,6 +237,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         var resolvedSystemBodyDataClient = exploration.SystemBodyDataClient;
         var resolvedInaraPublisher = online.InaraPublisher;
         var frontierProfile = foundation.FrontierProfile;
+        var externalNetworkClient = foundation.ExternalNetworkClient;
 
         var rollback = new MainWindowViewModelConstructionRollback(
             resolvedApplicationLogService);
@@ -257,6 +258,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             this.themeService = resolvedThemeService;
             this.profileImporter = new LegacyProfileImporter();
             this.applicationLogService = resolvedApplicationLogService;
+            IsDiagnosticReplay = foundation.IsDiagnosticReplay;
+            DiagnosticReplayStatus = foundation.DiagnosticReplayStatus
+                ?? string.Empty;
             AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
             var sharedJournalSettingsStore = new JournalSettingsStore(
                 AppDataPaths.UiSettingsPath);
@@ -285,7 +289,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 knownSystems);
 
             ReferenceDataUpdates = new ReferenceDataUpdateViewModel(
-                new PublishedReferenceUpdateService(),
+                new PublishedReferenceUpdateService(
+                    client: externalNetworkClient),
                 AppDataPaths.DataDirectory,
                 ReferenceDataStatus,
                 CreateReferenceUpdateLogger(resolvedApplicationLogService));
@@ -301,7 +306,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 AppDataPaths.UiSettingsPath);
             this.questRuntimeCoordinator = new QuestRuntimeCoordinator(
                 new LegacyQuestStateStore(AppDataPaths.DataDirectory),
-                new RavenQuestClient(serviceUri: ravenServiceUri),
+                new RavenQuestClient(
+                    httpClient: externalNetworkClient,
+                    serviceUri: ravenServiceUri),
                 message => resolvedApplicationLogService?.Append(message));
             rollback.Add(this.questRuntimeCoordinator.DisposeAsync);
             QuestWorkspace = new QuestWorkspaceViewModel(
@@ -318,11 +325,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             DiagnosticsLog = new DiagnosticsLogViewModel(resolvedApplicationLogService);
             rollback.Add(DiagnosticsLog.Dispose);
             ReleaseUpdates = new ReleaseUpdateViewModel(
-                new ReleaseUpdateService(),
+                new ReleaseUpdateService(
+                    releaseClient: externalNetworkClient is null
+                        ? null
+                        : new CrossPlatformReleaseClient(externalNetworkClient)),
                 ReleaseVersion.FromAssembly(typeof(MainWindowViewModel).Assembly),
                 new ReleaseUpdateSettingsStore(AppDataPaths.UiSettingsPath));
             JournalInspector = new JournalInspectorViewModel(
                 ReplayQuestJournalEventAsync);
+            JournalHistory = new JournalHistoryViewModel(
+                ResolveJournalPathOrDefault(
+                    folderResolution,
+                    AppDataPaths.DataDirectory),
+                (typeof(MainWindowViewModel).Assembly.GetName().Version
+                    ?? new Version(0, 0)).ToString());
             JournalSettings = new JournalSettingsViewModel(
                 sharedJournalSettingsStore,
                 configuredJournalDirectory);
@@ -394,7 +410,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             DockToDock = new DockToDockViewModel(
                 new DockToDockSettingsStore(AppDataPaths.UiSettingsPath),
                 new DockToDockLogService(
-                    DockToDockCsvWriter.GetDefaultPath()));
+                    IsDiagnosticReplay
+                        ? Path.Combine(
+                            AppDataPaths.DataDirectory,
+                            DockToDockCsvWriter.FileName)
+                        : DockToDockCsvWriter.GetDefaultPath()));
             Notifications = new NotificationViewModel(
                 new NotificationSettingsStore(AppDataPaths.UiSettingsPath));
             PulseOverlay = new PulseOverlayViewModel(
@@ -409,13 +429,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             Inara = new InaraSettingsViewModel(commanderProfileStore);
             this.inaraPublisher = resolvedInaraPublisher ?? new InaraPublisher(
                 (typeof(MainWindowViewModel).Assembly.GetName().Version
-                    ?? new Version(0, 0)).ToString());
+                    ?? new Version(0, 0)).ToString(),
+                httpClient: externalNetworkClient);
             rollback.AddIfCreated(resolvedInaraPublisher, this.inaraPublisher);
             Inara.ApiKeyChanged += OnInaraApiKeyChanged;
             rollback.Add(() => Inara.ApiKeyChanged -= OnInaraApiKeyChanged);
             this.eddnPublisher = resolvedEddnPublisher ?? new EddnPublisher(
                 (typeof(MainWindowViewModel).Assembly.GetName().Version
                     ?? new Version(0, 0)).ToString(),
+                client: externalNetworkClient,
                 outboxPath: Path.Combine(
                     AppDataPaths.DataDirectory,
                     "eddn-outbox-v1.json"),
@@ -432,7 +454,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 ?? new VoxStellarPublisher(
                     (typeof(MainWindowViewModel).Assembly.GetName().Version
                         ?? new Version(0, 0)).ToString(),
-                    VoxStellarSharedKeyProvider.GetSharedKey(),
+                    IsDiagnosticReplay
+                        ? string.Empty
+                        : VoxStellarSharedKeyProvider.GetSharedKey(),
+                    client: externalNetworkClient,
                     log: message => resolvedApplicationLogService?.Append(message));
             VoxStellar = new VoxStellarSharingViewModel(
                 new VoxStellarSettingsStore(AppDataPaths.UiSettingsPath),
@@ -449,15 +474,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 resolvedGreenGasGiantPublicationCoordinator
                     ?? new GreenGasGiantPublicationCoordinator(
                         legacyReferences.GreenGasGiants,
-                        new GreenGasGiantClient(serviceUri: ravenServiceUri));
+                        new GreenGasGiantClient(
+                            httpClient: externalNetworkClient,
+                            serviceUri: ravenServiceUri));
             Colonization = new ColonizationViewModel(
                 new ColonizationSettingsStore(AppDataPaths.UiSettingsPath),
-                client: new RavenColonialClient(serviceUri: ravenServiceUri),
+                client: new RavenColonialClient(
+                    httpClient: externalNetworkClient,
+                    serviceUri: ravenServiceUri),
                 commanderProfileStore: commanderProfileStore,
                 legacyProfileStore: new LegacyColonizationProfileStore(
                     AppDataPaths.DataDirectory));
             rollback.Add(Colonization.Dispose);
-            var sharedSystemResolver = new SpanshStarSystemResolver();
+            var sharedSystemResolver = new SpanshStarSystemResolver(
+                externalNetworkClient);
             var sharedExobiologyCatalog = legacyReferences.Exobiology;
             var defaultCodexImageCache = Path.Combine(
                 AppDataPaths.CacheDirectory,
@@ -483,7 +513,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 commanderProfileStore,
                 sharedSystemResolver);
             NearestSystems = new NearestSystemsViewModel(
-                new NearestSystemsClient(),
+                new NearestSystemsClient(externalNetworkClient),
                 sharedSystemResolver);
             boxelSurveyStats = new BoxelSurveyStatsCoordinator(
                 new BoxelSurveyStatsStore(AppDataPaths.DataDirectory));
@@ -498,7 +528,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 new LegacySystemDataReader(AppDataPaths.DataDirectory),
                 new EmptyBoxelStore(AppDataPaths.DataDirectory),
                 new SavedBoxelSearchStore(AppDataPaths.DataDirectory),
-                boxelSystemResolver ?? new SpanshBoxelClient(),
+                boxelSystemResolver ?? new SpanshBoxelClient(
+                    externalNetworkClient),
                 new BoxelSearchSessionServices
                 {
                     Clipboard = BoxelClipboard,
@@ -513,8 +544,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 knownSystems: knownSystems,
                 systemNameSuggestionClient:
                     new FallbackSystemNameSuggestionClient(
-                        new EdsmSystemNameSuggestionClient(),
-                        new ArdentSystemNameSuggestionClient()),
+                        new EdsmSystemNameSuggestionClient(
+                            externalNetworkClient),
+                        new ArdentSystemNameSuggestionClient(
+                            externalNetworkClient)),
                 surveyStats: boxelSurveyStats);
             rollback.Add(BoxelSearch.CancelPendingOperations);
             construction.Checkpoint?.Invoke(
@@ -530,7 +563,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 sharedSystemResolver,
                 systemNoteStore,
                 systemNotesSettingsStore);
-            var spanshRouteClient = new SpanshRouteClient();
+            var spanshRouteClient = new SpanshRouteClient(
+                externalNetworkClient);
             var routeNameImporter = new RouteNameImporter(sharedSystemResolver);
             var routeService = new FollowRouteService(
                 new FollowRouteStore(AppDataPaths.DataDirectory));
@@ -559,6 +593,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             var sharedJumpInfoSettingsStore = new JumpInfoSettingsStore(
                 AppDataPaths.UiSettingsPath);
             var sharedSystemSummaryClient = new SystemSummaryClient(
+                externalNetworkClient,
                 useSpanshLastUpdated: () => sharedJumpInfoSettingsStore
                     .Load()
                     .UseSpanshLastUpdated);
@@ -648,13 +683,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 commanderCodexStore,
                 sharedExobiologyCatalog,
                 new CanonnCodexChallengeImporter(
-                    new CanonnCodexChallengeClient(),
+                    new CanonnCodexChallengeClient(externalNetworkClient),
                     commanderCodexStore,
                     sharedExobiologyCatalog),
                 new CommanderCodexJournalImporter(
                     journalImportDirectory,
                     commanderCodexStore),
-                new CodexDiscoveryLocationClient());
+                new CodexDiscoveryLocationClient(externalNetworkClient));
             rollback.Add(CodexBingo.Dispose);
             JournalPostProcessor = new JournalPostProcessorViewModel(
                 new CommanderProfileCatalog(AppDataPaths.DataDirectory),
@@ -669,7 +704,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 new CommanderCodexJournalImporter(
                     journalImportDirectory,
                     commanderCodexStore),
-                new GreenGasGiantClient(serviceUri: ravenServiceUri),
+                new GreenGasGiantClient(
+                    httpClient: externalNetworkClient,
+                    serviceUri: ravenServiceUri),
                 () => NetworkPrivacy.UploadGreenGasGiantCandidates);
             rollback.Add(JournalPostProcessor.Cancel);
             RamTah = new RamTahViewModel(commanderProfileStore);
@@ -740,7 +777,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 CommanderInstances.HasMultipleGameWindows);
             (visitedStarsHttpClient, VisitedStarsCache) = CreateVisitedStarsCache(
                 provided: null,
-                appDataPaths: AppDataPaths);
+                appDataPaths: AppDataPaths,
+                externalNetworkClient,
+                externalEffectsAllowed: !IsDiagnosticReplay);
             rollback.Add(visitedStarsHttpClient);
             statusMessage = BuildJournalReadyStatus(
                 folderResolution.IsFound,
@@ -977,6 +1016,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     public AppDataPaths AppDataPaths { get; }
 
+    public bool IsDiagnosticReplay { get; private set; }
+
+    public string DiagnosticReplayStatus { get; private set; } = string.Empty;
+
     public Task PendingSystemBodyDataLoad { get; private set; } =
         Task.CompletedTask;
 
@@ -1045,6 +1088,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public ReleaseUpdateViewModel ReleaseUpdates { get; }
 
     public JournalInspectorViewModel JournalInspector { get; }
+
+    public JournalHistoryViewModel JournalHistory { get; }
 
     public JournalSettingsViewModel JournalSettings { get; }
 
@@ -1257,12 +1302,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
             OnPropertyChanged(nameof(SelectedDiagnosticsTabIndex));
             OnPropertyChanged(nameof(IsDiagnosticsSourceSelected));
+            OnPropertyChanged(nameof(IsDiagnosticsHistorySelected));
             OnPropertyChanged(nameof(IsDiagnosticsUpdatesSelected));
             OnPropertyChanged(nameof(IsDiagnosticsProcessingSelected));
             OnPropertyChanged(nameof(IsDiagnosticsInspectorSelected));
             OnPropertyChanged(nameof(IsDiagnosticsLogsSelected));
             OnPropertyChanged(nameof(DiagnosticsTabTitle));
             OnPropertyChanged(nameof(DiagnosticsTabDescription));
+            if (value == DiagnosticsWorkspaceTab.History
+                && !JournalHistory.HasEvents)
+            {
+                _ = JournalHistory.RefreshAsync();
+            }
         }
     }
 
@@ -1281,6 +1332,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public bool IsDiagnosticsSourceSelected =>
         SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.Source;
 
+    public bool IsDiagnosticsHistorySelected =>
+        SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.History;
+
     public bool IsDiagnosticsUpdatesSelected =>
         SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.Updates;
 
@@ -1296,6 +1350,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public string DiagnosticsTabTitle => SelectedDiagnosticsTab switch
     {
         DiagnosticsWorkspaceTab.Source => "Journal source",
+        DiagnosticsWorkspaceTab.History => "Journal history",
         DiagnosticsWorkspaceTab.Updates => "Updates",
         DiagnosticsWorkspaceTab.Processing => "Processing",
         DiagnosticsWorkspaceTab.Inspector => "Inspector",
@@ -1307,6 +1362,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     {
         DiagnosticsWorkspaceTab.Source =>
             "The active bootstrap source and the locations checked on this platform.",
+        DiagnosticsWorkspaceTab.History =>
+            "Search the durable game journal record and export a bounded diagnostic replay package.",
         DiagnosticsWorkspaceTab.Updates =>
             "Check application and reference-data releases without changing profile data.",
         DiagnosticsWorkspaceTab.Processing =>
@@ -2114,7 +2171,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private static (HttpClient? Client, VisitedStarsCacheViewModel Cache)
         CreateVisitedStarsCache(
             VisitedStarsCacheViewModel? provided,
-            AppDataPaths appDataPaths)
+            AppDataPaths appDataPaths,
+            HttpClient? externalNetworkClient,
+            bool externalEffectsAllowed)
     {
         if (provided is not null)
         {
@@ -2122,7 +2181,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         }
 
         var processDetector = new EliteGameProcessDetector();
-        var client = new HttpClient
+        Func<bool> isGameRunning = externalEffectsAllowed
+            ? processDetector.IsRunning
+            : static () => false;
+        Func<string, string?> targetResolver = externalEffectsAllowed
+            ? VisitedStarsCacheTargetLocator.ResolveCurrent
+            : static _ => null;
+        var client = externalNetworkClient ?? new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(45),
         };
@@ -2131,10 +2196,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             new VisitedStarsCacheService(
                 client,
                 Path.Combine(appDataPaths.CacheDirectory, "star-cache"),
-                processDetector.IsRunning),
-            VisitedStarsCacheTargetLocator.ResolveCurrent,
-            processDetector.IsRunning);
-        return (client, cache);
+                isGameRunning),
+            targetResolver,
+            isGameRunning,
+            externalEffectsAllowed);
+        return (externalNetworkClient is null ? client : null, cache);
     }
 
     private void SelectTheme(ThemeOptionViewModel option)

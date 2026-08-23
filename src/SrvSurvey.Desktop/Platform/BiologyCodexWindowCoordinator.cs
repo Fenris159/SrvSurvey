@@ -21,16 +21,18 @@ public sealed class BiologyCodexWindowCoordinator : IDisposable
     public BiologyCodexWindowCoordinator(
         BiologyCodexViewModel viewModel,
         Window owner,
-        CodexImageSettingsViewModel imageSettings)
+        CodexImageSettingsViewModel imageSettings,
+        CodexImageCache? imageCache = null)
     {
         this.viewModel = viewModel
             ?? throw new ArgumentNullException(nameof(viewModel));
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
         this.imageSettings = imageSettings
             ?? throw new ArgumentNullException(nameof(imageSettings));
-        imageCache = new CodexImageCache(() => new CodexImageLocations(
-            imageSettings.EffectiveCacheDirectory,
-            imageSettings.EffectiveLocalFloraDirectory));
+        this.imageCache = imageCache ?? new CodexImageCache(
+            () => new CodexImageLocations(
+                imageSettings.EffectiveCacheDirectory,
+                imageSettings.EffectiveLocalFloraDirectory));
         imageSettings.PropertyChanged += OnImageSettingsPropertyChanged;
         viewModel.SetWindowOpener(ShowOrActivateAsync);
         RestartPreDownload();

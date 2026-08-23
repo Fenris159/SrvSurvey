@@ -5,6 +5,34 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 public sealed class DiagnosticsViewMarkupTests
 {
     [Fact]
+    public void JournalHistoryIsSeparateFromTheQuestInspector()
+    {
+        var document = LoadDiagnosticsView();
+        var tabs = document.Descendants()
+            .Where(element => element.Name.LocalName == "TabItem")
+            .Select(element => element.Attribute("Header")?.Value)
+            .ToArray();
+
+        Assert.Contains("History", tabs);
+        Assert.Contains("Inspector", tabs);
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "ListBox"
+            && element.Attributes().Any(attribute =>
+                attribute.Name.LocalName == "Name"
+                && attribute.Value == "JournalHistoryEventList"));
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "Button"
+            && element.Attribute("Content")?.Value == "Export replay package");
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "TextBox"
+            && element.Attribute("Text")?.Value
+                == "{Binding JournalHistory.SearchText, Mode=TwoWay}");
+        Assert.Contains(document.Descendants(), element =>
+            element.Attribute("Text")?.Value
+                == "{Binding DiagnosticReplayStatus}");
+    }
+
+    [Fact]
     public void LiveLogUsesAnIndependentNonCaretScrollSurface()
     {
         var document = LoadDiagnosticsView();

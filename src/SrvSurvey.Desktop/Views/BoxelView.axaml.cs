@@ -10,6 +10,7 @@ using SrvSurvey.Desktop;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -41,7 +42,8 @@ public sealed partial class BoxelView : UserControl
 
     private void ConnectClipboard()
     {
-        if (DataContext is MainWindowViewModel viewModel)
+        if (DesktopExternalEffectPolicy.IsAllowed
+            && DataContext is MainWindowViewModel viewModel)
         {
             viewModel.BoxelClipboard.SetWriter(WriteClipboardAsync);
         }
@@ -360,6 +362,7 @@ public sealed partial class BoxelView : UserControl
 
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
                     "The desktop link launcher is not available.");

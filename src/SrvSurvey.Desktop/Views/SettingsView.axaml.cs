@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -286,6 +287,7 @@ public sealed partial class SettingsView : UserControl
 
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
                     "The desktop link launcher is not available.");

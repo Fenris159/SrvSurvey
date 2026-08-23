@@ -12,6 +12,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
     private readonly IVisitedStarsCacheService cacheService;
     private readonly Func<string, string?> targetResolver;
     private readonly Func<bool> isGameRunning;
+    private readonly bool externalEffectsAllowed;
     private readonly AsyncCommand swapCommand;
     private readonly AsyncCommand restoreCommand;
     private readonly AsyncCommand refreshCommand;
@@ -31,12 +32,19 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
         CommanderProfileCatalog commanderCatalog,
         IVisitedStarsCacheService cacheService,
         Func<string, string?> targetResolver,
-        Func<bool> isGameRunning)
+        Func<bool> isGameRunning,
+        bool externalEffectsAllowed = true)
     {
         this.commanderCatalog = commanderCatalog;
         this.cacheService = cacheService;
         this.targetResolver = targetResolver;
         this.isGameRunning = isGameRunning;
+        this.externalEffectsAllowed = externalEffectsAllowed;
+        if (!externalEffectsAllowed)
+        {
+            statusMessage =
+                "Visited-stars cache replacement is unavailable during diagnostic replay.";
+        }
         swapCommand = new AsyncCommand(SwapAsync, CanSwap);
         restoreCommand = new AsyncCommand(RestoreAsync, CanRestore);
         refreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
@@ -208,7 +216,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            GameIsRunning = isGameRunning();
+            GameIsRunning = externalEffectsAllowed && isGameRunning();
             var result = await commanderCatalog.LoadAsync();
             var previous = SelectedCommander?.FrontierId;
             Commanders = result.Profiles
@@ -223,13 +231,15 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
                     currentFrontierId,
                     StringComparison.OrdinalIgnoreCase))
                 ?? (Commanders.Count > 0 ? Commanders[0] : null);
-            StatusMessage = result.Warnings.Count > 0
-                ? string.Join(" ", result.Warnings)
-                : (Commanders.Count == 0) switch
-                {
-                    true => "No commander profile is available. Import the original profile or start Elite once.",
-                    false => "Choose a commander, reference system, and VisitedStarsCache.dat file."
-                };
+            StatusMessage = !externalEffectsAllowed
+                ? "Visited-stars cache replacement is unavailable during diagnostic replay."
+                : result.Warnings.Count > 0
+                    ? string.Join(" ", result.Warnings)
+                    : (Commanders.Count == 0) switch
+                    {
+                        true => "No commander profile is available. Import the original profile or start Elite once.",
+                        false => "Choose a commander, reference system, and VisitedStarsCache.dat file."
+                    };
         }
         catch (Exception exception) when (
             exception is IOException or UnauthorizedAccessException)
@@ -321,7 +331,8 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
 
     private bool CanSwap()
     {
-        return !IsBusy
+        return externalEffectsAllowed
+            && !IsBusy
             && !GameIsRunning
             && SelectedCommander is not null
             && !string.IsNullOrWhiteSpace(SystemName)
@@ -331,7 +342,8 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
 
     private bool CanRestore()
     {
-        return !IsBusy
+        return externalEffectsAllowed
+            && !IsBusy
             && !GameIsRunning
             && IsValidCachePath(TargetPath)
             && HasBackup;
@@ -353,7 +365,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
 
     private void ResolveSelectedTarget()
     {
-        if (SelectedCommander is null)
+        if (!externalEffectsAllowed || SelectedCommander is null)
         {
             return;
         }

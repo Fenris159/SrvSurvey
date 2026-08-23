@@ -38,6 +38,24 @@ public sealed class MainWindowRedesignMarkupTests
     }
 
     [Fact]
+    public void DiagnosticReplayUsesOnlyAnAlteredApplicationBorder()
+    {
+        var mainWindow = LoadDesktopFile("MainWindow.axaml");
+        var diagnosticBorder = mainWindow.Descendants().Single(element =>
+            element.Name.LocalName == "Border"
+            && element.Attribute("Classes")?.Value == "diagnostic-shell");
+
+        Assert.Equal(
+            "{Binding IsDiagnosticReplay}",
+            diagnosticBorder.Attribute("Classes.active")?.Value);
+        Assert.DoesNotContain(
+            mainWindow.Descendants(),
+            element => element.Attributes().Any(attribute =>
+                attribute.Value.Contains("watermark", StringComparison.OrdinalIgnoreCase)
+                || attribute.Value.Contains("replay bar", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Fact]
     public void NavigationGroupHeadingsMatchDestinationTypography()
     {
         var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");

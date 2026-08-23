@@ -52,6 +52,7 @@ internal sealed class MainWindowViewModelStartup : IDisposable
         MainWindowFoundationInputs foundation,
         MainWindowOverlayInputs overlay,
         MainWindowExplorationInputs exploration,
+        MainWindowTravelInputs travel,
         MainWindowOnlineInputs online)
     {
         ConfiguredJournalDirectory = configuredJournalDirectory;
@@ -60,6 +61,7 @@ internal sealed class MainWindowViewModelStartup : IDisposable
         Overlay = overlay ?? throw new ArgumentNullException(nameof(overlay));
         Exploration = exploration
             ?? throw new ArgumentNullException(nameof(exploration));
+        Travel = travel ?? throw new ArgumentNullException(nameof(travel));
         Online = online ?? throw new ArgumentNullException(nameof(online));
         ownedOverlayInteraction = overlay.OverlayInteraction;
         ownedFirstFootfallInferenceService =
@@ -73,6 +75,8 @@ internal sealed class MainWindowViewModelStartup : IDisposable
     public MainWindowOverlayInputs Overlay { get; }
 
     public MainWindowExplorationInputs Exploration { get; }
+
+    public MainWindowTravelInputs Travel { get; }
 
     public MainWindowOnlineInputs Online { get; }
 
@@ -112,6 +116,7 @@ internal sealed class MainWindowViewModelStartup : IDisposable
             Foundation = Foundation,
             Overlay = Overlay,
             Exploration = Exploration,
+            Travel = Travel,
             Online = Online,
         };
     }
@@ -205,6 +210,12 @@ internal sealed class MainWindowFoundationInputs
     public string? CommanderPreferenceInitialStatus { get; init; }
 
     public CommanderProfileViewModel? FrontierProfile { get; init; }
+
+    public bool IsDiagnosticReplay { get; init; }
+
+    public string? DiagnosticReplayStatus { get; init; }
+
+    public HttpClient? ExternalNetworkClient { get; init; }
 }
 
 internal sealed class MainWindowOverlayInputs

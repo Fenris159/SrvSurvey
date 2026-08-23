@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop.Platform;
 
@@ -34,6 +35,7 @@ public sealed class ApplicationRestartService
 
     public void StartReplacement()
     {
+        DesktopExternalEffectPolicy.ThrowIfDisabled();
         var startInfo = CreateStartInfo(
             processPath,
             entryAssemblyPath,

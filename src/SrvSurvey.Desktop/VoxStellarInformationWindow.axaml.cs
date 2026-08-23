@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using SrvSurvey.Core.Network;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop;
 
@@ -36,6 +37,7 @@ public sealed partial class VoxStellarInformationWindow : Window
     {
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var launcher = Launcher
                 ?? throw new InvalidOperationException(
                     "The desktop link launcher is not available.");

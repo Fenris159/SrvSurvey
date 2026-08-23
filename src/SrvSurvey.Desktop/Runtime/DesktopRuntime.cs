@@ -12,6 +12,8 @@ internal sealed record DesktopStartup(
 {
     internal AppDataPaths? AppDataPathsOverride { get; init; }
 
+    internal DiagnosticReplayContext? DiagnosticReplay { get; init; }
+
     internal Action<DesktopStartupCheckpoint>? Checkpoint { get; init; }
 }
 
