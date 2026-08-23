@@ -874,7 +874,7 @@ public sealed class GuardianSiteMapControlTests
 
         Assert.True(Render(
             control,
-            new Size(520, 320),
+            new Size(280, 320),
             Environment.GetEnvironmentVariable(
                 "SRVSURVEY_GUARDIAN_LEGEND_RENDER_OUTPUT")));
     }

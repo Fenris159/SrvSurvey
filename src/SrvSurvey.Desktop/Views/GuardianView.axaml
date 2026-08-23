@@ -600,23 +600,18 @@
                                  FontSize="11"
                                  TextWrapping="Wrap"
                                  Text="Map-point geometry is shared by every site of this type. Draft changes preview here and persist only through a verified catalog export." />
-                      <Button Classes="secondary"
-                              HorizontalAlignment="Left"
-                              IsVisible="{Binding Guardian.TemplateAuthoring.CanStart}"
-                              Command="{Binding Guardian.TemplateAuthoring.StartCommand}"
-                              Content="Start map draft" />
                       <StackPanel x:Name="GuardianSelectedTemplatePointFields"
                                   Spacing="8"
                                   IsEnabled="{Binding Guardian.TemplateAuthoring.IsAuthoring}">
-                        <Grid ColumnDefinitions="2*,*" ColumnSpacing="8">
+                        <StackPanel x:Name="GuardianSelectedTemplateIdentityFields"
+                                    Spacing="8">
                           <TextBox MinWidth="132"
                                    Text="{Binding Guardian.TemplateAuthoring.PointName, Mode=TwoWay}"
                                    PlaceholderText="Point name" />
-                          <ComboBox Grid.Column="1"
-                                    MinWidth="132"
+                          <ComboBox MinWidth="132"
                                     ItemsSource="{Binding Guardian.TemplateAuthoring.PointTypes}"
                                     SelectedItem="{Binding Guardian.TemplateAuthoring.PointType, Mode=TwoWay}" />
-                        </Grid>
+                        </StackPanel>
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                           <TextBlock Classes="muted"
                                      MinWidth="72"
@@ -798,6 +793,7 @@
                     <TextBlock Classes="card-title" Text="Map legend" />
                     <controls:GuardianSiteMapControl
                         Height="320"
+                        ClipToBounds="True"
                         IsLegendOnly="True"
                         Projection="{Binding Guardian.MapProjection}"
                         ShowLegend="False"

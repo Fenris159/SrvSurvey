@@ -60,6 +60,9 @@ public sealed class GuardianViewMarkupTests
         var selectedPoint = FindNamedElement(
             document,
             "GuardianSelectedMapPointEditor");
+        var startMapDraft = document.Descendants().Single(element =>
+            element.Name.LocalName == "Button"
+            && element.Attribute("Content")?.Value == "Start map draft");
         var cardNames = sidebar.Elements()
             .Select(GetName)
             .OfType<string>()
@@ -88,6 +91,8 @@ public sealed class GuardianViewMarkupTests
             "{Binding Guardian.SurveyEditor.HasSelectedMapMarker}",
             selectedPoint.Attribute("IsVisible")?.Value);
         Assert.Null(selectedPoint.Attribute("IsEnabled"));
+        Assert.Contains(startMapDraft, selectedMap.Descendants());
+        Assert.DoesNotContain(startMapDraft, selectedPoint.Descendants());
         var selectedContent = selectedPoint.Descendants().Single(element =>
             element.Name.LocalName == "ContentControl"
             && element.Attribute("Content")?.Value
@@ -133,6 +138,9 @@ public sealed class GuardianViewMarkupTests
         var templatePointFields = FindNamedElement(
             document,
             "GuardianSelectedTemplatePointFields");
+        var templateIdentityFields = FindNamedElement(
+            document,
+            "GuardianSelectedTemplateIdentityFields");
 
         Assert.Contains(siteType, editor.Descendants());
         Assert.Equal(
@@ -170,6 +178,8 @@ public sealed class GuardianViewMarkupTests
         Assert.Equal(
             "{Binding Guardian.TemplateAuthoring.IsAuthoring}",
             templatePointFields.Attribute("IsEnabled")?.Value);
+        Assert.Equal("StackPanel", templateIdentityFields.Name.LocalName);
+        Assert.Null(templateIdentityFields.Attribute("Orientation"));
         var coordinateInputs = templatePointFields.Descendants()
             .Where(element => element.Name.LocalName == "NumericUpDown")
             .ToArray();
@@ -244,6 +254,7 @@ public sealed class GuardianViewMarkupTests
 
         Assert.Equal("True", mapLegend.Attribute("IsLegendOnly")?.Value);
         Assert.Equal("320", mapLegend.Attribute("Height")?.Value);
+        Assert.Equal("True", mapLegend.Attribute("ClipToBounds")?.Value);
         Assert.Equal(["Map legend"], labels);
         Assert.DoesNotContain(legend.Descendants(), element =>
             element.Name.LocalName is "Border" or "Grid");

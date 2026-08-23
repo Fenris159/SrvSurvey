@@ -253,10 +253,10 @@ public sealed class GuardianSiteMapControl : Control
                 projection,
                 left: 2,
                 top: 4,
-                rowHeight: 28,
+                rowHeight: 26,
                 availableWidth: Math.Max(1, bounds.Width - 4),
-                fontSize: 15,
-                symbolScale: 1.4);
+                fontSize: 13,
+                symbolScale: 1.25);
             return;
         }
 
@@ -827,7 +827,7 @@ public sealed class GuardianSiteMapControl : Control
         double symbolScale)
     {
         var entries = CreateLegendEntries(projection);
-        var useTwoColumns = availableWidth >= 320;
+        var useTwoColumns = IsLegendOnly && availableWidth >= 220;
         var compactEntries = useTwoColumns
             ? entries.Where(entry => !IsFullWidthLegendEntry(entry)).ToArray()
             : entries.ToArray();
@@ -852,6 +852,8 @@ public sealed class GuardianSiteMapControl : Control
                 entry.Label,
                 FontWeight.Normal,
                 fontSize);
+            text.MaxTextWidth = Math.Max(1, columnWidth - 40);
+            text.MaxTextHeight = rowHeight;
             context.DrawText(
                 text,
                 new Point(entryLeft + 36, center.Y - text.Height / 2));
@@ -860,26 +862,32 @@ public sealed class GuardianSiteMapControl : Control
         var fullWidthTop = top
             + Math.Ceiling(compactEntries.Length / (double)columnCount)
             * rowHeight;
+        var entryTop = fullWidthTop;
         for (var index = 0; index < fullWidthEntries.Length; index++)
         {
             var entry = fullWidthEntries[index];
-            var center = new Point(
-                left + 16,
-                fullWidthTop + (rowHeight / 2) + index * rowHeight);
-            DrawLegendSymbol(context, center, entry, symbolScale);
             var text = CreateLegendText(
                 entry.Label,
                 FontWeight.Normal,
                 fontSize);
+            text.MaxTextWidth = Math.Max(1, availableWidth - 40);
+            var entryHeight = Math.Max(rowHeight, text.Height + 2);
+            var center = new Point(
+                left + 16,
+                entryTop + entryHeight / 2);
+            DrawLegendSymbol(context, center, entry, symbolScale);
             context.DrawText(
                 text,
                 new Point(left + 36, center.Y - text.Height / 2));
+            entryTop += entryHeight;
         }
     }
 
     private static bool IsFullWidthLegendEntry(GuardianMapLegendEntry entry)
     {
         return entry.IsActiveObelisk
+            || entry.Type is GuardianPoiType.Pylon
+                or GuardianPoiType.Component
             || entry.Kind != GuardianMapLegendKind.Point;
     }
 
