@@ -86,11 +86,98 @@ public sealed class JournalReplayExporter
 
         ReplayPresentationSnapshotValidator.Validate(
             request.PresentationSnapshot);
+        ReplaySessionManager.ValidateSourceVersion(request.SourceVersion);
+        var scan = await ScanAsync(
+            journalDirectory,
+            request,
+            cancellationToken);
 
-        List<JournalReplayEvent> selected = [];
+        var fullDestinationPath = Path.GetFullPath(destinationPath);
+        var destinationDirectory = Path.GetDirectoryName(fullDestinationPath)
+            ?? throw new InvalidDataException(
+                "The replay export destination has no containing directory.");
+        Directory.CreateDirectory(destinationDirectory);
+        var journalSpoolPath = Path.Combine(
+            destinationDirectory,
+            $".journal-export.{Guid.NewGuid():N}.tmp");
+        var temporaryPath = Path.Combine(
+            destinationDirectory,
+            $".{Path.GetFileName(fullDestinationPath)}.{Guid.NewGuid():N}.tmp");
+        try
+        {
+            var checksum = await WriteJournalSpoolAsync(
+                journalDirectory,
+                journalSpoolPath,
+                request,
+                scan,
+                cancellationToken);
+            var outputCommander = request.PrivacyMode
+                == ReplayPrivacyMode.Redacted
+                    ? RedactCommander(scan.Commander, scan.Identities)
+                    : scan.Commander;
+            var package = new JournalReplayPackageManifest(
+                CurrentPackageFormatVersion,
+                DateTimeOffset.UtcNow,
+                request.SourceVersion.Trim(),
+                request.From,
+                request.To,
+                request.PrivacyMode,
+                scan.EventCount,
+                scan.Bootstrap.Length,
+                scan.FirstTimestamp,
+                scan.LastTimestamp,
+                outputCommander,
+                checksum,
+                ["status", "cargo", "shipLocker", "navRoute", "market"],
+                request.PresentationSnapshot);
+            ReplaySessionManager.ValidatePackageMetadata(package);
+            await packageWriter.WriteAsync(
+                temporaryPath,
+                package,
+                journalSpoolPath,
+                cancellationToken);
+            await ValidateWrittenPackageAsync(
+                temporaryPath,
+                package,
+                cancellationToken);
+            File.Move(temporaryPath, fullDestinationPath, overwrite: true);
+            return new JournalReplayExportResult(
+                fullDestinationPath,
+                scan.EventCount,
+                scan.Bootstrap.Length,
+                package.Commander,
+                package.FirstTimestamp,
+                package.LastTimestamp);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+
+            if (File.Exists(journalSpoolPath))
+            {
+                File.Delete(journalSpoolPath);
+            }
+        }
+    }
+
+    private async Task<ReplayExportScan> ScanAsync(
+        string journalDirectory,
+        JournalReplayExportRequest request,
+        CancellationToken cancellationToken)
+    {
         var bootstrapSelector = new ReplayBootstrapSelector();
+        var identityBuilder = request.PrivacyMode == ReplayPrivacyMode.Redacted
+            ? new IdentityRedactionBuilder()
+            : null;
         JournalReplayEvent[] bootstrap = [];
-        long selectedInputBytes = 0;
+        ReplayCommander? commander = null;
+        DateTimeOffset? firstTimestamp = null;
+        DateTimeOffset? lastTimestamp = null;
+        var selectedEventCount = 0;
+        long inputByteCount = 0;
         await foreach (var historyEvent in historyReader.StreamAsync(
                            journalDirectory,
                            cancellationToken))
@@ -100,125 +187,137 @@ public sealed class JournalReplayExporter
                 historyEvent.Timestamp,
                 historyEvent.EventName,
                 historyEvent.RawJson);
-            if (IsWithinRange(replayEvent, request))
+            if (!IsWithinRange(replayEvent, request))
             {
-                if (selected.Count == 0)
+                if (selectedEventCount == 0)
                 {
-                    bootstrap = bootstrapSelector.Snapshot();
+                    bootstrapSelector.Observe(replayEvent);
                 }
 
-                selected.Add(replayEvent);
-                selectedInputBytes += Encoding.UTF8.GetByteCount(
-                    replayEvent.RawJson) + 1L;
-                ValidateOutputBounds(selected.Count, selectedInputBytes);
+                continue;
             }
-            else if (selected.Count == 0)
+
+            if (selectedEventCount == 0)
             {
-                bootstrapSelector.Observe(replayEvent);
+                bootstrap = bootstrapSelector.Snapshot();
+                foreach (var bootstrapEvent in bootstrap)
+                {
+                    ObserveIncluded(bootstrapEvent);
+                    inputByteCount += Encoding.UTF8.GetByteCount(
+                        bootstrapEvent.RawJson) + 1L;
+                }
+
+                firstTimestamp = bootstrap.Length > 0
+                    ? bootstrap[0].Timestamp
+                    : replayEvent.Timestamp;
             }
+
+            selectedEventCount++;
+            ObserveIncluded(replayEvent);
+            lastTimestamp = replayEvent.Timestamp;
+            inputByteCount += Encoding.UTF8.GetByteCount(
+                replayEvent.RawJson) + 1L;
+            ValidateOutputBounds(
+                bootstrap.Length + selectedEventCount,
+                inputByteCount);
         }
 
-        if (selected.Count == 0)
+        if (selectedEventCount == 0)
         {
             throw new InvalidDataException(
                 "No journal events exist in the selected replay range.");
         }
 
-        var included = bootstrap
-            .Concat(selected)
-            .DistinctBy(replayEvent => replayEvent.Index)
-            .OrderBy(replayEvent => replayEvent.Index)
-            .ToArray();
-        var commander = ReplaySessionManager.ResolveCommander(included);
-        var identities = request.PrivacyMode == ReplayPrivacyMode.Redacted
-            ? BuildIdentityRedactions(included)
-            : [];
-        var locations = new LocationRedactionState();
-        var initialCapacity = (int)Math.Min(
-            ReplaySessionManager.MaximumJournalBytes,
-            selectedInputBytes + 1024 * 1024);
-        using var journalBuffer = new MemoryStream(initialCapacity);
-        long outputByteCount = 0;
-        foreach (var replayEvent in included)
+        if (commander is null)
         {
+            throw new InvalidDataException(
+                "The replay does not contain a Commander or LoadGame event with both commander name and Frontier ID. Personal profile data will not be used as a fallback.");
+        }
+
+        return new ReplayExportScan(
+            bootstrap,
+            bootstrap.Length + selectedEventCount,
+            firstTimestamp,
+            lastTimestamp,
+            commander,
+            identityBuilder?.Build() ?? []);
+
+        void ObserveIncluded(JournalReplayEvent replayEvent)
+        {
+            identityBuilder?.Observe(replayEvent);
+            commander ??= TryReadCommander(replayEvent);
+        }
+    }
+
+    private async Task<string> WriteJournalSpoolAsync(
+        string journalDirectory,
+        string spoolPath,
+        JournalReplayExportRequest request,
+        ReplayExportScan scan,
+        CancellationToken cancellationToken)
+    {
+        var bootstrapIndices = scan.Bootstrap
+            .Select(replayEvent => replayEvent.Index)
+            .ToHashSet();
+        var locations = new LocationRedactionState();
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        await using var output = new FileStream(
+            spoolPath,
+            FileMode.CreateNew,
+            FileAccess.Write,
+            FileShare.None,
+            bufferSize: 64 * 1024,
+            useAsync: true);
+        long outputByteCount = 0;
+        var outputEventCount = 0;
+        await foreach (var historyEvent in historyReader.StreamAsync(
+                           journalDirectory,
+                           cancellationToken))
+        {
+            var replayEvent = new JournalReplayEvent(
+                historyEvent.Index,
+                historyEvent.Timestamp,
+                historyEvent.EventName,
+                historyEvent.RawJson);
+            if (!bootstrapIndices.Contains(replayEvent.Index)
+                && !IsWithinRange(replayEvent, request))
+            {
+                continue;
+            }
+
             var sanitized = replayEvent with
             {
                 RawJson = RemoveCredentials(replayEvent.RawJson),
             };
             var outputLine = request.PrivacyMode == ReplayPrivacyMode.Redacted
-                ? RedactEvent(sanitized, identities, locations)
+                ? RedactEvent(sanitized, scan.Identities, locations)
                 : sanitized.RawJson;
             var lineBytes = Encoding.UTF8.GetBytes(outputLine);
+            outputEventCount++;
             outputByteCount += lineBytes.Length + 1L;
-            ValidateOutputBounds(included.Length, outputByteCount);
-            journalBuffer.Write(lineBytes);
-            journalBuffer.WriteByte((byte)'\n');
+            ValidateOutputBounds(outputEventCount, outputByteCount);
+            hash.AppendData(lineBytes);
+            hash.AppendData(Newline.Span);
+            await output.WriteAsync(lineBytes.AsMemory(), cancellationToken);
+            await output.WriteAsync(Newline, cancellationToken);
         }
 
-        var outputCommander = request.PrivacyMode == ReplayPrivacyMode.Redacted
-            ? RedactCommander(commander, identities)
-            : commander;
-        _ = journalBuffer.TryGetBuffer(out var journalSegment);
-        var journalBytes = journalSegment.AsMemory(
-            0,
-            checked((int)journalBuffer.Length));
-        var checksum = Convert.ToHexStringLower(
-            SHA256.HashData(journalBytes.Span));
-        var package = new JournalReplayPackageManifest(
-            CurrentPackageFormatVersion,
-            DateTimeOffset.UtcNow,
-            request.SourceVersion.Trim(),
-            request.From,
-            request.To,
-            request.PrivacyMode,
-            included.Length,
-            bootstrap.Length,
-            included.FirstOrDefault()?.Timestamp,
-            included.LastOrDefault()?.Timestamp,
-            outputCommander,
-            checksum,
-            ["status", "cargo", "shipLocker", "navRoute", "market"],
-            request.PresentationSnapshot);
-
-        var fullDestinationPath = Path.GetFullPath(destinationPath);
-        var destinationDirectory = Path.GetDirectoryName(fullDestinationPath)
-            ?? throw new InvalidDataException(
-                "The replay export destination has no containing directory.");
-        Directory.CreateDirectory(destinationDirectory);
-        var temporaryPath = Path.Combine(
-            destinationDirectory,
-            $".{Path.GetFileName(fullDestinationPath)}.{Guid.NewGuid():N}.tmp");
-        try
+        if (outputEventCount != scan.EventCount)
         {
-            await packageWriter.WriteAsync(
-                temporaryPath,
-                package,
-                journalBytes,
-                cancellationToken);
-            await ValidateWrittenPackageAsync(
-                temporaryPath,
-                package,
-                cancellationToken);
-            File.Move(temporaryPath, fullDestinationPath, overwrite: true);
-        }
-        finally
-        {
-            if (File.Exists(temporaryPath))
-            {
-                File.Delete(temporaryPath);
-            }
+            throw new InvalidDataException(
+                "The journal history changed while the replay export was being created. Refresh and export again.");
         }
 
-        return new JournalReplayExportResult(
-            fullDestinationPath,
-            included.Length,
-            bootstrap.Length,
-            package.Commander,
-            package.FirstTimestamp,
-            package.LastTimestamp);
+        await output.FlushAsync(cancellationToken);
+        return Convert.ToHexStringLower(hash.GetHashAndReset());
     }
 
     internal static JsonSerializerOptions GetPackageJsonOptions() => PackageJson;
+
+    private static ReadOnlyMemory<byte> Newline { get; } = new byte[]
+    {
+        (byte)'\n',
+    };
 
     internal static void ValidateOutputBounds(int eventCount, long byteCount)
     {
@@ -247,6 +346,13 @@ public sealed class JournalReplayExporter
         var journalEntry = archive.GetEntry("journal.jsonl")
             ?? throw new InvalidDataException(
                 "The completed replay package is missing its journal.");
+        if (manifestEntry.Length
+            > ReplaySessionManager.MaximumReplayManifestBytes)
+        {
+            throw new InvalidDataException(
+                "The completed replay package manifest is larger than the supported limit.");
+        }
+
         JournalReplayPackageManifest actual;
         await using (var stream = manifestEntry.Open())
         {
@@ -259,11 +365,26 @@ public sealed class JournalReplayExporter
                     "The completed replay package manifest is empty.");
         }
 
+        ReplaySessionManager.ValidatePackageMetadata(actual);
         await using var journal = journalEntry.Open();
         var checksum = Convert.ToHexStringLower(
             await SHA256.HashDataAsync(journal, cancellationToken));
         if (actual.FormatVersion != expected.FormatVersion
             || actual.EventCount != expected.EventCount
+            || actual.BootstrapEventCount != expected.BootstrapEventCount
+            || actual.PrivacyMode != expected.PrivacyMode
+            || !string.Equals(
+                actual.SourceVersion,
+                expected.SourceVersion,
+                StringComparison.Ordinal)
+            || !string.Equals(
+                actual.Commander.Name,
+                expected.Commander.Name,
+                StringComparison.Ordinal)
+            || !string.Equals(
+                actual.Commander.FrontierId,
+                expected.Commander.FrontierId,
+                StringComparison.OrdinalIgnoreCase)
             || !string.Equals(
                 actual.JournalSha256,
                 expected.JournalSha256,
@@ -390,38 +511,6 @@ public sealed class JournalReplayExporter
             : new ReplayCommander(
                 identity.ReplacementName,
                 identity.ReplacementFrontierId);
-    }
-
-    private static IReadOnlyList<IdentityRedaction> BuildIdentityRedactions(
-        IReadOnlyList<JournalReplayEvent> events)
-    {
-        List<ReplayCommander> commanders = [];
-        foreach (var replayEvent in events)
-        {
-            var commander = TryReadCommander(replayEvent);
-            if (commander is not null
-                && !commanders.Any(existing => string.Equals(
-                        existing.Name,
-                        commander.Name,
-                        StringComparison.Ordinal)
-                    && string.Equals(
-                        existing.FrontierId,
-                        commander.FrontierId,
-                        StringComparison.OrdinalIgnoreCase)))
-            {
-                commanders.Add(commander);
-            }
-        }
-
-        return commanders.Select((commander, index) => new IdentityRedaction(
-                commander.Name,
-                commander.FrontierId,
-                index == 0
-                    ? "Replay Commander"
-                    : $"Replay Commander {index + 1:N0}",
-                $"F{index:000000}"))
-            .OrderByDescending(identity => identity.OriginalName.Length)
-            .ToArray();
     }
 
     private static JsonNode RedactNode(
@@ -659,11 +748,64 @@ public sealed class JournalReplayExporter
         ["Filename"],
         StringComparer.OrdinalIgnoreCase);
 
+    private sealed record ReplayExportScan(
+        JournalReplayEvent[] Bootstrap,
+        int EventCount,
+        DateTimeOffset? FirstTimestamp,
+        DateTimeOffset? LastTimestamp,
+        ReplayCommander Commander,
+        IReadOnlyList<IdentityRedaction> Identities);
+
     private sealed record IdentityRedaction(
         string OriginalName,
         string OriginalFrontierId,
         string ReplacementName,
         string ReplacementFrontierId);
+
+    private sealed class IdentityRedactionBuilder
+    {
+        private const int MaximumIdentityCount = 4096;
+        private readonly List<ReplayCommander> commanders = [];
+
+        public void Observe(JournalReplayEvent replayEvent)
+        {
+            var commander = TryReadCommander(replayEvent);
+            if (commander is null
+                || commanders.Any(existing => string.Equals(
+                        existing.Name,
+                        commander.Name,
+                        StringComparison.Ordinal)
+                    && string.Equals(
+                        existing.FrontierId,
+                        commander.FrontierId,
+                        StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
+
+            if (commanders.Count >= MaximumIdentityCount)
+            {
+                throw new InvalidDataException(
+                    "The replay export contains too many commander identities to redact safely.");
+            }
+
+            commanders.Add(commander);
+        }
+
+        public IReadOnlyList<IdentityRedaction> Build()
+        {
+            return commanders
+                .Select((commander, index) => new IdentityRedaction(
+                    commander.Name,
+                    commander.FrontierId,
+                    index == 0
+                        ? "Replay Commander"
+                        : $"Replay Commander {index + 1:N0}",
+                    $"F{index:000000}"))
+                .OrderByDescending(identity => identity.OriginalName.Length)
+                .ToArray();
+        }
+    }
 
     private sealed record SensitiveReplacement(
         string Original,
@@ -821,7 +963,7 @@ internal interface IReplayPackageWriter
     Task WriteAsync(
         string path,
         JournalReplayPackageManifest package,
-        ReadOnlyMemory<byte> journalBytes,
+        string journalPath,
         CancellationToken cancellationToken);
 }
 
@@ -830,7 +972,7 @@ internal sealed class ZipReplayPackageWriter : IReplayPackageWriter
     public async Task WriteAsync(
         string path,
         JournalReplayPackageManifest package,
-        ReadOnlyMemory<byte> journalBytes,
+        string journalPath,
         CancellationToken cancellationToken)
     {
         await using var output = new FileStream(
@@ -860,7 +1002,14 @@ internal sealed class ZipReplayPackageWriter : IReplayPackageWriter
             "journal.jsonl",
             CompressionLevel.Optimal);
         await using var journalStream = journalEntry.Open();
-        await journalStream.WriteAsync(journalBytes, cancellationToken);
+        await using var journalInput = new FileStream(
+            journalPath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            bufferSize: 64 * 1024,
+            useAsync: true);
+        await journalInput.CopyToAsync(journalStream, cancellationToken);
     }
 }
 

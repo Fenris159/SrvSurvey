@@ -461,6 +461,71 @@ public sealed class JournalReplayExporterTests
         Assert.Empty(Directory.EnumerateFiles(
             temp.Path,
             ".existing.srvreplay.*.tmp"));
+        Assert.Empty(Directory.EnumerateFiles(
+            temp.Path,
+            ".journal-export.*.tmp"));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task ExportRejectsBlankSourceVersion(string sourceVersion)
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.01.log"),
+            "{\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n");
+        var destination = Path.Combine(temp.Path, "invalid.srvreplay");
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            new JournalReplayExporter().ExportAsync(
+                journals,
+                destination,
+                new JournalReplayExportRequest(
+                    null,
+                    null,
+                    ReplayPrivacyMode.Raw,
+                    sourceVersion),
+                CancellationToken.None));
+
+        Assert.Contains(
+            "source version",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.False(File.Exists(destination));
+    }
+
+    [Fact]
+    public async Task ExportRejectsOversizedSourceVersion()
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.01.log"),
+            "{\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n");
+        var destination = Path.Combine(temp.Path, "invalid.srvreplay");
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            new JournalReplayExporter().ExportAsync(
+                journals,
+                destination,
+                new JournalReplayExportRequest(
+                    null,
+                    null,
+                    ReplayPrivacyMode.Raw,
+                    new string(
+                        'x',
+                        ReplaySessionManager.MaximumSourceVersionCharacters + 1)),
+                CancellationToken.None));
+
+        Assert.Contains(
+            "source version",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.False(File.Exists(destination));
     }
 
     [Theory]
@@ -484,7 +549,7 @@ public sealed class JournalReplayExporterTests
         public async Task WriteAsync(
             string path,
             JournalReplayPackageManifest package,
-            ReadOnlyMemory<byte> journalBytes,
+            string journalPath,
             CancellationToken cancellationToken)
         {
             await File.WriteAllTextAsync(path, "partial", cancellationToken);

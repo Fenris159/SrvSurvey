@@ -32,6 +32,35 @@ public sealed class ReplaySessionManagerTests
     }
 
     [Fact]
+    public void PackageMetadataRejectsOversizedSourceVersion()
+    {
+        var package = new JournalReplayPackageManifest(
+            JournalReplayExporter.CurrentPackageFormatVersion,
+            DateTimeOffset.UtcNow,
+            new string(
+                'x',
+                ReplaySessionManager.MaximumSourceVersionCharacters + 1),
+            null,
+            null,
+            ReplayPrivacyMode.Raw,
+            1,
+            0,
+            null,
+            null,
+            new ReplayCommander("Replay Cmdr", "F123456"),
+            new string('a', 64),
+            []);
+
+        var exception = Assert.Throws<InvalidDataException>(() =>
+            ReplaySessionManager.ValidatePackageMetadata(package));
+
+        Assert.Contains(
+            "source version",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task ImportCreatesAnIsolatedSessionFromACommanderJournal()
     {
         using var temp = new TemporaryDirectory();

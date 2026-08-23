@@ -15,6 +15,9 @@ public sealed class ReplaySessionManager
         MaximumJournalBytes + 2L * 1024L * 1024L;
     internal const int MaximumJournalEvents = 2_000_000;
     internal const int MaximumJournalLineCharacters = 4 * 1024 * 1024;
+    internal const int MaximumReplayManifestBytes = 1024 * 1024;
+    internal const int MaximumSourceVersionCharacters = 4096;
+    private const int MaximumCommanderIdentityCharacters = 1024;
     private static readonly JsonSerializerOptions ManifestJson = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -155,6 +158,55 @@ public sealed class ReplaySessionManager
             commander,
             events,
             manifest.PresentationSnapshot);
+    }
+
+    internal static string ValidateSourceVersion(string? sourceVersion)
+    {
+        if (string.IsNullOrWhiteSpace(sourceVersion)
+            || sourceVersion.Length > MaximumSourceVersionCharacters)
+        {
+            throw new InvalidDataException(
+                "The replay package source version is invalid or larger than the supported limit.");
+        }
+
+        return sourceVersion.Trim();
+    }
+
+    internal static void ValidatePackageMetadata(
+        JournalReplayPackageManifest package)
+    {
+        ArgumentNullException.ThrowIfNull(package);
+        if (package.FormatVersion
+            != JournalReplayExporter.CurrentPackageFormatVersion)
+        {
+            throw new InvalidDataException(
+                $"Replay package format {package.FormatVersion} is not supported by this build.");
+        }
+
+        _ = ValidateSourceVersion(package.SourceVersion);
+        ReplayPresentationSnapshotValidator.Validate(
+            package.PresentationSnapshot);
+        if (!Enum.IsDefined(package.PrivacyMode)
+            || package.Commander is null
+            || string.IsNullOrWhiteSpace(package.Commander.Name)
+            || string.IsNullOrWhiteSpace(package.Commander.FrontierId)
+            || package.Commander.Name.Length > MaximumCommanderIdentityCharacters
+            || package.Commander.FrontierId.Length
+                > MaximumCommanderIdentityCharacters
+            || package.EventCount is <= 0 or > MaximumJournalEvents
+            || package.BootstrapEventCount is < 0
+                || package.BootstrapEventCount > package.EventCount
+            || package.JournalSha256 is null
+            || package.JournalSha256.Length != 64
+            || package.JournalSha256.Any(character => !Uri.IsHexDigit(character))
+            || package.MissingCompanionTimelines is null
+            || package.MissingCompanionTimelines.Count > 64
+            || package.MissingCompanionTimelines.Any(value =>
+                string.IsNullOrWhiteSpace(value) || value.Length > 128))
+        {
+            throw new InvalidDataException(
+                "The replay package source metadata or commander is invalid.");
+        }
     }
 
     internal static async Task<IReadOnlyList<JournalReplayEvent>> ReadEventsAsync(
@@ -508,7 +560,7 @@ public sealed class ReplaySessionManager
                 "A replay package must contain exactly one manifest and one journal.");
         }
 
-        if (manifests[0].Length > 1024 * 1024)
+        if (manifests[0].Length > MaximumReplayManifestBytes)
         {
             throw new InvalidDataException(
                 "The replay package manifest is larger than the supported limit.");
@@ -528,7 +580,7 @@ public sealed class ReplaySessionManager
             await CopyBoundedAsync(
                 manifestStream,
                 boundedManifest,
-                1024 * 1024,
+                MaximumReplayManifestBytes,
                 cancellationToken);
             boundedManifest.Position = 0;
             package = await JsonSerializer
@@ -546,12 +598,7 @@ public sealed class ReplaySessionManager
                 exception);
         }
 
-        if (package.FormatVersion
-            != JournalReplayExporter.CurrentPackageFormatVersion)
-        {
-            throw new InvalidDataException(
-                $"Replay package format {package.FormatVersion} is not supported by this build.");
-        }
+        ValidatePackageMetadata(package);
 
         await using var source = journals[0].Open();
         await using var destination = new FileStream(
@@ -607,18 +654,7 @@ public sealed class ReplaySessionManager
             return;
         }
 
-        ReplayPresentationSnapshotValidator.Validate(
-            package.PresentationSnapshot);
-
-        if (string.IsNullOrWhiteSpace(package.SourceVersion)
-            || !Enum.IsDefined(package.PrivacyMode)
-            || package.Commander is null
-            || string.IsNullOrWhiteSpace(package.Commander.Name)
-            || string.IsNullOrWhiteSpace(package.Commander.FrontierId))
-        {
-            throw new InvalidDataException(
-                "The replay package source metadata or commander is invalid.");
-        }
+        ValidatePackageMetadata(package);
 
         if (!string.Equals(
                 package.JournalSha256,
@@ -718,7 +754,7 @@ public sealed record DiagnosticReplaySession(
         }
 
         var manifestInfo = new FileInfo(fullManifestPath);
-        if (manifestInfo.Length > 1024 * 1024)
+        if (manifestInfo.Length > ReplaySessionManager.MaximumReplayManifestBytes)
         {
             throw new InvalidDataException(
                 "The diagnostic replay manifest is larger than the supported limit.");
@@ -748,8 +784,8 @@ public sealed record DiagnosticReplaySession(
                 $"Replay format {manifest.FormatVersion} is not supported by this SrvSurvey build.");
         }
 
-        if (string.IsNullOrWhiteSpace(manifest.SourceVersion)
-            || !Enum.IsDefined(manifest.PrivacyMode)
+        _ = ReplaySessionManager.ValidateSourceVersion(manifest.SourceVersion);
+        if (!Enum.IsDefined(manifest.PrivacyMode)
             || manifest.Commander is null
             || string.IsNullOrWhiteSpace(manifest.Commander.Name)
             || string.IsNullOrWhiteSpace(manifest.Commander.FrontierId)
