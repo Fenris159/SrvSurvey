@@ -727,6 +727,7 @@ public sealed record DiagnosticReplaySession(
                 "A replay session path escapes the managed session directory.");
         }
 
+        RejectReparsePoints(fullSessionDirectory, candidate);
         return candidate;
     }
 
@@ -745,7 +746,38 @@ public sealed record DiagnosticReplaySession(
                 "A replay runtime path escapes the managed session directory.");
         }
 
+        RejectReparsePoints(sessionRoot, candidate);
         return candidate;
+    }
+
+    private static void RejectReparsePoints(
+        string sessionRoot,
+        string candidate)
+    {
+        RejectReparsePointIfPresent(sessionRoot);
+        var relative = Path.GetRelativePath(sessionRoot, candidate);
+        var current = sessionRoot;
+        foreach (var segment in relative.Split(
+                     [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
+                     StringSplitOptions.RemoveEmptyEntries))
+        {
+            current = Path.Combine(current, segment);
+            if (!Directory.Exists(current) && !File.Exists(current))
+            {
+                break;
+            }
+
+            RejectReparsePointIfPresent(current);
+        }
+    }
+
+    private static void RejectReparsePointIfPresent(string path)
+    {
+        if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+        {
+            throw new InvalidDataException(
+                "Replay session paths may not contain a symbolic link or reparse point.");
+        }
     }
 
     private void ClearContainedDirectory(

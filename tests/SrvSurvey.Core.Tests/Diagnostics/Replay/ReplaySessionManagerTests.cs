@@ -102,6 +102,96 @@ public sealed class ReplaySessionManagerTests
             session.Events[0].EventName);
     }
 
+    [Fact]
+    public async Task ImportRejectsJournalWithoutCommanderIdentity()
+    {
+        using var temp = new TemporaryDirectory();
+        var sourcePath = Path.Combine(temp.Path, "Journal.01.log");
+        await File.WriteAllTextAsync(
+            sourcePath,
+            "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\"}\n");
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            new ReplaySessionManager().ImportAsync(
+                sourcePath,
+                Path.Combine(temp.Path, "managed"),
+                CancellationToken.None));
+
+        Assert.Contains(
+            "Personal profile data will not be used as a fallback",
+            exception.Message,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task LoadRejectsManifestPathThatEscapesTheSession()
+    {
+        using var temp = new TemporaryDirectory();
+        var session = await ImportCommanderJournalAsync(temp.Path);
+        var manifest = await File.ReadAllTextAsync(session.ManifestPath);
+        await File.WriteAllTextAsync(
+            session.ManifestPath,
+            manifest.Replace(
+                "\"configDirectory\": \"config\"",
+                "\"configDirectory\": \"../outside\"",
+                StringComparison.Ordinal));
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            DiagnosticReplaySession.LoadAsync(
+                session.ManifestPath,
+                CancellationToken.None));
+
+        Assert.Contains(
+            "escapes",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ResetRejectsRuntimeDirectoryLinkWithoutTouchingTarget()
+    {
+        using var temp = new TemporaryDirectory();
+        var session = await ImportCommanderJournalAsync(temp.Path);
+        var outside = Path.Combine(temp.Path, "outside");
+        Directory.CreateDirectory(outside);
+        var marker = Path.Combine(outside, "must-survive.txt");
+        await File.WriteAllTextAsync(marker, "personal data");
+        Directory.Delete(session.ConfigDirectory);
+        try
+        {
+            _ = Directory.CreateSymbolicLink(session.ConfigDirectory, outside);
+        }
+        catch (Exception linkException) when (
+            linkException is UnauthorizedAccessException
+                or IOException
+                or PlatformNotSupportedException)
+        {
+            return;
+        }
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            session.ResetRuntimeAsync(CancellationToken.None));
+
+        Assert.Contains(
+            "symbolic link or reparse point",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.True(File.Exists(marker));
+    }
+
+    private static async Task<DiagnosticReplaySession>
+        ImportCommanderJournalAsync(string root)
+    {
+        var sourcePath = Path.Combine(root, "Journal.01.log");
+        await File.WriteAllTextAsync(
+            sourcePath,
+            "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n");
+        return await new ReplaySessionManager().ImportAsync(
+            sourcePath,
+            Path.Combine(root, "managed"),
+            CancellationToken.None);
+    }
+
     private sealed class TemporaryDirectory : IDisposable
     {
         public TemporaryDirectory()
