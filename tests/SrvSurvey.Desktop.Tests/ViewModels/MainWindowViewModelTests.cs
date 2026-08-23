@@ -2130,6 +2130,8 @@ public sealed class MainWindowViewModelTests
                 journalPath,
                 "{\"timestamp\":\"2026-07-24T10:05:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"New Test\",\"SystemAddress\":84,\"StarPos\":[4,5,6]}\n");
             await viewModel.RefreshAsync();
+            await client.WaitForRequestAsync(84).WaitAsync(
+                TimeSpan.FromSeconds(2));
 
             Assert.Equal([42, 84], client.RequestedAddresses);
             Assert.Contains(42, client.CanceledAddresses);
@@ -3957,6 +3959,8 @@ public sealed class MainWindowViewModelTests
         private readonly object sync = new();
         private readonly List<long> requestedAddresses = [];
         private readonly List<long> canceledAddresses = [];
+        private readonly Dictionary<long, TaskCompletionSource>
+            requestStartedByAddress = [];
         private readonly TaskCompletionSource firstRequestStarted = new(
             TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -3984,6 +3988,30 @@ public sealed class MainWindowViewModelTests
             }
         }
 
+        public Task WaitForRequestAsync(long systemAddress)
+        {
+            lock (sync)
+            {
+                if (requestedAddresses.Contains(systemAddress))
+                {
+                    return Task.CompletedTask;
+                }
+
+                if (!requestStartedByAddress.TryGetValue(
+                    systemAddress,
+                    out var requestStarted))
+                {
+                    requestStarted = new TaskCompletionSource(
+                        TaskCreationOptions.RunContinuationsAsynchronously);
+                    requestStartedByAddress.Add(
+                        systemAddress,
+                        requestStarted);
+                }
+
+                return requestStarted.Task;
+            }
+        }
+
         public Task<SystemBodyDataLoadResult> GetAsync(
             string systemName,
             long systemAddress,
@@ -3992,6 +4020,12 @@ public sealed class MainWindowViewModelTests
             lock (sync)
             {
                 requestedAddresses.Add(systemAddress);
+                if (requestStartedByAddress.Remove(
+                    systemAddress,
+                    out var requestStarted))
+                {
+                    requestStarted.TrySetResult();
+                }
             }
 
             firstRequestStarted.TrySetResult();
