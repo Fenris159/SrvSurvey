@@ -29,6 +29,29 @@ public sealed class ReleaseWorkflowContractTests
             StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ReleasePackagesIncludeTheReplayController()
+    {
+        var workflow = File.ReadAllText(Path.Combine(
+            FindRepositoryRoot(),
+            ".github",
+            "workflows",
+            "build-srvsurvey-xp.yml"));
+
+        Assert.Contains(
+            "dotnet publish src/SrvSurvey.ReplayController/SrvSurvey.ReplayController.csproj",
+            workflow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "SrvSurvey.ReplayController.exe",
+            workflow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "SrvSurvey.ReplayController'",
+            workflow,
+            StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

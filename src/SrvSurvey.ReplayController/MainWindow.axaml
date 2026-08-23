@@ -1,0 +1,136 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:replay="using:SrvSurvey.Core.Diagnostics.Replay"
+        xmlns:local="using:SrvSurvey.ReplayController"
+        x:Class="SrvSurvey.ReplayController.MainWindow"
+        x:DataType="local:ReplayControllerViewModel"
+        Title="SrvSurvey Journal Replay Controller"
+        Width="1120"
+        Height="760"
+        MinWidth="900"
+        MinHeight="620">
+  <Grid Margin="20" RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="14">
+    <StackPanel Spacing="3">
+      <TextBlock FontSize="24" FontWeight="SemiBold" Text="Journal Replay Controller" />
+      <TextBlock Opacity="0.72"
+                 Text="Import evidence, launch an isolated SrvSurvey instance, then emit events in their original order and timing." />
+    </StackPanel>
+
+    <Border Grid.Row="1" BorderBrush="#505050" BorderThickness="1" CornerRadius="5" Padding="12">
+      <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="8">
+        <TextBlock VerticalAlignment="Center" Text="Replay source" />
+        <TextBox Grid.Column="1" IsReadOnly="True" Text="{Binding SourcePath}" />
+        <Button Grid.Column="2" Click="ImportReplay_Click" Content="Import…" />
+
+        <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="SrvSurvey executable" />
+        <TextBox Grid.Row="1" Grid.Column="1"
+                 Text="{Binding SrvSurveyExecutablePath, Mode=TwoWay}" />
+        <Button Grid.Row="1" Grid.Column="2" Click="ChooseExecutable_Click" Content="Choose…" />
+
+        <TextBlock Grid.Row="2" VerticalAlignment="Center" Text="Managed replay folder" />
+        <TextBox Grid.Row="2" Grid.Column="1" IsReadOnly="True" Text="{Binding SessionDirectory}" />
+        <Button Grid.Row="2" Grid.Column="2" Click="OpenReplayFolder_Click" Content="Open folder" />
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="2" BorderBrush="#505050" BorderThickness="1" CornerRadius="5" Padding="12">
+      <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*"
+            RowDefinitions="Auto,Auto"
+            ColumnSpacing="10"
+            RowSpacing="7">
+        <TextBlock Opacity="0.72" Text="Commander" />
+        <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="{Binding CommanderName}" />
+        <TextBlock Grid.Column="2" Opacity="0.72" Text="Frontier ID" />
+        <TextBlock Grid.Column="3" FontFamily="Consolas" Text="{Binding FrontierId}" />
+        <TextBlock Grid.Column="4" Opacity="0.72" Text="Events / range" />
+        <StackPanel Grid.Column="5">
+          <TextBlock FontWeight="SemiBold" Text="{Binding TotalEvents}" />
+          <TextBlock FontSize="11" Opacity="0.72" Text="{Binding TimeRangeText}" />
+        </StackPanel>
+        <TextBlock Grid.Row="1" Opacity="0.72" Text="Source build" />
+        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SourceVersion}" />
+        <TextBlock Grid.Row="1" Grid.Column="2" Opacity="0.72" Text="Privacy" />
+        <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding PrivacyModeText}" />
+        <StackPanel Grid.Row="1" Grid.Column="4" Grid.ColumnSpan="2"
+                   HorizontalAlignment="Right"
+                   MaxWidth="430">
+          <TextBlock HorizontalAlignment="Right"
+                     Foreground="#76C47A"
+                     Text="{Binding ValidationStatus}" />
+          <TextBlock HorizontalAlignment="Right"
+                     FontSize="11"
+                     Opacity="0.72"
+                     TextWrapping="Wrap"
+                     Text="{Binding FidelityStatus}" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="3" ColumnDefinitions="360,*" ColumnSpacing="14">
+      <Border BorderBrush="#505050" BorderThickness="1" CornerRadius="5" Padding="10">
+        <Grid RowDefinitions="Auto,*" RowSpacing="8">
+          <TextBlock FontWeight="SemiBold" Text="Imported events" />
+          <ListBox Grid.Row="1"
+                   ItemsSource="{Binding Events}"
+                   SelectedItem="{Binding SelectedEvent, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="replay:JournalReplayEvent">
+                <Grid Margin="3" ColumnDefinitions="46,*,Auto" ColumnSpacing="8">
+                  <TextBlock FontFamily="Consolas" Opacity="0.65" Text="{Binding Index}" />
+                  <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="{Binding EventName}" />
+                  <TextBlock Grid.Column="2" FontFamily="Consolas" FontSize="10" Opacity="0.7" Text="{Binding Timestamp}" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </Border>
+
+      <Border Grid.Column="1" BorderBrush="#505050" BorderThickness="1" CornerRadius="5" Padding="12">
+        <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
+          <WrapPanel>
+            <Button Margin="0,0,8,8" Command="{Binding LaunchCommand}" Content="Launch diagnostic SrvSurvey" />
+            <Button Margin="0,0,8,8" Command="{Binding StopCommand}" Content="Stop instance" />
+            <Button Margin="0,0,8,8" Command="{Binding RestartCommand}" Content="Restart replay" />
+            <Button Margin="0,0,8,8" Click="OpenLogsFolder_Click" Content="Open logs" />
+          </WrapPanel>
+
+          <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
+            <Button Command="{Binding PreviousCommand}" Content="Previous" />
+            <Button Grid.Column="1" Command="{Binding StepCommand}" Content="Step" />
+            <Button Grid.Column="2" Command="{Binding PlayCommand}" Content="Play" />
+            <Button Grid.Column="3" Command="{Binding PauseCommand}" Content="Pause" />
+            <TextBlock Grid.Column="4" VerticalAlignment="Center" Margin="10,0,0,0" Text="Speed" />
+            <ComboBox Grid.Column="5" Width="90"
+                      ItemsSource="{Binding SpeedOptions}"
+                      SelectedItem="{Binding SpeedMultiplier, Mode=TwoWay}" />
+            <TextBlock Grid.Column="6" HorizontalAlignment="Right" VerticalAlignment="Center"
+                       FontFamily="Consolas" Text="{Binding PositionText}" />
+            <TextBlock Grid.Column="7" VerticalAlignment="Center"
+                       FontWeight="SemiBold"
+                       Text="{Binding CurrentEvent.EventName}" />
+          </Grid>
+
+          <ProgressBar Grid.Row="2" Minimum="0" Maximum="{Binding TotalEvents}" Value="{Binding Position}" />
+
+          <StackPanel Grid.Row="3" Spacing="6">
+            <TextBlock FontWeight="SemiBold" Text="Selected event" />
+            <TextBox MinHeight="230"
+                     AcceptsReturn="True"
+                     IsReadOnly="True"
+                     TextWrapping="NoWrap"
+                     FontFamily="Consolas"
+                     FontSize="11"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     Text="{Binding SelectedEvent.RawJson}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <Border Grid.Row="4" Background="#1B1B1B" CornerRadius="4" Padding="10">
+      <TextBlock TextWrapping="Wrap" Text="{Binding StatusMessage}" />
+    </Border>
+  </Grid>
+</Window>
