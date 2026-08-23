@@ -111,6 +111,11 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     public async Task ReferenceOnlySelectionRemainsReadOnly()
     {
         var callbackCount = 0;
+        var template = CreateTemplate();
+        var projection = new GuardianSiteMapProjector().Project(
+            template,
+            CreateSurvey().Survey,
+            [new GuardianObelisk("A01", "H1", true, ["ca"])]);
         var editor = new GuardianSurveyEditorViewModel(
             new GuardianCommanderSurveyStore(temporaryDirectory),
             (_, _) =>
@@ -119,13 +124,67 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                 return Task.CompletedTask;
             });
 
-        editor.Load("F123", isOdyssey: true, survey: null, CreateTemplate());
+        editor.Load(
+            "F123",
+            isOdyssey: true,
+            survey: null,
+            template,
+            referenceProjection: projection);
+        editor.SelectedPointName = "c1";
+
+        Assert.True(editor.HasSelectedMapMarker);
+        Assert.False(editor.IsMapSummaryVisible);
+        Assert.True(editor.HasSelectedPoint);
+        Assert.True(editor.IsSelectedPointReadOnly);
+        Assert.False(editor.CanEditSelectedPoint);
+        Assert.Equal(GuardianPoiStatus.Present, editor.SelectedPoint!.Status);
+        Assert.True(editor.SelectedPoint.IsReferenceOnly);
+        Assert.True(editor.SelectedPoint.HasComponentRecord);
+
+        editor.SelectedPointName = null;
+
+        Assert.False(editor.HasSelectedMapMarker);
+        Assert.True(editor.IsMapSummaryVisible);
         await editor.SaveAsync();
 
         Assert.False(editor.IsAvailable);
         Assert.Empty(editor.Points);
         Assert.Equal(0, callbackCount);
         Assert.Contains("Visit the selected site", editor.StatusMessage);
+    }
+
+    [Fact]
+    public void ReferenceSelectionBecomesEditableWhenSurveyAppears()
+    {
+        var template = CreateTemplate();
+        var survey = CreateSurvey();
+        var projection = new GuardianSiteMapProjector().Project(
+            template,
+            survey.Survey,
+            survey.ActiveObelisks);
+        var editor = new GuardianSurveyEditorViewModel(
+            new GuardianCommanderSurveyStore(temporaryDirectory),
+            (_, _) => Task.CompletedTask);
+        editor.Load(
+            "F123",
+            isOdyssey: true,
+            survey: null,
+            template,
+            referenceProjection: projection);
+        editor.SelectedPointName = "c1";
+
+        editor.Load(
+            "F123",
+            isOdyssey: true,
+            survey,
+            template,
+            referenceProjection: projection);
+
+        Assert.Equal("c1", editor.SelectedPointName);
+        Assert.True(editor.HasSelectedMapMarker);
+        Assert.True(editor.CanEditSelectedPoint);
+        Assert.False(editor.IsSelectedPointReadOnly);
+        Assert.False(editor.SelectedPoint!.IsReferenceOnly);
     }
 
     [Fact]

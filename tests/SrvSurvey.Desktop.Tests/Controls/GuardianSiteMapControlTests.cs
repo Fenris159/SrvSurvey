@@ -532,6 +532,16 @@ public sealed class GuardianSiteMapControlTests
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
                 frame.Save(outputPath, PngBitmapEncoderOptions.Default);
             }
+
+            window.MouseDown(
+                new Point(40, 40),
+                MouseButton.Left,
+                RawInputModifiers.None);
+            window.MouseUp(
+                new Point(40, 40),
+                MouseButton.Left,
+                RawInputModifiers.None);
+            Assert.Null(control.SelectedPointName);
         }
         finally
         {

@@ -52,6 +52,10 @@ public sealed class GuardianViewMarkupTests
         var map = top.Descendants().Single(element =>
             element.Name.LocalName == "GuardianSiteMapControl"
             && element.Attribute("IsLegendOnly") is null);
+        var selectedMap = FindNamedElement(document, "GuardianSelectedMap");
+        var selectedPoint = FindNamedElement(
+            document,
+            "GuardianSelectedMapPointEditor");
         var cardNames = sidebar.Elements()
             .Select(GetName)
             .OfType<string>()
@@ -64,6 +68,20 @@ public sealed class GuardianViewMarkupTests
         Assert.Equal(
             "{Binding Guardian.SurveyEditor.SelectedPointName, Mode=TwoWay}",
             map.Attribute("SelectedPointName")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.IsMapSummaryVisible}",
+            selectedMap.Attribute("IsVisible")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.HasSelectedMapMarker}",
+            selectedPoint.Attribute("IsVisible")?.Value);
+        Assert.Null(selectedPoint.Attribute("IsEnabled"));
+        var selectedContent = selectedPoint.Descendants().Single(element =>
+            element.Name.LocalName == "ContentControl"
+            && element.Attribute("Content")?.Value
+                == "{Binding Guardian.SurveyEditor.SelectedPoint}");
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.CanEditSelectedPoint}",
+            selectedContent.Attribute("IsEnabled")?.Value);
         Assert.Equal(
             [
                 "GuardianSelectedMap",
@@ -89,6 +107,9 @@ public sealed class GuardianViewMarkupTests
         var rawPrecision = FindNamedElement(
             document,
             "GuardianRawPointPrecisionEditor");
+        var rawFields = FindNamedElement(
+            document,
+            "GuardianRawPointGeometryFields");
 
         Assert.Contains(siteType, editor.Descendants());
         Assert.Equal(
@@ -104,6 +125,8 @@ public sealed class GuardianViewMarkupTests
         Assert.Equal(
             "{Binding IsRaw}",
             rawPrecision.Attribute("IsVisible")?.Value);
+        Assert.Equal("StackPanel", rawFields.Name.LocalName);
+        Assert.Null(rawFields.Attribute("Orientation"));
     }
 
     [Fact]

@@ -4741,7 +4741,9 @@ public sealed class GuardianViewModel
             survey,
             template,
             ShowComponentMaterials,
-            templates);
+            templates,
+            MapProjection,
+            row?.Reference);
         TemplateAuthoring.UpdateContext(template, measurement: null);
     }
 

@@ -53,10 +53,14 @@ identified by the audit:
 
 Map interaction is linked to the same editor rather than a second workflow.
 Hovering a point draws the segmented green focus ring used by the legacy map;
-clicking selects that point and opens its editable details beside the map.
-Commander-specific raw points additionally expose type, angle, distance, and
-rotation for precision correction, plus deletion. Selecting a matching active
-obelisk marker selects its metadata row.
+clicking replaces the map-summary card with that point's inspector. Reference
+markers use the same controls with their published values in a disabled state;
+when a commander survey is created for the same site, the selected inspector
+transitions to editable state without switching workflows. Clicking empty map
+space deselects the marker and restores the summary. Commander-specific raw
+points additionally expose type, angle, distance, and rotation for precision
+correction, plus deletion. Selecting a matching active obelisk marker selects
+its metadata row.
 
 Component materials remain available for component towers and destructible
 panels when **Track Guardian component materials** is enabled in Overlay

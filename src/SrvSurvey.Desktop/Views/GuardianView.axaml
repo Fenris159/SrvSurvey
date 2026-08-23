@@ -546,7 +546,8 @@
                           Grid.Column="1"
                           Spacing="18">
                 <Border x:Name="GuardianSelectedMap"
-                        Classes="card raised">
+                        Classes="card raised"
+                        IsVisible="{Binding Guardian.SurveyEditor.IsMapSummaryVisible}">
                   <StackPanel Spacing="8">
                     <TextBlock Classes="eyebrow" Text="SELECTED MAP" />
                     <TextBlock Classes="card-title"
@@ -574,11 +575,16 @@
 
                 <Border x:Name="GuardianSelectedMapPointEditor"
                         Classes="card raised"
-                        IsEnabled="{Binding Guardian.SurveyEditor.IsAvailable}"
-                        IsVisible="{Binding Guardian.SurveyEditor.HasSelectedPoint}">
+                        IsVisible="{Binding Guardian.SurveyEditor.HasSelectedMapMarker}">
                   <StackPanel Spacing="10">
-                    <TextBlock Classes="eyebrow" Text="SELECTED SURVEY POINT" />
-                    <ContentControl Content="{Binding Guardian.SurveyEditor.SelectedPoint}">
+                    <TextBlock Classes="eyebrow"
+                               Text="SELECTED SURVEY POINT" />
+                    <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                               IsVisible="{Binding Guardian.SurveyEditor.IsSelectedPointReadOnly}"
+                               TextWrapping="Wrap"
+                               Text="Reference marker preview. Published values are read only; these controls enable when the marker belongs to your commander survey." />
+                    <ContentControl Content="{Binding Guardian.SurveyEditor.SelectedPoint}"
+                                    IsEnabled="{Binding Guardian.SurveyEditor.CanEditSelectedPoint}">
                       <ContentControl.ContentTemplate>
                         <DataTemplate x:DataType="vm:GuardianSurveyPoiViewModel">
                           <StackPanel Spacing="10">
@@ -595,32 +601,45 @@
                               <TextBlock Classes="muted" Text="RAW-POINT PRECISION" />
                               <ComboBox ItemsSource="{Binding EditableRawPointTypes}"
                                         SelectedItem="{Binding Type, Mode=TwoWay}" />
-                              <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                                <StackPanel Spacing="4">
-                                  <TextBlock Classes="muted" FontSize="11" Text="ANGLE" />
-                                  <NumericUpDown Minimum="0"
+                              <StackPanel x:Name="GuardianRawPointGeometryFields"
+                                          Spacing="8">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                  <TextBlock Classes="muted"
+                                             MinWidth="72"
+                                             VerticalAlignment="Center"
+                                             Text="ANGLE" />
+                                  <NumericUpDown Grid.Column="1"
+                                                 Minimum="0"
                                                  Maximum="359.999"
                                                  Increment="0.001"
                                                  FormatString="0.000"
                                                  Value="{Binding RawAngle, Mode=TwoWay}" />
-                                </StackPanel>
-                                <StackPanel Grid.Column="1" Spacing="4">
-                                  <TextBlock Classes="muted" FontSize="11" Text="DISTANCE" />
-                                  <NumericUpDown Minimum="0"
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                  <TextBlock Classes="muted"
+                                             MinWidth="72"
+                                             VerticalAlignment="Center"
+                                             Text="DISTANCE" />
+                                  <NumericUpDown Grid.Column="1"
+                                                 Minimum="0"
                                                  Maximum="100000"
                                                  Increment="0.001"
                                                  FormatString="0.000"
                                                  Value="{Binding RawDistance, Mode=TwoWay}" />
-                                </StackPanel>
-                                <StackPanel Grid.Column="2" Spacing="4">
-                                  <TextBlock Classes="muted" FontSize="11" Text="ROTATION" />
-                                  <NumericUpDown Minimum="-1"
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                  <TextBlock Classes="muted"
+                                             MinWidth="72"
+                                             VerticalAlignment="Center"
+                                             Text="ROTATION" />
+                                  <NumericUpDown Grid.Column="1"
+                                                 Minimum="-1"
                                                  Maximum="359.999"
                                                  Increment="0.001"
                                                  FormatString="0.000"
                                                  Value="{Binding RawRotation, Mode=TwoWay}" />
-                                </StackPanel>
-                              </Grid>
+                                </Grid>
+                              </StackPanel>
                               <TextBlock Classes="muted"
                                          FontSize="11"
                                          TextWrapping="Wrap"

@@ -22,6 +22,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private bool showComponentMaterials;
     private GuardianSiteTemplateCatalog templates =
         new GuardianSiteTemplateCatalog([]);
+    private GuardianSiteSelectionKey? selectionContext;
+    private GuardianSiteMapProjection? referenceProjection;
     private GuardianCommanderSiteSurvey? originalSurvey;
     private bool isAvailable;
     private bool isBusy;
@@ -33,6 +35,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private decimal? surfaceLongitude;
     private string notes = string.Empty;
     private IReadOnlyList<GuardianSurveyPoiViewModel> points = [];
+    private IReadOnlyList<GuardianSurveyPoiViewModel> selectableMapPoints = [];
     private IReadOnlyList<GuardianObeliskGroupViewModel> obeliskGroups = [];
     private IReadOnlyList<GuardianActiveObeliskViewModel> activeObelisks = [];
     private GuardianSurveyPoiViewModel? selectedPoint;
@@ -59,7 +62,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             () => IsAvailable && !IsBusy && liveMeasurement is not null);
         removeRawPointCommand = new AsyncCommand(
             RemoveSelectedRawPointAsync,
-            () => IsAvailable && !IsBusy && SelectedPoint?.IsRaw == true);
+            () => IsAvailable
+                && !IsBusy
+                && SelectedPoint is { IsRaw: true, IsReferenceOnly: false });
         addActiveObeliskCommand = new AsyncCommand(
             AddActiveObeliskAsync,
             () => IsAvailable && !IsBusy);
@@ -105,6 +110,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 addActiveObeliskCommand.RaiseCanExecuteChanged();
                 removeActiveObeliskCommand.RaiseCanExecuteChanged();
                 OnPropertyChanged(nameof(AvailabilityMessage));
+                OnPropertyChanged(nameof(CanEditSelectedPoint));
+                OnPropertyChanged(nameof(IsSelectedPointReadOnly));
             }
         }
     }
@@ -228,21 +235,30 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             if (SetField(ref selectedPoint, value))
             {
                 selectedPointName = value?.Name;
-                OnPropertyChanged(nameof(HasSelectedPoint));
-                OnPropertyChanged(nameof(HasSelectedRawPoint));
-                OnPropertyChanged(nameof(SelectedPointName));
+                NotifySelectedPointStateChanged(selectionNameChanged: true);
                 if (value is not null)
                 {
                     SelectedActiveObelisk = null;
                 }
-                removeRawPointCommand.RaiseCanExecuteChanged();
             }
         }
     }
 
     public bool HasSelectedPoint => SelectedPoint is not null;
 
-    public bool HasSelectedRawPoint => SelectedPoint?.IsRaw == true;
+    public bool HasSelectedRawPoint => SelectedPoint is
+    { IsRaw: true, IsReferenceOnly: false };
+
+    public bool HasSelectedMapMarker =>
+        !string.IsNullOrWhiteSpace(SelectedPointName);
+
+    public bool IsMapSummaryVisible => !HasSelectedMapMarker;
+
+    public bool CanEditSelectedPoint => IsAvailable
+        && SelectedPoint is { IsReferenceOnly: false };
+
+    public bool IsSelectedPointReadOnly => HasSelectedMapMarker
+        && !CanEditSelectedPoint;
 
     public string? SelectedPointName
     {
@@ -258,10 +274,10 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             }
 
             selectedPointName = value;
-            OnPropertyChanged();
+            NotifySelectedPointStateChanged(selectionNameChanged: true);
             var point = value is null
                 ? null
-                : Points.FirstOrDefault(candidate => string.Equals(
+                : selectableMapPoints.FirstOrDefault(candidate => string.Equals(
                     candidate.Name,
                     value,
                     StringComparison.OrdinalIgnoreCase));
@@ -269,12 +285,10 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             {
                 selectedPoint = point;
                 OnPropertyChanged(nameof(SelectedPoint));
-                OnPropertyChanged(nameof(HasSelectedPoint));
-                OnPropertyChanged(nameof(HasSelectedRawPoint));
-                removeRawPointCommand.RaiseCanExecuteChanged();
+                NotifySelectedPointStateChanged(selectionNameChanged: false);
             }
 
-            SelectedActiveObelisk = point is null && value is not null
+            SelectedActiveObelisk = value is not null
                 ? ActiveObelisks.FirstOrDefault(candidate => string.Equals(
                     candidate.Name,
                     value,
@@ -333,8 +347,22 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         GuardianCommanderSiteSurvey? survey,
         GuardianSiteTemplate? template,
         bool showComponentMaterials = false,
-        GuardianSiteTemplateCatalog? templateCatalog = null)
+        GuardianSiteTemplateCatalog? templateCatalog = null,
+        GuardianSiteMapProjection? referenceProjection = null,
+        GuardianSiteReference? siteReference = null)
     {
+        GuardianSiteSelectionKey? nextSelectionContext = siteReference is null
+            ? null
+            : new GuardianSiteSelectionKey(
+                siteReference.Kind,
+                siteReference.SystemAddress,
+                siteReference.BodyId,
+                siteReference.Index,
+                siteReference.SiteId);
+        var previousSelectionName = selectionContext == nextSelectionContext
+            ? SelectedPointName
+            : null;
+        selectionContext = nextSelectionContext;
         this.frontierId = frontierId;
         this.isOdyssey = isOdyssey;
         this.showComponentMaterials = showComponentMaterials;
@@ -342,6 +370,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             ?? (template is null
                 ? new GuardianSiteTemplateCatalog([])
                 : new GuardianSiteTemplateCatalog([template]));
+        this.referenceProjection = referenceProjection;
         originalSurvey = survey;
         SelectedPointName = null;
         IsAvailable = frontierId is not null
@@ -361,9 +390,13 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             SurfaceLongitude = null;
             Notes = string.Empty;
             Points = [];
+            selectableMapPoints = BuildSelectableMapPoints(
+                template,
+                referenceProjection,
+                Points);
             ObeliskGroups = [];
             ActiveObelisks = [];
-            SelectedPoint = null;
+            SelectedPointName = previousSelectionName;
             SelectedActiveObelisk = null;
             UpdateLiveMeasurement(null);
             StatusMessage = AvailabilityMessage;
@@ -401,7 +434,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         LoadPointRows(
             templates.Find(SiteType) ?? template,
             survey.Survey,
-            selectedPointName: null);
+            previousSelectionName,
+            referenceProjection);
         isLoading = false;
         StatusMessage = templates.Find(SiteType) is null
             ? AvailabilityMessage
@@ -412,11 +446,16 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private void LoadPointRows(
         GuardianSiteTemplate? template,
         GuardianSurveyData survey,
-        string? selectedPointName)
+        string? selectedPointName,
+        GuardianSiteMapProjection? referenceProjection = null)
     {
         if (template is null)
         {
             Points = [];
+            selectableMapPoints = BuildSelectableMapPoints(
+                template,
+                referenceProjection,
+                Points);
             ObeliskGroups = [];
             SelectedPoint = null;
             return;
@@ -451,6 +490,10 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 showComponentMaterials)))
             .OrderBy(point => point.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        selectableMapPoints = BuildSelectableMapPoints(
+            template,
+            referenceProjection,
+            Points);
         ObeliskGroups = template.ObeliskGroupNameLocations.Keys
             .Where(name => !string.IsNullOrEmpty(name))
             .Select(name => name[0])
@@ -462,10 +505,66 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             .ToArray();
         SelectedPoint = selectedPointName is null
             ? null
-            : Points.FirstOrDefault(point => string.Equals(
+            : selectableMapPoints.FirstOrDefault(point => string.Equals(
                 point.Name,
                 selectedPointName,
                 StringComparison.OrdinalIgnoreCase));
+    }
+
+    private IReadOnlyList<GuardianSurveyPoiViewModel> BuildSelectableMapPoints(
+        GuardianSiteTemplate? template,
+        GuardianSiteMapProjection? referenceProjection,
+        IReadOnlyList<GuardianSurveyPoiViewModel> editablePoints)
+    {
+        if (referenceProjection is null)
+        {
+            return editablePoints;
+        }
+
+        var editableByName = editablePoints.ToDictionary(
+            point => point.Name,
+            StringComparer.OrdinalIgnoreCase);
+        var templatePointNames = (template?.PointsOfInterest ?? [])
+            .Concat(template?.DestructiblePanels ?? [])
+            .Select(point => point.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var projectedRows = referenceProjection.Points
+            .Select(point => editableByName.GetValueOrDefault(point.Name)
+                ?? CreateReferencePointRow(
+                    point,
+                    isRaw: !templatePointNames.Contains(point.Name)))
+            .ToArray();
+        var projectedNames = projectedRows
+            .Select(point => point.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return projectedRows
+            .Concat(editablePoints.Where(point => !projectedNames.Contains(
+                point.Name)))
+            .ToArray();
+    }
+
+    private GuardianSurveyPoiViewModel CreateReferencePointRow(
+        GuardianProjectedPoint point,
+        bool isRaw)
+    {
+        var componentMaterials = point.ComponentMaterials.Count == 0
+            ? null
+            : new GuardianComponentLoadout(
+                point.Name,
+                point.ComponentMaterials);
+        return new GuardianSurveyPoiViewModel(
+            new GuardianPointOfInterest(
+                point.Name,
+                point.Type,
+                point.Angle,
+                point.Distance,
+                point.Rotation),
+            point.Status,
+            point.RelicHeading,
+            isRaw,
+            componentMaterials,
+            showComponentMaterials,
+            isReferenceOnly: true);
     }
 
     public void UpdateLiveMeasurement(GuardianSurveyMeasurement? measurement)
@@ -516,7 +615,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         LoadPointRows(
             templates.Find(SiteType),
             source,
-            previousSelectionName);
+            previousSelectionName,
+            referenceProjection);
     }
 
     public Task AddActiveObeliskAsync()
@@ -605,6 +705,14 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             .Append(row)
             .OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        selectableMapPoints = selectableMapPoints
+            .Where(item => !string.Equals(
+                item.Name,
+                row.Name,
+                StringComparison.OrdinalIgnoreCase))
+            .Append(row)
+            .OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         SelectedPoint = row;
         StatusMessage = $"Added {name} as a local raw {NewRawPointType} point. Save the survey to persist it.";
         return Task.CompletedTask;
@@ -612,13 +720,17 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     public Task RemoveSelectedRawPointAsync()
     {
-        if (SelectedPoint is not { IsRaw: true } selected)
+        if (SelectedPoint is not
+            { IsRaw: true, IsReferenceOnly: false } selected)
         {
             StatusMessage = "Only commander-specific raw points can be removed.";
             return Task.CompletedTask;
         }
 
         Points = Points.Where(point => !ReferenceEquals(point, selected)).ToArray();
+        selectableMapPoints = selectableMapPoints
+            .Where(point => !ReferenceEquals(point, selected))
+            .ToArray();
         SelectedPoint = Points.Count > 0 ? Points[0] : null;
         StatusMessage = $"Removed local raw point {selected.Name}. Save the survey to persist the removal.";
         return Task.CompletedTask;
@@ -932,6 +1044,13 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         Dictionary<string, int> RelicHeadings,
         Dictionary<string, GuardianComponentLoadout> ComponentMaterials);
 
+    private readonly record struct GuardianSiteSelectionKey(
+        GuardianSiteKind Kind,
+        long SystemAddress,
+        int BodyId,
+        int Index,
+        int SiteId);
+
     private static bool TryGetHeading(decimal value, out int heading)
     {
         if (value != decimal.Truncate(value) || value is < -1 or > 359)
@@ -1008,6 +1127,22 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
+    private void NotifySelectedPointStateChanged(bool selectionNameChanged)
+    {
+        OnPropertyChanged(nameof(HasSelectedPoint));
+        OnPropertyChanged(nameof(HasSelectedRawPoint));
+        OnPropertyChanged(nameof(HasSelectedMapMarker));
+        OnPropertyChanged(nameof(IsMapSummaryVisible));
+        OnPropertyChanged(nameof(CanEditSelectedPoint));
+        OnPropertyChanged(nameof(IsSelectedPointReadOnly));
+        if (selectionNameChanged)
+        {
+            OnPropertyChanged(nameof(SelectedPointName));
+        }
+
+        removeRawPointCommand.RaiseCanExecuteChanged();
+    }
+
     private sealed class AsyncCommand(
         Func<Task> execute,
         Func<bool> canExecute) : ICommand
@@ -1068,7 +1203,8 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
         int relicHeading,
         bool isRaw = false,
         GuardianComponentLoadout? componentMaterials = null,
-        bool componentModeEnabled = false)
+        bool componentModeEnabled = false,
+        bool isReferenceOnly = false)
     {
         sourcePoint = point;
         type = point.Type;
@@ -1078,6 +1214,7 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
         this.status = status;
         this.relicHeading = relicHeading;
         IsRaw = isRaw;
+        IsReferenceOnly = isReferenceOnly;
         this.componentModeEnabled = componentModeEnabled;
         hasComponentRecord = componentMaterials is not null;
         topComponentMaterial = componentMaterials?.GetItem(0)
@@ -1102,7 +1239,9 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
 
     public bool IsRaw { get; }
 
-    public bool IsStatusEditable => !IsRaw;
+    public bool IsReferenceOnly { get; }
+
+    public bool IsStatusEditable => !IsRaw && !IsReferenceOnly;
 
     public string Name => sourcePoint.Name;
 
