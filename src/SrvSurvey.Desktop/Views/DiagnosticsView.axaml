@@ -167,7 +167,7 @@
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
                      Text="{Binding JournalHistory.ExportPreview}" />
-          <Button Classes="primary"
+          <Button Classes="secondary"
                   HorizontalAlignment="Left"
                   Click="ExportJournalReplay_Click"
                   Content="Export replay package" />
