@@ -251,7 +251,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         {
             var snapshot = await Task.Run(() => reader.LoadAsync(
                 journalDirectory,
-                CancellationToken.None));
+                CancellationToken.None), CancellationToken.None);
             allEvents = snapshot.Events;
             totalEventCount = snapshot.TotalEventCount;
             isHistoryWindowed = snapshot.IsWindowed;

@@ -219,7 +219,8 @@ public sealed class JournalReplayExporter
                 bootstrap = bootstrapSelector.Snapshot();
                 foreach (var bootstrapEvent in bootstrap)
                 {
-                    ObserveIncluded(bootstrapEvent);
+                    identityBuilder?.Observe(bootstrapEvent);
+                    commander ??= TryReadCommander(bootstrapEvent);
                     AppendRawEvent(inputHash, bootstrapEvent.RawJson);
                     inputByteCount += Encoding.UTF8.GetByteCount(
                         bootstrapEvent.RawJson) + 1L;
@@ -231,7 +232,8 @@ public sealed class JournalReplayExporter
             }
 
             selectedEventCount++;
-            ObserveIncluded(replayEvent);
+            identityBuilder?.Observe(replayEvent);
+            commander ??= TryReadCommander(replayEvent);
             AppendRawEvent(inputHash, replayEvent.RawJson);
             lastTimestamp = replayEvent.Timestamp;
             inputByteCount += Encoding.UTF8.GetByteCount(
@@ -261,12 +263,6 @@ public sealed class JournalReplayExporter
             commander,
             identityBuilder?.Build() ?? [],
             Convert.ToHexStringLower(inputHash.GetHashAndReset()));
-
-        void ObserveIncluded(JournalReplayEvent replayEvent)
-        {
-            identityBuilder?.Observe(replayEvent);
-            commander ??= TryReadCommander(replayEvent);
-        }
     }
 
     private async Task<string> WriteJournalSpoolAsync(

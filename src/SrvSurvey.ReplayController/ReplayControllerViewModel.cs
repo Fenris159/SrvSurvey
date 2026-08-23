@@ -465,7 +465,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
 
     public async ValueTask DisposeAsync()
     {
-        await operationGate.WaitAsync();
+        await operationGate.WaitAsync(CancellationToken.None);
         IsBusy = true;
         try
         {
@@ -716,7 +716,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
 
     private bool TryBeginOperation()
     {
-        if (!operationGate.Wait(0))
+        if (!operationGate.Wait(0, CancellationToken.None))
         {
             return false;
         }

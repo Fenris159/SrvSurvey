@@ -96,7 +96,9 @@ public sealed class ReplayControllerViewModelTests
         Assert.True(await viewModel.LaunchAsync());
 
         launcher.Instances[0].Exit(17);
-        await WaitUntilAsync(() => !viewModel.IsInstanceRunning);
+        await WaitUntilAsync(() => viewModel.StatusMessage.Contains(
+            "unexpectedly",
+            StringComparison.Ordinal));
 
         Assert.Contains("unexpectedly", viewModel.StatusMessage);
         Assert.Contains("code 17", viewModel.StatusMessage);

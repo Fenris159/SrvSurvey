@@ -127,6 +127,47 @@ public sealed class JournalHistoryViewModelTests
         Assert.True(await viewModel.ExportAsync(packagePath));
     }
 
+    [Fact]
+    public async Task EmptyHistoryAndInvalidRangesRemainRecoverable()
+    {
+        using var temp = new TemporaryDirectory();
+        using var empty = new JournalHistoryViewModel(temp.Path, "test-build");
+
+        await empty.RefreshAsync();
+
+        Assert.False(empty.HasEvents);
+        Assert.Contains("No journal events", empty.Summary);
+        Assert.Contains("No timestamped events", empty.ExportPreview);
+        Assert.False(await empty.ExportAsync(
+            Path.Combine(temp.Path, "empty.srvreplay")));
+
+        await File.WriteAllTextAsync(
+            Path.Combine(temp.Path, "Journal.01.log"),
+            "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"History Cmdr\",\"FID\":\"F123456\"}\n");
+        using var populated = new JournalHistoryViewModel(
+            temp.Path,
+            "test-build");
+        await populated.RefreshAsync();
+        populated.RedactExport = false;
+        Assert.Contains("remain raw", populated.ExportPreview);
+        populated.SelectedEvent = populated.Events[0];
+        populated.SearchText = "not present";
+        Assert.Null(populated.SelectedEvent);
+
+        populated.RangeFromText = "not-a-timestamp";
+        Assert.Contains("valid ISO timestamp", populated.ExportPreview);
+        Assert.False(await populated.ExportAsync(
+            Path.Combine(temp.Path, "invalid-start.srvreplay")));
+        Assert.Contains("valid ISO timestamp", populated.StatusMessage);
+
+        populated.RangeFromText = "2026-08-21T18:01:00Z";
+        populated.RangeToText = "not-a-timestamp";
+        Assert.Contains("export end", populated.ExportPreview);
+
+        populated.RangeToText = "2026-08-21T18:00:00Z";
+        Assert.Contains("must not be after", populated.ExportPreview);
+    }
+
     private sealed class TemporaryDirectory : IDisposable
     {
         public TemporaryDirectory()
