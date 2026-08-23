@@ -52,6 +52,10 @@ public sealed class GuardianViewMarkupTests
         var map = top.Descendants().Single(element =>
             element.Name.LocalName == "GuardianSiteMapControl"
             && element.Attribute("IsLegendOnly") is null);
+        var zoom = top.Descendants().Single(element =>
+            element.Name.LocalName == "Slider"
+            && element.Attribute("Value")?.Value
+                == "{Binding ViewportZoom, ElementName=GuardianSurveyMap, Mode=TwoWay}");
         var selectedMap = FindNamedElement(document, "GuardianSelectedMap");
         var selectedPoint = FindNamedElement(
             document,
@@ -68,6 +72,10 @@ public sealed class GuardianViewMarkupTests
         Assert.Equal(
             "{Binding Guardian.SurveyEditor.SelectedPointName, Mode=TwoWay}",
             map.Attribute("SelectedPointName")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.SelectedMapCommanderPosition}",
+            map.Attribute("CommanderMapPosition")?.Value);
+        Assert.Equal("15", zoom.Attribute("Maximum")?.Value);
         Assert.Equal(
             "{Binding Guardian.SurveyEditor.IsMapSummaryVisible}",
             selectedMap.Attribute("IsVisible")?.Value);
@@ -104,6 +112,10 @@ public sealed class GuardianViewMarkupTests
         var activeObelisks = FindNamedElement(
             document,
             "GuardianActiveObeliskEditor");
+        var activeObeliskDetails = activeObelisks.Descendants().Single(element =>
+            element.Name.LocalName == "ContentControl"
+            && element.Attribute("Content")?.Value
+                == "{Binding Guardian.SurveyEditor.SelectedActiveObelisk}");
         var rawPrecision = FindNamedElement(
             document,
             "GuardianRawPointPrecisionEditor");
@@ -122,6 +134,11 @@ public sealed class GuardianViewMarkupTests
             "{Binding Guardian.SurveyEditor.SurfaceLongitude, Mode=TwoWay}",
             longitude.Attribute("Value")?.Value);
         Assert.Contains(activeObelisks, editor.Descendants());
+        Assert.DoesNotContain(
+            activeObeliskDetails.Descendants().Attributes(),
+            attribute => attribute.Value.Contains(
+                "SelectedActiveObelisk.",
+                StringComparison.Ordinal));
         Assert.Equal(
             "{Binding IsRaw}",
             rawPrecision.Attribute("IsVisible")?.Value);
@@ -141,7 +158,7 @@ public sealed class GuardianViewMarkupTests
 
         Assert.Equal("640,Auto", mapGrid.Attribute("RowDefinitions")?.Value);
         Assert.Equal("1", slider.Attribute("Minimum")?.Value);
-        Assert.Equal("10", slider.Attribute("Maximum")?.Value);
+        Assert.Equal("15", slider.Attribute("Maximum")?.Value);
         Assert.Contains(
             "ElementName=GuardianSurveyMap",
             slider.Attribute("Value")?.Value,

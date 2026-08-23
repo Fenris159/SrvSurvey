@@ -453,7 +453,8 @@ public sealed class GuardianSiteMapControlTests
     [InlineData(double.NaN, 1)]
     [InlineData(0.5, 1)]
     [InlineData(4, 4)]
-    [InlineData(12, 10)]
+    [InlineData(12, 12)]
+    [InlineData(20, 15)]
     public void InteractiveViewportZoomUsesBoundedLegacyRange(
         double requested,
         double expected)
@@ -481,7 +482,7 @@ public sealed class GuardianSiteMapControlTests
     }
 
     [AvaloniaFact]
-    public void HoveringProjectedPointExposesMarkerSelectionFeedback()
+    public void OverlappingCommanderDoesNotBlockPointSelectionFeedback()
     {
         var control = new GuardianSiteMapControl
         {
@@ -495,6 +496,14 @@ public sealed class GuardianSiteMapControlTests
                     GuardianPoiStatus.Present)],
                 [],
                 1),
+            CommanderMapPosition = new GuardianSiteProximitySnapshot(
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                null),
             MapScale = 4,
             AllowViewportInteraction = true,
             ShowLegend = false,

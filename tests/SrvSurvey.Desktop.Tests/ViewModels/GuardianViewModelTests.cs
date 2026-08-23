@@ -1684,6 +1684,7 @@ public sealed class GuardianViewModelTests
             Assert.Equal("Ancient Ruins (1)", screenshotContext.SiteName);
             Assert.Null(viewModel.CurrentObelisk);
             Assert.Null(viewModel.Proximity);
+            Assert.Null(viewModel.SelectedMapCommanderPosition);
             Assert.Null(viewModel.TargetObeliskName);
         }
         finally
@@ -1735,6 +1736,9 @@ public sealed class GuardianViewModelTests
                 "Drew");
             viewModel.UpdateStatus(StatusNorthOfSite(0));
             Assert.Equal("p1", viewModel.Proximity?.NearestPoint?.Point.Name);
+            Assert.Same(
+                viewModel.Proximity,
+                viewModel.SelectedMapCommanderPosition);
 
             foreach (var (command, expected) in new[]
                      {

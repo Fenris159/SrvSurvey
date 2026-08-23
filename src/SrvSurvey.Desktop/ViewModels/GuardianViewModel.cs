@@ -935,6 +935,13 @@ public sealed class GuardianViewModel
         private set => SetField(ref mapProjection, value);
     }
 
+    public GuardianSiteProximitySnapshot? SelectedMapCommanderPosition =>
+        SelectedSite?.Reference is { } selectedReference
+        && ActiveSite?.Reference is { } activeReference
+        && selectedReference == activeReference
+            ? Proximity
+            : null;
+
     public GuardianSiteMapProjection? ActiveMapProjection => activeMapProjection;
 
     public string ActiveMapTitle => ActiveSite is { } site
@@ -3928,6 +3935,7 @@ public sealed class GuardianViewModel
         OnPropertyChanged(nameof(ResolvedActiveSiteType));
         OnPropertyChanged(nameof(ShouldShowLiveSiteOverlay));
         OnPropertyChanged(nameof(ShouldShowGuardianStatusOverlay));
+        OnPropertyChanged(nameof(SelectedMapCommanderPosition));
         NotifyAuxiliaryOverlayState();
     }
 
@@ -3935,6 +3943,7 @@ public sealed class GuardianViewModel
     {
         RefreshAutomaticMapScale();
         OnPropertyChanged(nameof(Proximity));
+        OnPropertyChanged(nameof(SelectedMapCommanderPosition));
         OnPropertyChanged(nameof(CurrentObelisk));
         OnPropertyChanged(nameof(HasCurrentObelisk));
         OnPropertyChanged(nameof(SiteDistanceText));

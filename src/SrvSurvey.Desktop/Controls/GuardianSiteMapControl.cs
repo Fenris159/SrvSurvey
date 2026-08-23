@@ -17,6 +17,10 @@ public sealed class GuardianSiteMapControl : Control
         ProximityProperty = AvaloniaProperty.Register<
             GuardianSiteMapControl,
             GuardianSiteProximitySnapshot?>(nameof(Proximity));
+    public static readonly StyledProperty<GuardianSiteProximitySnapshot?>
+        CommanderMapPositionProperty = AvaloniaProperty.Register<
+            GuardianSiteMapControl,
+            GuardianSiteProximitySnapshot?>(nameof(CommanderMapPosition));
     public static readonly StyledProperty<double> MapScaleProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, double>(
             nameof(MapScale),
@@ -73,7 +77,7 @@ public sealed class GuardianSiteMapControl : Control
             1);
 
     internal const double MinimumViewportZoom = 1;
-    internal const double MaximumViewportZoom = 10;
+    internal const double MaximumViewportZoom = 15;
 
     private IPointer? capturedPointer;
     private Point? dragOrigin;
@@ -86,6 +90,7 @@ public sealed class GuardianSiteMapControl : Control
         AffectsRender<GuardianSiteMapControl>(
             ProjectionProperty,
             ProximityProperty,
+            CommanderMapPositionProperty,
             MapScaleProperty,
             CommanderHeadingProperty,
             TargetPointNameProperty,
@@ -115,6 +120,12 @@ public sealed class GuardianSiteMapControl : Control
     {
         get => GetValue(ProximityProperty);
         set => SetValue(ProximityProperty, value);
+    }
+
+    public GuardianSiteProximitySnapshot? CommanderMapPosition
+    {
+        get => GetValue(CommanderMapPositionProperty);
+        set => SetValue(CommanderMapPositionProperty, value);
     }
 
     public double MapScale
@@ -332,6 +343,21 @@ public sealed class GuardianSiteMapControl : Control
             gridExtent * scale,
             CommanderHeading,
             scale);
+        if (Proximity is null && CommanderMapPosition is { } commander)
+        {
+            DrawCommander(
+                context,
+                TransformMapPoint(
+                    commander.MapX,
+                    commander.MapY,
+                    proximity: null,
+                    commanderHeading: 0,
+                    viewportCenter,
+                    scale),
+                projection.IsRuins,
+                scale);
+        }
+
         foreach (var point in projection.Points)
         {
             DrawPoint(

@@ -60,7 +60,10 @@ transitions to editable state without switching workflows. Clicking empty map
 space deselects the marker and restores the summary. Commander-specific raw
 points additionally expose type, angle, distance, and rotation for precision
 correction, plus deletion. Selecting a matching active obelisk marker selects
-its metadata row.
+its metadata row. While the selected site is also the active in-game site, the
+Survey map mirrors the live commander position without adding it to marker
+selection or hit testing. Interactive zoom extends from the fitted 1x view to
+15x for separating tightly grouped markers.
 
 Component materials remain available for component towers and destructible
 panels when **Track Guardian component materials** is enabled in Overlay

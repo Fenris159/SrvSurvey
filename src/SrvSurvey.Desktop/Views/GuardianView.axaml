@@ -512,6 +512,7 @@
                       Cursor="Hand"
                       AllowViewportInteraction="True"
                       Projection="{Binding Guardian.MapProjection}"
+                      CommanderMapPosition="{Binding Guardian.SelectedMapCommanderPosition}"
                       SelectedPointName="{Binding Guardian.SurveyEditor.SelectedPointName, Mode=TwoWay}"
                       ShowLegend="False"
                       MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
@@ -529,7 +530,7 @@
                                Text="ZOOM" />
                     <Slider Grid.Column="1"
                             Minimum="1"
-                            Maximum="10"
+                            Maximum="15"
                             TickFrequency="0.1"
                             Value="{Binding ViewportZoom, ElementName=GuardianSurveyMap, Mode=TwoWay}"
                             ToolTip.Tip="1x fits the full map. Zoom in, then drag the map to pan." />
@@ -1099,22 +1100,27 @@
                               </DataTemplate>
                             </ListBox.ItemTemplate>
                           </ListBox>
-                          <StackPanel Grid.Column="1"
-                                      Spacing="8"
-                                      IsVisible="{Binding Guardian.SurveyEditor.HasSelectedActiveObelisk}">
-                            <TextBox Text="{Binding Guardian.SurveyEditor.SelectedActiveObelisk.Name, Mode=TwoWay}"
-                                     PlaceholderText="Map marker, for example A01" />
-                            <TextBox Text="{Binding Guardian.SurveyEditor.SelectedActiveObelisk.LogCode, Mode=TwoWay}"
-                                     PlaceholderText="Log code, for example H1" />
-                            <TextBox Text="{Binding Guardian.SurveyEditor.SelectedActiveObelisk.ArtifactCodes, Mode=TwoWay}"
-                                     PlaceholderText="Artifact codes separated by commas" />
-                            <CheckBox IsChecked="{Binding Guardian.SurveyEditor.SelectedActiveObelisk.Scanned, Mode=TwoWay}"
-                                      Content="Scanned by this commander" />
-                            <TextBlock Classes="muted"
-                                       FontSize="11"
-                                       TextWrapping="Wrap"
-                                       Text="Clicking a matching obelisk marker on the map selects this metadata row." />
-                          </StackPanel>
+                          <ContentControl Grid.Column="1"
+                                          Content="{Binding Guardian.SurveyEditor.SelectedActiveObelisk}">
+                            <ContentControl.ContentTemplate>
+                              <DataTemplate x:DataType="vm:GuardianActiveObeliskViewModel">
+                                <StackPanel Spacing="8">
+                                  <TextBox Text="{Binding Name, Mode=TwoWay}"
+                                           PlaceholderText="Map marker, for example A01" />
+                                  <TextBox Text="{Binding LogCode, Mode=TwoWay}"
+                                           PlaceholderText="Log code, for example H1" />
+                                  <TextBox Text="{Binding ArtifactCodes, Mode=TwoWay}"
+                                           PlaceholderText="Artifact codes separated by commas" />
+                                  <CheckBox IsChecked="{Binding Scanned, Mode=TwoWay}"
+                                            Content="Scanned by this commander" />
+                                  <TextBlock Classes="muted"
+                                             FontSize="11"
+                                             TextWrapping="Wrap"
+                                             Text="Clicking a matching obelisk marker on the map selects this metadata row." />
+                                </StackPanel>
+                              </DataTemplate>
+                            </ContentControl.ContentTemplate>
+                          </ContentControl>
                         </Grid>
                       </StackPanel>
                     </Border>
