@@ -18,10 +18,14 @@ public sealed class DiagnosticReplayExternalServicesTests
         Assert.Null(state.Snapshot);
         await service.CancelConnectionAsync();
         await service.UnlinkAsync();
-        var connect = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            service.ConnectAsync());
-        var refresh = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            service.RefreshAsync());
+        var connectTask = service.ConnectAsync();
+        var refreshTask = service.RefreshAsync();
+        Assert.True(connectTask.IsFaulted);
+        Assert.True(refreshTask.IsFaulted);
+        var connect = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => connectTask);
+        var refresh = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => refreshTask);
         Assert.Contains("unavailable", connect.Message);
         Assert.Equal(connect.Message, refresh.Message);
     }

@@ -241,6 +241,57 @@ public sealed class ReplayControllerViewModelTests
     }
 
     [Fact]
+    public async Task WindowCloseWaitsForTheDiagnosticProcessToStop()
+    {
+        using var temp = new TemporaryDirectory();
+        var (journalPath, executable) = await CreateInputsAsync(temp.Path);
+        var launcher = new ControlledLauncher();
+        var viewModel = new ReplayControllerViewModel(
+            Path.Combine(temp.Path, "sessions"),
+            launcher);
+        viewModel.SrvSurveyExecutablePath = executable;
+        Assert.True(await viewModel.ImportAsync(journalPath));
+        Assert.True(await viewModel.LaunchAsync());
+        var diagnosticInstance = launcher.Instances[0];
+        diagnosticInstance.BlockStop();
+        var closeCompleted = false;
+        var coordinator = new ReplayControllerWindowCloseCoordinator(
+            viewModel.DisposeAsync,
+            () => closeCompleted = true);
+        var closeStarted = false;
+
+        try
+        {
+            closeStarted = true;
+            Assert.True(coordinator.ShouldCancelClose());
+            await diagnosticInstance.StopStarted.Task.WaitAsync(
+                TimeSpan.FromSeconds(2));
+
+            Assert.False(closeCompleted);
+            Assert.True(diagnosticInstance.IsRunning);
+
+            diagnosticInstance.ReleaseStop();
+            await coordinator.Completion.WaitAsync(TimeSpan.FromSeconds(2));
+
+            Assert.True(closeCompleted);
+            Assert.False(diagnosticInstance.IsRunning);
+            Assert.False(coordinator.ShouldCancelClose());
+        }
+        finally
+        {
+            diagnosticInstance.ReleaseStop();
+            if (closeStarted)
+            {
+                await coordinator.Completion;
+            }
+            else
+            {
+                await viewModel.DisposeAsync();
+            }
+        }
+    }
+
+    [Fact]
     public async Task DisposalReleasesTheOwnedReplayPlayer()
     {
         using var temp = new TemporaryDirectory();

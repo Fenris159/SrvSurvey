@@ -207,6 +207,7 @@ public sealed class ReplaySessionManagerTests
     public async Task LoadRejectsOversizedContainedSourceBeforeHashing()
     {
         using var temp = new TemporaryDirectory();
+        const long testJournalLimit = 1024;
         var session = await ImportCommanderJournalAsync(temp.Path);
         await using (var stream = new FileStream(
                          session.SourceJournalPath,
@@ -214,12 +215,13 @@ public sealed class ReplaySessionManagerTests
                          FileAccess.Write,
                          FileShare.None))
         {
-            stream.SetLength(ReplaySessionManager.MaximumJournalBytes + 1);
+            stream.SetLength(testJournalLimit + 1);
         }
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             DiagnosticReplaySession.LoadAsync(
                 session.ManifestPath,
+                testJournalLimit,
                 CancellationToken.None));
 
         Assert.Contains(
@@ -303,27 +305,19 @@ public sealed class ReplaySessionManagerTests
         using (var archive = ZipFile.Open(packagePath, ZipArchiveMode.Update))
         {
             var entry = archive.GetEntry("replay-package.json")!;
-            string manifest;
+            JsonObject manifest;
             using (var reader = new StreamReader(entry.Open()))
             {
-                manifest = await reader.ReadToEndAsync();
+                manifest = JsonNode.Parse(await reader.ReadToEndAsync())!
+                    .AsObject();
             }
 
             entry.Delete();
             var replacement = archive.CreateEntry("replay-package.json");
             await using var output = replacement.Open();
             await using var writer = new StreamWriter(output);
-            var commanderStart = manifest.IndexOf(
-                "\"commander\": {",
-                StringComparison.Ordinal);
-            var commanderEnd = manifest.IndexOf(
-                "  },",
-                commanderStart,
-                StringComparison.Ordinal);
-            await writer.WriteAsync(
-                manifest[..commanderStart]
-                + "\"commander\": null,"
-                + manifest[(commanderEnd + 4)..]);
+            manifest["commander"] = null;
+            await writer.WriteAsync(manifest.ToJsonString());
         }
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>

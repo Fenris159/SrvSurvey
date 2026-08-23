@@ -27,6 +27,8 @@ public sealed record JournalHistorySnapshot(
 public sealed class JournalHistoryReader
 {
     public const int DefaultMaximumLoadedEvents = 50_000;
+    private static readonly string[] SystemNamePropertyNames =
+        ["StarSystem", "SystemName"];
 
     private readonly int maximumLoadedEvents;
 
@@ -267,7 +269,7 @@ public sealed class JournalHistoryReader
 
     private static string? GetSystemName(JsonElement root)
     {
-        foreach (var propertyName in new[] { "StarSystem", "SystemName" })
+        foreach (var propertyName in SystemNamePropertyNames)
         {
             if (ReplaySessionManager.TryGetString(
                 root,

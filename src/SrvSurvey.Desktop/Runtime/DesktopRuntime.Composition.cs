@@ -242,20 +242,12 @@ internal sealed partial class DesktopRuntime
             viewModel.ProfileImportPreparing +=
                 StopJournalMonitorForProfileImportAsync;
             viewModel.BoxelClipboard.SetWriter(WriteClipboardAsync);
-        }
-        desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-
-        if (diagnosticReplay is null)
-        {
             viewModel.FrontierProfile.AuthorizationCallbackReceived +=
                 HandleFrontierAuthorizationCallback;
             viewModel.ReferenceDataUpdates.SetRestartHandler(() =>
                 RestartApplicationAsync("Published reference data refreshed"));
             viewModel.Localization.SetRestartHandler(() =>
                 RestartApplicationAsync("Language preference changed"));
-        }
-        if (diagnosticReplay is null)
-        {
             ConfigureReleaseInstaller(
                 viewModel,
                 desktop,
@@ -275,6 +267,7 @@ internal sealed partial class DesktopRuntime
                     CancellationToken.None),
                 WriteClipboardAsync);
         }
+        desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
         var errorReports = new ErrorReportWindowCoordinator(
             mainWindow,

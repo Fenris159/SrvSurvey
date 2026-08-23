@@ -46,9 +46,14 @@ public sealed class ReleaseWorkflowContractTests
             "SrvSurvey.ReplayController.exe",
             workflow,
             StringComparison.Ordinal);
+        var normalizedWorkflow = string.Join(
+            ' ',
+            workflow.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
         Assert.Contains(
-            "SrvSurvey.ReplayController'",
-            workflow,
+            "Get-ChildItem -LiteralPath $controllerOutput -File ` "
+                + "-Filter 'SrvSurvey.ReplayController*' | "
+                + "Copy-Item -Destination \"artifacts/${{ matrix.rid }}\" -Force",
+            normalizedWorkflow,
             StringComparison.Ordinal);
         Assert.Contains(
             "test -x squashfs-root/usr/lib/srvsurvey/SrvSurvey.ReplayController",

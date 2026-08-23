@@ -47,7 +47,7 @@ internal sealed class DiagnosticReplayFrontierAccountService
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        throw Unavailable();
+        return Task.FromException<FrontierAccountSnapshot>(Unavailable());
     }
 
     public Task CancelConnectionAsync(

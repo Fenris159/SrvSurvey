@@ -56,4 +56,21 @@ public sealed class StartupOptionsTests
 
         Assert.Null(StartupOptions.GetDiagnosticReplayManifest(arguments));
     }
+
+    [Theory]
+    [InlineData("--diagnostic-replay", "diagnostic replay")]
+    [InlineData("--diagnostic-replay=C:\\replays\\session.json", "diagnostic replay")]
+    [InlineData("--journal-directory", "normal startup")]
+    public void StartupFailureMessageIdentifiesTheRequestedMode(
+        string argument,
+        string expectedMode)
+    {
+        var message = Program.GetStartupFailureMessage(
+            [argument],
+            new InvalidDataException("test failure"));
+
+        Assert.Equal(
+            $"SrvSurvey {expectedMode} could not start: test failure",
+            message);
+    }
 }

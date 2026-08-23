@@ -160,13 +160,25 @@ internal static class Program
                 or UnauthorizedAccessException
                 or ArgumentException)
         {
-            Console.Error.WriteLine(
-                "SrvSurvey diagnostic replay could not start: "
-                + exception.Message);
+            Console.Error.WriteLine(GetStartupFailureMessage(
+                StartupArguments,
+                exception));
             Environment.ExitCode = 2;
             startupContext = null;
             return false;
         }
+    }
+
+    internal static string GetStartupFailureMessage(
+        IReadOnlyList<string> arguments,
+        Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(arguments);
+        ArgumentNullException.ThrowIfNull(exception);
+        var startupMode = StartupOptions.HasDiagnosticReplayOption(arguments)
+            ? "diagnostic replay"
+            : "normal startup";
+        return $"SrvSurvey {startupMode} could not start: {exception.Message}";
     }
 
     private static bool TryHandleFrontierCallback(

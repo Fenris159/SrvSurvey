@@ -143,6 +143,25 @@ public sealed class ReplayPresentationSnapshotStoreTests
         Assert.Throws<InvalidDataException>(() =>
             ReplayPresentationSnapshotStore.Apply(unknownOverlay));
 
+        var invalidPlacementScale = CreateSession(
+            Path.Combine(temp.Path, "placement-scale-session"),
+            Snapshot(
+                0,
+                new Dictionary<string, ReplayOverlayPlacement>
+                {
+                    ["PlotBioStatus"] = new(
+                        ReplayHorizontalAnchor.Left,
+                        0,
+                        ReplayVerticalAnchor.Top,
+                        0,
+                        null,
+                        99),
+                }));
+        Assert.Throws<InvalidDataException>(() =>
+            ReplayPresentationSnapshotStore.Apply(invalidPlacementScale));
+        Assert.False(Directory.Exists(invalidPlacementScale.ConfigDirectory));
+        Assert.False(Directory.Exists(invalidPlacementScale.DataDirectory));
+
         ReplayPresentationSnapshotStore.Apply(CreateSession(
             Path.Combine(temp.Path, "empty-session"),
             presentationSnapshot: null));

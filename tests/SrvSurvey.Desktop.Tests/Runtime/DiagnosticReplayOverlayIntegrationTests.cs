@@ -86,50 +86,59 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
         registry.SetUserVisibility("PlotFloatie", visible: true);
         Assert.True(Find(registry, "PlotFloatie").IsVisible);
 
-        var surfaceWindow = new Window();
-        registry.Register(surfaceWindow, "PlotGrounded");
-        surfaceWindow.Show();
-        Assert.True(surfaceWindow.IsVisible);
-        registry.SetGalaxyMapContextActive(active: true);
-        Assert.False(surfaceWindow.IsVisible);
-        Assert.True(Find(registry, "PlotFloatie").IsVisible);
-        registry.SetGalaxyMapContextActive(active: false);
+        Window? surfaceWindow = null;
+        Window? guardianWindow = null;
+        Window? biologyWindow = null;
+        try
+        {
+            surfaceWindow = new Window();
+            registry.Register(surfaceWindow, "PlotGrounded");
+            surfaceWindow.Show();
+            Assert.True(surfaceWindow.IsVisible);
+            registry.SetGalaxyMapContextActive(active: true);
+            Assert.False(surfaceWindow.IsVisible);
+            Assert.True(Find(registry, "PlotFloatie").IsVisible);
+            registry.SetGalaxyMapContextActive(active: false);
 
-        registry.SetGlobalSuppression(
-            manualSuppressed: false,
-            suitSuppressed: true,
-            sessionSuppressed: false);
-        Assert.All(registry.Snapshot(), item => Assert.False(item.IsVisible));
-        registry.SetGlobalSuppression(false, false, false);
+            registry.SetGlobalSuppression(
+                manualSuppressed: false,
+                suitSuppressed: true,
+                sessionSuppressed: false);
+            Assert.All(registry.Snapshot(), item => Assert.False(item.IsVisible));
+            registry.SetGlobalSuppression(false, false, false);
 
-        var guardianWindow = new Window();
-        var biologyWindow = new Window();
-        registry.Register(guardianWindow, "PlotGuardians");
-        registry.Register(biologyWindow, "PlotBioSystem");
-        biologyWindow.Show();
-        guardianWindow.Show();
-        Assert.True(guardianWindow.IsVisible);
-        Assert.False(biologyWindow.IsVisible);
-        Assert.Equal(
-            OverlayVisibilityReasons.PriorityObscured,
-            registry.GetDecision(biologyWindow).Reasons);
+            guardianWindow = new Window();
+            biologyWindow = new Window();
+            registry.Register(guardianWindow, "PlotGuardians");
+            registry.Register(biologyWindow, "PlotBioSystem");
+            biologyWindow.Show();
+            guardianWindow.Show();
+            Assert.True(guardianWindow.IsVisible);
+            Assert.False(biologyWindow.IsVisible);
+            Assert.Equal(
+                OverlayVisibilityReasons.PriorityObscured,
+                registry.GetDecision(biologyWindow).Reasons);
 
-        notification.Enabled = false;
-        Assert.False(coordinator.IsVisible);
-        notification.Enabled = true;
-        notification.ApplyJournalEvents(
-            live.JournalEvents,
-            allowNotifications: true);
-        Assert.True(coordinator.IsVisible);
+            notification.Enabled = false;
+            Assert.False(coordinator.IsVisible);
+            notification.Enabled = true;
+            notification.ApplyJournalEvents(
+                live.JournalEvents,
+                allowNotifications: true);
+            Assert.True(coordinator.IsVisible);
 
-        time.Advance(TimeSpan.FromSeconds(6));
-        notification.Refresh();
+            time.Advance(TimeSpan.FromSeconds(6));
+            notification.Refresh();
 
-        Assert.False(coordinator.IsVisible);
-        Assert.Empty(notification.Messages);
-        surfaceWindow.Close();
-        guardianWindow.Close();
-        biologyWindow.Close();
+            Assert.False(coordinator.IsVisible);
+            Assert.Empty(notification.Messages);
+        }
+        finally
+        {
+            surfaceWindow?.Close();
+            guardianWindow?.Close();
+            biologyWindow?.Close();
+        }
     }
 
     public void Dispose()

@@ -792,11 +792,23 @@ public sealed record DiagnosticReplaySession(
             cancellationToken);
     }
 
-    public static async Task<DiagnosticReplaySession> LoadAsync(
+    public static Task<DiagnosticReplaySession> LoadAsync(
         string manifestPath,
         CancellationToken cancellationToken)
     {
+        return LoadAsync(
+            manifestPath,
+            ReplaySessionManager.MaximumJournalBytes,
+            cancellationToken);
+    }
+
+    internal static async Task<DiagnosticReplaySession> LoadAsync(
+        string manifestPath,
+        long maximumJournalBytes,
+        CancellationToken cancellationToken)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestPath);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maximumJournalBytes);
         var fullManifestPath = Path.GetFullPath(manifestPath);
         if (!File.Exists(fullManifestPath))
         {
@@ -880,8 +892,7 @@ public sealed record DiagnosticReplaySession(
                 "The diagnostic replay source journal is missing.");
         }
 
-        if (new FileInfo(sourceJournalPath).Length
-            > ReplaySessionManager.MaximumJournalBytes)
+        if (new FileInfo(sourceJournalPath).Length > maximumJournalBytes)
         {
             throw new InvalidDataException(
                 "The diagnostic replay source journal is larger than the supported limit.");

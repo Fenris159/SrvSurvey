@@ -67,11 +67,22 @@ internal static class ReplayPresentationSnapshotStore
                 "The replay overlay presentation contains an unknown overlay.");
         }
 
+        if (snapshot.OverlayPlacements.Values.Any(placement =>
+                placement.ScaleIndex is { } scaleIndex
+                && !OverlayScaleCatalog.IsSupported(scaleIndex)))
+        {
+            throw new InvalidDataException(
+                "The replay overlay presentation uses an unsupported placement scale.");
+        }
+
         Directory.CreateDirectory(session.ConfigDirectory);
         Directory.CreateDirectory(session.DataDirectory);
-        var uiSettingsPath = Path.Combine(
+        var paths = new AppDataPaths(
             session.ConfigDirectory,
-            "cross-platform-ui.json");
+            session.DataDirectory,
+            session.CacheDirectory,
+            []);
+        var uiSettingsPath = paths.UiSettingsPath;
         new OverlayPanelVisibilitySettingsStore(uiSettingsPath).Save(
             snapshot.OverlayEnablement);
         new OverlayScaleSettingsStore(uiSettingsPath).Save(

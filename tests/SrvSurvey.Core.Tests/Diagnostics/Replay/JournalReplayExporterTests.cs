@@ -61,7 +61,7 @@ public sealed class JournalReplayExporterTests
             Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
             [
                 "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Private Cmdr\",\"FID\":\"F999999\"}",
-                "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Private Cmdr\",\"FID\":\"F999999\",\"AccessToken\":\"do-not-share\",\"Nested\":{\"ApiKey\":\"also-secret\"}}",
+                "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Private Cmdr\",\"FID\":\"F999999\",\"AccessToken\":\"do-not-share\",\"ClientCredential\":\"credential-value\",\"Nested\":{\"ApiKey\":\"also-secret\",\"AuthenticationHeader\":\"authentication-value\"}}",
                 "{\"timestamp\":\"2026-08-21T18:00:02Z\",\"event\":\"ReceiveText\",\"From\":\"Private Cmdr\",\"Message\":\"private message\"}",
             ]);
         var destination = Path.Combine(temp.Path, $"{privacyMode}.srvreplay");
@@ -80,6 +80,10 @@ public sealed class JournalReplayExporterTests
         Assert.DoesNotContain("also-secret", journal, StringComparison.Ordinal);
         Assert.DoesNotContain("AccessToken", journal, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("ApiKey", journal, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("credential-value", journal, StringComparison.Ordinal);
+        Assert.DoesNotContain("authentication-value", journal, StringComparison.Ordinal);
+        Assert.DoesNotContain("ClientCredential", journal, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("AuthenticationHeader", journal, StringComparison.OrdinalIgnoreCase);
         if (privacyMode == ReplayPrivacyMode.Redacted)
         {
             Assert.DoesNotContain("Private Cmdr", journal, StringComparison.Ordinal);
@@ -601,8 +605,8 @@ public sealed class JournalReplayExporterTests
     }
 
     [Theory]
-    [InlineData(2_000_001, 1)]
-    [InlineData(1, (256L * 1024L * 1024L) + 1)]
+    [InlineData(ReplaySessionManager.MaximumJournalEvents + 1, 1)]
+    [InlineData(1, ReplaySessionManager.MaximumJournalBytes + 1)]
     public void ExportBoundsMatchWhatTheImporterCanRead(
         int eventCount,
         long byteCount)

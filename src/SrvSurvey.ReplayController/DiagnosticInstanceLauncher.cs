@@ -101,10 +101,16 @@ internal sealed class ProcessDiagnosticInstanceLauncher : IDiagnosticInstanceLau
             return process.ExitCode;
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            process.Dispose();
-            return ValueTask.CompletedTask;
+            try
+            {
+                await StopAsync(CancellationToken.None);
+            }
+            finally
+            {
+                process.Dispose();
+            }
         }
     }
 }

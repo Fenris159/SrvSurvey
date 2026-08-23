@@ -461,7 +461,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
 
     public void Pause()
     {
-        playbackCancellation?.Cancel();
+        TryCancelPlayback();
     }
 
     public async ValueTask DisposeAsync()
@@ -614,10 +614,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
     private async Task PausePlaybackAsync()
     {
         var activePlayback = playbackTask;
-        if (playbackCancellation is not null)
-        {
-            await playbackCancellation.CancelAsync();
-        }
+        TryCancelPlayback();
         if (activePlayback is null)
         {
             return;
@@ -656,7 +653,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
                 }
 
                 instance = null;
-                playbackCancellation?.Cancel();
+                TryCancelPlayback();
                 if (ReferenceEquals(instanceMonitorCancellation, cancellation))
                 {
                     instanceMonitorCancellation = null;
@@ -696,6 +693,24 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         finally
         {
             cancellation.Dispose();
+        }
+    }
+
+    private void TryCancelPlayback()
+    {
+        var cancellation = playbackCancellation;
+        if (cancellation is null)
+        {
+            return;
+        }
+
+        try
+        {
+            cancellation.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Playback completion may dispose the source concurrently.
         }
     }
 

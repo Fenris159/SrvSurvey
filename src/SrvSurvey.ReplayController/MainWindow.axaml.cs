@@ -7,6 +7,8 @@ namespace SrvSurvey.ReplayController;
 
 public sealed partial class MainWindow : Window
 {
+    private readonly ReplayControllerWindowCloseCoordinator closeCoordinator;
+
     private ReplayControllerViewModel ViewModel =>
         DataContext as ReplayControllerViewModel
         ?? throw new InvalidOperationException(
@@ -18,8 +20,12 @@ public sealed partial class MainWindow : Window
         var managedRoot = Path.Combine(
             AppDataPaths.ResolveCurrent().DataDirectory,
             "diagnostic-replays");
-        DataContext = new ReplayControllerViewModel(managedRoot);
-        Closed += OnClosed;
+        var viewModel = new ReplayControllerViewModel(managedRoot);
+        DataContext = viewModel;
+        closeCoordinator = new ReplayControllerWindowCloseCoordinator(
+            viewModel.DisposeAsync,
+            CompleteClose);
+        Closing += OnClosing;
     }
 
     private async void ImportReplay_Click(
@@ -98,11 +104,15 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private async void OnClosed(object? sender, EventArgs eventArgs)
+    private void OnClosing(object? sender, WindowClosingEventArgs eventArgs)
     {
-        Closed -= OnClosed;
-        var viewModel = ViewModel;
+        eventArgs.Cancel = closeCoordinator.ShouldCancelClose();
+    }
+
+    private void CompleteClose()
+    {
         DataContext = null;
-        await viewModel.DisposeAsync();
+        Closing -= OnClosing;
+        Close();
     }
 }

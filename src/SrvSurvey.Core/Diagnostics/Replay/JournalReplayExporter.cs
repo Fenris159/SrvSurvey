@@ -1046,6 +1046,8 @@ public sealed class JournalReplayExporter
         return normalized.Contains("token", StringComparison.Ordinal)
             || normalized.Contains("apikey", StringComparison.Ordinal)
             || normalized.Contains("authorization", StringComparison.Ordinal)
+            || normalized.Contains("credential", StringComparison.Ordinal)
+            || normalized.Contains("authentication", StringComparison.Ordinal)
             || normalized.Contains("password", StringComparison.Ordinal)
             || normalized.Contains("secret", StringComparison.Ordinal);
     }
