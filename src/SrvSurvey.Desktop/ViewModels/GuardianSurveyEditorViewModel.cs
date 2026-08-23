@@ -5,6 +5,21 @@ using SrvSurvey.Core.Guardian;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+public sealed record GuardianSurveyEditorLoadContext(
+    string? FrontierId,
+    bool IsOdyssey,
+    GuardianCommanderSiteSurvey? Survey,
+    GuardianSiteTemplate? Template)
+{
+    public bool ShowComponentMaterials { get; init; }
+
+    public GuardianSiteTemplateCatalog? TemplateCatalog { get; init; }
+
+    public GuardianSiteMapProjection? ReferenceProjection { get; init; }
+
+    public GuardianSiteReference? SiteReference { get; init; }
+}
+
 public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 {
     private readonly GuardianCommanderSurveyStore store;
@@ -341,16 +356,17 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         private set => SetField(ref statusMessage, value);
     }
 
-    public void Load(
-        string? frontierId,
-        bool isOdyssey,
-        GuardianCommanderSiteSurvey? survey,
-        GuardianSiteTemplate? template,
-        bool showComponentMaterials = false,
-        GuardianSiteTemplateCatalog? templateCatalog = null,
-        GuardianSiteMapProjection? referenceProjection = null,
-        GuardianSiteReference? siteReference = null)
+    public void Load(GuardianSurveyEditorLoadContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+        var frontierId = context.FrontierId;
+        var isOdyssey = context.IsOdyssey;
+        var survey = context.Survey;
+        var template = context.Template;
+        var showComponentMaterials = context.ShowComponentMaterials;
+        var templateCatalog = context.TemplateCatalog;
+        var referenceProjection = context.ReferenceProjection;
+        var siteReference = context.SiteReference;
         GuardianSiteSelectionKey? nextSelectionContext = siteReference is null
             ? null
             : new GuardianSiteSelectionKey(

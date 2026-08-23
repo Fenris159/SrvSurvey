@@ -260,8 +260,6 @@ public sealed class GuardianSiteMapControl : Control
             return;
         }
 
-        var grid = GridBrush ?? Brushes.Gray;
-        var accent = AccentBrush ?? Brushes.Cyan;
         var viewportZoom = NormalizeViewportZoom(ViewportZoom);
         viewportOffset = ClampViewportOffset(
             viewportOffset,
@@ -295,54 +293,14 @@ public sealed class GuardianSiteMapControl : Control
             viewportCenter,
             scale);
         var gridExtent = Math.Max(bounds.Width, bounds.Height) / scale * 2;
-        if (mapImage is null)
-        {
-            var gridPen = new Pen(grid, 1, dashStyle: DashStyle.Dash);
-            context.DrawLine(
-                gridPen,
-                TransformMapPoint(
-                    0,
-                    -gridExtent,
-                    Proximity,
-                    CommanderHeading,
-                    viewportCenter,
-                    scale),
-                TransformMapPoint(
-                    0,
-                    gridExtent,
-                    Proximity,
-                    CommanderHeading,
-                    viewportCenter,
-                    scale));
-            context.DrawLine(
-                gridPen,
-                TransformMapPoint(
-                    -gridExtent,
-                    0,
-                    Proximity,
-                    CommanderHeading,
-                    viewportCenter,
-                    scale),
-                TransformMapPoint(
-                    gridExtent,
-                    0,
-                    Proximity,
-                    CommanderHeading,
-                    viewportCenter,
-                    scale));
-            for (var ring = 1; ring <= 4; ring++)
-            {
-                var ringRadius = projection.MaximumDistance * scale * ring / 4;
-                context.DrawEllipse(
-                    null,
-                    gridPen,
-                    mapOrigin,
-                    ringRadius,
-                    ringRadius);
-            }
-
-            context.DrawEllipse(accent, null, mapOrigin, 3, 3);
-        }
+        DrawReferenceGrid(
+            context,
+            projection,
+            mapImage,
+            viewportCenter,
+            mapOrigin,
+            gridExtent,
+            scale);
 
         DrawHeadingLines(
             context,
@@ -416,6 +374,69 @@ public sealed class GuardianSiteMapControl : Control
         {
             DrawMissingMapNotice(context, bounds, projection.SiteType);
         }
+    }
+
+    private void DrawReferenceGrid(
+        DrawingContext context,
+        GuardianSiteMapProjection projection,
+        IImage? mapImage,
+        Point viewportCenter,
+        Point mapOrigin,
+        double gridExtent,
+        double scale)
+    {
+        if (mapImage is not null)
+        {
+            return;
+        }
+
+        var grid = GridBrush ?? Brushes.Gray;
+        var accent = AccentBrush ?? Brushes.Cyan;
+        var gridPen = new Pen(grid, 1, dashStyle: DashStyle.Dash);
+        context.DrawLine(
+            gridPen,
+            TransformMapPoint(
+                0,
+                -gridExtent,
+                Proximity,
+                CommanderHeading,
+                viewportCenter,
+                scale),
+            TransformMapPoint(
+                0,
+                gridExtent,
+                Proximity,
+                CommanderHeading,
+                viewportCenter,
+                scale));
+        context.DrawLine(
+            gridPen,
+            TransformMapPoint(
+                -gridExtent,
+                0,
+                Proximity,
+                CommanderHeading,
+                viewportCenter,
+                scale),
+            TransformMapPoint(
+                gridExtent,
+                0,
+                Proximity,
+                CommanderHeading,
+                viewportCenter,
+                scale));
+        for (var ring = 1; ring <= 4; ring++)
+        {
+            var ringRadius = projection.MaximumDistance * scale * ring / 4;
+            context.DrawEllipse(
+                null,
+                gridPen,
+                mapOrigin,
+                ringRadius,
+                ringRadius);
+        }
+
+        context.DrawEllipse(accent, null, mapOrigin, 3, 3);
     }
 
     public static double CalculateFittedScale(

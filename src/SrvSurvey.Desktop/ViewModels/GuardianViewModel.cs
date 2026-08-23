@@ -4751,15 +4751,17 @@ public sealed class GuardianViewModel
         var displayCatalog = displayTemplate is null
             ? templates
             : templates.WithTemplate(displayTemplate);
-        SurveyEditor.Load(
+        SurveyEditor.Load(new GuardianSurveyEditorLoadContext(
             activeFrontierId,
             activeIsOdyssey,
             survey,
-            displayTemplate,
-            ShowComponentMaterials,
-            displayCatalog,
-            MapProjection,
-            row?.Reference);
+            displayTemplate)
+        {
+            ShowComponentMaterials = ShowComponentMaterials,
+            TemplateCatalog = displayCatalog,
+            ReferenceProjection = MapProjection,
+            SiteReference = row?.Reference,
+        });
         TemplateAuthoring.UpdateContext(baseTemplate, measurement: null);
         TemplateAuthoring.SelectPoint(SurveyEditor.SelectedPointName);
     }

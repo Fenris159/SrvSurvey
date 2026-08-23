@@ -30,11 +30,11 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                 callbackSaved = saved;
                 return Task.CompletedTask;
             });
-        editor.Load(
+        editor.Load(new GuardianSurveyEditorLoadContext(
             "F123",
-            isOdyssey: true,
+            true,
             initial with { Path = path },
-            CreateTemplate());
+            CreateTemplate()));
 
         Assert.True(editor.IsAvailable);
         Assert.Equal(3, editor.Points.Count);
@@ -89,11 +89,11 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                 callbackCount++;
                 return Task.CompletedTask;
             });
-        editor.Load(
+        editor.Load(new GuardianSurveyEditorLoadContext(
             "F123",
-            isOdyssey: true,
+            true,
             initial with { Path = path },
-            CreateTemplate());
+            CreateTemplate()));
         editor.Points.Single(point => point.Name == "c1").Status =
             GuardianPoiStatus.Empty;
 
@@ -124,12 +124,14 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                 return Task.CompletedTask;
             });
 
-        editor.Load(
+        editor.Load(new GuardianSurveyEditorLoadContext(
             "F123",
-            isOdyssey: true,
-            survey: null,
-            template,
-            referenceProjection: projection);
+            true,
+            null,
+            template)
+        {
+            ReferenceProjection = projection,
+        });
         editor.SelectedPointName = "c1";
 
         Assert.True(editor.HasSelectedMapMarker);
@@ -165,20 +167,24 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         var editor = new GuardianSurveyEditorViewModel(
             new GuardianCommanderSurveyStore(temporaryDirectory),
             (_, _) => Task.CompletedTask);
-        editor.Load(
+        editor.Load(new GuardianSurveyEditorLoadContext(
             "F123",
-            isOdyssey: true,
-            survey: null,
-            template,
-            referenceProjection: projection);
+            true,
+            null,
+            template)
+        {
+            ReferenceProjection = projection,
+        });
         editor.SelectedPointName = "c1";
 
-        editor.Load(
+        editor.Load(new GuardianSurveyEditorLoadContext(
             "F123",
-            isOdyssey: true,
+            true,
             survey,
-            template,
-            referenceProjection: projection);
+            template)
+        {
+            ReferenceProjection = projection,
+        });
 
         Assert.Equal("c1", editor.SelectedPointName);
         Assert.True(editor.HasSelectedMapMarker);
@@ -196,12 +202,14 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         var editor = new GuardianSurveyEditorViewModel(
             store,
             (_, _) => Task.CompletedTask);
-        editor.Load(
+        editor.Load(new GuardianSurveyEditorLoadContext(
             "F123",
-            isOdyssey: true,
+            true,
             initial with { Path = path },
-            CreateTemplate(),
-            showComponentMaterials: true);
+            CreateTemplate())
+        {
+            ShowComponentMaterials = true,
+        });
 
         var tower = editor.Points.Single(point => point.Name == "c1");
         Assert.True(tower.CanEditComponentMaterials);
@@ -237,11 +245,11 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         var editor = new GuardianSurveyEditorViewModel(
             store,
             (_, _) => Task.CompletedTask);
-        editor.Load(
+        editor.Load(new GuardianSurveyEditorLoadContext(
             "F123",
-            isOdyssey: true,
+            true,
             initial with { Path = path },
-            CreateTemplate());
+            CreateTemplate()));
         editor.NewRawPointType = GuardianPoiType.Orb;
         editor.UpdateLiveMeasurement(new GuardianSurveyMeasurement(
             123.4,
@@ -282,11 +290,11 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         Assert.Equal(210.5, savedRaw.Rotation, 3);
         Assert.DoesNotContain("x1", saved.Survey.PoiStatuses.Keys);
 
-        editor.Load(
+        editor.Load(new GuardianSurveyEditorLoadContext(
             "F123",
-            isOdyssey: true,
+            true,
             saved,
-            CreateTemplate());
+            CreateTemplate()));
         editor.SelectedPoint = editor.Points.Single(point => point.IsRaw);
         await editor.RemoveSelectedRawPointAsync();
         await editor.SaveAsync();
@@ -308,12 +316,14 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         var editor = new GuardianSurveyEditorViewModel(
             store,
             (_, _) => Task.CompletedTask);
-        editor.Load(
+        editor.Load(new GuardianSurveyEditorLoadContext(
             "F123",
-            isOdyssey: true,
+            true,
             initial with { Path = path },
-            beta,
-            templateCatalog: new GuardianSiteTemplateCatalog([beta, gamma]));
+            beta)
+        {
+            TemplateCatalog = new GuardianSiteTemplateCatalog([beta, gamma]),
+        });
 
         editor.SiteType = "Gamma";
         editor.SurfaceLatitude = -12.345678m;
@@ -360,11 +370,11 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                 callbackCount++;
                 return Task.CompletedTask;
             });
-        editor.Load(
+        editor.Load(new GuardianSurveyEditorLoadContext(
             "F123",
-            isOdyssey: true,
+            true,
             initial with { Path = path },
-            CreateTemplate());
+            CreateTemplate()));
         editor.SurfaceLatitude = 10;
         editor.SurfaceLongitude = null;
 
@@ -425,11 +435,11 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         var editor = new GuardianSurveyEditorViewModel(
             store,
             (_, _) => Task.CompletedTask);
-        editor.Load(
+        editor.Load(new GuardianSurveyEditorLoadContext(
             "F123",
-            isOdyssey: true,
+            true,
             initial with { Path = path },
-            CreateTemplate());
+            CreateTemplate()));
         editor.SelectedPoint = editor.Points.Single(point => point.IsRaw);
         editor.SelectedPoint.RelicHeading = 123;
 
