@@ -64,16 +64,10 @@ namespace SrvSurvey.Core.Network
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(filepath);
             ArgumentNullException.ThrowIfNull(transport);
-            if (maximumPendingMessages <= 0)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(maximumPendingMessages));
-            }
-
-            if (maximumStoreBytes <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(maximumStoreBytes));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(
+                maximumPendingMessages);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(
+                maximumStoreBytes);
 
             this.filepath = filepath;
             storeFolder = filepath + ".d";
@@ -186,24 +180,8 @@ namespace SrvSurvey.Core.Network
                 enabled = value;
                 if (!enabled)
                 {
-                    cancellation = replaceActivityCancellationLocked();
-                    if (discardPendingWhenDisabled
-                        && ownershipLease is not null
-                        && (pending.Count > 0 || loadingTruncated))
-                    {
-                        var count = pending.Count;
-                        var includedUnloadedFiles = loadingTruncated;
-                        pending.Clear();
-                        persistedBytes.Clear();
-                        loadCycleIds.Clear();
-                        storeBytes = 0;
-                        loadingTruncated = false;
-                        persistenceLog = deleteStore();
-                        sharingLog = includedUnloadedFiles
-                            ? "EDDN discarded all pending uploads because sharing was disabled."
-                            : $"EDDN discarded {count:N0} pending upload(s) because sharing was disabled.";
-                    }
-
+                    (cancellation, persistenceLog, sharingLog) =
+                        disableLocked(discardPendingWhenDisabled);
                 }
 
                 canSchedule = enabled
@@ -228,6 +206,34 @@ namespace SrvSurvey.Core.Network
                 schedule(startupDelay);
             else if (!canSchedule)
                 stopTimer();
+        }
+
+        private (
+            CancellationTokenSource Cancellation,
+            string? PersistenceLog,
+            string? SharingLog) disableLocked(
+                bool discardPendingWhenDisabled)
+        {
+            var cancellation = replaceActivityCancellationLocked();
+            if (!discardPendingWhenDisabled
+                || ownershipLease is null
+                || (pending.Count == 0 && !loadingTruncated))
+            {
+                return (cancellation, null, null);
+            }
+
+            var count = pending.Count;
+            var includedUnloadedFiles = loadingTruncated;
+            pending.Clear();
+            persistedBytes.Clear();
+            loadCycleIds.Clear();
+            storeBytes = 0;
+            loadingTruncated = false;
+            var persistenceLog = deleteStore();
+            var sharingLog = includedUnloadedFiles
+                ? "EDDN discarded all pending uploads because sharing was disabled."
+                : $"EDDN discarded {count:N0} pending upload(s) because sharing was disabled.";
+            return (cancellation, persistenceLog, sharingLog);
         }
 
         internal void setSuspended(bool value)
