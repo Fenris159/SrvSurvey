@@ -359,13 +359,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     public void Load(GuardianSurveyEditorLoadContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        var frontierId = context.FrontierId;
-        var isOdyssey = context.IsOdyssey;
         var survey = context.Survey;
         var template = context.Template;
-        var showComponentMaterials = context.ShowComponentMaterials;
         var templateCatalog = context.TemplateCatalog;
-        var referenceProjection = context.ReferenceProjection;
         var siteReference = context.SiteReference;
         GuardianSiteSelectionKey? nextSelectionContext = siteReference is null
             ? null
@@ -379,14 +375,14 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             ? SelectedPointName
             : null;
         selectionContext = nextSelectionContext;
-        this.frontierId = frontierId;
-        this.isOdyssey = isOdyssey;
-        this.showComponentMaterials = showComponentMaterials;
+        frontierId = context.FrontierId;
+        isOdyssey = context.IsOdyssey;
+        showComponentMaterials = context.ShowComponentMaterials;
         templates = templateCatalog
             ?? (template is null
                 ? new GuardianSiteTemplateCatalog([])
                 : new GuardianSiteTemplateCatalog([template]));
-        this.referenceProjection = referenceProjection;
+        referenceProjection = context.ReferenceProjection;
         originalSurvey = survey;
         SelectedPointName = null;
         IsAvailable = frontierId is not null
