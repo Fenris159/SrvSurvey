@@ -331,9 +331,16 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         editor.SelectedPointName = "A01";
         Assert.Null(editor.SelectedPoint);
         Assert.Equal("A01", editor.SelectedActiveObelisk?.Name);
+        var selectionNotifications = new List<string?>();
+        editor.PropertyChanged += (_, args) =>
+            selectionNotifications.Add(args.PropertyName);
         await editor.AddActiveObeliskAsync();
         var added = Assert.IsType<GuardianActiveObeliskViewModel>(
             editor.SelectedActiveObelisk);
+        Assert.Contains(nameof(editor.HasSelectedMapMarker), selectionNotifications);
+        Assert.Contains(nameof(editor.IsMapSummaryVisible), selectionNotifications);
+        Assert.Contains(nameof(editor.CanEditSelectedPoint), selectionNotifications);
+        Assert.Contains(nameof(editor.IsSelectedPointReadOnly), selectionNotifications);
         added.Name = "B03";
         added.LogCode = "H12";
         added.ArtifactCodes = "ca, or";

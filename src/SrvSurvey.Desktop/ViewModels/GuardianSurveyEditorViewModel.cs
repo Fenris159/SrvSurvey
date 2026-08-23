@@ -326,7 +326,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                         StringComparison.OrdinalIgnoreCase))
                 {
                     selectedPointName = value.Name;
-                    OnPropertyChanged(nameof(SelectedPointName));
+                    NotifySelectedPointStateChanged(selectionNameChanged: true);
                 }
                 OnPropertyChanged(nameof(HasSelectedActiveObelisk));
                 removeActiveObeliskCommand.RaiseCanExecuteChanged();

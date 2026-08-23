@@ -259,21 +259,9 @@ public sealed class GuardianSiteMapControl : Control
             return;
         }
 
-        var viewportZoom = NormalizeViewportZoom(ViewportZoom);
-        viewportOffset = ClampViewportOffset(
-            viewportOffset,
-            bounds.Size,
-            viewportZoom);
-        var viewportCenter = bounds.Center + viewportOffset;
-        var mapImage = GuardianMapImageCatalog.Find(projection);
-        var fittedScale = CalculateFittedScale(
+        var (viewportCenter, scale, mapImage) = CalculateViewport(
             bounds,
-            projection,
-            mapImage);
-        var baseScale = double.IsFinite(MapScale) && MapScale > 0
-            ? Math.Clamp(MapScale, 0.1, 20)
-            : fittedScale;
-        var scale = baseScale * viewportZoom;
+            projection);
         if (mapImage is not null)
         {
             DrawMapImage(
@@ -720,17 +708,7 @@ public sealed class GuardianSiteMapControl : Control
         }
 
         var bounds = new Rect(Bounds.Size);
-        var viewportZoom = NormalizeViewportZoom(ViewportZoom);
-        var viewportCenter = bounds.Center + ClampViewportOffset(
-            viewportOffset,
-            bounds.Size,
-            viewportZoom);
-        var mapImage = GuardianMapImageCatalog.Find(projection);
-        var fittedScale = CalculateFittedScale(bounds, projection, mapImage);
-        var baseScale = double.IsFinite(MapScale) && MapScale > 0
-            ? Math.Clamp(MapScale, 0.1, 20)
-            : fittedScale;
-        var scale = baseScale * viewportZoom;
+        var (viewportCenter, scale, _) = CalculateViewport(bounds, projection);
         return projection.Points
             .Select(point => new
             {
@@ -757,6 +735,26 @@ public sealed class GuardianSiteMapControl : Control
             .OrderBy(candidate => candidate.Distance)
             .Select(candidate => candidate.Point)
             .FirstOrDefault();
+    }
+
+    private (Point Center, double Scale, IImage? MapImage) CalculateViewport(
+        Rect bounds,
+        GuardianSiteMapProjection projection)
+    {
+        var viewportZoom = NormalizeViewportZoom(ViewportZoom);
+        viewportOffset = ClampViewportOffset(
+            viewportOffset,
+            bounds.Size,
+            viewportZoom);
+        var mapImage = GuardianMapImageCatalog.Find(projection);
+        var fittedScale = CalculateFittedScale(bounds, projection, mapImage);
+        var baseScale = double.IsFinite(MapScale) && MapScale > 0
+            ? Math.Clamp(MapScale, 0.1, 20)
+            : fittedScale;
+        return (
+            bounds.Center + viewportOffset,
+            baseScale * viewportZoom,
+            mapImage);
     }
 
     private static double GetHitRadius(
