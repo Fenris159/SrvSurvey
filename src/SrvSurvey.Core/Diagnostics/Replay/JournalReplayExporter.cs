@@ -678,12 +678,16 @@ public sealed class JournalReplayExporter
             {
                 if (objectNode[childName] is { } child)
                 {
-                    objectNode[childName] = RedactNode(
+                    var redactedChild = RedactNode(
                         child,
                         childName,
                         identities,
                         locations,
                         objectSystemIdentity);
+                    if (!ReferenceEquals(child, redactedChild))
+                    {
+                        objectNode[childName] = redactedChild;
+                    }
                 }
             }
         }
@@ -693,12 +697,16 @@ public sealed class JournalReplayExporter
             {
                 if (arrayNode[index] is { } child)
                 {
-                    arrayNode[index] = RedactNode(
+                    var redactedChild = RedactNode(
                         child,
                         propertyName: null,
                         identities,
                         locations,
                         systemIdentity);
+                    if (!ReferenceEquals(child, redactedChild))
+                    {
+                        arrayNode[index] = redactedChild;
+                    }
                 }
             }
         }

@@ -156,6 +156,37 @@ public sealed class JournalReplayExporterTests
     }
 
     [Fact]
+    public async Task RedactionHandlesNonCoordinateArraysWithoutReparentingNodes()
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllLinesAsync(
+            Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
+            [
+                "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Private Cmdr\",\"FID\":\"F999999\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"Materials\",\"Raw\":[{\"Name\":\"iron\",\"Count\":12}]}"
+            ]);
+        var destination = Path.Combine(temp.Path, "redacted-array.srvreplay");
+
+        await new JournalReplayExporter().ExportAsync(
+            journals,
+            destination,
+            new JournalReplayExportRequest(
+                null,
+                null,
+                ReplayPrivacyMode.Redacted,
+                "test"),
+            CancellationToken.None);
+
+        using var archive = ZipFile.OpenRead(destination);
+        using var reader = new StreamReader(
+            archive.GetEntry("journal.jsonl")!.Open());
+        var journal = await reader.ReadToEndAsync();
+        Assert.Contains("\"Raw\":[{\"Name\":\"iron\",\"Count\":12}]", journal);
+    }
+
+    [Fact]
     public async Task ExportStreamsRangesOutsideTheHistoryDisplayWindow()
     {
         using var temp = new TemporaryDirectory();
