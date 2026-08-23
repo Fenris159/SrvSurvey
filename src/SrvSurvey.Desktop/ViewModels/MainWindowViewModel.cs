@@ -148,6 +148,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private bool activeProfileIsOdyssey = true;
     private NavigationItemViewModel? selectedNavigation;
     private string? expandedNavigationGroup = SurveyNavigationGroup;
+    private DiagnosticsWorkspaceTab selectedDiagnosticsTab =
+        DiagnosticsWorkspaceTab.Source;
     private bool isProfileSelected;
     private ThemeOptionViewModel selectedTheme;
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
@@ -805,6 +807,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 .Select(key => NavigationItems.Single(item => item.Key == key))
                 .ToArray();
             Guides = new GuidesViewModel(GuideCatalog.Create());
+            SettingsWorkspace = new SettingsWorkspaceViewModel();
 
             var currentTheme = themeService?.Current
                 ?? RavenThemeCatalog.Get(RavenThemeCatalog.DefaultThemeKey);
@@ -858,6 +861,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public OverlayPanelVisibilityViewModel OverlayPanelVisibility { get; }
 
     public DesktopBehaviorViewModel DesktopBehavior { get; }
+
+    public SettingsWorkspaceViewModel SettingsWorkspace { get; }
 
     public BiologyRewardSettingsViewModel BiologyRewards { get; }
 
@@ -1183,6 +1188,79 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public bool IsDiagnosticsSelected => SelectedNavigation?.Key == "diagnostics"
         && !IsProfileSelected;
 
+    public DiagnosticsWorkspaceTab SelectedDiagnosticsTab
+    {
+        get => selectedDiagnosticsTab;
+        set
+        {
+            if (!SetField(ref selectedDiagnosticsTab, value))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(SelectedDiagnosticsTabIndex));
+            OnPropertyChanged(nameof(IsDiagnosticsSourceSelected));
+            OnPropertyChanged(nameof(IsDiagnosticsUpdatesSelected));
+            OnPropertyChanged(nameof(IsDiagnosticsProcessingSelected));
+            OnPropertyChanged(nameof(IsDiagnosticsInspectorSelected));
+            OnPropertyChanged(nameof(IsDiagnosticsLogsSelected));
+            OnPropertyChanged(nameof(DiagnosticsTabTitle));
+            OnPropertyChanged(nameof(DiagnosticsTabDescription));
+        }
+    }
+
+    public int SelectedDiagnosticsTabIndex
+    {
+        get => (int)SelectedDiagnosticsTab;
+        set
+        {
+            if (Enum.IsDefined(typeof(DiagnosticsWorkspaceTab), value))
+            {
+                SelectedDiagnosticsTab = (DiagnosticsWorkspaceTab)value;
+            }
+        }
+    }
+
+    public bool IsDiagnosticsSourceSelected =>
+        SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.Source;
+
+    public bool IsDiagnosticsUpdatesSelected =>
+        SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.Updates;
+
+    public bool IsDiagnosticsProcessingSelected =>
+        SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.Processing;
+
+    public bool IsDiagnosticsInspectorSelected =>
+        SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.Inspector;
+
+    public bool IsDiagnosticsLogsSelected =>
+        SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.Logs;
+
+    public string DiagnosticsTabTitle => SelectedDiagnosticsTab switch
+    {
+        DiagnosticsWorkspaceTab.Source => "Journal source",
+        DiagnosticsWorkspaceTab.Updates => "Updates",
+        DiagnosticsWorkspaceTab.Processing => "Processing",
+        DiagnosticsWorkspaceTab.Inspector => "Inspector",
+        DiagnosticsWorkspaceTab.Logs => "Logs",
+        _ => "Diagnostics",
+    };
+
+    public string DiagnosticsTabDescription => SelectedDiagnosticsTab switch
+    {
+        DiagnosticsWorkspaceTab.Source =>
+            "The active bootstrap source and the locations checked on this platform.",
+        DiagnosticsWorkspaceTab.Updates =>
+            "Check application and reference-data releases without changing profile data.",
+        DiagnosticsWorkspaceTab.Processing =>
+            "Process historical journals and maintain supporting reference data.",
+        DiagnosticsWorkspaceTab.Inspector =>
+            "Inspect parsed journal events and the current live status state.",
+        DiagnosticsWorkspaceTab.Logs =>
+            "Review, copy, and open this application's diagnostic logs.",
+        _ => string.Empty,
+    };
+
     public bool IsSettingsSelected => SelectedNavigation?.Key == SettingsNavigationKey
         && !IsProfileSelected;
 
@@ -1266,8 +1344,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         OnPropertyChanged(nameof(IsGuidesSelected));
     }
 
-    public void ShowDiagnostics()
+    public void ShowDiagnostics(DiagnosticsWorkspaceTab? selectedTab = null)
     {
+        if (selectedTab is not null)
+        {
+            SelectedDiagnosticsTab = selectedTab.Value;
+        }
+
         SelectedNavigation = NavigationItems.Single(
             item => item.Key == "diagnostics");
     }

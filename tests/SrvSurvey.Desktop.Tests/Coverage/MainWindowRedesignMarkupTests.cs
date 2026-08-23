@@ -51,6 +51,43 @@ public sealed class MainWindowRedesignMarkupTests
     }
 
     [Fact]
+    public void NavigationGroupsAnimateHeightAndOpacityUnlessMotionIsReduced()
+    {
+        var mainWindow = LoadDesktopFile("MainWindow.axaml");
+        var containers = mainWindow.Descendants()
+            .Where(element => element.Name.LocalName == "Border"
+                && element.Attribute("Classes")?.Value
+                    == "nav-group-container")
+            .ToArray();
+
+        Assert.Equal(3, containers.Length);
+        Assert.All(containers, container => Assert.Equal(
+            "{Binding DesktopBehavior.ReduceMotion}",
+            container.Attribute("Classes.reduced-motion")?.Value));
+        Assert.DoesNotContain(
+            containers.SelectMany(container => container.Descendants()),
+            element => element.Attribute("IsVisible")?.Value is not null);
+
+        var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        var containerStyle = styles.Descendants().Single(element =>
+            element.Name.LocalName == "Style"
+            && element.Attribute("Selector")?.Value
+                == "Border.nav-group-container");
+        var transitionedProperties = containerStyle.Descendants()
+            .Where(element => element.Name.LocalName == "DoubleTransition")
+            .Select(element => element.Attribute("Property")?.Value)
+            .ToArray();
+        Assert.Contains("MaxHeight", transitionedProperties);
+        Assert.Contains("Opacity", transitionedProperties);
+
+        var reducedMotionStyle = styles.Descendants().Single(element =>
+            element.Name.LocalName == "Style"
+            && element.Attribute("Selector")?.Value
+                == "Border.nav-group-container.reduced-motion");
+        AssertStyleSetter(reducedMotionStyle, "Transitions", "{x:Null}");
+    }
+
+    [Fact]
     public void OverviewPreservesCommanderAndMultipleCommanderContracts()
     {
         var overview = LoadView("OverviewView.axaml");

@@ -54,6 +54,12 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
         set => Update(preferences with { MinimizeToTray = value });
     }
 
+    public bool ReduceMotion
+    {
+        get => preferences.ReduceMotion;
+        set => Update(preferences with { ReduceMotion = value });
+    }
+
     public IReadOnlyList<ApplicationMonitorOption> MonitorOptions =>
         monitorOptions;
 
@@ -229,6 +235,7 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(FocusGameOnMinimize));
         OnPropertyChanged(nameof(FocusGameAfterFsdJump));
         OnPropertyChanged(nameof(MinimizeToTray));
+        OnPropertyChanged(nameof(ReduceMotion));
         OnPropertyChanged(nameof(SelectedMonitor));
         OnPropertyChanged(nameof(PreferredMonitorId));
         OnPropertyChanged(nameof(SelectedApplicationWindowScale));

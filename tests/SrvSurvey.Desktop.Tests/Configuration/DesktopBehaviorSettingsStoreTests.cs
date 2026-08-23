@@ -19,7 +19,8 @@ public sealed class DesktopBehaviorSettingsStoreTests : IDisposable
                 false,
                 PreferredMonitorId: null,
                 ApplicationWindowScalePercent: 100,
-                LastApplicationWindowPosition: null),
+                LastApplicationWindowPosition: null,
+                ReduceMotion: false),
             CreateStore().Load());
     }
 
@@ -37,7 +38,8 @@ public sealed class DesktopBehaviorSettingsStoreTests : IDisposable
             true,
             "\\\\.\\DISPLAY2",
             125,
-            new ApplicationWindowPosition(2140, 86, "\\\\.\\DISPLAY2"));
+            new ApplicationWindowPosition(2140, 86, "\\\\.\\DISPLAY2"),
+            ReduceMotion: true);
 
         store.Save(expected);
 

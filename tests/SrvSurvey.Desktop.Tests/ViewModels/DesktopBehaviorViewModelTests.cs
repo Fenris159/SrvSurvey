@@ -88,6 +88,23 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
     }
 
     [Fact]
+    public void ReducedMotionPreferencePersistsWithoutPlacementNotification()
+    {
+        var viewModel = CreateViewModel(new RecordingSwitcher());
+        var placementChangeCount = 0;
+        viewModel.ApplicationWindowPreferencesChanged += (_, _) =>
+            placementChangeCount++;
+
+        viewModel.ReduceMotion = true;
+
+        Assert.True(viewModel.ReduceMotion);
+        Assert.True(new DesktopBehaviorSettingsStore(Path.Combine(
+            temporaryDirectory,
+            "ui-settings.json")).Load().ReduceMotion);
+        Assert.Equal(0, placementChangeCount);
+    }
+
+    [Fact]
     public void SavedMonitorFallsBackToAutomaticBeforeMonitorEnumeration()
     {
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");

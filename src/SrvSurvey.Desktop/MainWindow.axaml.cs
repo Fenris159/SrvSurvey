@@ -165,10 +165,9 @@ public sealed partial class MainWindow : Window
                 "Journal monitor stopped unexpectedly: " + exception));
     }
 
-    private void NavigateToReleaseUpdates()
+    internal void NavigateToReleaseUpdates()
     {
-        viewModel.ShowDiagnostics();
-        DiagnosticsPage.ScrollToApplicationUpdates();
+        viewModel.ShowDiagnostics(DiagnosticsWorkspaceTab.Updates);
     }
 
     private void OnScreensChanged(object? sender, EventArgs eventArgs)

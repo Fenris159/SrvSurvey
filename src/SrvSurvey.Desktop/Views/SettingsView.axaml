@@ -8,28 +8,79 @@
              x:Class="SrvSurvey.Desktop.Views.SettingsView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="32" Spacing="24" MaxWidth="1100">
-      <StackPanel Spacing="5">
-        <TextBlock Classes="eyebrow" Text="QUICK ACCESS" />
-        <Button Classes="link"
-                HorizontalAlignment="Left"
-                Click="ScrollToLegacyImport_Click">
-          <TextBlock Text="Import SrvSurvey User Data" />
-        </Button>
-        <TextBlock Classes="muted"
-                   TextWrapping="Wrap"
-                   Text="Jump directly to the source picker and the backed-up, verified import workflow." />
-      </StackPanel>
-
+  <Grid Margin="32"
+        RowDefinitions="Auto,*"
+        RowSpacing="20">
+    <Grid ColumnDefinitions="*,360" ColumnSpacing="24">
       <StackPanel Spacing="5">
         <TextBlock Classes="eyebrow" Text="CONFIGURATION" />
         <TextBlock Classes="page-title" Text="Settings" />
         <TextBlock Classes="muted"
-                   Text="Configure desktop behavior, data sources, privacy, and application integrations." />
+                   TextWrapping="Wrap"
+                   Text="Choose a category or search every setting by name, purpose, and familiar alias." />
       </StackPanel>
+      <TextBox x:Name="SettingsSearchBox"
+               Grid.Column="1"
+               VerticalAlignment="Center"
+               PlaceholderText="Search settings"
+               Text="{Binding SettingsWorkspace.SearchQuery, Mode=TwoWay}"
+               KeyDown="SettingsSearchBox_KeyDown" />
+    </Grid>
 
-      <Border Classes="card">
+    <Grid Grid.Row="1"
+          ColumnDefinitions="220,*"
+          ColumnSpacing="20">
+      <Border Classes="card"
+              Padding="10"
+              VerticalAlignment="Stretch">
+        <Grid RowDefinitions="*,Auto" RowSpacing="12">
+          <ListBox ItemsSource="{Binding SettingsWorkspace.Categories}"
+                   SelectedItem="{Binding SettingsWorkspace.SelectedCategory, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:SettingsCategoryViewModel">
+                <TextBlock Margin="8,6"
+                           FontWeight="SemiBold"
+                           Text="{Binding Name}" />
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <StackPanel Grid.Row="1" Spacing="5">
+            <Separator />
+            <TextBlock Classes="eyebrow" Text="QUICK ACCESS" />
+            <Button Classes="link"
+                    HorizontalAlignment="Left"
+                    Click="ScrollToLegacyImport_Click"
+                    Content="Import SrvSurvey User Data" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <Grid Grid.Column="1">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                      IsVisible="{Binding !SettingsWorkspace.HasSearchQuery}">
+          <StackPanel Spacing="24" MaxWidth="1100">
+            <Border x:Name="GlobalOverlaysCard"
+                    Classes="card raised"
+                    IsVisible="{Binding SettingsWorkspace.IsGlobalOverlaysSelected}">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+                <StackPanel Spacing="4">
+                  <TextBlock Classes="card-title" Text="Global overlays" />
+                  <TextBlock Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="Overlay appearance, positioning, opacity, typography, and per-overlay controls remain in the dedicated Theme workspace." />
+                </StackPanel>
+                <Button x:Name="OpenThemeWorkspaceButton"
+                        Grid.Column="1"
+                        Classes="secondary"
+                        VerticalAlignment="Center"
+                        Click="OpenThemeWorkspace_Click"
+                        Content="Open Theme workspace" />
+              </Grid>
+            </Border>
+
+      <Border x:Name="LanguageCard"
+              Classes="card"
+              IsVisible="{Binding SettingsWorkspace.IsApplicationSelected}">
         <Grid RowDefinitions="Auto,Auto"
               ColumnDefinitions="*,260,Auto"
               ColumnSpacing="14">
@@ -39,7 +90,8 @@
                        TextWrapping="Wrap"
                        Text="Uses the original SrvSurvey translations where available. New port-only text falls back to English." />
           </StackPanel>
-          <ComboBox Grid.Column="1"
+          <ComboBox x:Name="LanguageComboBox"
+                    Grid.Column="1"
                     ItemsSource="{Binding Localization.Languages}"
                     SelectedItem="{Binding Localization.SelectedLanguage, Mode=TwoWay}">
             <ComboBox.ItemTemplate>
@@ -62,7 +114,9 @@
         </Grid>
       </Border>
 
-      <Border x:Name="DesktopBehaviorCard" Classes="card raised">
+      <Border x:Name="DesktopBehaviorCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsDesktopSelected}">
         <StackPanel Spacing="12">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Desktop behavior" />
@@ -72,7 +126,8 @@
           </StackPanel>
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
             <StackPanel Spacing="10">
-              <CheckBox IsChecked="{Binding DesktopBehavior.FocusGameOnStart, Mode=TwoWay}"
+              <CheckBox x:Name="FocusGameOnStartCheckBox"
+                        IsChecked="{Binding DesktopBehavior.FocusGameOnStart, Mode=TwoWay}"
                         Content="Set focus on Elite Dangerous when starting Srv Survey." />
               <CheckBox IsChecked="{Binding DesktopBehavior.FocusGameOnMinimize, Mode=TwoWay}"
                         Content="Set focus on Elite Dangerous when minimizing Srv Survey." />
@@ -82,6 +137,8 @@
                         Content="Set focus on Elite Dangerous after each FSD jump." />
               <CheckBox IsChecked="{Binding DesktopBehavior.MinimizeToTray, Mode=TwoWay}"
                         Content="Minimize to system tray" />
+              <CheckBox IsChecked="{Binding DesktopBehavior.ReduceMotion, Mode=TwoWay}"
+                        Content="Reduce interface motion" />
             </StackPanel>
           </Grid>
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
@@ -119,7 +176,9 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card raised">
+      <Border x:Name="PreferredCommanderCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsDesktopSelected}">
         <StackPanel Spacing="12">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Preferred commander" />
@@ -128,7 +187,8 @@
                        Text="Pin this SrvSurvey instance to one commander's stable Frontier ID, or follow the newest active journal automatically." />
           </StackPanel>
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-            <ComboBox ItemsSource="{Binding CommanderPreference.Options}"
+            <ComboBox x:Name="PreferredCommanderComboBox"
+                      ItemsSource="{Binding CommanderPreference.Options}"
                       SelectedItem="{Binding CommanderPreference.SelectedOption, Mode=TwoWay}"
                       IsEnabled="{Binding !CommanderPreference.IsCommandLineOverride}">
               <ComboBox.ItemTemplate>
@@ -152,7 +212,9 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card raised">
+      <Border x:Name="SystemNicknamesCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}">
         <StackPanel Spacing="10">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
             <StackPanel Spacing="4">
@@ -161,7 +223,8 @@
                          TextWrapping="Wrap"
                          Text="Show personal system-nick-names.json labels first, then imported Raven Colonial public names, in Galaxy Map guidance overlays." />
             </StackPanel>
-            <CheckBox Grid.Column="1"
+            <CheckBox x:Name="SystemNicknamesCheckBox"
+                      Grid.Column="1"
                       VerticalAlignment="Center"
                       IsChecked="{Binding SystemNicknames.Enabled, Mode=TwoWay}"
                       Content="Use system nicknames" />
@@ -172,7 +235,9 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card raised">
+      <Border x:Name="CodexImagesCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsDataSelected}">
         <StackPanel Spacing="14">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Codex reference images" />
@@ -181,7 +246,8 @@
                        Text="Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing." />
           </StackPanel>
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-            <TextBox Text="{Binding CodexImages.CacheDirectory, Mode=TwoWay}"
+            <TextBox x:Name="CodexCacheTextBox"
+                     Text="{Binding CodexImages.CacheDirectory, Mode=TwoWay}"
                      PlaceholderText="Absolute cache directory" />
             <Button Grid.Column="1"
                     Classes="secondary"
@@ -206,7 +272,9 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card raised">
+      <Border x:Name="DockToDockCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsDataSelected}">
         <StackPanel Spacing="10">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
             <StackPanel Spacing="4">
@@ -215,7 +283,8 @@
                          TextWrapping="Wrap"
                          Text="Append live completed trips, jump distance, ingress and egress timing, ship details, and departure cargo using the original CSV columns." />
             </StackPanel>
-            <CheckBox Grid.Column="1"
+            <CheckBox x:Name="DockToDockEnabledCheckBox"
+                      Grid.Column="1"
                       VerticalAlignment="Center"
                       IsChecked="{Binding DockToDock.Enabled, Mode=TwoWay}"
                       Content="Log dock-to-dock times to .csv file" />
@@ -226,9 +295,10 @@
         </StackPanel>
       </Border>
 
-      <Separator />
+      <Separator IsVisible="{Binding SettingsWorkspace.IsScreenshotsSelected}" />
 
-      <StackPanel Spacing="5">
+      <StackPanel Spacing="5"
+                  IsVisible="{Binding SettingsWorkspace.IsScreenshotsSelected}">
         <TextBlock Classes="eyebrow" Text="SCREENSHOTS" />
         <TextBlock Classes="page-title" Text="Automatic conversion" />
         <TextBlock Classes="muted"
@@ -236,7 +306,9 @@
                    Text="Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux." />
       </StackPanel>
 
-      <Border Classes="card raised">
+      <Border x:Name="ScreenshotProcessingCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsScreenshotsSelected}">
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
             <StackPanel Spacing="4">
@@ -245,7 +317,8 @@
                          TextWrapping="Wrap"
                          Text="Journal Screenshot events are matched to completed BMP files; each PNG is decoded and verified before it replaces or removes anything." />
             </StackPanel>
-            <CheckBox Grid.Column="1"
+            <CheckBox x:Name="ScreenshotEnabledCheckBox"
+                      Grid.Column="1"
                       VerticalAlignment="Center"
                       IsChecked="{Binding ScreenshotProcessing.Enabled, Mode=TwoWay}"
                       Content="Convert .bmp screenshots into .png files" />
@@ -312,9 +385,10 @@
         </StackPanel>
       </Border>
 
-      <Separator />
+      <Separator IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}" />
 
-      <StackPanel Spacing="5">
+      <StackPanel Spacing="5"
+                  IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}">
         <TextBlock Classes="eyebrow" Text="PRIVACY" />
         <TextBlock Classes="page-title" Text="Network publication" />
         <TextBlock Classes="muted"
@@ -322,7 +396,9 @@
                    Text="All publication remains off unless you explicitly enable it. Imported profiles retain the original choices." />
       </StackPanel>
 
-      <Border Classes="card raised">
+      <Border x:Name="NetworkPrivacyCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}">
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
             <StackPanel Spacing="12">
@@ -334,7 +410,8 @@
                              Text="OPT-IN" />
                 </Border>
               </Grid>
-              <CheckBox IsChecked="{Binding NetworkPrivacy.EddnUploadEnabled, Mode=TwoWay}"
+              <CheckBox x:Name="EddnUploadCheckBox"
+                        IsChecked="{Binding NetworkPrivacy.EddnUploadEnabled, Mode=TwoWay}"
                         Content="Share supported live data with EDDN" />
               <CheckBox IsChecked="{Binding NetworkPrivacy.EddnUseTestSchemas, Mode=TwoWay}"
                         IsEnabled="{Binding NetworkPrivacy.EddnUploadEnabled}"
@@ -389,7 +466,9 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card raised">
+      <Border x:Name="InaraCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}">
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
             <StackPanel Spacing="4">
@@ -422,7 +501,8 @@
               <TextBlock FontWeight="SemiBold"
                          Text="{Binding Inara.CommanderDisplayName}" />
               <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                <TextBox Text="{Binding Inara.ApiKey, Mode=TwoWay}"
+                <TextBox x:Name="InaraApiKeyTextBox"
+                         Text="{Binding Inara.ApiKey, Mode=TwoWay}"
                          PasswordChar="*"
                          IsEnabled="{Binding Inara.HasCommanderProfile}"
                          PlaceholderText="Personal Inara API key" />
@@ -471,9 +551,10 @@
         </StackPanel>
       </Border>
 
-      <Separator />
+      <Separator IsVisible="{Binding SettingsWorkspace.IsInputSelected}" />
 
-      <StackPanel Spacing="5">
+      <StackPanel Spacing="5"
+                  IsVisible="{Binding SettingsWorkspace.IsInputSelected}">
         <TextBlock Classes="eyebrow" Text="INPUT" />
         <TextBlock Classes="page-title" Text="Global shortcuts" />
         <TextBlock Classes="muted"
@@ -481,7 +562,9 @@
                    Text="Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus." />
       </StackPanel>
 
-      <Border Classes="card raised">
+      <Border x:Name="KeyboardHookCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsInputSelected}">
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
             <StackPanel Spacing="4">
@@ -490,7 +573,8 @@
                          TextWrapping="Wrap"
                          Text="Keyboard capture stays off until you enable it here. Synthetic key events are ignored." />
             </StackPanel>
-            <CheckBox Grid.Column="1"
+            <CheckBox x:Name="KeyboardEnabledCheckBox"
+                      Grid.Column="1"
                       VerticalAlignment="Center"
                       IsChecked="{Binding InputSettings.KeyboardEnabled, Mode=TwoWay}"
                       IsEnabled="{Binding InputSettings.IsKeyboardAvailable}"
@@ -510,9 +594,11 @@
         </StackPanel>
       </Border>
 
-      <Expander Classes="section-pill"
+      <Expander x:Name="ShortcutBindingsExpander"
+                Classes="section-pill"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
+                IsVisible="{Binding SettingsWorkspace.IsInputSelected}"
                 IsExpanded="False">
         <Expander.Header>
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
@@ -562,7 +648,9 @@
         </ItemsControl>
       </Expander>
 
-      <Border Classes="card raised">
+      <Border x:Name="ControllerInputCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsInputSelected}">
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
             <StackPanel Spacing="4">
@@ -571,7 +659,8 @@
                          TextWrapping="Wrap"
                          Text="SDL supports standard gamepads, joysticks, and HOTAS devices. Input is accepted while SrvSurvey or Elite Dangerous has focus." />
             </StackPanel>
-            <CheckBox Grid.Column="1"
+            <CheckBox x:Name="ControllerEnabledCheckBox"
+                      Grid.Column="1"
                       VerticalAlignment="Center"
                       IsChecked="{Binding InputSettings.ControllerEnabled, Mode=TwoWay}"
                       IsEnabled="{Binding InputSettings.CanEnableControllerInput}"
@@ -611,9 +700,10 @@
         </StackPanel>
       </Border>
 
-      <Separator />
+      <Separator IsVisible="{Binding SettingsWorkspace.IsDataSelected}" />
 
-      <StackPanel Spacing="5">
+      <StackPanel Spacing="5"
+                  IsVisible="{Binding SettingsWorkspace.IsDataSelected}">
         <TextBlock Classes="eyebrow" Text="DATA &amp; MIGRATION" />
         <TextBlock Classes="page-title" Text="Data sources and migration" />
         <TextBlock Classes="muted"
@@ -621,7 +711,9 @@
                    Text="Bring settings, commander state, surveys, routes, journeys, caches, and every other legacy profile file into the cross-platform application." />
       </StackPanel>
 
-      <Border Classes="card raised">
+      <Border x:Name="JournalSourceCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsDataSelected}">
         <StackPanel Spacing="12">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Elite journal source" />
@@ -630,7 +722,8 @@
                        Text="Use a persisted folder for non-default Windows installations, Proton prefixes, and copied profiles." />
           </StackPanel>
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-            <TextBox Text="{Binding JournalSettings.DirectoryPath, Mode=TwoWay}"
+            <TextBox x:Name="JournalDirectoryTextBox"
+                     Text="{Binding JournalSettings.DirectoryPath, Mode=TwoWay}"
                      IsEnabled="{Binding !JournalSettings.IsCommandLineOverride}"
                      PlaceholderText="Elite Dangerous journal folder" />
             <Button Grid.Column="1"
@@ -650,7 +743,8 @@
       </Border>
 
       <Border x:Name="LegacyImportSection"
-              Classes="card raised">
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsDataSelected}">
         <StackPanel Spacing="16">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
             <StackPanel Spacing="5">
@@ -671,7 +765,8 @@
                 </ComboBox.ItemTemplate>
               </ComboBox>
               <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                <TextBox Text="{Binding LegacyProfileSourcePath, Mode=TwoWay}"
+                <TextBox x:Name="LegacyProfilePathTextBox"
+                         Text="{Binding LegacyProfileSourcePath, Mode=TwoWay}"
                          PlaceholderText="Path to the original SrvSurvey profile" />
                 <Button Grid.Column="1"
                         Classes="secondary"
@@ -713,6 +808,45 @@
                      Text="A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data." />
         </StackPanel>
       </Border>
-    </StackPanel>
-  </ScrollViewer>
+          </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                      IsVisible="{Binding SettingsWorkspace.HasSearchQuery}">
+          <StackPanel Spacing="18" MaxWidth="1100">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="page-title" Text="Search results" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search." />
+            </StackPanel>
+            <TextBlock Classes="muted"
+                       IsVisible="{Binding !SettingsWorkspace.HasSearchResults}"
+                       Text="No settings match this search." />
+            <ItemsControl ItemsSource="{Binding SettingsWorkspace.GroupedSearchResults}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:SettingsSearchGroupViewModel">
+                  <StackPanel Margin="0,0,0,18" Spacing="8">
+                    <TextBlock Classes="eyebrow" Text="{Binding CategoryName}" />
+                    <ItemsControl ItemsSource="{Binding Results}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SettingsSearchResultViewModel">
+                          <Button Classes="settings-search-result"
+                                  Classes.selected="{Binding IsSelected}"
+                                  HorizontalContentAlignment="Stretch"
+                                  Click="SettingsSearchResult_Click">
+                            <TextBlock FontWeight="SemiBold" Text="{Binding Title}" />
+                          </Button>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+    </Grid>
+  </Grid>
 </UserControl>

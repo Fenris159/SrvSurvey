@@ -45,6 +45,7 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
         viewModel.DesktopBehavior.SelectedApplicationWindowScale =
             ApplicationWindowScaleCatalog.All.Single(option =>
                 option.Percent == 125);
+        viewModel.SettingsWorkspace.SelectCategory("desktop");
         var settings = new SettingsView { DataContext = viewModel };
         var window = new Window
         {

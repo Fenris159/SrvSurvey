@@ -98,10 +98,13 @@
                     Click="ToggleNavigationGroup_Click"
                     Content="Survey"
                     ToolTip.Tip="Show exploration, exobiology, and Boxel workspaces" />
-            <ItemsControl Margin="10,0,0,4"
-                          IsVisible="{Binding IsSurveyNavigationExpanded}"
-                          ItemsSource="{Binding SurveyNavigationItems}"
-                          ItemTemplate="{StaticResource NavigationRowTemplate}" />
+            <Border Classes="nav-group-container"
+                    Classes.expanded="{Binding IsSurveyNavigationExpanded}"
+                    Classes.reduced-motion="{Binding DesktopBehavior.ReduceMotion}">
+              <ItemsControl Margin="10,0,0,4"
+                            ItemsSource="{Binding SurveyNavigationItems}"
+                            ItemTemplate="{StaticResource NavigationRowTemplate}" />
+            </Border>
 
             <Button Classes="nav-group-heading"
                     Classes.expanded="{Binding IsNavigationNavigationExpanded}"
@@ -109,10 +112,13 @@
                     Click="ToggleNavigationGroup_Click"
                     Content="Navigation"
                     ToolTip.Tip="Show travel and search workspaces" />
-            <ItemsControl Margin="10,0,0,4"
-                          IsVisible="{Binding IsNavigationNavigationExpanded}"
-                          ItemsSource="{Binding NavigationWorkspaceItems}"
-                          ItemTemplate="{StaticResource NavigationRowTemplate}" />
+            <Border Classes="nav-group-container"
+                    Classes.expanded="{Binding IsNavigationNavigationExpanded}"
+                    Classes.reduced-motion="{Binding DesktopBehavior.ReduceMotion}">
+              <ItemsControl Margin="10,0,0,4"
+                            ItemsSource="{Binding NavigationWorkspaceItems}"
+                            ItemTemplate="{StaticResource NavigationRowTemplate}" />
+            </Border>
 
             <Button Classes="nav-group-heading"
                     Classes.expanded="{Binding IsActivitiesNavigationExpanded}"
@@ -120,10 +126,13 @@
                     Click="ToggleNavigationGroup_Click"
                     Content="Activities"
                     ToolTip.Tip="Show Guardian, quest, and colonization workspaces" />
-            <ItemsControl Margin="10,0,0,4"
-                          IsVisible="{Binding IsActivitiesNavigationExpanded}"
-                          ItemsSource="{Binding ActivityNavigationItems}"
-                          ItemTemplate="{StaticResource NavigationRowTemplate}" />
+            <Border Classes="nav-group-container"
+                    Classes.expanded="{Binding IsActivitiesNavigationExpanded}"
+                    Classes.reduced-motion="{Binding DesktopBehavior.ReduceMotion}">
+              <ItemsControl Margin="10,0,0,4"
+                            ItemsSource="{Binding ActivityNavigationItems}"
+                            ItemTemplate="{StaticResource NavigationRowTemplate}" />
+            </Border>
           </StackPanel>
         </ScrollViewer>
 

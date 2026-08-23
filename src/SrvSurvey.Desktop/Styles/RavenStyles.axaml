@@ -44,6 +44,14 @@
   <Style Selector="Border.card.raised">
     <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
   </Style>
+  <Style Selector="Border.settings-search-highlight">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+  <Style Selector="Expander.settings-search-highlight">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
   <Style Selector="Border.accent-line">
     <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}" />
     <Setter Property="CornerRadius" Value="2" />
@@ -148,6 +156,20 @@
   <Style Selector="Button.link TextBlock">
     <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
   </Style>
+  <Style Selector="Button.settings-search-result">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="14,10" />
+  </Style>
+  <Style Selector="Button.settings-search-result:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
+  </Style>
+  <Style Selector="Button.settings-search-result.selected">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
   <Style Selector="TextBlock.system-copy-link">
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
@@ -219,6 +241,26 @@
   </Style>
   <Style Selector="Button.nav-group-heading.expanded">
     <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+  <Style Selector="Border.nav-group-container">
+    <Setter Property="ClipToBounds" Value="True" />
+    <Setter Property="IsHitTestVisible" Value="False" />
+    <Setter Property="MaxHeight" Value="0" />
+    <Setter Property="Opacity" Value="0" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="MaxHeight" Duration="0:0:0.14" />
+        <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Border.nav-group-container.expanded">
+    <Setter Property="IsHitTestVisible" Value="True" />
+    <Setter Property="MaxHeight" Value="260" />
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+  <Style Selector="Border.nav-group-container.reduced-motion">
+    <Setter Property="Transitions" Value="{x:Null}" />
   </Style>
   <Style Selector="Button.footer-link">
     <Setter Property="FontSize" Value="10" />

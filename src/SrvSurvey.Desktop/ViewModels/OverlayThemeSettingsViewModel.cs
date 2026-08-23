@@ -766,13 +766,19 @@ public sealed class OverlayThemeCategoryViewModel : INotifyPropertyChanged
         get => isExpanded;
         set
         {
-            if (value)
+            if (isExpanded == value)
             {
-                selectExpanded(this);
                 return;
             }
 
-            SetExpanded(false);
+            isExpanded = value;
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(IsExpanded)));
+            if (value)
+            {
+                selectExpanded(this);
+            }
         }
     }
 
