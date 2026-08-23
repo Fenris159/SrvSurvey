@@ -76,6 +76,11 @@ public sealed class GuardianViewMarkupTests
             "{Binding Guardian.SelectedMapCommanderPosition}",
             map.Attribute("CommanderMapPosition")?.Value);
         Assert.Equal("15", zoom.Attribute("Maximum")?.Value);
+        Assert.Contains(
+            top.Descendants(),
+            element => element.Attribute("Text")?.Value.Contains(
+                "Gradient wedges mark active obelisks",
+                StringComparison.Ordinal) == true);
         Assert.Equal(
             "{Binding Guardian.SurveyEditor.IsMapSummaryVisible}",
             selectedMap.Attribute("IsVisible")?.Value);

@@ -564,6 +564,10 @@
                                FontSize="11"
                                TextWrapping="Wrap"
                                Text="Hover a marker to highlight it; click to select its survey details. At higher zoom, drag empty map space to pan." />
+                    <TextBlock Classes="muted"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Text="Gradient wedges mark active obelisks: gray is unscanned, orange is scanned, and cyan is still needed for Ram Tah." />
                     <WrapPanel Orientation="Horizontal">
                       <CheckBox Margin="0,0,14,0"
                                 IsChecked="{Binding Guardian.ShowMapLegend, Mode=TwoWay}"
