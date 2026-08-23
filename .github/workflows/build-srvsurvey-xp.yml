@@ -304,6 +304,7 @@ jobs:
           "$appimage" --appimage-extract >/dev/null
           test -x squashfs-root/AppRun
           test -x squashfs-root/usr/lib/srvsurvey/SrvSurvey.Desktop
+          test -x squashfs-root/usr/lib/srvsurvey/SrvSurvey.ReplayController
           test -f squashfs-root/usr/lib/srvsurvey/release-package.json
           test -f squashfs-root/io.github.fenris159.SrvSurvey.desktop
           test -f squashfs-root/srvsurvey.png

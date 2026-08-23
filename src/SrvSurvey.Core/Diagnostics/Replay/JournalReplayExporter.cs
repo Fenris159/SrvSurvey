@@ -487,20 +487,7 @@ public sealed class JournalReplayExporter
         if (node is JsonValue value
             && value.TryGetValue<string>(out var text))
         {
-            foreach (var identity in identities)
-            {
-                text = text
-                    .Replace(
-                        identity.OriginalName,
-                        identity.ReplacementName,
-                        StringComparison.Ordinal)
-                    .Replace(
-                        identity.OriginalFrontierId,
-                        identity.ReplacementFrontierId,
-                        StringComparison.OrdinalIgnoreCase);
-            }
-
-            return JsonValue.Create(text)!;
+            return JsonValue.Create(ReplaceSensitiveText(text, identities))!;
         }
 
         if (node is JsonObject objectNode)
@@ -537,6 +524,67 @@ public sealed class JournalReplayExporter
         }
 
         return node;
+    }
+
+    private static string ReplaceSensitiveText(
+        string source,
+        IReadOnlyList<IdentityRedaction> identities)
+    {
+        var replacements = identities.SelectMany(identity => new[]
+            {
+                new SensitiveReplacement(
+                    identity.OriginalName,
+                    identity.ReplacementName,
+                    StringComparison.Ordinal),
+                new SensitiveReplacement(
+                    identity.OriginalFrontierId,
+                    identity.ReplacementFrontierId,
+                    StringComparison.OrdinalIgnoreCase),
+            })
+            .DistinctBy(item => (item.Original, item.Comparison))
+            .ToArray();
+        StringBuilder? output = null;
+        var sourceIndex = 0;
+        while (sourceIndex < source.Length)
+        {
+            SensitiveReplacement? nextReplacement = null;
+            var nextIndex = int.MaxValue;
+            foreach (var replacement in replacements)
+            {
+                var match = source.IndexOf(
+                    replacement.Original,
+                    sourceIndex,
+                    replacement.Comparison);
+                if (match >= 0
+                    && (match < nextIndex
+                        || match == nextIndex
+                            && (nextReplacement is null
+                                || replacement.Original.Length
+                                    > nextReplacement.Original.Length)))
+                {
+                    nextIndex = match;
+                    nextReplacement = replacement;
+                }
+            }
+
+            if (nextReplacement is null)
+            {
+                break;
+            }
+
+            output ??= new StringBuilder(source.Length + 32);
+            output.Append(source, sourceIndex, nextIndex - sourceIndex);
+            output.Append(nextReplacement.Replacement);
+            sourceIndex = nextIndex + nextReplacement.Original.Length;
+        }
+
+        if (output is null)
+        {
+            return source;
+        }
+
+        output.Append(source, sourceIndex, source.Length - sourceIndex);
+        return output.ToString();
     }
 
     private static readonly HashSet<string> LocationNameProperties = new(
@@ -576,6 +624,11 @@ public sealed class JournalReplayExporter
         string OriginalFrontierId,
         string ReplacementName,
         string ReplacementFrontierId);
+
+    private sealed record SensitiveReplacement(
+        string Original,
+        string Replacement,
+        StringComparison Comparison);
 
     private static string RemoveCredentials(string rawJson)
     {

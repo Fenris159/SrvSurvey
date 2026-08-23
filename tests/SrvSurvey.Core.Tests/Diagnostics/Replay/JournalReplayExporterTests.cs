@@ -152,6 +152,52 @@ public sealed class JournalReplayExporterTests
     }
 
     [Fact]
+    public async Task RedactionDoesNotRewriteGeneratedAliasesOnIdentityCollisions()
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllLinesAsync(
+            Path.Combine(journals, "Journal.01.log"),
+            [
+                "{\"event\":\"Commander\",\"Name\":\"First\",\"FID\":\"F111111\"}",
+                "{\"event\":\"Commander\",\"Name\":\"Replay\",\"FID\":\"F000000\"}",
+            ]);
+        var destination = Path.Combine(temp.Path, "identity-collision.srvreplay");
+
+        await new JournalReplayExporter().ExportAsync(
+            journals,
+            destination,
+            new JournalReplayExportRequest(
+                null,
+                null,
+                ReplayPrivacyMode.Redacted,
+                "test"),
+            CancellationToken.None);
+
+        using var archive = ZipFile.OpenRead(destination);
+        using var reader = new StreamReader(
+            archive.GetEntry("journal.jsonl")!.Open());
+        var lines = (await reader.ReadToEndAsync()).Split(
+            '\n',
+            StringSplitOptions.RemoveEmptyEntries);
+        using var first = System.Text.Json.JsonDocument.Parse(lines[0]);
+        using var second = System.Text.Json.JsonDocument.Parse(lines[1]);
+        Assert.Equal(
+            "Replay Commander",
+            first.RootElement.GetProperty("Name").GetString());
+        Assert.Equal(
+            "F000000",
+            first.RootElement.GetProperty("FID").GetString());
+        Assert.Equal(
+            "Replay Commander 2",
+            second.RootElement.GetProperty("Name").GetString());
+        Assert.Equal(
+            "F000001",
+            second.RootElement.GetProperty("FID").GetString());
+    }
+
+    [Fact]
     public async Task RangeBootstrapUsesOneCoherentCommanderIdentity()
     {
         using var temp = new TemporaryDirectory();

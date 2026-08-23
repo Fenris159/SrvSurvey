@@ -149,6 +149,31 @@ public sealed class ReplaySessionManagerTests
             StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task LoadRejectsOversizedContainedSourceBeforeHashing()
+    {
+        using var temp = new TemporaryDirectory();
+        var session = await ImportCommanderJournalAsync(temp.Path);
+        await using (var stream = new FileStream(
+                         session.SourceJournalPath,
+                         FileMode.Open,
+                         FileAccess.Write,
+                         FileShare.None))
+        {
+            stream.SetLength(ReplaySessionManager.MaximumJournalBytes + 1);
+        }
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            DiagnosticReplaySession.LoadAsync(
+                session.ManifestPath,
+                CancellationToken.None));
+
+        Assert.Contains(
+            "larger than the supported limit",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
     [Theory]
     [InlineData("configDirectory", ".")]
     [InlineData("playbackJournal", "source/journal.jsonl")]

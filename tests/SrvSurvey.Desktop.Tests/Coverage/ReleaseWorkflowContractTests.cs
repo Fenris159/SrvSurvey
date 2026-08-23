@@ -50,6 +50,10 @@ public sealed class ReleaseWorkflowContractTests
             "SrvSurvey.ReplayController'",
             workflow,
             StringComparison.Ordinal);
+        Assert.Contains(
+            "test -x squashfs-root/usr/lib/srvsurvey/SrvSurvey.ReplayController",
+            workflow,
+            StringComparison.Ordinal);
     }
 
     [Fact]

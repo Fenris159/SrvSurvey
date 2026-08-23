@@ -716,6 +716,13 @@ public sealed record DiagnosticReplaySession(
                 "The diagnostic replay source journal is missing.");
         }
 
+        if (new FileInfo(sourceJournalPath).Length
+            > ReplaySessionManager.MaximumJournalBytes)
+        {
+            throw new InvalidDataException(
+                "The diagnostic replay source journal is larger than the supported limit.");
+        }
+
         var actualChecksum = await ReplaySessionManager.ComputeSha256Async(
             sourceJournalPath,
             cancellationToken);
