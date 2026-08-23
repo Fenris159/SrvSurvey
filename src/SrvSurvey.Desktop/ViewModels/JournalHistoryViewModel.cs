@@ -144,60 +144,61 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         }
     }
 
-    public DateTimeOffset? RangeFromDate
+    public DateTime? RangeFromDate
     {
-        get => rangeFrom;
+        get => rangeFrom?.UtcDateTime.Date;
         set => RangeFrom = CombineDateAndTime(value, RangeFromTime);
     }
 
     public TimeSpan? RangeFromTime
     {
-        get => rangeFrom?.TimeOfDay;
+        get => rangeFrom?.UtcDateTime.TimeOfDay;
         set
         {
             if (rangeFrom is not null && value is not null)
             {
-                RangeFrom = CombineDateAndTime(rangeFrom, value);
+                RangeFrom = CombineDateAndTime(RangeFromDate, value);
             }
         }
     }
 
-    public DateTimeOffset? RangeToDate
+    public DateTime? RangeToDate
     {
-        get => rangeTo;
+        get => rangeTo?.UtcDateTime.Date;
         set => RangeTo = CombineDateAndTime(value, RangeToTime);
     }
 
     public TimeSpan? RangeToTime
     {
-        get => rangeTo?.TimeOfDay;
+        get => rangeTo?.UtcDateTime.TimeOfDay;
         set
         {
             if (rangeTo is not null && value is not null)
             {
-                RangeTo = CombineDateAndTime(rangeTo, value);
+                RangeTo = CombineDateAndTime(RangeToDate, value);
             }
         }
     }
 
-    public DateTimeOffset? RangeMinimumDate => firstJournalTimestamp;
+    public DateTime? RangeMinimumDate => firstJournalTimestamp?.UtcDateTime.Date;
 
-    public DateTimeOffset? RangeMaximumDate => lastJournalTimestamp;
+    public DateTime? RangeMaximumDate => lastJournalTimestamp?.UtcDateTime.Date;
 
-    public DateTimeOffset? RangeToMaximumDate
+    public DateTime? RangeToMaximumDate
     {
         get
         {
             if (rangeFrom is not { } from)
             {
-                return lastJournalTimestamp;
+                return RangeMaximumDate;
             }
 
             var maximum = from + MaximumExportRange;
-            return lastJournalTimestamp is { } journalEnd
+            var constrainedMaximum = lastJournalTimestamp is { } journalEnd
                 && journalEnd < maximum
                     ? journalEnd
                     : maximum;
+            return constrainedMaximum.UtcDateTime.Date;
         }
     }
 
@@ -558,7 +559,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
     }
 
     private static DateTimeOffset? CombineDateAndTime(
-        DateTimeOffset? date,
+        DateTime? date,
         TimeSpan? time)
     {
         return date is { } selectedDate

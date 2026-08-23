@@ -145,35 +145,67 @@
 
           <Separator Margin="0,4" />
           <TextBlock FontWeight="SemiBold" Text="Replay export range" />
-          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-            <StackPanel Spacing="4">
-              <TextBlock Classes="muted" Text="Start (UTC)" />
-              <Grid ColumnDefinitions="2*,*" ColumnSpacing="8">
-                <CalendarDatePicker SelectedDate="{Binding JournalHistory.RangeFromDate, Mode=TwoWay}"
-                                    DisplayDateStart="{Binding JournalHistory.RangeMinimumDate}"
-                                    DisplayDateEnd="{Binding JournalHistory.RangeMaximumDate}"
-                                    SelectedDateFormat="Long"
-                                    PlaceholderText="Choose a start date" />
-                <TimePicker Grid.Column="1"
-                            ClockIdentifier="24HourClock"
-                            UseSeconds="True"
-                            SelectedTime="{Binding JournalHistory.RangeFromTime, Mode=TwoWay}" />
-              </Grid>
-            </StackPanel>
-            <StackPanel Grid.Column="1" Spacing="4">
-              <TextBlock Classes="muted" Text="End (UTC)" />
-              <Grid ColumnDefinitions="2*,*" ColumnSpacing="8">
-                <CalendarDatePicker SelectedDate="{Binding JournalHistory.RangeToDate, Mode=TwoWay}"
-                                    DisplayDateStart="{Binding JournalHistory.RangeFromDate}"
-                                    DisplayDateEnd="{Binding JournalHistory.RangeToMaximumDate}"
-                                    SelectedDateFormat="Long"
-                                    PlaceholderText="Choose an end date" />
-                <TimePicker Grid.Column="1"
-                            ClockIdentifier="24HourClock"
-                            UseSeconds="True"
-                            SelectedTime="{Binding JournalHistory.RangeToTime, Mode=TwoWay}" />
-              </Grid>
-            </StackPanel>
+          <TextBlock Classes="muted" Text="All dates and times use UTC." />
+          <Grid x:Name="ReplayRangeFields"
+                ColumnDefinitions="*,*"
+                ColumnSpacing="24">
+            <Grid x:Name="ReplayStartFields"
+                  ColumnDefinitions="110,*"
+                  RowDefinitions="Auto,Auto"
+                  ColumnSpacing="10"
+                  RowSpacing="8">
+              <TextBlock Grid.Row="0"
+                         Classes="muted"
+                         VerticalAlignment="Center"
+                         Text="Start Date:" />
+              <CalendarDatePicker Grid.Row="0"
+                                  Grid.Column="1"
+                                  MinWidth="300"
+                                  SelectedDate="{Binding JournalHistory.RangeFromDate, Mode=TwoWay}"
+                                  DisplayDateStart="{Binding JournalHistory.RangeMinimumDate}"
+                                  DisplayDateEnd="{Binding JournalHistory.RangeMaximumDate}"
+                                  SelectedDateFormat="Long"
+                                  PlaceholderText="Choose a start date" />
+              <TextBlock Grid.Row="1"
+                         Classes="muted"
+                         VerticalAlignment="Center"
+                         Text="Time H/M/S:" />
+              <TimePicker Grid.Row="1"
+                          Grid.Column="1"
+                          MinWidth="300"
+                          ClockIdentifier="24HourClock"
+                          UseSeconds="True"
+                          SelectedTime="{Binding JournalHistory.RangeFromTime, Mode=TwoWay}" />
+            </Grid>
+            <Grid x:Name="ReplayEndFields"
+                  Grid.Column="1"
+                  ColumnDefinitions="110,*"
+                  RowDefinitions="Auto,Auto"
+                  ColumnSpacing="10"
+                  RowSpacing="8">
+              <TextBlock Grid.Row="0"
+                         Classes="muted"
+                         VerticalAlignment="Center"
+                         Text="End Date:" />
+              <CalendarDatePicker Grid.Row="0"
+                                  Grid.Column="1"
+                                  MinWidth="300"
+                                  SelectedDate="{Binding JournalHistory.RangeToDate, Mode=TwoWay}"
+                                  DisplayDateStart="{Binding JournalHistory.RangeFromDate}"
+                                  DisplayDateEnd="{Binding JournalHistory.RangeToMaximumDate}"
+                                  SelectedDateFormat="Long"
+                                  PlaceholderText="Choose an end date" />
+              <TextBlock Grid.Row="1"
+                         Classes="muted"
+                         VerticalAlignment="Center"
+                         Text="Time H/M/S:" />
+              <TimePicker Grid.Row="1"
+                          Grid.Column="1"
+                          MinWidth="300"
+                          ClockIdentifier="24HourClock"
+                          UseSeconds="True"
+                          SelectedTime="{Binding JournalHistory.RangeToTime, Mode=TwoWay}" />
+            </Grid>
           </Grid>
           <CheckBox IsChecked="{Binding JournalHistory.RedactExport, Mode=TwoWay}"
                     Content="Redact commander identities, chat, locations, coordinates, and screenshot paths" />

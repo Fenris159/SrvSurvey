@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Core.Diagnostics.Replay;
 
@@ -5,6 +6,49 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class JournalHistoryViewModelTests
 {
+    [Fact]
+    public void ReplayCalendarBindingsUseCalendarCompatibleDateTypes()
+    {
+        var selectedDateType = CalendarDatePicker.SelectedDateProperty.PropertyType;
+
+        Assert.Equal(typeof(DateTime?), selectedDateType);
+        string[] calendarProperties =
+        [
+            nameof(JournalHistoryViewModel.RangeFromDate),
+            nameof(JournalHistoryViewModel.RangeToDate),
+            nameof(JournalHistoryViewModel.RangeMinimumDate),
+            nameof(JournalHistoryViewModel.RangeMaximumDate),
+            nameof(JournalHistoryViewModel.RangeToMaximumDate),
+        ];
+        Assert.All(calendarProperties, propertyName => Assert.Equal(
+            selectedDateType,
+            typeof(JournalHistoryViewModel)
+                .GetProperty(propertyName)!
+                .PropertyType));
+    }
+
+    [Fact]
+    public void ReplayCalendarSelectionsPreserveUtcJournalTime()
+    {
+        using var temp = new TemporaryDirectory();
+        using var viewModel = new JournalHistoryViewModel(
+            temp.Path,
+            "test-build");
+
+        viewModel.RangeFrom = DateTimeOffset.Parse(
+            "2026-08-21T00:30:45+02:00");
+
+        Assert.Equal(new DateTime(2026, 8, 20), viewModel.RangeFromDate);
+        Assert.Equal(new TimeSpan(22, 30, 45), viewModel.RangeFromTime);
+
+        viewModel.RangeFromDate = new DateTime(2026, 8, 19);
+        viewModel.RangeFromTime = new TimeSpan(10, 11, 12);
+
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-08-19T10:11:12Z"),
+            viewModel.RangeFrom);
+    }
+
     [Fact]
     public void SelectionDetailsAreEmptyUntilAnEventIsSelected()
     {
@@ -134,9 +178,9 @@ public sealed class JournalHistoryViewModelTests
             DateTimeOffset.Parse("2026-08-21T18:00:00Z"),
             viewModel.RangeTo);
 
-        viewModel.RangeFromDate = DateTimeOffset.Parse("2026-06-01T00:00:00Z");
+        viewModel.RangeFromDate = DateTime.Parse("2026-06-01");
         viewModel.RangeFromTime = TimeSpan.FromHours(12);
-        viewModel.RangeToDate = DateTimeOffset.Parse("2026-08-21T00:00:00Z");
+        viewModel.RangeToDate = DateTime.Parse("2026-08-21");
         viewModel.RangeToTime = TimeSpan.FromHours(18);
 
         Assert.Equal(

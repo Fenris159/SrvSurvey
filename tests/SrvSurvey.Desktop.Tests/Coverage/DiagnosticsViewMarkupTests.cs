@@ -64,6 +64,21 @@ public sealed class DiagnosticsViewMarkupTests
     }
 
     [Fact]
+    public void ReplayRangeUsesAlignedDateAndTimeRows()
+    {
+        var document = LoadDiagnosticsView();
+        var rangeFields = FindNamedElement(document, "ReplayRangeFields");
+
+        Assert.Equal("*,*", rangeFields.Attribute("ColumnDefinitions")?.Value);
+        AssertRangeFieldLayout(
+            FindNamedElement(document, "ReplayStartFields"),
+            "Start Date:");
+        AssertRangeFieldLayout(
+            FindNamedElement(document, "ReplayEndFields"),
+            "End Date:");
+    }
+
+    [Fact]
     public void JournalHistoryDetailsDoNotDereferenceAMissingSelection()
     {
         var document = LoadDiagnosticsView();
@@ -174,6 +189,29 @@ public sealed class DiagnosticsViewMarkupTests
             element.Attributes().Any(attribute =>
                 attribute.Name.LocalName == "Name"
                 && attribute.Value == name));
+
+    private static void AssertRangeFieldLayout(
+        XElement fields,
+        string dateLabel)
+    {
+        Assert.Equal("110,*", fields.Attribute("ColumnDefinitions")?.Value);
+        Assert.Contains(fields.Elements(), element =>
+            element.Name.LocalName == "TextBlock"
+            && element.Attribute("Text")?.Value == dateLabel
+            && element.Attribute("Grid.Row")?.Value == "0");
+        Assert.Contains(fields.Elements(), element =>
+            element.Name.LocalName == "TextBlock"
+            && element.Attribute("Text")?.Value == "Time H/M/S:"
+            && element.Attribute("Grid.Row")?.Value == "1");
+        Assert.Contains(fields.Elements(), element =>
+            element.Name.LocalName == "CalendarDatePicker"
+            && element.Attribute("Grid.Row")?.Value == "0"
+            && element.Attribute("Grid.Column")?.Value == "1");
+        Assert.Contains(fields.Elements(), element =>
+            element.Name.LocalName == "TimePicker"
+            && element.Attribute("Grid.Row")?.Value == "1"
+            && element.Attribute("Grid.Column")?.Value == "1");
+    }
 
     private static string FindRepositoryRoot()
     {
