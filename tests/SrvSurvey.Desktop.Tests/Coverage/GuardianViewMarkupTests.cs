@@ -52,6 +52,17 @@ public sealed class GuardianViewMarkupTests
         var map = top.Descendants().Single(element =>
             element.Name.LocalName == "GuardianSiteMapControl"
             && element.Attribute("IsLegendOnly") is null);
+        var zoom = top.Descendants().Single(element =>
+            element.Name.LocalName == "Slider"
+            && element.Attribute("Value")?.Value
+                == "{Binding ViewportZoom, ElementName=GuardianSurveyMap, Mode=TwoWay}");
+        var selectedMap = FindNamedElement(document, "GuardianSelectedMap");
+        var selectedPoint = FindNamedElement(
+            document,
+            "GuardianSelectedMapPointEditor");
+        var startMapDraft = document.Descendants().Single(element =>
+            element.Name.LocalName == "Button"
+            && element.Attribute("Content")?.Value == "Start map draft");
         var cardNames = sidebar.Elements()
             .Select(GetName)
             .OfType<string>()
@@ -62,13 +73,132 @@ public sealed class GuardianViewMarkupTests
         Assert.Equal("True", map.Attribute("ClipToBounds")?.Value);
         Assert.Equal("True", map.Attribute("AllowViewportInteraction")?.Value);
         Assert.Equal(
+            "{Binding Guardian.SurveyEditor.SelectedPointName, Mode=TwoWay}",
+            map.Attribute("SelectedPointName")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.SelectedMapCommanderPosition}",
+            map.Attribute("CommanderMapPosition")?.Value);
+        Assert.Equal("15", zoom.Attribute("Maximum")?.Value);
+        Assert.Contains(
+            top.Descendants(),
+            element => element.Attribute("Text")?.Value.Contains(
+                "Gradient wedges mark active obelisks",
+                StringComparison.Ordinal) == true);
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.IsMapSummaryVisible}",
+            selectedMap.Attribute("IsVisible")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.HasSelectedMapMarker}",
+            selectedPoint.Attribute("IsVisible")?.Value);
+        Assert.Null(selectedPoint.Attribute("IsEnabled"));
+        Assert.Contains(startMapDraft, selectedMap.Descendants());
+        Assert.DoesNotContain(startMapDraft, selectedPoint.Descendants());
+        var selectedContent = selectedPoint.Descendants().Single(element =>
+            element.Name.LocalName == "ContentControl"
+            && element.Attribute("Content")?.Value
+                == "{Binding Guardian.SurveyEditor.SelectedPoint}");
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.CanEditSelectedPoint}",
+            selectedContent.Attribute("IsEnabled")?.Value);
+        Assert.Equal(
             [
                 "GuardianSelectedMap",
+                "GuardianSelectedMapPointEditor",
                 "GuardianSurveyMapLegend",
                 "GuardianSurveyMapOrientation",
                 "GuardianSurveyMapNotes",
             ],
             cardNames);
+    }
+
+    [Fact]
+    public void SurveyEditorExposesRepairAndPrecisionAuthoringFields()
+    {
+        var document = LoadGuardianView();
+        var editor = FindNamedElement(document, "GuardianSurveyEditor");
+        var siteType = FindNamedElement(document, "GuardianSurveySiteType");
+        var latitude = FindNamedElement(document, "GuardianSurveyLatitude");
+        var longitude = FindNamedElement(document, "GuardianSurveyLongitude");
+        var activeObelisks = FindNamedElement(
+            document,
+            "GuardianActiveObeliskEditor");
+        var activeObeliskDetails = activeObelisks.Descendants().Single(element =>
+            element.Name.LocalName == "ContentControl"
+            && element.Attribute("Content")?.Value
+                == "{Binding Guardian.SurveyEditor.SelectedActiveObelisk}");
+        var rawPrecision = FindNamedElement(
+            document,
+            "GuardianRawPointPrecisionEditor");
+        var rawFields = FindNamedElement(
+            document,
+            "GuardianRawPointGeometryFields");
+        var templatePointEditor = FindNamedElement(
+            document,
+            "GuardianSelectedTemplatePointEditor");
+        var templatePointFields = FindNamedElement(
+            document,
+            "GuardianSelectedTemplatePointFields");
+        var templateIdentityFields = FindNamedElement(
+            document,
+            "GuardianSelectedTemplateIdentityFields");
+
+        Assert.Contains(siteType, editor.Descendants());
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.SiteTypeOptions}",
+            siteType.Attribute("ItemsSource")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.SurfaceLatitude, Mode=TwoWay}",
+            latitude.Attribute("Value")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.SurfaceLongitude, Mode=TwoWay}",
+            longitude.Attribute("Value")?.Value);
+        Assert.Contains(activeObelisks, editor.Descendants());
+        Assert.DoesNotContain(
+            activeObeliskDetails.Descendants().Attributes(),
+            attribute => attribute.Value.Contains(
+                "SelectedActiveObelisk.",
+                StringComparison.Ordinal));
+        Assert.Equal(
+            "{Binding IsRaw}",
+            rawPrecision.Attribute("IsVisible")?.Value);
+        Assert.Equal("StackPanel", rawFields.Name.LocalName);
+        Assert.Null(rawFields.Attribute("Orientation"));
+        var rawCoordinateInputs = rawFields.Descendants()
+            .Where(element => element.Name.LocalName == "NumericUpDown")
+            .ToArray();
+        Assert.Equal(3, rawCoordinateInputs.Length);
+        Assert.All(rawCoordinateInputs, input =>
+        {
+            Assert.Equal("0.1", input.Attribute("Increment")?.Value);
+            Assert.Equal("132", input.Attribute("MinWidth")?.Value);
+        });
+        Assert.Equal(
+            "{Binding Guardian.TemplateAuthoring.HasSelectedPoint}",
+            templatePointEditor.Attribute("IsVisible")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.TemplateAuthoring.IsAuthoring}",
+            templatePointFields.Attribute("IsEnabled")?.Value);
+        Assert.Equal("StackPanel", templateIdentityFields.Name.LocalName);
+        Assert.Null(templateIdentityFields.Attribute("Orientation"));
+        var coordinateInputs = templatePointFields.Descendants()
+            .Where(element => element.Name.LocalName == "NumericUpDown")
+            .ToArray();
+        Assert.Equal(3, coordinateInputs.Length);
+        Assert.All(coordinateInputs, input =>
+        {
+            Assert.Equal("0.1", input.Attribute("Increment")?.Value);
+            Assert.Equal("132", input.Attribute("MinWidth")?.Value);
+        });
+        Assert.Contains(
+            templatePointFields.Descendants(),
+            element => element.Name.LocalName == "TextBox"
+                && element.Attribute("Text")?.Value
+                    == "{Binding Guardian.TemplateAuthoring.PointName, Mode=TwoWay}");
+        Assert.Contains(
+            templatePointFields.Descendants(),
+            element => element.Name.LocalName == "ComboBox"
+                && element.Attribute("SelectedItem")?.Value
+                    == "{Binding Guardian.TemplateAuthoring.PointType, Mode=TwoWay}");
     }
 
     [Fact]
@@ -83,7 +213,7 @@ public sealed class GuardianViewMarkupTests
 
         Assert.Equal("640,Auto", mapGrid.Attribute("RowDefinitions")?.Value);
         Assert.Equal("1", slider.Attribute("Minimum")?.Value);
-        Assert.Equal("10", slider.Attribute("Maximum")?.Value);
+        Assert.Equal("15", slider.Attribute("Maximum")?.Value);
         Assert.Contains(
             "ElementName=GuardianSurveyMap",
             slider.Attribute("Value")?.Value,
@@ -95,19 +225,22 @@ public sealed class GuardianViewMarkupTests
     {
         var document = LoadGuardianView();
         var top = FindNamedElement(document, "GuardianSurveyMapTop");
-        var developerTools = FindNamedElement(
+        var mapDraftTools = FindNamedElement(
             document,
-            "GuardianTemplateDeveloperTools");
+            "GuardianMapDraftTools");
         var surveyEditor = FindNamedElement(document, "GuardianSurveyEditor");
 
-        Assert.Same(top.Parent, developerTools.Parent);
+        Assert.Same(top.Parent, mapDraftTools.Parent);
         Assert.Same(top.Parent, surveyEditor.Parent);
-        Assert.Null(developerTools.Attribute("Grid.Column"));
+        Assert.Null(mapDraftTools.Attribute("Grid.Column"));
+        Assert.Equal(
+            "{Binding Guardian.TemplateAuthoring.IsAuthoring}",
+            mapDraftTools.Attribute("IsVisible")?.Value);
         Assert.Null(surveyEditor.Attribute("Grid.Column"));
     }
 
     [Fact]
-    public void ExternalLegendUsesOneCardWithoutInventedStatusKeys()
+    public void ExternalLegendUsesOneRenderedCardWithRoomForAllStates()
     {
         var document = LoadGuardianView();
         var legend = FindNamedElement(document, "GuardianSurveyMapLegend");
@@ -120,6 +253,8 @@ public sealed class GuardianViewMarkupTests
             .ToArray();
 
         Assert.Equal("True", mapLegend.Attribute("IsLegendOnly")?.Value);
+        Assert.Equal("320", mapLegend.Attribute("Height")?.Value);
+        Assert.Equal("True", mapLegend.Attribute("ClipToBounds")?.Value);
         Assert.Equal(["Map legend"], labels);
         Assert.DoesNotContain(legend.Descendants(), element =>
             element.Name.LocalName is "Border" or "Grid");

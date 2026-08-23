@@ -197,6 +197,9 @@ public sealed class GuardianViewModel
         TemplateAuthoring = new GuardianTemplateAuthoringViewModel(
             this.templates,
             OnTemplateDraftChanged);
+        SurveyEditor.PropertyChanged += OnSurveyEditorPropertyChanged;
+        TemplateAuthoring.PropertyChanged +=
+            OnTemplateAuthoringPropertyChanged;
         liveSiteState = new GuardianLiveSiteState(this.references);
         visits = GuardianSiteVisitCatalog.Merge(
             this.references,
@@ -934,6 +937,13 @@ public sealed class GuardianViewModel
         get => mapProjection;
         private set => SetField(ref mapProjection, value);
     }
+
+    public GuardianSiteProximitySnapshot? SelectedMapCommanderPosition =>
+        SelectedSite?.Reference is { } selectedReference
+        && ActiveSite?.Reference is { } activeReference
+        && selectedReference == activeReference
+            ? Proximity
+            : null;
 
     public GuardianSiteMapProjection? ActiveMapProjection => activeMapProjection;
 
@@ -3928,6 +3938,7 @@ public sealed class GuardianViewModel
         OnPropertyChanged(nameof(ResolvedActiveSiteType));
         OnPropertyChanged(nameof(ShouldShowLiveSiteOverlay));
         OnPropertyChanged(nameof(ShouldShowGuardianStatusOverlay));
+        OnPropertyChanged(nameof(SelectedMapCommanderPosition));
         NotifyAuxiliaryOverlayState();
     }
 
@@ -3935,6 +3946,7 @@ public sealed class GuardianViewModel
     {
         RefreshAutomaticMapScale();
         OnPropertyChanged(nameof(Proximity));
+        OnPropertyChanged(nameof(SelectedMapCommanderPosition));
         OnPropertyChanged(nameof(CurrentObelisk));
         OnPropertyChanged(nameof(HasCurrentObelisk));
         OnPropertyChanged(nameof(SiteDistanceText));
@@ -4734,14 +4746,24 @@ public sealed class GuardianViewModel
                 StringComparison.OrdinalIgnoreCase)
                     ? survey.SiteType
                     : row?.Reference.SiteType;
-        var template = templates.Find(siteType);
-        SurveyEditor.Load(
+        var baseTemplate = templates.Find(siteType);
+        var displayTemplate = FindTemplate(siteType) ?? baseTemplate;
+        var displayCatalog = displayTemplate is null
+            ? templates
+            : templates.WithTemplate(displayTemplate);
+        SurveyEditor.Load(new GuardianSurveyEditorLoadContext(
             activeFrontierId,
             activeIsOdyssey,
             survey,
-            template,
-            ShowComponentMaterials);
-        TemplateAuthoring.UpdateContext(template, measurement: null);
+            displayTemplate)
+        {
+            ShowComponentMaterials = ShowComponentMaterials,
+            TemplateCatalog = displayCatalog,
+            ReferenceProjection = MapProjection,
+            SiteReference = row?.Reference,
+        });
+        TemplateAuthoring.UpdateContext(baseTemplate, measurement: null);
+        TemplateAuthoring.SelectPoint(SurveyEditor.SelectedPointName);
     }
 
     private GuardianSiteTemplate? GetSelectedBaseTemplate()
@@ -4807,7 +4829,39 @@ public sealed class GuardianViewModel
         }
 
         UpdateMapProjection();
+        UpdateSurveyEditor();
         UpdateProximity();
+    }
+
+    private void OnSurveyEditorPropertyChanged(
+        object? sender,
+        PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName
+            == nameof(GuardianSurveyEditorViewModel.SelectedPointName))
+        {
+            TemplateAuthoring.SelectPoint(SurveyEditor.SelectedPointName);
+        }
+    }
+
+    private void OnTemplateAuthoringPropertyChanged(
+        object? sender,
+        PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName
+            != nameof(GuardianTemplateAuthoringViewModel.SelectedPoint))
+        {
+            return;
+        }
+
+        var selectedName = TemplateAuthoring.SelectedPoint?.Name;
+        if (!string.Equals(
+                SurveyEditor.SelectedPointName,
+                selectedName,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            SurveyEditor.SelectedPointName = selectedName;
+        }
     }
 
     private Task OnSurveySavedAsync(

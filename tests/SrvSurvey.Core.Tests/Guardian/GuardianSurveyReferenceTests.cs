@@ -49,6 +49,26 @@ public sealed class GuardianSurveyReferenceTests
     }
 
     [Fact]
+    public void EmbeddedReferencesIncludeLatestPublishedGuardianCorrections()
+    {
+        var sites = GuardianSiteCatalog.LoadEmbedded();
+        var templates = GuardianSiteTemplateCatalog.LoadEmbedded();
+
+        var structure = Assert.Single(sites.Sites, site =>
+            site.Kind == GuardianSiteKind.Structure
+            && site.SiteId == 91);
+        Assert.Equal(66, structure.SurveyProgress);
+        Assert.False(structure.IsSurveyComplete);
+
+        var gamma = Assert.IsType<GuardianSiteTemplate>(
+            templates.Find("Gamma"));
+        var tower = Assert.Single(
+            gamma.PointsOfInterest,
+            point => point.Name == "t9");
+        Assert.Equal(44.2413149429353, tower.Angle, precision: 12);
+    }
+
+    [Fact]
     public void CompletionMatchesEveryPublishedLegacySummary()
     {
         var sites = GuardianSiteCatalog.LoadEmbedded();

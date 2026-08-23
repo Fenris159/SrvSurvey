@@ -1684,6 +1684,7 @@ public sealed class GuardianViewModelTests
             Assert.Equal("Ancient Ruins (1)", screenshotContext.SiteName);
             Assert.Null(viewModel.CurrentObelisk);
             Assert.Null(viewModel.Proximity);
+            Assert.Null(viewModel.SelectedMapCommanderPosition);
             Assert.Null(viewModel.TargetObeliskName);
         }
         finally
@@ -1735,6 +1736,9 @@ public sealed class GuardianViewModelTests
                 "Drew");
             viewModel.UpdateStatus(StatusNorthOfSite(0));
             Assert.Equal("p1", viewModel.Proximity?.NearestPoint?.Point.Name);
+            Assert.Same(
+                viewModel.Proximity,
+                viewModel.SelectedMapCommanderPosition);
 
             foreach (var (command, expected) in new[]
                      {
@@ -1754,6 +1758,91 @@ public sealed class GuardianViewModelTests
                     expected,
                     Assert.Single(saved.Surveys).Survey.PoiStatuses["p1"]);
             }
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task MapSelectionDrivesTemplateCoordinatePreview()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference();
+            var template = new GuardianSiteTemplate(
+                "Test",
+                "Test",
+                string.Empty,
+                new GuardianMapPoint(0, 0),
+                1,
+                [
+                    new GuardianPointOfInterest(
+                        "p1",
+                        GuardianPoiType.Orb,
+                        0,
+                        10,
+                        0),
+                ],
+                [],
+                new Dictionary<string, GuardianMapPoint>());
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    Templates = new GuardianSiteTemplateCatalog([template]),
+                });
+            var visitedAt = DateTimeOffset.Parse("2026-08-23T12:00:00Z");
+            await new GuardianCommanderSurveyStore(root).SaveAsync(
+                "F123",
+                isOdyssey: true,
+                new GuardianCommanderSiteSurvey(
+                    string.Empty,
+                    "$Ancient:#index=1;",
+                    "Ancient Ruins (1)",
+                    "Drew",
+                    visitedAt,
+                    visitedAt,
+                    "Test",
+                    1,
+                    42,
+                    "Test",
+                    7,
+                    "Test A 1",
+                    string.Empty,
+                    false,
+                    new GuardianSurveyData
+                    {
+                        SiteType = "Test",
+                        Location = new GuardianSurfaceLocation(0, 0),
+                    },
+                    [],
+                    new HashSet<char>()));
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+
+            Assert.True(viewModel.SurveyEditor.IsAvailable);
+            viewModel.SurveyEditor.SelectedPointName = "p1";
+            Assert.Equal("p1", viewModel.TemplateAuthoring.SelectedPoint?.Name);
+
+            viewModel.TemplateAuthoring.StartCommand.Execute(null);
+            viewModel.TemplateAuthoring.PointName = "p1-edited";
+            viewModel.TemplateAuthoring.PointDistance = 10.1m;
+            viewModel.TemplateAuthoring.ApplySelectedPointCommand.Execute(null);
+
+            Assert.Equal(
+                "p1-edited",
+                viewModel.SurveyEditor.SelectedPointName);
+            Assert.Equal(
+                10.1,
+                viewModel.MapProjection?.Points.Single(point =>
+                    point.Name == "p1-edited").Distance);
+            Assert.Contains(
+                "10.1 m",
+                viewModel.SurveyEditor.SelectedPoint?.PositionText,
+                StringComparison.Ordinal);
         }
         finally
         {

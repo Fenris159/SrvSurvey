@@ -82,6 +82,38 @@ public sealed class GuardianTemplateAuthoringViewModelTests : IDisposable
         Assert.Contains("discarded", viewModel.StatusMessage);
     }
 
+    [Fact]
+    public void MapSelectionCarriesIntoCoordinateDraftAndUpdatesPreview()
+    {
+        var template = CreateTemplate("Test");
+        var viewModel = new GuardianTemplateAuthoringViewModel(
+            new GuardianSiteTemplateCatalog([template]),
+            _ => { });
+        viewModel.UpdateContext(template, measurement: null);
+
+        Assert.False(viewModel.HasSelectedPoint);
+        viewModel.SelectPoint("p2");
+        viewModel.StartCommand.Execute(null);
+
+        Assert.True(viewModel.HasSelectedPoint);
+        Assert.Equal("p2", viewModel.SelectedPoint?.Name);
+        viewModel.PointName = "p2-edited";
+        viewModel.PointAngle += 0.1m;
+        viewModel.PointDistance += 0.1m;
+        viewModel.PointRotation += 0.1m;
+        viewModel.ApplySelectedPointCommand.Execute(null);
+
+        var updated = viewModel.PreviewTemplate!.PointsOfInterest.Single(point =>
+            point.Name == "p2-edited");
+        Assert.Equal("p2-edited", viewModel.SelectedPoint?.Name);
+        Assert.Equal(90.1, updated.Angle);
+        Assert.Equal(20.1, updated.Distance);
+        Assert.Equal(45.1, updated.Rotation);
+
+        viewModel.SelectPoint("not-a-template-point");
+        Assert.False(viewModel.HasSelectedPoint);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(directory))
@@ -105,6 +137,12 @@ public sealed class GuardianTemplateAuthoringViewModelTests : IDisposable
                     0,
                     10,
                     0),
+                new GuardianPointOfInterest(
+                    "p2",
+                    GuardianPoiType.BrokenObelisk,
+                    90,
+                    20,
+                    45),
             ],
             [],
             new Dictionary<string, GuardianMapPoint>

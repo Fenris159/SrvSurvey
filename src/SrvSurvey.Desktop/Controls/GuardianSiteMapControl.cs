@@ -17,6 +17,10 @@ public sealed class GuardianSiteMapControl : Control
         ProximityProperty = AvaloniaProperty.Register<
             GuardianSiteMapControl,
             GuardianSiteProximitySnapshot?>(nameof(Proximity));
+    public static readonly StyledProperty<GuardianSiteProximitySnapshot?>
+        CommanderMapPositionProperty = AvaloniaProperty.Register<
+            GuardianSiteMapControl,
+            GuardianSiteProximitySnapshot?>(nameof(CommanderMapPosition));
     public static readonly StyledProperty<double> MapScaleProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, double>(
             nameof(MapScale),
@@ -27,6 +31,15 @@ public sealed class GuardianSiteMapControl : Control
     public static readonly StyledProperty<string?> TargetPointNameProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, string?>(
             nameof(TargetPointName));
+    public static readonly StyledProperty<string?> SelectedPointNameProperty =
+        AvaloniaProperty.Register<GuardianSiteMapControl, string?>(
+            nameof(SelectedPointName));
+    public static readonly DirectProperty<GuardianSiteMapControl, string?>
+        HoveredPointNameProperty = AvaloniaProperty.RegisterDirect<
+            GuardianSiteMapControl,
+            string?>(
+                nameof(HoveredPointName),
+                control => control.HoveredPointName);
     public static readonly StyledProperty<IBrush?> MapBackgroundProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, IBrush?>(
             nameof(MapBackground));
@@ -64,21 +77,25 @@ public sealed class GuardianSiteMapControl : Control
             1);
 
     internal const double MinimumViewportZoom = 1;
-    internal const double MaximumViewportZoom = 10;
+    internal const double MaximumViewportZoom = 15;
 
     private IPointer? capturedPointer;
     private Point? dragOrigin;
     private Vector dragStartOffset;
     private Vector viewportOffset;
+    private string? hoveredPointName;
 
     static GuardianSiteMapControl()
     {
         AffectsRender<GuardianSiteMapControl>(
             ProjectionProperty,
             ProximityProperty,
+            CommanderMapPositionProperty,
             MapScaleProperty,
             CommanderHeadingProperty,
             TargetPointNameProperty,
+            SelectedPointNameProperty,
+            HoveredPointNameProperty,
             MapBackgroundProperty,
             GridBrushProperty,
             AccentBrushProperty,
@@ -105,6 +122,12 @@ public sealed class GuardianSiteMapControl : Control
         set => SetValue(ProximityProperty, value);
     }
 
+    public GuardianSiteProximitySnapshot? CommanderMapPosition
+    {
+        get => GetValue(CommanderMapPositionProperty);
+        set => SetValue(CommanderMapPositionProperty, value);
+    }
+
     public double MapScale
     {
         get => GetValue(MapScaleProperty);
@@ -121,6 +144,21 @@ public sealed class GuardianSiteMapControl : Control
     {
         get => GetValue(TargetPointNameProperty);
         set => SetValue(TargetPointNameProperty, value);
+    }
+
+    public string? SelectedPointName
+    {
+        get => GetValue(SelectedPointNameProperty);
+        set => SetValue(SelectedPointNameProperty, value);
+    }
+
+    public string? HoveredPointName
+    {
+        get => hoveredPointName;
+        private set => SetAndRaise(
+            HoveredPointNameProperty,
+            ref hoveredPointName,
+            value);
     }
 
     public IBrush? MapBackground
@@ -210,27 +248,20 @@ public sealed class GuardianSiteMapControl : Control
 
         if (IsLegendOnly)
         {
-            DrawLegendRows(context, projection, 0, 8, 20);
+            DrawLegendRows(
+                context,
+                projection,
+                left: 2,
+                top: 4,
+                rowHeight: 26,
+                availableWidth: Math.Max(1, bounds.Width - 4),
+                fontSize: 13);
             return;
         }
 
-        var grid = GridBrush ?? Brushes.Gray;
-        var accent = AccentBrush ?? Brushes.Cyan;
-        var viewportZoom = NormalizeViewportZoom(ViewportZoom);
-        viewportOffset = ClampViewportOffset(
-            viewportOffset,
-            bounds.Size,
-            viewportZoom);
-        var viewportCenter = bounds.Center + viewportOffset;
-        var mapImage = GuardianMapImageCatalog.Find(projection);
-        var fittedScale = CalculateFittedScale(
+        var (viewportCenter, scale, mapImage) = CalculateViewport(
             bounds,
-            projection,
-            mapImage);
-        var baseScale = double.IsFinite(MapScale) && MapScale > 0
-            ? Math.Clamp(MapScale, 0.1, 20)
-            : fittedScale;
-        var scale = baseScale * viewportZoom;
+            projection);
         if (mapImage is not null)
         {
             DrawMapImage(
@@ -249,54 +280,14 @@ public sealed class GuardianSiteMapControl : Control
             viewportCenter,
             scale);
         var gridExtent = Math.Max(bounds.Width, bounds.Height) / scale * 2;
-        if (mapImage is null)
-        {
-            var gridPen = new Pen(grid, 1, dashStyle: DashStyle.Dash);
-            context.DrawLine(
-                gridPen,
-                TransformMapPoint(
-                    0,
-                    -gridExtent,
-                    Proximity,
-                    CommanderHeading,
-                    viewportCenter,
-                    scale),
-                TransformMapPoint(
-                    0,
-                    gridExtent,
-                    Proximity,
-                    CommanderHeading,
-                    viewportCenter,
-                    scale));
-            context.DrawLine(
-                gridPen,
-                TransformMapPoint(
-                    -gridExtent,
-                    0,
-                    Proximity,
-                    CommanderHeading,
-                    viewportCenter,
-                    scale),
-                TransformMapPoint(
-                    gridExtent,
-                    0,
-                    Proximity,
-                    CommanderHeading,
-                    viewportCenter,
-                    scale));
-            for (var ring = 1; ring <= 4; ring++)
-            {
-                var ringRadius = projection.MaximumDistance * scale * ring / 4;
-                context.DrawEllipse(
-                    null,
-                    gridPen,
-                    mapOrigin,
-                    ringRadius,
-                    ringRadius);
-            }
-
-            context.DrawEllipse(accent, null, mapOrigin, 3, 3);
-        }
+        DrawReferenceGrid(
+            context,
+            projection,
+            mapImage,
+            viewportCenter,
+            mapOrigin,
+            gridExtent,
+            scale);
 
         DrawHeadingLines(
             context,
@@ -305,6 +296,21 @@ public sealed class GuardianSiteMapControl : Control
             gridExtent * scale,
             CommanderHeading,
             scale);
+        if (Proximity is null && CommanderMapPosition is { } commander)
+        {
+            DrawCommander(
+                context,
+                TransformMapPoint(
+                    commander.MapX,
+                    commander.MapY,
+                    proximity: null,
+                    commanderHeading: 0,
+                    viewportCenter,
+                    scale),
+                projection.IsRuins,
+                scale);
+        }
+
         foreach (var point in projection.Points)
         {
             DrawPoint(
@@ -355,6 +361,69 @@ public sealed class GuardianSiteMapControl : Control
         {
             DrawMissingMapNotice(context, bounds, projection.SiteType);
         }
+    }
+
+    private void DrawReferenceGrid(
+        DrawingContext context,
+        GuardianSiteMapProjection projection,
+        IImage? mapImage,
+        Point viewportCenter,
+        Point mapOrigin,
+        double gridExtent,
+        double scale)
+    {
+        if (mapImage is not null)
+        {
+            return;
+        }
+
+        var grid = GridBrush ?? Brushes.Gray;
+        var accent = AccentBrush ?? Brushes.Cyan;
+        var gridPen = new Pen(grid, 1, dashStyle: DashStyle.Dash);
+        context.DrawLine(
+            gridPen,
+            TransformMapPoint(
+                0,
+                -gridExtent,
+                Proximity,
+                CommanderHeading,
+                viewportCenter,
+                scale),
+            TransformMapPoint(
+                0,
+                gridExtent,
+                Proximity,
+                CommanderHeading,
+                viewportCenter,
+                scale));
+        context.DrawLine(
+            gridPen,
+            TransformMapPoint(
+                -gridExtent,
+                0,
+                Proximity,
+                CommanderHeading,
+                viewportCenter,
+                scale),
+            TransformMapPoint(
+                gridExtent,
+                0,
+                Proximity,
+                CommanderHeading,
+                viewportCenter,
+                scale));
+        for (var ring = 1; ring <= 4; ring++)
+        {
+            var ringRadius = projection.MaximumDistance * scale * ring / 4;
+            context.DrawEllipse(
+                null,
+                gridPen,
+                mapOrigin,
+                ringRadius,
+                ringRadius);
+        }
+
+        context.DrawEllipse(accent, null, mapOrigin, 3, 3);
     }
 
     public static double CalculateFittedScale(
@@ -527,13 +596,27 @@ public sealed class GuardianSiteMapControl : Control
     {
         base.OnPointerPressed(e);
         if (!CanInteractWithViewport
-            || NormalizeViewportZoom(ViewportZoom) <= MinimumViewportZoom
             || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             return;
         }
 
-        dragOrigin = e.GetPosition(this);
+        var pointerPosition = e.GetPosition(this);
+        if (HitTestPoint(pointerPosition) is { } point)
+        {
+            SetCurrentValue(SelectedPointNameProperty, point.Name);
+            e.Handled = true;
+            return;
+        }
+
+        SetCurrentValue(SelectedPointNameProperty, null);
+        if (NormalizeViewportZoom(ViewportZoom) <= MinimumViewportZoom)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        dragOrigin = pointerPosition;
         dragStartOffset = viewportOffset;
         capturedPointer = e.Pointer;
         e.Pointer.Capture(this);
@@ -546,6 +629,7 @@ public sealed class GuardianSiteMapControl : Control
         base.OnPointerMoved(e);
         if (dragOrigin is not { } origin)
         {
+            UpdateHoveredPoint(e.GetPosition(this));
             return;
         }
 
@@ -555,6 +639,12 @@ public sealed class GuardianSiteMapControl : Control
             ViewportZoom);
         InvalidateVisual();
         e.Handled = true;
+    }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        base.OnPointerExited(e);
+        HoveredPointName = null;
     }
 
     protected override void OnPointerReleased(
@@ -603,6 +693,81 @@ public sealed class GuardianSiteMapControl : Control
         Cursor = new Cursor(StandardCursorType.Hand);
     }
 
+    private void UpdateHoveredPoint(Point pointerPosition)
+    {
+        HoveredPointName = HitTestPoint(pointerPosition)?.Name;
+    }
+
+    private GuardianProjectedPoint? HitTestPoint(Point pointerPosition)
+    {
+        if (Projection is not { } projection
+            || Bounds.Width <= 0
+            || Bounds.Height <= 0)
+        {
+            return null;
+        }
+
+        var bounds = new Rect(Bounds.Size);
+        var (viewportCenter, scale, _) = CalculateViewport(bounds, projection);
+        return projection.Points
+            .Select(point => new
+            {
+                Point = point,
+                Screen = TransformMapPoint(
+                    point.X,
+                    point.Y,
+                    Proximity,
+                    CommanderHeading,
+                    viewportCenter,
+                    scale),
+            })
+            .Select(candidate => new
+            {
+                candidate.Point,
+                Distance = Math.Sqrt(
+                    Math.Pow(candidate.Screen.X - pointerPosition.X, 2)
+                    + Math.Pow(candidate.Screen.Y - pointerPosition.Y, 2)),
+            })
+            .Where(candidate => candidate.Distance <= GetHitRadius(
+                candidate.Point,
+                projection,
+                scale))
+            .OrderBy(candidate => candidate.Distance)
+            .Select(candidate => candidate.Point)
+            .FirstOrDefault();
+    }
+
+    private (Point Center, double Scale, IImage? MapImage) CalculateViewport(
+        Rect bounds,
+        GuardianSiteMapProjection projection)
+    {
+        var viewportZoom = NormalizeViewportZoom(ViewportZoom);
+        viewportOffset = ClampViewportOffset(
+            viewportOffset,
+            bounds.Size,
+            viewportZoom);
+        var mapImage = GuardianMapImageCatalog.Find(projection);
+        var fittedScale = CalculateFittedScale(bounds, projection, mapImage);
+        var baseScale = double.IsFinite(MapScale) && MapScale > 0
+            ? Math.Clamp(MapScale, 0.1, 20)
+            : fittedScale;
+        return (
+            bounds.Center + viewportOffset,
+            baseScale * viewportZoom,
+            mapImage);
+    }
+
+    private static double GetHitRadius(
+        GuardianProjectedPoint point,
+        GuardianSiteMapProjection projection,
+        double markerScale)
+    {
+        var (_, ringRadius) = GetSurveyMarkerRadii(
+            point.Type,
+            projection.IsRuins);
+        return Math.Max(12, (ringRadius + 4) * markerScale);
+    }
+
     private void DrawCommander(
         DrawingContext context,
         Point location,
@@ -637,7 +802,14 @@ public sealed class GuardianSiteMapControl : Control
         context.DrawText(
             CreateLegendText("Legend", FontWeight.Bold),
             new Point(22, 18));
-        DrawLegendRows(context, projection, 16, 38, rowHeight);
+        DrawLegendRows(
+            context,
+            projection,
+            16,
+            38,
+            rowHeight,
+            width - 8,
+            fontSize: 10);
     }
 
     private void DrawLegendRows(
@@ -645,20 +817,74 @@ public sealed class GuardianSiteMapControl : Control
         GuardianSiteMapProjection projection,
         double left,
         double top,
-        double rowHeight)
+        double rowHeight,
+        double availableWidth,
+        double fontSize)
     {
+        var symbolScale = IsLegendOnly ? 1.25 : 1;
         var entries = CreateLegendEntries(projection);
-        for (var index = 0; index < entries.Count; index++)
+        var useTwoColumns = IsLegendOnly && availableWidth >= 220;
+        var compactEntries = useTwoColumns
+            ? entries.Where(entry => !IsFullWidthLegendEntry(entry)).ToArray()
+            : entries.ToArray();
+        var fullWidthEntries = useTwoColumns
+            ? entries.Where(IsFullWidthLegendEntry).ToArray()
+            : [];
+        var columnCount = useTwoColumns ? 2 : 1;
+        const double columnGap = 8;
+        var columnWidth = (availableWidth
+            - columnGap * (columnCount - 1)) / columnCount;
+        for (var index = 0; index < compactEntries.Length; index++)
         {
-            var entry = entries[index];
+            var entry = compactEntries[index];
+            var row = index / columnCount;
+            var column = index % columnCount;
+            var entryLeft = left + column * (columnWidth + columnGap);
             var center = new Point(
-                left + 12,
-                top + (rowHeight / 2) + index * rowHeight);
-            DrawLegendSymbol(context, center, entry);
+                entryLeft + 16,
+                top + (rowHeight / 2) + row * rowHeight);
+            DrawLegendSymbol(context, center, entry, symbolScale);
+            var text = CreateLegendText(
+                entry.Label,
+                FontWeight.Normal,
+                fontSize);
+            text.MaxTextWidth = Math.Max(1, columnWidth - 40);
+            text.MaxTextHeight = rowHeight;
             context.DrawText(
-                CreateLegendText(entry.Label, FontWeight.Normal),
-                new Point(left + 28, center.Y - 7));
+                text,
+                new Point(entryLeft + 36, center.Y - text.Height / 2));
         }
+
+        var fullWidthTop = top
+            + Math.Ceiling(compactEntries.Length / (double)columnCount)
+            * rowHeight;
+        var entryTop = fullWidthTop;
+        for (var index = 0; index < fullWidthEntries.Length; index++)
+        {
+            var entry = fullWidthEntries[index];
+            var text = CreateLegendText(
+                entry.Label,
+                FontWeight.Normal,
+                fontSize);
+            text.MaxTextWidth = Math.Max(1, availableWidth - 40);
+            var entryHeight = Math.Max(rowHeight, text.Height + 2);
+            var center = new Point(
+                left + 16,
+                entryTop + entryHeight / 2);
+            DrawLegendSymbol(context, center, entry, symbolScale);
+            context.DrawText(
+                text,
+                new Point(left + 36, center.Y - text.Height / 2));
+            entryTop += entryHeight;
+        }
+    }
+
+    private static bool IsFullWidthLegendEntry(GuardianMapLegendEntry entry)
+    {
+        return entry.IsActiveObelisk
+            || entry.Type is GuardianPoiType.Pylon
+                or GuardianPoiType.Component
+            || entry.Kind != GuardianMapLegendKind.Point;
     }
 
     private void DrawMapImage(
@@ -720,24 +946,35 @@ public sealed class GuardianSiteMapControl : Control
     private void DrawLegendSymbol(
         DrawingContext context,
         Point center,
-        GuardianMapLegendEntry entry)
+        GuardianMapLegendEntry entry,
+        double symbolScale = 1)
     {
         var accent = AccentBrush ?? Brushes.Cyan;
         if (entry.Kind == GuardianMapLegendKind.SiteHeading)
         {
             context.DrawLine(
-                new Pen(accent, 2),
-                new Point(center.X - 6, center.Y + 5),
-                new Point(center.X + 5, center.Y - 6));
+                new Pen(accent, 2 * symbolScale),
+                new Point(
+                    center.X - 6 * symbolScale,
+                    center.Y + 5 * symbolScale),
+                new Point(
+                    center.X + 5 * symbolScale,
+                    center.Y - 6 * symbolScale));
             return;
         }
 
         if (entry.Kind == GuardianMapLegendKind.TowerHeading)
         {
             context.DrawLine(
-                new Pen(EmptyBrush ?? Brushes.Goldenrod, 2),
-                new Point(center.X - 6, center.Y + 5),
-                new Point(center.X + 5, center.Y - 6));
+                new Pen(
+                    EmptyBrush ?? Brushes.Goldenrod,
+                    2 * symbolScale),
+                new Point(
+                    center.X - 6 * symbolScale,
+                    center.Y + 5 * symbolScale),
+                new Point(
+                    center.X + 5 * symbolScale,
+                    center.Y - 6 * symbolScale));
             return;
         }
 
@@ -746,9 +983,9 @@ public sealed class GuardianSiteMapControl : Control
             GuardianSurveyMarkerDrawing.Draw(
                 context,
                 center,
-                haloRadius: 8,
-                ringRadius: 7,
-                dotRadius: 0.6);
+                haloRadius: 8 * symbolScale,
+                ringRadius: 7 * symbolScale,
+                dotRadius: 0.6 * symbolScale);
             return;
         }
 
@@ -763,10 +1000,11 @@ public sealed class GuardianSiteMapControl : Control
                 0,
                 0,
                 entry.Status,
-                false,
-                false,
+                entry.IsActiveObelisk,
+                entry.IsScannedObelisk,
                 string.Empty,
-                []),
+                [],
+                IsRamTahNeededObelisk: entry.IsRamTahNeededObelisk),
             center,
             new GuardianSiteMapProjection(
                 "Alpha",
@@ -776,12 +1014,14 @@ public sealed class GuardianSiteMapControl : Control
                 IsRuins: true,
                 SiteHeading: 0,
                 RelicTowerHeading: 45),
-            headingLength: 0);
+            headingLength: 0,
+            markerScale: (entry.IsActiveObelisk ? 0.55 : 1) * symbolScale);
     }
 
     private FormattedText CreateLegendText(
         string text,
-        FontWeight weight)
+        FontWeight weight,
+        double fontSize = 10)
     {
         return new FormattedText(
             LocalizationCatalog.Translate(text),
@@ -791,7 +1031,7 @@ public sealed class GuardianSiteMapControl : Control
                 "Century Gothic, Segoe UI, sans-serif",
                 FontStyle.Normal,
                 weight),
-            10,
+            fontSize,
             MutedBrush ?? Brushes.Wheat);
     }
 
@@ -808,6 +1048,20 @@ public sealed class GuardianSiteMapControl : Control
             new("Urn", GuardianPoiType.Urn),
             new("Empty puddle", GuardianPoiType.EmptyPuddle, GuardianPoiStatus.Empty),
             new("Obelisk", GuardianPoiType.Obelisk),
+            new(
+                "Active obelisk · unscanned",
+                GuardianPoiType.Obelisk,
+                IsActiveObelisk: true),
+            new(
+                "Active obelisk · scanned",
+                GuardianPoiType.Obelisk,
+                IsActiveObelisk: true,
+                IsScannedObelisk: true),
+            new(
+                "Active obelisk · Ram Tah needed",
+                GuardianPoiType.Obelisk,
+                IsActiveObelisk: true,
+                IsRamTahNeededObelisk: true),
         };
         if (!projection.IsRuins)
         {
@@ -861,6 +1115,7 @@ public sealed class GuardianSiteMapControl : Control
             rotation,
             markerScale);
         DrawTargetOrNearestHighlight(context, point, location, markerScale);
+        DrawPointerSelectionHighlight(context, point, location, markerScale);
         if (point.Type == GuardianPoiType.Obelisk && point.IsActiveObelisk)
         {
             DrawActiveObeliskEffect(
@@ -966,6 +1221,39 @@ public sealed class GuardianSiteMapControl : Control
             location,
             highlightRadius,
             highlightRadius);
+    }
+
+    private void DrawPointerSelectionHighlight(
+        DrawingContext context,
+        GuardianProjectedPoint point,
+        Point location,
+        double markerScale)
+    {
+        var isHovered = string.Equals(
+            point.Name,
+            HoveredPointName,
+            StringComparison.OrdinalIgnoreCase);
+        var isSelected = string.Equals(
+            point.Name,
+            SelectedPointName,
+            StringComparison.OrdinalIgnoreCase);
+        if (!isHovered && !isSelected)
+        {
+            return;
+        }
+
+        var radius = 14 * markerScale;
+        var brush = PresentBrush ?? Brushes.LimeGreen;
+        var thickness = (isSelected ? 4d : 3d) * markerScale;
+        context.DrawEllipse(
+            null,
+            new Pen(
+                brush,
+                thickness,
+                dashStyle: new DashStyle([3.5, 2], 0.5)),
+            location,
+            radius,
+            radius);
     }
 
     private sealed class PointGlyphDraw
@@ -1351,7 +1639,10 @@ public sealed class GuardianSiteMapControl : Control
         string Label,
         GuardianPoiType Type,
         GuardianPoiStatus Status = GuardianPoiStatus.Present,
-        GuardianMapLegendKind Kind = GuardianMapLegendKind.Point);
+        GuardianMapLegendKind Kind = GuardianMapLegendKind.Point,
+        bool IsActiveObelisk = false,
+        bool IsScannedObelisk = false,
+        bool IsRamTahNeededObelisk = false);
 
     private enum GuardianMapLegendKind
     {

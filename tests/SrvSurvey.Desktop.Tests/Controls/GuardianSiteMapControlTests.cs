@@ -2,7 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Desktop.Controls;
 
@@ -127,7 +129,7 @@ public sealed class GuardianSiteMapControlTests
     }
 
     [Fact]
-    public void LegendMatchesLegacyRuinsAndStructureKeysExactly()
+    public void LegendIncludesLegacyKeysAndActiveObeliskStates()
     {
         var ruins = new GuardianSiteMapProjection(
             "Alpha",
@@ -154,6 +156,9 @@ public sealed class GuardianSiteMapControlTests
                 "Urn",
                 "Empty puddle",
                 "Obelisk",
+                "Active obelisk · unscanned",
+                "Active obelisk · scanned",
+                "Active obelisk · Ram Tah needed",
                 "Site heading",
                 "Tower heading",
                 "Survey needed",
@@ -169,6 +174,9 @@ public sealed class GuardianSiteMapControlTests
                 "Urn",
                 "Empty puddle",
                 "Obelisk",
+                "Active obelisk · unscanned",
+                "Active obelisk · scanned",
+                "Active obelisk · Ram Tah needed",
                 "Energy pylon",
                 "Component tower",
                 "Site heading",
@@ -451,7 +459,8 @@ public sealed class GuardianSiteMapControlTests
     [InlineData(double.NaN, 1)]
     [InlineData(0.5, 1)]
     [InlineData(4, 4)]
-    [InlineData(12, 10)]
+    [InlineData(12, 12)]
+    [InlineData(20, 15)]
     public void InteractiveViewportZoomUsesBoundedLegacyRange(
         double requested,
         double expected)
@@ -476,6 +485,83 @@ public sealed class GuardianSiteMapControlTests
                 new Vector(900, -900),
                 new Size(720, 640),
                 zoom: 2));
+    }
+
+    [AvaloniaFact]
+    public void OverlappingCommanderDoesNotBlockPointSelectionFeedback()
+    {
+        var control = new GuardianSiteMapControl
+        {
+            Projection = new GuardianSiteMapProjection(
+                "Lacrosse",
+                [RenderPoint(
+                    "P1",
+                    GuardianPoiType.Orb,
+                    0,
+                    0,
+                    GuardianPoiStatus.Present)],
+                [],
+                1),
+            CommanderMapPosition = new GuardianSiteProximitySnapshot(
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                null),
+            MapScale = 4,
+            AllowViewportInteraction = true,
+            ShowLegend = false,
+        };
+        var window = new Window
+        {
+            Width = 720,
+            Height = 640,
+            Content = control,
+        };
+
+        try
+        {
+            window.Show();
+            window.MouseMove(
+                new Point(360, 320),
+                RawInputModifiers.None);
+
+            Assert.Equal("P1", control.HoveredPointName);
+            window.MouseDown(
+                new Point(360, 320),
+                MouseButton.Left,
+                RawInputModifiers.None);
+            window.MouseUp(
+                new Point(360, 320),
+                MouseButton.Left,
+                RawInputModifiers.None);
+            Assert.Equal("P1", control.SelectedPointName);
+            var frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            var outputPath = Environment.GetEnvironmentVariable(
+                "SRVSURVEY_GUARDIAN_MAP_SELECTION_RENDER_OUTPUT");
+            if (!string.IsNullOrWhiteSpace(outputPath))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+                frame.Save(outputPath, PngBitmapEncoderOptions.Default);
+            }
+
+            window.MouseDown(
+                new Point(40, 40),
+                MouseButton.Left,
+                RawInputModifiers.None);
+            window.MouseUp(
+                new Point(40, 40),
+                MouseButton.Left,
+                RawInputModifiers.None);
+            Assert.Null(control.SelectedPointName);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [Fact]
@@ -729,6 +815,36 @@ public sealed class GuardianSiteMapControlTests
     }
 
     [AvaloniaFact]
+    public void LocalDraftBackgroundImageCanBePreviewed()
+    {
+        var path = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-guardian-map-{Guid.NewGuid():N}.png");
+        try
+        {
+            File.WriteAllBytes(
+                path,
+                Convert.FromBase64String(
+                    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="));
+            var projection = new GuardianSiteMapProjection(
+                "Draft",
+                [],
+                [],
+                1,
+                false,
+                BackgroundImage: path);
+
+            Assert.Equal(
+                new Size(1, 1),
+                GuardianMapImageCatalog.Find(projection)?.Size);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [AvaloniaFact]
     public void ExternalLegendRendersWithoutDrawingTheMapSurface()
     {
         var control = new GuardianSiteMapControl
@@ -756,7 +872,11 @@ public sealed class GuardianSiteMapControlTests
             MutedBrush = Brushes.Wheat,
         };
 
-        Assert.True(Render(control));
+        Assert.True(Render(
+            control,
+            new Size(280, 320),
+            Environment.GetEnvironmentVariable(
+                "SRVSURVEY_GUARDIAN_LEGEND_RENDER_OUTPUT")));
     }
 
     [AvaloniaFact]
@@ -779,9 +899,12 @@ public sealed class GuardianSiteMapControlTests
         Assert.True(Render(control));
     }
 
-    private static bool Render(GuardianSiteMapControl control)
+    private static bool Render(
+        GuardianSiteMapControl control,
+        Size? requestedSize = null,
+        string? outputPath = null)
     {
-        var size = new Size(720, 640);
+        var size = requestedSize ?? new Size(720, 640);
         var window = new Window
         {
             Width = size.Width,
@@ -793,7 +916,15 @@ public sealed class GuardianSiteMapControlTests
         {
             window.Show();
             var frame = window.CaptureRenderedFrame();
-            return frame?.PixelSize == new PixelSize(720, 640);
+            if (frame is not null && !string.IsNullOrWhiteSpace(outputPath))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+                frame.Save(outputPath, PngBitmapEncoderOptions.Default);
+            }
+
+            return frame?.PixelSize == new PixelSize(
+                (int)size.Width,
+                (int)size.Height);
         }
         finally
         {

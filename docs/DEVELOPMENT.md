@@ -1,6 +1,6 @@
 # Development and Validation
 
-Last updated: 2026-08-18
+Last updated: 2026-08-23
 
 ## Branch purpose
 
@@ -47,16 +47,18 @@ XWayland startup.
 
 ## Upstream parity baseline
 
-The latest source comparison was completed on 2026-08-02 against upstream
-commit `b592d991daa035ddda6682be52f3e55791c6ab29`. The runtime changes from the
-prior `c8068866db8fc98061922a391922b74842b6cef3` baseline remain covered: its
-organic-scan recovery uses the Avalonia system reducer's body lookup/creation
-path, and its colonisation shopping-overlay correction classifies an untracked
-Fleet Carrier from the journal's `StationType` value plus the complete
-commander-linked Raven carrier inventory. Station economy is not used as a
-Fleet Carrier proxy. The only later upstream additions are two Eunostus
-documentation images, not application behavior. Focused planner and
-presentation tests lock the runtime behavior.
+The latest source comparison was completed on 2026-08-23 against upstream
+commit `b9cac22183f00d846fbbaca4c47a40d1677532c4`. Of the last five upstream
+commits, the port absorbed the Guardian survey publication, Gamma T9 template
+correction, and screenshot game-client-width correction. The WinForms
+`FormMultiFloatie` static-instance cleanup has no corresponding static form in
+the port. Preferred-commander startup and API-key management already use the
+port's profile/settings workflows. The Guardian body-radius null guard is
+already present in the proximity path, and biology predictions publish
+method-local snapshot arrays rather than enumerating a shared mutable
+collection. Focused data and screenshot tests lock the absorbed behavior; the
+Guardian backend contract is recorded in
+[`GUARDIAN_SURVEY_PARITY.md`](GUARDIAN_SURVEY_PARITY.md).
 
 Because this branch intentionally excludes the previous application source,
 future upstream commits must receive an explicit delta review rather than being

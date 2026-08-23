@@ -169,9 +169,12 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
                 PointRotation = (decimal)value.Point.Rotation;
             }
 
+            OnPropertyChanged(nameof(HasSelectedPoint));
             RaiseCommandStates();
         }
     }
+
+    public bool HasSelectedPoint => SelectedPoint is not null;
 
     public IReadOnlyList<GuardianTemplateGroupViewModel> Groups
     {
@@ -356,6 +359,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
 
             activeTemplate = template;
             IsDiscardConfirmationPending = false;
+            SelectedPoint = null;
             LoadMetadata(template);
             RefreshCollections();
             OnPropertyChanged(nameof(TemplateTitle));
@@ -372,6 +376,16 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasLiveMeasurement));
         OnPropertyChanged(nameof(LiveMeasurementText));
         RaiseCommandStates();
+    }
+
+    public void SelectPoint(string? name)
+    {
+        SelectedPoint = string.IsNullOrWhiteSpace(name)
+            ? null
+            : Points.FirstOrDefault(point => string.Equals(
+                point.Name,
+                name,
+                StringComparison.OrdinalIgnoreCase));
     }
 
     public async Task ExportAsync(
@@ -424,9 +438,12 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             return;
         }
 
+        var selectedName = SelectedPoint?.Name;
         session = new GuardianSiteTemplateAuthoringSession(activeTemplate);
         LoadMetadata(session.Template);
-        RefreshDraft("Master-template draft started. Changes remain local until a catalog export succeeds.");
+        RefreshDraft(
+            "Master-template draft started. Changes remain local until a catalog export succeeds.",
+            selectedName);
         NewPointName = NextPointName(NewPointType);
     }
 
@@ -607,14 +624,13 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
                     pair.Value))
                 .ToArray()
             ?? [];
-        var firstPoint = Points.Count > 0 ? Points[0] : null;
-        SelectedPoint = selectedName is null
-            ? firstPoint
+        var selectedPointName = selectedName ?? SelectedPoint?.Name;
+        SelectedPoint = selectedPointName is null
+            ? null
             : Points.FirstOrDefault(point => string.Equals(
                 point.Point.Name,
-                selectedName,
-                StringComparison.OrdinalIgnoreCase))
-                ?? firstPoint;
+                selectedPointName,
+                StringComparison.OrdinalIgnoreCase));
         SelectedGroup = Groups.Count > 0 ? Groups[0] : null;
         OnPropertyChanged(nameof(PreviewTemplate));
     }

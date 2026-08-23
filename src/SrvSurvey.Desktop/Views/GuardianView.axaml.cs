@@ -229,6 +229,39 @@ public sealed partial class GuardianView : UserControl
         }
     }
 
+    private async void ChooseGuardianTemplateBackground_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is not MainWindowViewModel viewModel
+            || TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage)
+        {
+            return;
+        }
+
+        var files = await storage.OpenFilePickerAsync(
+            new FilePickerOpenOptions
+            {
+                Title = "Choose Guardian map background",
+                AllowMultiple = false,
+                FileTypeFilter =
+                [
+                    new FilePickerFileType("PNG image")
+                    {
+                        Patterns = ["*.png"],
+                        MimeTypes = ["image/png"],
+                    },
+                ],
+            });
+        var path = files.Count > 0
+            ? files[0].TryGetLocalPath()
+            : null;
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            viewModel.Guardian.TemplateAuthoring.BackgroundImage = path;
+        }
+    }
+
     private async void CopyShareBundle_Click(
         object? sender,
         RoutedEventArgs eventArgs)
