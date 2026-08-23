@@ -4928,10 +4928,15 @@ public sealed class GuardianViewModel
         ApplyFilters();
     }
 
-    private string GetSortIndicator(GuardianSiteBrowserSort sort) =>
-        siteBrowserSort == sort
-            ? siteBrowserSortDescending ? "▼" : "▲"
-            : string.Empty;
+    private string GetSortIndicator(GuardianSiteBrowserSort sort)
+    {
+        if (siteBrowserSort != sort)
+        {
+            return string.Empty;
+        }
+
+        return siteBrowserSortDescending ? "▼" : "▲";
+    }
 
     private void RaiseSiteSortProperties()
     {

@@ -42,6 +42,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private const int MaximumSystemBodyDataRetryAttempts = 5;
 
     private const string Unavailable = "—";
+    private const string ExplorationNavigationKey = "exploration";
+    private const string ExobiologyNavigationKey = "exobiology";
+    private const string TravelNavigationKey = "travel";
+    private const string BoxelNavigationKey = "boxel";
+    private const string SearchNavigationKey = "search";
+    private const string GuardianNavigationKey = "guardian";
+    private const string QuestsNavigationKey = "quests";
+    private const string ColonisationNavigationKey = "colonisation";
+    private const string DiagnosticsNavigationKey = "diagnostics";
     private const string SettingsNavigationKey = "settings";
     private const string SurveyNavigationGroup = "survey";
     private const string NavigationNavigationGroup = "navigation";
@@ -770,15 +779,49 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             NavigationItems =
             [
                 new("overview", "Overview", "Commander and current journal state"),
-                new("exploration", "Exploration", "Trip totals and body scans", true),
-                new("exobiology", "Exobiology", "Organic scans and unclaimed rewards", true),
-                new("travel", "Travel", "Ground targets, journeys, and routes", true),
-                new("boxel", "Boxel", "Procedural boxel searches and completion tracking", true),
-                new("search", "Search", "Spherical limits and nearby biology"),
-                new("guardian", "Guardian", "Sites, maps, and Ram Tah", true),
-                new("quests", "Quests", "Communications and active objectives", true),
-                new("colonisation", "Colonization", "Raven Colonial projects", true),
-                new("diagnostics", "Diagnostics", "Journal source and parsed state"),
+                new(
+                    ExplorationNavigationKey,
+                    "Exploration",
+                    "Trip totals and body scans",
+                    true),
+                new(
+                    ExobiologyNavigationKey,
+                    "Exobiology",
+                    "Organic scans and unclaimed rewards",
+                    true),
+                new(
+                    TravelNavigationKey,
+                    "Travel",
+                    "Ground targets, journeys, and routes",
+                    true),
+                new(
+                    BoxelNavigationKey,
+                    "Boxel",
+                    "Procedural boxel searches and completion tracking",
+                    true),
+                new(
+                    SearchNavigationKey,
+                    "Search",
+                    "Spherical limits and nearby biology"),
+                new(
+                    GuardianNavigationKey,
+                    "Guardian",
+                    "Sites, maps, and Ram Tah",
+                    true),
+                new(
+                    QuestsNavigationKey,
+                    "Quests",
+                    "Communications and active objectives",
+                    true),
+                new(
+                    ColonisationNavigationKey,
+                    "Colonization",
+                    "Raven Colonial projects",
+                    true),
+                new(
+                    DiagnosticsNavigationKey,
+                    "Diagnostics",
+                    "Journal source and parsed state"),
                 new(SettingsNavigationKey, "Settings", "Application and integration options"),
                 new("theme", "Theme", "Application and in-game appearance"),
                 new("guides", "Guides", "Help documentation and overlay icon glossary"),
@@ -789,20 +832,25 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 .Where(item => item.Key == "overview")
                 .ToArray();
             SurveyNavigationItems = NavigationItems
-                .Where(item => item.Key is "exploration" or "exobiology" or "boxel")
+                .Where(item => item.Key is ExplorationNavigationKey
+                    or ExobiologyNavigationKey
+                    or BoxelNavigationKey)
                 .ToArray();
             NavigationWorkspaceItems = NavigationItems
-                .Where(item => item.Key is "travel" or "search")
+                .Where(item => item.Key is TravelNavigationKey
+                    or SearchNavigationKey)
                 .ToArray();
             ActivityNavigationItems = NavigationItems
-                .Where(item => item.Key is "guardian" or "quests" or "colonisation")
+                .Where(item => item.Key is GuardianNavigationKey
+                    or QuestsNavigationKey
+                    or ColonisationNavigationKey)
                 .ToArray();
             UtilityNavigationItems = new[]
             {
                 SettingsNavigationKey,
                 "theme",
                 "guides",
-                "diagnostics",
+                DiagnosticsNavigationKey,
             }
                 .Select(key => NavigationItems.Single(item => item.Key == key))
                 .ToArray();
@@ -1161,31 +1209,40 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public bool IsOverviewSelected => SelectedNavigation?.Key == "overview"
         && !IsProfileSelected;
 
-    public bool IsExplorationSelected => SelectedNavigation?.Key == "exploration"
+    public bool IsExplorationSelected =>
+        SelectedNavigation?.Key == ExplorationNavigationKey
         && !IsProfileSelected;
 
-    public bool IsExobiologySelected => SelectedNavigation?.Key == "exobiology"
+    public bool IsExobiologySelected =>
+        SelectedNavigation?.Key == ExobiologyNavigationKey
         && !IsProfileSelected;
 
-    public bool IsTravelSelected => SelectedNavigation?.Key == "travel"
+    public bool IsTravelSelected =>
+        SelectedNavigation?.Key == TravelNavigationKey
         && !IsProfileSelected;
 
-    public bool IsBoxelSelected => SelectedNavigation?.Key == "boxel"
+    public bool IsBoxelSelected =>
+        SelectedNavigation?.Key == BoxelNavigationKey
         && !IsProfileSelected;
 
-    public bool IsSearchSelected => SelectedNavigation?.Key == "search"
+    public bool IsSearchSelected =>
+        SelectedNavigation?.Key == SearchNavigationKey
         && !IsProfileSelected;
 
-    public bool IsGuardianSelected => SelectedNavigation?.Key == "guardian"
+    public bool IsGuardianSelected =>
+        SelectedNavigation?.Key == GuardianNavigationKey
         && !IsProfileSelected;
 
-    public bool IsQuestsSelected => SelectedNavigation?.Key == "quests"
+    public bool IsQuestsSelected =>
+        SelectedNavigation?.Key == QuestsNavigationKey
         && !IsProfileSelected;
 
     public bool IsColonizationSelected =>
-        SelectedNavigation?.Key == "colonisation" && !IsProfileSelected;
+        SelectedNavigation?.Key == ColonisationNavigationKey
+        && !IsProfileSelected;
 
-    public bool IsDiagnosticsSelected => SelectedNavigation?.Key == "diagnostics"
+    public bool IsDiagnosticsSelected =>
+        SelectedNavigation?.Key == DiagnosticsNavigationKey
         && !IsProfileSelected;
 
     public DiagnosticsWorkspaceTab SelectedDiagnosticsTab
@@ -1301,9 +1358,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     {
         var group = navigationKey switch
         {
-            "exploration" or "exobiology" or "boxel" => SurveyNavigationGroup,
-            "travel" or "search" => NavigationNavigationGroup,
-            "guardian" or "quests" or "colonisation" =>
+            ExplorationNavigationKey
+                or ExobiologyNavigationKey
+                or BoxelNavigationKey => SurveyNavigationGroup,
+            TravelNavigationKey
+                or SearchNavigationKey => NavigationNavigationGroup,
+            GuardianNavigationKey
+                or QuestsNavigationKey
+                or ColonisationNavigationKey =>
                 ActivitiesNavigationGroup,
             _ => null,
         };
@@ -1352,7 +1414,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         }
 
         SelectedNavigation = NavigationItems.Single(
-            item => item.Key == "diagnostics");
+            item => item.Key == DiagnosticsNavigationKey);
     }
 
     public void ShowSettings()
@@ -1397,14 +1459,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public void ShowQuests()
     {
         SelectedNavigation = NavigationItems.Single(
-            item => item.Key == "quests");
+            item => item.Key == QuestsNavigationKey);
     }
 
     public async Task OpenCodexBingoNearestSearchAsync(
         CodexBingoNearestRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        SelectedNavigation = NavigationItems.Single(item => item.Key == "search");
+        SelectedNavigation = NavigationItems.Single(
+            item => item.Key == SearchNavigationKey);
         if (request.Mode == CodexBingoNearestMode.Signal
             && !string.IsNullOrWhiteSpace(request.Signal))
         {

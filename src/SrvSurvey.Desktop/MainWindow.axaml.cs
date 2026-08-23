@@ -106,7 +106,7 @@ public sealed partial class MainWindow : Window
         try
         {
             await Launcher.LaunchUriAsync(
-                new Uri("https://discord.com/invite/GJjTFa9fsz"));
+                WellKnownUris.GuardianScienceCorpsDiscord);
         }
         catch (Exception exception) when (
             exception is InvalidOperationException
