@@ -3720,8 +3720,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             return false;
         }
 
-        var frontierId = activeProfileFrontierId;
-        if (string.IsNullOrWhiteSpace(frontierId)
+        var commanderFrontierId = activeProfileFrontierId;
+        if (string.IsNullOrWhiteSpace(commanderFrontierId)
             || activeSystemVisitAddress != systemAddress
             || activeSystemVisitedAt is not { } visitedAt)
         {
@@ -3742,7 +3742,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         }
 
         isSystemBodyDataLoadDeferred = false;
-        var visitKey = frontierId
+        var visitKey = commanderFrontierId
             + "\n"
             + systemAddress
             + "\n"
@@ -3753,8 +3753,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             + includeBiologicalData;
         context = new SystemBodyDataLoadContext(
             client,
-            frontierId,
-            current.SystemName!,
+            commanderFrontierId,
+            current.SystemName,
             systemAddress,
             visitedAt,
             includeBiologicalData,
