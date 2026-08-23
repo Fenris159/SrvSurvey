@@ -7,20 +7,61 @@ public interface IReplayDelay
     Task WaitAsync(TimeSpan delay, CancellationToken cancellationToken);
 }
 
+internal interface IReplayJournalWriter
+{
+    Task AppendLineAsync(
+        string path,
+        string line,
+        CancellationToken cancellationToken);
+}
+
+internal sealed class AtomicReplayJournalWriter(
+    Action? emissionStarting = null) : IReplayJournalWriter
+{
+    public async Task AppendLineAsync(
+        string path,
+        string line,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var payload = Encoding.UTF8.GetBytes(line + "\n");
+        emissionStarting?.Invoke();
+        await using var stream = new FileStream(
+            path,
+            FileMode.Append,
+            FileAccess.Write,
+            FileShare.ReadWrite,
+            bufferSize: 16 * 1024,
+            useAsync: true);
+        await stream.WriteAsync(payload, CancellationToken.None);
+        await stream.FlushAsync(CancellationToken.None);
+    }
+}
+
 public sealed class JournalReplayPlayer
 {
     private readonly DiagnosticReplaySession session;
     private readonly IReplayDelay delay;
+    private readonly IReplayJournalWriter writer;
     private readonly SemaphoreSlim gate = new(1, 1);
     private int position;
 
     public JournalReplayPlayer(
         DiagnosticReplaySession session,
         IReplayDelay? delay = null)
+        : this(session, delay, new AtomicReplayJournalWriter())
+    {
+    }
+
+    internal JournalReplayPlayer(
+        DiagnosticReplaySession session,
+        IReplayDelay? delay,
+        IReplayJournalWriter writer)
     {
         this.session = session
             ?? throw new ArgumentNullException(nameof(session));
         this.delay = delay ?? new SystemReplayDelay();
+        this.writer = writer ?? throw new ArgumentNullException(nameof(writer));
     }
 
     public event EventHandler<JournalReplayPositionChangedEventArgs>?
@@ -138,24 +179,11 @@ public sealed class JournalReplayPlayer
         }
 
         var replayEvent = session.Events[position];
-        await using (var stream = new FileStream(
-                         session.PlaybackJournalPath,
-                         FileMode.Append,
-                         FileAccess.Write,
-                         FileShare.ReadWrite,
-                         bufferSize: 16 * 1024,
-                         useAsync: true))
-        await using (var writer = new StreamWriter(
-                         stream,
-                         new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                         bufferSize: 16 * 1024,
-                         leaveOpen: false))
-        {
-            await writer.WriteLineAsync(
-                replayEvent.RawJson.AsMemory(),
-                cancellationToken);
-            await writer.FlushAsync(cancellationToken);
-        }
+        cancellationToken.ThrowIfCancellationRequested();
+        await writer.AppendLineAsync(
+            session.PlaybackJournalPath,
+            replayEvent.RawJson,
+            cancellationToken);
 
         position++;
         PositionChanged?.Invoke(

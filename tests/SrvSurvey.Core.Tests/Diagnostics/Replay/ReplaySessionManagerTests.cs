@@ -1,4 +1,6 @@
 using SrvSurvey.Core.Diagnostics.Replay;
+using System.IO.Compression;
+using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Core.Tests.Diagnostics.Replay;
 
@@ -142,9 +144,162 @@ public sealed class ReplaySessionManagerTests
                 CancellationToken.None));
 
         Assert.Contains(
-            "escapes",
+            "path schema",
             exception.Message,
             StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("configDirectory", ".")]
+    [InlineData("playbackJournal", "source/journal.jsonl")]
+    public async Task LoadRejectsManifestPathsThatAliasRetainedEvidence(
+        string propertyName,
+        string replacement)
+    {
+        using var temp = new TemporaryDirectory();
+        var session = await ImportCommanderJournalAsync(temp.Path);
+        var manifest = JsonNode.Parse(
+            await File.ReadAllTextAsync(session.ManifestPath))!.AsObject();
+        manifest["paths"]!.AsObject()[propertyName] = replacement;
+        await File.WriteAllTextAsync(
+            session.ManifestPath,
+            manifest.ToJsonString());
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            DiagnosticReplaySession.LoadAsync(
+                session.ManifestPath,
+                CancellationToken.None));
+
+        Assert.Contains(
+            "path schema",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.True(File.Exists(session.SourceJournalPath));
+    }
+
+    [Theory]
+    [InlineData("commander")]
+    [InlineData("paths")]
+    public async Task LoadRejectsMissingRequiredManifestObjects(string propertyName)
+    {
+        using var temp = new TemporaryDirectory();
+        var session = await ImportCommanderJournalAsync(temp.Path);
+        var manifest = JsonNode.Parse(
+            await File.ReadAllTextAsync(session.ManifestPath))!.AsObject();
+        manifest[propertyName] = null;
+        await File.WriteAllTextAsync(
+            session.ManifestPath,
+            manifest.ToJsonString());
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            DiagnosticReplaySession.LoadAsync(
+                session.ManifestPath,
+                CancellationToken.None));
+
+        Assert.Contains(
+            "required",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ImportRejectsPackageWithMissingCommanderObject()
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.01.log"),
+            "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Package Cmdr\",\"FID\":\"F777777\"}\n");
+        var packagePath = Path.Combine(temp.Path, "incident.srvreplay");
+        await new JournalReplayExporter().ExportAsync(
+            journals,
+            packagePath,
+            new JournalReplayExportRequest(
+                null,
+                null,
+                ReplayPrivacyMode.Raw,
+                "test"),
+            CancellationToken.None);
+        using (var archive = ZipFile.Open(packagePath, ZipArchiveMode.Update))
+        {
+            var entry = archive.GetEntry("replay-package.json")!;
+            string manifest;
+            using (var reader = new StreamReader(entry.Open()))
+            {
+                manifest = await reader.ReadToEndAsync();
+            }
+
+            entry.Delete();
+            var replacement = archive.CreateEntry("replay-package.json");
+            await using var output = replacement.Open();
+            await using var writer = new StreamWriter(output);
+            var commanderStart = manifest.IndexOf(
+                "\"commander\": {",
+                StringComparison.Ordinal);
+            var commanderEnd = manifest.IndexOf(
+                "  },",
+                commanderStart,
+                StringComparison.Ordinal);
+            await writer.WriteAsync(
+                manifest[..commanderStart]
+                + "\"commander\": null,"
+                + manifest[(commanderEnd + 4)..]);
+        }
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            new ReplaySessionManager().ImportAsync(
+                packagePath,
+                Path.Combine(temp.Path, "managed-package"),
+                CancellationToken.None));
+
+        Assert.Contains(
+            "commander",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ImportRejectsOversizedLineBeforeMaterializingItAsAnEvent()
+    {
+        using var temp = new TemporaryDirectory();
+        var sourcePath = Path.Combine(temp.Path, "Journal.oversized.log");
+        await File.WriteAllTextAsync(
+            sourcePath,
+            new string('x', (4 * 1024 * 1024) + 1));
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            new ReplaySessionManager().ImportAsync(
+                sourcePath,
+                Path.Combine(temp.Path, "managed-oversized"),
+                CancellationToken.None));
+
+        Assert.Contains(
+            "line",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "supported limit",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task BoundedReaderStopsConsumingAnUnbrokenLineNearTheLimit()
+    {
+        var source = new CountingTextReader(
+            ReplaySessionManager.MaximumJournalLineCharacters * 4);
+        var reader = new ReplaySessionManager.BoundedJournalLineReader(source);
+
+        _ = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            reader.ReadLineAsync(
+                ReplaySessionManager.MaximumJournalLineCharacters,
+                CancellationToken.None));
+
+        Assert.InRange(
+            source.CharactersRead,
+            ReplaySessionManager.MaximumJournalLineCharacters + 1,
+            ReplaySessionManager.MaximumJournalLineCharacters + (64 * 1024));
     }
 
     [Fact]
@@ -218,6 +373,25 @@ public sealed class ReplaySessionManagerTests
             {
                 // Best-effort cleanup for files still being released by Windows.
             }
+        }
+    }
+
+    private sealed class CountingTextReader(int length) : TextReader
+    {
+        private int remaining = length;
+
+        public int CharactersRead { get; private set; }
+
+        public override ValueTask<int> ReadAsync(
+            Memory<char> buffer,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var count = Math.Min(buffer.Length, remaining);
+            buffer.Span[..count].Fill('x');
+            remaining -= count;
+            CharactersRead += count;
+            return ValueTask.FromResult(count);
         }
     }
 }

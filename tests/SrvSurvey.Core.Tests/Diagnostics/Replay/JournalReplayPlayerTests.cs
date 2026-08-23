@@ -60,6 +60,28 @@ public sealed class JournalReplayPlayerTests
         Assert.True(player.IsComplete);
     }
 
+    [Fact]
+    public async Task CancellationDuringEmissionStillWritesOneCompleteEvent()
+    {
+        using var temp = new TemporaryDirectory();
+        var sourcePath = Path.Combine(temp.Path, "Journal.01.log");
+        var line = "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}";
+        await File.WriteAllTextAsync(sourcePath, line + Environment.NewLine);
+        var session = await new ReplaySessionManager().ImportAsync(
+            sourcePath,
+            Path.Combine(temp.Path, "managed"),
+            CancellationToken.None);
+        using var cancellation = new CancellationTokenSource();
+        var writer = new AtomicReplayJournalWriter(cancellation.Cancel);
+        var player = new JournalReplayPlayer(session, delay: null, writer);
+
+        Assert.True(await player.StepAsync(cancellation.Token));
+
+        Assert.Equal(1, player.Position);
+        Assert.Equal([line], await File.ReadAllLinesAsync(
+            session.PlaybackJournalPath));
+    }
+
     private sealed class RecordingDelay : IReplayDelay
     {
         public List<TimeSpan> Delays { get; } = [];

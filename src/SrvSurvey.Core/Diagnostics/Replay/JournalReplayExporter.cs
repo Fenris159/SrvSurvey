@@ -17,7 +17,8 @@ public sealed record JournalReplayExportRequest(
     DateTimeOffset? From,
     DateTimeOffset? To,
     ReplayPrivacyMode PrivacyMode,
-    string SourceVersion);
+    string SourceVersion,
+    ReplayPresentationSnapshot? PresentationSnapshot = null);
 
 public sealed record JournalReplayExportResult(
     string Path,
@@ -37,6 +38,18 @@ public sealed class JournalReplayExporter
         WriteIndented = true,
         Converters = { new JsonStringEnumConverter() },
     };
+    private readonly IReplayPackageWriter packageWriter;
+
+    public JournalReplayExporter()
+        : this(new ZipReplayPackageWriter())
+    {
+    }
+
+    internal JournalReplayExporter(IReplayPackageWriter packageWriter)
+    {
+        this.packageWriter = packageWriter
+            ?? throw new ArgumentNullException(nameof(packageWriter));
+    }
 
     public async Task<JournalReplayExportResult> ExportAsync(
         string journalDirectory,
@@ -55,6 +68,9 @@ public sealed class JournalReplayExporter
                 "The replay export start must not be after its end.",
                 nameof(request));
         }
+
+        ReplayPresentationSnapshotValidator.Validate(
+            request.PresentationSnapshot);
 
         var history = await new JournalHistoryReader().LoadAsync(
             journalDirectory,
@@ -80,14 +96,23 @@ public sealed class JournalReplayExporter
             .DistinctBy(replayEvent => replayEvent.Index)
             .OrderBy(replayEvent => replayEvent.Index)
             .ToArray();
-        var commander = ReplaySessionManager.ResolveCommander(included);
         var sanitized = included.Select(replayEvent => replayEvent with
         {
             RawJson = RemoveCredentials(replayEvent.RawJson),
         }).ToArray();
         var outputLines = request.PrivacyMode == ReplayPrivacyMode.Redacted
-            ? Redact(sanitized, commander)
+            ? Redact(sanitized)
             : sanitized.Select(replayEvent => replayEvent.RawJson).ToArray();
+        var outputByteCount = outputLines.Sum(line =>
+            (long)Encoding.UTF8.GetByteCount(line) + 1);
+        ValidateOutputBounds(outputLines.Length, outputByteCount);
+        var outputEvents = sanitized.Select((replayEvent, index) =>
+            replayEvent with
+            {
+                RawJson = outputLines[index],
+            }).ToArray();
+        var outputCommander = ReplaySessionManager.ResolveCommander(
+            outputEvents);
         var journalBytes = Encoding.UTF8.GetBytes(
             string.Join('\n', outputLines) + '\n');
         var checksum = Convert.ToHexStringLower(SHA256.HashData(journalBytes));
@@ -102,46 +127,38 @@ public sealed class JournalReplayExporter
             bootstrap.Length,
             included.FirstOrDefault()?.Timestamp,
             included.LastOrDefault()?.Timestamp,
-            request.PrivacyMode == ReplayPrivacyMode.Redacted
-                ? new ReplayCommander("Replay Commander", "F000000")
-                : commander,
+            outputCommander,
             checksum,
-            ["status", "cargo", "shipLocker", "navRoute", "market"]);
+            ["status", "cargo", "shipLocker", "navRoute", "market"],
+            request.PresentationSnapshot);
 
         var fullDestinationPath = Path.GetFullPath(destinationPath);
-        Directory.CreateDirectory(
-            Path.GetDirectoryName(fullDestinationPath)
-                ?? throw new InvalidDataException(
-                    "The replay export destination has no containing directory."));
-        await using var output = new FileStream(
-            fullDestinationPath,
-            FileMode.Create,
-            FileAccess.ReadWrite,
-            FileShare.None,
-            bufferSize: 64 * 1024,
-            useAsync: true);
-        using (var archive = new ZipArchive(
-                   output,
-                   ZipArchiveMode.Create,
-                   leaveOpen: true))
+        var destinationDirectory = Path.GetDirectoryName(fullDestinationPath)
+            ?? throw new InvalidDataException(
+                "The replay export destination has no containing directory.");
+        Directory.CreateDirectory(destinationDirectory);
+        var temporaryPath = Path.Combine(
+            destinationDirectory,
+            $".{Path.GetFileName(fullDestinationPath)}.{Guid.NewGuid():N}.tmp");
+        try
         {
-            var manifestEntry = archive.CreateEntry(
-                "replay-package.json",
-                CompressionLevel.Optimal);
-            await using (var manifestStream = manifestEntry.Open())
+            await packageWriter.WriteAsync(
+                temporaryPath,
+                package,
+                journalBytes,
+                cancellationToken);
+            await ValidateWrittenPackageAsync(
+                temporaryPath,
+                package,
+                cancellationToken);
+            File.Move(temporaryPath, fullDestinationPath, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
             {
-                await JsonSerializer.SerializeAsync(
-                    manifestStream,
-                    package,
-                    PackageJson,
-                    cancellationToken);
+                File.Delete(temporaryPath);
             }
-
-            var journalEntry = archive.CreateEntry(
-                "journal.jsonl",
-                CompressionLevel.Optimal);
-            await using var journalStream = journalEntry.Open();
-            await journalStream.WriteAsync(journalBytes, cancellationToken);
         }
 
         return new JournalReplayExportResult(
@@ -154,6 +171,64 @@ public sealed class JournalReplayExporter
     }
 
     internal static JsonSerializerOptions GetPackageJsonOptions() => PackageJson;
+
+    internal static void ValidateOutputBounds(int eventCount, long byteCount)
+    {
+        if (eventCount > ReplaySessionManager.MaximumJournalEvents)
+        {
+            throw new InvalidDataException(
+                "The replay export contains more events than the supported package limit.");
+        }
+
+        if (byteCount > ReplaySessionManager.MaximumJournalBytes)
+        {
+            throw new InvalidDataException(
+                "The replay export is larger than the supported package limit.");
+        }
+    }
+
+    private static async Task ValidateWrittenPackageAsync(
+        string path,
+        JournalReplayPackageManifest expected,
+        CancellationToken cancellationToken)
+    {
+        using var archive = ZipFile.OpenRead(path);
+        var manifestEntry = archive.GetEntry("replay-package.json")
+            ?? throw new InvalidDataException(
+                "The completed replay package is missing its manifest.");
+        var journalEntry = archive.GetEntry("journal.jsonl")
+            ?? throw new InvalidDataException(
+                "The completed replay package is missing its journal.");
+        JournalReplayPackageManifest actual;
+        await using (var stream = manifestEntry.Open())
+        {
+            actual = await JsonSerializer
+                .DeserializeAsync<JournalReplayPackageManifest>(
+                    stream,
+                    PackageJson,
+                    cancellationToken)
+                ?? throw new InvalidDataException(
+                    "The completed replay package manifest is empty.");
+        }
+
+        await using var journal = journalEntry.Open();
+        var checksum = Convert.ToHexStringLower(
+            await SHA256.HashDataAsync(journal, cancellationToken));
+        if (actual.FormatVersion != expected.FormatVersion
+            || actual.EventCount != expected.EventCount
+            || !string.Equals(
+                actual.JournalSha256,
+                expected.JournalSha256,
+                StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(
+                checksum,
+                expected.JournalSha256,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException(
+                "The completed replay package could not be verified.");
+        }
+    }
 
     private static bool IsWithinRange(
         JournalReplayEvent replayEvent,
@@ -178,10 +253,22 @@ public sealed class JournalReplayExporter
             .ToArray();
         var selected = new List<JournalReplayEvent>();
         AddLatest(selected, prior, "Fileheader");
-        AddLatest(selected, prior, "Commander");
-        AddLatest(selected, prior, "LoadGame");
+        var identityEvent = prior
+            .Select(replayEvent => new
+            {
+                Event = replayEvent,
+                Commander = TryReadCommander(replayEvent),
+            })
+            .LastOrDefault(candidate => candidate.Commander is not null);
+        if (identityEvent?.Commander is { } identity)
+        {
+            AddLatestIdentity(selected, prior, "Commander", identity);
+            AddLatestIdentity(selected, prior, "LoadGame", identity);
+        }
         var location = prior.LastOrDefault(replayEvent =>
-            replayEvent.EventName is "Location" or "FSDJump" or "CarrierJump");
+            replayEvent.Index >= (identityEvent?.Event.Index ?? 0)
+            && replayEvent.EventName
+                is "Location" or "FSDJump" or "CarrierJump");
         if (location is not null)
         {
             selected.Add(location);
@@ -208,34 +295,287 @@ public sealed class JournalReplayExporter
         }
     }
 
-    private static string[] Redact(
+    private static void AddLatestIdentity(
+        ICollection<JournalReplayEvent> selected,
         IReadOnlyList<JournalReplayEvent> events,
-        ReplayCommander commander)
+        string eventName,
+        ReplayCommander identity)
     {
-        return events.Select(replayEvent =>
+        var match = events.LastOrDefault(replayEvent =>
         {
-            var redacted = replayEvent.RawJson
-                .Replace(commander.Name, "Replay Commander", StringComparison.Ordinal)
-                .Replace(commander.FrontierId, "F000000", StringComparison.OrdinalIgnoreCase);
-            using var document = JsonDocument.Parse(redacted);
             if (!string.Equals(
                     replayEvent.EventName,
-                    "ReceiveText",
+                    eventName,
                     StringComparison.Ordinal))
             {
-                return redacted;
+                return false;
             }
 
-            var properties = document.RootElement
-                .EnumerateObject()
-                .Where(property => property.Name is not "Message" and not "Message_Localised")
-                .ToDictionary(
-                    property => property.Name,
-                    property => property.Value.Clone(),
-                    StringComparer.Ordinal);
-            return JsonSerializer.Serialize(properties);
+            var candidate = TryReadCommander(replayEvent);
+            return candidate is not null
+                && string.Equals(
+                    candidate.Name,
+                    identity.Name,
+                    StringComparison.Ordinal)
+                && string.Equals(
+                    candidate.FrontierId,
+                    identity.FrontierId,
+                    StringComparison.OrdinalIgnoreCase);
+        });
+        if (match is not null)
+        {
+            selected.Add(match);
+        }
+    }
+
+    private static ReplayCommander? TryReadCommander(
+        JournalReplayEvent replayEvent)
+    {
+        if (replayEvent.EventName is not "Commander" and not "LoadGame")
+        {
+            return null;
+        }
+
+        using var document = JsonDocument.Parse(replayEvent.RawJson);
+        var nameProperty = replayEvent.EventName == "Commander"
+            ? "Name"
+            : "Commander";
+        return ReplaySessionManager.TryGetString(
+                document.RootElement,
+                nameProperty,
+                out var name)
+            && ReplaySessionManager.TryGetString(
+                document.RootElement,
+                "FID",
+                out var frontierId)
+                ? new ReplayCommander(name, frontierId)
+                : null;
+    }
+
+    private static string[] Redact(
+        IReadOnlyList<JournalReplayEvent> events)
+    {
+        var identities = BuildIdentityRedactions(events);
+        var locationNames = new Dictionary<string, string>(
+            StringComparer.Ordinal);
+        var locationIds = new Dictionary<string, long>(
+            StringComparer.Ordinal);
+        return events.Select(replayEvent =>
+        {
+            var root = JsonNode.Parse(replayEvent.RawJson)
+                ?? throw new InvalidDataException(
+                    "A journal event could not be read while applying redaction.");
+            if (root is JsonObject eventObject)
+            {
+                foreach (var propertyName in SensitivePathProperties)
+                {
+                    _ = eventObject.Remove(propertyName);
+                }
+
+                if (string.Equals(
+                        replayEvent.EventName,
+                        "FSDTarget",
+                        StringComparison.OrdinalIgnoreCase)
+                    && eventObject["Name"] is { } destinationName)
+                {
+                    eventObject["Name"] = RedactNode(
+                        destinationName,
+                        "DestinationSystem",
+                        identities,
+                        locationNames,
+                        locationIds);
+                }
+            }
+
+            _ = RedactNode(
+                root,
+                propertyName: null,
+                identities,
+                locationNames,
+                locationIds);
+            if (replayEvent.EventName is "ReceiveText" or "SendText"
+                && root is JsonObject chat)
+            {
+                _ = chat.Remove("Message");
+                _ = chat.Remove("Message_Localised");
+            }
+
+            return root.ToJsonString();
         }).ToArray();
     }
+
+    private static IReadOnlyList<IdentityRedaction> BuildIdentityRedactions(
+        IReadOnlyList<JournalReplayEvent> events)
+    {
+        List<ReplayCommander> commanders = [];
+        foreach (var replayEvent in events)
+        {
+            var commander = TryReadCommander(replayEvent);
+            if (commander is not null
+                && !commanders.Any(existing => string.Equals(
+                        existing.Name,
+                        commander.Name,
+                        StringComparison.Ordinal)
+                    && string.Equals(
+                        existing.FrontierId,
+                        commander.FrontierId,
+                        StringComparison.OrdinalIgnoreCase)))
+            {
+                commanders.Add(commander);
+            }
+        }
+
+        return commanders.Select((commander, index) => new IdentityRedaction(
+                commander.Name,
+                commander.FrontierId,
+                index == 0
+                    ? "Replay Commander"
+                    : $"Replay Commander {index + 1:N0}",
+                $"F{index:000000}"))
+            .OrderByDescending(identity => identity.OriginalName.Length)
+            .ToArray();
+    }
+
+    private static JsonNode RedactNode(
+        JsonNode node,
+        string? propertyName,
+        IReadOnlyList<IdentityRedaction> identities,
+        IDictionary<string, string> locationNames,
+        IDictionary<string, long> locationIds)
+    {
+        if (propertyName is not null
+            && LocationNameProperties.Contains(propertyName)
+            && node is JsonValue locationValue
+            && locationValue.TryGetValue<string>(out var locationName))
+        {
+            if (!locationNames.TryGetValue(locationName, out var replacement))
+            {
+                replacement = $"Replay Location {locationNames.Count + 1:000}";
+                locationNames.Add(locationName, replacement);
+            }
+
+            return JsonValue.Create(replacement)!;
+        }
+
+        if (propertyName is not null
+            && LocationIdProperties.Contains(propertyName)
+            && node is JsonValue)
+        {
+            var original = node.ToJsonString();
+            var key = propertyName + ":" + original;
+            if (!locationIds.TryGetValue(key, out var replacement))
+            {
+                replacement = 9_000_000_000_000_000L + locationIds.Count;
+                locationIds.Add(key, replacement);
+            }
+
+            return JsonValue.Create(replacement)!;
+        }
+
+        if (propertyName is not null
+            && LocationCoordinateProperties.Contains(propertyName))
+        {
+            if (node is JsonArray coordinates)
+            {
+                return new JsonArray(coordinates.Select(_ =>
+                    (JsonNode?)JsonValue.Create(0d)).ToArray());
+            }
+
+            return JsonValue.Create(0d)!;
+        }
+
+        if (node is JsonValue value
+            && value.TryGetValue<string>(out var text))
+        {
+            foreach (var identity in identities)
+            {
+                text = text
+                    .Replace(
+                        identity.OriginalName,
+                        identity.ReplacementName,
+                        StringComparison.Ordinal)
+                    .Replace(
+                        identity.OriginalFrontierId,
+                        identity.ReplacementFrontierId,
+                        StringComparison.OrdinalIgnoreCase);
+            }
+
+            return JsonValue.Create(text)!;
+        }
+
+        if (node is JsonObject objectNode)
+        {
+            foreach (var childName in objectNode
+                         .Select(property => property.Key)
+                         .ToArray())
+            {
+                if (objectNode[childName] is { } child)
+                {
+                    objectNode[childName] = RedactNode(
+                        child,
+                        childName,
+                        identities,
+                        locationNames,
+                        locationIds);
+                }
+            }
+        }
+        else if (node is JsonArray arrayNode)
+        {
+            for (var index = 0; index < arrayNode.Count; index++)
+            {
+                if (arrayNode[index] is { } child)
+                {
+                    arrayNode[index] = RedactNode(
+                        child,
+                        propertyName: null,
+                        identities,
+                        locationNames,
+                        locationIds);
+                }
+            }
+        }
+
+        return node;
+    }
+
+    private static readonly HashSet<string> LocationNameProperties = new(
+        [
+            "StarSystem",
+            "System",
+            "SystemName",
+            "DestinationSystem",
+            "TargetSystem",
+            "OriginSystem",
+            "HomeSystem",
+            "BodyName",
+            "Body",
+            "StationName",
+            "Station",
+            "DestinationStation",
+            "SettlementName",
+            "Settlement",
+            "NearestDestination",
+        ],
+        StringComparer.OrdinalIgnoreCase);
+
+    private static readonly HashSet<string> LocationIdProperties = new(
+        ["SystemAddress", "DestinationSystemAddress", "BodyID", "MarketID"],
+        StringComparer.OrdinalIgnoreCase);
+
+    private static readonly HashSet<string> LocationCoordinateProperties = new(
+        ["StarPos", "Latitude", "Longitude"],
+        StringComparer.OrdinalIgnoreCase);
+
+    private static readonly HashSet<string> SensitivePathProperties = new(
+        ["Filename"],
+        StringComparer.OrdinalIgnoreCase);
+
+    private sealed record IdentityRedaction(
+        string OriginalName,
+        string OriginalFrontierId,
+        string ReplacementName,
+        string ReplacementFrontierId);
 
     private static string RemoveCredentials(string rawJson)
     {
@@ -293,6 +633,54 @@ public sealed class JournalReplayExporter
     }
 }
 
+internal interface IReplayPackageWriter
+{
+    Task WriteAsync(
+        string path,
+        JournalReplayPackageManifest package,
+        ReadOnlyMemory<byte> journalBytes,
+        CancellationToken cancellationToken);
+}
+
+internal sealed class ZipReplayPackageWriter : IReplayPackageWriter
+{
+    public async Task WriteAsync(
+        string path,
+        JournalReplayPackageManifest package,
+        ReadOnlyMemory<byte> journalBytes,
+        CancellationToken cancellationToken)
+    {
+        await using var output = new FileStream(
+            path,
+            FileMode.CreateNew,
+            FileAccess.ReadWrite,
+            FileShare.None,
+            bufferSize: 64 * 1024,
+            useAsync: true);
+        using var archive = new ZipArchive(
+            output,
+            ZipArchiveMode.Create,
+            leaveOpen: true);
+        var manifestEntry = archive.CreateEntry(
+            "replay-package.json",
+            CompressionLevel.Optimal);
+        await using (var manifestStream = manifestEntry.Open())
+        {
+            await JsonSerializer.SerializeAsync(
+                manifestStream,
+                package,
+                JournalReplayExporter.GetPackageJsonOptions(),
+                cancellationToken);
+        }
+
+        var journalEntry = archive.CreateEntry(
+            "journal.jsonl",
+            CompressionLevel.Optimal);
+        await using var journalStream = journalEntry.Open();
+        await journalStream.WriteAsync(journalBytes, cancellationToken);
+    }
+}
+
 public sealed record JournalReplayPackageManifest(
     int FormatVersion,
     DateTimeOffset CreatedAt,
@@ -306,4 +694,96 @@ public sealed record JournalReplayPackageManifest(
     DateTimeOffset? LastTimestamp,
     ReplayCommander Commander,
     string JournalSha256,
-    IReadOnlyList<string> SupportedCompanionTimelines);
+    IReadOnlyList<string> MissingCompanionTimelines,
+    ReplayPresentationSnapshot? PresentationSnapshot = null);
+
+public sealed record ReplayPresentationSnapshot(
+    int ViewportWidth,
+    int ViewportHeight,
+    int GlobalScaleIndex,
+    double? DefaultOpacity,
+    IReadOnlyDictionary<string, bool> OverlayEnablement,
+    IReadOnlyDictionary<string, ReplayOverlayPlacement> OverlayPlacements);
+
+public sealed record ReplayOverlayPlacement(
+    ReplayHorizontalAnchor Horizontal,
+    int HorizontalOffset,
+    ReplayVerticalAnchor Vertical,
+    int VerticalOffset,
+    double? Opacity,
+    int? ScaleIndex);
+
+public enum ReplayHorizontalAnchor
+{
+    Left,
+    Center,
+    Right,
+    Screen,
+}
+
+public enum ReplayVerticalAnchor
+{
+    Top,
+    Middle,
+    Bottom,
+    Screen,
+}
+
+internal static class ReplayPresentationSnapshotValidator
+{
+    public static void Validate(ReplayPresentationSnapshot? snapshot)
+    {
+        if (snapshot is null)
+        {
+            return;
+        }
+
+        if (snapshot.ViewportWidth is < 320 or > 16_384
+            || snapshot.ViewportHeight is < 200 or > 16_384
+            || snapshot.GlobalScaleIndex is < 0 or > 100
+            || snapshot.DefaultOpacity is { } opacity
+                && (!double.IsFinite(opacity) || opacity is < 0 or > 1)
+            || snapshot.OverlayEnablement is null
+            || snapshot.OverlayPlacements is null
+            || snapshot.OverlayEnablement.Count > 256
+            || snapshot.OverlayPlacements.Count > 256)
+        {
+            throw new InvalidDataException(
+                "The replay overlay presentation snapshot is invalid.");
+        }
+
+        foreach (var entry in snapshot.OverlayEnablement)
+        {
+            ValidateName(entry.Key);
+        }
+
+        foreach (var entry in snapshot.OverlayPlacements)
+        {
+            ValidateName(entry.Key);
+            var placement = entry.Value;
+            if (placement is null
+                || !Enum.IsDefined(placement.Horizontal)
+                || !Enum.IsDefined(placement.Vertical)
+                || Math.Abs((long)placement.HorizontalOffset) > 100_000
+                || Math.Abs((long)placement.VerticalOffset) > 100_000
+                || placement.Opacity is { } itemOpacity
+                    && (!double.IsFinite(itemOpacity)
+                        || itemOpacity is < 0 or > 1)
+                || placement.ScaleIndex is { } scaleIndex
+                    && scaleIndex is < 0 or > 100)
+            {
+                throw new InvalidDataException(
+                    "The replay overlay presentation snapshot contains an invalid placement.");
+            }
+        }
+    }
+
+    private static void ValidateName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name) || name.Length > 128)
+        {
+            throw new InvalidDataException(
+                "The replay overlay presentation snapshot contains an invalid overlay name.");
+        }
+    }
+}

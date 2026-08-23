@@ -90,6 +90,260 @@ public sealed class JournalReplayExporterTests
         }
     }
 
+    [Fact]
+    public async Task RedactionPreservesJsonKeysAndPseudonymizesEveryIdentityAndLocation()
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllLinesAsync(
+            Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
+            [
+                "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Name\",\"FID\":\"F111111\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Secret System\",\"SystemAddress\":123456,\"StarPos\":[1.5,2.5,3.5]}",
+                "{\"timestamp\":\"2026-08-21T18:01:00Z\",\"event\":\"Commander\",\"Name\":\"Other Cmdr\",\"FID\":\"F222222\"}",
+                "{\"timestamp\":\"2026-08-21T18:01:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Other Cmdr\",\"FID\":\"F222222\"}",
+                "{\"timestamp\":\"2026-08-21T18:01:02Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Secret System\",\"SystemAddress\":123456,\"StarPos\":[1.5,2.5,3.5]}",
+                "{\"timestamp\":\"2026-08-21T18:01:03Z\",\"event\":\"CodexEntry\",\"System\":\"Secret Codex System\",\"SystemAddress\":456789,\"BodyID\":7,\"BodyName\":\"Secret Codex Body\",\"NearestDestination\":\"Secret Port\"}",
+                "{\"timestamp\":\"2026-08-21T18:01:04Z\",\"event\":\"Screenshot\",\"Filename\":\"C:\\\\Users\\\\Private Cmdr\\\\Pictures\\\\Secret System.bmp\",\"System\":\"Secret System\",\"Body\":\"Secret Body\"}",
+                "{\"timestamp\":\"2026-08-21T18:01:05Z\",\"event\":\"FSDTarget\",\"Name\":\"Secret Destination\",\"SystemAddress\":987654,\"DestinationSystemAddress\":987654}",
+                "{\"timestamp\":\"2026-08-21T18:01:06Z\",\"event\":\"ReceiveText\",\"From\":\"Other Cmdr\",\"Message\":\"received secret\",\"Message_Localised\":\"received localized secret\"}",
+                "{\"timestamp\":\"2026-08-21T18:01:07Z\",\"event\":\"SendText\",\"To\":\"Other Cmdr\",\"Message\":\"sent secret\",\"Message_Localised\":\"sent localized secret\"}",
+            ]);
+        var destination = Path.Combine(temp.Path, "redacted.srvreplay");
+
+        await new JournalReplayExporter().ExportAsync(
+            journals,
+            destination,
+            new JournalReplayExportRequest(
+                null,
+                null,
+                ReplayPrivacyMode.Redacted,
+                "test"),
+            CancellationToken.None);
+
+        using (var archive = ZipFile.OpenRead(destination))
+        using (var reader = new StreamReader(
+                   archive.GetEntry("journal.jsonl")!.Open()))
+        {
+            var journal = await reader.ReadToEndAsync();
+            Assert.Contains("\"Name\":", journal, StringComparison.Ordinal);
+            Assert.DoesNotContain("Other Cmdr", journal, StringComparison.Ordinal);
+            Assert.DoesNotContain("F222222", journal, StringComparison.Ordinal);
+            Assert.DoesNotContain("Secret System", journal, StringComparison.Ordinal);
+            Assert.DoesNotContain("123456", journal, StringComparison.Ordinal);
+            Assert.DoesNotContain("1.5", journal, StringComparison.Ordinal);
+            Assert.DoesNotContain("Secret Codex", journal, StringComparison.Ordinal);
+            Assert.DoesNotContain("Secret Destination", journal, StringComparison.Ordinal);
+            Assert.DoesNotContain("987654", journal, StringComparison.Ordinal);
+            Assert.DoesNotContain("Filename", journal, StringComparison.Ordinal);
+            Assert.DoesNotContain("received secret", journal, StringComparison.Ordinal);
+            Assert.DoesNotContain("sent secret", journal, StringComparison.Ordinal);
+            Assert.Contains("Replay Commander 2", journal, StringComparison.Ordinal);
+            Assert.Contains("Replay Location 001", journal, StringComparison.Ordinal);
+        }
+
+        var imported = await new ReplaySessionManager().ImportAsync(
+            destination,
+            Path.Combine(temp.Path, "managed"),
+            CancellationToken.None);
+        Assert.Equal("Replay Commander", imported.Commander.Name);
+        Assert.Equal(10, imported.Events.Count);
+    }
+
+    [Fact]
+    public async Task RangeBootstrapUsesOneCoherentCommanderIdentity()
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllLinesAsync(
+            Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
+            [
+                "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"First Cmdr\",\"FID\":\"F111111\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"First Cmdr\",\"FID\":\"F111111\"}",
+                "{\"timestamp\":\"2026-08-21T18:10:00Z\",\"event\":\"Commander\",\"Name\":\"Second Cmdr\",\"FID\":\"F222222\"}",
+                "{\"timestamp\":\"2026-08-21T18:10:02Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\"}",
+            ]);
+        var destination = Path.Combine(temp.Path, "second.srvreplay");
+
+        await new JournalReplayExporter().ExportAsync(
+            journals,
+            destination,
+            new JournalReplayExportRequest(
+                DateTimeOffset.Parse("2026-08-21T18:10:02Z"),
+                DateTimeOffset.Parse("2026-08-21T18:10:02Z"),
+                ReplayPrivacyMode.Raw,
+                "test"),
+            CancellationToken.None);
+
+        using var archive = ZipFile.OpenRead(destination);
+        using var reader = new StreamReader(
+            archive.GetEntry("journal.jsonl")!.Open());
+        var journal = await reader.ReadToEndAsync();
+        Assert.DoesNotContain("First Cmdr", journal, StringComparison.Ordinal);
+        Assert.DoesNotContain("F111111", journal, StringComparison.Ordinal);
+        Assert.Contains("Second Cmdr", journal, StringComparison.Ordinal);
+        Assert.Contains("F222222", journal, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task RangeBootstrapDoesNotAttachAPriorCommandersLocation()
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllLinesAsync(
+            Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
+            [
+                "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"First Cmdr\",\"FID\":\"F111111\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"First System\"}",
+                "{\"timestamp\":\"2026-08-21T18:10:00Z\",\"event\":\"Commander\",\"Name\":\"Second Cmdr\",\"FID\":\"F222222\"}",
+                "{\"timestamp\":\"2026-08-21T18:10:01Z\",\"event\":\"Shutdown\"}",
+            ]);
+        var destination = Path.Combine(temp.Path, "second-no-location.srvreplay");
+
+        await new JournalReplayExporter().ExportAsync(
+            journals,
+            destination,
+            new JournalReplayExportRequest(
+                DateTimeOffset.Parse("2026-08-21T18:10:01Z"),
+                DateTimeOffset.Parse("2026-08-21T18:10:01Z"),
+                ReplayPrivacyMode.Raw,
+                "test"),
+            CancellationToken.None);
+
+        using var archive = ZipFile.OpenRead(destination);
+        using var reader = new StreamReader(
+            archive.GetEntry("journal.jsonl")!.Open());
+        var journal = await reader.ReadToEndAsync();
+        Assert.DoesNotContain("First System", journal, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"event\":\"Location\"", journal, StringComparison.Ordinal);
+        Assert.Contains("Second Cmdr", journal, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ExportCarriesPortableOverlayPresentationAndNamesMissingTimelines()
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.01.log"),
+            "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n");
+        var destination = Path.Combine(temp.Path, "presentation.srvreplay");
+        var presentation = new ReplayPresentationSnapshot(
+            2560,
+            1440,
+            3,
+            0.75,
+            new Dictionary<string, bool> { ["PlotFSSInfo"] = false },
+            new Dictionary<string, ReplayOverlayPlacement>
+            {
+                ["PlotFSSInfo"] = new(
+                    ReplayHorizontalAnchor.Right,
+                    42,
+                    ReplayVerticalAnchor.Top,
+                    24,
+                    0.8,
+                    4),
+            });
+
+        await new JournalReplayExporter().ExportAsync(
+            journals,
+            destination,
+            new JournalReplayExportRequest(
+                null,
+                null,
+                ReplayPrivacyMode.Redacted,
+                "test",
+                presentation),
+            CancellationToken.None);
+
+        using (var archive = ZipFile.OpenRead(destination))
+        using (var reader = new StreamReader(
+                   archive.GetEntry("replay-package.json")!.Open()))
+        {
+            var manifest = await reader.ReadToEndAsync();
+            Assert.Contains("missingCompanionTimelines", manifest);
+            Assert.DoesNotContain("supportedCompanionTimelines", manifest);
+            Assert.Contains("presentationSnapshot", manifest);
+        }
+
+        var imported = await new ReplaySessionManager().ImportAsync(
+            destination,
+            Path.Combine(temp.Path, "managed"),
+            CancellationToken.None);
+        Assert.Equal(2560, imported.PresentationSnapshot?.ViewportWidth);
+        Assert.Equal(1440, imported.PresentationSnapshot?.ViewportHeight);
+        Assert.False(imported.PresentationSnapshot?
+            .OverlayEnablement["PlotFSSInfo"]);
+        Assert.Equal(
+            42,
+            imported.PresentationSnapshot?
+                .OverlayPlacements["PlotFSSInfo"].HorizontalOffset);
+    }
+
+    [Fact]
+    public async Task FailedExportPreservesAnExistingPackage()
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.01.log"),
+            "{\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n");
+        var destination = Path.Combine(temp.Path, "existing.srvreplay");
+        await File.WriteAllTextAsync(destination, "valid existing evidence");
+        var exporter = new JournalReplayExporter(new FailingPackageWriter());
+
+        await Assert.ThrowsAsync<IOException>(() => exporter.ExportAsync(
+            journals,
+            destination,
+            new JournalReplayExportRequest(
+                null,
+                null,
+                ReplayPrivacyMode.Redacted,
+                "test"),
+            CancellationToken.None));
+
+        Assert.Equal(
+            "valid existing evidence",
+            await File.ReadAllTextAsync(destination));
+        Assert.Empty(Directory.EnumerateFiles(
+            temp.Path,
+            ".existing.srvreplay.*.tmp"));
+    }
+
+    [Theory]
+    [InlineData(2_000_001, 1)]
+    [InlineData(1, (256L * 1024L * 1024L) + 1)]
+    public void ExportBoundsMatchWhatTheImporterCanRead(
+        int eventCount,
+        long byteCount)
+    {
+        var exception = Assert.Throws<InvalidDataException>(() =>
+            JournalReplayExporter.ValidateOutputBounds(eventCount, byteCount));
+
+        Assert.Contains(
+            "supported package limit",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private sealed class FailingPackageWriter : IReplayPackageWriter
+    {
+        public async Task WriteAsync(
+            string path,
+            JournalReplayPackageManifest package,
+            ReadOnlyMemory<byte> journalBytes,
+            CancellationToken cancellationToken)
+        {
+            await File.WriteAllTextAsync(path, "partial", cancellationToken);
+            throw new IOException("simulated archive failure");
+        }
+    }
+
     private static string GetEventName(string json)
     {
         using var document = System.Text.Json.JsonDocument.Parse(json);

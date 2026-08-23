@@ -50,6 +50,13 @@ public sealed class JournalHistoryReader
                 cancellationToken,
                 requireEvents: false,
                 allowIncompleteFinalLine: true);
+            if (history.Count + fileEvents.Count
+                > ReplaySessionManager.MaximumJournalEvents)
+            {
+                throw new InvalidDataException(
+                    "The journal history contains more events than the supported diagnostic limit.");
+            }
+
             foreach (var replayEvent in fileEvents)
             {
                 using var document = JsonDocument.Parse(replayEvent.RawJson);

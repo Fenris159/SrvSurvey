@@ -10,9 +10,9 @@ public sealed class ReplaySessionManager
 {
     public const int CurrentFormatVersion = 1;
 
-    private const long MaximumJournalBytes = 256L * 1024L * 1024L;
-    private const int MaximumJournalEvents = 2_000_000;
-    private const int MaximumJournalLineCharacters = 4 * 1024 * 1024;
+    internal const long MaximumJournalBytes = 256L * 1024L * 1024L;
+    internal const int MaximumJournalEvents = 2_000_000;
+    internal const int MaximumJournalLineCharacters = 4 * 1024 * 1024;
     private static readonly JsonSerializerOptions ManifestJson = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -126,7 +126,8 @@ public sealed class ReplaySessionManager
                 "config",
                 "data",
                 "cache",
-                "logs"));
+                "logs"),
+            package?.PresentationSnapshot);
         var manifestPath = Path.Combine(sessionDirectory, "replay-session.json");
         await File.WriteAllTextAsync(
             manifestPath,
@@ -146,7 +147,8 @@ public sealed class ReplaySessionManager
             manifest.SourceVersion,
             manifest.PrivacyMode,
             commander,
-            events);
+            events,
+            manifest.PresentationSnapshot);
     }
 
     internal static async Task<IReadOnlyList<JournalReplayEvent>> ReadEventsAsync(
@@ -169,20 +171,19 @@ public sealed class ReplaySessionManager
             detectEncodingFromByteOrderMarks: true,
             bufferSize: 64 * 1024,
             leaveOpen: false);
-        var line = await reader.ReadLineAsync(cancellationToken);
+        var boundedReader = new BoundedJournalLineReader(reader);
+        var line = await boundedReader.ReadLineAsync(
+            MaximumJournalLineCharacters,
+            cancellationToken);
         while (line is not null)
         {
-            var nextLine = await reader.ReadLineAsync(cancellationToken);
+            var nextLine = await boundedReader.ReadLineAsync(
+                MaximumJournalLineCharacters,
+                cancellationToken);
             if (string.IsNullOrWhiteSpace(line))
             {
                 line = nextLine;
                 continue;
-            }
-
-            if (line.Length > MaximumJournalLineCharacters)
-            {
-                throw new InvalidDataException(
-                    $"Journal line {events.Count + 1:N0} is larger than the supported limit.");
             }
 
             if (events.Count >= MaximumJournalEvents)
@@ -248,6 +249,68 @@ public sealed class ReplaySessionManager
         }
 
         return events;
+    }
+
+    internal sealed class BoundedJournalLineReader(TextReader reader)
+    {
+        private readonly char[] buffer = new char[64 * 1024];
+        private int offset;
+        private int count;
+
+        public async Task<string?> ReadLineAsync(
+            int maximumCharacters,
+            CancellationToken cancellationToken)
+        {
+            StringBuilder? line = null;
+            var characterCount = 0;
+            while (true)
+            {
+                if (offset >= count)
+                {
+                    count = await reader.ReadAsync(
+                        buffer.AsMemory(),
+                        cancellationToken);
+                    offset = 0;
+                    if (count == 0)
+                    {
+                        return characterCount == 0
+                            ? null
+                            : line?.ToString() ?? string.Empty;
+                    }
+                }
+
+                var newline = Array.IndexOf(
+                    buffer,
+                    '\n',
+                    offset,
+                    count - offset);
+                var segmentEnd = newline >= 0 ? newline : count;
+                var segmentLength = segmentEnd - offset;
+                if (characterCount + segmentLength > maximumCharacters)
+                {
+                    throw new InvalidDataException(
+                        "A journal line is larger than the supported limit.");
+                }
+
+                line ??= new StringBuilder(Math.Min(
+                    maximumCharacters,
+                    Math.Max(segmentLength, 256)));
+                line.Append(buffer, offset, segmentLength);
+                characterCount += segmentLength;
+                offset = newline >= 0 ? newline + 1 : count;
+                if (newline < 0)
+                {
+                    continue;
+                }
+
+                if (line.Length > 0 && line[^1] == '\r')
+                {
+                    line.Length--;
+                }
+
+                return line.ToString();
+            }
+        }
     }
 
     internal static ReplayCommander ResolveCommander(
@@ -468,11 +531,17 @@ public sealed class ReplaySessionManager
             return;
         }
 
+        ReplayPresentationSnapshotValidator.Validate(
+            package.PresentationSnapshot);
+
         if (string.IsNullOrWhiteSpace(package.SourceVersion)
-            || !Enum.IsDefined(package.PrivacyMode))
+            || !Enum.IsDefined(package.PrivacyMode)
+            || package.Commander is null
+            || string.IsNullOrWhiteSpace(package.Commander.Name)
+            || string.IsNullOrWhiteSpace(package.Commander.FrontierId))
         {
             throw new InvalidDataException(
-                "The replay package source metadata is invalid.");
+                "The replay package source metadata or commander is invalid.");
         }
 
         if (!string.Equals(
@@ -544,7 +613,8 @@ public sealed record DiagnosticReplaySession(
     string SourceVersion,
     ReplayPrivacyMode PrivacyMode,
     ReplayCommander Commander,
-    IReadOnlyList<JournalReplayEvent> Events)
+    IReadOnlyList<JournalReplayEvent> Events,
+    ReplayPresentationSnapshot? PresentationSnapshot = null)
 {
     public async Task ResetRuntimeAsync(CancellationToken cancellationToken)
     {
@@ -603,11 +673,20 @@ public sealed record DiagnosticReplaySession(
         }
 
         if (string.IsNullOrWhiteSpace(manifest.SourceVersion)
-            || !Enum.IsDefined(manifest.PrivacyMode))
+            || !Enum.IsDefined(manifest.PrivacyMode)
+            || manifest.Commander is null
+            || string.IsNullOrWhiteSpace(manifest.Commander.Name)
+            || string.IsNullOrWhiteSpace(manifest.Commander.FrontierId)
+            || manifest.Paths is null)
         {
             throw new InvalidDataException(
-                "The diagnostic replay source metadata is invalid.");
+                "The diagnostic replay manifest is missing required source, commander, or path metadata.");
         }
+
+
+        ValidateVersionOnePathSchema(manifest.Paths);
+        ReplayPresentationSnapshotValidator.Validate(
+            manifest.PresentationSnapshot);
 
         var sessionDirectory = Path.GetDirectoryName(fullManifestPath)
             ?? throw new InvalidDataException(
@@ -698,7 +777,8 @@ public sealed record DiagnosticReplaySession(
             manifest.SourceVersion,
             manifest.PrivacyMode,
             commander,
-            events);
+            events,
+            manifest.PresentationSnapshot);
     }
 
     private static string ResolveContainedPath(
@@ -729,6 +809,28 @@ public sealed record DiagnosticReplaySession(
 
         RejectReparsePoints(fullSessionDirectory, candidate);
         return candidate;
+    }
+
+    private static void ValidateVersionOnePathSchema(
+        DiagnosticReplaySessionPaths paths)
+    {
+        var valid = string.Equals(
+                paths.SourceJournal,
+                "source/journal.jsonl",
+                StringComparison.Ordinal)
+            && string.Equals(
+                paths.PlaybackJournal,
+                "playback/Journal.9999-12-31T235959.01.log",
+                StringComparison.Ordinal)
+            && string.Equals(paths.ConfigDirectory, "config", StringComparison.Ordinal)
+            && string.Equals(paths.DataDirectory, "data", StringComparison.Ordinal)
+            && string.Equals(paths.CacheDirectory, "cache", StringComparison.Ordinal)
+            && string.Equals(paths.LogsDirectory, "logs", StringComparison.Ordinal);
+        if (!valid)
+        {
+            throw new InvalidDataException(
+                "Replay format 1 paths do not match the required managed path schema.");
+        }
     }
 
     private string EnsureContainedPath(string path)
@@ -820,7 +922,8 @@ public sealed record DiagnosticReplayManifest(
     string SourceVersion,
     ReplayPrivacyMode PrivacyMode,
     ReplayCommander Commander,
-    DiagnosticReplaySessionPaths Paths);
+    DiagnosticReplaySessionPaths Paths,
+    ReplayPresentationSnapshot? PresentationSnapshot = null);
 
 public sealed record DiagnosticReplaySessionPaths(
     string SourceJournal,
