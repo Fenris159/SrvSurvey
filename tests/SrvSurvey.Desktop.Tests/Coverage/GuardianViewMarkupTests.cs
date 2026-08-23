@@ -62,13 +62,48 @@ public sealed class GuardianViewMarkupTests
         Assert.Equal("True", map.Attribute("ClipToBounds")?.Value);
         Assert.Equal("True", map.Attribute("AllowViewportInteraction")?.Value);
         Assert.Equal(
+            "{Binding Guardian.SurveyEditor.SelectedPointName, Mode=TwoWay}",
+            map.Attribute("SelectedPointName")?.Value);
+        Assert.Equal(
             [
                 "GuardianSelectedMap",
+                "GuardianSelectedMapPointEditor",
                 "GuardianSurveyMapLegend",
                 "GuardianSurveyMapOrientation",
                 "GuardianSurveyMapNotes",
             ],
             cardNames);
+    }
+
+    [Fact]
+    public void SurveyEditorExposesRepairAndPrecisionAuthoringFields()
+    {
+        var document = LoadGuardianView();
+        var editor = FindNamedElement(document, "GuardianSurveyEditor");
+        var siteType = FindNamedElement(document, "GuardianSurveySiteType");
+        var latitude = FindNamedElement(document, "GuardianSurveyLatitude");
+        var longitude = FindNamedElement(document, "GuardianSurveyLongitude");
+        var activeObelisks = FindNamedElement(
+            document,
+            "GuardianActiveObeliskEditor");
+        var rawPrecision = FindNamedElement(
+            document,
+            "GuardianRawPointPrecisionEditor");
+
+        Assert.Contains(siteType, editor.Descendants());
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.SiteTypeOptions}",
+            siteType.Attribute("ItemsSource")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.SurfaceLatitude, Mode=TwoWay}",
+            latitude.Attribute("Value")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.SurfaceLongitude, Mode=TwoWay}",
+            longitude.Attribute("Value")?.Value);
+        Assert.Contains(activeObelisks, editor.Descendants());
+        Assert.Equal(
+            "{Binding IsRaw}",
+            rawPrecision.Attribute("IsVisible")?.Value);
     }
 
     [Fact]

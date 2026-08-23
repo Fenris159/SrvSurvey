@@ -512,6 +512,7 @@
                       Cursor="Hand"
                       AllowViewportInteraction="True"
                       Projection="{Binding Guardian.MapProjection}"
+                      SelectedPointName="{Binding Guardian.SurveyEditor.SelectedPointName, Mode=TwoWay}"
                       ShowLegend="False"
                       MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
                       GridBrush="{DynamicResource RavenBorderBrush}"
@@ -557,6 +558,10 @@
                     <TextBlock Classes="muted"
                                TextWrapping="Wrap"
                                Text="{Binding Guardian.MapStatus}" />
+                    <TextBlock Classes="muted"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Text="Hover a marker to highlight it; click to select its survey details. At higher zoom, drag empty map space to pan." />
                     <WrapPanel Orientation="Horizontal">
                       <CheckBox Margin="0,0,14,0"
                                 IsChecked="{Binding Guardian.ShowMapLegend, Mode=TwoWay}"
@@ -564,6 +569,113 @@
                       <CheckBox IsChecked="{Binding Guardian.ShowMapNotes, Mode=TwoWay}"
                                 Content="Show notes" />
                     </WrapPanel>
+                  </StackPanel>
+                </Border>
+
+                <Border x:Name="GuardianSelectedMapPointEditor"
+                        Classes="card raised"
+                        IsEnabled="{Binding Guardian.SurveyEditor.IsAvailable}"
+                        IsVisible="{Binding Guardian.SurveyEditor.HasSelectedPoint}">
+                  <StackPanel Spacing="10">
+                    <TextBlock Classes="eyebrow" Text="SELECTED SURVEY POINT" />
+                    <ContentControl Content="{Binding Guardian.SurveyEditor.SelectedPoint}">
+                      <ContentControl.ContentTemplate>
+                        <DataTemplate x:DataType="vm:GuardianSurveyPoiViewModel">
+                          <StackPanel Spacing="10">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                              <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                              <TextBlock Grid.Column="1"
+                                         Classes="muted"
+                                         Text="{Binding TypeText}" />
+                            </Grid>
+                            <TextBlock Classes="muted" Text="{Binding PositionText}" />
+                            <StackPanel x:Name="GuardianRawPointPrecisionEditor"
+                                        Spacing="8"
+                                        IsVisible="{Binding IsRaw}">
+                              <TextBlock Classes="muted" Text="RAW-POINT PRECISION" />
+                              <ComboBox ItemsSource="{Binding EditableRawPointTypes}"
+                                        SelectedItem="{Binding Type, Mode=TwoWay}" />
+                              <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                                <StackPanel Spacing="4">
+                                  <TextBlock Classes="muted" FontSize="11" Text="ANGLE" />
+                                  <NumericUpDown Minimum="0"
+                                                 Maximum="359.999"
+                                                 Increment="0.001"
+                                                 FormatString="0.000"
+                                                 Value="{Binding RawAngle, Mode=TwoWay}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="4">
+                                  <TextBlock Classes="muted" FontSize="11" Text="DISTANCE" />
+                                  <NumericUpDown Minimum="0"
+                                                 Maximum="100000"
+                                                 Increment="0.001"
+                                                 FormatString="0.000"
+                                                 Value="{Binding RawDistance, Mode=TwoWay}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Spacing="4">
+                                  <TextBlock Classes="muted" FontSize="11" Text="ROTATION" />
+                                  <NumericUpDown Minimum="-1"
+                                                 Maximum="359.999"
+                                                 Increment="0.001"
+                                                 FormatString="0.000"
+                                                 Value="{Binding RawRotation, Mode=TwoWay}" />
+                                </StackPanel>
+                              </Grid>
+                              <TextBlock Classes="muted"
+                                         FontSize="11"
+                                         TextWrapping="Wrap"
+                                         Text="Fine-tune the commander-specific marker after selecting it on the map." />
+                            </StackPanel>
+                            <StackPanel Spacing="5">
+                              <TextBlock Classes="muted" Text="STATUS" />
+                              <ComboBox IsEnabled="{Binding IsStatusEditable}"
+                                        ItemsSource="{Binding AllowedStatuses}"
+                                        SelectedItem="{Binding Status, Mode=TwoWay}" />
+                            </StackPanel>
+                            <StackPanel Spacing="5"
+                                        IsVisible="{Binding SupportsRelicHeading}">
+                              <TextBlock Classes="muted" Text="RELIC HEADING" />
+                              <NumericUpDown Minimum="-1"
+                                             Maximum="359"
+                                             Increment="1"
+                                             FormatString="0"
+                                             Value="{Binding RelicHeading, Mode=TwoWay}" />
+                            </StackPanel>
+                            <StackPanel Spacing="8"
+                                        IsVisible="{Binding CanEditComponentMaterials}">
+                              <TextBlock Classes="muted" Text="COMPONENT MATERIALS" />
+                              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                <TextBlock VerticalAlignment="Center" Text="Panel / top" />
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding ComponentMaterialOptions}"
+                                          SelectedItem="{Binding TopComponentMaterial, Mode=TwoWay}" />
+                              </Grid>
+                              <Grid ColumnDefinitions="Auto,*"
+                                    ColumnSpacing="10"
+                                    IsVisible="{Binding SupportsMultipleComponentMaterials}">
+                                <TextBlock VerticalAlignment="Center" Text="Middle" />
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding ComponentMaterialOptions}"
+                                          SelectedItem="{Binding MiddleComponentMaterial, Mode=TwoWay}" />
+                              </Grid>
+                              <Grid ColumnDefinitions="Auto,*"
+                                    ColumnSpacing="10"
+                                    IsVisible="{Binding SupportsMultipleComponentMaterials}">
+                                <TextBlock VerticalAlignment="Center" Text="Bottom" />
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding ComponentMaterialOptions}"
+                                          SelectedItem="{Binding BottomComponentMaterial, Mode=TwoWay}" />
+                              </Grid>
+                            </StackPanel>
+                          </StackPanel>
+                        </DataTemplate>
+                      </ContentControl.ContentTemplate>
+                    </ContentControl>
+                    <Button Classes="secondary"
+                            HorizontalAlignment="Left"
+                            IsVisible="{Binding Guardian.SurveyEditor.HasSelectedRawPoint}"
+                            Command="{Binding Guardian.SurveyEditor.RemoveRawPointCommand}"
+                            Content="Delete local raw point" />
                   </StackPanel>
                 </Border>
 
@@ -846,24 +958,60 @@
 
                   <StackPanel Spacing="14"
                               IsEnabled="{Binding Guardian.SurveyEditor.IsAvailable}">
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                      <StackPanel Spacing="5">
-                        <TextBlock Classes="muted" Text="SITE HEADING" />
-                        <NumericUpDown Minimum="-1"
-                                       Maximum="359"
-                                       Increment="1"
-                                       FormatString="0"
-                                       Value="{Binding Guardian.SurveyEditor.SiteHeading, Mode=TwoWay}" />
+                    <Border Classes="card raised">
+                      <StackPanel Spacing="12">
+                        <TextBlock Classes="muted" Text="SITE IDENTITY AND SURVEY ORIGIN" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                          <StackPanel Spacing="5">
+                            <TextBlock Classes="muted" Text="SITE TYPE" />
+                            <ComboBox x:Name="GuardianSurveySiteType"
+                                      ItemsSource="{Binding Guardian.SurveyEditor.SiteTypeOptions}"
+                                      SelectedItem="{Binding Guardian.SurveyEditor.SiteType, Mode=TwoWay}" />
+                          </StackPanel>
+                          <StackPanel Grid.Column="1" Spacing="5">
+                            <TextBlock Classes="muted" Text="SITE HEADING" />
+                            <NumericUpDown Minimum="-1"
+                                           Maximum="359"
+                                           Increment="1"
+                                           FormatString="0"
+                                           Value="{Binding Guardian.SurveyEditor.SiteHeading, Mode=TwoWay}" />
+                          </StackPanel>
+                        </Grid>
+                        <StackPanel Spacing="5"
+                                    IsVisible="{Binding Guardian.SurveyEditor.IsRuinsSite}">
+                          <TextBlock Classes="muted" Text="RUINS RELIC HEADING" />
+                          <NumericUpDown Minimum="-1"
+                                         Maximum="359"
+                                         Increment="1"
+                                         FormatString="0"
+                                         Value="{Binding Guardian.SurveyEditor.RelicTowerHeading, Mode=TwoWay}" />
+                        </StackPanel>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                          <StackPanel Spacing="5">
+                            <TextBlock Classes="muted" Text="SURFACE LATITUDE" />
+                            <NumericUpDown x:Name="GuardianSurveyLatitude"
+                                           Minimum="-90"
+                                           Maximum="90"
+                                           Increment="0.000001"
+                                           FormatString="0.000000"
+                                           Value="{Binding Guardian.SurveyEditor.SurfaceLatitude, Mode=TwoWay}" />
+                          </StackPanel>
+                          <StackPanel Grid.Column="1" Spacing="5">
+                            <TextBlock Classes="muted" Text="SURFACE LONGITUDE" />
+                            <NumericUpDown x:Name="GuardianSurveyLongitude"
+                                           Minimum="-180"
+                                           Maximum="180"
+                                           Increment="0.000001"
+                                           FormatString="0.000000"
+                                           Value="{Binding Guardian.SurveyEditor.SurfaceLongitude, Mode=TwoWay}" />
+                          </StackPanel>
+                        </Grid>
+                        <TextBlock Classes="muted"
+                                   FontSize="11"
+                                   TextWrapping="Wrap"
+                                   Text="Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known." />
                       </StackPanel>
-                      <StackPanel Grid.Column="1" Spacing="5">
-                        <TextBlock Classes="muted" Text="RUINS RELIC HEADING" />
-                        <NumericUpDown Minimum="-1"
-                                       Maximum="359"
-                                       Increment="1"
-                                       FormatString="0"
-                                       Value="{Binding Guardian.SurveyEditor.RelicTowerHeading, Mode=TwoWay}" />
-                      </StackPanel>
-                    </Grid>
+                    </Border>
 
                     <StackPanel Spacing="5">
                       <TextBlock Classes="muted" Text="NOTES" />
@@ -891,6 +1039,66 @@
                         </ItemsControl.ItemTemplate>
                       </ItemsControl>
                     </StackPanel>
+
+                    <Border x:Name="GuardianActiveObeliskEditor"
+                            Classes="card raised">
+                      <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                          <StackPanel Spacing="4">
+                            <TextBlock Classes="muted" Text="ACTIVE OBELISKS" />
+                            <TextBlock Classes="muted"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"
+                                       Text="Author the scanned obelisk, log, and required artifact metadata used when publishing an unpublished site survey." />
+                          </StackPanel>
+                          <WrapPanel Grid.Column="1">
+                            <Button Classes="secondary"
+                                    Margin="0,0,8,0"
+                                    Command="{Binding Guardian.SurveyEditor.AddActiveObeliskCommand}"
+                                    Content="Add" />
+                            <Button Classes="secondary"
+                                    Command="{Binding Guardian.SurveyEditor.RemoveActiveObeliskCommand}"
+                                    Content="Delete" />
+                          </WrapPanel>
+                        </Grid>
+                        <Grid ColumnDefinitions="2*,3*" ColumnSpacing="12">
+                          <ListBox Height="170"
+                                   ItemsSource="{Binding Guardian.SurveyEditor.ActiveObelisks}"
+                                   SelectedItem="{Binding Guardian.SurveyEditor.SelectedActiveObelisk, Mode=TwoWay}">
+                            <ListBox.ItemTemplate>
+                              <DataTemplate x:DataType="vm:GuardianActiveObeliskViewModel">
+                                <Grid Margin="6,3" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                  <TextBlock Classes="monospace" Text="{Binding Name}" />
+                                  <TextBlock Grid.Column="1"
+                                             Classes="muted"
+                                             Text="{Binding LogCode}" />
+                                  <CheckBox Grid.Column="2"
+                                            IsHitTestVisible="False"
+                                            IsChecked="{Binding Scanned}"
+                                            Content="Scanned" />
+                                </Grid>
+                              </DataTemplate>
+                            </ListBox.ItemTemplate>
+                          </ListBox>
+                          <StackPanel Grid.Column="1"
+                                      Spacing="8"
+                                      IsVisible="{Binding Guardian.SurveyEditor.HasSelectedActiveObelisk}">
+                            <TextBox Text="{Binding Guardian.SurveyEditor.SelectedActiveObelisk.Name, Mode=TwoWay}"
+                                     PlaceholderText="Map marker, for example A01" />
+                            <TextBox Text="{Binding Guardian.SurveyEditor.SelectedActiveObelisk.LogCode, Mode=TwoWay}"
+                                     PlaceholderText="Log code, for example H1" />
+                            <TextBox Text="{Binding Guardian.SurveyEditor.SelectedActiveObelisk.ArtifactCodes, Mode=TwoWay}"
+                                     PlaceholderText="Artifact codes separated by commas" />
+                            <CheckBox IsChecked="{Binding Guardian.SurveyEditor.SelectedActiveObelisk.Scanned, Mode=TwoWay}"
+                                      Content="Scanned by this commander" />
+                            <TextBlock Classes="muted"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"
+                                       Text="Clicking a matching obelisk marker on the map selects this metadata row." />
+                          </StackPanel>
+                        </Grid>
+                      </StackPanel>
+                    </Border>
 
                     <Border Classes="card raised">
                       <StackPanel Spacing="10">
@@ -935,73 +1143,6 @@
                         </ListBox.ItemTemplate>
                       </ListBox>
                     </StackPanel>
-
-                    <Border Classes="card raised"
-                            IsVisible="{Binding Guardian.SurveyEditor.HasSelectedPoint}">
-                      <StackPanel Spacing="10">
-                        <ContentControl Content="{Binding Guardian.SurveyEditor.SelectedPoint}">
-                          <ContentControl.ContentTemplate>
-                            <DataTemplate x:DataType="vm:GuardianSurveyPoiViewModel">
-                              <StackPanel Spacing="10">
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                  <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
-                                  <TextBlock Grid.Column="1"
-                                             Classes="muted"
-                                             Text="{Binding TypeText}" />
-                                </Grid>
-                                <TextBlock Classes="muted" Text="{Binding PositionText}" />
-                                <StackPanel Spacing="5">
-                                  <TextBlock Classes="muted" Text="STATUS" />
-                                  <ComboBox IsEnabled="{Binding IsStatusEditable}"
-                                            ItemsSource="{Binding AllowedStatuses}"
-                                            SelectedItem="{Binding Status, Mode=TwoWay}" />
-                                </StackPanel>
-                                <StackPanel Spacing="5"
-                                            IsVisible="{Binding SupportsRelicHeading}">
-                                  <TextBlock Classes="muted" Text="RELIC HEADING" />
-                                  <NumericUpDown Minimum="-1"
-                                                 Maximum="359"
-                                                 Increment="1"
-                                                 FormatString="0"
-                                                 Value="{Binding RelicHeading, Mode=TwoWay}" />
-                                </StackPanel>
-                                <StackPanel Spacing="8"
-                                            IsVisible="{Binding CanEditComponentMaterials}">
-                                  <TextBlock Classes="muted" Text="COMPONENT MATERIALS" />
-                                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                    <TextBlock VerticalAlignment="Center" Text="Panel / top" />
-                                    <ComboBox Grid.Column="1"
-                                              ItemsSource="{Binding ComponentMaterialOptions}"
-                                              SelectedItem="{Binding TopComponentMaterial, Mode=TwoWay}" />
-                                  </Grid>
-                                  <Grid ColumnDefinitions="Auto,*"
-                                        ColumnSpacing="10"
-                                        IsVisible="{Binding SupportsMultipleComponentMaterials}">
-                                    <TextBlock VerticalAlignment="Center" Text="Middle" />
-                                    <ComboBox Grid.Column="1"
-                                              ItemsSource="{Binding ComponentMaterialOptions}"
-                                              SelectedItem="{Binding MiddleComponentMaterial, Mode=TwoWay}" />
-                                  </Grid>
-                                  <Grid ColumnDefinitions="Auto,*"
-                                        ColumnSpacing="10"
-                                        IsVisible="{Binding SupportsMultipleComponentMaterials}">
-                                    <TextBlock VerticalAlignment="Center" Text="Bottom" />
-                                    <ComboBox Grid.Column="1"
-                                              ItemsSource="{Binding ComponentMaterialOptions}"
-                                              SelectedItem="{Binding BottomComponentMaterial, Mode=TwoWay}" />
-                                  </Grid>
-                                </StackPanel>
-                              </StackPanel>
-                            </DataTemplate>
-                          </ContentControl.ContentTemplate>
-                        </ContentControl>
-                        <Button Classes="secondary"
-                                HorizontalAlignment="Left"
-                                IsVisible="{Binding Guardian.SurveyEditor.HasSelectedRawPoint}"
-                                Command="{Binding Guardian.SurveyEditor.RemoveRawPointCommand}"
-                                Content="Remove local raw point" />
-                      </StackPanel>
-                    </Border>
 
                     <Button Classes="primary"
                             HorizontalAlignment="Left"

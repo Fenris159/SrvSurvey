@@ -36,33 +36,36 @@ The upstream publication at `e257b427` is included in the embedded ruin and
 structure catalogs, Guardian ZIP, and site templates. The following `ac45f26d`
 Gamma T9 correction is also included and protected by a focused assertion.
 
-## UI follow-up candidates
+## UI workflow coverage
 
-These do not block backend compatibility or the legacy completion score, but
-they are worth a separate UX review:
+The main-window Survey editor now closes the three repair and authoring gaps
+identified by the audit:
 
-1. Site type can be selected through the live overlay/chat flow (`.site`) and
-   is normally inferred for known sites, but the survey editor has no visible
-   site-type control. An unknown or misidentified site therefore has a
-   discoverability and repair gap in the main window.
-2. Surface location is captured from the live visit or published reference and
-   displayed read-only. The survey editor cannot repair a missing or incorrect
-   origin, even though location is required for a survey to be complete.
-3. The UI can scan or unscan known active obelisks and persists their legacy
-   representation, but it cannot author an active-obelisk name, log code, or
-   artifact requirements for a newly discovered unpublished site. Active
-   obelisks are intentionally ignored by legacy discovery comparison and
-   completion scoring, so this is a catalog-authoring gap rather than a survey
-   release-format defect.
+1. A visible site-type selector can replace an unknown or misidentified
+   template. Switching templates clears incompatible template-point state but
+   preserves commander-specific raw points.
+2. Latitude and longitude are editable together, with range validation and an
+   explicit both-blank representation for an unknown surface origin.
+3. Active-obelisk rows can be added, selected, edited, or deleted, including
+   marker name, log code, artifact requirements, and commander scan state. The
+   save path validates and writes the same compact legacy representation used
+   by the reader, share service, and published catalogs.
 
-Component materials are not missing: the editor exposes component towers and
-destructible panels when **Track Guardian component materials** is enabled in
-Overlay Settings. Raw points, POI status (including valid empty states), relic
-headings, obelisk groups, notes, and share-bundle creation are all available.
+Map interaction is linked to the same editor rather than a second workflow.
+Hovering a point draws the segmented green focus ring used by the legacy map;
+clicking selects that point and opens its editable details beside the map.
+Commander-specific raw points additionally expose type, angle, distance, and
+rotation for precision correction, plus deletion. Selecting a matching active
+obelisk marker selects its metadata row.
+
+Component materials remain available for component towers and destructible
+panels when **Track Guardian component materials** is enabled in Overlay
+Settings. POI status (including valid empty states), relic headings, obelisk
+groups, notes, and share-bundle creation use the same Survey editor save path.
 
 ## Remaining runtime proof
 
 Automated coverage cannot confirm live coordinate capture, fire-group/blink
-gestures, nearest-POI selection, or the external recipient's ingestion of a
-fresh ZIP. Exercise those paths with an Odyssey commander before promoting the
-next release candidate.
+gestures, the feel of map hit targets at every template and zoom level, or the
+external recipient's ingestion of a fresh ZIP. Exercise those paths with an
+Odyssey commander before promoting the next release candidate.

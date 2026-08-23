@@ -27,6 +27,15 @@ public sealed class GuardianSiteMapControl : Control
     public static readonly StyledProperty<string?> TargetPointNameProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, string?>(
             nameof(TargetPointName));
+    public static readonly StyledProperty<string?> SelectedPointNameProperty =
+        AvaloniaProperty.Register<GuardianSiteMapControl, string?>(
+            nameof(SelectedPointName));
+    public static readonly DirectProperty<GuardianSiteMapControl, string?>
+        HoveredPointNameProperty = AvaloniaProperty.RegisterDirect<
+            GuardianSiteMapControl,
+            string?>(
+                nameof(HoveredPointName),
+                control => control.HoveredPointName);
     public static readonly StyledProperty<IBrush?> MapBackgroundProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, IBrush?>(
             nameof(MapBackground));
@@ -70,6 +79,7 @@ public sealed class GuardianSiteMapControl : Control
     private Point? dragOrigin;
     private Vector dragStartOffset;
     private Vector viewportOffset;
+    private string? hoveredPointName;
 
     static GuardianSiteMapControl()
     {
@@ -79,6 +89,8 @@ public sealed class GuardianSiteMapControl : Control
             MapScaleProperty,
             CommanderHeadingProperty,
             TargetPointNameProperty,
+            SelectedPointNameProperty,
+            HoveredPointNameProperty,
             MapBackgroundProperty,
             GridBrushProperty,
             AccentBrushProperty,
@@ -121,6 +133,21 @@ public sealed class GuardianSiteMapControl : Control
     {
         get => GetValue(TargetPointNameProperty);
         set => SetValue(TargetPointNameProperty, value);
+    }
+
+    public string? SelectedPointName
+    {
+        get => GetValue(SelectedPointNameProperty);
+        set => SetValue(SelectedPointNameProperty, value);
+    }
+
+    public string? HoveredPointName
+    {
+        get => hoveredPointName;
+        private set => SetAndRaise(
+            HoveredPointNameProperty,
+            ref hoveredPointName,
+            value);
     }
 
     public IBrush? MapBackground
@@ -527,13 +554,27 @@ public sealed class GuardianSiteMapControl : Control
     {
         base.OnPointerPressed(e);
         if (!CanInteractWithViewport
-            || NormalizeViewportZoom(ViewportZoom) <= MinimumViewportZoom
             || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             return;
         }
 
-        dragOrigin = e.GetPosition(this);
+        var pointerPosition = e.GetPosition(this);
+        if (HitTestPoint(pointerPosition) is { } point)
+        {
+            SetCurrentValue(SelectedPointNameProperty, point.Name);
+            e.Handled = true;
+            return;
+        }
+
+        SetCurrentValue(SelectedPointNameProperty, null);
+        if (NormalizeViewportZoom(ViewportZoom) <= MinimumViewportZoom)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        dragOrigin = pointerPosition;
         dragStartOffset = viewportOffset;
         capturedPointer = e.Pointer;
         e.Pointer.Capture(this);
@@ -546,6 +587,7 @@ public sealed class GuardianSiteMapControl : Control
         base.OnPointerMoved(e);
         if (dragOrigin is not { } origin)
         {
+            UpdateHoveredPoint(e.GetPosition(this));
             return;
         }
 
@@ -555,6 +597,12 @@ public sealed class GuardianSiteMapControl : Control
             ViewportZoom);
         InvalidateVisual();
         e.Handled = true;
+    }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        base.OnPointerExited(e);
+        HoveredPointName = null;
     }
 
     protected override void OnPointerReleased(
@@ -601,6 +649,71 @@ public sealed class GuardianSiteMapControl : Control
         capturedPointer = null;
         pointerToRelease?.Capture(null);
         Cursor = new Cursor(StandardCursorType.Hand);
+    }
+
+    private void UpdateHoveredPoint(Point pointerPosition)
+    {
+        HoveredPointName = HitTestPoint(pointerPosition)?.Name;
+    }
+
+    private GuardianProjectedPoint? HitTestPoint(Point pointerPosition)
+    {
+        if (Projection is not { } projection
+            || Bounds.Width <= 0
+            || Bounds.Height <= 0)
+        {
+            return null;
+        }
+
+        var bounds = new Rect(Bounds.Size);
+        var viewportZoom = NormalizeViewportZoom(ViewportZoom);
+        var viewportCenter = bounds.Center + ClampViewportOffset(
+            viewportOffset,
+            bounds.Size,
+            viewportZoom);
+        var mapImage = GuardianMapImageCatalog.Find(projection);
+        var fittedScale = CalculateFittedScale(bounds, projection, mapImage);
+        var baseScale = double.IsFinite(MapScale) && MapScale > 0
+            ? Math.Clamp(MapScale, 0.1, 20)
+            : fittedScale;
+        var scale = baseScale * viewportZoom;
+        return projection.Points
+            .Select(point => new
+            {
+                Point = point,
+                Screen = TransformMapPoint(
+                    point.X,
+                    point.Y,
+                    Proximity,
+                    CommanderHeading,
+                    viewportCenter,
+                    scale),
+            })
+            .Select(candidate => new
+            {
+                candidate.Point,
+                Distance = Math.Sqrt(
+                    Math.Pow(candidate.Screen.X - pointerPosition.X, 2)
+                    + Math.Pow(candidate.Screen.Y - pointerPosition.Y, 2)),
+            })
+            .Where(candidate => candidate.Distance <= GetHitRadius(
+                candidate.Point,
+                projection,
+                scale))
+            .OrderBy(candidate => candidate.Distance)
+            .Select(candidate => candidate.Point)
+            .FirstOrDefault();
+    }
+
+    private static double GetHitRadius(
+        GuardianProjectedPoint point,
+        GuardianSiteMapProjection projection,
+        double markerScale)
+    {
+        var (_, ringRadius) = GetSurveyMarkerRadii(
+            point.Type,
+            projection.IsRuins);
+        return Math.Max(12, (ringRadius + 4) * markerScale);
     }
 
     private void DrawCommander(
@@ -861,6 +974,7 @@ public sealed class GuardianSiteMapControl : Control
             rotation,
             markerScale);
         DrawTargetOrNearestHighlight(context, point, location, markerScale);
+        DrawPointerSelectionHighlight(context, point, location, markerScale);
         if (point.Type == GuardianPoiType.Obelisk && point.IsActiveObelisk)
         {
             DrawActiveObeliskEffect(
@@ -966,6 +1080,39 @@ public sealed class GuardianSiteMapControl : Control
             location,
             highlightRadius,
             highlightRadius);
+    }
+
+    private void DrawPointerSelectionHighlight(
+        DrawingContext context,
+        GuardianProjectedPoint point,
+        Point location,
+        double markerScale)
+    {
+        var isHovered = string.Equals(
+            point.Name,
+            HoveredPointName,
+            StringComparison.OrdinalIgnoreCase);
+        var isSelected = string.Equals(
+            point.Name,
+            SelectedPointName,
+            StringComparison.OrdinalIgnoreCase);
+        if (!isHovered && !isSelected)
+        {
+            return;
+        }
+
+        var radius = 14 * markerScale;
+        var brush = PresentBrush ?? Brushes.LimeGreen;
+        var thickness = (isSelected ? 4d : 3d) * markerScale;
+        context.DrawEllipse(
+            null,
+            new Pen(
+                brush,
+                thickness,
+                dashStyle: new DashStyle([3.5, 2], 0.5)),
+            location,
+            radius,
+            radius);
     }
 
     private sealed class PointGlyphDraw

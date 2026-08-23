@@ -2,7 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Desktop.Controls;
 
@@ -476,6 +478,65 @@ public sealed class GuardianSiteMapControlTests
                 new Vector(900, -900),
                 new Size(720, 640),
                 zoom: 2));
+    }
+
+    [AvaloniaFact]
+    public void HoveringProjectedPointExposesMarkerSelectionFeedback()
+    {
+        var control = new GuardianSiteMapControl
+        {
+            Projection = new GuardianSiteMapProjection(
+                "Lacrosse",
+                [RenderPoint(
+                    "P1",
+                    GuardianPoiType.Orb,
+                    0,
+                    0,
+                    GuardianPoiStatus.Present)],
+                [],
+                1),
+            MapScale = 4,
+            AllowViewportInteraction = true,
+            ShowLegend = false,
+        };
+        var window = new Window
+        {
+            Width = 720,
+            Height = 640,
+            Content = control,
+        };
+
+        try
+        {
+            window.Show();
+            window.MouseMove(
+                new Point(360, 320),
+                RawInputModifiers.None);
+
+            Assert.Equal("P1", control.HoveredPointName);
+            window.MouseDown(
+                new Point(360, 320),
+                MouseButton.Left,
+                RawInputModifiers.None);
+            window.MouseUp(
+                new Point(360, 320),
+                MouseButton.Left,
+                RawInputModifiers.None);
+            Assert.Equal("P1", control.SelectedPointName);
+            var frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            var outputPath = Environment.GetEnvironmentVariable(
+                "SRVSURVEY_GUARDIAN_MAP_SELECTION_RENDER_OUTPUT");
+            if (!string.IsNullOrWhiteSpace(outputPath))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+                frame.Save(outputPath, PngBitmapEncoderOptions.Default);
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [Fact]

@@ -4740,7 +4740,8 @@ public sealed class GuardianViewModel
             activeIsOdyssey,
             survey,
             template,
-            ShowComponentMaterials);
+            ShowComponentMaterials,
+            templates);
         TemplateAuthoring.UpdateContext(template, measurement: null);
     }
 
