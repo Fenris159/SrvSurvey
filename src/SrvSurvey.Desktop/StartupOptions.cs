@@ -76,6 +76,18 @@ internal static class StartupOptions
         return null;
     }
 
+    public static bool HasDiagnosticReplayOption(
+        IReadOnlyList<string> args)
+    {
+        return args.Any(argument =>
+            argument.Equals(
+                DiagnosticReplayOption,
+                StringComparison.OrdinalIgnoreCase)
+            || argument.StartsWith(
+                $"{DiagnosticReplayOption}=",
+                StringComparison.OrdinalIgnoreCase));
+    }
+
     private static string? NormalizeFrontierId(string? value)
     {
         var normalized = value?.Trim();

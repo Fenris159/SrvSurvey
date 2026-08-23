@@ -71,6 +71,29 @@ public sealed class DiagnosticReplayContextTests
     }
 
     [Fact]
+    public async Task StartupRejectsDiagnosticOptionWithoutAManifest()
+    {
+        var normalPathsResolved = false;
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+            DesktopStartupContext.ResolveAsync(
+                ["--diagnostic-replay"],
+                () =>
+                {
+                    normalPathsResolved = true;
+                    throw new InvalidOperationException(
+                        "Normal personal paths must not be resolved.");
+                },
+                CancellationToken.None));
+
+        Assert.False(normalPathsResolved);
+        Assert.Contains(
+            "manifest path",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task DiagnosticNetworkClientDeniesEveryRequest()
     {
         using var temp = new TemporaryDirectory();

@@ -101,6 +101,14 @@ internal sealed record DesktopStartupContext(
         ArgumentNullException.ThrowIfNull(arguments);
         ArgumentNullException.ThrowIfNull(normalPathsFactory);
         var replayManifest = StartupOptions.GetDiagnosticReplayManifest(arguments);
+        if (replayManifest is null
+            && StartupOptions.HasDiagnosticReplayOption(arguments))
+        {
+            throw new ArgumentException(
+                "The --diagnostic-replay option requires a replay-session manifest path.",
+                nameof(arguments));
+        }
+
         if (replayManifest is null)
         {
             return new DesktopStartupContext(normalPathsFactory(), null);
