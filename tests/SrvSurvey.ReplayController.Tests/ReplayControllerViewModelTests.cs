@@ -133,7 +133,7 @@ public sealed class ReplayControllerViewModelTests
     }
 
     [Fact]
-    public async Task StepCannotInterleaveWithTimedPlayback()
+    public async Task PlaybackLocksPreviousStepAndSpeedChangesUntilPaused()
     {
         using var temp = new TemporaryDirectory();
         var (journalPath, executable) = await CreateInputsAsync(temp.Path);
@@ -146,18 +146,36 @@ public sealed class ReplayControllerViewModelTests
         viewModel.SrvSurveyExecutablePath = executable;
         Assert.True(await viewModel.ImportAsync(journalPath));
         Assert.True(await viewModel.LaunchAsync());
+        viewModel.SpeedMultiplier = 10;
 
         var playback = viewModel.PlayAsync();
         await delay.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
-        Assert.True(viewModel.IsPlaying);
-        Assert.Equal(1, viewModel.Position);
-        Assert.False(viewModel.StepCommand.CanExecute(null));
-        Assert.False(await viewModel.StepAsync());
-        Assert.Equal(1, viewModel.Position);
+        try
+        {
+            Assert.True(viewModel.IsPlaying);
+            Assert.False(viewModel.CanChangeSpeed);
+            Assert.Equal(1, viewModel.Position);
+            Assert.False(viewModel.PreviousCommand.CanExecute(null));
+            Assert.False(viewModel.StepCommand.CanExecute(null));
 
-        viewModel.Pause();
-        await playback;
+            viewModel.SpeedMultiplier = 25;
+
+            Assert.Equal(10, viewModel.SpeedMultiplier);
+            Assert.False(await viewModel.PreviousAsync());
+            Assert.False(await viewModel.StepAsync());
+            Assert.Equal(1, viewModel.Position);
+        }
+        finally
+        {
+            viewModel.Pause();
+            await playback;
+        }
+
+        Assert.True(viewModel.CanChangeSpeed);
+        Assert.True(viewModel.PreviousCommand.CanExecute(null));
+        viewModel.SpeedMultiplier = 25;
+        Assert.Equal(25, viewModel.SpeedMultiplier);
     }
 
     [Fact]

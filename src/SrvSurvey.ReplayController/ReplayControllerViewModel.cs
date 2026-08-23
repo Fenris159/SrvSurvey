@@ -57,7 +57,9 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
             StopAsync,
             () => IsInstanceRunning && !IsBusy);
         restartCommand = new AsyncCommand(RestartAsync, () => CanControlReplay);
-        previousCommand = new AsyncCommand(PreviousAsync, () => CanControlReplay && Position > 0);
+        previousCommand = new AsyncCommand(
+            PreviousAsync,
+            () => CanControlReplay && Position > 0 && !IsPlaying);
         stepCommand = new AsyncCommand(
             StepAsync,
             () => CanControlReplay && !IsComplete && !IsPlaying);
@@ -100,6 +102,8 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         && File.Exists(SrvSurveyExecutablePath);
 
     public bool CanControlReplay => HasSession && IsInstanceRunning && !IsBusy;
+
+    public bool CanChangeSpeed => !IsPlaying;
 
     public bool IsInstanceRunning => instance?.IsRunning == true;
 
@@ -164,7 +168,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         get => speedMultiplier;
         set
         {
-            if (!double.IsFinite(value) || value <= 0)
+            if (!double.IsFinite(value) || value <= 0 || IsPlaying)
             {
                 return;
             }
@@ -194,6 +198,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         {
             if (SetField(ref isPlaying, value))
             {
+                OnPropertyChanged(nameof(CanChangeSpeed));
                 RaiseCommandStates();
             }
         }
@@ -355,7 +360,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
 
         try
         {
-            if (session is null || player is null || Position <= 0)
+            if (session is null || player is null || Position <= 0 || IsPlaying)
             {
                 return false;
             }
