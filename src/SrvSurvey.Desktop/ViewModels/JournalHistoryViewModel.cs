@@ -67,8 +67,30 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
     public JournalHistoryEvent? SelectedEvent
     {
         get => selectedEvent;
-        set => SetField(ref selectedEvent, value);
+        set
+        {
+            if (SetField(ref selectedEvent, value))
+            {
+                OnPropertyChanged(nameof(SelectedEventFileName));
+                OnPropertyChanged(nameof(SelectedEventCommanderName));
+                OnPropertyChanged(nameof(SelectedEventSystemName));
+                OnPropertyChanged(nameof(SelectedEventTimestamp));
+                OnPropertyChanged(nameof(SelectedEventRawJson));
+            }
+        }
     }
+
+    public string SelectedEventFileName => SelectedEvent?.FileName ?? string.Empty;
+
+    public string SelectedEventCommanderName =>
+        SelectedEvent?.CommanderName ?? string.Empty;
+
+    public string SelectedEventSystemName =>
+        SelectedEvent?.SystemName ?? string.Empty;
+
+    public DateTimeOffset? SelectedEventTimestamp => SelectedEvent?.Timestamp;
+
+    public string SelectedEventRawJson => SelectedEvent?.RawJson ?? string.Empty;
 
     public string SearchText
     {

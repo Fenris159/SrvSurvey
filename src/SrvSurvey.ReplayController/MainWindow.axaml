@@ -123,7 +123,7 @@
                      FontSize="11"
                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
-                     Text="{Binding SelectedEvent.RawJson}" />
+                     Text="{Binding SelectedEventRawJson}" />
           </StackPanel>
         </Grid>
       </Border>

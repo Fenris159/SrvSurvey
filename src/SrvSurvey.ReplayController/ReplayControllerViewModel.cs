@@ -208,8 +208,16 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
     public JournalReplayEvent? SelectedEvent
     {
         get => selectedEvent;
-        set => SetField(ref selectedEvent, value);
+        set
+        {
+            if (SetField(ref selectedEvent, value))
+            {
+                OnPropertyChanged(nameof(SelectedEventRawJson));
+            }
+        }
     }
+
+    public string SelectedEventRawJson => SelectedEvent?.RawJson ?? string.Empty;
 
     public async Task<bool> ImportAsync(
         string path,

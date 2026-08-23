@@ -43,6 +43,37 @@ public sealed class DiagnosticsViewMarkupTests
     }
 
     [Fact]
+    public void JournalHistoryDetailsDoNotDereferenceAMissingSelection()
+    {
+        var document = LoadDiagnosticsView();
+        var textBindings = document.Descendants()
+            .Select(element => element.Attribute("Text")?.Value)
+            .OfType<string>()
+            .ToArray();
+
+        Assert.DoesNotContain(
+            textBindings,
+            binding => binding.Contains(
+                "JournalHistory.SelectedEvent.",
+                StringComparison.Ordinal));
+        Assert.Contains(
+            "{Binding JournalHistory.SelectedEventFileName}",
+            textBindings);
+        Assert.Contains(
+            "{Binding JournalHistory.SelectedEventCommanderName}",
+            textBindings);
+        Assert.Contains(
+            "{Binding JournalHistory.SelectedEventSystemName}",
+            textBindings);
+        Assert.Contains(
+            "{Binding JournalHistory.SelectedEventTimestamp}",
+            textBindings);
+        Assert.Contains(
+            "{Binding JournalHistory.SelectedEventRawJson}",
+            textBindings);
+    }
+
+    [Fact]
     public void LiveLogUsesAnIndependentNonCaretScrollSurface()
     {
         var document = LoadDiagnosticsView();

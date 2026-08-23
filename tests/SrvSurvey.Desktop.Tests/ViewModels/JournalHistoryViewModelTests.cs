@@ -6,6 +6,49 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class JournalHistoryViewModelTests
 {
     [Fact]
+    public void SelectionDetailsAreEmptyUntilAnEventIsSelected()
+    {
+        using var temp = new TemporaryDirectory();
+        using var viewModel = new JournalHistoryViewModel(
+            temp.Path,
+            "test-build");
+        List<string?> changedProperties = [];
+        viewModel.PropertyChanged += (_, args) =>
+            changedProperties.Add(args.PropertyName);
+
+        Assert.Equal(string.Empty, viewModel.SelectedEventFileName);
+        Assert.Equal(string.Empty, viewModel.SelectedEventCommanderName);
+        Assert.Equal(string.Empty, viewModel.SelectedEventSystemName);
+        Assert.Null(viewModel.SelectedEventTimestamp);
+        Assert.Equal(string.Empty, viewModel.SelectedEventRawJson);
+
+        var timestamp = DateTimeOffset.Parse(
+            "2026-08-21T18:01:00Z",
+            System.Globalization.CultureInfo.InvariantCulture);
+        viewModel.SelectedEvent = new JournalHistoryEvent(
+            0,
+            "Journal.01.log",
+            timestamp,
+            "FSDJump",
+            "History Cmdr",
+            "Sol",
+            "{\"event\":\"FSDJump\"}");
+
+        Assert.Equal("Journal.01.log", viewModel.SelectedEventFileName);
+        Assert.Equal("History Cmdr", viewModel.SelectedEventCommanderName);
+        Assert.Equal("Sol", viewModel.SelectedEventSystemName);
+        Assert.Equal(timestamp, viewModel.SelectedEventTimestamp);
+        Assert.Equal(
+            "{\"event\":\"FSDJump\"}",
+            viewModel.SelectedEventRawJson);
+        Assert.Contains(nameof(viewModel.SelectedEventFileName), changedProperties);
+        Assert.Contains(nameof(viewModel.SelectedEventCommanderName), changedProperties);
+        Assert.Contains(nameof(viewModel.SelectedEventSystemName), changedProperties);
+        Assert.Contains(nameof(viewModel.SelectedEventTimestamp), changedProperties);
+        Assert.Contains(nameof(viewModel.SelectedEventRawJson), changedProperties);
+    }
+
+    [Fact]
     public async Task RefreshAndSearchExposeDurableJournalHistory()
     {
         using var temp = new TemporaryDirectory();

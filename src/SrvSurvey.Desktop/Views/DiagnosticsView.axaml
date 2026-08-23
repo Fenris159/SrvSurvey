@@ -118,17 +118,17 @@
                 <TextBlock Classes="muted" Text="File" />
                 <TextBlock Grid.Column="1"
                            Classes="monospace"
-                           Text="{Binding JournalHistory.SelectedEvent.FileName}" />
+                           Text="{Binding JournalHistory.SelectedEventFileName}" />
                 <TextBlock Grid.Row="1" Classes="muted" Text="Commander" />
                 <TextBlock Grid.Row="1" Grid.Column="1"
-                           Text="{Binding JournalHistory.SelectedEvent.CommanderName}" />
+                           Text="{Binding JournalHistory.SelectedEventCommanderName}" />
                 <TextBlock Grid.Row="2" Classes="muted" Text="System" />
                 <TextBlock Grid.Row="2" Grid.Column="1"
-                           Text="{Binding JournalHistory.SelectedEvent.SystemName}" />
+                           Text="{Binding JournalHistory.SelectedEventSystemName}" />
                 <TextBlock Grid.Row="3" Classes="muted" Text="Timestamp" />
                 <TextBlock Grid.Row="3" Grid.Column="1"
                            Classes="monospace"
-                           Text="{Binding JournalHistory.SelectedEvent.Timestamp}" />
+                           Text="{Binding JournalHistory.SelectedEventTimestamp}" />
               </Grid>
               <TextBox MinHeight="225"
                        AcceptsReturn="True"
@@ -139,7 +139,7 @@
                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
                        ScrollViewer.IsScrollChainingEnabled="False"
                        ScrollViewer.VerticalScrollBarVisibility="Auto"
-                       Text="{Binding JournalHistory.SelectedEvent.RawJson}" />
+                       Text="{Binding JournalHistory.SelectedEventRawJson}" />
             </StackPanel>
           </Grid>
 

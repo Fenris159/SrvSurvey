@@ -7,6 +7,33 @@ namespace SrvSurvey.ReplayController.Tests;
 public sealed class ReplayControllerViewModelTests
 {
     [Fact]
+    public void SelectedEventTextIsSafeBeforeImport()
+    {
+        using var temp = new TemporaryDirectory();
+        var viewModel = new ReplayControllerViewModel(
+            Path.Combine(temp.Path, "sessions"),
+            new RecordingLauncher());
+        List<string?> changedProperties = [];
+        viewModel.PropertyChanged += (_, args) =>
+            changedProperties.Add(args.PropertyName);
+
+        Assert.Equal(string.Empty, viewModel.SelectedEventRawJson);
+
+        viewModel.SelectedEvent = new JournalReplayEvent(
+            0,
+            DateTimeOffset.Parse(
+                "2026-08-21T18:01:00Z",
+                System.Globalization.CultureInfo.InvariantCulture),
+            "FSDJump",
+            "{\"event\":\"FSDJump\"}");
+
+        Assert.Equal(
+            "{\"event\":\"FSDJump\"}",
+            viewModel.SelectedEventRawJson);
+        Assert.Contains(nameof(viewModel.SelectedEventRawJson), changedProperties);
+    }
+
+    [Fact]
     public async Task ImportLaunchStepAndPreviousReconstructAnIsolatedRun()
     {
         using var temp = new TemporaryDirectory();
