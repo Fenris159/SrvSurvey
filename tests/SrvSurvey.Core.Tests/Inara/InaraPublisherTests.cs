@@ -369,6 +369,68 @@ public sealed class InaraPublisherTests
     }
 
     [Fact]
+    public async Task DisposeCompletesWithoutPumpingTheCallersSynchronizationContext()
+    {
+        var handler = new BlockingInaraHandler();
+        using var httpClient = new HttpClient(handler);
+        var publisher = new InaraPublisher(
+            "2.0.95.0",
+            httpClient);
+        await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:00:00Z",
+                      "event": "LoadGame",
+                      "Credits": 1000
+                    }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:01:00Z",
+                      "event": "Shutdown"
+                    }
+                    """),
+            ],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+        await handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        var disposeStarted = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var completed = new TaskCompletionSource<Exception?>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var thread = new Thread(() =>
+        {
+            SynchronizationContext.SetSynchronizationContext(
+                new NonPumpingSynchronizationContext());
+            disposeStarted.TrySetResult();
+            try
+            {
+                publisher.Dispose();
+                completed.TrySetResult(null);
+            }
+            catch (Exception exception)
+            {
+                completed.TrySetResult(exception);
+            }
+        })
+        {
+            IsBackground = true,
+            Name = "Inara UI-context disposal test",
+        };
+
+        thread.Start();
+        await disposeStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        Assert.False(completed.Task.IsCompleted);
+        handler.ReleaseResponse();
+        var exception = await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.Null(exception);
+        Assert.True(handler.ResponseCompleted);
+    }
+
+    [Fact]
     public async Task ClearingKeyCancelsAnActiveUploadAndDiscardsItsBatch()
     {
         var handler = new BlockingInaraHandler();
@@ -1021,6 +1083,8 @@ public sealed class InaraPublisherTests
         public TaskCompletionSource RequestCancelled { get; } = new(
             TaskCreationOptions.RunContinuationsAsynchronously);
 
+        public bool ResponseCompleted { get; private set; }
+
         public void ReleaseResponse()
         {
             releaseResponse.TrySetResult();
@@ -1035,9 +1099,13 @@ public sealed class InaraPublisherTests
             try
             {
                 var body = await request.Content!
-                    .ReadAsStringAsync(cancellationToken);
+                    .ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
                 var payload = JObject.Parse(body);
-                await releaseResponse.Task.WaitAsync(cancellationToken);
+                await releaseResponse.Task
+                    .WaitAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                ResponseCompleted = true;
                 return new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent(
@@ -1062,6 +1130,14 @@ public sealed class InaraPublisherTests
                 RequestCancelled.TrySetResult();
                 throw;
             }
+        }
+    }
+
+    private sealed class NonPumpingSynchronizationContext
+        : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback callback, object? state)
+        {
         }
     }
 

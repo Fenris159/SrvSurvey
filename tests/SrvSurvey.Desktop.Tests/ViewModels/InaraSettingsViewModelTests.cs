@@ -83,6 +83,8 @@ public sealed class InaraSettingsViewModelTests : IDisposable
         }
 
         var viewModel = CreateViewModel(SaveAsync);
+        var changes = 0;
+        viewModel.ApiKeyChanged += (_, _) => changes++;
         viewModel.SetCommanderProfile(
             "F123",
             "First Commander",
@@ -110,6 +112,7 @@ public sealed class InaraSettingsViewModelTests : IDisposable
         Assert.Equal("second-key", viewModel.StoredApiKey);
         Assert.Contains("Second Commander", viewModel.CredentialStatus);
         Assert.DoesNotContain("First Commander", viewModel.CredentialStatus);
+        Assert.Equal(0, changes);
     }
 
     [Fact]
