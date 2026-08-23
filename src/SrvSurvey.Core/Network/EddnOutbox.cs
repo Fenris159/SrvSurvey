@@ -697,30 +697,10 @@ namespace SrvSurvey.Core.Network
                         "the queue contained excessive entries");
                 }
 
-                var ids = loaded.Select(item => item.id).ToHashSet();
-                var migrated = true;
-                foreach (var item in legacy)
+                if (migrateLegacyMessages(legacy, loaded, messages))
                 {
-                    normalize(item);
-                    if (!isValid(item))
-                    {
-                        throw new InvalidDataException(
-                            "the queue contained invalid entries");
-                    }
-
-                    if (!ids.Add(item.id)) continue;
-                    if (persistMessage(item, out var error))
-                    {
-                        loaded.Add(item);
-                    }
-                    else
-                    {
-                        migrated = false;
-                        if (error is not null) messages.Add(error);
-                    }
+                    File.Delete(filepath);
                 }
-
-                if (migrated) File.Delete(filepath);
             }
             catch (Exception exception) when (
                 exception is IOException
@@ -733,6 +713,37 @@ namespace SrvSurvey.Core.Network
                     "EDDN could not load its legacy pending uploads: "
                         + exception.Message);
             }
+        }
+
+        private bool migrateLegacyMessages(
+            IEnumerable<EddnQueuedMessage> legacy,
+            List<EddnQueuedMessage> loaded,
+            List<string> messages)
+        {
+            var ids = loaded.Select(item => item.id).ToHashSet();
+            var migrated = true;
+            foreach (var item in legacy)
+            {
+                normalize(item);
+                if (!isValid(item))
+                {
+                    throw new InvalidDataException(
+                        "the queue contained invalid entries");
+                }
+
+                if (!ids.Add(item.id)) continue;
+                if (persistMessage(item, out var error))
+                {
+                    loaded.Add(item);
+                }
+                else
+                {
+                    migrated = false;
+                    if (error is not null) messages.Add(error);
+                }
+            }
+
+            return migrated;
         }
 
         private bool persistMessage(

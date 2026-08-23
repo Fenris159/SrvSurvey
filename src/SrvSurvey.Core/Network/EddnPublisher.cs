@@ -48,8 +48,7 @@ public interface IEddnPublisher
 public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposable
 {
     private readonly object sync = new();
-    private readonly SemaphoreSlim applyGate = new(1, 1);
-    private readonly EddnTransport transport;
+    private readonly object applySync = new();
     private readonly EddnOutbox outbox;
     private readonly Channel<OutboxWriteCommand> outboxWrites;
     private readonly Task outboxWriterTask;
@@ -78,7 +77,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         ArgumentException.ThrowIfNullOrWhiteSpace(softwareVersion);
         this.softwareVersion = softwareVersion.Trim();
         this.log = log ?? (_ => { });
-        transport = new EddnTransport(
+        var transport = new EddnTransport(
             client,
             endpoint,
             $"SrvSurvey/{this.softwareVersion}");
@@ -110,7 +109,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         EddnSessionPublisher? currentSession;
         lock (sync)
         {
-            if (disposed || Volatile.Read(ref disposeStarted) != 0)
+            if (disposed)
             {
                 return;
             }
@@ -134,9 +133,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         EddnSessionPublisher? currentSession;
         lock (sync)
         {
-            if (disposed
-                || Volatile.Read(ref disposeStarted) != 0
-                || publishingSuspended == suspended)
+            if (disposed || publishingSuspended == suspended)
             {
                 return;
             }
@@ -150,21 +147,20 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         outbox.setSuspended(suspended);
     }
 
-    public async Task<EddnPublicationResult> ApplyAsync(
+    public Task<EddnPublicationResult> ApplyAsync(
         EddnApplyRequest request,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.JournalEvents);
-        await applyGate.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
+        lock (applySync)
         {
             cancellationToken.ThrowIfCancellationRequested();
             lock (sync)
             {
                 if (disposed)
                 {
-                    return EddnPublicationResult.Empty;
+                    return Task.FromResult(EddnPublicationResult.Empty);
                 }
             }
 
@@ -172,15 +168,11 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             var currentSession = ReplaceSessionIfNeeded(request);
             if (currentSession is null)
             {
-                return EddnPublicationResult.Empty;
+                return Task.FromResult(EddnPublicationResult.Empty);
             }
 
-            return await currentSession.ApplyAsync(request, cancellationToken)
-                .ConfigureAwait(false);
-        }
-        finally
-        {
-            applyGate.Release();
+            return Task.FromResult(
+                currentSession.Apply(request, cancellationToken));
         }
     }
 
@@ -265,22 +257,16 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
 
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref disposeStarted, 1) != 0)
+        lock (applySync)
         {
-            return;
-        }
+            if (Interlocked.Exchange(ref disposeStarted, 1) != 0)
+            {
+                return;
+            }
 
-        applyGate.Wait();
-        try
-        {
             EddnSessionPublisher? currentSession;
             lock (sync)
             {
-                if (disposed)
-                {
-                    return;
-                }
-
                 currentSession = session;
                 session = null;
                 sessionKey = null;
@@ -313,10 +299,6 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
 
             outbox.Dispose();
         }
-        finally
-        {
-            applyGate.Release();
-        }
     }
 
     private EddnSessionPublisher? ReplaceSessionIfNeeded(EddnApplyRequest request)
@@ -325,11 +307,6 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         EddnSessionPublisher? previousSession;
         lock (sync)
         {
-            if (disposed)
-            {
-                return null;
-            }
-
             if (descriptor is not null && descriptor.Key == sessionKey)
             {
                 return session;
@@ -348,11 +325,6 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         bool suspended;
         lock (sync)
         {
-            if (disposed)
-            {
-                return null;
-            }
-
             ingestionGeneration++;
             enabled = sharingEnabled;
             suspended = publishingSuspended;
@@ -371,24 +343,10 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         replacement.SetEnabled(enabled);
         replacement.SetSuspended(suspended);
 
-        var disposeReplacement = false;
         lock (sync)
         {
-            if (disposed)
-            {
-                disposeReplacement = true;
-            }
-            else
-            {
-                session = replacement;
-                sessionKey = descriptor.Key;
-            }
-        }
-
-        if (disposeReplacement)
-        {
-            replacement.Dispose();
-            return null;
+            session = replacement;
+            sessionKey = descriptor.Key;
         }
 
         return replacement;

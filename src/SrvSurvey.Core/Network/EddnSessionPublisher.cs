@@ -36,7 +36,7 @@ internal sealed class EddnSessionPublisher : IDisposable
 
     private readonly object sync = new();
     private readonly object companionTasksSync = new();
-    private readonly SemaphoreSlim enqueueGate = new(1, 1);
+    private readonly object enqueueSync = new();
     private readonly IEddnSessionSink sink;
     private readonly UploadPayloadHeader header;
     private readonly string? journalDirectory;
@@ -146,7 +146,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
     }
 
-    internal Task<EddnPublicationResult> ApplyAsync(
+    internal EddnPublicationResult Apply(
         EddnApplyRequest request,
         CancellationToken cancellationToken)
     {
@@ -195,7 +195,7 @@ internal sealed class EddnSessionPublisher : IDisposable
             }
         }
 
-        return Task.FromResult(new EddnPublicationResult(published, warnings));
+        return new EddnPublicationResult(published, warnings);
     }
 
     internal async Task WaitForCompanionReadsAsync(
@@ -222,8 +222,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
 
         SignalBatch? batch;
-        enqueueGate.Wait();
-        try
+        lock (enqueueSync)
         {
             lock (sync)
             {
@@ -239,10 +238,6 @@ internal sealed class EddnSessionPublisher : IDisposable
             }
 
             disposal.Cancel();
-        }
-        finally
-        {
-            enqueueGate.Release();
         }
 
         Task[] tasks;
@@ -281,33 +276,104 @@ internal sealed class EddnSessionPublisher : IDisposable
         List<EddnPublishedEvent> published,
         List<string> warnings)
     {
-        if (eventName == "LoadGame")
+        if (!MatchesCapturedCommander(eventName, raw, warnings))
         {
-            var eventCommander = raw.Value<string>("Commander");
-            if (!string.IsNullOrWhiteSpace(eventCommander)
-                && !eventCommander.Equals(
-                    header.uploaderID,
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                StopForCommanderChange(eventCommander);
-                warnings.Add(
-                    $"EDDN stopped the captured '{header.uploaderID}' session because LoadGame identified Commander '{eventCommander}'.");
-                return false;
-            }
+            return false;
         }
 
-        SignalBatch? signalBatch;
-        EddnMessageContext context;
-        bool suppressForCrew;
-        long currentSessionGeneration;
+        var captured = CaptureEventState(eventName, raw, request);
+        if (captured is null)
+        {
+            return false;
+        }
+
+        if (captured.SignalBatch is not null)
+        {
+            PublishSignalBatch(captured.SignalBatch, published, warnings);
+        }
+
+        if (eventName == "FSSSignalDiscovered")
+        {
+            BufferSignal(
+                raw,
+                captured.Context,
+                request.AllowPublishing,
+                captured.SessionGeneration);
+            return true;
+        }
+
+        if (captured.SuppressForCrew
+            || !CanPublishNow(
+                request.AllowPublishing,
+                captured.SessionGeneration,
+                out var ingestionGeneration))
+        {
+            return true;
+        }
+
+        if (EddnMessageSanitizer.isCompanionEvent(eventName))
+        {
+            return ProcessCompanionEvent(
+                eventName,
+                raw,
+                request,
+                captured,
+                ingestionGeneration,
+                warnings);
+        }
+
+        if (JournalEvents.Contains(eventName))
+        {
+            PublishJournalEvent(
+                eventName,
+                raw,
+                captured,
+                ingestionGeneration,
+                published,
+                warnings);
+        }
+
+        return true;
+    }
+
+    private bool MatchesCapturedCommander(
+        string eventName,
+        JObject raw,
+        List<string> warnings)
+    {
+        if (eventName != "LoadGame")
+        {
+            return true;
+        }
+
+        var eventCommander = raw.Value<string>("Commander");
+        if (string.IsNullOrWhiteSpace(eventCommander)
+            || eventCommander.Equals(
+                header.uploaderID,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        StopForCommanderChange(eventCommander);
+        warnings.Add(
+            $"EDDN stopped the captured '{header.uploaderID}' session because LoadGame identified Commander '{eventCommander}'.");
+        return false;
+    }
+
+    private CapturedEventState? CaptureEventState(
+        string eventName,
+        JObject raw,
+        EddnApplyRequest request)
+    {
         lock (sync)
         {
             if (disposed || !accepting)
             {
-                return false;
+                return null;
             }
 
-            signalBatch = eventName == "FSSSignalDiscovered"
+            var signalBatch = eventName == "FSSSignalDiscovered"
                 ? null
                 : TakeSignalBatchLocked();
             var eventLocation = EddnMessageSanitizer.getLocation(raw);
@@ -324,81 +390,69 @@ internal sealed class EddnSessionPublisher : IDisposable
             UpdateBodyContextLocked(raw);
             UpdateExpansionFlagsLocked(raw);
             UpdateCrewMembershipLocked(eventName);
-            suppressForCrew = isCrewMember;
-            currentSessionGeneration = sessionGeneration;
-            context = CreateContextLocked();
+            return new CapturedEventState(
+                signalBatch,
+                CreateContextLocked(),
+                isCrewMember,
+                sessionGeneration);
         }
+    }
 
-        if (signalBatch is not null)
+    private bool ProcessCompanionEvent(
+        string eventName,
+        JObject raw,
+        EddnApplyRequest request,
+        CapturedEventState captured,
+        long ingestionGeneration,
+        List<string> warnings)
+    {
+        if (!request.AllowSharedData)
         {
-            PublishSignalBatch(signalBatch, published, warnings);
-        }
-
-        if (eventName == "FSSSignalDiscovered")
-        {
-            BufferSignal(
-                raw,
-                context,
-                request.AllowPublishing,
-                currentSessionGeneration);
+            warnings.Add(
+                $"EDDN skipped {eventName}: shared companion files are suppressed while multiple Elite instances are active.");
             return true;
         }
 
-        if (suppressForCrew
-            || !CanPublishNow(
-                request.AllowPublishing,
-                currentSessionGeneration,
-                out var ingestionGeneration))
+        var directory = string.IsNullOrWhiteSpace(request.JournalDirectory)
+            ? journalDirectory
+            : request.JournalDirectory;
+        if (string.IsNullOrWhiteSpace(directory))
         {
+            warnings.Add(
+                $"EDDN skipped {eventName}: the journal directory was unavailable.");
             return true;
         }
 
-        if (EddnMessageSanitizer.isCompanionEvent(eventName))
-        {
-            if (!request.AllowSharedData)
-            {
-                warnings.Add(
-                    $"EDDN skipped {eventName}: shared companion files are suppressed while multiple Elite instances are active.");
-                return true;
-            }
+        StartCompanionRead(new CompanionCandidate(
+            new JObject(raw),
+            captured.Context,
+            captured.SessionGeneration,
+            ingestionGeneration,
+            directory));
+        return true;
+    }
 
-            var directory = string.IsNullOrWhiteSpace(request.JournalDirectory)
-                ? journalDirectory
-                : request.JournalDirectory;
-            if (string.IsNullOrWhiteSpace(directory))
-            {
-                warnings.Add(
-                    $"EDDN skipped {eventName}: the journal directory was unavailable.");
-                return true;
-            }
-
-            StartCompanionRead(new CompanionCandidate(
-                new JObject(raw),
-                context,
-                currentSessionGeneration,
-                ingestionGeneration,
-                directory));
-            return true;
-        }
-
-        if (!JournalEvents.Contains(eventName))
-        {
-            return true;
-        }
-
+    private void PublishJournalEvent(
+        string eventName,
+        JObject raw,
+        CapturedEventState captured,
+        long ingestionGeneration,
+        List<EddnPublishedEvent> published,
+        List<string> warnings)
+    {
         if (!EddnMessageSanitizer.tryBuildJournal(
                 raw,
-                context,
+                captured.Context,
                 out var prepared,
                 out var reason))
         {
             warnings.Add($"EDDN skipped {eventName}: {reason}.");
-            return true;
+            return;
         }
 
         if (TryEnqueue(
                 prepared!,
-                currentSessionGeneration,
+                captured.SessionGeneration,
                 ingestionGeneration))
         {
             published.Add(new EddnPublishedEvent(
@@ -406,12 +460,10 @@ internal sealed class EddnSessionPublisher : IDisposable
                 EddnTransport.NormalizeSchemaReference(prepared.schemaRef),
                 UsesTestSchemas: true));
         }
-        else if (IsCurrentSession(currentSessionGeneration))
+        else if (IsCurrentSession(captured.SessionGeneration))
         {
             warnings.Add($"EDDN could not queue {eventName} for upload.");
         }
-
-        return true;
     }
 
     private void BufferSignal(
@@ -540,14 +592,12 @@ internal sealed class EddnSessionPublisher : IDisposable
         bool allowDisposedBatch = false,
         Action? rejected = null)
     {
-        enqueueGate.Wait();
-        try
+        lock (enqueueSync)
         {
             lock (sync)
             {
-                if ((!allowDisposedBatch
-                        && !IsCurrentSessionLocked(expectedSessionGeneration))
-                    || (!allowDisposedBatch && (!accepting || disposed)))
+                if (!allowDisposedBatch
+                    && !IsCurrentSessionLocked(expectedSessionGeneration))
                 {
                     return false;
                 }
@@ -559,10 +609,6 @@ internal sealed class EddnSessionPublisher : IDisposable
                 expectedIngestionGeneration,
                 prepared.eventName,
                 rejected);
-        }
-        finally
-        {
-            enqueueGate.Release();
         }
     }
 
@@ -654,18 +700,11 @@ internal sealed class EddnSessionPublisher : IDisposable
                     candidate.JournalEvent,
                     cancellationToken)
                 .ConfigureAwait(false);
-            if (!read.isSuccess)
-            {
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    WriteLog($"EDDN skipped {eventName}: {read.error}");
-                }
-
-                return;
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-            if (!IsCurrentSession(candidate.SessionGeneration))
+            if (!CanUseCompanionRead(
+                    read,
+                    candidate.SessionGeneration,
+                    eventName,
+                    cancellationToken))
             {
                 return;
             }
@@ -680,28 +719,7 @@ internal sealed class EddnSessionPublisher : IDisposable
                 return;
             }
 
-            var signature = GetCompanionSignature(prepared!);
-            if (signature is not null && !ReserveSignature(signature.Value))
-            {
-                return;
-            }
-
-            var queued = TryEnqueue(
-                prepared!,
-                candidate.SessionGeneration,
-                candidate.IngestionGeneration,
-                rejected: signature is null
-                    ? null
-                    : () => ReleaseSignature(signature.Value));
-            if (!queued && signature is not null)
-            {
-                ReleaseSignature(signature.Value);
-            }
-
-            if (!queued && IsCurrentSession(candidate.SessionGeneration))
-            {
-                WriteLog($"EDDN could not queue {eventName} for upload.");
-            }
+            QueueCompanionMessage(prepared!, candidate, eventName);
         }
         catch (OperationCanceledException) when (
             cancellationToken.IsCancellationRequested)
@@ -709,17 +727,75 @@ internal sealed class EddnSessionPublisher : IDisposable
             // Session replacement and application shutdown intentionally cancel
             // reads so a shared companion file cannot cross Commander sessions.
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or JsonException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception) when (IsExpectedCompanionException(exception))
         {
             if (!cancellationToken.IsCancellationRequested)
             {
                 WriteLog($"EDDN skipped {eventName}: {exception.Message}");
             }
         }
+    }
+
+    private bool CanUseCompanionRead(
+        EddnCompanionReadResult read,
+        long expectedSessionGeneration,
+        string eventName,
+        CancellationToken cancellationToken)
+    {
+        if (!read.isSuccess)
+        {
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                WriteLog($"EDDN skipped {eventName}: {read.error}");
+            }
+
+            return false;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return IsCurrentSession(expectedSessionGeneration);
+    }
+
+    private void QueueCompanionMessage(
+        EddnPreparedMessage prepared,
+        CompanionCandidate candidate,
+        string eventName)
+    {
+        var signature = GetCompanionSignature(prepared);
+        if (signature is not null && !ReserveSignature(signature.Value))
+        {
+            return;
+        }
+
+        var queued = TryEnqueue(
+            prepared,
+            candidate.SessionGeneration,
+            candidate.IngestionGeneration,
+            rejected: signature is null
+                ? null
+                : () => ReleaseSignature(signature.Value));
+        if (queued)
+        {
+            return;
+        }
+
+        if (signature is not null)
+        {
+            ReleaseSignature(signature.Value);
+        }
+
+        if (IsCurrentSession(candidate.SessionGeneration))
+        {
+            WriteLog($"EDDN could not queue {eventName} for upload.");
+        }
+    }
+
+    private static bool IsExpectedCompanionException(Exception exception)
+    {
+        return exception is IOException
+            or JsonException
+            or UnauthorizedAccessException
+            or InvalidDataException;
     }
 
     private static (string Key, string Value)? GetCompanionSignature(
@@ -774,8 +850,7 @@ internal sealed class EddnSessionPublisher : IDisposable
 
     private void StopForCommanderChange(string eventCommander)
     {
-        enqueueGate.Wait();
-        try
+        lock (enqueueSync)
         {
             lock (sync)
             {
@@ -790,10 +865,6 @@ internal sealed class EddnSessionPublisher : IDisposable
             }
 
             disposal.Cancel();
-        }
-        finally
-        {
-            enqueueGate.Release();
         }
 
         WriteLog(
@@ -933,6 +1004,12 @@ internal sealed class EddnSessionPublisher : IDisposable
         bool? Odyssey,
         long SessionGeneration,
         long IngestionGeneration);
+
+    private sealed record CapturedEventState(
+        SignalBatch? SignalBatch,
+        EddnMessageContext Context,
+        bool SuppressForCrew,
+        long SessionGeneration);
 
     private sealed record SignalBatch(
         IReadOnlyList<JObject> Signals,
