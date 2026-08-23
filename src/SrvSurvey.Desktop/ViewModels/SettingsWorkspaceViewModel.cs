@@ -111,7 +111,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
     public void MoveSearchSelection(int delta)
     {
         var results = GetFlattenedResults();
-        if (results.Count == 0)
+        if (results.Length == 0)
         {
             SetSelectedSearchResult(-1);
             return;
@@ -120,12 +120,12 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
         int nextIndex;
         if (selectedSearchResultIndex < 0)
         {
-            nextIndex = delta < 0 ? results.Count - 1 : 0;
+            nextIndex = delta < 0 ? results.Length - 1 : 0;
         }
         else
         {
-            nextIndex = (selectedSearchResultIndex + delta + results.Count)
-                % results.Count;
+            nextIndex = (selectedSearchResultIndex + delta + results.Length)
+                % results.Length;
         }
 
         SetSelectedSearchResult(nextIndex);
@@ -160,7 +160,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
         SelectedCategory = Categories.Single(category => category.Key == key);
     }
 
-    private IReadOnlyList<SettingsSearchResultViewModel> GetFlattenedResults()
+    private SettingsSearchResultViewModel[] GetFlattenedResults()
     {
         return GroupedSearchResults.SelectMany(group => group.Results).ToArray();
     }
@@ -195,7 +195,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
     private void SetSelectedSearchResult(int index)
     {
         var results = GetFlattenedResults();
-        for (var resultIndex = 0; resultIndex < results.Count; resultIndex++)
+        for (var resultIndex = 0; resultIndex < results.Length; resultIndex++)
         {
             results[resultIndex].IsSelected = resultIndex == index;
         }
