@@ -177,6 +177,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private string? loadedSystemHistoryKey;
     private string? loadedSystemBodyDataKey;
     private string? loadedSystemBodyDataVisitKey;
+    private string? reservedSystemBodyDataLoadKey;
     private SystemBodyDataRetryState? systemBodyDataRetryState;
     private DateTimeOffset? systemBodyDataRetryAt;
     private int systemBodyDataRetryAttempts;
@@ -3673,6 +3674,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         if (!SystemSurvey.UseExternalData)
         {
             loadedSystemBodyDataKey = null;
+            reservedSystemBodyDataLoadKey = null;
             isSystemBodyDataLoadDeferred = false;
             CancelSystemBodyDataRequest();
             return;
@@ -3694,6 +3696,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             || activeSystemVisitedAt is not { } visitedAt)
         {
             loadedSystemBodyDataKey = null;
+            reservedSystemBodyDataLoadKey = null;
             isSystemBodyDataLoadDeferred = true;
             CancelSystemBodyDataRequest();
             return;
@@ -3702,6 +3705,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         if (!IsEliteGameSessionActive())
         {
             loadedSystemBodyDataKey = null;
+            reservedSystemBodyDataLoadKey = null;
             isSystemBodyDataLoadDeferred = true;
             CancelSystemBodyDataRequest();
             return;
@@ -3713,27 +3717,74 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             + systemAddress
             + "\n"
             + visitedAt.ToUniversalTime().Ticks;
-        if (!string.Equals(
-            loadedSystemBodyDataVisitKey,
-            visitKey,
-            StringComparison.Ordinal))
-        {
-            ResetSystemBodyDataRetryContext();
-            loadedSystemBodyDataVisitKey = visitKey;
-            systemBodyDataRetryState = await LoadSystemBodyDataRetryStateAsync(
-                activeProfileFrontierId,
-                systemAddress,
-                visitedAt);
-            if (systemBodyDataRetryState is { } restored)
-            {
-                systemBodyDataRetryAttempts = restored.AttemptCount;
-                systemBodyDataRetryAt = restored.RetryAt;
-            }
-        }
-
         var key = visitKey
             + "\nbiology="
             + SystemSurvey.UseExternalBioData;
+        if (string.Equals(
+            reservedSystemBodyDataLoadKey,
+            key,
+            StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var visitChanged = !string.Equals(
+            loadedSystemBodyDataVisitKey,
+            visitKey,
+            StringComparison.Ordinal);
+        var replacesReservation =
+            reservedSystemBodyDataLoadKey is not null;
+        if (visitChanged)
+        {
+            ResetSystemBodyDataRetryContext();
+            reservedSystemBodyDataLoadKey = key;
+            loadedSystemBodyDataVisitKey = visitKey;
+        }
+        else if (replacesReservation)
+        {
+            reservedSystemBodyDataLoadKey = key;
+        }
+
+        if (visitChanged || replacesReservation)
+        {
+            try
+            {
+                if (visitChanged)
+                {
+                    systemBodyDataRetryState =
+                        await LoadSystemBodyDataRetryStateAsync(
+                            activeProfileFrontierId,
+                            systemAddress,
+                            visitedAt);
+                }
+
+                if (!string.Equals(
+                    reservedSystemBodyDataLoadKey,
+                    key,
+                    StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                if (visitChanged
+                    && systemBodyDataRetryState is { } restored)
+                {
+                    systemBodyDataRetryAttempts = restored.AttemptCount;
+                    systemBodyDataRetryAt = restored.RetryAt;
+                }
+            }
+            finally
+            {
+                if (string.Equals(
+                    reservedSystemBodyDataLoadKey,
+                    key,
+                    StringComparison.Ordinal))
+                {
+                    reservedSystemBodyDataLoadKey = null;
+                }
+            }
+        }
+
         if (systemBodyDataRetryState is { } state
             && (state.IsComplete(SystemSurvey.UseExternalBioData)
                 || state.AttemptCount
@@ -3922,6 +3973,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private void ResetSystemBodyDataRetryContext()
     {
         loadedSystemBodyDataVisitKey = null;
+        reservedSystemBodyDataLoadKey = null;
         systemBodyDataRetryState = null;
         systemBodyDataRetryAt = null;
         systemBodyDataRetryAttempts = 0;
