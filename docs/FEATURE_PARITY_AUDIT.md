@@ -1,10 +1,10 @@
 # Legacy Feature Parity Audit
 
-Last audited: 2026-08-02
+Last audited: 2026-08-23
 
 This audit compares the current Avalonia working tree with the legacy
 application at `origin/main` commit
-`b592d991daa035ddda6682be52f3e55791c6ab29`. It treats a compiling screen as
+`b9cac22183f00d846fbbaca4c47a40d1677532c4`. It treats a compiling screen as
 insufficient evidence: a workflow needs a production implementation, durable
 state behavior where applicable, and focused assertions. Native integrations
 also need live verification on their supported operating systems.
@@ -26,7 +26,7 @@ runtime checklist below remains a release gate.
 | Legacy workflow | Legacy forms | Current surface |
 |---|---|---|
 | Overlay positioning | `FormAdjustOverlay` | `OverlayPositionEditorWindow`, shared layout store, live interaction controller |
-| Guardian surveys | `FormBeacons`, `FormEditMap`, `FormRamTah`, `FormRuins`, `FormShareData` | Guardian workspace, map renderer/editor, Ram Tah state, survey archive sharing |
+| Guardian surveys | `FormBeacons`, `FormEditMap`, `FormRamTah`, `FormRuins`, `FormShareData` | Guardian workspace, map renderer/editor, Ram Tah state, survey archive sharing; [backend contract audit](GUARDIAN_SURVEY_PARITY.md) |
 | Human-site authoring | `FormBuilder` | Human-site template authoring and live map workspace |
 | Search | `FormBoxelSearch`, `FormNearestSystems`, `FormSphereLimit` | Search workspace: boxel, nearest-system, and spherical-search sections |
 | Exobiology reference | `FormCodexBingo`, `FormPredictions`, `FormShowCodex` | Codex Bingo, predictions, Codex browser, and Exobiology workspace |
@@ -64,9 +64,10 @@ user workflows.
   recoverable. Its typed settings translation has a 133-control audit.
 - Network coverage inventories every runtime `HttpClient` owner and enforces
   bounded response handling for application-controlled downloads.
-- The current upstream delta after the prior `c8068866` baseline contains only
-  the two Eunostus documentation images; it introduces no new legacy runtime
-  behavior to port.
+- The last-five-commit upstream delta is dispositioned in `DEVELOPMENT.md`.
+  Guardian publication data, the Gamma T9 coordinate, and screenshot sizing
+  were absorbed; the remaining changes are already covered or do not share the
+  affected WinForms implementation.
 
 ## Runtime parity gates still open
 

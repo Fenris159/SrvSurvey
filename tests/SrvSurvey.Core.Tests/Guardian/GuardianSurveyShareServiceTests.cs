@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Text.Json;
 using SrvSurvey.Core.Guardian;
 
 namespace SrvSurvey.Core.Tests.Guardian;
@@ -115,6 +116,146 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
         using var archive = ZipFile.OpenRead(result.ArchivePath);
         var entry = Assert.Single(archive.Entries);
         Assert.Equal(Path.GetFileName(changedPath), entry.FullName);
+    }
+
+    [Fact]
+    public async Task CompleteSurveyRoundTripsIntoLegacyShareArchive()
+    {
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var survey = new GuardianCommanderSiteSurvey(
+            string.Empty,
+            "$Ancient_Tiny_001:#index=1;",
+            "Guardian Structure",
+            "Tester",
+            DateTimeOffset.Parse("2026-08-20T12:00:00Z"),
+            DateTimeOffset.Parse("2026-08-20T13:00:00Z"),
+            "Lacrosse",
+            1,
+            42,
+            "Test System",
+            1,
+            "Test System A 1",
+            "Complete field survey",
+            false,
+            new GuardianSurveyData
+            {
+                SiteType = "Lacrosse",
+                SiteHeading = 45,
+                Location = new GuardianSurfaceLocation(12.5, -34.25),
+                PoiStatuses = new Dictionary<string, GuardianPoiStatus>
+                {
+                    ["c1"] = GuardianPoiStatus.Present,
+                    ["p1"] = GuardianPoiStatus.Absent,
+                    ["p2"] = GuardianPoiStatus.Empty,
+                    ["t1"] = GuardianPoiStatus.Present,
+                },
+                RelicHeadings = new Dictionary<string, int>
+                {
+                    ["t1"] = 135,
+                },
+                ComponentMaterials = new Dictionary<
+                    string,
+                    GuardianComponentLoadout>
+                {
+                    ["c1"] = new GuardianComponentLoadout(
+                        "c1",
+                        [
+                            GuardianComponentMaterial.Cell,
+                            GuardianComponentMaterial.Conduit,
+                            GuardianComponentMaterial.Tech,
+                        ]),
+                    ["d1"] = new GuardianComponentLoadout(
+                        "d1",
+                        [GuardianComponentMaterial.Tech]),
+                },
+                RawPointsOfInterest =
+                [
+                    new GuardianPointOfInterest(
+                        "x1",
+                        GuardianPoiType.Urn,
+                        10.5,
+                        25,
+                        180),
+                ],
+            },
+            [new GuardianObelisk("A01", "H1", true, ["ca", "or"])],
+            new HashSet<char>(['A', 'B']));
+
+        await store.SaveAsync(FrontierId, true, survey);
+        var commanderData = await new GuardianCommanderDataReader(
+            temporaryDirectory).ReadAsync(FrontierId, true);
+        var loaded = Assert.Single(commanderData.Surveys);
+        var template = new GuardianSiteTemplate(
+            "Lacrosse",
+            "Lacrosse",
+            string.Empty,
+            new GuardianMapPoint(0, 0),
+            1,
+            [
+                new GuardianPointOfInterest(
+                    "c1", GuardianPoiType.Component, 0, 0, 0),
+                new GuardianPointOfInterest(
+                    "p1", GuardianPoiType.Orb, 0, 0, 0),
+                new GuardianPointOfInterest(
+                    "p2", GuardianPoiType.Casket, 0, 0, 0),
+                new GuardianPointOfInterest(
+                    "t1", GuardianPoiType.Relic, 0, 0, 0),
+            ],
+            [],
+            new Dictionary<string, GuardianMapPoint>());
+        var calculator = new GuardianSurveyCompletionCalculator(
+            new GuardianSiteTemplateCatalog([template]));
+
+        Assert.True(calculator.IsSurveyComplete(loaded.Survey));
+
+        var service = new GuardianSurveyShareService(
+            temporaryDirectory,
+            new GuardianPublishedSiteCatalog([]));
+        var result = await service.PrepareAsync(
+            FrontierId,
+            true,
+            commanderData);
+
+        var shared = Assert.Single(result.Sites);
+        Assert.Contains("No published survey", shared.Reasons);
+        Assert.Contains("Raw points of interest", shared.Reasons);
+        Assert.Contains("Component materials", shared.Reasons);
+        using var archive = ZipFile.OpenRead(result.ArchivePath);
+        var entry = Assert.Single(archive.Entries);
+        await using var entryStream = entry.Open();
+        using var document = await JsonDocument.ParseAsync(entryStream);
+        var root = document.RootElement;
+        Assert.Equal("Tester", root.GetProperty("commander").GetString());
+        Assert.Equal("Lacrosse", root.GetProperty("type").GetString());
+        Assert.Equal(45, root.GetProperty("siteHeading").GetInt32());
+        Assert.Equal(
+            "Complete field survey",
+            root.GetProperty("notes").GetString());
+        Assert.Equal(
+            12.5,
+            root.GetProperty("location").GetProperty("lat").GetDouble());
+        Assert.Equal(
+            -34.25,
+            root.GetProperty("location").GetProperty("long").GetDouble());
+        Assert.Equal("c1,t1", root.GetProperty("poiPresent").GetString());
+        Assert.Equal("p1", root.GetProperty("poiAbsent").GetString());
+        Assert.Equal("p2", root.GetProperty("poiEmpty").GetString());
+        Assert.Equal("AB", root.GetProperty("obeliskGroups").GetString());
+        Assert.Equal(
+            "A01!-ca,or-H1-",
+            root.GetProperty("activeObelisks")[0].GetString());
+        Assert.Equal(
+            135,
+            root.GetProperty("relicHeadings").GetProperty("t1").GetInt32());
+        Assert.Equal(
+            "urn",
+            root.GetProperty("rawPoi")[0].GetProperty("type").GetString());
+        Assert.Equal(
+            ["c1,cell,conduit,tech", "d1,tech"],
+            root.GetProperty("components")
+                .EnumerateArray()
+                .Select(item => item.GetString()!)
+                .ToArray());
     }
 
     [Fact]
