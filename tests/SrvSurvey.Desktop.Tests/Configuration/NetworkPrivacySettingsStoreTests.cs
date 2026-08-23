@@ -1,3 +1,4 @@
+using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -17,6 +18,48 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
         Assert.Equal(NetworkPrivacyPreferences.Default, preferences);
         Assert.False(preferences.EddnUploadEnabled);
         Assert.False(preferences.UploadHumanSettlementGeometry);
+    }
+
+    [Fact]
+    public void EddnConsentPersistsAndNotifiesOnlyWhenItChanges()
+    {
+        var store = CreateStore();
+        var viewModel = new NetworkPrivacyViewModel(store);
+        var changes = new List<bool>();
+        viewModel.EddnUploadEnabledChanged += changes.Add;
+
+        Assert.Equal("EDDN sharing is disabled.", viewModel.EddnConsentSummary);
+        Assert.True(viewModel.TrySetEddnUploadEnabled(true));
+        Assert.True(viewModel.TrySetEddnUploadEnabled(true));
+
+        Assert.True(viewModel.EddnUploadEnabled);
+        Assert.Equal(
+            "EDDN sharing is enabled for live Commander sessions.",
+            viewModel.EddnConsentSummary);
+        Assert.Equal([true], changes);
+        Assert.True(store.Load().EddnUploadEnabled);
+    }
+
+    [Fact]
+    public void EddnPublicationStatusAlwaysDescribesFixedTestSchemas()
+    {
+        var viewModel = new NetworkPrivacyViewModel(CreateStore());
+
+        viewModel.ReportPublicationResult(new EddnPublicationResult(
+            [
+                new EddnPublishedEvent("FSDJump", "schema/1/test", true),
+                new EddnPublishedEvent("Scan", "schema/1/test", true),
+            ],
+            []));
+
+        Assert.Equal(
+            "Queued 2 journal events for EDDN (test schemas).",
+            viewModel.StatusMessage);
+
+        viewModel.ReportPublicationResult(new EddnPublicationResult(
+            [],
+            ["EDDN warning"]));
+        Assert.Equal("EDDN warning", viewModel.StatusMessage);
     }
 
     [Fact]

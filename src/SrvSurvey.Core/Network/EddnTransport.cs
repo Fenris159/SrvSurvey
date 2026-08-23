@@ -53,17 +53,6 @@ namespace SrvSurvey.Core.Network
             };
         }
 
-        internal async Task<EddnUploadResult> upload(
-            JObject message,
-            string schemaRef,
-            UploadPayloadHeader header,
-            CancellationToken cancellationToken = default)
-        {
-            return await upload(
-                prepare(message, schemaRef, header),
-                cancellationToken).ConfigureAwait(false);
-        }
-
         internal static string NormalizeSchemaReference(string schemaRef)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(schemaRef);
@@ -73,6 +62,17 @@ namespace SrvSurvey.Core.Network
             }
 
             return TestSchemasEnabled ? schemaRef + "/test" : schemaRef;
+        }
+
+        internal async Task<EddnUploadResult> upload(
+            JObject message,
+            string schemaRef,
+            UploadPayloadHeader header,
+            CancellationToken cancellationToken = default)
+        {
+            return await upload(
+                prepare(message, schemaRef, header),
+                cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task<EddnUploadResult> upload(
