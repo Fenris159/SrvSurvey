@@ -84,6 +84,35 @@ public sealed class ScreenshotProcessingServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ScreenshotMatchingGameClientWidthIsNotMarkedHighResolution()
+    {
+        var sourceDirectory = Path.Combine(temporaryDirectory, "source");
+        var targetDirectory = Path.Combine(temporaryDirectory, "target");
+        Directory.CreateDirectory(sourceDirectory);
+        var sourcePath = Path.Combine(sourceDirectory, "Screenshot_0001.bmp");
+        CreateBitmap(sourcePath, SKColors.Cyan);
+
+        var result = await new ScreenshotProcessingService(() => 1920)
+            .ProcessAsync(
+            [
+                Parse(
+                    """
+                    {"timestamp":"2026-08-03T12:00:00Z","event":"Screenshot","Filename":"Screenshot_0001.bmp","Width":1920,"System":"Sol","Body":"Earth"}
+                    """),
+            ],
+            Preferences(sourceDirectory, targetDirectory) with
+            {
+                AddBanner = false,
+            },
+            null);
+
+        Assert.EndsWith(
+            "Earth (2026-08-03 120000).png",
+            Assert.Single(result.Conversions).OutputPath,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task BitmapIsBanneredEncodedVerifiedAndKeptByDefault()
     {
         var sourceDirectory = Path.Combine(temporaryDirectory, "source");

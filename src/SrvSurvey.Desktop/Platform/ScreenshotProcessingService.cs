@@ -1,11 +1,10 @@
 using System.Globalization;
 using System.Text;
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using SkiaSharp;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Platform;
 
@@ -30,13 +29,13 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
     private const string UnknownLabel = "unknown";
 
     private readonly SemaphoreSlim processingLock = new(1, 1);
-    private readonly Func<int?> primaryWorkingAreaWidthProvider;
+    private readonly Func<int?> gameClientWidthProvider;
 
     public ScreenshotProcessingService(
-        Func<int?>? primaryWorkingAreaWidthProvider = null)
+        Func<int?>? gameClientWidthProvider = null)
     {
-        this.primaryWorkingAreaWidthProvider = primaryWorkingAreaWidthProvider
-            ?? GetPrimaryWorkingAreaWidth;
+        this.gameClientWidthProvider = gameClientWidthProvider
+            ?? GetGameClientWidth;
     }
 
     public static string GetSystemFolderPath(
@@ -127,6 +126,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                 [$"The screenshot source folder does not exist: {sourceDirectory}"]);
         }
 
+        var gameClientWidth = gameClientWidthProvider();
         foreach (var entry in screenshots)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -140,7 +140,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                         commanderName,
                         guardianContext,
                         navigationContext,
-                        primaryWorkingAreaWidthProvider(),
+                        gameClientWidth,
                         sourceDirectory,
                         targetDirectory),
                     cancellationToken).ConfigureAwait(false);
@@ -172,7 +172,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         string? CommanderName,
         ScreenshotGuardianContext? GuardianContext,
         ScreenshotNavigationContext? NavigationContext,
-        int? PrimaryWorkingAreaWidth,
+        int? GameClientWidth,
         string SourceDirectory,
         string TargetDirectory);
 
@@ -212,7 +212,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         var baseName = SafeFileName(
             $"{bodyName} ({timestamp.UtcDateTime:yyyy-MM-dd HHmmss})"
             + GetGuardianFileSuffix(guardianContext)
-            + GetHighResolutionSuffix(entry, request.PrimaryWorkingAreaWidth));
+            + GetHighResolutionSuffix(entry, request.GameClientWidth));
         var outputPath = GetAvailablePath(folder, baseName, ".png");
         WritePngAtomically(output, outputPath);
 
@@ -344,12 +344,12 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
     private static string GetHighResolutionSuffix(
         JournalEventEnvelope entry,
-        int? primaryWorkingAreaWidth)
+        int? gameClientWidth)
     {
-        return primaryWorkingAreaWidth is > 0
+        return gameClientWidth is > 0
             && entry.Payload.TryGetProperty("Width", out var width)
             && width.TryGetInt32(out var screenshotWidth)
-            && screenshotWidth > primaryWorkingAreaWidth
+            && screenshotWidth > gameClientWidth
                 ? " (HighRes)"
                 : string.Empty;
     }
@@ -594,11 +594,12 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             $"{label}: {value.ToString($"F{decimals}", CultureInfo.InvariantCulture)}{suffix}");
     }
 
-    private static int? GetPrimaryWorkingAreaWidth()
+    private static int? GetGameClientWidth()
     {
-        return Application.Current?.ApplicationLifetime
-                is IClassicDesktopStyleApplicationLifetime { MainWindow: { } window }
-            ? window.Screens.Primary?.WorkingArea.Width
+        using var tracker = GameWindowTracker.CreateCurrent();
+        var snapshot = tracker.GetSnapshot();
+        return snapshot.IsAvailable
+            ? snapshot.ClientBounds.Width
             : null;
     }
 
