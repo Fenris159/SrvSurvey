@@ -86,6 +86,50 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     }
 
     [Fact]
+    public void FailedRuntimeTransitionRestoresPersistedEddnConsent()
+    {
+        var store = CreateStore();
+        var viewModel = new NetworkPrivacyViewModel(store);
+        var transitions = new List<bool>();
+        viewModel.EddnUploadEnabledChanged += enabled =>
+        {
+            transitions.Add(enabled);
+            if (enabled)
+            {
+                throw new InvalidOperationException(
+                    "simulated EDDN runtime failure");
+            }
+        };
+
+        var saved = viewModel.TrySetEddnUploadEnabled(true);
+
+        Assert.False(saved);
+        Assert.False(viewModel.EddnUploadEnabled);
+        Assert.False(store.Load().EddnUploadEnabled);
+        Assert.Equal([true, false], transitions);
+        Assert.Contains(
+            "previous choice was restored",
+            viewModel.StatusMessage,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void InvalidEddnConsentFallsBackToDisabled()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        File.WriteAllText(
+            path,
+            """
+            {"NetworkPrivacy":{"EddnUploadEnabled":"yes"}}
+            """);
+
+        var preferences = new NetworkPrivacySettingsStore(path).Load();
+
+        Assert.False(preferences.EddnUploadEnabled);
+    }
+
+    [Fact]
     public void PreferencesRoundTripWithoutRemovingOtherSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);

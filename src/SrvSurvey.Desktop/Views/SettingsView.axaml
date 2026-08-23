@@ -440,7 +440,8 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card raised"
+      <Border x:Name="EddnCard"
+              Classes="card raised"
               IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
           <StackPanel Spacing="8">
@@ -461,7 +462,8 @@
                        TextWrapping="Wrap"
                        Text="Review the data, Commander identity, retry storage, multi-client pause, and duplicate-uploader warning before changing this global setting." />
           </StackPanel>
-          <Button Grid.Column="1"
+          <Button x:Name="ConfigureEddnSharingButton"
+                  Grid.Column="1"
                   Classes="primary"
                   VerticalAlignment="Center"
                   Click="ConfigureEddnSharing_Click"

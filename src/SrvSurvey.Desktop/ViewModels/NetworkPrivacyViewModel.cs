@@ -41,13 +41,67 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
             return true;
         }
 
-        if (Update(preferences with { EddnUploadEnabled = value }))
+        var previous = preferences;
+        if (!Update(previous with { EddnUploadEnabled = value }))
+        {
+            return false;
+        }
+
+        try
         {
             EddnUploadEnabledChanged?.Invoke(value);
             return true;
         }
+        catch (Exception exception)
+        {
+            RollBackEddnConsent(previous, exception);
+            return false;
+        }
+    }
 
-        return false;
+    private void RollBackEddnConsent(
+        NetworkPrivacyPreferences previous,
+        Exception originalException)
+    {
+        preferences = previous;
+        List<string> rollbackErrors = [];
+        try
+        {
+            settingsStore.Save(previous);
+        }
+        catch (Exception exception)
+        {
+            rollbackErrors.Add(
+                "The previous consent could not be saved: "
+                    + exception.Message);
+        }
+
+        try
+        {
+            EddnUploadEnabledChanged?.Invoke(previous.EddnUploadEnabled);
+        }
+        catch (Exception exception)
+        {
+            rollbackErrors.Add(
+                "The EDDN runtime rollback failed: " + exception.Message);
+        }
+
+        OnPropertyChanged(string.Empty);
+        StatusMessage = rollbackErrors.Count == 0
+            ? "The EDDN sharing choice was not changed because the runtime transition failed; the previous choice was restored: "
+                + originalException.Message
+            : "The EDDN sharing choice could not be fully restored after the runtime transition failed: "
+                + originalException.Message
+                + Environment.NewLine
+                + string.Join(Environment.NewLine, rollbackErrors);
+    }
+
+    private static bool IsExpectedSettingsException(Exception exception)
+    {
+        return exception is IOException
+            or UnauthorizedAccessException
+            or InvalidDataException
+            or InvalidOperationException;
     }
 
     public bool UploadGreenGasGiantCandidates
@@ -156,11 +210,7 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
             StatusMessage = string.Empty;
             return true;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException)
+        catch (Exception exception) when (IsExpectedSettingsException(exception))
         {
             StatusMessage =
                 "The privacy preference was not changed because it could not be saved: "
