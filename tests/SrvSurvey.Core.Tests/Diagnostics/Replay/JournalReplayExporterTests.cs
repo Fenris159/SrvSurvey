@@ -166,8 +166,13 @@ public sealed class JournalReplayExporterTests
                 "{\"timestamp\":\"2026-08-21T18:00:03Z\",\"event\":\"Shutdown\"}",
             ]);
         var destination = Path.Combine(temp.Path, "older-range.srvreplay");
-        var exporter = new JournalReplayExporter(
-            new JournalHistoryReader(maximumLoadedEvents: 2));
+        var historyReader = new JournalHistoryReader(maximumLoadedEvents: 2);
+        var displaySnapshot = await historyReader.LoadAsync(
+            journals,
+            CancellationToken.None);
+        Assert.True(displaySnapshot.IsWindowed);
+        Assert.Equal(2, displaySnapshot.Events.Count);
+        var exporter = new JournalReplayExporter();
 
         var result = await exporter.ExportAsync(
             journals,

@@ -30,7 +30,7 @@ internal sealed class DiagnosticReplayContext
 
     public ReplayCommander Commander => Session.Commander;
 
-    public bool ExternalEffectsAllowed => false;
+    public static bool ExternalEffectsAllowed => false;
 
     public static async Task<DiagnosticReplayContext> LoadAsync(
         string manifestPath,
@@ -56,12 +56,18 @@ internal sealed class DiagnosticReplayContext
             bounds);
     }
 
-    public HttpClient CreateNetworkClient()
+    public static HttpClient CreateNetworkClient()
     {
         return new HttpClient(new DiagnosticReplayNetworkHandler())
         {
             Timeout = TimeSpan.FromSeconds(1),
         };
+    }
+
+    public static HttpClient? CreateNetworkClient(
+        DiagnosticReplayContext? context)
+    {
+        return context is null ? null : CreateNetworkClient();
     }
 
     private sealed class DiagnosticGameWindowTracker(PixelRect bounds)

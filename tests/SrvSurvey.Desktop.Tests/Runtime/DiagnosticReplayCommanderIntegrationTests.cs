@@ -28,7 +28,7 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
         var context = await DiagnosticReplayContext.LoadAsync(
             session.ManifestPath,
             CancellationToken.None);
-        using var blockedNetwork = context.CreateNetworkClient();
+        using var blockedNetwork = DiagnosticReplayContext.CreateNetworkClient();
         using var viewModel = MainWindowViewModelTestBuilder.Create(
             context.JournalDirectory,
             builder => builder
@@ -75,7 +75,7 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
         var context = await DiagnosticReplayContext.LoadAsync(
             session.ManifestPath,
             CancellationToken.None);
-        using var blockedNetwork = context.CreateNetworkClient();
+        using var blockedNetwork = DiagnosticReplayContext.CreateNetworkClient();
         using var viewModel = MainWindowViewModelTestBuilder.Create(
             context.JournalDirectory,
             builder => builder

@@ -38,7 +38,7 @@ internal sealed class AtomicReplayJournalWriter(
     }
 }
 
-public sealed class JournalReplayPlayer
+public sealed class JournalReplayPlayer : IDisposable
 {
     private readonly DiagnosticReplaySession session;
     private readonly IReplayDelay delay;
@@ -218,6 +218,10 @@ public sealed class JournalReplayPlayer
         }
     }
 
+    public void Dispose()
+    {
+        gate.Dispose();
+    }
 }
 
 internal sealed class SystemReplayDelay(
@@ -233,10 +237,7 @@ internal sealed class SystemReplayDelay(
         TimeSpan delay,
         CancellationToken cancellationToken)
     {
-        if (delay < TimeSpan.Zero)
-        {
-            throw new ArgumentOutOfRangeException(nameof(delay));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(delay, TimeSpan.Zero);
 
         var remaining = delay;
         while (remaining > TimeSpan.Zero)

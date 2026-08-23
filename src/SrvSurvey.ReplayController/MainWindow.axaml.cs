@@ -7,7 +7,10 @@ namespace SrvSurvey.ReplayController;
 
 public sealed partial class MainWindow : Window
 {
-    private readonly ReplayControllerViewModel viewModel;
+    private ReplayControllerViewModel ViewModel =>
+        DataContext as ReplayControllerViewModel
+        ?? throw new InvalidOperationException(
+            "The replay controller view model is unavailable.");
 
     public MainWindow()
     {
@@ -15,8 +18,7 @@ public sealed partial class MainWindow : Window
         var managedRoot = Path.Combine(
             AppDataPaths.ResolveCurrent().DataDirectory,
             "diagnostic-replays");
-        viewModel = new ReplayControllerViewModel(managedRoot);
-        DataContext = viewModel;
+        DataContext = new ReplayControllerViewModel(managedRoot);
         Closed += OnClosed;
     }
 
@@ -37,10 +39,12 @@ public sealed partial class MainWindow : Window
                     },
                 ],
             });
-        var path = files.FirstOrDefault()?.TryGetLocalPath();
+        var path = files.Count > 0
+            ? files[0].TryGetLocalPath()
+            : null;
         if (!string.IsNullOrWhiteSpace(path))
         {
-            await viewModel.ImportAsync(path);
+            await ViewModel.ImportAsync(path);
         }
     }
 
@@ -63,10 +67,12 @@ public sealed partial class MainWindow : Window
                     },
                 ],
             });
-        var path = files.FirstOrDefault()?.TryGetLocalPath();
+        var path = files.Count > 0
+            ? files[0].TryGetLocalPath()
+            : null;
         if (!string.IsNullOrWhiteSpace(path))
         {
-            viewModel.SrvSurveyExecutablePath = path;
+            ViewModel.SrvSurveyExecutablePath = path;
         }
     }
 
@@ -74,14 +80,14 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs eventArgs)
     {
-        await OpenDirectoryAsync(viewModel.SessionDirectory);
+        await OpenDirectoryAsync(ViewModel.SessionDirectory);
     }
 
     private async void OpenLogsFolder_Click(
         object? sender,
         RoutedEventArgs eventArgs)
     {
-        await OpenDirectoryAsync(viewModel.LogsDirectory);
+        await OpenDirectoryAsync(ViewModel.LogsDirectory);
     }
 
     private async Task OpenDirectoryAsync(string path)
@@ -95,6 +101,8 @@ public sealed partial class MainWindow : Window
     private async void OnClosed(object? sender, EventArgs eventArgs)
     {
         Closed -= OnClosed;
+        var viewModel = ViewModel;
+        DataContext = null;
         await viewModel.DisposeAsync();
     }
 }

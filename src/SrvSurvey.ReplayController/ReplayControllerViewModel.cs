@@ -136,18 +136,9 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         : "Validated: supported format, bounded JSON, commander bootstrap, "
             + "and checksum verified/recorded.";
 
-    public string FidelityStatus => session is null
-        ? string.Empty
-        : "Journal-first replay. Status, Cargo, ShipLocker, NavRoute, and "
-            + "Market timelines are not present in this format revision. "
-            + (session.PresentationSnapshot is null
-                ? "No overlay presentation snapshot was included."
-                : "Overlay enablement, layout, scale, opacity, and viewport are included.");
+    public string FidelityStatus => ResolveFidelityStatus();
 
-    public string TimeRangeText => session is null
-        ? string.Empty
-        : $"{FormatTimestamp(session.Events.FirstOrDefault()?.Timestamp)} to "
-            + FormatTimestamp(session.Events.LastOrDefault()?.Timestamp);
+    public string TimeRangeText => ResolveTimeRangeText();
 
     public string SrvSurveyExecutablePath
     {
@@ -244,7 +235,9 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
             player.PositionChanged += OnPlayerPositionChanged;
             sourcePath = Path.GetFullPath(path);
             CurrentEvent = null;
-            SelectedEvent = imported.Events.FirstOrDefault();
+            SelectedEvent = imported.Events.Count > 0
+                ? imported.Events[0]
+                : null;
             StatusMessage = $"Imported {imported.Events.Count:N0} events for "
                 + $"Commander {imported.Commander.Name}.";
             RaiseSessionProperties();
@@ -475,6 +468,10 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         }
         finally
         {
+            instanceMonitorCancellation?.Dispose();
+            instanceMonitorCancellation = null;
+            playbackCancellation?.Dispose();
+            playbackCancellation = null;
             IsBusy = false;
             operationGate.Release();
             operationGate.Dispose();
@@ -541,7 +538,10 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         var monitor = instanceMonitorTask;
         instanceMonitorCancellation = null;
         instanceMonitorTask = null;
-        monitorCancellation?.Cancel();
+        if (monitorCancellation is not null)
+        {
+            await monitorCancellation.CancelAsync();
+        }
         try
         {
             await current.StopAsync(cancellationToken);
@@ -606,7 +606,10 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
     private async Task PausePlaybackAsync()
     {
         var activePlayback = playbackTask;
-        playbackCancellation?.Cancel();
+        if (playbackCancellation is not null)
+        {
+            await playbackCancellation.CancelAsync();
+        }
         if (activePlayback is null)
         {
             return;
@@ -802,8 +805,35 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         if (player is not null)
         {
             player.PositionChanged -= OnPlayerPositionChanged;
+            player.Dispose();
             player = null;
         }
+    }
+
+    private string ResolveFidelityStatus()
+    {
+        if (session is null)
+        {
+            return string.Empty;
+        }
+
+        var presentationStatus = session.PresentationSnapshot is null
+            ? "No overlay presentation snapshot was included."
+            : "Overlay enablement, layout, scale, opacity, and viewport are included.";
+        return "Journal-first replay. Status, Cargo, ShipLocker, NavRoute, and "
+            + "Market timelines are not present in this format revision. "
+            + presentationStatus;
+    }
+
+    private string ResolveTimeRangeText()
+    {
+        if (session is null || session.Events.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return $"{FormatTimestamp(session.Events[0].Timestamp)} to "
+            + FormatTimestamp(session.Events[^1].Timestamp);
     }
 
     private static string ResolveDefaultExecutablePath()

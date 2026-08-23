@@ -24,6 +24,23 @@ public sealed class ReplaySessionManager
         WriteIndented = true,
         Converters = { new JsonStringEnumConverter() },
     };
+    private readonly Func<Guid> createSessionId;
+    private readonly Func<DateTimeOffset> getUtcNow;
+
+    public ReplaySessionManager()
+        : this(Guid.NewGuid, () => DateTimeOffset.UtcNow)
+    {
+    }
+
+    internal ReplaySessionManager(
+        Func<Guid> createSessionId,
+        Func<DateTimeOffset> getUtcNow)
+    {
+        this.createSessionId = createSessionId
+            ?? throw new ArgumentNullException(nameof(createSessionId));
+        this.getUtcNow = getUtcNow
+            ?? throw new ArgumentNullException(nameof(getUtcNow));
+    }
 
     public async Task<DiagnosticReplaySession> ImportAsync(
         string sourcePath,
@@ -55,10 +72,11 @@ public sealed class ReplaySessionManager
                 "The journal selected for replay is larger than the supported limit.");
         }
 
-        var sessionId = Guid.NewGuid();
+        var sessionId = createSessionId();
+        var createdAt = getUtcNow();
         var sessionDirectory = Path.Combine(
             Path.GetFullPath(managedRoot),
-            $"replay-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}-{sessionId:N}");
+            $"replay-{createdAt:yyyyMMdd-HHmmss}-{sessionId:N}");
         var sourceDirectory = Path.Combine(sessionDirectory, "source");
         var playbackDirectory = Path.Combine(sessionDirectory, "playback");
         var configDirectory = Path.Combine(sessionDirectory, "config");
@@ -120,12 +138,12 @@ public sealed class ReplaySessionManager
         var manifest = new DiagnosticReplayManifest(
             CurrentFormatVersion,
             sessionId,
-            DateTimeOffset.UtcNow,
+            createdAt,
             Path.GetFileName(fullSourcePath),
             sourceSha256,
             events.Count,
-            events.FirstOrDefault()?.Timestamp,
-            events.LastOrDefault()?.Timestamp,
+            events.Count > 0 ? events[0].Timestamp : null,
+            events.Count > 0 ? events[^1].Timestamp : null,
             package?.SourceVersion ?? "Unpackaged Elite journal",
             package?.PrivacyMode ?? ReplayPrivacyMode.Raw,
             commander,
@@ -250,53 +268,16 @@ public sealed class ReplaySessionManager
                     "The journal contains more events than the supported limit.");
             }
 
-            try
-            {
-                using var document = JsonDocument.Parse(
-                    line,
-                    new JsonDocumentOptions
-                    {
-                        AllowTrailingCommas = false,
-                        CommentHandling = JsonCommentHandling.Disallow,
-                        MaxDepth = 64,
-                    });
-                var root = document.RootElement;
-                if (root.ValueKind != JsonValueKind.Object
-                    || !TryGetString(root, "event", out var eventName))
-                {
-                    throw new InvalidDataException(
-                        $"Journal line {events.Count + 1:N0} does not contain an event name.");
-                }
-
-                DateTimeOffset? timestamp = null;
-                if (TryGetString(root, "timestamp", out var timestampText)
-                    && DateTimeOffset.TryParse(
-                        timestampText,
-                        System.Globalization.CultureInfo.InvariantCulture,
-                        System.Globalization.DateTimeStyles.AssumeUniversal,
-                        out var parsedTimestamp))
-                {
-                    timestamp = parsedTimestamp;
-                }
-
-                events.Add(new JournalReplayEvent(
-                    events.Count,
-                    timestamp,
-                    eventName,
-                    line));
-            }
-            catch (JsonException) when (
-                allowIncompleteFinalLine && nextLine is null)
+            var replayEvent = ParseReplayEvent(
+                line,
+                events.Count,
+                allowIncompleteFinalLine && nextLine is null);
+            if (replayEvent is null)
             {
                 break;
             }
-            catch (JsonException exception)
-            {
-                throw new InvalidDataException(
-                    $"Journal line {events.Count + 1:N0} is not valid JSON.",
-                    exception);
-            }
 
+            events.Add(replayEvent);
             line = nextLine;
         }
 
@@ -309,6 +290,64 @@ public sealed class ReplaySessionManager
         return events;
     }
 
+    private static JournalReplayEvent? ParseReplayEvent(
+        string line,
+        int eventIndex,
+        bool allowIncomplete)
+    {
+        JsonDocument document;
+        try
+        {
+            document = JsonDocument.Parse(
+                line,
+                new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = false,
+                    CommentHandling = JsonCommentHandling.Disallow,
+                    MaxDepth = 64,
+                });
+        }
+        catch (JsonException) when (allowIncomplete)
+        {
+            return null;
+        }
+        catch (JsonException exception)
+        {
+            throw new InvalidDataException(
+                $"Journal line {eventIndex + 1:N0} is not valid JSON.",
+                exception);
+        }
+
+        using (document)
+        {
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object
+                || !TryGetString(root, "event", out var eventName))
+            {
+                throw new InvalidDataException(
+                    $"Journal line {eventIndex + 1:N0} does not contain an event name.");
+            }
+
+            return new JournalReplayEvent(
+                eventIndex,
+                ParseTimestamp(root),
+                eventName,
+                line);
+        }
+    }
+
+    private static DateTimeOffset? ParseTimestamp(JsonElement root)
+    {
+        return TryGetString(root, "timestamp", out var timestampText)
+            && DateTimeOffset.TryParse(
+                timestampText,
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.AssumeUniversal,
+                out var timestamp)
+                ? timestamp
+                : null;
+    }
+
     internal sealed class BoundedJournalLineReader(TextReader reader)
     {
         private readonly char[] buffer = new char[64 * 1024];
@@ -319,22 +358,14 @@ public sealed class ReplaySessionManager
             int maximumCharacters,
             CancellationToken cancellationToken)
         {
-            StringBuilder? line = null;
+            var line = new StringBuilder(256);
             var characterCount = 0;
             while (true)
             {
-                if (offset >= count)
+                if (offset >= count
+                    && !await FillBufferAsync(cancellationToken))
                 {
-                    count = await reader.ReadAsync(
-                        buffer.AsMemory(),
-                        cancellationToken);
-                    offset = 0;
-                    if (count == 0)
-                    {
-                        return characterCount == 0
-                            ? null
-                            : line?.ToString() ?? string.Empty;
-                    }
+                    return characterCount == 0 ? null : line.ToString();
                 }
 
                 var newline = Array.IndexOf(
@@ -344,15 +375,10 @@ public sealed class ReplaySessionManager
                     count - offset);
                 var segmentEnd = newline >= 0 ? newline : count;
                 var segmentLength = segmentEnd - offset;
-                if (characterCount + segmentLength > maximumCharacters)
-                {
-                    throw new InvalidDataException(
-                        "A journal line is larger than the supported limit.");
-                }
-
-                line ??= new StringBuilder(Math.Min(
-                    maximumCharacters,
-                    Math.Max(segmentLength, 256)));
+                ValidateLineLength(
+                    characterCount,
+                    segmentLength,
+                    maximumCharacters);
                 line.Append(buffer, offset, segmentLength);
                 characterCount += segmentLength;
                 offset = newline >= 0 ? newline + 1 : count;
@@ -369,6 +395,29 @@ public sealed class ReplaySessionManager
                 return line.ToString();
             }
         }
+
+        private async Task<bool> FillBufferAsync(
+            CancellationToken cancellationToken)
+        {
+            count = await reader.ReadAsync(
+                buffer.AsMemory(),
+                cancellationToken);
+            offset = 0;
+            return count > 0;
+        }
+
+        private static void ValidateLineLength(
+            int characterCount,
+            int segmentLength,
+            int maximumCharacters)
+        {
+            if (characterCount + segmentLength > maximumCharacters)
+            {
+                throw new InvalidDataException(
+                    "A journal line is larger than the supported limit.");
+            }
+        }
+
     }
 
     internal static ReplayCommander ResolveCommander(
@@ -481,10 +530,7 @@ public sealed class ReplaySessionManager
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(destination);
-        if (maximumBytes < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maximumBytes));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(maximumBytes);
 
         var buffer = new byte[64 * 1024];
         long written = 0;
@@ -575,7 +621,8 @@ public sealed class ReplaySessionManager
         JournalReplayPackageManifest package;
         try
         {
-            await using var manifestStream = manifests[0].Open();
+            await using var manifestStream = await manifests[0].OpenAsync(
+                cancellationToken);
             await using var boundedManifest = new MemoryStream();
             await CopyBoundedAsync(
                 manifestStream,
@@ -600,7 +647,8 @@ public sealed class ReplaySessionManager
 
         ValidatePackageMetadata(package);
 
-        await using var source = journals[0].Open();
+        await using var source = await journals[0].OpenAsync(
+            cancellationToken);
         await using var destination = new FileStream(
             journalDestination,
             FileMode.CreateNew,
@@ -627,7 +675,7 @@ public sealed class ReplaySessionManager
     {
         var normalized = entry.FullName.Replace('\\', '/');
         if (string.IsNullOrWhiteSpace(normalized)
-            || normalized.StartsWith("/", StringComparison.Ordinal)
+            || normalized.StartsWith('/')
             || Path.IsPathRooted(normalized)
             || normalized.Split('/').Any(segment => segment == ".."))
         {

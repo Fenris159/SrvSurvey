@@ -37,7 +37,7 @@ public sealed class DiagnosticReplayContextTests
             Path.GetDirectoryName(session.PlaybackJournalPath),
             context.JournalDirectory);
         Assert.Equal("Replay Cmdr", context.Commander.Name);
-        Assert.False(context.ExternalEffectsAllowed);
+        Assert.False(DiagnosticReplayContext.ExternalEffectsAllowed);
         Assert.True(snapshot.IsAvailable);
         Assert.True(snapshot.IsVisible);
         Assert.True(snapshot.IsForeground);
@@ -112,7 +112,7 @@ public sealed class DiagnosticReplayContextTests
         var context = await DiagnosticReplayContext.LoadAsync(
             session.ManifestPath,
             CancellationToken.None);
-        using var client = context.CreateNetworkClient();
+        using var client = DiagnosticReplayContext.CreateNetworkClient();
 
         var exception = await Assert.ThrowsAsync<HttpRequestException>(
             () => client.GetAsync(
@@ -140,7 +140,7 @@ public sealed class DiagnosticReplayContextTests
         var context = await DiagnosticReplayContext.LoadAsync(
             session.ManifestPath,
             CancellationToken.None);
-        using var client = context.CreateNetworkClient();
+        using var client = DiagnosticReplayContext.CreateNetworkClient();
         var viewModel = new NearestSystemsViewModel(
             new NearestSystemsClient(client),
             new EmptySystemResolver());

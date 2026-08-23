@@ -213,6 +213,28 @@ public sealed class ReplayControllerViewModelTests
         Assert.Equal(2, launcher.Instances.Count);
     }
 
+    [Fact]
+    public async Task DisposalReleasesTheOwnedReplayPlayer()
+    {
+        using var temp = new TemporaryDirectory();
+        var (journalPath, _) = await CreateInputsAsync(temp.Path);
+        JournalReplayPlayer? ownedPlayer = null;
+        var viewModel = new ReplayControllerViewModel(
+            Path.Combine(temp.Path, "sessions"),
+            playerFactory: session =>
+            {
+                ownedPlayer = new JournalReplayPlayer(session);
+                return ownedPlayer;
+            });
+        Assert.True(await viewModel.ImportAsync(journalPath));
+
+        await viewModel.DisposeAsync();
+
+        var disposedPlayer = Assert.IsType<JournalReplayPlayer>(ownedPlayer);
+        await Assert.ThrowsAsync<ObjectDisposedException>(() =>
+            disposedPlayer.StepAsync(CancellationToken.None));
+    }
+
     private static async Task<(string JournalPath, string Executable)>
         CreateInputsAsync(string root)
     {

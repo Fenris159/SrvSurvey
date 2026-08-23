@@ -33,10 +33,7 @@ public sealed class JournalHistoryReader
     public JournalHistoryReader(
         int maximumLoadedEvents = DefaultMaximumLoadedEvents)
     {
-        if (maximumLoadedEvents <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maximumLoadedEvents));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maximumLoadedEvents);
 
         this.maximumLoadedEvents = maximumLoadedEvents;
     }
@@ -96,7 +93,7 @@ public sealed class JournalHistoryReader
             lastTimestamp);
     }
 
-    public async IAsyncEnumerable<JournalHistoryEvent> StreamAsync(
+    public static async IAsyncEnumerable<JournalHistoryEvent> StreamAsync(
         string journalDirectory,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -163,75 +160,91 @@ public sealed class JournalHistoryReader
                         "The journal history contains more events than the supported diagnostic limit.");
                 }
 
-                JsonDocument? document = null;
-                try
-                {
-                    document = JsonDocument.Parse(
-                        line,
-                        new JsonDocumentOptions
-                        {
-                            AllowTrailingCommas = false,
-                            CommentHandling = JsonCommentHandling.Disallow,
-                            MaxDepth = 64,
-                        });
-                }
-                catch (JsonException) when (nextLine is null)
-                {
-                    // The live journal may end with a partially written event.
-                }
-                catch (JsonException exception)
-                {
-                    throw new InvalidDataException(
-                        $"Journal line {eventIndex + 1:N0} is not valid JSON.",
-                        exception);
-                }
-
-                if (document is null)
+                var historyEvent = ParseHistoryEvent(
+                    line,
+                    path,
+                    eventIndex,
+                    allowIncomplete: nextLine is null);
+                if (historyEvent is null)
                 {
                     break;
                 }
 
-                using (document)
-                {
-                    var root = document.RootElement;
-                    if (root.ValueKind != JsonValueKind.Object
-                        || !ReplaySessionManager.TryGetString(
-                            root,
-                            "event",
-                            out var eventName))
-                    {
-                        throw new InvalidDataException(
-                            $"Journal line {eventIndex + 1:N0} does not contain an event name.");
-                    }
-
-                    DateTimeOffset? timestamp = null;
-                    if (ReplaySessionManager.TryGetString(
-                            root,
-                            "timestamp",
-                            out var timestampText)
-                        && DateTimeOffset.TryParse(
-                            timestampText,
-                            System.Globalization.CultureInfo.InvariantCulture,
-                            System.Globalization.DateTimeStyles.AssumeUniversal,
-                            out var parsedTimestamp))
-                    {
-                        timestamp = parsedTimestamp;
-                    }
-
-                    yield return new JournalHistoryEvent(
-                        eventIndex,
-                        Path.GetFileName(path),
-                        timestamp,
-                        eventName,
-                        GetCommanderName(root, eventName),
-                        GetSystemName(root),
-                        line);
-                }
+                yield return historyEvent;
 
                 eventIndex++;
                 line = nextLine;
             }
         }
+    }
+
+    private static JournalHistoryEvent? ParseHistoryEvent(
+        string line,
+        string path,
+        int eventIndex,
+        bool allowIncomplete)
+    {
+        JsonDocument document;
+        try
+        {
+            document = JsonDocument.Parse(
+                line,
+                new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = false,
+                    CommentHandling = JsonCommentHandling.Disallow,
+                    MaxDepth = 64,
+                });
+        }
+        catch (JsonException) when (allowIncomplete)
+        {
+            // The live journal may end with a partially written event.
+            return null;
+        }
+        catch (JsonException exception)
+        {
+            throw new InvalidDataException(
+                $"Journal line {eventIndex + 1:N0} is not valid JSON.",
+                exception);
+        }
+
+        using (document)
+        {
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object
+                || !ReplaySessionManager.TryGetString(
+                    root,
+                    "event",
+                    out var eventName))
+            {
+                throw new InvalidDataException(
+                    $"Journal line {eventIndex + 1:N0} does not contain an event name.");
+            }
+
+            return new JournalHistoryEvent(
+                eventIndex,
+                Path.GetFileName(path),
+                GetTimestamp(root),
+                eventName,
+                GetCommanderName(root, eventName),
+                GetSystemName(root),
+                line);
+        }
+    }
+
+    private static DateTimeOffset? GetTimestamp(JsonElement root)
+    {
+        return ReplaySessionManager.TryGetString(
+                root,
+                "timestamp",
+                out var timestampText)
+            && DateTimeOffset.TryParse(
+                timestampText,
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.AssumeUniversal,
+                out var timestamp)
+                ? timestamp
+                : null;
     }
 
     private static string? GetCommanderName(

@@ -12,8 +12,14 @@ internal sealed class DiagnosticReplayFrontierAccountService
 {
     public event EventHandler? AuthorizationCallbackReceived
     {
-        add { }
-        remove { }
+        add
+        {
+            _ = value;
+        }
+        remove
+        {
+            _ = value;
+        }
     }
 
     public void SetActiveCommander(string? frontierId, string? commanderName)
@@ -54,8 +60,7 @@ internal sealed class DiagnosticReplayFrontierAccountService
     public Task<FrontierAccountSnapshot> RefreshAsync(
         CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        throw Unavailable();
+        return ConnectAsync(cancellationToken);
     }
 
     public Task UnlinkAsync(CancellationToken cancellationToken = default)

@@ -89,19 +89,18 @@ internal sealed partial class DesktopRuntime
 
         var diagnosticReplay = startup.DiagnosticReplay;
         diagnosticReplayContext = diagnosticReplay;
-        var externalNetworkClient = diagnosticReplay?.CreateNetworkClient();
+        var externalNetworkClient = DiagnosticReplayContext.CreateNetworkClient(
+            diagnosticReplay);
         diagnosticNetworkClientOwnership = externalNetworkClient;
         var appDataPaths = startup.AppDataPathsOverride
             ?? AppDataPaths.ResolveCurrent();
         var applicationLog = startup.ApplicationLog
             ?? new ApplicationLogService(appDataPaths.DataDirectory);
         applicationLogService = applicationLog;
-        if (diagnosticReplay is null)
-        {
-            MigrateLegacyOverlayLayout(appDataPaths, applicationLog);
-            MigrateLegacyUiSettings(appDataPaths, applicationLog);
-            MigrateLegacyOrganicProfiles(appDataPaths, applicationLog);
-        }
+        MigrateLegacyStateIfNeeded(
+            diagnosticReplay,
+            appDataPaths,
+            applicationLog);
 
         var overlayTheme = LoadOverlayTheme(appDataPaths, applicationLog);
         var overlayLayoutStore = new LegacyOverlayLayoutStore(
@@ -157,23 +156,13 @@ internal sealed partial class DesktopRuntime
             DesktopStartupCheckpoint.OverlayInfrastructureReady);
         var configuredJournalDirectory = diagnosticReplay?.JournalDirectory
             ?? StartupOptions.GetJournalDirectory(startup.Arguments);
-        var commandLineFrontierId = diagnosticReplay is null
-            ? StartupOptions.GetFrontierId(startup.Arguments)
-            : null;
         var commanderPreferenceStore = new CommanderPreferenceSettingsStore(
             appDataPaths.UiSettingsPath);
-        var commanderPreferenceResolution = diagnosticReplay is null
-            ? new CommanderPreferenceResolver(
-                    commanderPreferenceStore,
-                    new CommanderProfileCatalog(appDataPaths.DataDirectory))
-                .ResolveAsync(commandLineFrontierId, CancellationToken.None)
-                .GetAwaiter()
-                .GetResult()
-            : new CommanderPreferenceResolution(
-                TargetFrontierId: null,
-                IsCommandLineOverride: false,
-                StatusMessage:
-                    "Diagnostic replay is waiting for commander identity from the imported journal.");
+        var commanderPreferenceResolution = ResolveCommanderPreference(
+            diagnosticReplay,
+            startup.Arguments,
+            commanderPreferenceStore,
+            appDataPaths.DataDirectory);
         if (commanderPreferenceResolution.StatusMessage is not null)
         {
             applicationLog.Append(
@@ -938,6 +927,46 @@ internal sealed partial class DesktopRuntime
             suitSuppressed: false,
             sessionSuppressed: false);
         OverlayWindowRegistry.Shared.SetPriorityFacts(default);
+    }
+
+    private static CommanderPreferenceResolution ResolveCommanderPreference(
+        DiagnosticReplayContext? diagnosticReplay,
+        IReadOnlyList<string> startupArguments,
+        CommanderPreferenceSettingsStore preferenceStore,
+        string dataDirectory)
+    {
+        if (diagnosticReplay is not null)
+        {
+            return new CommanderPreferenceResolution(
+                TargetFrontierId: null,
+                IsCommandLineOverride: false,
+                StatusMessage:
+                    "Diagnostic replay is waiting for commander identity from the imported journal.");
+        }
+
+        var commandLineFrontierId = StartupOptions.GetFrontierId(
+            startupArguments);
+        return new CommanderPreferenceResolver(
+                preferenceStore,
+                new CommanderProfileCatalog(dataDirectory))
+            .ResolveAsync(commandLineFrontierId, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    private static void MigrateLegacyStateIfNeeded(
+        DiagnosticReplayContext? diagnosticReplay,
+        AppDataPaths appDataPaths,
+        ApplicationLogService applicationLog)
+    {
+        if (diagnosticReplay is not null)
+        {
+            return;
+        }
+
+        MigrateLegacyOverlayLayout(appDataPaths, applicationLog);
+        MigrateLegacyUiSettings(appDataPaths, applicationLog);
+        MigrateLegacyOrganicProfiles(appDataPaths, applicationLog);
     }
 
     private void DisposeResource<T>(ref T? resource)

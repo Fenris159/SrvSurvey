@@ -31,6 +31,7 @@ public sealed record JournalReplayExportResult(
 public sealed class JournalReplayExporter
 {
     public const int CurrentPackageFormatVersion = 1;
+    private const string CommanderJournalName = "Commander";
 
     private static readonly JsonSerializerOptions PackageJson = new()
     {
@@ -45,28 +46,15 @@ public sealed class JournalReplayExporter
         IAsyncEnumerable<JournalHistoryEvent>> streamHistory;
 
     public JournalReplayExporter()
-        : this(new ZipReplayPackageWriter(), new JournalHistoryReader())
+        : this(
+            new ZipReplayPackageWriter(),
+            JournalHistoryReader.StreamAsync)
     {
     }
 
     internal JournalReplayExporter(IReplayPackageWriter packageWriter)
-        : this(packageWriter, new JournalHistoryReader())
+        : this(packageWriter, JournalHistoryReader.StreamAsync)
     {
-    }
-
-    internal JournalReplayExporter(JournalHistoryReader historyReader)
-        : this(new ZipReplayPackageWriter(), historyReader)
-    {
-    }
-
-    internal JournalReplayExporter(
-        IReplayPackageWriter packageWriter,
-        JournalHistoryReader historyReader)
-    {
-        this.packageWriter = packageWriter
-            ?? throw new ArgumentNullException(nameof(packageWriter));
-        ArgumentNullException.ThrowIfNull(historyReader);
-        streamHistory = historyReader.StreamAsync;
     }
 
     internal JournalReplayExporter(
@@ -217,14 +205,11 @@ public sealed class JournalReplayExporter
             if (selectedEventCount == 0)
             {
                 bootstrap = bootstrapSelector.Snapshot();
-                foreach (var bootstrapEvent in bootstrap)
-                {
-                    identityBuilder?.Observe(bootstrapEvent);
-                    commander ??= TryReadCommander(bootstrapEvent);
-                    AppendRawEvent(inputHash, bootstrapEvent.RawJson);
-                    inputByteCount += Encoding.UTF8.GetByteCount(
-                        bootstrapEvent.RawJson) + 1L;
-                }
+                inputByteCount += ScanBootstrap(
+                    bootstrap,
+                    identityBuilder,
+                    inputHash,
+                    ref commander);
 
                 firstTimestamp = bootstrap.Length > 0
                     ? bootstrap[0].Timestamp
@@ -263,6 +248,25 @@ public sealed class JournalReplayExporter
             commander,
             identityBuilder?.Build() ?? [],
             Convert.ToHexStringLower(inputHash.GetHashAndReset()));
+    }
+
+    private static long ScanBootstrap(
+        IReadOnlyList<JournalReplayEvent> bootstrap,
+        IdentityRedactionBuilder? identityBuilder,
+        IncrementalHash inputHash,
+        ref ReplayCommander? commander)
+    {
+        long inputByteCount = 0;
+        foreach (var bootstrapEvent in bootstrap)
+        {
+            identityBuilder?.Observe(bootstrapEvent);
+            commander ??= TryReadCommander(bootstrapEvent);
+            AppendRawEvent(inputHash, bootstrapEvent.RawJson);
+            inputByteCount += Encoding.UTF8.GetByteCount(
+                bootstrapEvent.RawJson) + 1L;
+        }
+
+        return inputByteCount;
     }
 
     private async Task<string> WriteJournalSpoolAsync(
@@ -393,7 +397,9 @@ public sealed class JournalReplayExporter
         JournalReplayPackageManifest expected,
         CancellationToken cancellationToken)
     {
-        using var archive = ZipFile.OpenRead(path);
+        using var archive = await ZipFile.OpenReadAsync(
+            path,
+            cancellationToken);
         var manifestEntry = archive.GetEntry("replay-package.json")
             ?? throw new InvalidDataException(
                 "The completed replay package is missing its manifest.");
@@ -408,7 +414,8 @@ public sealed class JournalReplayExporter
         }
 
         JournalReplayPackageManifest actual;
-        await using (var stream = manifestEntry.Open())
+        await using (var stream = await manifestEntry.OpenAsync(
+                         cancellationToken))
         {
             actual = await JsonSerializer
                 .DeserializeAsync<JournalReplayPackageManifest>(
@@ -420,7 +427,8 @@ public sealed class JournalReplayExporter
         }
 
         ReplaySessionManager.ValidatePackageMetadata(actual);
-        await using var journal = journalEntry.Open();
+        await using var journal = await journalEntry.OpenAsync(
+            cancellationToken);
         var checksum = Convert.ToHexStringLower(
             await SHA256.HashDataAsync(journal, cancellationToken));
         if (actual.FormatVersion != expected.FormatVersion
@@ -470,15 +478,15 @@ public sealed class JournalReplayExporter
     private static ReplayCommander? TryReadCommander(
         JournalReplayEvent replayEvent)
     {
-        if (replayEvent.EventName is not "Commander" and not "LoadGame")
+        if (replayEvent.EventName is not CommanderJournalName and not "LoadGame")
         {
             return null;
         }
 
         using var document = JsonDocument.Parse(replayEvent.RawJson);
-        var nameProperty = replayEvent.EventName == "Commander"
+        var nameProperty = replayEvent.EventName == CommanderJournalName
             ? "Name"
-            : "Commander";
+            : CommanderJournalName;
         return ReplaySessionManager.TryGetString(
                 document.RootElement,
                 nameProperty,
@@ -574,6 +582,33 @@ public sealed class JournalReplayExporter
         LocationRedactionState locations,
         string? systemIdentity)
     {
+        var redactedValue = RedactValue(
+            node,
+            propertyName,
+            identities,
+            locations,
+            systemIdentity);
+        if (redactedValue is not null)
+        {
+            return redactedValue;
+        }
+
+        RedactChildren(
+            node,
+            propertyName,
+            identities,
+            locations,
+            systemIdentity);
+        return node;
+    }
+
+    private static JsonNode? RedactValue(
+        JsonNode node,
+        string? propertyName,
+        IReadOnlyList<IdentityRedaction> identities,
+        LocationRedactionState locations,
+        string? systemIdentity)
+    {
         if (propertyName is not null
             && LocationNameProperties.Contains(propertyName)
             && node is JsonValue locationValue
@@ -585,7 +620,7 @@ public sealed class JournalReplayExporter
                 locations.Names.Add(locationName, replacement);
             }
 
-            return JsonValue.Create(replacement)!;
+            return JsonValue.Create(replacement);
         }
 
         if (propertyName is not null
@@ -603,7 +638,7 @@ public sealed class JournalReplayExporter
                 locations.Ids.Add(key, replacement);
             }
 
-            return JsonValue.Create(replacement)!;
+            return JsonValue.Create(replacement);
         }
 
         if (propertyName is not null
@@ -615,15 +650,25 @@ public sealed class JournalReplayExporter
                     (JsonNode?)JsonValue.Create(0d)).ToArray());
             }
 
-            return JsonValue.Create(0d)!;
+            return JsonValue.Create(0d);
         }
 
         if (node is JsonValue value
             && value.TryGetValue<string>(out var text))
         {
-            return JsonValue.Create(ReplaceSensitiveText(text, identities))!;
+            return JsonValue.Create(ReplaceSensitiveText(text, identities));
         }
 
+        return null;
+    }
+
+    private static void RedactChildren(
+        JsonNode node,
+        string? propertyName,
+        IReadOnlyList<IdentityRedaction> identities,
+        LocationRedactionState locations,
+        string? systemIdentity)
+    {
         if (node is JsonObject objectNode)
         {
             var objectSystemIdentity = ResolveSystemIdentity(
@@ -659,8 +704,6 @@ public sealed class JournalReplayExporter
                 }
             }
         }
-
-        return node;
     }
 
     private static string? ResolveSystemIdentity(
@@ -847,7 +890,7 @@ public sealed class JournalReplayExporter
             commanders.Add(commander);
         }
 
-        public IReadOnlyList<IdentityRedaction> Build()
+        public IdentityRedaction[] Build()
         {
             return commanders
                 .Select((commander, index) => new IdentityRedaction(
@@ -908,7 +951,7 @@ public sealed class JournalReplayExporter
 
                 if (string.Equals(
                         replayEvent.EventName,
-                        "Commander",
+                        CommanderJournalName,
                         StringComparison.Ordinal))
                 {
                     commanderEvent = replayEvent;
@@ -989,12 +1032,9 @@ public sealed class JournalReplayExporter
 
         if (node is JsonArray arrayNode)
         {
-            foreach (var child in arrayNode)
+            foreach (var child in arrayNode.OfType<JsonNode>())
             {
-                if (child is not null)
-                {
-                    RemoveCredentialProperties(child);
-                }
+                RemoveCredentialProperties(child);
             }
         }
     }
@@ -1044,7 +1084,8 @@ internal sealed class ZipReplayPackageWriter : IReplayPackageWriter
         var manifestEntry = archive.CreateEntry(
             "replay-package.json",
             CompressionLevel.Optimal);
-        await using (var manifestStream = manifestEntry.Open())
+        await using (var manifestStream = await manifestEntry.OpenAsync(
+                         cancellationToken))
         {
             await JsonSerializer.SerializeAsync(
                 manifestStream,
@@ -1056,7 +1097,8 @@ internal sealed class ZipReplayPackageWriter : IReplayPackageWriter
         var journalEntry = archive.CreateEntry(
             "journal.jsonl",
             CompressionLevel.Optimal);
-        await using var journalStream = journalEntry.Open();
+        await using var journalStream = await journalEntry.OpenAsync(
+            cancellationToken);
         await using var journalInput = new FileStream(
             journalPath,
             FileMode.Open,
@@ -1125,6 +1167,22 @@ internal static class ReplayPresentationSnapshotValidator
             return;
         }
 
+        ValidateSnapshotHeader(snapshot);
+        foreach (var entry in snapshot.OverlayEnablement)
+        {
+            ValidateName(entry.Key);
+        }
+
+        foreach (var entry in snapshot.OverlayPlacements)
+        {
+            ValidateName(entry.Key);
+            ValidatePlacement(entry.Value);
+        }
+    }
+
+    private static void ValidateSnapshotHeader(
+        ReplayPresentationSnapshot snapshot)
+    {
         if (snapshot.ViewportWidth is < 320 or > 16_384
             || snapshot.ViewportHeight is < 200 or > 16_384
             || snapshot.GlobalScaleIndex is < 0 or > 100
@@ -1138,30 +1196,23 @@ internal static class ReplayPresentationSnapshotValidator
             throw new InvalidDataException(
                 "The replay overlay presentation snapshot is invalid.");
         }
+    }
 
-        foreach (var entry in snapshot.OverlayEnablement)
+    private static void ValidatePlacement(ReplayOverlayPlacement? placement)
+    {
+        if (placement is null
+            || !Enum.IsDefined(placement.Horizontal)
+            || !Enum.IsDefined(placement.Vertical)
+            || Math.Abs((long)placement.HorizontalOffset) > 100_000
+            || Math.Abs((long)placement.VerticalOffset) > 100_000
+            || placement.Opacity is { } itemOpacity
+                && (!double.IsFinite(itemOpacity)
+                    || itemOpacity is < 0 or > 1)
+            || placement.ScaleIndex is { } scaleIndex
+                && scaleIndex is < 0 or > 100)
         {
-            ValidateName(entry.Key);
-        }
-
-        foreach (var entry in snapshot.OverlayPlacements)
-        {
-            ValidateName(entry.Key);
-            var placement = entry.Value;
-            if (placement is null
-                || !Enum.IsDefined(placement.Horizontal)
-                || !Enum.IsDefined(placement.Vertical)
-                || Math.Abs((long)placement.HorizontalOffset) > 100_000
-                || Math.Abs((long)placement.VerticalOffset) > 100_000
-                || placement.Opacity is { } itemOpacity
-                    && (!double.IsFinite(itemOpacity)
-                        || itemOpacity is < 0 or > 1)
-                || placement.ScaleIndex is { } scaleIndex
-                    && scaleIndex is < 0 or > 100)
-            {
-                throw new InvalidDataException(
-                    "The replay overlay presentation snapshot contains an invalid placement.");
-            }
+            throw new InvalidDataException(
+                "The replay overlay presentation snapshot contains an invalid placement.");
         }
     }
 

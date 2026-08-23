@@ -225,10 +225,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             var privacy = RedactExport
                 ? "Commander identities, sent and received chat, location names, IDs, coordinates, and screenshot paths will be redacted."
                 : "Commander identity and selected event content will remain raw.";
-            var selection = isHistoryWindowed
-                ? $"The selected range will be scanned during export across all {totalEventCount:N0} indexed events"
-                : $"{selectedCount:N0} selected event"
-                    + (selectedCount == 1 ? string.Empty : "s");
+            var selection = ResolveSelectionDescription(selectedCount);
             return selection
                 + "; required header, commander, load, and location bootstrap "
                 + "events before the range will be added automatically. "
@@ -257,15 +254,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             isHistoryWindowed = snapshot.IsWindowed;
             RangeFrom = snapshot.FirstTimestamp;
             RangeTo = snapshot.LastTimestamp;
-            Summary = snapshot.TotalEventCount == 0
-                ? $"No journal events were found in {snapshot.JournalDirectory}."
-                : $"{snapshot.TotalEventCount:N0} events across "
-                    + $"{snapshot.FileCount:N0} journal file(s), "
-                    + $"{FormatTimestamp(snapshot.FirstTimestamp)} to "
-                    + $"{FormatTimestamp(snapshot.LastTimestamp)}."
-                    + (snapshot.IsWindowed
-                        ? $" Showing the most recent {snapshot.Events.Count:N0}; export scans the full indexed history."
-                        : string.Empty);
+            Summary = ResolveSummary(snapshot);
             ApplyFilter();
             OnPropertyChanged(nameof(TotalEventCount));
             OnPropertyChanged(nameof(HasEvents));
@@ -404,9 +393,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             if (ReferenceEquals(filterCancellation, cancellation))
             {
                 filterCancellation = null;
+                cancellation.Dispose();
             }
-
-            cancellation.Dispose();
         }
     }
 
@@ -451,12 +439,46 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
     {
         var cancellation = filterCancellation;
         filterCancellation = null;
-        cancellation?.Cancel();
+        if (cancellation is not null)
+        {
+            cancellation.Cancel();
+            cancellation.Dispose();
+        }
     }
 
     public void Dispose()
     {
-        CancelPendingFilter();
+        filterCancellation?.Cancel();
+        filterCancellation?.Dispose();
+        filterCancellation = null;
+    }
+
+    private string ResolveSelectionDescription(int selectedCount)
+    {
+        if (isHistoryWindowed)
+        {
+            return $"The selected range will be scanned during export across all {totalEventCount:N0} indexed events";
+        }
+
+        var suffix = selectedCount == 1 ? string.Empty : "s";
+        return $"{selectedCount:N0} selected event{suffix}";
+    }
+
+    private static string ResolveSummary(JournalHistorySnapshot snapshot)
+    {
+        if (snapshot.TotalEventCount == 0)
+        {
+            return $"No journal events were found in {snapshot.JournalDirectory}.";
+        }
+
+        var windowedSummary = snapshot.IsWindowed
+            ? $" Showing the most recent {snapshot.Events.Count:N0}; export scans the full indexed history."
+            : string.Empty;
+        return $"{snapshot.TotalEventCount:N0} events across "
+            + $"{snapshot.FileCount:N0} journal file(s), "
+            + $"{FormatTimestamp(snapshot.FirstTimestamp)} to "
+            + $"{FormatTimestamp(snapshot.LastTimestamp)}."
+            + windowedSummary;
     }
 
     private static bool Contains(string? value, string filter)
