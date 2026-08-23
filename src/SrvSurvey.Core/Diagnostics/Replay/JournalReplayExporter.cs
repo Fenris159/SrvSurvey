@@ -163,8 +163,12 @@ public sealed class JournalReplayExporter
                 scan.Bootstrap.Length,
                 companionScan.Entries.Count,
                 companionScan.BootstrapCount,
-                companionScan.Entries.FirstOrDefault()?.Timestamp,
-                companionScan.Entries.LastOrDefault()?.Timestamp,
+                companionScan.Entries.Count == 0
+                    ? null
+                    : companionScan.Entries[0].Timestamp,
+                companionScan.Entries.Count == 0
+                    ? null
+                    : companionScan.Entries[^1].Timestamp,
                 scan.FirstTimestamp,
                 scan.LastTimestamp,
                 outputCommander,

@@ -772,48 +772,37 @@ public sealed class ReplaySessionManager
 
         ValidatePackageMetadata(package);
 
-        {
-            await using var source = await journals[0].OpenAsync(
-                cancellationToken);
-            await using var destination = new FileStream(
-                journalDestination,
-                FileMode.CreateNew,
-                FileAccess.Write,
-                FileShare.None,
-                bufferSize: 64 * 1024,
-                useAsync: true);
-            await CopyBoundedAsync(
-                source,
-                destination,
-                MaximumJournalBytes,
-                cancellationToken);
-            await destination.FlushAsync(cancellationToken);
-            if (destination.Length > MaximumJournalBytes)
-            {
-                throw new InvalidDataException(
-                    "The replay package journal is larger than the supported limit.");
-            }
-        }
-
-        {
-            await using var companionSource = await companions[0].OpenAsync(
-                cancellationToken);
-            await using var companionOutput = new FileStream(
-                companionDestination,
-                FileMode.CreateNew,
-                FileAccess.Write,
-                FileShare.None,
-                bufferSize: 64 * 1024,
-                useAsync: true);
-            await CopyBoundedAsync(
-                companionSource,
-                companionOutput,
-                MaximumJournalBytes,
-                cancellationToken);
-            await companionOutput.FlushAsync(cancellationToken);
-        }
+        await ExtractArchiveEntryAsync(
+            journals[0],
+            journalDestination,
+            cancellationToken);
+        await ExtractArchiveEntryAsync(
+            companions[0],
+            companionDestination,
+            cancellationToken);
 
         return package;
+    }
+
+    private static async Task ExtractArchiveEntryAsync(
+        ZipArchiveEntry entry,
+        string destinationPath,
+        CancellationToken cancellationToken)
+    {
+        await using var source = await entry.OpenAsync(cancellationToken);
+        await using var destination = new FileStream(
+            destinationPath,
+            FileMode.CreateNew,
+            FileAccess.Write,
+            FileShare.None,
+            bufferSize: 64 * 1024,
+            useAsync: true);
+        await CopyBoundedAsync(
+            source,
+            destination,
+            MaximumJournalBytes,
+            cancellationToken);
+        await destination.FlushAsync(cancellationToken);
     }
 
     private static void ValidateArchiveEntry(ZipArchiveEntry entry)
@@ -1006,17 +995,116 @@ public sealed record DiagnosticReplaySession(
         }
 
         var manifestInfo = new FileInfo(fullManifestPath);
+        var manifest = await ReadManifestAsync(manifestInfo, cancellationToken);
+        ValidateLoadedManifest(manifest);
+        ValidateVersionTwoPathSchema(manifest.Paths);
+        ReplayPresentationSnapshotValidator.Validate(
+            manifest.PresentationSnapshot);
+
+        var sessionDirectory = Path.GetDirectoryName(fullManifestPath)
+            ?? throw new InvalidDataException(
+                "The diagnostic replay manifest has no containing session directory.");
+        var sourceJournalPath = ResolveContainedPath(
+            sessionDirectory,
+            manifest.Paths.SourceJournal);
+        var sourceCompanionPath = ResolveContainedPath(
+            sessionDirectory,
+            manifest.Paths.SourceCompanions);
+        var playbackJournalPath = ResolveContainedPath(
+            sessionDirectory,
+            manifest.Paths.PlaybackJournal);
+        var configDirectory = ResolveContainedPath(
+            sessionDirectory,
+            manifest.Paths.ConfigDirectory);
+        var dataDirectory = ResolveContainedPath(
+            sessionDirectory,
+            manifest.Paths.DataDirectory);
+        var cacheDirectory = ResolveContainedPath(
+            sessionDirectory,
+            manifest.Paths.CacheDirectory);
+        var logsDirectory = ResolveContainedPath(
+            sessionDirectory,
+            manifest.Paths.LogsDirectory);
+
+        await ValidateSourceFileAsync(
+            sourceJournalPath,
+            maximumJournalBytes,
+            manifest.SourceSha256,
+            "The diagnostic replay source journal is missing.",
+            "The diagnostic replay source journal is larger than the supported limit.",
+            "The diagnostic replay source checksum does not match the manifest.",
+            cancellationToken);
+        await ValidateSourceFileAsync(
+            sourceCompanionPath,
+            maximumJournalBytes,
+            manifest.SourceCompanionSha256,
+            "The diagnostic replay source companion timeline is missing.",
+            "The diagnostic replay companion timeline is larger than the supported limit.",
+            "The diagnostic replay companion checksum does not match the manifest.",
+            cancellationToken);
+
+        var journalEvents = await ReplaySessionManager.ReadEventsAsync(
+            sourceJournalPath,
+            cancellationToken);
+        var companionEntries = await ReplaySessionManager.ReadCompanionsAsync(
+            sourceCompanionPath,
+            cancellationToken);
+        ValidateSourceCounts(manifest, journalEvents, companionEntries);
+
+        var events = ReplaySessionManager.MergeTimeline(
+            journalEvents,
+            manifest.JournalBootstrapEventCount,
+            companionEntries,
+            manifest.CompanionBootstrapEventCount);
+        ValidateTimelineCount(manifest, events);
+
+        var commander = ReplaySessionManager.ResolveCommander(journalEvents);
+        ValidateCommander(manifest.Commander, commander);
+
+        EnsureDirectory(configDirectory);
+        EnsureDirectory(dataDirectory);
+        EnsureDirectory(cacheDirectory);
+        EnsureDirectory(logsDirectory);
+        EnsureDirectory(Path.GetDirectoryName(playbackJournalPath)!);
+        await EnsurePlaybackJournalAsync(
+            playbackJournalPath,
+            cancellationToken);
+
+        return new DiagnosticReplaySession(
+            fullManifestPath,
+            sessionDirectory,
+            sourceJournalPath,
+            sourceCompanionPath,
+            playbackJournalPath,
+            configDirectory,
+            dataDirectory,
+            cacheDirectory,
+            logsDirectory,
+            manifest.SourceVersion,
+            manifest.PrivacyMode,
+            commander,
+            events,
+            manifest.BootstrapInputCount,
+            manifest.MissingCompanionTimelines,
+            manifest.CompanionFirstTimestamp,
+            manifest.CompanionLastTimestamp,
+            manifest.PresentationSnapshot);
+    }
+
+    private static async Task<DiagnosticReplayManifest> ReadManifestAsync(
+        FileInfo manifestInfo,
+        CancellationToken cancellationToken)
+    {
         if (manifestInfo.Length > ReplaySessionManager.MaximumReplayManifestBytes)
         {
             throw new InvalidDataException(
                 "The diagnostic replay manifest is larger than the supported limit.");
         }
 
-        DiagnosticReplayManifest manifest;
         try
         {
             await using var stream = manifestInfo.OpenRead();
-            manifest = await JsonSerializer.DeserializeAsync<DiagnosticReplayManifest>(
+            return await JsonSerializer.DeserializeAsync<DiagnosticReplayManifest>(
                     stream,
                     ReplaySessionManager.GetManifestJsonOptions(),
                     cancellationToken)
@@ -1029,7 +1117,10 @@ public sealed record DiagnosticReplaySession(
                 "The diagnostic replay manifest is not valid JSON.",
                 exception);
         }
+    }
 
+    private static void ValidateLoadedManifest(DiagnosticReplayManifest manifest)
+    {
         if (manifest.FormatVersion != ReplaySessionManager.CurrentFormatVersion)
         {
             throw new InvalidDataException(
@@ -1061,155 +1152,93 @@ public sealed record DiagnosticReplaySession(
             throw new InvalidDataException(
                 "The diagnostic replay manifest is missing required source, commander, or path metadata.");
         }
+    }
 
-
-        ValidateVersionTwoPathSchema(manifest.Paths);
-        ReplayPresentationSnapshotValidator.Validate(
-            manifest.PresentationSnapshot);
-
-        var sessionDirectory = Path.GetDirectoryName(fullManifestPath)
-            ?? throw new InvalidDataException(
-                "The diagnostic replay manifest has no containing session directory.");
-        var sourceJournalPath = ResolveContainedPath(
-            sessionDirectory,
-            manifest.Paths.SourceJournal);
-        var sourceCompanionPath = ResolveContainedPath(
-            sessionDirectory,
-            manifest.Paths.SourceCompanions);
-        var playbackJournalPath = ResolveContainedPath(
-            sessionDirectory,
-            manifest.Paths.PlaybackJournal);
-        var configDirectory = ResolveContainedPath(
-            sessionDirectory,
-            manifest.Paths.ConfigDirectory);
-        var dataDirectory = ResolveContainedPath(
-            sessionDirectory,
-            manifest.Paths.DataDirectory);
-        var cacheDirectory = ResolveContainedPath(
-            sessionDirectory,
-            manifest.Paths.CacheDirectory);
-        var logsDirectory = ResolveContainedPath(
-            sessionDirectory,
-            manifest.Paths.LogsDirectory);
-
-        if (!File.Exists(sourceJournalPath))
+    private static async Task ValidateSourceFileAsync(
+        string path,
+        long maximumBytes,
+        string expectedChecksum,
+        string missingMessage,
+        string tooLargeMessage,
+        string checksumMessage,
+        CancellationToken cancellationToken)
+    {
+        if (!File.Exists(path))
         {
-            throw new InvalidDataException(
-                "The diagnostic replay source journal is missing.");
+            throw new InvalidDataException(missingMessage);
         }
 
-        if (!File.Exists(sourceCompanionPath))
+        if (new FileInfo(path).Length > maximumBytes)
         {
-            throw new InvalidDataException(
-                "The diagnostic replay source companion timeline is missing.");
-        }
-
-        if (new FileInfo(sourceJournalPath).Length > maximumJournalBytes)
-        {
-            throw new InvalidDataException(
-                "The diagnostic replay source journal is larger than the supported limit.");
+            throw new InvalidDataException(tooLargeMessage);
         }
 
         var actualChecksum = await ReplaySessionManager.ComputeSha256Async(
-            sourceJournalPath,
+            path,
             cancellationToken);
         if (!string.Equals(
                 actualChecksum,
-                manifest.SourceSha256,
+                expectedChecksum,
                 StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidDataException(
-                "The diagnostic replay source checksum does not match the manifest.");
+            throw new InvalidDataException(checksumMessage);
         }
-        if (new FileInfo(sourceCompanionPath).Length > maximumJournalBytes)
-        {
-            throw new InvalidDataException(
-                "The diagnostic replay companion timeline is larger than the supported limit.");
-        }
+    }
 
-        var actualCompanionChecksum = await ReplaySessionManager.ComputeSha256Async(
-            sourceCompanionPath,
-            cancellationToken);
-        if (!string.Equals(
-                actualCompanionChecksum,
-                manifest.SourceCompanionSha256,
-                StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidDataException(
-                "The diagnostic replay companion checksum does not match the manifest.");
-        }
-
-        var journalEvents = await ReplaySessionManager.ReadEventsAsync(
-            sourceJournalPath,
-            cancellationToken);
-        var companionEntries = await ReplaySessionManager.ReadCompanionsAsync(
-            sourceCompanionPath,
-            cancellationToken);
+    private static void ValidateSourceCounts(
+        DiagnosticReplayManifest manifest,
+        IReadOnlyCollection<JournalReplayEvent> journalEvents,
+        IReadOnlyCollection<CompanionTimelineEntry> companionEntries)
+    {
         if (journalEvents.Count != manifest.JournalEventCount
             || companionEntries.Count != manifest.CompanionEventCount)
         {
             throw new InvalidDataException(
                 "The diagnostic replay event count does not match the manifest.");
         }
+    }
 
-        var events = ReplaySessionManager.MergeTimeline(
-            journalEvents,
-            manifest.JournalBootstrapEventCount,
-            companionEntries,
-            manifest.CompanionBootstrapEventCount);
+    private static void ValidateTimelineCount(
+        DiagnosticReplayManifest manifest,
+        IReadOnlyCollection<JournalReplayEvent> events)
+    {
         if (events.Count != manifest.EventCount)
         {
             throw new InvalidDataException(
                 "The diagnostic replay timeline count does not match the manifest.");
         }
+    }
 
-        var commander = ReplaySessionManager.ResolveCommander(journalEvents);
+    private static void ValidateCommander(
+        ReplayCommander expected,
+        ReplayCommander actual)
+    {
         if (!string.Equals(
-                commander.FrontierId,
-                manifest.Commander.FrontierId,
+                actual.FrontierId,
+                expected.FrontierId,
                 StringComparison.OrdinalIgnoreCase)
             || !string.Equals(
-                commander.Name,
-                manifest.Commander.Name,
+                actual.Name,
+                expected.Name,
                 StringComparison.Ordinal))
         {
             throw new InvalidDataException(
                 "The diagnostic replay commander does not match the manifest.");
         }
+    }
 
-        EnsureDirectory(configDirectory);
-        EnsureDirectory(dataDirectory);
-        EnsureDirectory(cacheDirectory);
-        EnsureDirectory(logsDirectory);
-        EnsureDirectory(Path.GetDirectoryName(playbackJournalPath)!);
-        if (!File.Exists(playbackJournalPath))
+    private static async Task EnsurePlaybackJournalAsync(
+        string path,
+        CancellationToken cancellationToken)
+    {
+        if (!File.Exists(path))
         {
             await File.WriteAllTextAsync(
-                playbackJournalPath,
+                path,
                 string.Empty,
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
                 cancellationToken);
         }
-
-        return new DiagnosticReplaySession(
-            fullManifestPath,
-            sessionDirectory,
-            sourceJournalPath,
-            sourceCompanionPath,
-            playbackJournalPath,
-            configDirectory,
-            dataDirectory,
-            cacheDirectory,
-            logsDirectory,
-            manifest.SourceVersion,
-            manifest.PrivacyMode,
-            commander,
-            events,
-            manifest.BootstrapInputCount,
-            manifest.MissingCompanionTimelines,
-            manifest.CompanionFirstTimestamp,
-            manifest.CompanionLastTimestamp,
-            manifest.PresentationSnapshot);
     }
 
     private static string ResolveContainedPath(

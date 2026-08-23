@@ -318,6 +318,10 @@ public sealed class CompanionTimelineStore : IDisposable
 
 internal static class CompanionTimelineCodec
 {
+    private const string EventProperty = "event";
+    private const string LocalizedNameProperty = "Name_Localised";
+    private const string StarSystemProperty = "StarSystem";
+    private const string TimestampProperty = "timestamp";
     private static readonly JsonSerializerOptions Json = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -346,7 +350,7 @@ internal static class CompanionTimelineCodec
     }
 
     private static void Add<T>(
-        ICollection<CompanionTimelineEntry> entries,
+        List<CompanionTimelineEntry> entries,
         ReplayInputKind kind,
         T? snapshot,
         DateTimeOffset observedAt)
@@ -410,7 +414,7 @@ internal static class CompanionTimelineCodec
     {
         var wrapper = new JsonObject
         {
-            ["timestamp"] = JsonSerializer.SerializeToNode(entry.Timestamp, Json),
+            [TimestampProperty] = JsonSerializer.SerializeToNode(entry.Timestamp, Json),
             ["kind"] = JsonSerializer.SerializeToNode(entry.Kind, Json),
             ["payload"] = JsonNode.Parse(entry.RawJson),
         };
@@ -424,7 +428,7 @@ internal static class CompanionTimelineCodec
             MaxDepth = 64,
         });
         var root = document.RootElement;
-        var timestamp = root.GetProperty("timestamp")
+        var timestamp = root.GetProperty(TimestampProperty)
             .Deserialize<DateTimeOffset>(Json);
         var kind = root.GetProperty("kind").Deserialize<ReplayInputKind>(Json);
         if (kind == ReplayInputKind.Journal)
@@ -445,7 +449,7 @@ internal static class CompanionTimelineCodec
     {
         var root = JsonNode.Parse(rawJson)?.AsObject()
             ?? throw new JsonException("A companion payload must be an object.");
-        _ = root.Remove("timestamp");
+        _ = root.Remove(TimestampProperty);
         return Convert.ToHexStringLower(
             SHA256.HashData(Encoding.UTF8.GetBytes(root.ToJsonString(Json))));
     }
@@ -467,7 +471,7 @@ internal static class CompanionTimelineCodec
                     Replace(destination, "Name", "Replay Destination");
                     Replace(
                         destination,
-                        "Name_Localised",
+                        LocalizedNameProperty,
                         "Replay Destination");
                 }
                 break;
@@ -478,7 +482,7 @@ internal static class CompanionTimelineCodec
                     foreach (var item in route.OfType<JsonObject>())
                     {
                         index++;
-                        Replace(item, "StarSystem", $"Replay Route {index:000}");
+                        Replace(item, StarSystemProperty, $"Replay Route {index:000}");
                         item["SystemAddress"] = 9_100_000_000_000_000L + index;
                         if (item["StarPos"] is JsonArray position)
                         {
@@ -491,7 +495,7 @@ internal static class CompanionTimelineCodec
                 break;
             case ReplayInputKind.Market:
                 Replace(payload, "StationName", "Replay Station");
-                Replace(payload, "StarSystem", "Replay System");
+                Replace(payload, StarSystemProperty, "Replay System");
                 payload["MarketId"] = 9_200_000_000_000_000L;
                 break;
             case ReplayInputKind.Cargo:
@@ -528,14 +532,14 @@ internal static class CompanionTimelineCodec
         CargoSnapshot snapshot,
         DateTimeOffset timestamp) => new()
         {
-            ["timestamp"] = JsonSerializer.SerializeToNode(timestamp, Json),
-            ["event"] = snapshot.EventName,
+            [TimestampProperty] = JsonSerializer.SerializeToNode(timestamp, Json),
+            [EventProperty] = snapshot.EventName,
             ["Vessel"] = snapshot.Vessel,
             ["Inventory"] = new JsonArray(snapshot.Inventory.Select(item =>
                 (JsonNode)new JsonObject
                 {
                     ["Name"] = item.Name,
-                    ["Name_Localised"] = item.LocalizedName,
+                    [LocalizedNameProperty] = item.LocalizedName,
                     ["Count"] = item.Count,
                     ["Stolen"] = item.Stolen,
                 }).ToArray()),
@@ -547,8 +551,8 @@ internal static class CompanionTimelineCodec
     {
         var payload = new JsonObject
         {
-            ["timestamp"] = JsonSerializer.SerializeToNode(timestamp, Json),
-            ["event"] = snapshot.EventName,
+            [TimestampProperty] = JsonSerializer.SerializeToNode(timestamp, Json),
+            [EventProperty] = snapshot.EventName,
         };
         foreach (var category in new[]
                  {
@@ -563,7 +567,7 @@ internal static class CompanionTimelineCodec
                 .Select(item => (JsonNode)new JsonObject
                 {
                     ["Name"] = item.Name,
-                    ["Name_Localised"] = item.LocalizedName,
+                    [LocalizedNameProperty] = item.LocalizedName,
                     ["Count"] = item.Count,
                 }).ToArray());
         }
@@ -575,12 +579,12 @@ internal static class CompanionTimelineCodec
         NavRouteSnapshot snapshot,
         DateTimeOffset timestamp) => new()
         {
-            ["timestamp"] = JsonSerializer.SerializeToNode(timestamp, Json),
-            ["event"] = snapshot.EventName,
+            [TimestampProperty] = JsonSerializer.SerializeToNode(timestamp, Json),
+            [EventProperty] = snapshot.EventName,
             ["Route"] = new JsonArray(snapshot.Route.Select(item =>
                 (JsonNode)new JsonObject
                 {
-                    ["StarSystem"] = item.StarSystem,
+                    [StarSystemProperty] = item.StarSystem,
                     ["SystemAddress"] = item.SystemAddress,
                     ["StarPos"] = item.Position is not { } position
                         ? null
@@ -596,19 +600,19 @@ internal static class CompanionTimelineCodec
         MarketSnapshot snapshot,
         DateTimeOffset timestamp) => new()
         {
-            ["timestamp"] = JsonSerializer.SerializeToNode(timestamp, Json),
-            ["event"] = snapshot.EventName,
+            [TimestampProperty] = JsonSerializer.SerializeToNode(timestamp, Json),
+            [EventProperty] = snapshot.EventName,
             ["MarketId"] = snapshot.MarketId,
             ["StationName"] = snapshot.StationName,
             ["StationType"] = snapshot.StationType,
             ["CarrierDockingAccess"] = snapshot.CarrierDockingAccess,
-            ["StarSystem"] = snapshot.StarSystem,
+            [StarSystemProperty] = snapshot.StarSystem,
             ["Items"] = new JsonArray(snapshot.Items.Select(item =>
                 (JsonNode)new JsonObject
                 {
                     ["id"] = item.Id,
                     ["Name"] = item.Name,
-                    ["Name_Localised"] = item.LocalizedName,
+                    [LocalizedNameProperty] = item.LocalizedName,
                     ["Category"] = item.Category,
                     ["Category_Localised"] = item.LocalizedCategory,
                     ["BuyPrice"] = item.BuyPrice,

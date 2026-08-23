@@ -1881,7 +1881,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
             if (!IsDiagnosticReplay)
             {
-                await companionTimelineStore.CleanupAsync();
+                await companionTimelineStore.CleanupAsync(CancellationToken.None);
             }
 
             var update = await journalMonitor.PollAsync(
@@ -2352,7 +2352,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         {
             try
             {
-                await companionTimelineStore.AppendAsync(update);
+                await companionTimelineStore.AppendAsync(
+                    update,
+                    CancellationToken.None);
             }
             catch (Exception exception) when (
                 exception is IOException
@@ -5300,7 +5302,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(firstFootfallInferenceCancellation.Dispose);
         TryDispose(DiagnosticsLog.Dispose);
         TryDispose(JournalHistory.Dispose);
-        TryDispose(companionTimelineStore.Dispose);
+        companionTimelineStore.Dispose();
         TryDispose(JumpInfo.Dispose);
         TryDispose(BiologyPredictions.Dispose);
         TryDispose(BiologyCodex.Dispose);
