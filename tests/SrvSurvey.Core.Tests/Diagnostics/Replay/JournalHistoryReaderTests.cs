@@ -40,6 +40,28 @@ public sealed class JournalHistoryReaderTests
         Assert.Equal("Commander", history.Events[0].EventName);
     }
 
+    [Fact]
+    public async Task LargeHistoryKeepsAnExactCountAndABoundedRecentWindow()
+    {
+        using var temp = new TemporaryDirectory();
+        await File.WriteAllLinesAsync(
+            Path.Combine(temp.Path, "Journal.2026-08-21T180000.01.log"),
+            [
+                "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"History Cmdr\",\"FID\":\"F123456\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"Location\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:02Z\",\"event\":\"Shutdown\"}",
+            ]);
+
+        var history = await new JournalHistoryReader(maximumLoadedEvents: 2)
+            .LoadAsync(temp.Path, CancellationToken.None);
+
+        Assert.Equal(3, history.TotalEventCount);
+        Assert.True(history.IsWindowed);
+        Assert.Equal(["Location", "Shutdown"], history.Events
+            .Select(item => item.EventName));
+        Assert.Equal(1, history.Events[0].Index);
+    }
+
     private sealed class TemporaryDirectory : IDisposable
     {
         public TemporaryDirectory()

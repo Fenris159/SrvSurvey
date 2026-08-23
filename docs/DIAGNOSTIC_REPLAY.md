@@ -10,7 +10,10 @@ visual state of an overlay.
 Open **Diagnostics > History** in a normal SrvSurvey instance. The History tab
 reads the durable Elite journal files independently from the Inspector, supports
 event-name and raw-payload search, and shows the complete JSON for the selected
-event.
+event. To keep long-lived installations responsive, the panel indexes the full
+history while retaining the most recent 50,000 events as its searchable display
+window. Timestamp export streams the full index, including ranges older than the
+display window.
 
 Choose an exact inclusive UTC timestamp range, preview it, and export a
 `.srvreplay` package. The exporter includes the earlier Commander and LoadGame

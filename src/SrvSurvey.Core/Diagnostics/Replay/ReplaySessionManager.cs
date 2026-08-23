@@ -11,6 +11,8 @@ public sealed class ReplaySessionManager
     public const int CurrentFormatVersion = 1;
 
     internal const long MaximumJournalBytes = 256L * 1024L * 1024L;
+    internal const long MaximumReplayPackageBytes =
+        MaximumJournalBytes + 2L * 1024L * 1024L;
     internal const int MaximumJournalEvents = 2_000_000;
     internal const int MaximumJournalLineCharacters = 4 * 1024 * 1024;
     private static readonly JsonSerializerOptions ManifestJson = new()
@@ -37,7 +39,14 @@ public sealed class ReplaySessionManager
                 fullSourcePath);
         }
 
-        if (sourceInfo.Length > MaximumJournalBytes)
+        var isPackage = string.Equals(
+            Path.GetExtension(fullSourcePath),
+            ".srvreplay",
+            StringComparison.OrdinalIgnoreCase);
+        var maximumSourceBytes = isPackage
+            ? MaximumReplayPackageBytes
+            : MaximumJournalBytes;
+        if (sourceInfo.Length > maximumSourceBytes)
         {
             throw new InvalidDataException(
                 "The journal selected for replay is larger than the supported limit.");
@@ -70,10 +79,7 @@ public sealed class ReplaySessionManager
         JournalReplayPackageManifest? package = null;
         try
         {
-            if (string.Equals(
-                    Path.GetExtension(fullSourcePath),
-                    ".srvreplay",
-                    StringComparison.OrdinalIgnoreCase))
+            if (isPackage)
             {
                 package = await ExtractPackageAsync(
                     fullSourcePath,
@@ -402,7 +408,59 @@ public sealed class ReplaySessionManager
             FileShare.None,
             bufferSize: 64 * 1024,
             useAsync: true);
-        await source.CopyToAsync(destination, cancellationToken);
+        await CopyBoundedAsync(
+            source,
+            destination,
+            MaximumJournalBytes,
+            cancellationToken);
+        await destination.FlushAsync(cancellationToken);
+        if (destination.Length > MaximumJournalBytes)
+        {
+            throw new InvalidDataException(
+                "The journal selected for replay is larger than the supported limit.");
+        }
+    }
+
+    internal static async Task CopyBoundedAsync(
+        Stream source,
+        Stream destination,
+        long maximumBytes,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(destination);
+        if (maximumBytes < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maximumBytes));
+        }
+
+        var buffer = new byte[64 * 1024];
+        long written = 0;
+        while (true)
+        {
+            var remaining = maximumBytes - written;
+            var readLength = remaining > 0
+                ? (int)Math.Min(buffer.Length, remaining)
+                : 1;
+            var read = await source.ReadAsync(
+                buffer.AsMemory(0, readLength),
+                cancellationToken);
+            if (read == 0)
+            {
+                return;
+            }
+
+            if (written + read > maximumBytes)
+            {
+                throw new InvalidDataException(
+                    "The journal selected for replay is larger than the supported limit.");
+            }
+
+            await destination.WriteAsync(
+                buffer.AsMemory(0, read),
+                cancellationToken);
+            written += read;
+        }
     }
 
     private static async Task<JournalReplayPackageManifest> ExtractPackageAsync(
@@ -466,9 +524,16 @@ public sealed class ReplaySessionManager
         try
         {
             await using var manifestStream = manifests[0].Open();
+            await using var boundedManifest = new MemoryStream();
+            await CopyBoundedAsync(
+                manifestStream,
+                boundedManifest,
+                1024 * 1024,
+                cancellationToken);
+            boundedManifest.Position = 0;
             package = await JsonSerializer
                 .DeserializeAsync<JournalReplayPackageManifest>(
-                    manifestStream,
+                    boundedManifest,
                     JournalReplayExporter.GetPackageJsonOptions(),
                     cancellationToken)
                 ?? throw new InvalidDataException(
@@ -496,7 +561,18 @@ public sealed class ReplaySessionManager
             FileShare.None,
             bufferSize: 64 * 1024,
             useAsync: true);
-        await source.CopyToAsync(destination, cancellationToken);
+        await CopyBoundedAsync(
+            source,
+            destination,
+            MaximumJournalBytes,
+            cancellationToken);
+        await destination.FlushAsync(cancellationToken);
+        if (destination.Length > MaximumJournalBytes)
+        {
+            throw new InvalidDataException(
+                "The replay package journal is larger than the supported limit.");
+        }
+
         return package;
     }
 

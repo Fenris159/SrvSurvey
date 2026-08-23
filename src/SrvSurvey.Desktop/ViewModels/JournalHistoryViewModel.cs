@@ -18,6 +18,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
     private readonly AsyncCommand refreshCommand;
     private IReadOnlyList<JournalHistoryEvent> allEvents = [];
     private IReadOnlyList<JournalHistoryEvent> events = [];
+    private int totalEventCount;
+    private bool isHistoryWindowed;
     private JournalHistoryEvent? selectedEvent;
     private string searchText = string.Empty;
     private string summary = "Journal history has not been loaded.";
@@ -174,9 +176,9 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         }
     }
 
-    public int TotalEventCount => allEvents.Count;
+    public int TotalEventCount => totalEventCount;
 
-    public bool HasEvents => allEvents.Count > 0;
+    public bool HasEvents => totalEventCount > 0;
 
     public bool IsBusy
     {
@@ -211,10 +213,11 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
                 return error;
             }
 
-            var selectedCount = allEvents.Count(item => item.Timestamp is { } timestamp
-                    && (from is null || timestamp >= from)
-                    && (to is null || timestamp <= to));
-            if (selectedCount == 0)
+            var selectedCount = allEvents.Count(item =>
+                item.Timestamp is { } timestamp
+                && (from is null || timestamp >= from)
+                && (to is null || timestamp <= to));
+            if (!isHistoryWindowed && selectedCount == 0)
             {
                 return "No timestamped events are inside the export range.";
             }
@@ -222,8 +225,11 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             var privacy = RedactExport
                 ? "Commander identities, sent and received chat, location names, IDs, coordinates, and screenshot paths will be redacted."
                 : "Commander identity and selected event content will remain raw.";
-            return $"{selectedCount:N0} selected event"
-                + (selectedCount == 1 ? string.Empty : "s")
+            var selection = isHistoryWindowed
+                ? $"The selected range will be scanned during export across all {totalEventCount:N0} indexed events"
+                : $"{selectedCount:N0} selected event"
+                    + (selectedCount == 1 ? string.Empty : "s");
+            return selection
                 + "; required header, commander, load, and location bootstrap "
                 + "events before the range will be added automatically. "
                 + privacy
@@ -247,14 +253,19 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
                 journalDirectory,
                 CancellationToken.None));
             allEvents = snapshot.Events;
+            totalEventCount = snapshot.TotalEventCount;
+            isHistoryWindowed = snapshot.IsWindowed;
             RangeFrom = snapshot.FirstTimestamp;
             RangeTo = snapshot.LastTimestamp;
-            Summary = snapshot.Events.Count == 0
+            Summary = snapshot.TotalEventCount == 0
                 ? $"No journal events were found in {snapshot.JournalDirectory}."
-                : $"{snapshot.Events.Count:N0} events across "
+                : $"{snapshot.TotalEventCount:N0} events across "
                     + $"{snapshot.FileCount:N0} journal file(s), "
                     + $"{FormatTimestamp(snapshot.FirstTimestamp)} to "
-                    + $"{FormatTimestamp(snapshot.LastTimestamp)}.";
+                    + $"{FormatTimestamp(snapshot.LastTimestamp)}."
+                    + (snapshot.IsWindowed
+                        ? $" Showing the most recent {snapshot.Events.Count:N0}; export scans the full indexed history."
+                        : string.Empty);
             ApplyFilter();
             OnPropertyChanged(nameof(TotalEventCount));
             OnPropertyChanged(nameof(HasEvents));
@@ -267,6 +278,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
                 or JsonException)
         {
             allEvents = [];
+            totalEventCount = 0;
+            isHistoryWindowed = false;
             Events = [];
             SelectedEvent = null;
             Summary = "Journal history could not be loaded.";

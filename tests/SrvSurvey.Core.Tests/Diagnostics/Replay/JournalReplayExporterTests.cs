@@ -152,6 +152,108 @@ public sealed class JournalReplayExporterTests
     }
 
     [Fact]
+    public async Task ExportStreamsRangesOutsideTheHistoryDisplayWindow()
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllLinesAsync(
+            Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
+            [
+                "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"History Cmdr\",\"FID\":\"F123456\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Older\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:02Z\",\"event\":\"Music\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:03Z\",\"event\":\"Shutdown\"}",
+            ]);
+        var destination = Path.Combine(temp.Path, "older-range.srvreplay");
+        var exporter = new JournalReplayExporter(
+            new JournalHistoryReader(maximumLoadedEvents: 2));
+
+        var result = await exporter.ExportAsync(
+            journals,
+            destination,
+            new JournalReplayExportRequest(
+                DateTimeOffset.Parse("2026-08-21T18:00:01Z"),
+                DateTimeOffset.Parse("2026-08-21T18:00:01Z"),
+                ReplayPrivacyMode.Raw,
+                "test"),
+            CancellationToken.None);
+
+        Assert.Equal(2, result.EventCount);
+        Assert.Equal(1, result.BootstrapEventCount);
+        using var archive = ZipFile.OpenRead(destination);
+        using var reader = new StreamReader(
+            archive.GetEntry("journal.jsonl")!.Open());
+        Assert.Equal(
+            ["Commander", "Location"],
+            (await reader.ReadToEndAsync())
+                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .Select(GetEventName));
+    }
+
+    [Fact]
+    public async Task RedactionPreservesSystemAndBodyRelationshipsAcrossEvents()
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllLinesAsync(
+            Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
+            [
+                "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Private\",\"FID\":\"F111111\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Origin\",\"SystemAddress\":123}",
+                "{\"timestamp\":\"2026-08-21T18:00:02Z\",\"event\":\"Scan\",\"SystemAddress\":123,\"BodyID\":7,\"BodyName\":\"Origin 7\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:03Z\",\"event\":\"FSDTarget\",\"Name\":\"Destination\",\"DestinationSystemAddress\":456}",
+                "{\"timestamp\":\"2026-08-21T18:00:04Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Destination\",\"SystemAddress\":456}",
+                "{\"timestamp\":\"2026-08-21T18:00:05Z\",\"event\":\"Scan\",\"SystemAddress\":456,\"BodyID\":7,\"BodyName\":\"Destination 7\"}",
+            ]);
+        var destination = Path.Combine(temp.Path, "relationships.srvreplay");
+
+        await new JournalReplayExporter().ExportAsync(
+            journals,
+            destination,
+            new JournalReplayExportRequest(
+                null,
+                null,
+                ReplayPrivacyMode.Redacted,
+                "test"),
+            CancellationToken.None);
+
+        using var archive = ZipFile.OpenRead(destination);
+        using var reader = new StreamReader(
+            archive.GetEntry("journal.jsonl")!.Open());
+        var events = (await reader.ReadToEndAsync())
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(json => System.Text.Json.JsonDocument.Parse(json))
+            .ToArray();
+        try
+        {
+            var targetAddress = events[3].RootElement
+                .GetProperty("DestinationSystemAddress")
+                .GetInt64();
+            var arrivalAddress = events[4].RootElement
+                .GetProperty("SystemAddress")
+                .GetInt64();
+            var originBody = events[2].RootElement
+                .GetProperty("BodyID")
+                .GetInt64();
+            var destinationBody = events[5].RootElement
+                .GetProperty("BodyID")
+                .GetInt64();
+
+            Assert.Equal(targetAddress, arrivalAddress);
+            Assert.NotEqual(originBody, destinationBody);
+        }
+        finally
+        {
+            foreach (var replayEvent in events)
+            {
+                replayEvent.Dispose();
+            }
+        }
+    }
+
+    [Fact]
     public async Task RedactionDoesNotRewriteGeneratedAliasesOnIdentityCollisions()
     {
         using var temp = new TemporaryDirectory();

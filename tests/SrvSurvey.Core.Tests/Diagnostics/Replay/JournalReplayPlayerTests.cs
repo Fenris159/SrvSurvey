@@ -82,6 +82,29 @@ public sealed class JournalReplayPlayerTests
             session.PlaybackJournalPath));
     }
 
+    [Fact]
+    public async Task SystemDelayChunksIntervalsBeyondThePlatformTimerLimit()
+    {
+        var segments = new List<TimeSpan>();
+        var delay = new SystemReplayDelay((segment, cancellationToken) =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            segments.Add(segment);
+            return Task.CompletedTask;
+        });
+        var requested = TimeSpan.FromDays(30);
+
+        await delay.WaitAsync(requested, CancellationToken.None);
+
+        Assert.True(segments.Count > 1);
+        Assert.All(segments, segment => Assert.InRange(
+            segment,
+            TimeSpan.Zero,
+            SystemReplayDelay.MaximumSegment));
+        Assert.Equal(requested, segments.Aggregate(TimeSpan.Zero, (sum, item) =>
+            sum + item));
+    }
+
     private sealed class RecordingDelay : IReplayDelay
     {
         public List<TimeSpan> Delays { get; } = [];

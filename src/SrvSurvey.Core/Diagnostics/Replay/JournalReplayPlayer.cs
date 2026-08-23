@@ -218,11 +218,35 @@ public sealed class JournalReplayPlayer
         }
     }
 
-    private sealed class SystemReplayDelay : IReplayDelay
+}
+
+internal sealed class SystemReplayDelay(
+    Func<TimeSpan, CancellationToken, Task>? wait = null) : IReplayDelay
+{
+    internal static readonly TimeSpan MaximumSegment =
+        TimeSpan.FromMilliseconds(int.MaxValue - 1d);
+
+    private readonly Func<TimeSpan, CancellationToken, Task> wait =
+        wait ?? Task.Delay;
+
+    public async Task WaitAsync(
+        TimeSpan delay,
+        CancellationToken cancellationToken)
     {
-        public Task WaitAsync(TimeSpan delay, CancellationToken cancellationToken)
+        if (delay < TimeSpan.Zero)
         {
-            return Task.Delay(delay, cancellationToken);
+            throw new ArgumentOutOfRangeException(nameof(delay));
+        }
+
+        var remaining = delay;
+        while (remaining > TimeSpan.Zero)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var segment = remaining > MaximumSegment
+                ? MaximumSegment
+                : remaining;
+            await wait(segment, cancellationToken);
+            remaining -= segment;
         }
     }
 }

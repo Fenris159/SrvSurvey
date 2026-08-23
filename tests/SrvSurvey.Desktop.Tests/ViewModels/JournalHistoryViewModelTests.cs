@@ -95,6 +95,38 @@ public sealed class JournalHistoryViewModelTests
         Assert.Equal("NeedleEvent", viewModel.Events[0].EventName);
     }
 
+    [Fact]
+    public async Task WindowedHistoryReportsTheFullCountAndExportsOlderRanges()
+    {
+        using var temp = new TemporaryDirectory();
+        await File.WriteAllLinesAsync(
+            Path.Combine(temp.Path, "Journal.2026-08-21T180000.01.log"),
+            [
+                "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"History Cmdr\",\"FID\":\"F123456\"}",
+                "{\"timestamp\":\"2026-08-21T18:01:00Z\",\"event\":\"Location\",\"StarSystem\":\"Older\"}",
+                "{\"timestamp\":\"2026-08-21T18:02:00Z\",\"event\":\"Music\"}",
+                "{\"timestamp\":\"2026-08-21T18:03:00Z\",\"event\":\"Shutdown\"}",
+            ]);
+        var historyReader = new JournalHistoryReader(maximumLoadedEvents: 2);
+        using var viewModel = new JournalHistoryViewModel(
+            temp.Path,
+            "test-build",
+            historyReader,
+            new JournalReplayExporter());
+
+        await viewModel.RefreshAsync();
+        viewModel.RangeFromText = "2026-08-21T18:01:00Z";
+        viewModel.RangeToText = "2026-08-21T18:01:00Z";
+        var packagePath = Path.Combine(temp.Path, "older.srvreplay");
+
+        Assert.Equal(4, viewModel.TotalEventCount);
+        Assert.Equal(["Music", "Shutdown"], viewModel.Events
+            .Select(item => item.EventName));
+        Assert.Contains("most recent 2", viewModel.Summary, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("scanned during export", viewModel.ExportPreview, StringComparison.OrdinalIgnoreCase);
+        Assert.True(await viewModel.ExportAsync(packagePath));
+    }
+
     private sealed class TemporaryDirectory : IDisposable
     {
         public TemporaryDirectory()

@@ -39,16 +39,31 @@ public sealed class JournalReplayExporter
         Converters = { new JsonStringEnumConverter() },
     };
     private readonly IReplayPackageWriter packageWriter;
+    private readonly JournalHistoryReader historyReader;
 
     public JournalReplayExporter()
-        : this(new ZipReplayPackageWriter())
+        : this(new ZipReplayPackageWriter(), new JournalHistoryReader())
     {
     }
 
     internal JournalReplayExporter(IReplayPackageWriter packageWriter)
+        : this(packageWriter, new JournalHistoryReader())
+    {
+    }
+
+    internal JournalReplayExporter(JournalHistoryReader historyReader)
+        : this(new ZipReplayPackageWriter(), historyReader)
+    {
+    }
+
+    internal JournalReplayExporter(
+        IReplayPackageWriter packageWriter,
+        JournalHistoryReader historyReader)
     {
         this.packageWriter = packageWriter
             ?? throw new ArgumentNullException(nameof(packageWriter));
+        this.historyReader = historyReader
+            ?? throw new ArgumentNullException(nameof(historyReader));
     }
 
     public async Task<JournalReplayExportResult> ExportAsync(
@@ -72,50 +87,83 @@ public sealed class JournalReplayExporter
         ReplayPresentationSnapshotValidator.Validate(
             request.PresentationSnapshot);
 
-        var history = await new JournalHistoryReader().LoadAsync(
-            journalDirectory,
-            cancellationToken);
-        var events = history.Events.Select(item => new JournalReplayEvent(
-            item.Index,
-            item.Timestamp,
-            item.EventName,
-            item.RawJson)).ToArray();
-        var selected = events
-            .Where(replayEvent => IsWithinRange(replayEvent, request))
-            .ToArray();
-        if (selected.Length == 0)
+        List<JournalReplayEvent> selected = [];
+        var bootstrapSelector = new ReplayBootstrapSelector();
+        JournalReplayEvent[] bootstrap = [];
+        long selectedInputBytes = 0;
+        await foreach (var historyEvent in historyReader.StreamAsync(
+                           journalDirectory,
+                           cancellationToken))
+        {
+            var replayEvent = new JournalReplayEvent(
+                historyEvent.Index,
+                historyEvent.Timestamp,
+                historyEvent.EventName,
+                historyEvent.RawJson);
+            if (IsWithinRange(replayEvent, request))
+            {
+                if (selected.Count == 0)
+                {
+                    bootstrap = bootstrapSelector.Snapshot();
+                }
+
+                selected.Add(replayEvent);
+                selectedInputBytes += Encoding.UTF8.GetByteCount(
+                    replayEvent.RawJson) + 1L;
+                ValidateOutputBounds(selected.Count, selectedInputBytes);
+            }
+            else if (selected.Count == 0)
+            {
+                bootstrapSelector.Observe(replayEvent);
+            }
+        }
+
+        if (selected.Count == 0)
         {
             throw new InvalidDataException(
                 "No journal events exist in the selected replay range.");
         }
 
-        var firstSelectedIndex = selected[0].Index;
-        var bootstrap = SelectBootstrap(events, firstSelectedIndex);
         var included = bootstrap
             .Concat(selected)
             .DistinctBy(replayEvent => replayEvent.Index)
             .OrderBy(replayEvent => replayEvent.Index)
             .ToArray();
-        var sanitized = included.Select(replayEvent => replayEvent with
+        var commander = ReplaySessionManager.ResolveCommander(included);
+        var identities = request.PrivacyMode == ReplayPrivacyMode.Redacted
+            ? BuildIdentityRedactions(included)
+            : [];
+        var locations = new LocationRedactionState();
+        var initialCapacity = (int)Math.Min(
+            ReplaySessionManager.MaximumJournalBytes,
+            selectedInputBytes + 1024 * 1024);
+        using var journalBuffer = new MemoryStream(initialCapacity);
+        long outputByteCount = 0;
+        foreach (var replayEvent in included)
         {
-            RawJson = RemoveCredentials(replayEvent.RawJson),
-        }).ToArray();
-        var outputLines = request.PrivacyMode == ReplayPrivacyMode.Redacted
-            ? Redact(sanitized)
-            : sanitized.Select(replayEvent => replayEvent.RawJson).ToArray();
-        var outputByteCount = outputLines.Sum(line =>
-            (long)Encoding.UTF8.GetByteCount(line) + 1);
-        ValidateOutputBounds(outputLines.Length, outputByteCount);
-        var outputEvents = sanitized.Select((replayEvent, index) =>
-            replayEvent with
+            var sanitized = replayEvent with
             {
-                RawJson = outputLines[index],
-            }).ToArray();
-        var outputCommander = ReplaySessionManager.ResolveCommander(
-            outputEvents);
-        var journalBytes = Encoding.UTF8.GetBytes(
-            string.Join('\n', outputLines) + '\n');
-        var checksum = Convert.ToHexStringLower(SHA256.HashData(journalBytes));
+                RawJson = RemoveCredentials(replayEvent.RawJson),
+            };
+            var outputLine = request.PrivacyMode == ReplayPrivacyMode.Redacted
+                ? RedactEvent(sanitized, identities, locations)
+                : sanitized.RawJson;
+            var lineBytes = Encoding.UTF8.GetBytes(outputLine);
+            outputByteCount += lineBytes.Length + 1L;
+            ValidateOutputBounds(included.Length, outputByteCount);
+            journalBuffer.Write(lineBytes);
+            journalBuffer.WriteByte((byte)'\n');
+        }
+
+        var outputCommander = request.PrivacyMode == ReplayPrivacyMode.Redacted
+            ? RedactCommander(commander, identities)
+            : commander;
+        _ = journalBuffer.TryGetBuffer(out var journalSegment);
+        var journalBytes = journalSegment.AsMemory(
+            0,
+            checked((int)journalBuffer.Length));
+        var checksum = Convert.ToHexStringLower(
+            SHA256.HashData(journalBytes.Span));
         var package = new JournalReplayPackageManifest(
             CurrentPackageFormatVersion,
             DateTimeOffset.UtcNow,
@@ -244,90 +292,6 @@ public sealed class JournalReplayExporter
             && (request.To is null || timestamp <= request.To);
     }
 
-    private static JournalReplayEvent[] SelectBootstrap(
-        IReadOnlyList<JournalReplayEvent> events,
-        int firstSelectedIndex)
-    {
-        var prior = events
-            .Where(replayEvent => replayEvent.Index < firstSelectedIndex)
-            .ToArray();
-        var selected = new List<JournalReplayEvent>();
-        AddLatest(selected, prior, "Fileheader");
-        var identityEvent = prior
-            .Select(replayEvent => new
-            {
-                Event = replayEvent,
-                Commander = TryReadCommander(replayEvent),
-            })
-            .LastOrDefault(candidate => candidate.Commander is not null);
-        if (identityEvent?.Commander is { } identity)
-        {
-            AddLatestIdentity(selected, prior, "Commander", identity);
-            AddLatestIdentity(selected, prior, "LoadGame", identity);
-        }
-        var location = prior.LastOrDefault(replayEvent =>
-            replayEvent.Index >= (identityEvent?.Event.Index ?? 0)
-            && replayEvent.EventName
-                is "Location" or "FSDJump" or "CarrierJump");
-        if (location is not null)
-        {
-            selected.Add(location);
-        }
-
-        return selected
-            .DistinctBy(replayEvent => replayEvent.Index)
-            .OrderBy(replayEvent => replayEvent.Index)
-            .ToArray();
-    }
-
-    private static void AddLatest(
-        ICollection<JournalReplayEvent> selected,
-        IReadOnlyList<JournalReplayEvent> events,
-        string eventName)
-    {
-        var match = events.LastOrDefault(replayEvent => string.Equals(
-            replayEvent.EventName,
-            eventName,
-            StringComparison.Ordinal));
-        if (match is not null)
-        {
-            selected.Add(match);
-        }
-    }
-
-    private static void AddLatestIdentity(
-        ICollection<JournalReplayEvent> selected,
-        IReadOnlyList<JournalReplayEvent> events,
-        string eventName,
-        ReplayCommander identity)
-    {
-        var match = events.LastOrDefault(replayEvent =>
-        {
-            if (!string.Equals(
-                    replayEvent.EventName,
-                    eventName,
-                    StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            var candidate = TryReadCommander(replayEvent);
-            return candidate is not null
-                && string.Equals(
-                    candidate.Name,
-                    identity.Name,
-                    StringComparison.Ordinal)
-                && string.Equals(
-                    candidate.FrontierId,
-                    identity.FrontierId,
-                    StringComparison.OrdinalIgnoreCase);
-        });
-        if (match is not null)
-        {
-            selected.Add(match);
-        }
-    }
-
     private static ReplayCommander? TryReadCommander(
         JournalReplayEvent replayEvent)
     {
@@ -352,56 +316,80 @@ public sealed class JournalReplayExporter
                 : null;
     }
 
-    private static string[] Redact(
-        IReadOnlyList<JournalReplayEvent> events)
+    private static string RedactEvent(
+        JournalReplayEvent replayEvent,
+        IReadOnlyList<IdentityRedaction> identities,
+        LocationRedactionState locations)
     {
-        var identities = BuildIdentityRedactions(events);
-        var locationNames = new Dictionary<string, string>(
-            StringComparer.Ordinal);
-        var locationIds = new Dictionary<string, long>(
-            StringComparer.Ordinal);
-        return events.Select(replayEvent =>
+        var root = JsonNode.Parse(replayEvent.RawJson)
+            ?? throw new InvalidDataException(
+                "A journal event could not be read while applying redaction.");
+        string? eventSystemIdentity = null;
+        if (root is JsonObject eventObject)
         {
-            var root = JsonNode.Parse(replayEvent.RawJson)
-                ?? throw new InvalidDataException(
-                    "A journal event could not be read while applying redaction.");
-            if (root is JsonObject eventObject)
+            eventSystemIdentity = ResolveSystemIdentity(
+                eventObject,
+                locations.CurrentSystemIdentity);
+            foreach (var propertyName in SensitivePathProperties)
             {
-                foreach (var propertyName in SensitivePathProperties)
-                {
-                    _ = eventObject.Remove(propertyName);
-                }
-
-                if (string.Equals(
-                        replayEvent.EventName,
-                        "FSDTarget",
-                        StringComparison.OrdinalIgnoreCase)
-                    && eventObject["Name"] is { } destinationName)
-                {
-                    eventObject["Name"] = RedactNode(
-                        destinationName,
-                        "DestinationSystem",
-                        identities,
-                        locationNames,
-                        locationIds);
-                }
+                _ = eventObject.Remove(propertyName);
             }
 
-            _ = RedactNode(
-                root,
-                propertyName: null,
-                identities,
-                locationNames,
-                locationIds);
-            if (replayEvent.EventName is "ReceiveText" or "SendText"
-                && root is JsonObject chat)
+            if (string.Equals(
+                    replayEvent.EventName,
+                    "FSDTarget",
+                    StringComparison.OrdinalIgnoreCase)
+                && eventObject["Name"] is { } destinationName)
             {
-                _ = chat.Remove("Message");
-                _ = chat.Remove("Message_Localised");
+                eventObject["Name"] = RedactNode(
+                    destinationName,
+                    "DestinationSystem",
+                    identities,
+                    locations,
+                    eventSystemIdentity);
             }
+        }
 
-            return root.ToJsonString();
-        }).ToArray();
+        _ = RedactNode(
+            root,
+            propertyName: null,
+            identities,
+            locations,
+            eventSystemIdentity);
+        if (eventSystemIdentity is not null
+            && CurrentSystemEvents.Contains(replayEvent.EventName))
+        {
+            locations.CurrentSystemIdentity = eventSystemIdentity;
+        }
+
+        if (replayEvent.EventName is "ReceiveText" or "SendText"
+            && root is JsonObject chat)
+        {
+            _ = chat.Remove("Message");
+            _ = chat.Remove("Message_Localised");
+        }
+
+        return root.ToJsonString();
+    }
+
+    private static ReplayCommander RedactCommander(
+        ReplayCommander commander,
+        IReadOnlyList<IdentityRedaction> identities)
+    {
+        var identity = identities.FirstOrDefault(candidate =>
+            string.Equals(
+                candidate.OriginalName,
+                commander.Name,
+                StringComparison.Ordinal)
+            && string.Equals(
+                candidate.OriginalFrontierId,
+                commander.FrontierId,
+                StringComparison.OrdinalIgnoreCase));
+        return identity is null
+            ? commander
+            : new ReplayCommander(
+                identity.ReplacementName,
+                identity.ReplacementFrontierId);
     }
 
     private static IReadOnlyList<IdentityRedaction> BuildIdentityRedactions(
@@ -440,18 +428,18 @@ public sealed class JournalReplayExporter
         JsonNode node,
         string? propertyName,
         IReadOnlyList<IdentityRedaction> identities,
-        IDictionary<string, string> locationNames,
-        IDictionary<string, long> locationIds)
+        LocationRedactionState locations,
+        string? systemIdentity)
     {
         if (propertyName is not null
             && LocationNameProperties.Contains(propertyName)
             && node is JsonValue locationValue
             && locationValue.TryGetValue<string>(out var locationName))
         {
-            if (!locationNames.TryGetValue(locationName, out var replacement))
+            if (!locations.Names.TryGetValue(locationName, out var replacement))
             {
-                replacement = $"Replay Location {locationNames.Count + 1:000}";
-                locationNames.Add(locationName, replacement);
+                replacement = $"Replay Location {locations.Names.Count + 1:000}";
+                locations.Names.Add(locationName, replacement);
             }
 
             return JsonValue.Create(replacement)!;
@@ -462,11 +450,14 @@ public sealed class JournalReplayExporter
             && node is JsonValue)
         {
             var original = node.ToJsonString();
-            var key = propertyName + ":" + original;
-            if (!locationIds.TryGetValue(key, out var replacement))
+            var key = CreateLocationIdKey(
+                propertyName,
+                original,
+                systemIdentity);
+            if (!locations.Ids.TryGetValue(key, out var replacement))
             {
-                replacement = 9_000_000_000_000_000L + locationIds.Count;
-                locationIds.Add(key, replacement);
+                replacement = 9_000_000_000_000_000L + locations.Ids.Count;
+                locations.Ids.Add(key, replacement);
             }
 
             return JsonValue.Create(replacement)!;
@@ -492,6 +483,9 @@ public sealed class JournalReplayExporter
 
         if (node is JsonObject objectNode)
         {
+            var objectSystemIdentity = ResolveSystemIdentity(
+                objectNode,
+                systemIdentity);
             foreach (var childName in objectNode
                          .Select(property => property.Key)
                          .ToArray())
@@ -502,8 +496,8 @@ public sealed class JournalReplayExporter
                         child,
                         childName,
                         identities,
-                        locationNames,
-                        locationIds);
+                        locations,
+                        objectSystemIdentity);
                 }
             }
         }
@@ -517,13 +511,47 @@ public sealed class JournalReplayExporter
                         child,
                         propertyName: null,
                         identities,
-                        locationNames,
-                        locationIds);
+                        locations,
+                        systemIdentity);
                 }
             }
         }
 
         return node;
+    }
+
+    private static string? ResolveSystemIdentity(
+        JsonObject value,
+        string? fallback)
+    {
+        foreach (var propertyName in SystemAddressProperties)
+        {
+            if (value[propertyName] is { } address
+                && address is JsonValue)
+            {
+                return address.ToJsonString();
+            }
+        }
+
+        return fallback;
+    }
+
+    private static string CreateLocationIdKey(
+        string propertyName,
+        string original,
+        string? systemIdentity)
+    {
+        if (SystemAddressProperties.Contains(propertyName))
+        {
+            return "system:" + original;
+        }
+
+        if (BodyIdProperties.Contains(propertyName))
+        {
+            return $"body:{systemIdentity ?? "unknown-system"}:{original}";
+        }
+
+        return $"{propertyName.ToUpperInvariant()}:{original}";
     }
 
     private static string ReplaceSensitiveText(
@@ -608,7 +636,19 @@ public sealed class JournalReplayExporter
         StringComparer.OrdinalIgnoreCase);
 
     private static readonly HashSet<string> LocationIdProperties = new(
-        ["SystemAddress", "DestinationSystemAddress", "BodyID", "MarketID"],
+        ["SystemAddress", "DestinationSystemAddress", "BodyID", "Body", "MarketID"],
+        StringComparer.OrdinalIgnoreCase);
+
+    private static readonly HashSet<string> SystemAddressProperties = new(
+        ["SystemAddress", "DestinationSystemAddress"],
+        StringComparer.OrdinalIgnoreCase);
+
+    private static readonly HashSet<string> BodyIdProperties = new(
+        ["BodyID", "Body"],
+        StringComparer.OrdinalIgnoreCase);
+
+    private static readonly HashSet<string> CurrentSystemEvents = new(
+        ["Location", "FSDJump", "CarrierJump"],
         StringComparer.OrdinalIgnoreCase);
 
     private static readonly HashSet<string> LocationCoordinateProperties = new(
@@ -629,6 +669,96 @@ public sealed class JournalReplayExporter
         string Original,
         string Replacement,
         StringComparison Comparison);
+
+    private sealed class LocationRedactionState
+    {
+        public Dictionary<string, string> Names { get; } = new(
+            StringComparer.Ordinal);
+
+        public Dictionary<string, long> Ids { get; } = new(
+            StringComparer.Ordinal);
+
+        public string? CurrentSystemIdentity { get; set; }
+    }
+
+    private sealed class ReplayBootstrapSelector
+    {
+        private JournalReplayEvent? fileHeader;
+        private JournalReplayEvent? commanderEvent;
+        private JournalReplayEvent? loadGameEvent;
+        private JournalReplayEvent? locationEvent;
+        private ReplayCommander? identity;
+
+        public void Observe(JournalReplayEvent replayEvent)
+        {
+            if (string.Equals(
+                    replayEvent.EventName,
+                    "Fileheader",
+                    StringComparison.Ordinal))
+            {
+                fileHeader = replayEvent;
+            }
+
+            if (TryReadCommander(replayEvent) is { } candidate)
+            {
+                if (!SameIdentity(identity, candidate))
+                {
+                    identity = candidate;
+                    commanderEvent = null;
+                    loadGameEvent = null;
+                    locationEvent = null;
+                }
+
+                if (string.Equals(
+                        replayEvent.EventName,
+                        "Commander",
+                        StringComparison.Ordinal))
+                {
+                    commanderEvent = replayEvent;
+                }
+                else
+                {
+                    loadGameEvent = replayEvent;
+                }
+            }
+
+            if (replayEvent.EventName is "Location" or "FSDJump" or "CarrierJump")
+            {
+                locationEvent = replayEvent;
+            }
+        }
+
+        public JournalReplayEvent[] Snapshot()
+        {
+            return new[]
+                {
+                    fileHeader,
+                    commanderEvent,
+                    loadGameEvent,
+                    locationEvent,
+                }
+                .Where(item => item is not null)
+                .Cast<JournalReplayEvent>()
+                .DistinctBy(item => item.Index)
+                .OrderBy(item => item.Index)
+                .ToArray();
+        }
+
+        private static bool SameIdentity(
+            ReplayCommander? first,
+            ReplayCommander second)
+        {
+            return first is not null
+                && string.Equals(
+                    first.Name,
+                    second.Name,
+                    StringComparison.Ordinal)
+                && string.Equals(
+                    first.FrontierId,
+                    second.FrontierId,
+                    StringComparison.OrdinalIgnoreCase);
+        }
+    }
 
     private static string RemoveCredentials(string rawJson)
     {

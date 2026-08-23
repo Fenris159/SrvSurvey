@@ -7,6 +7,31 @@ namespace SrvSurvey.Core.Tests.Diagnostics.Replay;
 public sealed class ReplaySessionManagerTests
 {
     [Fact]
+    public async Task BoundedCopyRejectsBytesBeyondTheDeclaredLimitBeforeWritingThem()
+    {
+        await using var source = new MemoryStream(new byte[17]);
+        await using var destination = new MemoryStream();
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            ReplaySessionManager.CopyBoundedAsync(
+                source,
+                destination,
+                maximumBytes: 16,
+                CancellationToken.None));
+
+        Assert.Contains("larger", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(16, destination.Length);
+    }
+
+    [Fact]
+    public void ReplayPackageLimitAllowsJournalLimitPlusContainerOverhead()
+    {
+        Assert.True(
+            ReplaySessionManager.MaximumReplayPackageBytes
+                > ReplaySessionManager.MaximumJournalBytes);
+    }
+
+    [Fact]
     public async Task ImportCreatesAnIsolatedSessionFromACommanderJournal()
     {
         using var temp = new TemporaryDirectory();
