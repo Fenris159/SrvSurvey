@@ -39,7 +39,10 @@ public sealed class JournalReplayExporter
         Converters = { new JsonStringEnumConverter() },
     };
     private readonly IReplayPackageWriter packageWriter;
-    private readonly JournalHistoryReader historyReader;
+    private readonly Func<
+        string,
+        CancellationToken,
+        IAsyncEnumerable<JournalHistoryEvent>> streamHistory;
 
     public JournalReplayExporter()
         : this(new ZipReplayPackageWriter(), new JournalHistoryReader())
@@ -62,8 +65,26 @@ public sealed class JournalReplayExporter
     {
         this.packageWriter = packageWriter
             ?? throw new ArgumentNullException(nameof(packageWriter));
-        this.historyReader = historyReader
-            ?? throw new ArgumentNullException(nameof(historyReader));
+        ArgumentNullException.ThrowIfNull(historyReader);
+        streamHistory = historyReader.StreamAsync;
+    }
+
+    internal JournalReplayExporter(
+        Func<string, CancellationToken, IAsyncEnumerable<JournalHistoryEvent>>
+            streamHistory)
+        : this(new ZipReplayPackageWriter(), streamHistory)
+    {
+    }
+
+    internal JournalReplayExporter(
+        IReplayPackageWriter packageWriter,
+        Func<string, CancellationToken, IAsyncEnumerable<JournalHistoryEvent>>
+            streamHistory)
+    {
+        this.packageWriter = packageWriter
+            ?? throw new ArgumentNullException(nameof(packageWriter));
+        this.streamHistory = streamHistory
+            ?? throw new ArgumentNullException(nameof(streamHistory));
     }
 
     public async Task<JournalReplayExportResult> ExportAsync(
@@ -140,6 +161,7 @@ public sealed class JournalReplayExporter
                 temporaryPath,
                 package,
                 cancellationToken);
+            File.Delete(journalSpoolPath);
             File.Move(temporaryPath, fullDestinationPath, overwrite: true);
             return new JournalReplayExportResult(
                 fullDestinationPath,
@@ -151,15 +173,8 @@ public sealed class JournalReplayExporter
         }
         finally
         {
-            if (File.Exists(temporaryPath))
-            {
-                File.Delete(temporaryPath);
-            }
-
-            if (File.Exists(journalSpoolPath))
-            {
-                File.Delete(journalSpoolPath);
-            }
+            TryDeleteTemporaryFile(temporaryPath);
+            TryDeleteTemporaryFile(journalSpoolPath);
         }
     }
 
@@ -172,13 +187,15 @@ public sealed class JournalReplayExporter
         var identityBuilder = request.PrivacyMode == ReplayPrivacyMode.Redacted
             ? new IdentityRedactionBuilder()
             : null;
+        using var inputHash = IncrementalHash.CreateHash(
+            HashAlgorithmName.SHA256);
         JournalReplayEvent[] bootstrap = [];
         ReplayCommander? commander = null;
         DateTimeOffset? firstTimestamp = null;
         DateTimeOffset? lastTimestamp = null;
         var selectedEventCount = 0;
         long inputByteCount = 0;
-        await foreach (var historyEvent in historyReader.StreamAsync(
+        await foreach (var historyEvent in streamHistory(
                            journalDirectory,
                            cancellationToken))
         {
@@ -203,6 +220,7 @@ public sealed class JournalReplayExporter
                 foreach (var bootstrapEvent in bootstrap)
                 {
                     ObserveIncluded(bootstrapEvent);
+                    AppendRawEvent(inputHash, bootstrapEvent.RawJson);
                     inputByteCount += Encoding.UTF8.GetByteCount(
                         bootstrapEvent.RawJson) + 1L;
                 }
@@ -214,6 +232,7 @@ public sealed class JournalReplayExporter
 
             selectedEventCount++;
             ObserveIncluded(replayEvent);
+            AppendRawEvent(inputHash, replayEvent.RawJson);
             lastTimestamp = replayEvent.Timestamp;
             inputByteCount += Encoding.UTF8.GetByteCount(
                 replayEvent.RawJson) + 1L;
@@ -240,7 +259,8 @@ public sealed class JournalReplayExporter
             firstTimestamp,
             lastTimestamp,
             commander,
-            identityBuilder?.Build() ?? []);
+            identityBuilder?.Build() ?? [],
+            Convert.ToHexStringLower(inputHash.GetHashAndReset()));
 
         void ObserveIncluded(JournalReplayEvent replayEvent)
         {
@@ -261,6 +281,8 @@ public sealed class JournalReplayExporter
             .ToHashSet();
         var locations = new LocationRedactionState();
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using var inputHash = IncrementalHash.CreateHash(
+            HashAlgorithmName.SHA256);
         await using var output = new FileStream(
             spoolPath,
             FileMode.CreateNew,
@@ -270,7 +292,7 @@ public sealed class JournalReplayExporter
             useAsync: true);
         long outputByteCount = 0;
         var outputEventCount = 0;
-        await foreach (var historyEvent in historyReader.StreamAsync(
+        await foreach (var historyEvent in streamHistory(
                            journalDirectory,
                            cancellationToken))
         {
@@ -285,6 +307,7 @@ public sealed class JournalReplayExporter
                 continue;
             }
 
+            AppendRawEvent(inputHash, replayEvent.RawJson);
             var sanitized = replayEvent with
             {
                 RawJson = RemoveCredentials(replayEvent.RawJson),
@@ -308,6 +331,17 @@ public sealed class JournalReplayExporter
                 "The journal history changed while the replay export was being created. Refresh and export again.");
         }
 
+        var inputChecksum = Convert.ToHexStringLower(
+            inputHash.GetHashAndReset());
+        if (!string.Equals(
+                inputChecksum,
+                scan.InputSha256,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException(
+                "The journal history changed while the replay export was being created. Refresh and export again.");
+        }
+
         await output.FlushAsync(cancellationToken);
         return Convert.ToHexStringLower(hash.GetHashAndReset());
     }
@@ -318,6 +352,30 @@ public sealed class JournalReplayExporter
     {
         (byte)'\n',
     };
+
+    private static void AppendRawEvent(
+        IncrementalHash hash,
+        string rawJson)
+    {
+        hash.AppendData(Encoding.UTF8.GetBytes(rawJson));
+        hash.AppendData(Newline.Span);
+    }
+
+    private static void TryDeleteTemporaryFile(string path)
+    {
+        try
+        {
+            File.Delete(path);
+        }
+        catch (IOException)
+        {
+            // Preserve the primary export failure or committed result.
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Preserve the primary export failure or committed result.
+        }
+    }
 
     internal static void ValidateOutputBounds(int eventCount, long byteCount)
     {
@@ -754,7 +812,8 @@ public sealed class JournalReplayExporter
         DateTimeOffset? FirstTimestamp,
         DateTimeOffset? LastTimestamp,
         ReplayCommander Commander,
-        IReadOnlyList<IdentityRedaction> Identities);
+        IReadOnlyList<IdentityRedaction> Identities,
+        string InputSha256);
 
     private sealed record IdentityRedaction(
         string OriginalName,

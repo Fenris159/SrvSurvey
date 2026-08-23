@@ -466,6 +466,73 @@ public sealed class JournalReplayExporterTests
             ".journal-export.*.tmp"));
     }
 
+    [Fact]
+    public async Task ExportRejectsSameCountJournalMutationBetweenPasses()
+    {
+        using var temp = new TemporaryDirectory();
+        var firstPass = new[]
+        {
+            HistoryEvent(
+                "{\"event\":\"Commander\",\"Name\":\"First Cmdr\",\"FID\":\"F111111\"}"),
+        };
+        var secondPass = new[]
+        {
+            HistoryEvent(
+                "{\"event\":\"Commander\",\"Name\":\"Private Replacement\",\"FID\":\"F999999\"}"),
+        };
+        var pass = 0;
+        var exporter = new JournalReplayExporter(StreamHistory);
+        var destination = Path.Combine(temp.Path, "changed.srvreplay");
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            exporter.ExportAsync(
+                temp.Path,
+                destination,
+                new JournalReplayExportRequest(
+                    null,
+                    null,
+                    ReplayPrivacyMode.Redacted,
+                    "test"),
+                CancellationToken.None));
+
+        Assert.Contains(
+            "changed",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.False(File.Exists(destination));
+        Assert.Empty(Directory.EnumerateFiles(
+            temp.Path,
+            ".journal-export.*.tmp"));
+
+        async IAsyncEnumerable<JournalHistoryEvent> StreamHistory(
+            string _,
+            [System.Runtime.CompilerServices.EnumeratorCancellation]
+            CancellationToken cancellationToken)
+        {
+            var events = Interlocked.Increment(ref pass) == 1
+                ? firstPass
+                : secondPass;
+            foreach (var historyEvent in events)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await Task.Yield();
+                yield return historyEvent;
+            }
+        }
+
+        static JournalHistoryEvent HistoryEvent(string rawJson)
+        {
+            return new JournalHistoryEvent(
+                0,
+                "Journal.01.log",
+                null,
+                "Commander",
+                null,
+                null,
+                rawJson);
+        }
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
