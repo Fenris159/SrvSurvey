@@ -27,6 +27,7 @@ using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Frontier;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.Runtime;
 using SrvSurvey.Desktop.Theming;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -264,9 +265,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
             var sharedJournalSettingsStore = new JournalSettingsStore(
                 AppDataPaths.UiSettingsPath);
-            folderResolution = JournalFolderLocator.ResolveCurrent(
+            folderResolution = ResolveJournalFolder(
                 configuredJournalDirectory
-                    ?? sharedJournalSettingsStore.Load().Directory);
+                    ?? sharedJournalSettingsStore.Load().Directory,
+                IsDiagnosticReplay);
             FrontierProfile = frontierProfile ?? new CommanderProfileViewModel(
                 FrontierAccountService.CreateCurrent(AppDataPaths.DataDirectory),
                 communityGoalHistoryReader: CreateCommunityGoalHistoryReader(
@@ -338,7 +340,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     folderResolution,
                     AppDataPaths.DataDirectory),
                 (typeof(MainWindowViewModel).Assembly.GetName().Version
-                    ?? new Version(0, 0)).ToString());
+                    ?? new Version(0, 0)).ToString(),
+                presentationSnapshotProvider: () =>
+                    ReplayPresentationSnapshotStore.Capture(
+                        AppDataPaths,
+                        foundation.ReplayViewportProvider?.Invoke()));
+            rollback.Add(JournalHistory.Dispose);
             JournalSettings = new JournalSettingsViewModel(
                 sharedJournalSettingsStore,
                 configuredJournalDirectory);
@@ -1914,6 +1921,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     public async Task ImportLegacyProfileAsync()
     {
+        if (IsDiagnosticReplay)
+        {
+            ProfileStatusMessage =
+                "Legacy profile import is unavailable during diagnostic replay.";
+            return;
+        }
+
         if (!CanImportLegacyProfile())
         {
             return;
@@ -2069,7 +2083,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     private bool CanImportLegacyProfile()
     {
-        return !IsImportingProfile
+        return !IsDiagnosticReplay
+            && !IsImportingProfile
             && Directory.Exists(LegacyProfileSourcePath)
             && !HasCompletedLegacyImport
             && !File.Exists(AppDataPaths.DataDirectory);
@@ -2077,6 +2092,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     private string GetInitialProfileStatus()
     {
+        if (IsDiagnosticReplay)
+        {
+            return "Legacy profile import is unavailable during diagnostic replay.";
+        }
+
         if (HasCompletedLegacyImport)
         {
             return $"Legacy profile data has already been imported into "
@@ -2130,6 +2150,27 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         string dataDirectory) =>
         ResolvePrimaryJournalPath(resolution)
             ?? Path.Combine(dataDirectory, "journals");
+
+    private static JournalFolderResolution ResolveJournalFolder(
+        string? configuredJournalDirectory,
+        bool isDiagnosticReplay)
+    {
+        if (!isDiagnosticReplay)
+        {
+            return JournalFolderLocator.ResolveCurrent(
+                configuredJournalDirectory);
+        }
+
+        var replayDirectory = configuredJournalDirectory?.Trim().Trim('"');
+        if (string.IsNullOrWhiteSpace(replayDirectory))
+        {
+            return new JournalFolderResolution(null, []);
+        }
+
+        return new JournalFolderResolution(
+            Directory.Exists(replayDirectory) ? replayDirectory : null,
+            [replayDirectory]);
+    }
 
     private static string FormatCandidatePathsDisplay(
         JournalFolderResolution resolution) =>

@@ -1,6 +1,10 @@
 using Avalonia;
 using SrvSurvey.Core.Diagnostics.Replay;
+using SrvSurvey.Core.Search;
+using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Runtime;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Runtime;
 
@@ -110,7 +114,7 @@ public sealed class DiagnosticReplayContextTests
             CancellationToken.None);
         using var client = context.CreateNetworkClient();
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(
             () => client.GetAsync(
                 "https://example.com/must-not-run",
                 CancellationToken.None));
@@ -119,6 +123,114 @@ public sealed class DiagnosticReplayContextTests
             "disabled during diagnostic replay",
             exception.Message,
             StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task NetworkBackedViewModelReportsDiagnosticDenialWithoutThrowing()
+    {
+        using var temp = new TemporaryDirectory();
+        var journalPath = Path.Combine(temp.Path, "Journal.01.log");
+        await File.WriteAllTextAsync(
+            journalPath,
+            "{\"event\":\"Commander\",\"Name\":\"Imported\",\"FID\":\"F987654\"}\n");
+        var session = await new ReplaySessionManager().ImportAsync(
+            journalPath,
+            Path.Combine(temp.Path, "managed"),
+            CancellationToken.None);
+        var context = await DiagnosticReplayContext.LoadAsync(
+            session.ManifestPath,
+            CancellationToken.None);
+        using var client = context.CreateNetworkClient();
+        var viewModel = new NearestSystemsViewModel(
+            new NearestSystemsClient(client),
+            new EmptySystemResolver());
+        viewModel.UpdateContext(
+            "Replay System",
+            new GalacticCoordinate(1, 2, 3),
+            "Imported");
+        viewModel.BiologicalSignal = "Stratum";
+
+        await viewModel.SearchAsync();
+
+        Assert.Contains(
+            "disabled during diagnostic replay",
+            viewModel.StatusMessage,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.False(viewModel.IsSearching);
+    }
+
+    [Fact]
+    public async Task ContextAppliesPortableOverlayPresentationWithoutAProfile()
+    {
+        using var temp = new TemporaryDirectory();
+        var journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.01.log"),
+            "{\"event\":\"Commander\",\"Name\":\"Imported\",\"FID\":\"F987654\"}\n");
+        var packagePath = Path.Combine(temp.Path, "presentation.srvreplay");
+        await new JournalReplayExporter().ExportAsync(
+            journals,
+            packagePath,
+            new JournalReplayExportRequest(
+                null,
+                null,
+                ReplayPrivacyMode.Redacted,
+                "test",
+                new ReplayPresentationSnapshot(
+                    2560,
+                    1440,
+                    3,
+                    0.7,
+                    new Dictionary<string, bool>
+                    {
+                        ["PlotFSSInfo"] = false,
+                    },
+                    new Dictionary<string, ReplayOverlayPlacement>
+                    {
+                        ["PlotFSSInfo"] = new(
+                            ReplayHorizontalAnchor.Right,
+                            42,
+                            ReplayVerticalAnchor.Top,
+                            24,
+                            0.8,
+                            4),
+                    })),
+            CancellationToken.None);
+        var session = await new ReplaySessionManager().ImportAsync(
+            packagePath,
+            Path.Combine(temp.Path, "managed"),
+            CancellationToken.None);
+
+        var context = await DiagnosticReplayContext.LoadAsync(
+            session.ManifestPath,
+            CancellationToken.None);
+        using var gameWindow = context.CreateGameWindowTracker();
+        var visibility = new OverlayPanelVisibilitySettingsStore(
+            context.AppDataPaths.UiSettingsPath).Load();
+        var scale = new OverlayScaleSettingsStore(
+            context.AppDataPaths.UiSettingsPath).Load();
+        var layout = new LegacyOverlayLayoutStore(
+            context.AppDataPaths.DataDirectory).Load();
+
+        Assert.Equal(
+            new PixelRect(0, 0, 2560, 1440),
+            gameWindow.GetSnapshot().ClientBounds);
+        Assert.False(visibility["PlotFSSInfo"]);
+        Assert.Equal(3, scale.Index);
+        Assert.Equal(
+            42,
+            layout.Placements["PlotFSSInfo"].HorizontalOffset);
+        Assert.Equal(4, layout.Placements["PlotFSSInfo"].ScaleIndex);
+        Assert.Equal(0.7, layout.DefaultOpacity);
+    }
+
+    private sealed class EmptySystemResolver : IStarSystemResolver
+    {
+        public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
+            string query,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<StarSystemReference>>([]);
     }
 
     private sealed class TemporaryDirectory : IDisposable

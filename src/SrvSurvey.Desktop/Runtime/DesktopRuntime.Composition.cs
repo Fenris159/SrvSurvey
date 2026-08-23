@@ -211,6 +211,7 @@ internal sealed partial class DesktopRuntime
                     : $"Diagnostic replay: {diagnosticReplay.Commander.Name} "
                         + $"({diagnosticReplay.Commander.FrontierId}); external effects disabled.",
                 ExternalNetworkClient = externalNetworkClient,
+                ReplayViewportProvider = CaptureReplayViewport,
             },
             new MainWindowOverlayInputs
             {
@@ -1199,6 +1200,13 @@ internal sealed partial class DesktopRuntime
     {
         return diagnosticReplayContext?.CreateGameWindowTracker()
             ?? GameWindowTracker.CreateCurrent();
+    }
+
+    private PixelRect? CaptureReplayViewport()
+    {
+        using var tracker = CreateRawGameWindowTracker();
+        var snapshot = tracker.GetSnapshot();
+        return snapshot.IsAvailable ? snapshot.ClientBounds : null;
     }
 
     private void HandleFrontierAuthorizationCallback(

@@ -49,6 +49,14 @@ public sealed class JournalHistoryViewModelTests
             "1 selected event",
             viewModel.ExportPreview,
             StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "sent and received chat",
+            viewModel.ExportPreview,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "location names",
+            viewModel.ExportPreview,
+            StringComparison.OrdinalIgnoreCase);
         Assert.True(await viewModel.ExportAsync(packagePath));
         var session = await new ReplaySessionManager().ImportAsync(
             packagePath,
@@ -58,6 +66,33 @@ public sealed class JournalHistoryViewModelTests
         Assert.Equal(
             ["Commander", "FSDJump"],
             session.Events.Select(item => item.EventName));
+    }
+
+    [Fact]
+    public async Task LargeHistorySearchCompletesOffTheCallingContext()
+    {
+        using var temp = new TemporaryDirectory();
+        var lines = Enumerable.Range(0, 6_000)
+            .Select(index => index == 5_999
+                ? "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"NeedleEvent\",\"Name\":\"History Cmdr\",\"FID\":\"F123456\"}"
+                : $"{{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Scan\",\"BodyID\":{index}}}")
+            .ToArray();
+        await File.WriteAllLinesAsync(
+            Path.Combine(temp.Path, "Journal.2026-08-21T180000.01.log"),
+            lines);
+        using var viewModel = new JournalHistoryViewModel(
+            temp.Path,
+            "test-build");
+        await viewModel.RefreshAsync();
+
+        viewModel.SearchText = "NeedleEvent";
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+        while (viewModel.Events.Count != 1)
+        {
+            await Task.Delay(10, timeout.Token);
+        }
+
+        Assert.Equal("NeedleEvent", viewModel.Events[0].EventName);
     }
 
     private sealed class TemporaryDirectory : IDisposable

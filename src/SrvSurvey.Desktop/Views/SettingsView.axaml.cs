@@ -156,6 +156,11 @@ public sealed partial class SettingsView : UserControl
             return;
         }
 
+        if (viewModel.IsDiagnosticReplay)
+        {
+            return;
+        }
+
         var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(
             new FolderPickerOpenOptions
             {

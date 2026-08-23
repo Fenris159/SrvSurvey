@@ -39,13 +39,21 @@ internal sealed class DiagnosticReplayContext
         var session = await DiagnosticReplaySession.LoadAsync(
             manifestPath,
             cancellationToken);
+        ReplayPresentationSnapshotStore.Apply(session);
         return new DiagnosticReplayContext(session);
     }
 
     public IGameWindowTracker CreateGameWindowTracker()
     {
+        var bounds = Session.PresentationSnapshot is { } presentation
+            ? new PixelRect(
+                0,
+                0,
+                presentation.ViewportWidth,
+                presentation.ViewportHeight)
+            : new PixelRect(0, 0, 1920, 1080);
         return new DiagnosticGameWindowTracker(
-            new PixelRect(0, 0, 1920, 1080));
+            bounds);
     }
 
     public HttpClient CreateNetworkClient()
@@ -80,7 +88,7 @@ internal sealed class DiagnosticReplayContext
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            throw new InvalidOperationException(
+            throw new HttpRequestException(
                 "Network access is disabled during diagnostic replay. "
                 + $"Blocked {request.Method} request to {request.RequestUri?.Host ?? "an external service"}.");
         }

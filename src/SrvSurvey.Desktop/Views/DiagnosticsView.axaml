@@ -88,11 +88,6 @@
                      ItemsSource="{Binding JournalHistory.Events}"
                      ScrollViewer.IsScrollChainingEnabled="False"
                      SelectedItem="{Binding JournalHistory.SelectedEvent, Mode=TwoWay}">
-              <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                  <StackPanel />
-                </ItemsPanelTemplate>
-              </ListBox.ItemsPanel>
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="replay:JournalHistoryEvent">
                   <StackPanel Margin="4" Spacing="2">
@@ -163,7 +158,7 @@
             </StackPanel>
           </Grid>
           <CheckBox IsChecked="{Binding JournalHistory.RedactExport, Mode=TwoWay}"
-                    Content="Redact commander identity and received-message text" />
+                    Content="Redact commander identities, chat, locations, coordinates, and screenshot paths" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
                      Text="{Binding JournalHistory.ExportPreview}" />

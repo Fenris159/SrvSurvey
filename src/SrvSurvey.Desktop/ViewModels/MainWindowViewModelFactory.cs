@@ -216,6 +216,8 @@ internal sealed class MainWindowFoundationInputs
     public string? DiagnosticReplayStatus { get; init; }
 
     public HttpClient? ExternalNetworkClient { get; init; }
+
+    public Func<Avalonia.PixelRect?>? ReplayViewportProvider { get; init; }
 }
 
 internal sealed class MainWindowOverlayInputs

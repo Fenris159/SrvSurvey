@@ -30,6 +30,16 @@ public sealed class DiagnosticsViewMarkupTests
         Assert.Contains(document.Descendants(), element =>
             element.Attribute("Text")?.Value
                 == "{Binding DiagnosticReplayStatus}");
+        var historyList = FindNamedElement(
+            document,
+            "JournalHistoryEventList");
+        Assert.DoesNotContain(
+            historyList.Descendants(),
+            element => element.Name.LocalName == "ItemsPanelTemplate");
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "CheckBox"
+            && element.Attribute("Content")?.Value
+                == "Redact commander identities, chat, locations, coordinates, and screenshot paths");
     }
 
     [Fact]

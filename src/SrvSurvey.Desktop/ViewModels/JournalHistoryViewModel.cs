@@ -6,12 +6,15 @@ using SrvSurvey.Core.Diagnostics.Replay;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class JournalHistoryViewModel : INotifyPropertyChanged
+public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposable
 {
+    private const int BackgroundFilterThreshold = 5_000;
     private readonly string journalDirectory;
     private readonly string sourceVersion;
     private readonly JournalHistoryReader reader;
     private readonly JournalReplayExporter exporter;
+    private readonly Func<ReplayPresentationSnapshot?> presentationSnapshotProvider;
+    private readonly SynchronizationContext? synchronizationContext;
     private readonly AsyncCommand refreshCommand;
     private IReadOnlyList<JournalHistoryEvent> allEvents = [];
     private IReadOnlyList<JournalHistoryEvent> events = [];
@@ -25,12 +28,14 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged
     private string rangeFromText = string.Empty;
     private string rangeToText = string.Empty;
     private bool redactExport = true;
+    private CancellationTokenSource? filterCancellation;
 
     public JournalHistoryViewModel(
         string journalDirectory,
         string sourceVersion,
         JournalHistoryReader? reader = null,
-        JournalReplayExporter? exporter = null)
+        JournalReplayExporter? exporter = null,
+        Func<ReplayPresentationSnapshot?>? presentationSnapshotProvider = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceVersion);
@@ -38,6 +43,9 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged
         this.sourceVersion = sourceVersion.Trim();
         this.reader = reader ?? new JournalHistoryReader();
         this.exporter = exporter ?? new JournalReplayExporter();
+        this.presentationSnapshotProvider = presentationSnapshotProvider
+            ?? (() => null);
+        synchronizationContext = SynchronizationContext.Current;
         refreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
         RefreshCommand = refreshCommand;
     }
@@ -203,20 +211,19 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged
                 return error;
             }
 
-            var selected = allEvents.Where(item => item.Timestamp is { } timestamp
+            var selectedCount = allEvents.Count(item => item.Timestamp is { } timestamp
                     && (from is null || timestamp >= from)
-                    && (to is null || timestamp <= to))
-                .ToArray();
-            if (selected.Length == 0)
+                    && (to is null || timestamp <= to));
+            if (selectedCount == 0)
             {
                 return "No timestamped events are inside the export range.";
             }
 
             var privacy = RedactExport
-                ? "Commander identity and received-message text will be redacted."
+                ? "Commander identities, sent and received chat, location names, IDs, coordinates, and screenshot paths will be redacted."
                 : "Commander identity and selected event content will remain raw.";
-            return $"{selected.Length:N0} selected event"
-                + (selected.Length == 1 ? string.Empty : "s")
+            return $"{selectedCount:N0} selected event"
+                + (selectedCount == 1 ? string.Empty : "s")
                 + "; required header, commander, load, and location bootstrap "
                 + "events before the range will be added automatically. "
                 + privacy
@@ -233,11 +240,12 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged
 
         IsBusy = true;
         StatusMessage = string.Empty;
+        CancelPendingFilter();
         try
         {
-            var snapshot = await reader.LoadAsync(
+            var snapshot = await Task.Run(() => reader.LoadAsync(
                 journalDirectory,
-                CancellationToken.None);
+                CancellationToken.None));
             allEvents = snapshot.Events;
             RangeFrom = snapshot.FirstTimestamp;
             RangeTo = snapshot.LastTimestamp;
@@ -292,16 +300,19 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var result = await exporter.ExportAsync(
-                journalDirectory,
-                destinationPath,
-                new JournalReplayExportRequest(
-                    from,
-                    to,
-                    RedactExport
-                        ? ReplayPrivacyMode.Redacted
-                        : ReplayPrivacyMode.Raw,
-                    sourceVersion),
+            var request = new JournalReplayExportRequest(
+                from,
+                to,
+                RedactExport
+                    ? ReplayPrivacyMode.Redacted
+                    : ReplayPrivacyMode.Raw,
+                sourceVersion,
+                presentationSnapshotProvider());
+            var result = await Task.Run(() => exporter.ExportAsync(
+                    journalDirectory,
+                    destinationPath,
+                    request,
+                    cancellationToken),
                 cancellationToken);
             StatusMessage = $"Exported {result.EventCount:N0} events "
                 + $"({result.BootstrapEventCount:N0} bootstrap) to {result.Path}.";
@@ -325,7 +336,21 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged
     private void ApplyFilter()
     {
         var filter = SearchText.Trim();
-        Events = filter.Length == 0
+        CancelPendingFilter();
+        if (filter.Length == 0 || allEvents.Count < BackgroundFilterThreshold)
+        {
+            ApplyFilteredEvents(FilterEvents(filter));
+            return;
+        }
+
+        var cancellation = new CancellationTokenSource();
+        filterCancellation = cancellation;
+        _ = ApplyFilterInBackgroundAsync(filter, cancellation);
+    }
+
+    private IReadOnlyList<JournalHistoryEvent> FilterEvents(string filter)
+    {
+        return filter.Length == 0
             ? allEvents
             : allEvents.Where(item => Contains(item.EventName, filter)
                 || Contains(item.FileName, filter)
@@ -333,10 +358,92 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged
                 || Contains(item.SystemName, filter)
                 || Contains(item.RawJson, filter))
                 .ToArray();
+    }
+
+    private async Task ApplyFilterInBackgroundAsync(
+        string filter,
+        CancellationTokenSource cancellation)
+    {
+        try
+        {
+            await Task.Delay(150, cancellation.Token);
+            var filtered = await Task.Run(
+                () => FilterEvents(filter),
+                cancellation.Token);
+            await InvokeOnCapturedContextAsync(() =>
+            {
+                if (ReferenceEquals(filterCancellation, cancellation)
+                    && string.Equals(
+                        SearchText.Trim(),
+                        filter,
+                        StringComparison.Ordinal))
+                {
+                    ApplyFilteredEvents(filtered);
+                }
+            });
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            // A newer search superseded this one.
+        }
+        finally
+        {
+            if (ReferenceEquals(filterCancellation, cancellation))
+            {
+                filterCancellation = null;
+            }
+
+            cancellation.Dispose();
+        }
+    }
+
+    private void ApplyFilteredEvents(IReadOnlyList<JournalHistoryEvent> filtered)
+    {
+        Events = filtered;
         if (SelectedEvent is not null && !Events.Contains(SelectedEvent))
         {
             SelectedEvent = null;
         }
+    }
+
+    private Task InvokeOnCapturedContextAsync(Action action)
+    {
+        if (synchronizationContext is null
+            || ReferenceEquals(SynchronizationContext.Current, synchronizationContext))
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        var completion = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        synchronizationContext.Post(
+            _ =>
+            {
+                try
+                {
+                    action();
+                    completion.SetResult();
+                }
+                catch (Exception exception)
+                {
+                    completion.SetException(exception);
+                }
+            },
+            state: null);
+        return completion.Task;
+    }
+
+    private void CancelPendingFilter()
+    {
+        var cancellation = filterCancellation;
+        filterCancellation = null;
+        cancellation?.Cancel();
+    }
+
+    public void Dispose()
+    {
+        CancelPendingFilter();
     }
 
     private static bool Contains(string? value, string filter)

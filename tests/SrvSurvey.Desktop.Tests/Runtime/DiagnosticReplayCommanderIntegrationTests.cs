@@ -103,6 +103,62 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
             StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void DiagnosticJournalResolutionNeverFallsBackToLiveCandidates()
+    {
+        using var temp = new TemporaryDirectory();
+        var missingPlayback = Path.Combine(temp.Path, "missing-playback");
+        var paths = new SrvSurvey.Core.Storage.AppDataPaths(
+            Path.Combine(temp.Path, "config"),
+            Path.Combine(temp.Path, "data"),
+            Path.Combine(temp.Path, "cache"),
+            []);
+
+        using var viewModel = MainWindowViewModelTestBuilder.Create(
+            missingPlayback,
+            builder => builder
+                .WithAppDataPaths(paths)
+                .AsDiagnosticReplay("External effects disabled."));
+
+        Assert.Equal(missingPlayback, viewModel.JournalFolderPath);
+        Assert.Equal(missingPlayback, viewModel.CandidatePaths);
+        Assert.Null(viewModel.CurrentJournalPath);
+    }
+
+    [Fact]
+    public async Task DiagnosticModeRejectsLegacyProfileImport()
+    {
+        using var temp = new TemporaryDirectory();
+        var source = Path.Combine(temp.Path, "personal-profile");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "F123-live.json"),
+            "personal commander");
+        var paths = new SrvSurvey.Core.Storage.AppDataPaths(
+            Path.Combine(temp.Path, "config"),
+            Path.Combine(temp.Path, "diagnostic-data"),
+            Path.Combine(temp.Path, "cache"),
+            []);
+
+        using var viewModel = MainWindowViewModelTestBuilder.Create(
+            Path.Combine(temp.Path, "playback"),
+            builder => builder
+                .WithAppDataPaths(paths)
+                .AsDiagnosticReplay("External effects disabled."));
+        viewModel.LegacyProfileSourcePath = source;
+
+        Assert.False(viewModel.ImportLegacyProfileCommand.CanExecute(null));
+        await viewModel.ImportLegacyProfileAsync();
+
+        Assert.False(File.Exists(Path.Combine(
+            paths.DataDirectory,
+            "F123-live.json")));
+        Assert.Contains(
+            "unavailable during diagnostic replay",
+            viewModel.ProfileStatusMessage,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
     private sealed class TemporaryDirectory : IDisposable
     {
         public TemporaryDirectory()
