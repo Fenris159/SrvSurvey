@@ -147,14 +147,32 @@
           <TextBlock FontWeight="SemiBold" Text="Replay export range" />
           <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
             <StackPanel Spacing="4">
-              <TextBlock Classes="muted" Text="From" />
-              <TextBox Text="{Binding JournalHistory.RangeFromText, Mode=TwoWay}"
-                       PlaceholderText="2026-08-21T18:00:00Z" />
+              <TextBlock Classes="muted" Text="Start (UTC)" />
+              <Grid ColumnDefinitions="2*,*" ColumnSpacing="8">
+                <CalendarDatePicker SelectedDate="{Binding JournalHistory.RangeFromDate, Mode=TwoWay}"
+                                    DisplayDateStart="{Binding JournalHistory.RangeMinimumDate}"
+                                    DisplayDateEnd="{Binding JournalHistory.RangeMaximumDate}"
+                                    SelectedDateFormat="Long"
+                                    PlaceholderText="Choose a start date" />
+                <TimePicker Grid.Column="1"
+                            ClockIdentifier="24HourClock"
+                            UseSeconds="True"
+                            SelectedTime="{Binding JournalHistory.RangeFromTime, Mode=TwoWay}" />
+              </Grid>
             </StackPanel>
             <StackPanel Grid.Column="1" Spacing="4">
-              <TextBlock Classes="muted" Text="To" />
-              <TextBox Text="{Binding JournalHistory.RangeToText, Mode=TwoWay}"
-                       PlaceholderText="2026-08-21T18:30:00Z" />
+              <TextBlock Classes="muted" Text="End (UTC)" />
+              <Grid ColumnDefinitions="2*,*" ColumnSpacing="8">
+                <CalendarDatePicker SelectedDate="{Binding JournalHistory.RangeToDate, Mode=TwoWay}"
+                                    DisplayDateStart="{Binding JournalHistory.RangeFromDate}"
+                                    DisplayDateEnd="{Binding JournalHistory.RangeToMaximumDate}"
+                                    SelectedDateFormat="Long"
+                                    PlaceholderText="Choose an end date" />
+                <TimePicker Grid.Column="1"
+                            ClockIdentifier="24HourClock"
+                            UseSeconds="True"
+                            SelectedTime="{Binding JournalHistory.RangeToTime, Mode=TwoWay}" />
+              </Grid>
             </StackPanel>
           </Grid>
           <CheckBox IsChecked="{Binding JournalHistory.RedactExport, Mode=TwoWay}"

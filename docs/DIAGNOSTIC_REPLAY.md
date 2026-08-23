@@ -15,13 +15,16 @@ history while retaining the most recent 50,000 events as its searchable display
 window. Timestamp export streams the full index, including ranges older than the
 display window.
 
-Choose an exact inclusive UTC timestamp range, preview it, and export a
-`.srvreplay` package. The exporter includes the earlier Commander and LoadGame
-bootstrap events needed to establish the replay identity. Redacted export is the
-default and pseudonymizes every Commander/FID identity and location relationship,
-removes sent and received chat, zeroes coordinates, and removes screenshot file
-paths. Raw export still removes credential-like properties; it preserves journal
-fields that the redacted mode intentionally masks.
+Choose an exact inclusive UTC range with the calendar and 24-hour time controls,
+preview it, and export a `.srvreplay` package. The most recent 24 hours are
+selected initially, and the controls limit a package to 31 days so an accidental
+multi-year selection does not exceed the portable replay bounds. The exporter
+includes the earlier Commander and LoadGame bootstrap events needed to establish
+the replay identity. Redacted export is the default and pseudonymizes every
+Commander/FID identity and location relationship, removes sent and received chat,
+zeroes coordinates, and removes screenshot file paths. Raw export still removes
+credential-like properties; it preserves journal fields that the redacted mode
+intentionally masks.
 
 The package also carries a non-sensitive overlay presentation snapshot: panel
 enablement, placement, per-panel and global scale, opacity, and the observed game

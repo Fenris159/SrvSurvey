@@ -84,8 +84,8 @@ public sealed class JournalHistoryViewModelTests
             ]);
         var viewModel = new JournalHistoryViewModel(temp.Path, "test-build");
         await viewModel.RefreshAsync();
-        viewModel.RangeFromText = "2026-08-21T18:00:30Z";
-        viewModel.RangeToText = "2026-08-21T18:01:30Z";
+        viewModel.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:00:30Z");
+        viewModel.RangeTo = DateTimeOffset.Parse("2026-08-21T18:01:30Z");
         var packagePath = Path.Combine(temp.Path, "incident.srvreplay");
 
         Assert.Contains(
@@ -109,6 +109,40 @@ public sealed class JournalHistoryViewModelTests
         Assert.Equal(
             ["Commander", "FSDJump"],
             session.Events.Select(item => item.EventName));
+    }
+
+    [Fact]
+    public async Task ReplayRangeDefaultsToRecentEventsAndClampsBroadSelections()
+    {
+        using var temp = new TemporaryDirectory();
+        await File.WriteAllLinesAsync(
+            Path.Combine(temp.Path, "Journal.2026-08-21T180000.01.log"),
+            [
+                "{\"timestamp\":\"2026-06-01T12:00:00Z\",\"event\":\"Commander\",\"Name\":\"History Cmdr\",\"FID\":\"F123456\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Sol\"}",
+            ]);
+        using var viewModel = new JournalHistoryViewModel(
+            temp.Path,
+            "test-build");
+
+        await viewModel.RefreshAsync();
+
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-08-20T18:00:00Z"),
+            viewModel.RangeFrom);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-08-21T18:00:00Z"),
+            viewModel.RangeTo);
+
+        viewModel.RangeFromDate = DateTimeOffset.Parse("2026-06-01T00:00:00Z");
+        viewModel.RangeFromTime = TimeSpan.FromHours(12);
+        viewModel.RangeToDate = DateTimeOffset.Parse("2026-08-21T00:00:00Z");
+        viewModel.RangeToTime = TimeSpan.FromHours(18);
+
+        Assert.Equal(
+            viewModel.RangeFrom + JournalHistoryViewModel.MaximumExportRange,
+            viewModel.RangeTo);
+        Assert.Contains("31 days", viewModel.ExportPreview);
     }
 
     [Fact]
@@ -158,8 +192,8 @@ public sealed class JournalHistoryViewModelTests
             new JournalReplayExporter());
 
         await viewModel.RefreshAsync();
-        viewModel.RangeFromText = "2026-08-21T18:01:00Z";
-        viewModel.RangeToText = "2026-08-21T18:01:00Z";
+        viewModel.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:01:00Z");
+        viewModel.RangeTo = DateTimeOffset.Parse("2026-08-21T18:01:00Z");
         var packagePath = Path.Combine(temp.Path, "older.srvreplay");
 
         Assert.Equal(4, viewModel.TotalEventCount);
@@ -197,18 +231,9 @@ public sealed class JournalHistoryViewModelTests
         populated.SearchText = "not present";
         Assert.Null(populated.SelectedEvent);
 
-        populated.RangeFromText = "not-a-timestamp";
-        Assert.Contains("valid ISO timestamp", populated.ExportPreview);
-        Assert.False(await populated.ExportAsync(
-            Path.Combine(temp.Path, "invalid-start.srvreplay")));
-        Assert.Contains("valid ISO timestamp", populated.StatusMessage);
-
-        populated.RangeFromText = "2026-08-21T18:01:00Z";
-        populated.RangeToText = "not-a-timestamp";
-        Assert.Contains("export end", populated.ExportPreview);
-
-        populated.RangeToText = "2026-08-21T18:00:00Z";
-        Assert.Contains("must not be after", populated.ExportPreview);
+        populated.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:01:00Z");
+        populated.RangeTo = DateTimeOffset.Parse("2026-08-21T18:00:00Z");
+        Assert.Equal(populated.RangeFrom, populated.RangeTo);
     }
 
     private sealed class TemporaryDirectory : IDisposable

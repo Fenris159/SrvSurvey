@@ -40,6 +40,27 @@ public sealed class DiagnosticsViewMarkupTests
             element.Name.LocalName == "CheckBox"
             && element.Attribute("Content")?.Value
                 == "Redact commander identities, chat, locations, coordinates, and screenshot paths");
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "CalendarDatePicker"
+            && element.Attribute("SelectedDate")?.Value
+                == "{Binding JournalHistory.RangeFromDate, Mode=TwoWay}");
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "TimePicker"
+            && element.Attribute("SelectedTime")?.Value
+                == "{Binding JournalHistory.RangeFromTime, Mode=TwoWay}");
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "CalendarDatePicker"
+            && element.Attribute("SelectedDate")?.Value
+                == "{Binding JournalHistory.RangeToDate, Mode=TwoWay}");
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "TimePicker"
+            && element.Attribute("SelectedTime")?.Value
+                == "{Binding JournalHistory.RangeToTime, Mode=TwoWay}");
+        Assert.DoesNotContain(document.Descendants(), element =>
+            element.Name.LocalName == "TextBox"
+            && element.Attribute("Text")?.Value is
+                "{Binding JournalHistory.RangeFromText, Mode=TwoWay}"
+                or "{Binding JournalHistory.RangeToText, Mode=TwoWay}");
     }
 
     [Fact]

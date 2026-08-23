@@ -9,6 +9,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposable
 {
     private const int BackgroundFilterThreshold = 5_000;
+    private static readonly TimeSpan DefaultExportRange = TimeSpan.FromHours(24);
     private readonly string journalDirectory;
     private readonly string sourceVersion;
     private readonly JournalHistoryReader reader;
@@ -27,8 +28,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
     private bool isBusy;
     private DateTimeOffset? rangeFrom;
     private DateTimeOffset? rangeTo;
-    private string rangeFromText = string.Empty;
-    private string rangeToText = string.Empty;
+    private DateTimeOffset? firstJournalTimestamp;
+    private DateTimeOffset? lastJournalTimestamp;
     private bool redactExport = true;
     private CancellationTokenSource? filterCancellation;
 
@@ -53,6 +54,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public static TimeSpan MaximumExportRange { get; } = TimeSpan.FromDays(31);
 
     public ICommand RefreshCommand { get; }
 
@@ -110,16 +113,22 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         set
         {
             var changed = SetField(ref rangeFrom, value);
-            var formatted = FormatEditableTimestamp(value);
-            if (!string.Equals(rangeFromText, formatted, StringComparison.Ordinal))
-            {
-                rangeFromText = formatted;
-                OnPropertyChanged(nameof(RangeFromText));
-                changed = true;
-            }
-
             if (changed)
             {
+                OnPropertyChanged(nameof(RangeFromDate));
+                OnPropertyChanged(nameof(RangeFromTime));
+                OnPropertyChanged(nameof(RangeToMaximumDate));
+                if (rangeFrom is { } from && rangeTo is { } to)
+                {
+                    RangeTo = to < from
+                        ? from
+                        : DateTimeOffset.Compare(
+                            to,
+                            from + MaximumExportRange) > 0
+                                ? from + MaximumExportRange
+                                : to;
+                }
+
                 OnPropertyChanged(nameof(ExportPreview));
             }
         }
@@ -130,59 +139,71 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         get => rangeTo;
         set
         {
-            var changed = SetField(ref rangeTo, value);
-            var formatted = FormatEditableTimestamp(value);
-            if (!string.Equals(rangeToText, formatted, StringComparison.Ordinal))
-            {
-                rangeToText = formatted;
-                OnPropertyChanged(nameof(RangeToText));
-                changed = true;
-            }
-
+            var constrained = ConstrainRangeTo(value);
+            var changed = SetField(ref rangeTo, constrained);
             if (changed)
             {
+                OnPropertyChanged(nameof(RangeToDate));
+                OnPropertyChanged(nameof(RangeToTime));
                 OnPropertyChanged(nameof(ExportPreview));
             }
         }
     }
 
-    public string RangeFromText
+    public DateTimeOffset? RangeFromDate
     {
-        get => rangeFromText;
+        get => rangeFrom;
+        set => RangeFrom = CombineDateAndTime(value, RangeFromTime);
+    }
+
+    public TimeSpan? RangeFromTime
+    {
+        get => rangeFrom?.TimeOfDay;
         set
         {
-            if (!SetField(ref rangeFromText, value ?? string.Empty))
+            if (rangeFrom is not null && value is not null)
             {
-                return;
+                RangeFrom = CombineDateAndTime(rangeFrom, value);
             }
-
-            if (TryParseTimestamp(rangeFromText, out var parsed))
-            {
-                rangeFrom = parsed;
-                OnPropertyChanged(nameof(RangeFrom));
-            }
-
-            OnPropertyChanged(nameof(ExportPreview));
         }
     }
 
-    public string RangeToText
+    public DateTimeOffset? RangeToDate
     {
-        get => rangeToText;
+        get => rangeTo;
+        set => RangeTo = CombineDateAndTime(value, RangeToTime);
+    }
+
+    public TimeSpan? RangeToTime
+    {
+        get => rangeTo?.TimeOfDay;
         set
         {
-            if (!SetField(ref rangeToText, value ?? string.Empty))
+            if (rangeTo is not null && value is not null)
             {
-                return;
+                RangeTo = CombineDateAndTime(rangeTo, value);
+            }
+        }
+    }
+
+    public DateTimeOffset? RangeMinimumDate => firstJournalTimestamp;
+
+    public DateTimeOffset? RangeMaximumDate => lastJournalTimestamp;
+
+    public DateTimeOffset? RangeToMaximumDate
+    {
+        get
+        {
+            if (rangeFrom is not { } from)
+            {
+                return lastJournalTimestamp;
             }
 
-            if (TryParseTimestamp(rangeToText, out var parsed))
-            {
-                rangeTo = parsed;
-                OnPropertyChanged(nameof(RangeTo));
-            }
-
-            OnPropertyChanged(nameof(ExportPreview));
+            var maximum = from + MaximumExportRange;
+            return lastJournalTimestamp is { } journalEnd
+                && journalEnd < maximum
+                    ? journalEnd
+                    : maximum;
         }
     }
 
@@ -252,7 +273,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
                 + "; required header, commander, load, and location bootstrap "
                 + "events before the range will be added automatically. "
                 + privacy
-                + " Credentials and API tokens are always removed.";
+                + " Credentials and API tokens are always removed. "
+                + $"Replay ranges are limited to {MaximumExportRange.TotalDays:N0} days.";
         }
     }
 
@@ -274,8 +296,19 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             allEvents = snapshot.Events;
             totalEventCount = snapshot.TotalEventCount;
             isHistoryWindowed = snapshot.IsWindowed;
-            RangeFrom = snapshot.FirstTimestamp;
-            RangeTo = snapshot.LastTimestamp;
+            firstJournalTimestamp = snapshot.FirstTimestamp;
+            lastJournalTimestamp = snapshot.LastTimestamp;
+            OnPropertyChanged(nameof(RangeMinimumDate));
+            OnPropertyChanged(nameof(RangeMaximumDate));
+            rangeFrom = null;
+            rangeTo = null;
+            var defaultTo = snapshot.LastTimestamp;
+            RangeFrom = defaultTo is { } lastTimestamp
+                ? LaterOf(
+                    snapshot.FirstTimestamp,
+                    lastTimestamp - DefaultExportRange)
+                : snapshot.FirstTimestamp;
+            RangeTo = defaultTo;
             Summary = ResolveSummary(snapshot);
             ApplyFilter();
             OnPropertyChanged(nameof(TotalEventCount));
@@ -514,37 +547,45 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             ?? "unknown time";
     }
 
-    private static string FormatEditableTimestamp(DateTimeOffset? timestamp)
+    private DateTimeOffset? ConstrainRangeTo(DateTimeOffset? value)
     {
-        return timestamp?.ToString(
-            "yyyy-MM-dd'T'HH:mm:ss.fffK",
-            System.Globalization.CultureInfo.InvariantCulture)
-            ?? string.Empty;
+        if (value is not { } candidate || rangeFrom is not { } from)
+        {
+            return value;
+        }
+
+        if (candidate < from)
+        {
+            return from;
+        }
+
+        var maximum = from + MaximumExportRange;
+        return candidate > maximum ? maximum : candidate;
     }
 
-    private static bool TryParseTimestamp(
-        string text,
-        out DateTimeOffset? timestamp)
+    private static DateTimeOffset? CombineDateAndTime(
+        DateTimeOffset? date,
+        TimeSpan? time)
     {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            timestamp = null;
-            return true;
-        }
+        return date is { } selectedDate
+            ? new DateTimeOffset(
+                selectedDate.Year,
+                selectedDate.Month,
+                selectedDate.Day,
+                0,
+                0,
+                0,
+                TimeSpan.Zero) + (time ?? TimeSpan.Zero)
+            : null;
+    }
 
-        if (DateTimeOffset.TryParse(
-                text,
-                System.Globalization.CultureInfo.InvariantCulture,
-                System.Globalization.DateTimeStyles.AllowWhiteSpaces
-                    | System.Globalization.DateTimeStyles.AssumeUniversal,
-                out var parsed))
-        {
-            timestamp = parsed;
-            return true;
-        }
-
-        timestamp = null;
-        return false;
+    private static DateTimeOffset? LaterOf(
+        DateTimeOffset? first,
+        DateTimeOffset second)
+    {
+        return first is { } firstTimestamp && firstTimestamp > second
+            ? firstTimestamp
+            : second;
     }
 
     private bool TryResolveRange(
@@ -552,18 +593,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         out DateTimeOffset? to,
         out string error)
     {
-        if (!TryParseTimestamp(RangeFromText, out from))
-        {
-            to = null;
-            error = "Enter a valid ISO timestamp for the export start.";
-            return false;
-        }
-
-        if (!TryParseTimestamp(RangeToText, out to))
-        {
-            error = "Enter a valid ISO timestamp for the export end.";
-            return false;
-        }
+        from = RangeFrom;
+        to = RangeTo;
 
         if (from is not null && to is not null && from > to)
         {
