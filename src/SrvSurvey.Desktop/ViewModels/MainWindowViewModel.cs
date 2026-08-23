@@ -40,7 +40,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TimeSpan.FromSeconds(30);
     private static readonly TimeSpan MaximumSystemBodyDataRetryDelay =
         TimeSpan.FromMinutes(4);
-    private const int MaximumSystemBodyDataRetryAttempts = 5;
+    private const int MaximumSystemBodyDataRetryAttempts = 3;
 
     private const string Unavailable = "—";
     private const string ExplorationNavigationKey = "exploration";
@@ -68,7 +68,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private readonly CommanderCodexStore commanderCodexStore;
     private readonly CommanderCodexJournalTracker commanderCodexJournalTracker;
     private readonly SystemScanPersistenceStore systemScanPersistenceStore;
+    private readonly SystemBodyDataRetryStore systemBodyDataRetryStore;
     private readonly ISystemBodyDataClient? systemBodyDataClient;
+    private readonly IEliteGameProcessDetector eliteGameProcessDetector;
     private readonly TimeSpan systemBodyDataRetryDelay;
     private readonly CargoInventoryState cargoInventoryState = new();
     private readonly FirstFootfallInferenceSettingsStore
@@ -175,8 +177,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private DateTimeOffset? activeSystemVisitedAt;
     private string? loadedSystemHistoryKey;
     private string? loadedSystemBodyDataKey;
+    private string? loadedSystemBodyDataVisitKey;
+    private string? reservedSystemBodyDataLoadKey;
+    private SystemBodyDataRetryState? systemBodyDataRetryState;
     private DateTimeOffset? systemBodyDataRetryAt;
     private int systemBodyDataRetryAttempts;
+    private bool isSystemBodyDataLoadDeferred;
+    private bool isSystemBodyDataGameSessionConfirmed;
     private EliteStatus? latestStatus;
     private CargoSnapshot? latestCargo;
     private ShipLockerSnapshot? latestShipLocker;
@@ -357,7 +364,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 commanderCodexStore);
             this.systemScanPersistenceStore = new SystemScanPersistenceStore(
                 AppDataPaths.DataDirectory);
+            systemBodyDataRetryStore = new SystemBodyDataRetryStore(
+                AppDataPaths.CacheDirectory);
             this.systemBodyDataClient = resolvedSystemBodyDataClient;
+            eliteGameProcessDetector = exploration.EliteGameProcessDetector
+                ?? new EliteGameProcessDetector();
             systemBodyDataRetryDelay = exploration.SystemBodyDataRetryDelay
                 ?? DefaultSystemBodyDataRetryDelay;
             this.firstFootfallInferenceSettingsStore =
@@ -2418,6 +2429,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             journalState.Apply(journalEvent);
         }
 
+        UpdateSystemBodyDataGameSessionConfirmation(update);
+
         if (update.Status is { } status)
         {
             journalState.ReconcileVehicleStatus(status);
@@ -2975,6 +2988,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 journalState.ActiveSrvType);
         }
 
+        UpdateActiveSystemVisit(update.JournalEvents);
+
         await LoadCurrentSystemHistoryAsync();
         await ApplyBoxelSurveyStatsAsync(
             update,
@@ -3473,7 +3488,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             CancellationToken.None);
         loadedSystemHistoryKey = null;
         loadedSystemBodyDataKey = null;
-        ResetSystemBodyDataRetry();
+        ResetSystemBodyDataRetryContext();
         CancelSystemBodyDataRequest();
         activeProfileFrontierId = journalState.FrontierId;
         activeProfileCommanderName = journalState.CommanderName
@@ -3756,19 +3771,49 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         }
     }
 
+    private sealed record SystemBodyDataLoadContext(
+        ISystemBodyDataClient Client,
+        string FrontierId,
+        string SystemName,
+        long SystemAddress,
+        DateTimeOffset VisitedAt,
+        bool IncludeBiologicalData,
+        string VisitKey,
+        string Key);
+
     private async Task LoadCurrentSystemBodyDataAsync()
     {
-        if (systemBodyDataClient is null)
+        if (!TryCreateSystemBodyDataLoadContext(out var context))
         {
             return;
+        }
+
+        if (!await RestoreSystemBodyDataRetryStateAsync(context)
+            || !ShouldStartSystemBodyDataRequest(context))
+        {
+            return;
+        }
+
+        await RequestSystemBodyDataAsync(context);
+    }
+
+    private bool TryCreateSystemBodyDataLoadContext(
+        out SystemBodyDataLoadContext context)
+    {
+        context = default!;
+        var client = systemBodyDataClient;
+        if (client is null)
+        {
+            return false;
         }
 
         if (!SystemSurvey.UseExternalData)
         {
             loadedSystemBodyDataKey = null;
-            ResetSystemBodyDataRetry();
+            reservedSystemBodyDataLoadKey = null;
+            isSystemBodyDataLoadDeferred = false;
             CancelSystemBodyDataRequest();
-            return;
+            return false;
         }
 
         var current = SystemSurvey.Snapshot;
@@ -3777,44 +3822,182 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             || systemAddress <= 0)
         {
             loadedSystemBodyDataKey = null;
-            ResetSystemBodyDataRetry();
+            ResetSystemBodyDataRetryContext();
             CancelSystemBodyDataRequest();
-            return;
+            return false;
         }
 
-        var key = systemAddress
+        var commanderFrontierId = activeProfileFrontierId;
+        if (string.IsNullOrWhiteSpace(commanderFrontierId)
+            || activeSystemVisitAddress != systemAddress
+            || activeSystemVisitedAt is not { } visitedAt)
+        {
+            loadedSystemBodyDataKey = null;
+            reservedSystemBodyDataLoadKey = null;
+            isSystemBodyDataLoadDeferred = true;
+            CancelSystemBodyDataRequest();
+            return false;
+        }
+
+        if (!IsEliteGameSessionActive())
+        {
+            loadedSystemBodyDataKey = null;
+            reservedSystemBodyDataLoadKey = null;
+            isSystemBodyDataLoadDeferred = true;
+            CancelSystemBodyDataRequest();
+            return false;
+        }
+
+        isSystemBodyDataLoadDeferred = false;
+        var visitKey = commanderFrontierId
+            + "\n"
+            + systemAddress
+            + "\n"
+            + visitedAt.ToUniversalTime().Ticks;
+        var includeBiologicalData = SystemSurvey.UseExternalBioData;
+        var key = visitKey
             + "\nbiology="
-            + SystemSurvey.UseExternalBioData;
+            + includeBiologicalData;
+        context = new SystemBodyDataLoadContext(
+            client,
+            commanderFrontierId,
+            current.SystemName,
+            systemAddress,
+            visitedAt,
+            includeBiologicalData,
+            visitKey,
+            key);
+        return true;
+    }
+
+    private async Task<bool> RestoreSystemBodyDataRetryStateAsync(
+        SystemBodyDataLoadContext context)
+    {
+        if (string.Equals(
+            reservedSystemBodyDataLoadKey,
+            context.Key,
+            StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var visitChanged = !string.Equals(
+            loadedSystemBodyDataVisitKey,
+            context.VisitKey,
+            StringComparison.Ordinal);
+        var replacesReservation =
+            reservedSystemBodyDataLoadKey is not null;
+        if (!visitChanged && !replacesReservation)
+        {
+            return true;
+        }
+
+        if (visitChanged)
+        {
+            ResetSystemBodyDataRetryContext();
+            loadedSystemBodyDataVisitKey = context.VisitKey;
+        }
+
+        reservedSystemBodyDataLoadKey = context.Key;
+        try
+        {
+            if (visitChanged)
+            {
+                systemBodyDataRetryState =
+                    await LoadSystemBodyDataRetryStateAsync(
+                        context.FrontierId,
+                        context.SystemAddress,
+                        context.VisitedAt);
+            }
+
+            if (!OwnsSystemBodyDataReservation(context.Key))
+            {
+                return false;
+            }
+
+            if (visitChanged
+                && systemBodyDataRetryState is { } restored)
+            {
+                systemBodyDataRetryAttempts = restored.AttemptCount;
+                systemBodyDataRetryAt = restored.RetryAt;
+            }
+
+            return true;
+        }
+        finally
+        {
+            if (OwnsSystemBodyDataReservation(context.Key))
+            {
+                reservedSystemBodyDataLoadKey = null;
+            }
+        }
+    }
+
+    private bool ShouldStartSystemBodyDataRequest(
+        SystemBodyDataLoadContext context)
+    {
+        if (systemBodyDataRetryState is { } state
+            && (state.IsComplete(context.IncludeBiologicalData)
+                || state.AttemptCount
+                    > MaximumSystemBodyDataRetryAttempts))
+        {
+            loadedSystemBodyDataKey = context.Key;
+            systemBodyDataRetryAt = null;
+            return false;
+        }
+
+        if (systemBodyDataRetryAt > DateTimeOffset.UtcNow)
+        {
+            loadedSystemBodyDataKey = context.Key;
+            return false;
+        }
+
         var sameKey = string.Equals(
             loadedSystemBodyDataKey,
-            key,
+            context.Key,
             StringComparison.Ordinal);
+        if (sameKey && systemBodyDataCancellation is not null)
+        {
+            return false;
+        }
+
         if (sameKey
             && (systemBodyDataRetryAt is null
                 || systemBodyDataRetryAt > DateTimeOffset.UtcNow))
         {
-            return;
+            return false;
         }
 
-        if (!sameKey)
-        {
-            ResetSystemBodyDataRetry();
-        }
+        return true;
+    }
 
+    private async Task RequestSystemBodyDataAsync(
+        SystemBodyDataLoadContext context)
+    {
         CancelSystemBodyDataRequest();
         var cancellation = new CancellationTokenSource();
         systemBodyDataCancellation = cancellation;
-        loadedSystemBodyDataKey = key;
+        loadedSystemBodyDataKey = context.Key;
         systemBodyDataRetryAt = null;
         try
         {
-            var result = await systemBodyDataClient.GetAsync(
-                current.SystemName,
-                systemAddress,
+            await RememberSystemBodyDataAttemptAsync(
+                context.FrontierId,
+                context.SystemAddress,
+                context.VisitedAt);
+            if (!IsEliteGameSessionActive())
+            {
+                return;
+            }
+
+            var result = await context.Client.GetAsync(
+                context.SystemName,
+                context.SystemAddress,
                 cancellation.Token);
             if (cancellation.IsCancellationRequested
-                || SystemSurvey.Snapshot.SystemAddress != systemAddress
-                || !SystemSurvey.UseExternalData)
+                || SystemSurvey.Snapshot.SystemAddress != context.SystemAddress
+                || !SystemSurvey.UseExternalData
+                || !IsEliteGameSessionActive())
             {
                 return;
             }
@@ -3824,7 +4007,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             {
                 changed |= SystemSurvey.MergeKnownSystemData(
                     provider.Snapshot,
-                    SystemSurvey.UseExternalBioData);
+                    context.IncludeBiologicalData);
             }
 
             foreach (var warning in result.Warnings)
@@ -3832,7 +4015,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 applicationLogService?.Append(warning);
             }
 
-            ScheduleSystemBodyDataRetry(result.NotIndexedProviders);
+            await UpdateSystemBodyDataRetryStateAsync(
+                context.FrontierId,
+                context.SystemAddress,
+                context.VisitedAt,
+                context.IncludeBiologicalData,
+                result.NotIndexedProviders);
 
             if (changed)
             {
@@ -3854,16 +4042,54 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         }
     }
 
-    private void ScheduleSystemBodyDataRetry(
+    private bool OwnsSystemBodyDataReservation(string key) =>
+        string.Equals(
+            reservedSystemBodyDataLoadKey,
+            key,
+            StringComparison.Ordinal);
+
+    private async Task RememberSystemBodyDataAttemptAsync(
+        string frontierId,
+        long systemAddress,
+        DateTimeOffset visitedAt)
+    {
+        systemBodyDataRetryAttempts++;
+        systemBodyDataRetryAt = systemBodyDataRetryAttempts
+            <= MaximumSystemBodyDataRetryAttempts
+                ? DateTimeOffset.UtcNow
+                    + GetSystemBodyDataRetryDelay(systemBodyDataRetryAttempts)
+                : null;
+        systemBodyDataRetryState = CreateSystemBodyDataRetryState(
+            frontierId,
+            systemAddress,
+            visitedAt,
+            systemBodyDataRetryAt);
+        await SaveSystemBodyDataRetryStateAsync(systemBodyDataRetryState);
+    }
+
+    private async Task UpdateSystemBodyDataRetryStateAsync(
+        string frontierId,
+        long systemAddress,
+        DateTimeOffset visitedAt,
+        bool includedBiologicalData,
         IReadOnlyList<string> notIndexedProviders)
     {
         if (notIndexedProviders.Count == 0)
         {
-            ResetSystemBodyDataRetry();
+            systemBodyDataRetryAt = null;
+            systemBodyDataRetryState = new SystemBodyDataRetryState(
+                frontierId,
+                systemAddress,
+                visitedAt,
+                systemBodyDataRetryAttempts,
+                null,
+                StandardDataComplete: true,
+                BiologicalDataComplete: includedBiologicalData
+                    || systemBodyDataRetryState?.BiologicalDataComplete == true);
+            await SaveSystemBodyDataRetryStateAsync(systemBodyDataRetryState);
             return;
         }
 
-        systemBodyDataRetryAttempts++;
         if (systemBodyDataRetryAttempts > MaximumSystemBodyDataRetryAttempts)
         {
             systemBodyDataRetryAt = null;
@@ -3873,12 +4099,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             return;
         }
 
-        var multiplier = 1L << (systemBodyDataRetryAttempts - 1);
-        var delayTicks = Math.Min(
-            systemBodyDataRetryDelay.Ticks * multiplier,
-            MaximumSystemBodyDataRetryDelay.Ticks);
-        var delay = TimeSpan.FromTicks(delayTicks);
-        systemBodyDataRetryAt = DateTimeOffset.UtcNow + delay;
+        var delay = GetSystemBodyDataRetryDelay(systemBodyDataRetryAttempts);
         applicationLogService?.Append(
             $"External body data is not indexed yet by {string.Join(", ", notIndexedProviders)}; "
                 + $"retry {systemBodyDataRetryAttempts:N0} of "
@@ -3886,10 +4107,25 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 + $"{delay.TotalSeconds:N0} seconds.");
     }
 
+    private TimeSpan GetSystemBodyDataRetryDelay(int retryAttempt)
+    {
+        var multiplier = 1L << (retryAttempt - 1);
+        var delayTicks = Math.Min(
+            systemBodyDataRetryDelay.Ticks * multiplier,
+            MaximumSystemBodyDataRetryDelay.Ticks);
+        return TimeSpan.FromTicks(delayTicks);
+    }
+
     private void StartSystemBodyDataRetryIfDue()
     {
-        if (systemBodyDataRetryAt is null
-            || systemBodyDataRetryAt > DateTimeOffset.UtcNow)
+        if (!isSystemBodyDataLoadDeferred
+            && (systemBodyDataRetryAt is null
+                || systemBodyDataRetryAt > DateTimeOffset.UtcNow))
+        {
+            return;
+        }
+
+        if (!IsEliteGameSessionActive())
         {
             return;
         }
@@ -3897,10 +4133,109 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         PendingSystemBodyDataLoad = LoadCurrentSystemBodyDataAsync();
     }
 
-    private void ResetSystemBodyDataRetry()
+    private void ResetSystemBodyDataRetryContext()
     {
+        loadedSystemBodyDataVisitKey = null;
+        reservedSystemBodyDataLoadKey = null;
+        systemBodyDataRetryState = null;
         systemBodyDataRetryAt = null;
         systemBodyDataRetryAttempts = 0;
+        isSystemBodyDataLoadDeferred = false;
+    }
+
+    private bool IsEliteGameSessionActive()
+    {
+        if (!eliteGameProcessDetector.IsRunning())
+        {
+            isSystemBodyDataGameSessionConfirmed = false;
+            return false;
+        }
+
+        return isSystemBodyDataGameSessionConfirmed
+            && !journalState.IsShutdown
+            && !journalState.IsAtMainMenu;
+    }
+
+    private void UpdateSystemBodyDataGameSessionConfirmation(
+        JournalMonitorUpdate update)
+    {
+        if (!eliteGameProcessDetector.IsRunning()
+            || journalState.IsShutdown
+            || journalState.IsAtMainMenu)
+        {
+            isSystemBodyDataGameSessionConfirmed = false;
+            return;
+        }
+
+        if (update.JournalEvents.Any(journalEvent =>
+            IsSystemVisitEvent(journalEvent.EventName)))
+        {
+            isSystemBodyDataGameSessionConfirmed = true;
+        }
+    }
+
+    private SystemBodyDataRetryState CreateSystemBodyDataRetryState(
+        string frontierId,
+        long systemAddress,
+        DateTimeOffset visitedAt,
+        DateTimeOffset? retryAt)
+    {
+        return new SystemBodyDataRetryState(
+            frontierId,
+            systemAddress,
+            visitedAt,
+            systemBodyDataRetryAttempts,
+            retryAt,
+            systemBodyDataRetryState?.StandardDataComplete == true,
+            systemBodyDataRetryState?.BiologicalDataComplete == true);
+    }
+
+    private async Task<SystemBodyDataRetryState?>
+        LoadSystemBodyDataRetryStateAsync(
+            string frontierId,
+            long systemAddress,
+            DateTimeOffset visitedAt)
+    {
+        try
+        {
+            var state = await systemBodyDataRetryStore.LoadAsync(
+                frontierId,
+                CancellationToken.None);
+            return state?.SystemAddress == systemAddress
+                && state.VisitedAt == visitedAt
+                    ? state
+                    : null;
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            applicationLogService?.Append(
+                "External body retry state could not be restored safely: "
+                    + exception.Message);
+            return null;
+        }
+    }
+
+    private async Task SaveSystemBodyDataRetryStateAsync(
+        SystemBodyDataRetryState state)
+    {
+        try
+        {
+            await systemBodyDataRetryStore.SaveAsync(
+                state,
+                CancellationToken.None);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            applicationLogService?.Append(
+                "External body retry state could not be remembered safely: "
+                    + exception.Message);
+        }
     }
 
     private void CancelSystemBodyDataRequest()
@@ -3922,6 +4257,26 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             return;
         }
 
+        if (activeSystemVisitAddress != systemAddress
+            || activeSystemVisitedAt is not { } visitedAt
+            || !journalEvents.Any(journalEvent =>
+                IsSystemScanPersistenceEvent(journalEvent.EventName)))
+        {
+            return;
+        }
+
+        await PersistCurrentSystemScanAsync(snapshot, visitedAt);
+    }
+
+    private void UpdateActiveSystemVisit(
+        IReadOnlyList<JournalEventEnvelope> journalEvents)
+    {
+        var systemAddress = SystemSurvey.Snapshot.SystemAddress;
+        if (systemAddress is null)
+        {
+            return;
+        }
+
         foreach (var journalEvent in journalEvents)
         {
             if (!IsSystemVisitEvent(journalEvent.EventName)
@@ -3935,16 +4290,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             activeSystemVisitAddress = eventAddress;
             activeSystemVisitedAt = timestamp;
         }
-
-        if (activeSystemVisitAddress != systemAddress
-            || activeSystemVisitedAt is not { } visitedAt
-            || !journalEvents.Any(journalEvent =>
-                IsSystemScanPersistenceEvent(journalEvent.EventName)))
-        {
-            return;
-        }
-
-        await PersistCurrentSystemScanAsync(snapshot, visitedAt);
     }
 
     private async Task PersistCurrentSystemScanAsync(
