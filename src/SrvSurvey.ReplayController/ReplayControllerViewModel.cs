@@ -59,7 +59,9 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         restartCommand = new AsyncCommand(RestartAsync, () => CanControlReplay);
         previousCommand = new AsyncCommand(
             PreviousAsync,
-            () => CanControlReplay && Position > 0 && !IsPlaying);
+            () => CanControlReplay
+                && Position > (session?.BootstrapInputCount ?? 0)
+                && !IsPlaying);
         stepCommand = new AsyncCommand(
             StepAsync,
             () => CanControlReplay && !IsComplete && !IsPlaying);
@@ -138,7 +140,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
     public string ValidationStatus => session is null
         ? "No replay has been validated."
         : "Validated: supported format, bounded JSON, commander bootstrap, "
-            + "and checksum verified/recorded.";
+            + "journal and companion checksum verified.";
 
     public string FidelityStatus => ResolveFidelityStatus();
 
@@ -360,7 +362,10 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
 
         try
         {
-            if (session is null || player is null || Position <= 0 || IsPlaying)
+            if (session is null
+                || player is null
+                || Position <= session.BootstrapInputCount
+                || IsPlaying)
             {
                 return false;
             }
@@ -368,14 +373,15 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
             var targetPosition = Position - 1;
             await PausePlaybackAsync();
             await StopInstanceCoreAsync(CancellationToken.None);
+            await session.ResetRuntimeAsync(CancellationToken.None);
+            await player.SeekAsync(targetPosition, CancellationToken.None);
             if (!await LaunchCoreAsync(
-                    resetPlayback: true,
+                    resetPlayback: false,
                     CancellationToken.None))
             {
                 return false;
             }
 
-            await player.SeekAsync(targetPosition, CancellationToken.None);
             StatusMessage =
                 $"Reconstructed replay at event {targetPosition:N0}.";
             return true;
@@ -514,6 +520,9 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
             {
                 await session.ResetRuntimeAsync(cancellationToken);
                 await player.ResetAsync(cancellationToken);
+                await player.SeekAsync(
+                    session.BootstrapInputCount,
+                    cancellationToken);
             }
 
             instance = await instanceLauncher.LaunchAsync(
@@ -848,9 +857,16 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         var presentationStatus = session.PresentationSnapshot is null
             ? "No overlay presentation snapshot was included."
             : "Overlay enablement, layout, scale, opacity, and viewport are included.";
-        return "Journal-first replay. Status, Cargo, ShipLocker, NavRoute, and "
-            + "Market timelines are not present in this format revision. "
-            + presentationStatus;
+        var companionStatus = session.MissingCompanionTimelines.Count == 0
+            ? "Synchronized Status, Cargo, ShipLocker, NavRoute, and Market timelines are included."
+            : "Missing companion timelines: "
+                + string.Join(", ", session.MissingCompanionTimelines)
+                + ".";
+        var companionCoverage = session.CompanionFirstTimestamp is { } first
+            && session.CompanionLastTimestamp is { } last
+                ? $" Companion coverage: {FormatTimestamp(first)} to {FormatTimestamp(last)}."
+                : string.Empty;
+        return companionStatus + companionCoverage + " " + presentationStatus;
     }
 
     private string ResolveTimeRangeText()

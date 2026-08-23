@@ -657,6 +657,7 @@ public sealed class JournalReplayExporterTests
             string path,
             JournalReplayPackageManifest package,
             string journalPath,
+            string companionPath,
             CancellationToken cancellationToken)
         {
             await File.WriteAllTextAsync(path, "partial", cancellationToken);

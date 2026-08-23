@@ -45,10 +45,15 @@ public sealed class ReplaySessionManagerTests
             ReplayPrivacyMode.Raw,
             1,
             0,
+            0,
+            0,
+            null,
+            null,
             null,
             null,
             new ReplayCommander("Replay Cmdr", "F123456"),
             new string('a', 64),
+            new string('b', 64),
             []);
 
         var exception = Assert.Throws<InvalidDataException>(() =>
@@ -56,6 +61,38 @@ public sealed class ReplaySessionManagerTests
 
         Assert.Contains(
             "source version",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void PackageMetadataRejectsVersionOne()
+    {
+        var package = new JournalReplayPackageManifest(
+            1,
+            DateTimeOffset.UtcNow,
+            "test",
+            null,
+            null,
+            ReplayPrivacyMode.Raw,
+            1,
+            0,
+            0,
+            0,
+            null,
+            null,
+            null,
+            null,
+            new ReplayCommander("Replay Cmdr", "F123456"),
+            new string('a', 64),
+            new string('b', 64),
+            []);
+
+        var exception = Assert.Throws<InvalidDataException>(() =>
+            ReplaySessionManager.ValidatePackageMetadata(package));
+
+        Assert.Contains(
+            "format 1 is not supported",
             exception.Message,
             StringComparison.OrdinalIgnoreCase);
     }

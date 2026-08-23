@@ -202,6 +202,7 @@ public sealed class ReplayPresentationSnapshotStoreTests
             Path.Combine(root, "replay-session.json"),
             root,
             Path.Combine(root, "source", "journal.jsonl"),
+            Path.Combine(root, "source", "companions.jsonl"),
             Path.Combine(root, "playback", "Journal.01.log"),
             Path.Combine(root, "config"),
             Path.Combine(root, "data"),
@@ -211,6 +212,10 @@ public sealed class ReplayPresentationSnapshotStoreTests
             ReplayPrivacyMode.Raw,
             new ReplayCommander("Replay Cmdr", "F123456"),
             [],
+            0,
+            [],
+            null,
+            null,
             presentationSnapshot);
     }
 

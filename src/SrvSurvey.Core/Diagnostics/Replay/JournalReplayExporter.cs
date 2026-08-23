@@ -24,13 +24,14 @@ public sealed record JournalReplayExportResult(
     string Path,
     int EventCount,
     int BootstrapEventCount,
+    int CompanionEventCount,
     ReplayCommander Commander,
     DateTimeOffset? FirstTimestamp,
     DateTimeOffset? LastTimestamp);
 
 public sealed class JournalReplayExporter
 {
-    public const int CurrentPackageFormatVersion = 1;
+    public const int CurrentPackageFormatVersion = 2;
     private const string CommanderJournalName = "Commander";
 
     private static readonly JsonSerializerOptions PackageJson = new()
@@ -81,6 +82,21 @@ public sealed class JournalReplayExporter
         JournalReplayExportRequest request,
         CancellationToken cancellationToken)
     {
+        return await ExportAsync(
+            journalDirectory,
+            companionHistoryDirectory: null,
+            destinationPath,
+            request,
+            cancellationToken);
+    }
+
+    public async Task<JournalReplayExportResult> ExportAsync(
+        string journalDirectory,
+        string? companionHistoryDirectory,
+        string destinationPath,
+        JournalReplayExportRequest request,
+        CancellationToken cancellationToken)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationPath);
         ArgumentNullException.ThrowIfNull(request);
@@ -100,6 +116,10 @@ public sealed class JournalReplayExporter
             journalDirectory,
             request,
             cancellationToken);
+        var companionScan = await ScanCompanionsAsync(
+            companionHistoryDirectory,
+            request,
+            cancellationToken);
 
         var fullDestinationPath = Path.GetFullPath(destinationPath);
         var destinationDirectory = Path.GetDirectoryName(fullDestinationPath)
@@ -109,6 +129,9 @@ public sealed class JournalReplayExporter
         var journalSpoolPath = Path.Combine(
             destinationDirectory,
             $".journal-export.{Guid.NewGuid():N}.tmp");
+        var companionSpoolPath = Path.Combine(
+            destinationDirectory,
+            $".companion-export.{Guid.NewGuid():N}.tmp");
         var temporaryPath = Path.Combine(
             destinationDirectory,
             $".{Path.GetFileName(fullDestinationPath)}.{Guid.NewGuid():N}.tmp");
@@ -119,6 +142,11 @@ public sealed class JournalReplayExporter
                 journalSpoolPath,
                 request,
                 scan,
+                cancellationToken);
+            var companionChecksum = await WriteCompanionSpoolAsync(
+                companionSpoolPath,
+                companionScan,
+                request.PrivacyMode,
                 cancellationToken);
             var outputCommander = request.PrivacyMode
                 == ReplayPrivacyMode.Redacted
@@ -133,28 +161,36 @@ public sealed class JournalReplayExporter
                 request.PrivacyMode,
                 scan.EventCount,
                 scan.Bootstrap.Length,
+                companionScan.Entries.Count,
+                companionScan.BootstrapCount,
+                companionScan.Entries.FirstOrDefault()?.Timestamp,
+                companionScan.Entries.LastOrDefault()?.Timestamp,
                 scan.FirstTimestamp,
                 scan.LastTimestamp,
                 outputCommander,
                 checksum,
-                ["status", "cargo", "shipLocker", "navRoute", "market"],
+                companionChecksum,
+                companionScan.MissingTimelines,
                 request.PresentationSnapshot);
             ReplaySessionManager.ValidatePackageMetadata(package);
             await packageWriter.WriteAsync(
                 temporaryPath,
                 package,
                 journalSpoolPath,
+                companionSpoolPath,
                 cancellationToken);
             await ValidateWrittenPackageAsync(
                 temporaryPath,
                 package,
                 cancellationToken);
             File.Delete(journalSpoolPath);
+            File.Delete(companionSpoolPath);
             File.Move(temporaryPath, fullDestinationPath, overwrite: true);
             return new JournalReplayExportResult(
                 fullDestinationPath,
                 scan.EventCount,
                 scan.Bootstrap.Length,
+                companionScan.Entries.Count,
                 package.Commander,
                 package.FirstTimestamp,
                 package.LastTimestamp);
@@ -163,7 +199,88 @@ public sealed class JournalReplayExporter
         {
             TryDeleteTemporaryFile(temporaryPath);
             TryDeleteTemporaryFile(journalSpoolPath);
+            TryDeleteTemporaryFile(companionSpoolPath);
         }
+    }
+
+    private static async Task<CompanionExportScan> ScanCompanionsAsync(
+        string? companionHistoryDirectory,
+        JournalReplayExportRequest request,
+        CancellationToken cancellationToken)
+    {
+        var latestBeforeRange = new Dictionary<
+            ReplayInputKind,
+            CompanionTimelineEntry>();
+        var selected = new List<CompanionTimelineEntry>();
+        if (!string.IsNullOrWhiteSpace(companionHistoryDirectory))
+        {
+            await foreach (var entry in CompanionTimelineStore.StreamAsync(
+                               companionHistoryDirectory,
+                               from: null,
+                               request.To,
+                               cancellationToken))
+            {
+                if (request.From is { } from && entry.Timestamp < from)
+                {
+                    latestBeforeRange[entry.Kind] = entry;
+                }
+                else
+                {
+                    selected.Add(entry);
+                }
+            }
+        }
+
+        var bootstrap = latestBeforeRange.Values
+            .OrderBy(entry => entry.Timestamp)
+            .ThenBy(entry => entry.Kind)
+            .ToArray();
+        var entries = bootstrap.Concat(selected
+                .OrderBy(entry => entry.Timestamp)
+                .ThenBy(entry => entry.Kind))
+            .ToArray();
+        var presentKinds = entries.Select(entry => entry.Kind).ToHashSet();
+        var missing = Enum.GetValues<ReplayInputKind>()
+            .Where(kind => kind != ReplayInputKind.Journal
+                && !presentKinds.Contains(kind))
+            .Select(kind => kind.ToString())
+            .ToArray();
+        return new CompanionExportScan(entries, bootstrap.Length, missing);
+    }
+
+    private static async Task<string> WriteCompanionSpoolAsync(
+        string path,
+        CompanionExportScan scan,
+        ReplayPrivacyMode privacyMode,
+        CancellationToken cancellationToken)
+    {
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        await using var output = new FileStream(
+            path,
+            FileMode.CreateNew,
+            FileAccess.Write,
+            FileShare.None,
+            bufferSize: 64 * 1024,
+            useAsync: true);
+        long byteCount = 0;
+        foreach (var sourceEntry in scan.Entries)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var entry = privacyMode == ReplayPrivacyMode.Redacted
+                ? CompanionTimelineCodec.Redact(sourceEntry)
+                : sourceEntry;
+            var line = CompanionTimelineCodec.SerializeEntry(entry);
+            var bytes = Encoding.UTF8.GetBytes(line);
+            byteCount += bytes.Length + 1L;
+            ValidateOutputBounds(scan.Entries.Count, byteCount);
+            hash.AppendData(bytes);
+            hash.AppendData(Newline.Span);
+            await output.WriteAsync(bytes, cancellationToken);
+            await output.WriteAsync(Newline, cancellationToken);
+        }
+
+        await output.FlushAsync(cancellationToken);
+        return Convert.ToHexStringLower(hash.GetHashAndReset());
     }
 
     private async Task<ReplayExportScan> ScanAsync(
@@ -406,6 +523,9 @@ public sealed class JournalReplayExporter
         var journalEntry = archive.GetEntry("journal.jsonl")
             ?? throw new InvalidDataException(
                 "The completed replay package is missing its journal.");
+        var companionEntry = archive.GetEntry("companions.jsonl")
+            ?? throw new InvalidDataException(
+                "The completed replay package is missing its companion timeline.");
         if (manifestEntry.Length
             > ReplaySessionManager.MaximumReplayManifestBytes)
         {
@@ -431,9 +551,16 @@ public sealed class JournalReplayExporter
             cancellationToken);
         var checksum = Convert.ToHexStringLower(
             await SHA256.HashDataAsync(journal, cancellationToken));
+        await using var companions = await companionEntry.OpenAsync(
+            cancellationToken);
+        var companionChecksum = Convert.ToHexStringLower(
+            await SHA256.HashDataAsync(companions, cancellationToken));
         if (actual.FormatVersion != expected.FormatVersion
             || actual.EventCount != expected.EventCount
             || actual.BootstrapEventCount != expected.BootstrapEventCount
+            || actual.CompanionEventCount != expected.CompanionEventCount
+            || actual.CompanionBootstrapEventCount
+                != expected.CompanionBootstrapEventCount
             || actual.PrivacyMode != expected.PrivacyMode
             || !string.Equals(
                 actual.SourceVersion,
@@ -454,6 +581,14 @@ public sealed class JournalReplayExporter
             || !string.Equals(
                 checksum,
                 expected.JournalSha256,
+                StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(
+                actual.CompanionSha256,
+                expected.CompanionSha256,
+                StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(
+                companionChecksum,
+                expected.CompanionSha256,
                 StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidDataException(
@@ -888,6 +1023,11 @@ public sealed class JournalReplayExporter
         IReadOnlyList<IdentityRedaction> Identities,
         string InputSha256);
 
+    private sealed record CompanionExportScan(
+        IReadOnlyList<CompanionTimelineEntry> Entries,
+        int BootstrapCount,
+        IReadOnlyList<string> MissingTimelines);
+
     private sealed record IdentityRedaction(
         string OriginalName,
         string OriginalFrontierId,
@@ -1095,6 +1235,7 @@ internal interface IReplayPackageWriter
         string path,
         JournalReplayPackageManifest package,
         string journalPath,
+        string companionPath,
         CancellationToken cancellationToken);
 }
 
@@ -1104,6 +1245,7 @@ internal sealed class ZipReplayPackageWriter : IReplayPackageWriter
         string path,
         JournalReplayPackageManifest package,
         string journalPath,
+        string companionPath,
         CancellationToken cancellationToken)
     {
         await using var output = new FileStream(
@@ -1133,16 +1275,34 @@ internal sealed class ZipReplayPackageWriter : IReplayPackageWriter
         var journalEntry = archive.CreateEntry(
             "journal.jsonl",
             CompressionLevel.Optimal);
-        await using var journalStream = await journalEntry.OpenAsync(
-            cancellationToken);
-        await using var journalInput = new FileStream(
-            journalPath,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.Read,
-            bufferSize: 64 * 1024,
-            useAsync: true);
-        await journalInput.CopyToAsync(journalStream, cancellationToken);
+        await using (var journalStream = await journalEntry.OpenAsync(
+                         cancellationToken))
+        await using (var journalInput = new FileStream(
+                         journalPath,
+                         FileMode.Open,
+                         FileAccess.Read,
+                         FileShare.Read,
+                         bufferSize: 64 * 1024,
+                         useAsync: true))
+        {
+            await journalInput.CopyToAsync(journalStream, cancellationToken);
+        }
+
+        var companionEntry = archive.CreateEntry(
+            "companions.jsonl",
+            CompressionLevel.Optimal);
+        await using (var companionStream = await companionEntry.OpenAsync(
+                         cancellationToken))
+        await using (var companionInput = new FileStream(
+                         companionPath,
+                         FileMode.Open,
+                         FileAccess.Read,
+                         FileShare.Read,
+                         bufferSize: 64 * 1024,
+                         useAsync: true))
+        {
+            await companionInput.CopyToAsync(companionStream, cancellationToken);
+        }
     }
 }
 
@@ -1155,10 +1315,15 @@ public sealed record JournalReplayPackageManifest(
     ReplayPrivacyMode PrivacyMode,
     int EventCount,
     int BootstrapEventCount,
+    int CompanionEventCount,
+    int CompanionBootstrapEventCount,
+    DateTimeOffset? CompanionFirstTimestamp,
+    DateTimeOffset? CompanionLastTimestamp,
     DateTimeOffset? FirstTimestamp,
     DateTimeOffset? LastTimestamp,
     ReplayCommander Commander,
     string JournalSha256,
+    string CompanionSha256,
     IReadOnlyList<string> MissingCompanionTimelines,
     ReplayPresentationSnapshot? PresentationSnapshot = null);
 

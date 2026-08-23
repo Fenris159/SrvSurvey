@@ -7,6 +7,7 @@ using System.Windows.Input;
 using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Diagnostics.Replay;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
@@ -61,6 +62,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     private readonly JournalFolderResolution folderResolution;
     private readonly JournalDirectoryMonitor? journalMonitor;
+    private readonly CompanionTimelineStore companionTimelineStore;
     private readonly JournalSessionState journalState = new();
     private readonly ExplorationState explorationState = new();
     private readonly ExobiologyState exobiologyState;
@@ -342,12 +344,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 new ReleaseUpdateSettingsStore(AppDataPaths.UiSettingsPath));
             JournalInspector = new JournalInspectorViewModel(
                 ReplayQuestJournalEventAsync);
+            companionTimelineStore = new CompanionTimelineStore(
+                CompanionTimelineStore.ResolveDirectory(
+                    AppDataPaths.DataDirectory));
+            rollback.Add(companionTimelineStore);
             JournalHistory = new JournalHistoryViewModel(
                 ResolveJournalPathOrDefault(
                     folderResolution,
                     AppDataPaths.DataDirectory),
                 (typeof(MainWindowViewModel).Assembly.GetName().Version
                     ?? new Version(0, 0)).ToString(),
+                companionHistoryDirectory:
+                    companionTimelineStore.DirectoryPath,
                 presentationSnapshotProvider: () =>
                     ReplayPresentationSnapshotStore.Capture(
                         AppDataPaths,
@@ -1871,13 +1879,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             IsBusy = true;
             StatusMessage = "Reading journal and status updates…";
 
+            if (!IsDiagnosticReplay)
+            {
+                await companionTimelineStore.CleanupAsync();
+            }
+
             var update = await journalMonitor.PollAsync(
                 CancellationToken.None);
             await ApplyMonitorUpdateAsync(update, isManualRefresh: true);
         }
         catch (Exception exception) when (
             exception is IOException
-                or UnauthorizedAccessException)
+                or UnauthorizedAccessException
+                or JsonException)
         {
             StatusMessage = exception.Message;
         }
@@ -2332,6 +2346,23 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         {
             await ApplyIdleHousekeepingAsync(update);
             return;
+        }
+
+        if (!IsDiagnosticReplay)
+        {
+            try
+            {
+                await companionTimelineStore.AppendAsync(update);
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or JsonException)
+            {
+                applicationLogService?.Append(
+                    "Companion replay history could not be updated: "
+                        + exception.Message);
+            }
         }
 
         var previousFrontierId = journalState.FrontierId;
@@ -5269,6 +5300,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(firstFootfallInferenceCancellation.Dispose);
         TryDispose(DiagnosticsLog.Dispose);
         TryDispose(JournalHistory.Dispose);
+        TryDispose(companionTimelineStore.Dispose);
         TryDispose(JumpInfo.Dispose);
         TryDispose(BiologyPredictions.Dispose);
         TryDispose(BiologyCodex.Dispose);

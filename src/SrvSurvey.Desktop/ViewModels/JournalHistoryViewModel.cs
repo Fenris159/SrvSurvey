@@ -11,6 +11,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
     private const int BackgroundFilterThreshold = 5_000;
     private static readonly TimeSpan DefaultExportRange = TimeSpan.FromHours(24);
     private readonly string journalDirectory;
+    private readonly string? companionHistoryDirectory;
     private readonly string sourceVersion;
     private readonly JournalHistoryReader reader;
     private readonly JournalReplayExporter exporter;
@@ -39,12 +40,17 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         string sourceVersion,
         JournalHistoryReader? reader = null,
         JournalReplayExporter? exporter = null,
+        string? companionHistoryDirectory = null,
         Func<ReplayPresentationSnapshot?>? presentationSnapshotProvider = null,
         TimeProvider? timeProvider = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceVersion);
         this.journalDirectory = Path.GetFullPath(journalDirectory);
+        this.companionHistoryDirectory = string.IsNullOrWhiteSpace(
+            companionHistoryDirectory)
+                ? null
+                : Path.GetFullPath(companionHistoryDirectory);
         this.sourceVersion = sourceVersion.Trim();
         this.reader = reader ?? new JournalHistoryReader();
         this.exporter = exporter ?? new JournalReplayExporter();
@@ -290,6 +296,9 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             return selection
                 + "; required header, commander, load, and location bootstrap "
                 + "events before the range will be added automatically. "
+                + "Validated Status, Cargo, ShipLocker, NavRoute, and Market "
+                + "snapshots retained during the most recent 24 hours will be "
+                + "synchronized with the journal timeline. "
                 + privacy
                 + " Credentials and API tokens are always removed. "
                 + $"Replay ranges are limited to {MaximumExportRange.TotalDays:N0} days.";
@@ -381,12 +390,15 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
                 presentationSnapshotProvider());
             var result = await Task.Run(() => exporter.ExportAsync(
                     journalDirectory,
+                    companionHistoryDirectory,
                     destinationPath,
                     request,
                     cancellationToken),
                 cancellationToken);
             StatusMessage = $"Exported {result.EventCount:N0} events "
-                + $"({result.BootstrapEventCount:N0} bootstrap) to {result.Path}.";
+                + $"({result.BootstrapEventCount:N0} bootstrap) and "
+                + $"{result.CompanionEventCount:N0} companion snapshots to "
+                + $"{result.Path}.";
             return true;
         }
         catch (Exception exception) when (
