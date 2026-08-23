@@ -52,6 +52,25 @@ public sealed class ReleaseWorkflowContractTests
             StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void LinuxAppImageExposesReplayControllerDispatch()
+    {
+        var appRun = File.ReadAllText(Path.Combine(
+            FindRepositoryRoot(),
+            "packaging",
+            "linux",
+            "AppRun"));
+
+        Assert.Contains(
+            "--replay-controller",
+            appRun,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "SrvSurvey.ReplayController",
+            appRun,
+            StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

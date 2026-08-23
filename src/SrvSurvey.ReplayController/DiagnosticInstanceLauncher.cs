@@ -14,6 +14,8 @@ public interface IDiagnosticInstance : IAsyncDisposable
 {
     bool IsRunning { get; }
 
+    Task<int> WaitForExitAsync(CancellationToken cancellationToken);
+
     Task StopAsync(CancellationToken cancellationToken);
 }
 
@@ -90,6 +92,13 @@ internal sealed class ProcessDiagnosticInstanceLauncher : IDiagnosticInstanceLau
                 process.Kill(entireProcessTree: true);
                 await process.WaitForExitAsync(cancellationToken);
             }
+        }
+
+        public async Task<int> WaitForExitAsync(
+            CancellationToken cancellationToken)
+        {
+            await process.WaitForExitAsync(cancellationToken);
+            return process.ExitCode;
         }
 
         public ValueTask DisposeAsync()

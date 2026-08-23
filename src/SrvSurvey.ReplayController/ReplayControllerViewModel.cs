@@ -10,6 +10,10 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
     private readonly string managedRoot;
     private readonly IDiagnosticInstanceLauncher instanceLauncher;
     private readonly ReplaySessionManager sessionManager;
+    private readonly Func<DiagnosticReplaySession, JournalReplayPlayer>
+        playerFactory;
+    private readonly SemaphoreSlim operationGate = new(1, 1);
+    private readonly SynchronizationContext? synchronizationContext;
     private readonly AsyncCommand launchCommand;
     private readonly AsyncCommand stopCommand;
     private readonly AsyncCommand restartCommand;
@@ -20,7 +24,10 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
     private DiagnosticReplaySession? session;
     private JournalReplayPlayer? player;
     private IDiagnosticInstance? instance;
+    private CancellationTokenSource? instanceMonitorCancellation;
+    private Task? instanceMonitorTask;
     private CancellationTokenSource? playbackCancellation;
+    private Task? playbackTask;
     private JournalReplayEvent? currentEvent;
     private JournalReplayEvent? selectedEvent;
     private string sourcePath = string.Empty;
@@ -33,19 +40,27 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
     public ReplayControllerViewModel(
         string managedRoot,
         IDiagnosticInstanceLauncher? instanceLauncher = null,
-        ReplaySessionManager? sessionManager = null)
+        ReplaySessionManager? sessionManager = null,
+        Func<DiagnosticReplaySession, JournalReplayPlayer>? playerFactory = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(managedRoot);
         this.managedRoot = Path.GetFullPath(managedRoot);
         this.instanceLauncher = instanceLauncher
             ?? new ProcessDiagnosticInstanceLauncher();
         this.sessionManager = sessionManager ?? new ReplaySessionManager();
+        this.playerFactory = playerFactory
+            ?? (replaySession => new JournalReplayPlayer(replaySession));
+        synchronizationContext = SynchronizationContext.Current;
         srvSurveyExecutablePath = ResolveDefaultExecutablePath();
         launchCommand = new AsyncCommand(LaunchAsync, () => CanLaunch);
-        stopCommand = new AsyncCommand(StopAsync, () => IsInstanceRunning);
+        stopCommand = new AsyncCommand(
+            StopAsync,
+            () => IsInstanceRunning && !IsBusy);
         restartCommand = new AsyncCommand(RestartAsync, () => CanControlReplay);
         previousCommand = new AsyncCommand(PreviousAsync, () => CanControlReplay && Position > 0);
-        stepCommand = new AsyncCommand(StepAsync, () => CanControlReplay && !IsComplete);
+        stepCommand = new AsyncCommand(
+            StepAsync,
+            () => CanControlReplay && !IsComplete && !IsPlaying);
         playCommand = new AsyncCommand(PlayAsync, () => CanControlReplay && !IsComplete && !IsPlaying);
         pauseCommand = new RelayCommand(Pause, () => IsPlaying);
         LaunchCommand = launchCommand;
@@ -124,7 +139,10 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
     public string FidelityStatus => session is null
         ? string.Empty
         : "Journal-first replay. Status, Cargo, ShipLocker, NavRoute, and "
-            + "Market timelines are not present in this format revision.";
+            + "Market timelines are not present in this format revision. "
+            + (session.PresentationSnapshot is null
+                ? "No overlay presentation snapshot was included."
+                : "Overlay enablement, layout, scale, opacity, and viewport are included.");
 
     public string TimeRangeText => session is null
         ? string.Empty
@@ -207,15 +225,14 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        if (IsBusy)
+        if (!TryBeginOperation())
         {
             return false;
         }
 
-        IsBusy = true;
         try
         {
-            Pause();
+            await PausePlaybackAsync();
             await StopInstanceCoreAsync(cancellationToken);
             var imported = await sessionManager.ImportAsync(
                 path,
@@ -223,7 +240,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
                 cancellationToken);
             DetachPlayer();
             session = imported;
-            player = new JournalReplayPlayer(imported);
+            player = playerFactory(imported);
             player.PositionChanged += OnPlayerPositionChanged;
             sourcePath = Path.GetFullPath(path);
             CurrentEvent = null;
@@ -237,108 +254,207 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
             exception is IOException
                 or UnauthorizedAccessException
                 or InvalidDataException
-                or ArgumentException)
+                or ArgumentException
+                or InvalidOperationException
+                or System.ComponentModel.Win32Exception)
         {
             StatusMessage = "Import failed: " + exception.Message;
             return false;
         }
         finally
         {
-            IsBusy = false;
+            EndOperation();
         }
     }
 
     public async Task<bool> LaunchAsync()
     {
-        return await LaunchCoreAsync(resetPlayback: true, CancellationToken.None);
+        if (!TryBeginOperation())
+        {
+            return false;
+        }
+
+        try
+        {
+            await PausePlaybackAsync();
+            return await LaunchCoreAsync(
+                resetPlayback: true,
+                CancellationToken.None);
+        }
+        finally
+        {
+            EndOperation();
+        }
     }
 
     public async Task StopAsync()
     {
-        Pause();
-        await StopInstanceCoreAsync(CancellationToken.None);
-        StatusMessage = "The diagnostic SrvSurvey instance is stopped.";
-        RaiseRuntimeProperties();
-    }
-
-    public async Task<bool> RestartAsync()
-    {
-        if (session is null || player is null)
-        {
-            return false;
-        }
-
-        Pause();
-        await StopInstanceCoreAsync(CancellationToken.None);
-        return await LaunchCoreAsync(resetPlayback: true, CancellationToken.None);
-    }
-
-    public async Task<bool> PreviousAsync()
-    {
-        if (session is null || player is null || Position <= 0)
-        {
-            return false;
-        }
-
-        var targetPosition = Position - 1;
-        Pause();
-        await StopInstanceCoreAsync(CancellationToken.None);
-        if (!await LaunchCoreAsync(resetPlayback: true, CancellationToken.None))
-        {
-            return false;
-        }
-
-        await player.SeekAsync(targetPosition, CancellationToken.None);
-        StatusMessage = $"Reconstructed replay at event {targetPosition:N0}.";
-        return true;
-    }
-
-    public async Task<bool> StepAsync()
-    {
-        if (!CanControlReplay || player is null)
-        {
-            return false;
-        }
-
-        var stepped = await player.StepAsync(CancellationToken.None);
-        StatusMessage = stepped
-            ? $"Emitted event {Position:N0} of {TotalEvents:N0}."
-            : "Replay is complete.";
-        return stepped;
-    }
-
-    public async Task PlayAsync()
-    {
-        if (!CanControlReplay || player is null || IsPlaying)
+        if (!TryBeginOperation())
         {
             return;
         }
 
-        playbackCancellation = new CancellationTokenSource();
-        var cancellation = playbackCancellation;
-        IsPlaying = true;
-        StatusMessage = $"Playing at {SpeedMultiplier:0.##}x.";
         try
         {
-            await player.PlayAsync(() => SpeedMultiplier, cancellation.Token);
-            if (player.IsComplete)
-            {
-                StatusMessage = "Replay is complete.";
-            }
+            await PausePlaybackAsync();
+            await StopInstanceCoreAsync(CancellationToken.None);
+            StatusMessage = "The diagnostic SrvSurvey instance is stopped.";
+            RaiseRuntimeProperties();
         }
-        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        catch (Exception exception) when (IsRecoverableControllerFailure(exception))
         {
-            StatusMessage = $"Paused at event {Position:N0}.";
+            StatusMessage = "Stop failed: " + exception.Message
+                + $" Logs retained at {LogsDirectory}.";
+            RaiseRuntimeProperties();
         }
         finally
         {
-            if (ReferenceEquals(playbackCancellation, cancellation))
+            EndOperation();
+        }
+    }
+
+    public async Task<bool> RestartAsync()
+    {
+        if (!TryBeginOperation())
+        {
+            return false;
+        }
+
+        try
+        {
+            if (session is null || player is null)
             {
-                playbackCancellation = null;
+                return false;
             }
 
-            cancellation.Dispose();
-            IsPlaying = false;
+            await PausePlaybackAsync();
+            await StopInstanceCoreAsync(CancellationToken.None);
+            return await LaunchCoreAsync(
+                resetPlayback: true,
+                CancellationToken.None);
+        }
+        catch (Exception exception) when (IsRecoverableControllerFailure(exception))
+        {
+            StatusMessage = "Restart failed: " + exception.Message
+                + $" Logs retained at {LogsDirectory}.";
+            return false;
+        }
+        finally
+        {
+            EndOperation();
+        }
+    }
+
+    public async Task<bool> PreviousAsync()
+    {
+        if (!TryBeginOperation())
+        {
+            return false;
+        }
+
+        try
+        {
+            if (session is null || player is null || Position <= 0)
+            {
+                return false;
+            }
+
+            var targetPosition = Position - 1;
+            await PausePlaybackAsync();
+            await StopInstanceCoreAsync(CancellationToken.None);
+            if (!await LaunchCoreAsync(
+                    resetPlayback: true,
+                    CancellationToken.None))
+            {
+                return false;
+            }
+
+            await player.SeekAsync(targetPosition, CancellationToken.None);
+            StatusMessage =
+                $"Reconstructed replay at event {targetPosition:N0}.";
+            return true;
+        }
+        catch (Exception exception) when (IsRecoverableControllerFailure(exception))
+        {
+            StatusMessage = "Previous failed: " + exception.Message
+                + $" Logs retained at {LogsDirectory}.";
+            return false;
+        }
+        finally
+        {
+            EndOperation();
+        }
+    }
+
+    public async Task<bool> StepAsync()
+    {
+        if (!TryBeginOperation())
+        {
+            return false;
+        }
+
+        try
+        {
+            if (session is null
+                || instance?.IsRunning != true
+                || player is null
+                || IsPlaying)
+            {
+                return false;
+            }
+
+            var stepped = await player.StepAsync(CancellationToken.None);
+            StatusMessage = stepped
+                ? $"Emitted event {Position:N0} of {TotalEvents:N0}."
+                : "Replay is complete.";
+            return stepped;
+        }
+        catch (Exception exception) when (IsRecoverableControllerFailure(exception))
+        {
+            StatusMessage = "Step failed: " + exception.Message
+                + $" Logs retained at {LogsDirectory}.";
+            return false;
+        }
+        finally
+        {
+            EndOperation();
+        }
+    }
+
+    public async Task PlayAsync()
+    {
+        if (!TryBeginOperation())
+        {
+            return;
+        }
+
+        Task activePlayback;
+        try
+        {
+            if (session is null
+                || instance?.IsRunning != true
+                || player is null
+                || IsPlaying)
+            {
+                return;
+            }
+
+            var cancellation = new CancellationTokenSource();
+            playbackCancellation = cancellation;
+            IsPlaying = true;
+            StatusMessage = $"Playing at {SpeedMultiplier:0.##}x.";
+            activePlayback = PlayCoreAsync(player, cancellation);
+            playbackTask = activePlayback;
+        }
+        finally
+        {
+            EndOperation();
+        }
+
+        await activePlayback;
+        if (ReferenceEquals(playbackTask, activePlayback))
+        {
+            playbackTask = null;
         }
     }
 
@@ -349,9 +465,20 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
 
     public async ValueTask DisposeAsync()
     {
-        Pause();
-        await StopInstanceCoreAsync(CancellationToken.None);
-        DetachPlayer();
+        await operationGate.WaitAsync();
+        IsBusy = true;
+        try
+        {
+            await PausePlaybackAsync();
+            await StopInstanceCoreAsync(CancellationToken.None);
+            DetachPlayer();
+        }
+        finally
+        {
+            IsBusy = false;
+            operationGate.Release();
+            operationGate.Dispose();
+        }
     }
 
     private async Task<bool> LaunchCoreAsync(
@@ -370,7 +497,6 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
             return false;
         }
 
-        IsBusy = true;
         try
         {
             await StopInstanceCoreAsync(cancellationToken);
@@ -384,6 +510,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
                 SrvSurveyExecutablePath,
                 session.ManifestPath,
                 cancellationToken);
+            StartInstanceMonitor(instance);
             StatusMessage = "SrvSurvey launched in isolated diagnostic replay mode. "
                 + "Networking and external effects are disabled.";
             RaiseRuntimeProperties();
@@ -392,15 +519,12 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         catch (Exception exception) when (
             exception is IOException
                 or UnauthorizedAccessException
-                or InvalidOperationException)
+                or InvalidOperationException
+                or System.ComponentModel.Win32Exception)
         {
             StatusMessage = "Launch failed: " + exception.Message;
             await StopInstanceCoreAsync(CancellationToken.None);
             return false;
-        }
-        finally
-        {
-            IsBusy = false;
         }
     }
 
@@ -413,9 +537,205 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
 
         var current = instance;
         instance = null;
-        await current.StopAsync(cancellationToken);
-        await current.DisposeAsync();
-        RaiseRuntimeProperties();
+        var monitorCancellation = instanceMonitorCancellation;
+        var monitor = instanceMonitorTask;
+        instanceMonitorCancellation = null;
+        instanceMonitorTask = null;
+        monitorCancellation?.Cancel();
+        try
+        {
+            await current.StopAsync(cancellationToken);
+        }
+        finally
+        {
+            if (monitor is not null)
+            {
+                try
+                {
+                    await monitor;
+                }
+                catch (OperationCanceledException) when (
+                    monitorCancellation?.IsCancellationRequested == true)
+                {
+                    // A controller-owned stop supersedes natural-exit reporting.
+                }
+            }
+
+            monitorCancellation?.Dispose();
+            await current.DisposeAsync();
+            RaiseRuntimeProperties();
+        }
+    }
+
+    private async Task PlayCoreAsync(
+        JournalReplayPlayer activePlayer,
+        CancellationTokenSource cancellation)
+    {
+        try
+        {
+            await activePlayer.PlayAsync(
+                () => SpeedMultiplier,
+                cancellation.Token);
+            if (activePlayer.IsComplete)
+            {
+                StatusMessage = "Replay is complete.";
+            }
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            StatusMessage = $"Paused at event {Position:N0}.";
+        }
+        catch (Exception exception) when (IsRecoverableControllerFailure(exception))
+        {
+            StatusMessage = "Replay stopped after an I/O failure: "
+                + exception.Message
+                + $" Logs retained at {LogsDirectory}.";
+        }
+        finally
+        {
+            if (ReferenceEquals(playbackCancellation, cancellation))
+            {
+                playbackCancellation = null;
+            }
+
+            cancellation.Dispose();
+            IsPlaying = false;
+        }
+    }
+
+    private async Task PausePlaybackAsync()
+    {
+        var activePlayback = playbackTask;
+        playbackCancellation?.Cancel();
+        if (activePlayback is null)
+        {
+            return;
+        }
+
+        await activePlayback;
+        if (ReferenceEquals(playbackTask, activePlayback))
+        {
+            playbackTask = null;
+        }
+    }
+
+    private void StartInstanceMonitor(IDiagnosticInstance observedInstance)
+    {
+        var cancellation = new CancellationTokenSource();
+        instanceMonitorCancellation = cancellation;
+        instanceMonitorTask = MonitorInstanceExitAsync(
+            observedInstance,
+            cancellation);
+    }
+
+    private async Task MonitorInstanceExitAsync(
+        IDiagnosticInstance observedInstance,
+        CancellationTokenSource cancellation)
+    {
+        await Task.Yield();
+        try
+        {
+            var exitCode = await observedInstance.WaitForExitAsync(
+                cancellation.Token);
+            var exitTransition = await InvokeOnCapturedContextAsync(() =>
+            {
+                if (!ReferenceEquals(instance, observedInstance))
+                {
+                    return (Handled: false, Playback: (Task?)null);
+                }
+
+                instance = null;
+                playbackCancellation?.Cancel();
+                if (ReferenceEquals(instanceMonitorCancellation, cancellation))
+                {
+                    instanceMonitorCancellation = null;
+                    instanceMonitorTask = null;
+                }
+
+                RaiseRuntimeProperties();
+                return (Handled: true, Playback: playbackTask);
+            });
+            if (exitTransition.Playback is not null)
+            {
+                await exitTransition.Playback;
+            }
+
+            if (exitTransition.Handled)
+            {
+                await InvokeOnCapturedContextAsync(() =>
+                {
+                    if (instance is null)
+                    {
+                        StatusMessage = exitCode == 0
+                            ? "Diagnostic SrvSurvey exited normally with code 0. "
+                                + $"Logs retained at {LogsDirectory}."
+                            : $"Diagnostic SrvSurvey exited unexpectedly with code {exitCode}. "
+                                + $"Logs retained at {LogsDirectory}.";
+                    }
+
+                    return true;
+                });
+                await observedInstance.DisposeAsync();
+            }
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            // A controller-owned stop suppresses natural-exit reporting.
+        }
+        finally
+        {
+            cancellation.Dispose();
+        }
+    }
+
+    private Task<T> InvokeOnCapturedContextAsync<T>(Func<T> action)
+    {
+        if (synchronizationContext is null
+            || ReferenceEquals(SynchronizationContext.Current, synchronizationContext))
+        {
+            return Task.FromResult(action());
+        }
+
+        var completion = new TaskCompletionSource<T>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        synchronizationContext.Post(
+            _ =>
+            {
+                try
+                {
+                    completion.SetResult(action());
+                }
+                catch (Exception exception)
+                {
+                    completion.SetException(exception);
+                }
+            },
+            state: null);
+        return completion.Task;
+    }
+
+    private bool TryBeginOperation()
+    {
+        if (!operationGate.Wait(0))
+        {
+            return false;
+        }
+
+        IsBusy = true;
+        return true;
+    }
+
+    private static bool IsRecoverableControllerFailure(Exception exception) =>
+        exception is IOException
+            or UnauthorizedAccessException
+            or InvalidDataException
+            or InvalidOperationException
+            or System.ComponentModel.Win32Exception;
+
+    private void EndOperation()
+    {
+        IsBusy = false;
+        operationGate.Release();
     }
 
     private void OnPlayerPositionChanged(
@@ -524,13 +844,31 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         Func<Task> execute,
         Func<bool> canExecute) : ICommand
     {
+        private int isExecuting;
+
         public event EventHandler? CanExecuteChanged;
 
-        public bool CanExecute(object? parameter) => canExecute();
+        public bool CanExecute(object? parameter) =>
+            Volatile.Read(ref isExecuting) == 0 && canExecute();
 
         public async void Execute(object? parameter)
         {
-            await execute();
+            if (!canExecute()
+                || Interlocked.CompareExchange(ref isExecuting, 1, 0) != 0)
+            {
+                return;
+            }
+
+            RaiseCanExecuteChanged();
+            try
+            {
+                await execute();
+            }
+            finally
+            {
+                Volatile.Write(ref isExecuting, 0);
+                RaiseCanExecuteChanged();
+            }
         }
 
         public void RaiseCanExecuteChanged() =>

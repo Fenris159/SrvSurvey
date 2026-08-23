@@ -14,4 +14,9 @@ else
 fi
 export LD_LIBRARY_PATH
 
+if [ "${1:-}" = "--replay-controller" ]; then
+    shift
+    exec "$APPDIR/usr/lib/srvsurvey/SrvSurvey.ReplayController" "$@"
+fi
+
 exec "$APPDIR/usr/lib/srvsurvey/SrvSurvey.Desktop" "$@"

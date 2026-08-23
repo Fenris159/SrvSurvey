@@ -15,9 +15,15 @@ event.
 Choose an exact inclusive UTC timestamp range, preview it, and export a
 `.srvreplay` package. The exporter includes the earlier Commander and LoadGame
 bootstrap events needed to establish the replay identity. Redacted export is the
-default and removes chat text and credential-like properties. Raw export still
-removes credential-like properties; it only preserves journal fields that the
-redacted mode intentionally masks.
+default and pseudonymizes every Commander/FID identity and location relationship,
+removes sent and received chat, zeroes coordinates, and removes screenshot file
+paths. Raw export still removes credential-like properties; it preserves journal
+fields that the redacted mode intentionally masks.
+
+The package also carries a non-sensitive overlay presentation snapshot: panel
+enablement, placement, per-panel and global scale, opacity, and the observed game
+viewport. Diagnostic mode applies that snapshot to its session-local settings;
+it never imports the reporter's full profile or credentials.
 
 ## Replay controller
 
@@ -26,6 +32,13 @@ beside `SrvSurvey.Desktop`. It accepts a raw journal or `.srvreplay` package fro
 any location, validates it, and copies the evidence into an application-managed
 replay directory. The original evidence is never used as a writable playback
 file.
+
+On Linux, launch the controller from the portable archive directly, or dispatch
+to it through the AppImage:
+
+```console
+./SrvSurvey-XP-<version>-x86_64.AppImage --replay-controller
+```
 
 After selecting the SrvSurvey executable, use **Launch diagnostic SrvSurvey**.
 The controller starts it with:
