@@ -3,6 +3,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop;
 
@@ -21,7 +22,10 @@ public sealed partial class BiologyCodexBingoWindow : Window
             ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
         DataContext = viewModel;
-        viewModel.SetPlatformServices(WriteClipboardAsync, LaunchUriAsync);
+        if (DesktopExternalEffectPolicy.IsAllowed)
+        {
+            viewModel.SetPlatformServices(WriteClipboardAsync, LaunchUriAsync);
+        }
         Opened += OnOpened;
         Closed += OnClosed;
     }

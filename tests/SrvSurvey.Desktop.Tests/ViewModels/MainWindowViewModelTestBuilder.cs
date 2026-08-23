@@ -17,6 +17,7 @@ internal sealed class MainWindowViewModelTestBuilder
     private IBoxelSystemResolver? boxelSystemResolver;
     private DesktopBehaviorSettingsStore? desktopBehaviorSettingsStore;
     private IEddnPublisher? eddnPublisher;
+    private HttpClient? externalNetworkClient;
     private IFirstFootfallInferenceService? firstFootfallInferenceService;
     private CommanderProfileViewModel? frontierProfile;
     private IGameWindowSwitcher? gameWindowSwitcher;
@@ -33,6 +34,8 @@ internal sealed class MainWindowViewModelTestBuilder
     private TimeSpan? systemBodyDataRetryDelay;
     private string? targetFrontierId;
     private IVoxStellarPublisher? voxStellarPublisher;
+    private bool isDiagnosticReplay;
+    private string? diagnosticReplayStatus;
     private Action<MainWindowViewModelConstructionCheckpoint>? checkpoint;
 
     public static MainWindowViewModel Create(
@@ -57,6 +60,9 @@ internal sealed class MainWindowViewModelTestBuilder
                     ApplicationLogService = applicationLogService,
                     TargetFrontierId = targetFrontierId,
                     FrontierProfile = frontierProfile,
+                    ExternalNetworkClient = externalNetworkClient,
+                    IsDiagnosticReplay = isDiagnosticReplay,
+                    DiagnosticReplayStatus = diagnosticReplayStatus,
                 },
                 Overlay = new MainWindowOverlayInputs
                 {
@@ -111,6 +117,10 @@ internal sealed class MainWindowViewModelTestBuilder
 
     public MainWindowViewModelTestBuilder WithEddnPublisher(IEddnPublisher value)
         => Set(ref eddnPublisher, value);
+
+    public MainWindowViewModelTestBuilder WithExternalNetworkClient(
+        HttpClient value)
+        => Set(ref externalNetworkClient, value);
 
     public MainWindowViewModelTestBuilder WithFirstFootfallInferenceService(
         IFirstFootfallInferenceService value)
@@ -177,6 +187,13 @@ internal sealed class MainWindowViewModelTestBuilder
     public MainWindowViewModelTestBuilder WithVoxStellarPublisher(
         IVoxStellarPublisher value)
         => Set(ref voxStellarPublisher, value);
+
+    public MainWindowViewModelTestBuilder AsDiagnosticReplay(string status)
+    {
+        isDiagnosticReplay = true;
+        diagnosticReplayStatus = status;
+        return this;
+    }
 
     public MainWindowViewModelTestBuilder FailAt(
         MainWindowViewModelConstructionCheckpoint value,

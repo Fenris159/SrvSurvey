@@ -59,6 +59,8 @@ target for this build.
   update, and domain services, including application-owned reference resources.
 - `src/SrvSurvey.Desktop` — Avalonia UI, overlays, theming, input, and native
   platform adapters.
+- `src/SrvSurvey.ReplayController` — standalone diagnostic journal replay
+  launcher and playback controls.
 - `tests` — core and desktop regression suites with explicit journal, network,
   and overlay coverage inventories.
 - `packaging` and `scripts` — Windows/Linux packaging and AppImage validation.
@@ -67,6 +69,7 @@ target for this build.
 See [development and validation status](docs/DEVELOPMENT.md),
 [current release notes](CurrentReleaseNotes.md),
 [journal coverage](docs/JOURNAL_COVERAGE.md),
+[diagnostic journal replay](docs/DIAGNOSTIC_REPLAY.md),
 [network coverage](docs/NETWORK_COVERAGE.md),
 [network publication privacy](docs/PRIVACY.md), and
 [profile migration](docs/DATA_MIGRATION.md). Frontier account linking and the

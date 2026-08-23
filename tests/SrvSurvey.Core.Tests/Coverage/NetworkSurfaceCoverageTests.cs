@@ -31,7 +31,9 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Desktop/Platform/CodexImageCache.cs",
         "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs",
         "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs",
+        "src/SrvSurvey.Desktop/Runtime/DiagnosticReplayContext.cs",
         "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs",
+        "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModelFactory.cs",
     ];
 
     private static readonly string[] ResponseOwners =
@@ -44,6 +46,12 @@ public sealed class NetworkSurfaceCoverageTests
                     StringComparison.Ordinal)
                 && !path.EndsWith(
                     "VoxStellarPublisher.cs",
+                    StringComparison.Ordinal)
+                && !path.EndsWith(
+                    "DiagnosticReplayContext.cs",
+                    StringComparison.Ordinal)
+                && !path.EndsWith(
+                    "MainWindowViewModelFactory.cs",
                     StringComparison.Ordinal))
             .ToArray();
 
@@ -177,6 +185,10 @@ public sealed class NetworkSurfaceCoverageTests
                 "tests/SrvSurvey.Core.Tests/Storage/VisitedStarsCacheServiceTests.cs",
                 "tests/SrvSurvey.Desktop.Tests/Platform/CodexImageCacheTests.cs",
             ]),
+        new(
+            "diagnostic-network-denial",
+            ["src/SrvSurvey.Desktop/Runtime/DiagnosticReplayContext.cs"],
+            ["tests/SrvSurvey.Desktop.Tests/Runtime/DiagnosticReplayContextTests.cs"]),
     ];
 
     [Fact]

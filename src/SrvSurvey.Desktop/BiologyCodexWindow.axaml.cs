@@ -6,6 +6,7 @@ using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop;
 
@@ -33,7 +34,10 @@ public sealed partial class BiologyCodexWindow : Window
             ?? throw new ArgumentNullException(nameof(imageCache));
         InitializeComponent();
         DataContext = viewModel;
-        viewModel.SetUriLauncher(LaunchUriAsync);
+        if (DesktopExternalEffectPolicy.IsAllowed)
+        {
+            viewModel.SetUriLauncher(LaunchUriAsync);
+        }
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         _ = LoadSelectedImageAsync(forceRefresh: false);
     }

@@ -3,6 +3,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -18,7 +19,8 @@ public sealed partial class TravelView : UserControl
 
     private void ConnectClipboard()
     {
-        if (DataContext is MainWindowViewModel viewModel)
+        if (DesktopExternalEffectPolicy.IsAllowed
+            && DataContext is MainWindowViewModel viewModel)
         {
             viewModel.Route.SetClipboardWriter(WriteClipboardAsync);
             viewModel.FleetCarrierRoute.SetClipboardWriter(WriteClipboardAsync);

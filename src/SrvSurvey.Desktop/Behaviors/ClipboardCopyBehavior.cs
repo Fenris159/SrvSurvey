@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop.Behaviors;
 
@@ -81,6 +82,11 @@ public static class ClipboardCopyBehavior
 
     private static async Task CopyTextAsync(Control control)
     {
+        if (!DesktopExternalEffectPolicy.IsAllowed)
+        {
+            return;
+        }
+
         var text = GetText(control)?.ToString()?.Trim();
         if (string.IsNullOrWhiteSpace(text)
             || TopLevel.GetTopLevel(control)?.Clipboard is not { } clipboard)

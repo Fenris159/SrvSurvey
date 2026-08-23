@@ -749,6 +749,7 @@
 
       <Border x:Name="LegacyImportSection"
               Classes="card raised"
+              IsEnabled="{Binding !IsDiagnosticReplay}"
               IsVisible="{Binding SettingsWorkspace.IsDataSelected}">
         <StackPanel Spacing="16">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
