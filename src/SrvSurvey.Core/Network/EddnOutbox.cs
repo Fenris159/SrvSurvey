@@ -15,10 +15,11 @@ namespace SrvSurvey.Core.Network
         private static readonly TimeSpan sendSpacing = TimeSpan.FromMilliseconds(400);
         private static readonly TimeSpan minimumRetryDelay = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan maximumRetryDelay = TimeSpan.FromMinutes(30);
-        private const int maximumPendingMessages = 4096;
-        private const long maximumStoreBytes = 64L * 1024 * 1024;
+        private const int defaultMaximumPendingMessages = 4096;
+        private const long defaultMaximumStoreBytes = 64L * 1024 * 1024;
 
         private readonly string filepath;
+        private readonly string storeFolder;
         private readonly string ownershipPath;
         private readonly string sharedDisablePath;
         private readonly string sharedDisableLeasePath;
@@ -26,6 +27,8 @@ namespace SrvSurvey.Core.Network
         private readonly Action<string> log;
         private readonly Func<DateTimeOffset> utcNow;
         private readonly bool automaticProcessing;
+        private readonly int maximumPendingMessages;
+        private readonly long maximumStoreBytes;
         private readonly object sync = new();
         private readonly object sharedConsentSync = new();
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
@@ -38,11 +41,15 @@ namespace SrvSurvey.Core.Network
         private readonly FileSystemWatcher? sharedConsentWatcher;
         private CancellationTokenSource activityCancellation = new();
         private List<EddnQueuedMessage> pending;
+        private readonly Dictionary<Guid, long> persistedBytes = [];
+        private readonly HashSet<Guid> loadCycleIds = [];
+        private long storeBytes;
         private FileStream? ownershipLease;
         private FileStream? sharedDisableLease;
         private bool? requestedEnabled;
         private bool enabled;
         private bool suspended;
+        private bool loadingTruncated;
         private bool ownershipWarningReported;
         private volatile bool disposed;
 
@@ -51,11 +58,19 @@ namespace SrvSurvey.Core.Network
             EddnTransport transport,
             Action<string>? log = null,
             Func<DateTimeOffset>? utcNow = null,
-            bool automaticProcessing = true)
+            bool automaticProcessing = true,
+            int maximumPendingMessages = defaultMaximumPendingMessages,
+            long maximumStoreBytes = defaultMaximumStoreBytes)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(filepath);
             ArgumentNullException.ThrowIfNull(transport);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(
+                maximumPendingMessages);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(
+                maximumStoreBytes);
+
             this.filepath = filepath;
+            storeFolder = filepath + ".d";
             ownershipPath = getOwnershipPath(filepath);
             sharedDisablePath = ownershipPath + ".sharing-disabled";
             sharedDisableLeasePath = sharedDisablePath + ".lease";
@@ -63,6 +78,8 @@ namespace SrvSurvey.Core.Network
             this.log = log ?? (_ => { });
             this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
             this.automaticProcessing = automaticProcessing;
+            this.maximumPendingMessages = maximumPendingMessages;
+            this.maximumStoreBytes = maximumStoreBytes;
             pending = [];
             timer = new System.Threading.Timer(
                 _ => triggerProcessing(),
@@ -163,17 +180,8 @@ namespace SrvSurvey.Core.Network
                 enabled = value;
                 if (!enabled)
                 {
-                    cancellation = replaceActivityCancellationLocked();
-                    if (discardPendingWhenDisabled
-                        && ownershipLease is not null
-                        && pending.Count > 0)
-                    {
-                        var count = pending.Count;
-                        pending.Clear();
-                        persistenceLog = deleteStore();
-                        sharingLog = $"EDDN discarded {count:N0} pending upload(s) because sharing was disabled.";
-                    }
-
+                    (cancellation, persistenceLog, sharingLog) =
+                        disableLocked(discardPendingWhenDisabled);
                 }
 
                 canSchedule = enabled
@@ -198,6 +206,34 @@ namespace SrvSurvey.Core.Network
                 schedule(startupDelay);
             else if (!canSchedule)
                 stopTimer();
+        }
+
+        private (
+            CancellationTokenSource Cancellation,
+            string? PersistenceLog,
+            string? SharingLog) disableLocked(
+                bool discardPendingWhenDisabled)
+        {
+            var cancellation = replaceActivityCancellationLocked();
+            if (!discardPendingWhenDisabled
+                || ownershipLease is null
+                || (pending.Count == 0 && !loadingTruncated))
+            {
+                return (cancellation, null, null);
+            }
+
+            var count = pending.Count;
+            var includedUnloadedFiles = loadingTruncated;
+            pending.Clear();
+            persistedBytes.Clear();
+            loadCycleIds.Clear();
+            storeBytes = 0;
+            loadingTruncated = false;
+            var persistenceLog = deleteStore();
+            var sharingLog = includedUnloadedFiles
+                ? "EDDN discarded all pending uploads because sharing was disabled."
+                : $"EDDN discarded {count:N0} pending upload(s) because sharing was disabled.";
+            return (cancellation, persistenceLog, sharingLog);
         }
 
         internal void setSuspended(bool value)
@@ -263,7 +299,7 @@ namespace SrvSurvey.Core.Network
                 else
                 {
                     pending.Add(message);
-                    if (!save(out persistenceLog))
+                    if (!persistMessage(message, out persistenceLog))
                     {
                         pending.Remove(message);
                     }
@@ -341,7 +377,7 @@ namespace SrvSurvey.Core.Network
                 }
 
                 var now = utcNow();
-                next = pending.FirstOrDefault();
+                next = nextDueLocked(now);
                 if (next == null)
                 {
                     scheduleNextLocked(now);
@@ -401,6 +437,7 @@ namespace SrvSurvey.Core.Network
         {
             string? persistenceLog = null;
             string? resultLog = null;
+            List<string> reloadLogs = [];
             var continueProcessing = true;
             lock (sync)
             {
@@ -417,11 +454,13 @@ namespace SrvSurvey.Core.Network
                 if (retry)
                 {
                     (persistenceLog, resultLog) = ScheduleRetryLocked(next, result, failure);
-                    continueProcessing = false;
                 }
                 else
                 {
-                    (persistenceLog, resultLog) = CompleteUploadLocked(next, result);
+                    (persistenceLog, resultLog) = CompleteUploadLocked(
+                        next,
+                        result,
+                        reloadLogs);
                 }
             }
 
@@ -429,6 +468,7 @@ namespace SrvSurvey.Core.Network
             // holding the queue lock or Settings can deadlock against this worker.
             writeLog(persistenceLog);
             writeLog(resultLog);
+            writeLogs(reloadLogs);
             return continueProcessing;
         }
 
@@ -440,7 +480,7 @@ namespace SrvSurvey.Core.Network
             next.attempts++;
             var retryAt = utcNow() + getRetryDelay(next.attempts);
             next.nextAttempt = retryAt;
-            save(out var persistenceLog);
+            persistMessage(next, out var persistenceLog);
             var detail = failure?.Message
                 ?? result?.responseDetail
                 ?? result?.reasonPhrase
@@ -453,25 +493,30 @@ namespace SrvSurvey.Core.Network
 
         private (string? PersistenceLog, string ResultLog) CompleteUploadLocked(
             EddnQueuedMessage next,
-            EddnUploadResult? result)
+            EddnUploadResult? result,
+            List<string> reloadLogs)
         {
             pending.RemoveAll(item => item.id == next.id);
-            string? persistenceLog;
+            var persistenceLog = deleteMessage(next);
             if (pending.Count == 0)
             {
-                persistenceLog = deleteStore();
-            }
-            else
-            {
-                save(out persistenceLog);
+                if (loadingTruncated)
+                {
+                    pending = load(
+                        reloadLogs,
+                        continueTruncatedLoad: true);
+                }
+                else
+                {
+                    persistenceLog ??= deleteStore();
+                }
             }
 
             if (result?.isSuccess == true)
             {
-                var schemaMode = next.useTestSchemas ? "test" : "live";
                 return (
                     persistenceLog,
-                    $"EDDN uploaded {eventName(next)} using {schemaMode} schemas.");
+                    $"EDDN uploaded {eventName(next)} using test schemas.");
             }
 
             var detail = result?.skipReason
@@ -506,6 +551,10 @@ namespace SrvSurvey.Core.Network
             {
                 if (ownershipLease is null) return;
                 pending.Clear();
+                persistedBytes.Clear();
+                loadCycleIds.Clear();
+                storeBytes = 0;
+                loadingTruncated = false;
                 persistenceLog = deleteStore();
             }
             writeLog(persistenceLog);
@@ -590,54 +639,49 @@ namespace SrvSurvey.Core.Network
                 return;
             }
 
-            schedule(pending[0].nextAttempt - now);
+            schedule(pending.Min(item => item.nextAttempt) - now);
         }
 
-        private List<EddnQueuedMessage> load(List<string> messages)
+        private EddnQueuedMessage? nextDueLocked(DateTimeOffset now)
         {
-            if (!File.Exists(filepath)) return [];
-            try
-            {
-                if (new FileInfo(filepath).Length > maximumStoreBytes)
-                {
-                    throw new InvalidDataException(
-                        $"the queue exceeded {maximumStoreBytes / 1024 / 1024:N0} MiB");
-                }
+            // Give every new message one attempt in durable creation order.
+            // Retried messages then use their own due time. One persistently
+            // retryable payload therefore cannot block unrelated uploads.
+            return pending
+                .Where(item => item.nextAttempt <= now)
+                .OrderBy(item => item.attempts == 0 ? 0 : 1)
+                .ThenBy(item => item.attempts == 0
+                    ? item.created
+                    : item.nextAttempt)
+                .ThenBy(item => item.created)
+                .FirstOrDefault();
+        }
 
-                var json = File.ReadAllText(filepath);
-                var loaded = JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(json) ?? [];
-                foreach (var item in loaded)
-                {
-                    item.normalizeSchemaMode();
-                }
-                if (loaded.Count > maximumPendingMessages
-                    || loaded.Any(item => !isValid(item)))
-                {
-                    throw new InvalidDataException(
-                        "the queue contained invalid or excessive entries");
-                }
-
-                return loaded;
-            }
-            catch (Exception ex) when (
-                ex is IOException
-                    or JsonException
-                    or UnauthorizedAccessException
-                    or InvalidDataException)
+        private List<EddnQueuedMessage> load(
+            List<string> messages,
+            bool continueTruncatedLoad = false)
+        {
+            if (!continueTruncatedLoad)
             {
-                var backup = filepath + ".bad-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
-                try
-                {
-                    File.Move(filepath, backup);
-                    messages.Add($"EDDN moved an unreadable queue to: {backup}");
-                }
-                catch (Exception moveError) when (moveError is IOException or UnauthorizedAccessException)
-                {
-                    messages.Add($"EDDN could not preserve its unreadable queue: {moveError.Message}");
-                }
-                messages.Add($"EDDN could not load its pending uploads: {ex.Message}");
-                return [];
+                loadCycleIds.Clear();
             }
+
+            persistedBytes.Clear();
+            storeBytes = 0;
+            loadingTruncated = false;
+            var loaded = loadMessageFiles(messages, loadCycleIds);
+            migrateLegacyStore(loaded, messages);
+            foreach (var item in loaded)
+            {
+                loadCycleIds.Add(item.id);
+            }
+
+            if (!loadingTruncated)
+            {
+                loadCycleIds.Clear();
+            }
+
+            return loaded.OrderBy(item => item.created).ToList();
         }
 
         private void stopTimer()
@@ -652,32 +696,193 @@ namespace SrvSurvey.Core.Network
             }
         }
 
-        private bool save(out string? errorLog)
+        private List<EddnQueuedMessage> loadMessageFiles(
+            List<string> messages,
+            HashSet<Guid> ids)
+        {
+            if (!Directory.Exists(storeFolder)) return [];
+            List<EddnQueuedMessage> loaded = [];
+            foreach (var path in Directory.EnumerateFiles(storeFolder, "*.json"))
+            {
+                if (loaded.Count >= maximumPendingMessages)
+                {
+                    loadingTruncated = true;
+                    messages.Add(
+                        $"EDDN stopped loading pending uploads after reaching the {maximumPendingMessages:N0}-message limit; remaining files were left unchanged.");
+                    break;
+                }
+
+                try
+                {
+                    var length = new FileInfo(path).Length;
+                    if (length > maximumStoreBytes - storeBytes)
+                    {
+                        loadingTruncated = true;
+                        messages.Add(
+                            $"EDDN stopped loading pending uploads after reaching the {maximumStoreBytes / 1024 / 1024:N0} MiB storage limit; remaining files were left unchanged.");
+                        break;
+                    }
+
+                    if (length <= 0)
+                    {
+                        throw new InvalidDataException(
+                            "the queue contained an empty entry");
+                    }
+
+                    var item = JsonConvert.DeserializeObject<EddnQueuedMessage>(
+                        File.ReadAllText(path));
+                    normalize(item);
+                    if (!isValid(item) || !ids.Add(item!.id))
+                    {
+                        throw new InvalidDataException(
+                            "the queue contained an invalid or duplicate entry");
+                    }
+
+                    loaded.Add(item);
+                    persistedBytes[item.id] = length;
+                    storeBytes += length;
+                }
+                catch (Exception exception) when (
+                    exception is IOException
+                        or JsonException
+                        or UnauthorizedAccessException
+                        or InvalidDataException)
+                {
+                    quarantine(path, messages);
+                    messages.Add(
+                        "EDDN could not load a pending upload: "
+                            + exception.Message);
+                }
+            }
+
+            return loaded;
+        }
+
+        private void migrateLegacyStore(
+            List<EddnQueuedMessage> loaded,
+            List<string> messages)
+        {
+            if (!File.Exists(filepath)) return;
+            try
+            {
+                if (new FileInfo(filepath).Length > maximumStoreBytes)
+                {
+                    throw new InvalidDataException(
+                        $"the queue exceeded {maximumStoreBytes / 1024 / 1024:N0} MiB");
+                }
+
+                var legacy = JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(
+                    File.ReadAllText(filepath)) ?? [];
+                if (legacy.Count + loaded.Count > maximumPendingMessages)
+                {
+                    throw new InvalidDataException(
+                        "the queue contained excessive entries");
+                }
+
+                if (migrateLegacyMessages(legacy, loaded, messages))
+                {
+                    File.Delete(filepath);
+                }
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or JsonException
+                    or UnauthorizedAccessException
+                    or InvalidDataException)
+            {
+                quarantine(filepath, messages);
+                messages.Add(
+                    "EDDN could not load its legacy pending uploads: "
+                        + exception.Message);
+            }
+        }
+
+        private bool migrateLegacyMessages(
+            IEnumerable<EddnQueuedMessage> legacy,
+            List<EddnQueuedMessage> loaded,
+            List<string> messages)
+        {
+            var ids = loaded.Select(item => item.id).ToHashSet();
+            var migrated = true;
+            foreach (var item in legacy)
+            {
+                normalize(item);
+                if (!isValid(item))
+                {
+                    throw new InvalidDataException(
+                        "the queue contained invalid entries");
+                }
+
+                if (!ids.Add(item.id)) continue;
+                if (persistMessage(item, out var error))
+                {
+                    loaded.Add(item);
+                }
+                else
+                {
+                    migrated = false;
+                    if (error is not null) messages.Add(error);
+                }
+            }
+
+            return migrated;
+        }
+
+        private bool persistMessage(
+            EddnQueuedMessage message,
+            out string? errorLog)
         {
             errorLog = null;
             try
             {
-                var folder = Path.GetDirectoryName(filepath);
-                if (!string.IsNullOrEmpty(folder)) Directory.CreateDirectory(folder);
-                var temporary = filepath + ".tmp";
-                var json = JsonConvert.SerializeObject(pending, Formatting.Indented);
-                if (Encoding.UTF8.GetByteCount(json) > maximumStoreBytes)
+                Directory.CreateDirectory(storeFolder);
+                var json = JsonConvert.SerializeObject(message, Formatting.None);
+                var bytes = Encoding.UTF8.GetByteCount(json);
+                var previousBytes = persistedBytes.GetValueOrDefault(message.id);
+                if (storeBytes - previousBytes + bytes > maximumStoreBytes)
                 {
                     errorLog =
                         $"EDDN did not grow its local queue beyond {maximumStoreBytes / 1024 / 1024:N0} MiB.";
                     return false;
                 }
 
+                var path = messagePath(message.id);
+                var temporary = path + ".tmp";
                 File.WriteAllText(
                     temporary,
                     json);
-                File.Move(temporary, filepath, true);
+                File.Move(temporary, path, true);
+                persistedBytes[message.id] = bytes;
+                storeBytes = storeBytes - previousBytes + bytes;
                 return true;
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            catch (Exception exception) when (
+                exception is IOException or UnauthorizedAccessException)
             {
-                errorLog = $"EDDN could not persist a pending upload: {ex.Message}";
+                errorLog =
+                    "EDDN could not persist a pending upload: "
+                        + exception.Message;
                 return false;
+            }
+        }
+
+        private string? deleteMessage(EddnQueuedMessage message)
+        {
+            try
+            {
+                var path = messagePath(message.id);
+                if (File.Exists(path)) File.Delete(path);
+                var temporary = path + ".tmp";
+                if (File.Exists(temporary)) File.Delete(temporary);
+                storeBytes -= persistedBytes.GetValueOrDefault(message.id);
+                persistedBytes.Remove(message.id);
+                return null;
+            }
+            catch (Exception exception) when (
+                exception is IOException or UnauthorizedAccessException)
+            {
+                return "EDDN could not remove a delivered upload: "
+                    + exception.Message;
             }
         }
 
@@ -688,11 +893,52 @@ namespace SrvSurvey.Core.Network
                 if (File.Exists(filepath)) File.Delete(filepath);
                 var temporary = filepath + ".tmp";
                 if (File.Exists(temporary)) File.Delete(temporary);
+                if (Directory.Exists(storeFolder))
+                {
+                    Directory.Delete(storeFolder, recursive: true);
+                }
+
+                persistedBytes.Clear();
+                loadCycleIds.Clear();
+                storeBytes = 0;
+                loadingTruncated = false;
                 return null;
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 return $"EDDN could not remove its empty queue: {ex.Message}";
+            }
+        }
+
+        private string messagePath(Guid id)
+        {
+            return Path.Combine(storeFolder, id.ToString("N") + ".json");
+        }
+
+        private static void normalize(EddnQueuedMessage? item)
+        {
+            item?.normalizeSchemaMode();
+        }
+
+        private static void quarantine(string path, List<string> messages)
+        {
+            var backup = path
+                + ".bad-"
+                + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")
+                + "-"
+                + Guid.NewGuid().ToString("N");
+            try
+            {
+                File.Move(path, backup);
+                messages.Add(
+                    $"EDDN moved an unreadable queue entry to: {backup}");
+            }
+            catch (Exception exception) when (
+                exception is IOException or UnauthorizedAccessException)
+            {
+                messages.Add(
+                    "EDDN could not preserve an unreadable queue entry: "
+                        + exception.Message);
             }
         }
 

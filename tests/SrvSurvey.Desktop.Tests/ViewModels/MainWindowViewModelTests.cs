@@ -456,7 +456,7 @@ public sealed class MainWindowViewModelTests
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"gameversion\":\"4.1\",\"build\":\"r1\"}\n"
-                    + "{\"timestamp\":\"2026-07-25T12:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"Horizons\":true,\"Odyssey\":true}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"FID\":\"F123\",\"Horizons\":true,\"Odyssey\":true}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n");
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
@@ -477,7 +477,10 @@ public sealed class MainWindowViewModelTests
             var bootstrap = Assert.Single(publisher.Calls);
             Assert.False(bootstrap.AllowPublishing);
             Assert.True(bootstrap.Enabled);
-            Assert.True(bootstrap.UseTestSchemas);
+            Assert.Equal("Test Cmdr", bootstrap.CommanderName);
+            Assert.Equal("F123", bootstrap.FrontierId);
+            Assert.Equal("4.1", bootstrap.GameVersion);
+            Assert.Equal("r1", bootstrap.GameBuild);
             Assert.Equal(3, bootstrap.Events.Count);
             Assert.DoesNotContain("Queued", viewModel.NetworkPrivacy.StatusMessage);
 
@@ -3792,9 +3795,12 @@ public sealed class MainWindowViewModelTests
             Calls.Add(new EddnCall(
                 request.JournalEvents.ToArray(),
                 request.Enabled,
-                request.UseTestSchemas,
                 request.AllowPublishing,
-                request.AllowSharedData));
+                request.AllowSharedData,
+                request.CommanderName,
+                request.FrontierId,
+                request.GameVersion,
+                request.GameBuild));
             IReadOnlyList<EddnPublishedEvent> published =
                 request.Enabled
                     && request.AllowPublishing
@@ -3802,7 +3808,7 @@ public sealed class MainWindowViewModelTests
                     ? [new EddnPublishedEvent(
                         request.JournalEvents[0].EventName,
                         "https://eddn.edcd.io/schemas/test/1/test",
-                        request.UseTestSchemas)]
+                        UsesTestSchemas: true)]
                     : [];
             return Task.FromResult(new EddnPublicationResult(published, []));
         }
@@ -3858,9 +3864,12 @@ public sealed class MainWindowViewModelTests
     private sealed record EddnCall(
         IReadOnlyList<JournalEventEnvelope> Events,
         bool Enabled,
-        bool UseTestSchemas,
         bool AllowPublishing,
-        bool AllowSharedData);
+        bool AllowSharedData,
+        string? CommanderName,
+        string? FrontierId,
+        string? GameVersion,
+        string? GameBuild);
 
     private sealed class CountingScreenshotProcessor
         : IScreenshotProcessingService

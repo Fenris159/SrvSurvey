@@ -20,7 +20,6 @@ public sealed class NetworkPrivacySettingsStore
                 settings,
                 "EddnUploadEnabled",
                 defaults.EddnUploadEnabled),
-            GetTestSchemaPreference(settings, defaults.EddnUseTestSchemas),
             GetBoolean(
                 settings,
                 "UploadGreenGasGiantCandidates",
@@ -45,32 +44,13 @@ public sealed class NetworkPrivacySettingsStore
 
             root["Version"] = 1;
             settings["EddnUploadEnabled"] = preferences.EddnUploadEnabled;
-            settings["EddnUseTestSchemas"] = preferences.EddnUseTestSchemas;
+            settings.Remove("EddnUseTestSchemas");
             settings.Remove("EddnEnvironment");
             settings["UploadGreenGasGiantCandidates"] =
                 preferences.UploadGreenGasGiantCandidates;
             settings["UploadHumanSettlementGeometry"] =
                 preferences.UploadHumanSettlementGeometry;
         });
-    }
-
-    private static bool GetTestSchemaPreference(
-        JsonObject? settings,
-        bool fallback)
-    {
-        if (settings?["EddnUseTestSchemas"] is JsonValue value
-            && value.TryGetValue<bool>(out var useTestSchemas))
-        {
-            return useTestSchemas;
-        }
-
-        var legacyEnvironment = GetString(settings, "EddnEnvironment");
-        return legacyEnvironment is null
-            ? fallback
-            : !string.Equals(
-                legacyEnvironment.Trim(),
-                "live",
-                StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool GetBoolean(
@@ -84,24 +64,15 @@ public sealed class NetworkPrivacySettingsStore
                 : fallback;
     }
 
-    private static string? GetString(JsonObject? source, string propertyName)
-    {
-        return source?[propertyName] is JsonValue value
-            && value.TryGetValue<string>(out var result)
-                ? result
-                : null;
-    }
 }
 
 public sealed record NetworkPrivacyPreferences(
     bool EddnUploadEnabled,
-    bool EddnUseTestSchemas,
     bool UploadGreenGasGiantCandidates,
     bool UploadHumanSettlementGeometry = false)
 {
     public static NetworkPrivacyPreferences Default { get; } = new(
         EddnUploadEnabled: false,
-        EddnUseTestSchemas: true,
         UploadGreenGasGiantCandidates: false,
         UploadHumanSettlementGeometry: false);
 }
