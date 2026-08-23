@@ -63,9 +63,9 @@ correction, plus deletion. Selecting a matching active obelisk marker selects
 its metadata row. While the selected site is also the active in-game site, the
 Survey map mirrors the live commander position without adding it to marker
 selection or hit testing. Interactive zoom extends from the fitted 1x view to
-15x for separating tightly grouped markers. Inline map help identifies the
-directional gradient wedges for active obelisks as unscanned (gray), scanned
-(orange), or still needed for Ram Tah (cyan).
+15x for separating tightly grouped markers. The map legend and inline help
+identify the directional gradient wedges for active obelisks as unscanned
+(gray), scanned (orange), or still needed for Ram Tah (cyan).
 
 Component materials remain available for component towers and destructible
 panels when **Track Guardian component materials** is enabled in Overlay

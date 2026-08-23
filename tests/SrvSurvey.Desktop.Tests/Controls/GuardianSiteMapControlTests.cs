@@ -129,7 +129,7 @@ public sealed class GuardianSiteMapControlTests
     }
 
     [Fact]
-    public void LegendMatchesLegacyRuinsAndStructureKeysExactly()
+    public void LegendIncludesLegacyKeysAndActiveObeliskStates()
     {
         var ruins = new GuardianSiteMapProjection(
             "Alpha",
@@ -156,6 +156,9 @@ public sealed class GuardianSiteMapControlTests
                 "Urn",
                 "Empty puddle",
                 "Obelisk",
+                "Active obelisk · unscanned",
+                "Active obelisk · scanned",
+                "Active obelisk · Ram Tah needed",
                 "Site heading",
                 "Tower heading",
                 "Survey needed",
@@ -171,6 +174,9 @@ public sealed class GuardianSiteMapControlTests
                 "Urn",
                 "Empty puddle",
                 "Obelisk",
+                "Active obelisk · unscanned",
+                "Active obelisk · scanned",
+                "Active obelisk · Ram Tah needed",
                 "Energy pylon",
                 "Component tower",
                 "Site heading",

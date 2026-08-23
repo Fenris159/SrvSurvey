@@ -709,7 +709,7 @@
                   <StackPanel Spacing="12">
                     <TextBlock Classes="card-title" Text="Map legend" />
                     <controls:GuardianSiteMapControl
-                        Height="280"
+                        Height="320"
                         IsLegendOnly="True"
                         Projection="{Binding Guardian.MapProjection}"
                         ShowLegend="False"

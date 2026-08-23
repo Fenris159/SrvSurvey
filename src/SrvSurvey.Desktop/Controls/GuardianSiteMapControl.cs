@@ -902,10 +902,11 @@ public sealed class GuardianSiteMapControl : Control
                 0,
                 0,
                 entry.Status,
-                false,
-                false,
+                entry.IsActiveObelisk,
+                entry.IsScannedObelisk,
                 string.Empty,
-                []),
+                [],
+                IsRamTahNeededObelisk: entry.IsRamTahNeededObelisk),
             center,
             new GuardianSiteMapProjection(
                 "Alpha",
@@ -915,7 +916,8 @@ public sealed class GuardianSiteMapControl : Control
                 IsRuins: true,
                 SiteHeading: 0,
                 RelicTowerHeading: 45),
-            headingLength: 0);
+            headingLength: 0,
+            markerScale: entry.IsActiveObelisk ? 0.55 : 1);
     }
 
     private FormattedText CreateLegendText(
@@ -947,6 +949,20 @@ public sealed class GuardianSiteMapControl : Control
             new("Urn", GuardianPoiType.Urn),
             new("Empty puddle", GuardianPoiType.EmptyPuddle, GuardianPoiStatus.Empty),
             new("Obelisk", GuardianPoiType.Obelisk),
+            new(
+                "Active obelisk · unscanned",
+                GuardianPoiType.Obelisk,
+                IsActiveObelisk: true),
+            new(
+                "Active obelisk · scanned",
+                GuardianPoiType.Obelisk,
+                IsActiveObelisk: true,
+                IsScannedObelisk: true),
+            new(
+                "Active obelisk · Ram Tah needed",
+                GuardianPoiType.Obelisk,
+                IsActiveObelisk: true,
+                IsRamTahNeededObelisk: true),
         };
         if (!projection.IsRuins)
         {
@@ -1524,7 +1540,10 @@ public sealed class GuardianSiteMapControl : Control
         string Label,
         GuardianPoiType Type,
         GuardianPoiStatus Status = GuardianPoiStatus.Present,
-        GuardianMapLegendKind Kind = GuardianMapLegendKind.Point);
+        GuardianMapLegendKind Kind = GuardianMapLegendKind.Point,
+        bool IsActiveObelisk = false,
+        bool IsScannedObelisk = false,
+        bool IsRamTahNeededObelisk = false);
 
     private enum GuardianMapLegendKind
     {

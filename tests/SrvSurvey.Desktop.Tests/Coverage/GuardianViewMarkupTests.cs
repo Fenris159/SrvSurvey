@@ -187,7 +187,7 @@ public sealed class GuardianViewMarkupTests
     }
 
     [Fact]
-    public void ExternalLegendUsesOneCardWithoutInventedStatusKeys()
+    public void ExternalLegendUsesOneRenderedCardWithRoomForAllStates()
     {
         var document = LoadGuardianView();
         var legend = FindNamedElement(document, "GuardianSurveyMapLegend");
@@ -200,6 +200,7 @@ public sealed class GuardianViewMarkupTests
             .ToArray();
 
         Assert.Equal("True", mapLegend.Attribute("IsLegendOnly")?.Value);
+        Assert.Equal("320", mapLegend.Attribute("Height")?.Value);
         Assert.Equal(["Map legend"], labels);
         Assert.DoesNotContain(legend.Descendants(), element =>
             element.Name.LocalName is "Border" or "Grid");
