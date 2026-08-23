@@ -29,6 +29,7 @@ internal sealed class MainWindowViewModelTestBuilder
     private IScreenshotProcessingService? screenshotProcessingService;
     private StationInfoSettingsStore? stationInfoSettingsStore;
     private ISystemBodyDataClient? systemBodyDataClient;
+    private IEliteGameProcessDetector? eliteGameProcessDetector;
     private TimeSpan? systemBodyDataRetryDelay;
     private string? targetFrontierId;
     private IVoxStellarPublisher? voxStellarPublisher;
@@ -72,6 +73,7 @@ internal sealed class MainWindowViewModelTestBuilder
                     FirstFootfallInferenceService =
                         firstFootfallInferenceService,
                     SystemBodyDataClient = systemBodyDataClient,
+                    EliteGameProcessDetector = eliteGameProcessDetector,
                     SystemBodyDataRetryDelay = systemBodyDataRetryDelay,
                     HumanSiteSettingsStore = humanSiteSettingsStore,
                 },
@@ -154,6 +156,10 @@ internal sealed class MainWindowViewModelTestBuilder
     public MainWindowViewModelTestBuilder WithSystemBodyDataClient(
         ISystemBodyDataClient value)
         => Set(ref systemBodyDataClient, value);
+
+    public MainWindowViewModelTestBuilder WithEliteGameProcessDetector(
+        IEliteGameProcessDetector value)
+        => Set(ref eliteGameProcessDetector, value);
 
     public MainWindowViewModelTestBuilder WithSystemBodyDataRetryDelay(
         TimeSpan value)
