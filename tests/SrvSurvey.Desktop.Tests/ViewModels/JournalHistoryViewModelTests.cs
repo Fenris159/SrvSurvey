@@ -156,8 +156,9 @@ public sealed class JournalHistoryViewModelTests
     }
 
     [Fact]
-    public async Task ReplayRangeDefaultsToRecentEventsAndClampsBroadSelections()
+    public async Task ReplayRangeDefaultsToTodayAndYesterdayAndClampsBroadSelections()
     {
+        var now = DateTimeOffset.Parse("2026-08-23T10:31:44Z");
         using var temp = new TemporaryDirectory();
         await File.WriteAllLinesAsync(
             Path.Combine(temp.Path, "Journal.2026-08-21T180000.01.log"),
@@ -167,15 +168,16 @@ public sealed class JournalHistoryViewModelTests
             ]);
         using var viewModel = new JournalHistoryViewModel(
             temp.Path,
-            "test-build");
+            "test-build",
+            timeProvider: new FixedTimeProvider(now));
 
         await viewModel.RefreshAsync();
 
         Assert.Equal(
-            DateTimeOffset.Parse("2026-08-20T18:00:00Z"),
+            DateTimeOffset.Parse("2026-08-22T10:31:44Z"),
             viewModel.RangeFrom);
         Assert.Equal(
-            DateTimeOffset.Parse("2026-08-21T18:00:00Z"),
+            now,
             viewModel.RangeTo);
 
         viewModel.RangeFromDate = DateTime.Parse("2026-06-01");
@@ -269,6 +271,8 @@ public sealed class JournalHistoryViewModelTests
             temp.Path,
             "test-build");
         await populated.RefreshAsync();
+        populated.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:00:00Z");
+        populated.RangeTo = DateTimeOffset.Parse("2026-08-21T18:00:00Z");
         populated.RedactExport = false;
         Assert.Contains("remain raw", populated.ExportPreview);
         populated.SelectedEvent = populated.Events[0];
@@ -278,6 +282,11 @@ public sealed class JournalHistoryViewModelTests
         populated.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:01:00Z");
         populated.RangeTo = DateTimeOffset.Parse("2026-08-21T18:00:00Z");
         Assert.Equal(populated.RangeFrom, populated.RangeTo);
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => utcNow;
     }
 
     private sealed class TemporaryDirectory : IDisposable

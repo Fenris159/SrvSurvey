@@ -15,6 +15,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
     private readonly JournalHistoryReader reader;
     private readonly JournalReplayExporter exporter;
     private readonly Func<ReplayPresentationSnapshot?> presentationSnapshotProvider;
+    private readonly TimeProvider timeProvider;
     private readonly SynchronizationContext? synchronizationContext;
     private readonly AsyncCommand refreshCommand;
     private IReadOnlyList<JournalHistoryEvent> allEvents = [];
@@ -38,7 +39,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         string sourceVersion,
         JournalHistoryReader? reader = null,
         JournalReplayExporter? exporter = null,
-        Func<ReplayPresentationSnapshot?>? presentationSnapshotProvider = null)
+        Func<ReplayPresentationSnapshot?>? presentationSnapshotProvider = null,
+        TimeProvider? timeProvider = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceVersion);
@@ -48,6 +50,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         this.exporter = exporter ?? new JournalReplayExporter();
         this.presentationSnapshotProvider = presentationSnapshotProvider
             ?? (() => null);
+        this.timeProvider = timeProvider ?? TimeProvider.System;
         synchronizationContext = SynchronizationContext.Current;
         refreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
         RefreshCommand = refreshCommand;
@@ -180,9 +183,29 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         }
     }
 
-    public DateTime? RangeMinimumDate => firstJournalTimestamp?.UtcDateTime.Date;
+    public DateTime? RangeMinimumDate
+    {
+        get
+        {
+            var yesterday = timeProvider.GetUtcNow().UtcDateTime.Date.AddDays(-1);
+            var journalStart = firstJournalTimestamp?.UtcDateTime.Date;
+            return journalStart is { } firstDate && firstDate < yesterday
+                ? firstDate
+                : yesterday;
+        }
+    }
 
-    public DateTime? RangeMaximumDate => lastJournalTimestamp?.UtcDateTime.Date;
+    public DateTime? RangeMaximumDate
+    {
+        get
+        {
+            var today = timeProvider.GetUtcNow().UtcDateTime.Date;
+            var journalEnd = lastJournalTimestamp?.UtcDateTime.Date;
+            return journalEnd is { } lastDate && lastDate > today
+                ? lastDate
+                : today;
+        }
+    }
 
     public DateTime? RangeToMaximumDate
     {
@@ -193,12 +216,12 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
                 return RangeMaximumDate;
             }
 
-            var maximum = from + MaximumExportRange;
-            var constrainedMaximum = lastJournalTimestamp is { } journalEnd
-                && journalEnd < maximum
-                    ? journalEnd
-                    : maximum;
-            return constrainedMaximum.UtcDateTime.Date;
+            var maximumDate = (from + MaximumExportRange).UtcDateTime.Date;
+            var availableMaximum = RangeMaximumDate;
+            return availableMaximum is { } availableDate
+                && availableDate < maximumDate
+                    ? availableDate
+                    : maximumDate;
         }
     }
 
@@ -297,12 +320,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             OnPropertyChanged(nameof(RangeMaximumDate));
             rangeFrom = null;
             rangeTo = null;
-            var defaultTo = snapshot.LastTimestamp;
-            RangeFrom = defaultTo is { } lastTimestamp
-                ? LaterOf(
-                    snapshot.FirstTimestamp,
-                    lastTimestamp - DefaultExportRange)
-                : snapshot.FirstTimestamp;
+            var defaultTo = timeProvider.GetUtcNow();
+            RangeFrom = defaultTo - DefaultExportRange;
             RangeTo = defaultTo;
             Summary = ResolveSummary(snapshot);
             ApplyFilter();
@@ -572,15 +591,6 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
                 0,
                 TimeSpan.Zero) + (time ?? TimeSpan.Zero)
             : null;
-    }
-
-    private static DateTimeOffset? LaterOf(
-        DateTimeOffset? first,
-        DateTimeOffset second)
-    {
-        return first is { } firstTimestamp && firstTimestamp > second
-            ? firstTimestamp
-            : second;
     }
 
     private bool TryResolveRange(
