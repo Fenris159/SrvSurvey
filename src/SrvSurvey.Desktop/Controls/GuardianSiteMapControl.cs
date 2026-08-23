@@ -255,8 +255,7 @@ public sealed class GuardianSiteMapControl : Control
                 top: 4,
                 rowHeight: 26,
                 availableWidth: Math.Max(1, bounds.Width - 4),
-                fontSize: 13,
-                symbolScale: 1.25);
+                fontSize: 13);
             return;
         }
 
@@ -812,8 +811,7 @@ public sealed class GuardianSiteMapControl : Control
             38,
             rowHeight,
             width - 8,
-            fontSize: 10,
-            symbolScale: 1);
+            fontSize: 10);
     }
 
     private void DrawLegendRows(
@@ -823,9 +821,9 @@ public sealed class GuardianSiteMapControl : Control
         double top,
         double rowHeight,
         double availableWidth,
-        double fontSize,
-        double symbolScale)
+        double fontSize)
     {
+        var symbolScale = IsLegendOnly ? 1.25 : 1;
         var entries = CreateLegendEntries(projection);
         var useTwoColumns = IsLegendOnly && availableWidth >= 220;
         var compactEntries = useTwoColumns

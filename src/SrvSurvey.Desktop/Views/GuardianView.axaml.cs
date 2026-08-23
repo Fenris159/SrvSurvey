@@ -253,7 +253,9 @@ public sealed partial class GuardianView : UserControl
                     },
                 ],
             });
-        var path = files.FirstOrDefault()?.TryGetLocalPath();
+        var path = files.Count > 0
+            ? files[0].TryGetLocalPath()
+            : null;
         if (!string.IsNullOrWhiteSpace(path))
         {
             viewModel.Guardian.TemplateAuthoring.BackgroundImage = path;

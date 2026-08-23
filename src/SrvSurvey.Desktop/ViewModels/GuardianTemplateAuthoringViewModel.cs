@@ -624,12 +624,12 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
                     pair.Value))
                 .ToArray()
             ?? [];
-        var pointName = selectedName ?? SelectedPoint?.Name;
-        SelectedPoint = pointName is null
+        var selectedPointName = selectedName ?? SelectedPoint?.Name;
+        SelectedPoint = selectedPointName is null
             ? null
             : Points.FirstOrDefault(point => string.Equals(
                 point.Point.Name,
-                pointName,
+                selectedPointName,
                 StringComparison.OrdinalIgnoreCase));
         SelectedGroup = Groups.Count > 0 ? Groups[0] : null;
         OnPropertyChanged(nameof(PreviewTemplate));
