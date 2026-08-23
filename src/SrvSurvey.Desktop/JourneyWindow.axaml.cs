@@ -7,6 +7,7 @@ using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop;
 
@@ -25,7 +26,10 @@ public sealed partial class JourneyWindow : Window
             ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
         DataContext = viewModel;
-        viewModel.SetDirectoryLauncher(LaunchDirectoryAsync);
+        if (DesktopExternalEffectPolicy.IsAllowed)
+        {
+            viewModel.SetDirectoryLauncher(LaunchDirectoryAsync);
+        }
         Closed += OnClosed;
     }
 
@@ -58,6 +62,7 @@ public sealed partial class JourneyWindow : Window
         TappedEventArgs eventArgs)
     {
         if (ScreenshotListBox.SelectedItem is string path
+            && DesktopExternalEffectPolicy.IsAllowed
             && File.Exists(path))
         {
             await Launcher.LaunchFileInfoAsync(new FileInfo(path));

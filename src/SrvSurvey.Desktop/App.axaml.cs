@@ -27,7 +27,11 @@ public sealed partial class App : Application
                 desktop,
                 new DesktopStartup(
                     Program.StartupArguments,
-                    Program.ApplicationLog));
+                    Program.ApplicationLog)
+                {
+                    AppDataPathsOverride = Program.StartupContext?.AppDataPaths,
+                    DiagnosticReplay = Program.StartupContext?.DiagnosticReplay,
+                });
         }
 
         base.OnFrameworkInitializationCompleted();

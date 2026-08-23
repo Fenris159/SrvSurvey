@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -16,7 +17,8 @@ public sealed partial class SearchView : UserControl
 
     private void ConnectClipboard()
     {
-        if (DataContext is MainWindowViewModel viewModel)
+        if (DesktopExternalEffectPolicy.IsAllowed
+            && DataContext is MainWindowViewModel viewModel)
         {
             viewModel.NearestSystems.SetPlatformServices(
                 WriteClipboardAsync,

@@ -5,6 +5,75 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 public sealed class DiagnosticsViewMarkupTests
 {
     [Fact]
+    public void JournalHistoryIsSeparateFromTheQuestInspector()
+    {
+        var document = LoadDiagnosticsView();
+        var tabs = document.Descendants()
+            .Where(element => element.Name.LocalName == "TabItem")
+            .Select(element => element.Attribute("Header")?.Value)
+            .ToArray();
+
+        Assert.Contains("History", tabs);
+        Assert.Contains("Inspector", tabs);
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "ListBox"
+            && element.Attributes().Any(attribute =>
+                attribute.Name.LocalName == "Name"
+                && attribute.Value == "JournalHistoryEventList"));
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "Button"
+            && element.Attribute("Content")?.Value == "Export replay package");
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "TextBox"
+            && element.Attribute("Text")?.Value
+                == "{Binding JournalHistory.SearchText, Mode=TwoWay}");
+        Assert.Contains(document.Descendants(), element =>
+            element.Attribute("Text")?.Value
+                == "{Binding DiagnosticReplayStatus}");
+        var historyList = FindNamedElement(
+            document,
+            "JournalHistoryEventList");
+        Assert.DoesNotContain(
+            historyList.Descendants(),
+            element => element.Name.LocalName == "ItemsPanelTemplate");
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "CheckBox"
+            && element.Attribute("Content")?.Value
+                == "Redact commander identities, chat, locations, coordinates, and screenshot paths");
+    }
+
+    [Fact]
+    public void JournalHistoryDetailsDoNotDereferenceAMissingSelection()
+    {
+        var document = LoadDiagnosticsView();
+        var textBindings = document.Descendants()
+            .Select(element => element.Attribute("Text")?.Value)
+            .OfType<string>()
+            .ToArray();
+
+        Assert.DoesNotContain(
+            textBindings,
+            binding => binding.Contains(
+                "JournalHistory.SelectedEvent.",
+                StringComparison.Ordinal));
+        Assert.Contains(
+            "{Binding JournalHistory.SelectedEventFileName}",
+            textBindings);
+        Assert.Contains(
+            "{Binding JournalHistory.SelectedEventCommanderName}",
+            textBindings);
+        Assert.Contains(
+            "{Binding JournalHistory.SelectedEventSystemName}",
+            textBindings);
+        Assert.Contains(
+            "{Binding JournalHistory.SelectedEventTimestamp}",
+            textBindings);
+        Assert.Contains(
+            "{Binding JournalHistory.SelectedEventRawJson}",
+            textBindings);
+    }
+
+    [Fact]
     public void LiveLogUsesAnIndependentNonCaretScrollSurface()
     {
         var document = LoadDiagnosticsView();

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Storage;
@@ -7,6 +8,7 @@ using SrvSurvey.Desktop.Localization;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Frontier;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop;
 
@@ -19,16 +21,14 @@ internal static class Program
 
     internal static ApplicationLogService? ApplicationLog { get; private set; }
 
+    internal static DesktopStartupContext? StartupContext { get; private set; }
+
     [STAThread]
     public static void Main(string[] args)
     {
         var updateStartup = ApplicationUpdateBootstrap.ParseStartupArguments(args);
-        if (updateStartup.Mode == ApplicationUpdateStartupMode.Apply)
+        if (TryRunUpdateHelper(updateStartup))
         {
-            Environment.ExitCode = ApplicationUpdateBootstrap.RunHelperAsync(
-                    updateStartup.PlanPath!)
-                .GetAwaiter()
-                .GetResult();
             return;
         }
 
@@ -41,47 +41,25 @@ internal static class Program
             updateStartup.Mode == ApplicationUpdateStartupMode.Result
                 ? updateStartup.PlanPath
                 : null);
-        var appDataPaths = AppDataPaths.ResolveCurrent();
+        if (!TryResolveStartupContext(out var startupContext))
+        {
+            return;
+        }
+
+        StartupContext = startupContext;
+        var appDataPaths = startupContext.AppDataPaths;
         var language = LocalizationSettingsStore.ResolveCurrent(appDataPaths);
         LocalizationCatalog.Initialize(language);
         LocalizationCatalog.ApplyCulture(language);
-        var applicationLog = new ApplicationLogService(appDataPaths.DataDirectory);
+        var applicationLog = new ApplicationLogService(
+            startupContext.DiagnosticReplay?.LogsDirectory
+                ?? appDataPaths.DataDirectory);
         ApplicationLog = applicationLog;
-        var frontierCallback = FrontierOAuthCallback.Find(StartupArguments);
-        if (frontierCallback is not null)
+        if (TryHandleFrontierCallback(
+                startupContext,
+                appDataPaths,
+                applicationLog))
         {
-            try
-            {
-                using var frontier = FrontierAccountService.CreateCurrent(
-                    appDataPaths.DataDirectory);
-                frontier.HandleCallbackAsync(frontierCallback)
-                    .GetAwaiter()
-                    .GetResult();
-                var activated = DesktopApplicationActivator
-                    .TryActivateExistingInstance();
-                applicationLog.Append(
-                    "Frontier authorization callback completed securely.");
-                applicationLog.Append(
-                    activated
-                        ? "Frontier callback restored the running application."
-                        : "Frontier callback completed without a running application window to restore.");
-                Environment.ExitCode = 0;
-            }
-            catch (Exception exception) when (
-                exception is IOException
-                    or InvalidDataException
-                    or InvalidOperationException
-                    or NotSupportedException
-                    or HttpRequestException
-                    or TaskCanceledException
-                    or UnauthorizedAccessException)
-            {
-                applicationLog.Append(
-                    "Frontier authorization callback failed: "
-                    + exception.Message);
-                Environment.ExitCode = 1;
-            }
-
             return;
         }
 
@@ -93,6 +71,15 @@ internal static class Program
             $"SrvSurvey {typeof(Program).Assembly.GetName().Version}");
         applicationLog.Append($"New log path: {applicationLog.CurrentLogPath}");
         applicationLog.Append($"Data folder: {appDataPaths.DataDirectory}");
+        if (startupContext.DiagnosticReplay is { } diagnosticReplay)
+        {
+            applicationLog.Append(
+                "Diagnostic replay mode: external effects disabled; "
+                + $"commander will be established by {diagnosticReplay.Commander.Name} "
+                + $"({diagnosticReplay.Commander.FrontierId}).");
+            applicationLog.Append(
+                $"Replay session: {diagnosticReplay.Session.SessionDirectory}");
+        }
         applicationLog.Append(
             $"Platform: {Environment.OSVersion.Platform} ({Environment.OSVersion.VersionString})");
         applicationLog.Append(
@@ -137,6 +124,109 @@ internal static class Program
             Trace.Listeners.Remove(traceListener);
             traceListener.Flush();
         }
+    }
+
+    private static bool TryRunUpdateHelper(
+        ApplicationUpdateStartup updateStartup)
+    {
+        if (updateStartup.Mode != ApplicationUpdateStartupMode.Apply)
+        {
+            return false;
+        }
+
+        Environment.ExitCode = ApplicationUpdateBootstrap.RunHelperAsync(
+                updateStartup.PlanPath!)
+            .GetAwaiter()
+            .GetResult();
+        return true;
+    }
+
+    private static bool TryResolveStartupContext(
+        [NotNullWhen(true)] out DesktopStartupContext? startupContext)
+    {
+        try
+        {
+            startupContext = DesktopStartupContext.ResolveAsync(
+                    StartupArguments,
+                    AppDataPaths.ResolveCurrent,
+                    CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
+            return true;
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or InvalidDataException
+                or UnauthorizedAccessException
+                or ArgumentException)
+        {
+            Console.Error.WriteLine(GetStartupFailureMessage(
+                StartupArguments,
+                exception));
+            Environment.ExitCode = 2;
+            startupContext = null;
+            return false;
+        }
+    }
+
+    internal static string GetStartupFailureMessage(
+        IReadOnlyList<string> arguments,
+        Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(arguments);
+        ArgumentNullException.ThrowIfNull(exception);
+        var startupMode = StartupOptions.HasDiagnosticReplayOption(arguments)
+            ? "diagnostic replay"
+            : "normal startup";
+        return $"SrvSurvey {startupMode} could not start: {exception.Message}";
+    }
+
+    private static bool TryHandleFrontierCallback(
+        DesktopStartupContext startupContext,
+        AppDataPaths appDataPaths,
+        ApplicationLogService applicationLog)
+    {
+        var frontierCallback = startupContext.IsDiagnosticReplay
+            ? null
+            : FrontierOAuthCallback.Find(StartupArguments);
+        if (frontierCallback is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            using var frontier = FrontierAccountService.CreateCurrent(
+                appDataPaths.DataDirectory);
+            frontier.HandleCallbackAsync(frontierCallback)
+                .GetAwaiter()
+                .GetResult();
+            var activated = DesktopApplicationActivator
+                .TryActivateExistingInstance();
+            applicationLog.Append(
+                "Frontier authorization callback completed securely.");
+            applicationLog.Append(
+                activated
+                    ? "Frontier callback restored the running application."
+                    : "Frontier callback completed without a running application window to restore.");
+            Environment.ExitCode = 0;
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or InvalidDataException
+                or InvalidOperationException
+                or NotSupportedException
+                or HttpRequestException
+                or TaskCanceledException
+                or UnauthorizedAccessException)
+        {
+            applicationLog.Append(
+                "Frontier authorization callback failed: "
+                + exception.Message);
+            Environment.ExitCode = 1;
+        }
+
+        return true;
     }
 
     public static AppBuilder BuildAvaloniaApp()

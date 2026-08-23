@@ -158,6 +158,32 @@ jobs:
             -p:DebugType=None `
             -p:DebugSymbols=false
 
+      - name: Publish diagnostic replay controller
+        shell: pwsh
+        run: |
+          $controllerOutput = Join-Path $env:RUNNER_TEMP "replay-controller-${{ matrix.rid }}"
+          dotnet publish src/SrvSurvey.ReplayController/SrvSurvey.ReplayController.csproj `
+            --configuration Release `
+            --runtime "${{ matrix.rid }}" `
+            --self-contained true `
+            --output $controllerOutput `
+            -p:Version="${{ needs.release-metadata.outputs.package_version }}" `
+            -p:FileVersion="${{ needs.release-metadata.outputs.file_version }}" `
+            -p:DebugType=None `
+            -p:DebugSymbols=false
+          Get-ChildItem -LiteralPath $controllerOutput -File `
+            -Filter 'SrvSurvey.ReplayController*' |
+              Copy-Item -Destination "artifacts/${{ matrix.rid }}" -Force
+          $controllerEntryPoint = if ('${{ matrix.rid }}' -eq 'win-x64') {
+            'SrvSurvey.ReplayController.exe'
+          } else {
+            'SrvSurvey.ReplayController'
+          }
+          $publishedController = Join-Path "artifacts/${{ matrix.rid }}" $controllerEntryPoint
+          if (-not (Test-Path -LiteralPath $publishedController -PathType Leaf)) {
+            throw "The replay controller entry point was not published."
+          }
+
       - name: Remove optional Linux LTTng tracing provider
         if: matrix.rid == 'linux-x64'
         shell: pwsh
@@ -278,6 +304,7 @@ jobs:
           "$appimage" --appimage-extract >/dev/null
           test -x squashfs-root/AppRun
           test -x squashfs-root/usr/lib/srvsurvey/SrvSurvey.Desktop
+          test -x squashfs-root/usr/lib/srvsurvey/SrvSurvey.ReplayController
           test -f squashfs-root/usr/lib/srvsurvey/release-package.json
           test -f squashfs-root/io.github.fenris159.SrvSurvey.desktop
           test -f squashfs-root/srvsurvey.png

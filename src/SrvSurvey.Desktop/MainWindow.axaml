@@ -46,6 +46,17 @@
       </Border>
     </DataTemplate>
   </Window.Resources>
+  <Window.Styles>
+    <Style Selector="Border.diagnostic-shell">
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Border.diagnostic-shell.active">
+      <Setter Property="BorderBrush" Value="#FFF2A900" />
+      <Setter Property="BorderThickness" Value="3" />
+    </Style>
+  </Window.Styles>
+  <Border Classes="diagnostic-shell"
+          Classes.active="{Binding IsDiagnosticReplay}">
   <LayoutTransformControl x:Name="ApplicationScaleContainer">
   <Grid ColumnDefinitions="248,*">
     <Border Background="{DynamicResource RavenSidebarBrush}"
@@ -219,4 +230,5 @@
     </Border>
   </Grid>
   </LayoutTransformControl>
+  </Border>
 </Window>

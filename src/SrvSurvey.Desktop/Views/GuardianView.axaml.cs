@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -24,7 +25,8 @@ public sealed partial class GuardianView : UserControl
 
     private void ConnectClipboard()
     {
-        if (DataContext is MainWindowViewModel viewModel)
+        if (DesktopExternalEffectPolicy.IsAllowed
+            && DataContext is MainWindowViewModel viewModel)
         {
             viewModel.Guardian.SetClipboardWriter(WriteClipboardAsync);
         }
@@ -164,6 +166,7 @@ public sealed partial class GuardianView : UserControl
 
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var folderPath = ScreenshotProcessingService.GetSystemFolderPath(
                 viewModel.ScreenshotProcessing.TargetFolder,
                 selectedSite.Reference.SystemName);
@@ -248,6 +251,7 @@ public sealed partial class GuardianView : UserControl
 
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
                     "The desktop launcher is not available.");
@@ -281,6 +285,7 @@ public sealed partial class GuardianView : UserControl
 
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var topLevel = TopLevel.GetTopLevel(this)
                 ?? throw new InvalidOperationException(
                     "The desktop clipboard is not available.");
@@ -319,6 +324,7 @@ public sealed partial class GuardianView : UserControl
 
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
                     "The desktop link launcher is not available.");
@@ -356,6 +362,7 @@ public sealed partial class GuardianView : UserControl
     {
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
                     "The desktop link launcher is not available.");
@@ -386,6 +393,7 @@ public sealed partial class GuardianView : UserControl
 
         try
         {
+            DesktopExternalEffectPolicy.ThrowIfDisabled();
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
                     "The desktop link launcher is not available.");

@@ -3,6 +3,7 @@ namespace SrvSurvey.Desktop;
 internal static class StartupOptions
 {
     private const string JournalDirectoryOption = "--journal-directory";
+    private const string DiagnosticReplayOption = "--diagnostic-replay";
     private const string FrontierIdOption = "--frontier-id";
     private const string LegacyFrontierIdOption = "-fid";
 
@@ -50,6 +51,43 @@ internal static class StartupOptions
         return null;
     }
 
+    public static string? GetDiagnosticReplayManifest(
+        IReadOnlyList<string> args)
+    {
+        for (var index = 0; index < args.Count; index++)
+        {
+            var argument = args[index];
+            if (argument.Equals(
+                    DiagnosticReplayOption,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return index + 1 < args.Count
+                    ? NormalizePath(args[index + 1])
+                    : null;
+            }
+
+            var prefix = $"{DiagnosticReplayOption}=";
+            if (argument.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return NormalizePath(argument[prefix.Length..]);
+            }
+        }
+
+        return null;
+    }
+
+    public static bool HasDiagnosticReplayOption(
+        IReadOnlyList<string> args)
+    {
+        return args.Any(argument =>
+            argument.Equals(
+                DiagnosticReplayOption,
+                StringComparison.OrdinalIgnoreCase)
+            || argument.StartsWith(
+                $"{DiagnosticReplayOption}=",
+                StringComparison.OrdinalIgnoreCase));
+    }
+
     private static string? NormalizeFrontierId(string? value)
     {
         var normalized = value?.Trim();
@@ -59,5 +97,11 @@ internal static class StartupOptions
             && normalized[1..].All(char.IsAsciiDigit)
                 ? normalized.ToUpperInvariant()
                 : null;
+    }
+
+    private static string? NormalizePath(string? value)
+    {
+        var normalized = value?.Trim();
+        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
 }

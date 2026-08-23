@@ -4,6 +4,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop;
 
@@ -57,21 +58,21 @@ public sealed partial class ErrorReportWindow : Window
         object? sender,
         RoutedEventArgs eventArgs)
     {
-        await viewModel.OpenJournalAsync(Launcher.LaunchFileInfoAsync);
+        await viewModel.OpenJournalAsync(LaunchFileAsync);
     }
 
     private async void CreateIssue_Click(
         object? sender,
         RoutedEventArgs eventArgs)
     {
-        await viewModel.OpenIssueAsync(Launcher.LaunchUriAsync);
+        await viewModel.OpenIssueAsync(LaunchUriAsync);
     }
 
     private async void OpenDiscord_Click(
         object? sender,
         RoutedEventArgs eventArgs)
     {
-        await viewModel.OpenDiscordAsync(Launcher.LaunchUriAsync);
+        await viewModel.OpenDiscordAsync(LaunchUriAsync);
     }
 
     private void ViewLogs_Click(object? sender, RoutedEventArgs eventArgs)
@@ -96,10 +97,23 @@ public sealed partial class ErrorReportWindow : Window
 
     private async Task WriteClipboardAsync(string text)
     {
+        DesktopExternalEffectPolicy.ThrowIfDisabled();
         var clipboard = Clipboard
             ?? throw new InvalidOperationException(
                 "The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
         await clipboard.FlushAsync();
+    }
+
+    private Task<bool> LaunchFileAsync(FileInfo file)
+    {
+        DesktopExternalEffectPolicy.ThrowIfDisabled();
+        return Launcher.LaunchFileInfoAsync(file);
+    }
+
+    private Task<bool> LaunchUriAsync(Uri uri)
+    {
+        DesktopExternalEffectPolicy.ThrowIfDisabled();
+        return Launcher.LaunchUriAsync(uri);
     }
 }

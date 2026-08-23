@@ -39,6 +39,13 @@ chmod +x SrvSurvey-XP-2.1.3.0-rc.36-x86_64.AppImage
 ./SrvSurvey-XP-2.1.3.0-rc.36-x86_64.AppImage
 ```
 
+To launch the standalone diagnostic replay controller from the same AppImage,
+pass its explicit dispatcher option:
+
+```bash
+./SrvSurvey-XP-2.1.3.0-rc.36-x86_64.AppImage --replay-controller
+```
+
 Replace `2.1.3.0-rc.36` with the downloaded version. Keep the AppImage in this folder;
 create a launcher or shortcut that points to it instead of moving internal
 files out of the AppImage.

@@ -14,6 +14,7 @@ public sealed class NotificationOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly LegacyOverlayLayout overlayLayout;
+    private readonly OverlayWindowRegistry registry;
     private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private NotificationOverlayWindow? window;
@@ -24,7 +25,8 @@ public sealed class NotificationOverlayCoordinator : IDisposable
         NotificationViewModel viewModel,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null)
+        LegacyOverlayLayout? overlayLayout = null,
+        OverlayWindowRegistry? registry = null)
     {
         this.viewModel = viewModel
             ?? throw new ArgumentNullException(nameof(viewModel));
@@ -33,6 +35,7 @@ public sealed class NotificationOverlayCoordinator : IDisposable
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
+        this.registry = registry ?? OverlayWindowRegistry.Shared;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         timer = new OverlayDispatcherTimer
         {
@@ -120,7 +123,11 @@ public sealed class NotificationOverlayCoordinator : IDisposable
         }
 
         var overlay = new NotificationOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            PlotterName,
+            registry);
         overlay.Opened += (_, _) => PrepareWindow(overlay);
         overlay.Closed += (_, _) =>
         {

@@ -29,6 +29,57 @@ public sealed class ReleaseWorkflowContractTests
             StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ReleasePackagesIncludeTheReplayController()
+    {
+        var workflow = File.ReadAllText(Path.Combine(
+            FindRepositoryRoot(),
+            ".github",
+            "workflows",
+            "build-srvsurvey-xp.yml"));
+
+        Assert.Contains(
+            "dotnet publish src/SrvSurvey.ReplayController/SrvSurvey.ReplayController.csproj",
+            workflow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "SrvSurvey.ReplayController.exe",
+            workflow,
+            StringComparison.Ordinal);
+        var normalizedWorkflow = string.Join(
+            ' ',
+            workflow.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        Assert.Contains(
+            "Get-ChildItem -LiteralPath $controllerOutput -File ` "
+                + "-Filter 'SrvSurvey.ReplayController*' | "
+                + "Copy-Item -Destination \"artifacts/${{ matrix.rid }}\" -Force",
+            normalizedWorkflow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "test -x squashfs-root/usr/lib/srvsurvey/SrvSurvey.ReplayController",
+            workflow,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LinuxAppImageExposesReplayControllerDispatch()
+    {
+        var appRun = File.ReadAllText(Path.Combine(
+            FindRepositoryRoot(),
+            "packaging",
+            "linux",
+            "AppRun"));
+
+        Assert.Contains(
+            "--replay-controller",
+            appRun,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "SrvSurvey.ReplayController",
+            appRun,
+            StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

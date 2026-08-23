@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
+using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop.Platform;
 
@@ -19,6 +20,7 @@ public sealed class ApplicationCommanderInstanceLauncher
         string journalDirectory,
         CancellationToken cancellationToken = default)
     {
+        DesktopExternalEffectPolicy.ThrowIfDisabled();
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);

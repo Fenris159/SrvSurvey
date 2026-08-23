@@ -2,10 +2,12 @@
   <Folder Name="/src/">
     <Project Path="src/SrvSurvey.Core/SrvSurvey.Core.csproj" />
     <Project Path="src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj" />
+    <Project Path="src/SrvSurvey.ReplayController/SrvSurvey.ReplayController.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SrvSurvey.Core.Tests/SrvSurvey.Core.Tests.csproj" />
     <Project Path="tests/SrvSurvey.Desktop.Tests/SrvSurvey.Desktop.Tests.csproj" />
+    <Project Path="tests/SrvSurvey.ReplayController.Tests/SrvSurvey.ReplayController.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/SrvSurvey.LocalizationTool/SrvSurvey.LocalizationTool.csproj" />

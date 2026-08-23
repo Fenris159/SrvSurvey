@@ -102,6 +102,41 @@ public sealed class VisitedStarsCacheViewModelTests : IDisposable
         Assert.Contains("Close Elite Dangerous", viewModel.GameStateMessage);
     }
 
+    [Fact]
+    public async Task DiagnosticReplayDisablesCacheTargetsAndMutations()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(temporaryDirectory, "F123-replay.json"),
+            "{\"fid\":\"F123\",\"commander\":\"Imported\"}");
+        var service = new RecordingService();
+        var targetResolverCalls = 0;
+        var viewModel = new VisitedStarsCacheViewModel(
+            new CommanderProfileCatalog(temporaryDirectory),
+            service,
+            _ =>
+            {
+                targetResolverCalls++;
+                return Path.Combine(
+                    temporaryDirectory,
+                    VisitedStarsCacheService.CacheFileName);
+            },
+            () => true,
+            externalEffectsAllowed: false);
+
+        await viewModel.RefreshAsync();
+        await viewModel.SwapAsync();
+        await viewModel.RestoreAsync();
+
+        Assert.False(viewModel.GameIsRunning);
+        Assert.Equal(0, targetResolverCalls);
+        Assert.Equal(0, service.SwapCount);
+        Assert.Equal(0, service.RestoreCount);
+        Assert.False(viewModel.SwapCommand.CanExecute(null));
+        Assert.False(viewModel.RestoreCommand.CanExecute(null));
+        Assert.Contains("diagnostic replay", viewModel.StatusMessage);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
