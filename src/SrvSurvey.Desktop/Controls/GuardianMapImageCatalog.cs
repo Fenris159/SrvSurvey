@@ -16,13 +16,27 @@ internal static class GuardianMapImageCatalog
     public static IImage? Find(GuardianSiteMapProjection projection)
     {
         ArgumentNullException.ThrowIfNull(projection);
+        if (TryResolveLocalFile(projection.BackgroundImage) is { } localPath)
+        {
+            return FindCached(
+                "file:" + localPath,
+                () => LoadFile(localPath));
+        }
+
         var fileName = ResolveFileName(projection);
+        return FindCached("asset:" + fileName, () => LoadAsset(fileName));
+    }
+
+    private static Bitmap? FindCached(
+        string key,
+        Func<Bitmap?> load)
+    {
         lock (SyncRoot)
         {
-            if (!Images.TryGetValue(fileName, out var image))
+            if (!Images.TryGetValue(key, out var image))
             {
-                image = Load(fileName);
-                Images[fileName] = image;
+                image = load();
+                Images[key] = image;
             }
 
             return image;
@@ -39,7 +53,29 @@ internal static class GuardianMapImageCatalog
             : configuredName;
     }
 
-    private static Bitmap? Load(string fileName)
+    private static string? TryResolveLocalFile(string configuredPath)
+    {
+        if (string.IsNullOrWhiteSpace(configuredPath)
+            || !Path.IsPathRooted(configuredPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            var path = Path.GetFullPath(configuredPath);
+            return File.Exists(path) ? path : null;
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException
+                or NotSupportedException
+                or PathTooLongException)
+        {
+            return null;
+        }
+    }
+
+    private static Bitmap? LoadAsset(string fileName)
     {
         try
         {
@@ -57,6 +93,23 @@ internal static class GuardianMapImageCatalog
             return null;
         }
         catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    private static Bitmap? LoadFile(string path)
+    {
+        try
+        {
+            using var stream = File.OpenRead(path);
+            return new Bitmap(stream);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or ArgumentException
+                or NotSupportedException)
         {
             return null;
         }

@@ -67,6 +67,17 @@ selection or hit testing. Interactive zoom extends from the fitted 1x view to
 identify the directional gradient wedges for active obelisks as unscanned
 (gray), scanned (orange), or still needed for Ram Tah (cyan).
 
+Published marker geometry remains part of the shared site-type template, as in
+the legacy map editor, rather than being written as a commander-survey
+override. Reference and draft selection use the same point inspector: name,
+type, angle, distance, and rotation remain visible but disabled in preview,
+then enable after **Start map draft**. The minimum-width numeric inputs use
+0.1-step spinners, and applying a point change immediately refreshes and keeps
+the renamed marker selected on the map. The same Survey map workspace exposes
+background alignment and scale, measured-point creation, obelisk group-label
+placement, removal, verified export, and recoverable draft discard. Raw points
+continue to use the separate commander-survey precision fields.
+
 Component materials remain available for component towers and destructible
 panels when **Track Guardian component materials** is enabled in Overlay
 Settings. POI status (including valid empty states), relic headings, obelisk

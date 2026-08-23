@@ -127,6 +127,12 @@ public sealed class GuardianViewMarkupTests
         var rawFields = FindNamedElement(
             document,
             "GuardianRawPointGeometryFields");
+        var templatePointEditor = FindNamedElement(
+            document,
+            "GuardianSelectedTemplatePointEditor");
+        var templatePointFields = FindNamedElement(
+            document,
+            "GuardianSelectedTemplatePointFields");
 
         Assert.Contains(siteType, editor.Descendants());
         Assert.Equal(
@@ -149,6 +155,40 @@ public sealed class GuardianViewMarkupTests
             rawPrecision.Attribute("IsVisible")?.Value);
         Assert.Equal("StackPanel", rawFields.Name.LocalName);
         Assert.Null(rawFields.Attribute("Orientation"));
+        var rawCoordinateInputs = rawFields.Descendants()
+            .Where(element => element.Name.LocalName == "NumericUpDown")
+            .ToArray();
+        Assert.Equal(3, rawCoordinateInputs.Length);
+        Assert.All(rawCoordinateInputs, input =>
+        {
+            Assert.Equal("0.1", input.Attribute("Increment")?.Value);
+            Assert.Equal("132", input.Attribute("MinWidth")?.Value);
+        });
+        Assert.Equal(
+            "{Binding Guardian.TemplateAuthoring.HasSelectedPoint}",
+            templatePointEditor.Attribute("IsVisible")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.TemplateAuthoring.IsAuthoring}",
+            templatePointFields.Attribute("IsEnabled")?.Value);
+        var coordinateInputs = templatePointFields.Descendants()
+            .Where(element => element.Name.LocalName == "NumericUpDown")
+            .ToArray();
+        Assert.Equal(3, coordinateInputs.Length);
+        Assert.All(coordinateInputs, input =>
+        {
+            Assert.Equal("0.1", input.Attribute("Increment")?.Value);
+            Assert.Equal("132", input.Attribute("MinWidth")?.Value);
+        });
+        Assert.Contains(
+            templatePointFields.Descendants(),
+            element => element.Name.LocalName == "TextBox"
+                && element.Attribute("Text")?.Value
+                    == "{Binding Guardian.TemplateAuthoring.PointName, Mode=TwoWay}");
+        Assert.Contains(
+            templatePointFields.Descendants(),
+            element => element.Name.LocalName == "ComboBox"
+                && element.Attribute("SelectedItem")?.Value
+                    == "{Binding Guardian.TemplateAuthoring.PointType, Mode=TwoWay}");
     }
 
     [Fact]
@@ -175,14 +215,17 @@ public sealed class GuardianViewMarkupTests
     {
         var document = LoadGuardianView();
         var top = FindNamedElement(document, "GuardianSurveyMapTop");
-        var developerTools = FindNamedElement(
+        var mapDraftTools = FindNamedElement(
             document,
-            "GuardianTemplateDeveloperTools");
+            "GuardianMapDraftTools");
         var surveyEditor = FindNamedElement(document, "GuardianSurveyEditor");
 
-        Assert.Same(top.Parent, developerTools.Parent);
+        Assert.Same(top.Parent, mapDraftTools.Parent);
         Assert.Same(top.Parent, surveyEditor.Parent);
-        Assert.Null(developerTools.Attribute("Grid.Column"));
+        Assert.Null(mapDraftTools.Attribute("Grid.Column"));
+        Assert.Equal(
+            "{Binding Guardian.TemplateAuthoring.IsAuthoring}",
+            mapDraftTools.Attribute("IsVisible")?.Value);
         Assert.Null(surveyEditor.Attribute("Grid.Column"));
     }
 

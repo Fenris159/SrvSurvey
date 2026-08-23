@@ -815,6 +815,36 @@ public sealed class GuardianSiteMapControlTests
     }
 
     [AvaloniaFact]
+    public void LocalDraftBackgroundImageCanBePreviewed()
+    {
+        var path = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-guardian-map-{Guid.NewGuid():N}.png");
+        try
+        {
+            File.WriteAllBytes(
+                path,
+                Convert.FromBase64String(
+                    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="));
+            var projection = new GuardianSiteMapProjection(
+                "Draft",
+                [],
+                [],
+                1,
+                false,
+                BackgroundImage: path);
+
+            Assert.Equal(
+                new Size(1, 1),
+                GuardianMapImageCatalog.Find(projection)?.Size);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [AvaloniaFact]
     public void ExternalLegendRendersWithoutDrawingTheMapSurface()
     {
         var control = new GuardianSiteMapControl
@@ -842,7 +872,11 @@ public sealed class GuardianSiteMapControlTests
             MutedBrush = Brushes.Wheat,
         };
 
-        Assert.True(Render(control));
+        Assert.True(Render(
+            control,
+            new Size(520, 320),
+            Environment.GetEnvironmentVariable(
+                "SRVSURVEY_GUARDIAN_LEGEND_RENDER_OUTPUT")));
     }
 
     [AvaloniaFact]
@@ -865,9 +899,12 @@ public sealed class GuardianSiteMapControlTests
         Assert.True(Render(control));
     }
 
-    private static bool Render(GuardianSiteMapControl control)
+    private static bool Render(
+        GuardianSiteMapControl control,
+        Size? requestedSize = null,
+        string? outputPath = null)
     {
-        var size = new Size(720, 640);
+        var size = requestedSize ?? new Size(720, 640);
         var window = new Window
         {
             Width = size.Width,
@@ -879,7 +916,15 @@ public sealed class GuardianSiteMapControlTests
         {
             window.Show();
             var frame = window.CaptureRenderedFrame();
-            return frame?.PixelSize == new PixelSize(720, 640);
+            if (frame is not null && !string.IsNullOrWhiteSpace(outputPath))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+                frame.Save(outputPath, PngBitmapEncoderOptions.Default);
+            }
+
+            return frame?.PixelSize == new PixelSize(
+                (int)size.Width,
+                (int)size.Height);
         }
         finally
         {

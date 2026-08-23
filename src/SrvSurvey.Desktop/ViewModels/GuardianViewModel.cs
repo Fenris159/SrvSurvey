@@ -197,6 +197,9 @@ public sealed class GuardianViewModel
         TemplateAuthoring = new GuardianTemplateAuthoringViewModel(
             this.templates,
             OnTemplateDraftChanged);
+        SurveyEditor.PropertyChanged += OnSurveyEditorPropertyChanged;
+        TemplateAuthoring.PropertyChanged +=
+            OnTemplateAuthoringPropertyChanged;
         liveSiteState = new GuardianLiveSiteState(this.references);
         visits = GuardianSiteVisitCatalog.Merge(
             this.references,
@@ -4743,17 +4746,22 @@ public sealed class GuardianViewModel
                 StringComparison.OrdinalIgnoreCase)
                     ? survey.SiteType
                     : row?.Reference.SiteType;
-        var template = templates.Find(siteType);
+        var baseTemplate = templates.Find(siteType);
+        var displayTemplate = FindTemplate(siteType) ?? baseTemplate;
+        var displayCatalog = displayTemplate is null
+            ? templates
+            : templates.WithTemplate(displayTemplate);
         SurveyEditor.Load(
             activeFrontierId,
             activeIsOdyssey,
             survey,
-            template,
+            displayTemplate,
             ShowComponentMaterials,
-            templates,
+            displayCatalog,
             MapProjection,
             row?.Reference);
-        TemplateAuthoring.UpdateContext(template, measurement: null);
+        TemplateAuthoring.UpdateContext(baseTemplate, measurement: null);
+        TemplateAuthoring.SelectPoint(SurveyEditor.SelectedPointName);
     }
 
     private GuardianSiteTemplate? GetSelectedBaseTemplate()
@@ -4819,7 +4827,39 @@ public sealed class GuardianViewModel
         }
 
         UpdateMapProjection();
+        UpdateSurveyEditor();
         UpdateProximity();
+    }
+
+    private void OnSurveyEditorPropertyChanged(
+        object? sender,
+        PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName
+            == nameof(GuardianSurveyEditorViewModel.SelectedPointName))
+        {
+            TemplateAuthoring.SelectPoint(SurveyEditor.SelectedPointName);
+        }
+    }
+
+    private void OnTemplateAuthoringPropertyChanged(
+        object? sender,
+        PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName
+            != nameof(GuardianTemplateAuthoringViewModel.SelectedPoint))
+        {
+            return;
+        }
+
+        var selectedName = TemplateAuthoring.SelectedPoint?.Name;
+        if (!string.Equals(
+                SurveyEditor.SelectedPointName,
+                selectedName,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            SurveyEditor.SelectedPointName = selectedName;
+        }
     }
 
     private Task OnSurveySavedAsync(

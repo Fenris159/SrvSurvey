@@ -248,7 +248,15 @@ public sealed class GuardianSiteMapControl : Control
 
         if (IsLegendOnly)
         {
-            DrawLegendRows(context, projection, 0, 8, 20);
+            DrawLegendRows(
+                context,
+                projection,
+                left: 2,
+                top: 4,
+                rowHeight: 28,
+                availableWidth: Math.Max(1, bounds.Width - 4),
+                fontSize: 15,
+                symbolScale: 1.4);
             return;
         }
 
@@ -776,7 +784,15 @@ public sealed class GuardianSiteMapControl : Control
         context.DrawText(
             CreateLegendText("Legend", FontWeight.Bold),
             new Point(22, 18));
-        DrawLegendRows(context, projection, 16, 38, rowHeight);
+        DrawLegendRows(
+            context,
+            projection,
+            16,
+            38,
+            rowHeight,
+            width - 8,
+            fontSize: 10,
+            symbolScale: 1);
     }
 
     private void DrawLegendRows(
@@ -784,20 +800,66 @@ public sealed class GuardianSiteMapControl : Control
         GuardianSiteMapProjection projection,
         double left,
         double top,
-        double rowHeight)
+        double rowHeight,
+        double availableWidth,
+        double fontSize,
+        double symbolScale)
     {
         var entries = CreateLegendEntries(projection);
-        for (var index = 0; index < entries.Count; index++)
+        var useTwoColumns = availableWidth >= 320;
+        var compactEntries = useTwoColumns
+            ? entries.Where(entry => !IsFullWidthLegendEntry(entry)).ToArray()
+            : entries.ToArray();
+        var fullWidthEntries = useTwoColumns
+            ? entries.Where(IsFullWidthLegendEntry).ToArray()
+            : [];
+        var columnCount = useTwoColumns ? 2 : 1;
+        const double columnGap = 8;
+        var columnWidth = (availableWidth
+            - columnGap * (columnCount - 1)) / columnCount;
+        for (var index = 0; index < compactEntries.Length; index++)
         {
-            var entry = entries[index];
+            var entry = compactEntries[index];
+            var row = index / columnCount;
+            var column = index % columnCount;
+            var entryLeft = left + column * (columnWidth + columnGap);
             var center = new Point(
-                left + 12,
-                top + (rowHeight / 2) + index * rowHeight);
-            DrawLegendSymbol(context, center, entry);
+                entryLeft + 16,
+                top + (rowHeight / 2) + row * rowHeight);
+            DrawLegendSymbol(context, center, entry, symbolScale);
+            var text = CreateLegendText(
+                entry.Label,
+                FontWeight.Normal,
+                fontSize);
             context.DrawText(
-                CreateLegendText(entry.Label, FontWeight.Normal),
-                new Point(left + 28, center.Y - 7));
+                text,
+                new Point(entryLeft + 36, center.Y - text.Height / 2));
         }
+
+        var fullWidthTop = top
+            + Math.Ceiling(compactEntries.Length / (double)columnCount)
+            * rowHeight;
+        for (var index = 0; index < fullWidthEntries.Length; index++)
+        {
+            var entry = fullWidthEntries[index];
+            var center = new Point(
+                left + 16,
+                fullWidthTop + (rowHeight / 2) + index * rowHeight);
+            DrawLegendSymbol(context, center, entry, symbolScale);
+            var text = CreateLegendText(
+                entry.Label,
+                FontWeight.Normal,
+                fontSize);
+            context.DrawText(
+                text,
+                new Point(left + 36, center.Y - text.Height / 2));
+        }
+    }
+
+    private static bool IsFullWidthLegendEntry(GuardianMapLegendEntry entry)
+    {
+        return entry.IsActiveObelisk
+            || entry.Kind != GuardianMapLegendKind.Point;
     }
 
     private void DrawMapImage(
@@ -859,24 +921,35 @@ public sealed class GuardianSiteMapControl : Control
     private void DrawLegendSymbol(
         DrawingContext context,
         Point center,
-        GuardianMapLegendEntry entry)
+        GuardianMapLegendEntry entry,
+        double symbolScale = 1)
     {
         var accent = AccentBrush ?? Brushes.Cyan;
         if (entry.Kind == GuardianMapLegendKind.SiteHeading)
         {
             context.DrawLine(
-                new Pen(accent, 2),
-                new Point(center.X - 6, center.Y + 5),
-                new Point(center.X + 5, center.Y - 6));
+                new Pen(accent, 2 * symbolScale),
+                new Point(
+                    center.X - 6 * symbolScale,
+                    center.Y + 5 * symbolScale),
+                new Point(
+                    center.X + 5 * symbolScale,
+                    center.Y - 6 * symbolScale));
             return;
         }
 
         if (entry.Kind == GuardianMapLegendKind.TowerHeading)
         {
             context.DrawLine(
-                new Pen(EmptyBrush ?? Brushes.Goldenrod, 2),
-                new Point(center.X - 6, center.Y + 5),
-                new Point(center.X + 5, center.Y - 6));
+                new Pen(
+                    EmptyBrush ?? Brushes.Goldenrod,
+                    2 * symbolScale),
+                new Point(
+                    center.X - 6 * symbolScale,
+                    center.Y + 5 * symbolScale),
+                new Point(
+                    center.X + 5 * symbolScale,
+                    center.Y - 6 * symbolScale));
             return;
         }
 
@@ -885,9 +958,9 @@ public sealed class GuardianSiteMapControl : Control
             GuardianSurveyMarkerDrawing.Draw(
                 context,
                 center,
-                haloRadius: 8,
-                ringRadius: 7,
-                dotRadius: 0.6);
+                haloRadius: 8 * symbolScale,
+                ringRadius: 7 * symbolScale,
+                dotRadius: 0.6 * symbolScale);
             return;
         }
 
@@ -917,12 +990,13 @@ public sealed class GuardianSiteMapControl : Control
                 SiteHeading: 0,
                 RelicTowerHeading: 45),
             headingLength: 0,
-            markerScale: entry.IsActiveObelisk ? 0.55 : 1);
+            markerScale: (entry.IsActiveObelisk ? 0.55 : 1) * symbolScale);
     }
 
     private FormattedText CreateLegendText(
         string text,
-        FontWeight weight)
+        FontWeight weight,
+        double fontSize = 10)
     {
         return new FormattedText(
             LocalizationCatalog.Translate(text),
@@ -932,7 +1006,7 @@ public sealed class GuardianSiteMapControl : Control
                 "Century Gothic, Segoe UI, sans-serif",
                 FontStyle.Normal,
                 weight),
-            10,
+            fontSize,
             MutedBrush ?? Brushes.Wheat);
     }
 
