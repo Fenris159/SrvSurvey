@@ -400,7 +400,7 @@ public sealed class ReplaySessionManager
             .ToArray();
     }
 
-    private static IReadOnlyList<TimelineItem> CreateJournalTimelineItems(
+    private static List<TimelineItem> CreateJournalTimelineItems(
         IReadOnlyList<JournalReplayEvent> journalEvents)
     {
         var items = new List<TimelineItem>(journalEvents.Count);
