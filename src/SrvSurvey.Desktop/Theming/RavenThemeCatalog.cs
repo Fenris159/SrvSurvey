@@ -83,6 +83,36 @@ public static class RavenThemeCatalog
             White,
             "#D0D0D0",
             "#83A377"),
+        new(
+            "monochrome-dark",
+            "Monochrome (dark)",
+            true,
+            "#0A0A0A",
+            "#141414",
+            "#141414",
+            "#1C1C1C",
+            "#E6D59A",
+            "#F0E4BC",
+            "#262626",
+            "#0A0A0A",
+            "#EDEDED",
+            "#A3A3A3",
+            "#2A2A2A")
+        {
+            HighestSurfaceColor = "#242424",
+            StrongBorderColor = "#3A3A3A",
+            TertiaryTextColor = "#737373",
+            SecondaryFillColor = "#262626",
+            InteractiveHoverColor = "#3A3A3A",
+            ControlAccentColor = "#F5F5F5",
+            ControlAccentHoverColor = "#EDEDED",
+            FocusRingColor = "#CCE6D59A",
+            ModalScrimColor = "#8C000000",
+            SuccessColor = "#D6D6D6",
+            WarningColor = "#BDBDBD",
+            DangerColor = "#FF7B72",
+            UseSurfaceOnlyDepth = true,
+        },
     ];
 
     public static RavenThemeDefinition Get(string? key)

@@ -27,7 +27,7 @@
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
                      Text="{Binding StatusMessage}" />
-          <Button Classes="primary"
+          <Button Classes="secondary"
                   HorizontalAlignment="Left"
                   MinWidth="116"
                   Command="{Binding RefreshCommand}"
@@ -67,7 +67,7 @@
                     Margin="0,0,8,8"
                     Command="{Binding ReleaseUpdates.CheckCommand}"
                     Content="{Binding ReleaseUpdates.CheckButtonText}" />
-            <Button Classes="primary"
+            <Button Classes="secondary"
                     Margin="0,0,0,8"
                     IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
                     Command="{Binding ReleaseUpdates.OpenReleaseCommand}"
@@ -245,7 +245,7 @@
             </Grid>
           </Border>
 
-          <Expander Header="Species and atmosphere summary">
+          <Expander Classes="section-pill" Header="Species and atmosphere summary">
             <StackPanel Margin="0,10,0,0" Spacing="8">
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
@@ -444,7 +444,7 @@
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                      Text="{Binding JournalInspector.CodeText}" />
             <Button Grid.Column="1"
-                    Classes="primary"
+                    Classes="secondary"
                     VerticalAlignment="Top"
                     Command="{Binding JournalInspector.CopyCodeCommand}"
                     Content="Copy handler" />
@@ -635,7 +635,7 @@
           </Border>
 
           <WrapPanel Orientation="Horizontal">
-            <Button Classes="primary"
+            <Button Classes="secondary"
                     Margin="0,0,8,8"
                     Command="{Binding DiagnosticsLog.CopyCommand}"
                     Content="Copy logs" />

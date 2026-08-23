@@ -100,6 +100,16 @@ public sealed class RavenThemeService
         "galacticRegionPotentialSegmentEdge",
     ];
 
+    private static readonly string[] FluentCheckedGlyphResourceKeys =
+    [
+        "CheckBoxCheckGlyphForegroundChecked",
+        "CheckBoxCheckGlyphForegroundCheckedPointerOver",
+        "CheckBoxCheckGlyphForegroundCheckedPressed",
+        "CheckBoxCheckGlyphForegroundIndeterminate",
+        "CheckBoxCheckGlyphForegroundIndeterminatePointerOver",
+        "CheckBoxCheckGlyphForegroundIndeterminatePressed",
+    ];
+
     private readonly Application application;
     private readonly ThemePreferenceStore preferenceStore;
     private LegacyOverlayTheme overlayTheme;
@@ -158,23 +168,35 @@ public sealed class RavenThemeService
             ? ThemeVariant.Dark
             : ThemeVariant.Light;
 
+        ApplyFluentAccent(theme.ControlAccentColor);
         SetBrush("RavenWindowBrush", theme.WindowColor);
         SetBrush("RavenSidebarBrush", theme.SidebarColor);
         SetBrush("RavenSurfaceBrush", theme.SurfaceColor);
         SetBrush("RavenRaisedSurfaceBrush", theme.RaisedSurfaceColor);
+        SetBrush("RavenHighestSurfaceBrush", theme.HighestSurfaceColor);
         SetBrush("RavenAccentBrush", theme.AccentColor);
         SetBrush("RavenAccentHoverBrush", theme.AccentHoverColor);
+        SetBrush("RavenControlAccentBrush", theme.ControlAccentColor);
+        SetBrush(
+            "RavenControlAccentHoverBrush",
+            theme.ControlAccentHoverColor);
         SetBrush("RavenAccentMutedBrush", theme.AccentMutedColor);
+        SetBrush("RavenSecondaryFillBrush", theme.SecondaryFillColor);
+        SetBrush("RavenInteractiveHoverBrush", theme.InteractiveHoverColor);
         SetBrush("RavenRouteGuidanceBadgeBrush", theme.AccentMutedColor);
         SetBrush("RavenAccentForegroundBrush", theme.AccentForegroundColor);
         SetBrush("RavenTextBrush", theme.TextColor);
         SetBrush("RavenMutedTextBrush", theme.MutedTextColor);
+        SetBrush("RavenTertiaryTextBrush", theme.TertiaryTextColor);
         SetBrush("RavenBorderBrush", theme.BorderColor);
-        SetBrush("RavenSuccessBrush", theme.IsDark ? "#6CCB72" : "#107C10");
-        var warningColor = theme.IsDark ? "#F7C948" : "#8A5D00";
-        SetBrush("RavenWarningBrush", warningColor);
-        SetInsetShadow("RavenWarningInsetShadow", warningColor);
-        SetBrush("RavenDangerBrush", theme.IsDark ? "#FF7B72" : "#C50F1F");
+        SetBrush("RavenStrongBorderBrush", theme.StrongBorderColor);
+        SetBrush("RavenFocusRingBrush", theme.FocusRingColor);
+        SetBrush("RavenModalScrimBrush", theme.ModalScrimColor);
+        SetBrush("RavenSuccessBrush", theme.SuccessColor);
+        SetBrush("RavenWarningBrush", theme.WarningColor);
+        SetBrush("RavenDangerBrush", theme.DangerColor);
+        ApplyFluentCheckBoxResources(theme);
+        ApplyDepthResources(theme);
     }
 
     private void ApplyOverlayTheme(LegacyOverlayTheme theme, bool notify)
@@ -223,6 +245,44 @@ public sealed class RavenThemeService
         application.Resources[key] = new SolidColorBrush(value);
     }
 
+    private void ApplyFluentAccent(string value)
+    {
+        var accent = Color.Parse(value);
+        application.Resources["SystemAccentColor"] = accent;
+        application.Resources["SystemAccentColorLight1"] =
+            Mix(accent, Colors.White, 0.15);
+        application.Resources["SystemAccentColorLight2"] =
+            Mix(accent, Colors.White, 0.30);
+        application.Resources["SystemAccentColorLight3"] =
+            Mix(accent, Colors.White, 0.45);
+        application.Resources["SystemAccentColorDark1"] =
+            Mix(accent, Colors.Black, 0.15);
+        application.Resources["SystemAccentColorDark2"] =
+            Mix(accent, Colors.Black, 0.30);
+        application.Resources["SystemAccentColorDark3"] =
+            Mix(accent, Colors.Black, 0.45);
+    }
+
+    private void ApplyFluentCheckBoxResources(RavenThemeDefinition theme)
+    {
+        foreach (var resourceKey in FluentCheckedGlyphResourceKeys)
+        {
+            SetBrush(resourceKey, theme.AccentForegroundColor);
+        }
+    }
+
+    private static Color Mix(Color source, Color target, double amount)
+    {
+        static byte Blend(byte source, byte target, double amount) =>
+            (byte)Math.Round(source + ((target - source) * amount));
+
+        return Color.FromArgb(
+            source.A,
+            Blend(source.R, target.R, amount),
+            Blend(source.G, target.G, amount),
+            Blend(source.B, target.B, amount));
+    }
+
     private void SetInsetShadow(string key, string value)
     {
         var color = Color.Parse(value);
@@ -233,6 +293,27 @@ public sealed class RavenThemeService
             IsInset = true,
             Spread = 2,
         });
+    }
+
+    private void ApplyDepthResources(RavenThemeDefinition theme)
+    {
+        if (theme.UseSurfaceOnlyDepth)
+        {
+            application.Resources["RavenWarningInsetShadow"] =
+                new BoxShadows();
+            application.Resources["RavenFloatingPanelShadow"] =
+                new BoxShadows();
+            return;
+        }
+
+        SetInsetShadow("RavenWarningInsetShadow", theme.WarningColor);
+        application.Resources["RavenFloatingPanelShadow"] = new BoxShadows(
+            new BoxShadow
+            {
+                OffsetY = 8,
+                Blur = 24,
+                Color = Color.Parse("#66000000"),
+            });
     }
 
     private static string GetBiologyEdgeResourceKey(string themeKey)

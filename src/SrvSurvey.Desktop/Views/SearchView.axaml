@@ -19,7 +19,7 @@
                      Text="Define a spherical boundary or find nearby biological systems." />
         </StackPanel>
         <Button Grid.Column="1"
-                Classes="primary"
+                Classes="secondary"
                 MinWidth="116"
                 VerticalAlignment="Center"
                 Command="{Binding RefreshCommand}"

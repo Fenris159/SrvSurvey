@@ -76,6 +76,48 @@ public sealed partial class MainWindow : Window
 
     public ApplicationInputContext InputContext { get; }
 
+    private void SelectNavigationItem_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (sender is Button
+            {
+                CommandParameter: NavigationItemViewModel navigationItem,
+            })
+        {
+            viewModel.SelectedNavigation = navigationItem;
+        }
+    }
+
+    private void ToggleNavigationGroup_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (sender is Button { CommandParameter: string groupKey })
+        {
+            viewModel.ToggleNavigationGroup(groupKey);
+        }
+    }
+
+    private async void OpenDiscord_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        try
+        {
+            await Launcher.LaunchUriAsync(
+                new Uri("https://discord.com/invite/GJjTFa9fsz"));
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or NotSupportedException)
+        {
+            Program.ApplicationLog?.Append(
+                "Could not open the Guardian Science Corps Discord link: "
+                + exception.Message);
+        }
+    }
+
     private void OpenCategoryOverlaySettings_Click(
         object? sender,
         RoutedEventArgs eventArgs)

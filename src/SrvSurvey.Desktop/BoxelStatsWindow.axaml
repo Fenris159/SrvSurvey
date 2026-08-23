@@ -126,16 +126,23 @@
                         HorizontalContentAlignment="Stretch"
                         Margin="{Binding Indent, Converter={StaticResource IndentMarginConverter}}"
                         Click="BrowserRow_Click">
-                  <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                  <Grid Classes="boxel-stats-browser-row"
+                        RowDefinitions="Auto,Auto"
+                        RowSpacing="3">
                     <TextBlock FontWeight="SemiBold"
-                               TextWrapping="Wrap"
+                               TextWrapping="NoWrap"
+                               TextTrimming="CharacterEllipsis"
                                Text="{Binding Prefix}" />
-                    <TextBlock Grid.Column="1"
-                               Classes="muted"
-                               Text="{Binding Glance}" />
-                    <TextBlock Grid.Column="2"
-                               Classes="muted"
-                               Text="{Binding Helium}" />
+                    <Grid Grid.Row="1"
+                          ColumnDefinitions="*,Auto"
+                          ColumnSpacing="10">
+                      <TextBlock Classes="muted"
+                                 TextTrimming="CharacterEllipsis"
+                                 Text="{Binding Glance}" />
+                      <TextBlock Grid.Column="1"
+                                 Classes="muted"
+                                 Text="{Binding Helium}" />
+                    </Grid>
                   </Grid>
                 </Button>
               </DataTemplate>
@@ -239,7 +246,7 @@
             BorderThickness="0,1,0,0"
             Padding="20,10">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
-        <Expander Header="Statistics settings">
+          <Expander Classes="section-pill" Header="Statistics settings">
           <StackPanel Margin="0,10,0,0" Spacing="10" MaxWidth="620" HorizontalAlignment="Left">
             <CheckBox IsChecked="{Binding TreatNavBeaconAsFullyScanned, Mode=TwoWay}"
                       ToolTip.Tip="Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.">

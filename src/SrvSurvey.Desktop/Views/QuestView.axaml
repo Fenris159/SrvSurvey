@@ -21,7 +21,7 @@
               Command="{Binding QuestWorkspace.ToggleEnabledCommand}"
               Content="{Binding QuestWorkspace.ToggleEnabledButtonText}" />
       <Button Grid.Column="2"
-              Classes="primary"
+              Classes="secondary"
               MinWidth="100"
               VerticalAlignment="Center"
               Command="{Binding QuestWorkspace.RefreshCommand}"

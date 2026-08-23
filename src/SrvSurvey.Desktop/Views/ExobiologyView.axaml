@@ -17,7 +17,7 @@
                      Text="Live sample progress and legacy-compatible unclaimed Vista Genomics rewards." />
         </StackPanel>
         <Button Grid.Column="1"
-                Classes="primary"
+                Classes="secondary"
                 MinWidth="116"
                 VerticalAlignment="Center"
                 Command="{Binding RefreshCommand}"
@@ -196,7 +196,7 @@
                        TextWrapping="Wrap" />
           </StackPanel>
           <Button Grid.Column="1"
-                  Classes="primary"
+                  Classes="secondary"
                   MinWidth="170"
                   VerticalAlignment="Center"
                   Command="{Binding BiologyPredictions.OpenWindowCommand}"

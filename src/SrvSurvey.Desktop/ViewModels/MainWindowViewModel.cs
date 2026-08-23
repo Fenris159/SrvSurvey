@@ -43,6 +43,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     private const string Unavailable = "—";
     private const string SettingsNavigationKey = "settings";
+    private const string SurveyNavigationGroup = "survey";
+    private const string NavigationNavigationGroup = "navigation";
+    private const string ActivitiesNavigationGroup = "activities";
     private const string CommanderProfileLoadFailedMessage =
         "The commander profile could not be loaded.";
 
@@ -144,6 +147,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private string? activeProfileCommanderName;
     private bool activeProfileIsOdyssey = true;
     private NavigationItemViewModel? selectedNavigation;
+    private string? expandedNavigationGroup = SurveyNavigationGroup;
     private bool isProfileSelected;
     private ThemeOptionViewModel selectedTheme;
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
@@ -773,10 +777,33 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 new("quests", "Quests", "Communications and active objectives", true),
                 new("colonisation", "Colonization", "Raven Colonial projects", true),
                 new("diagnostics", "Diagnostics", "Journal source and parsed state"),
-                new(SettingsNavigationKey, "Settings", "Appearance and application options"),
+                new(SettingsNavigationKey, "Settings", "Application and integration options"),
+                new("theme", "Theme", "Application and in-game appearance"),
                 new("guides", "Guides", "Help documentation and overlay icon glossary"),
             ];
             selectedNavigation = NavigationItems[0];
+            selectedNavigation.IsSelected = true;
+            OverviewNavigationItems = NavigationItems
+                .Where(item => item.Key == "overview")
+                .ToArray();
+            SurveyNavigationItems = NavigationItems
+                .Where(item => item.Key is "exploration" or "exobiology" or "boxel")
+                .ToArray();
+            NavigationWorkspaceItems = NavigationItems
+                .Where(item => item.Key is "travel" or "search")
+                .ToArray();
+            ActivityNavigationItems = NavigationItems
+                .Where(item => item.Key is "guardian" or "quests" or "colonisation")
+                .ToArray();
+            UtilityNavigationItems = new[]
+            {
+                SettingsNavigationKey,
+                "theme",
+                "guides",
+                "diagnostics",
+            }
+                .Select(key => NavigationItems.Single(item => item.Key == key))
+                .ToArray();
             Guides = new GuidesViewModel(GuideCatalog.Create());
 
             var currentTheme = themeService?.Current
@@ -800,6 +827,25 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public IReadOnlyList<NavigationItemViewModel> NavigationItems { get; }
+
+    public IReadOnlyList<NavigationItemViewModel> OverviewNavigationItems { get; }
+
+    public IReadOnlyList<NavigationItemViewModel> SurveyNavigationItems { get; }
+
+    public IReadOnlyList<NavigationItemViewModel> NavigationWorkspaceItems { get; }
+
+    public IReadOnlyList<NavigationItemViewModel> ActivityNavigationItems { get; }
+
+    public IReadOnlyList<NavigationItemViewModel> UtilityNavigationItems { get; }
+
+    public bool IsSurveyNavigationExpanded =>
+        expandedNavigationGroup == SurveyNavigationGroup;
+
+    public bool IsNavigationNavigationExpanded =>
+        expandedNavigationGroup == NavigationNavigationGroup;
+
+    public bool IsActivitiesNavigationExpanded =>
+        expandedNavigationGroup == ActivitiesNavigationGroup;
 
     public IReadOnlyList<ThemeOptionViewModel> ThemeOptions { get; }
 
@@ -1079,9 +1125,21 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         get => selectedNavigation;
         set
         {
+            var previous = selectedNavigation;
             if (!SetField(ref selectedNavigation, value))
             {
                 return;
+            }
+
+            if (previous is not null)
+            {
+                previous.IsSelected = false;
+            }
+
+            if (value is not null)
+            {
+                value.IsSelected = true;
+                ExpandNavigationGroupFor(value.Key);
             }
 
             if (value is not null)
@@ -1128,6 +1186,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public bool IsSettingsSelected => SelectedNavigation?.Key == SettingsNavigationKey
         && !IsProfileSelected;
 
+    public bool IsThemeSelected => SelectedNavigation?.Key == "theme"
+        && !IsProfileSelected;
+
     public bool IsGuidesSelected => SelectedNavigation?.Key == "guides"
         && !IsProfileSelected;
 
@@ -1136,12 +1197,55 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         if (!isProfileSelected)
         {
             isProfileSelected = true;
+            selectedNavigation?.IsSelected = false;
             selectedNavigation = null;
             OnPropertyChanged(nameof(SelectedNavigation));
             RaiseNavigationSelectionChanged();
         }
 
         await FrontierProfile.OpenAsync(CancellationToken.None);
+    }
+
+    public void ToggleNavigationGroup(string groupKey)
+    {
+        if (groupKey is not (SurveyNavigationGroup
+            or NavigationNavigationGroup
+            or ActivitiesNavigationGroup))
+        {
+            return;
+        }
+
+        SetExpandedNavigationGroup(
+            expandedNavigationGroup == groupKey ? null : groupKey);
+    }
+
+    private void ExpandNavigationGroupFor(string navigationKey)
+    {
+        var group = navigationKey switch
+        {
+            "exploration" or "exobiology" or "boxel" => SurveyNavigationGroup,
+            "travel" or "search" => NavigationNavigationGroup,
+            "guardian" or "quests" or "colonisation" =>
+                ActivitiesNavigationGroup,
+            _ => null,
+        };
+        if (group is not null)
+        {
+            SetExpandedNavigationGroup(group);
+        }
+    }
+
+    private void SetExpandedNavigationGroup(string? groupKey)
+    {
+        if (expandedNavigationGroup == groupKey)
+        {
+            return;
+        }
+
+        expandedNavigationGroup = groupKey;
+        OnPropertyChanged(nameof(IsSurveyNavigationExpanded));
+        OnPropertyChanged(nameof(IsNavigationNavigationExpanded));
+        OnPropertyChanged(nameof(IsActivitiesNavigationExpanded));
     }
 
     private void RaiseNavigationSelectionChanged()
@@ -1158,6 +1262,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         OnPropertyChanged(nameof(IsColonizationSelected));
         OnPropertyChanged(nameof(IsDiagnosticsSelected));
         OnPropertyChanged(nameof(IsSettingsSelected));
+        OnPropertyChanged(nameof(IsThemeSelected));
         OnPropertyChanged(nameof(IsGuidesSelected));
     }
 

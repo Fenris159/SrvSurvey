@@ -34,16 +34,10 @@
                  SelectedItem="{Binding Guides.SelectedCategory, Mode=TwoWay}">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:GuideCategoryViewModel">
-              <Grid ColumnDefinitions="28,*" ColumnSpacing="8">
-                <TextBlock Classes="muted"
-                           FontSize="11"
-                           FontWeight="SemiBold"
-                           Text="{Binding Number}" />
-                <TextBlock Grid.Column="1"
-                           FontWeight="SemiBold"
-                           TextWrapping="Wrap"
-                           Text="{Binding Title}" />
-              </Grid>
+              <TextBlock Margin="4,0"
+                         FontWeight="SemiBold"
+                         TextWrapping="Wrap"
+                         Text="{Binding Title}" />
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
@@ -55,8 +49,7 @@
           <StackPanel IsVisible="{Binding Guides.IsBrowsing}" Spacing="16">
             <Border Classes="card raised">
               <StackPanel Spacing="6">
-                <TextBlock Classes="eyebrow"
-                           Text="{Binding Guides.SelectedCategory.Number, StringFormat=CATEGORY {0}}" />
+                <TextBlock Classes="eyebrow" Text="GUIDE" />
                 <TextBlock FontSize="24"
                            FontWeight="SemiBold"
                            Text="{Binding Guides.SelectedCategory.Title}" />
@@ -81,21 +74,9 @@
                                     ItemsSource="{Binding Steps}">
                         <ItemsControl.ItemTemplate>
                           <DataTemplate>
-                            <Grid Margin="0,3" ColumnDefinitions="26,*">
-                              <Border Width="22" Height="22"
-                                      Background="{DynamicResource RavenAccentMutedBrush}"
-                                      CornerRadius="11">
-                                <TextBlock HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           FontSize="17"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource RavenAccentBrush}"
-                                           Text="❯" />
-                              </Border>
-                              <TextBlock Grid.Column="1"
-                                         TextWrapping="Wrap"
-                                         Text="{Binding}" />
-                            </Grid>
+                            <Border Classes="guide-step">
+                              <TextBlock TextWrapping="Wrap" Text="{Binding}" />
+                            </Border>
                           </DataTemplate>
                         </ItemsControl.ItemTemplate>
                       </ItemsControl>
@@ -104,14 +85,11 @@
                                     ItemsSource="{Binding Details}">
                         <ItemsControl.ItemTemplate>
                           <DataTemplate>
-                            <Grid Margin="0,2" ColumnDefinitions="16,*">
-                              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                                         Text="•" />
-                              <TextBlock Grid.Column="1"
-                                         Classes="muted"
+                            <Border Classes="guide-detail">
+                              <TextBlock Classes="muted"
                                          TextWrapping="Wrap"
                                          Text="{Binding}" />
-                            </Grid>
+                            </Border>
                           </DataTemplate>
                         </ItemsControl.ItemTemplate>
                       </ItemsControl>

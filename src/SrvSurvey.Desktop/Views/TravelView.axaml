@@ -37,7 +37,7 @@
                   <Button Classes="secondary"
                           Command="{Binding RouteManager.DeactivateCommand}"
                           Content="Deactivate" />
-                  <Button Classes="primary"
+                  <Button Classes="secondary"
                           Command="{Binding RouteManager.OpenWorkspaceCommand}"
                           Content="Open Route Workspace" />
                 </StackPanel>
@@ -322,7 +322,7 @@
                              Text="Set planetary coordinates and follow live distance, bearing, and approach guidance." />
                 </StackPanel>
                 <Button Grid.Column="1"
-                        Classes="primary"
+                        Classes="secondary"
                         MinWidth="116"
                         VerticalAlignment="Center"
                         Command="{Binding RefreshCommand}"
@@ -448,7 +448,7 @@
                 <Button Classes="secondary"
                         Command="{Binding FleetCarrierRouteManager.DeactivateCommand}"
                         Content="Deactivate" />
-                <Button Classes="primary"
+                <Button Classes="secondary"
                         Command="{Binding FleetCarrierRouteManager.OpenWorkspaceCommand}"
                         Content="{Binding FleetCarrierRouteManager.OpenWorkspaceLabel}" />
               </StackPanel>
@@ -772,7 +772,7 @@
                          TextWrapping="Wrap"
                          Text="Keep commander notes in the existing per-system data file." />
               <Button Grid.Row="2"
-                      Classes="primary"
+                      Classes="secondary"
                       HorizontalAlignment="Left"
                       Command="{Binding SystemNotes.OpenWindowCommand}"
                       Content="Open system notes" />
@@ -791,7 +791,7 @@
                          TextWrapping="Wrap"
                          Text="{Binding Journey.ActiveJourneySummary}" />
               <Button Grid.Row="2"
-                      Classes="primary"
+                      Classes="secondary"
                       HorizontalAlignment="Left"
                       Command="{Binding Journey.OpenWindowCommand}"
                       Content="Open Journey workspace" />

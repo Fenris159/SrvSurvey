@@ -18,7 +18,7 @@
                      Text="Explore sites, review surveys, and track both Ram Tah research missions." />
         </StackPanel>
         <Button Grid.Column="1"
-                Classes="primary"
+                Classes="secondary"
                 MinWidth="116"
                 VerticalAlignment="Center"
                 Command="{Binding Guardian.RefreshCommand}"
@@ -148,7 +148,7 @@
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="{Binding Guardian.CurrentObeliskMissionStatus}" />
-            <Button Classes="primary"
+            <Button Classes="secondary"
                     HorizontalAlignment="Left"
                     IsEnabled="{Binding Guardian.HasCurrentObelisk}"
                     Command="{Binding Guardian.ToggleCurrentObeliskScannedCommand}"
@@ -188,44 +188,110 @@
                      Classes="muted"
                      FontSize="10"
                      Text="{Binding Guardian.SortStatusText}" />
-          <ScrollViewer HorizontalScrollBarVisibility="Auto"
+          <ScrollViewer x:Name="GuardianSitesTableScroller"
+                        Height="430"
+                        HorizontalScrollBarVisibility="Auto"
                         VerticalScrollBarVisibility="Disabled">
-            <Grid Width="1480" RowDefinitions="Auto,Auto,*">
-              <Grid Margin="10,8"
+            <Grid Width="1480" RowDefinitions="Auto,Auto,Auto">
+              <Grid x:Name="GuardianSitesTableHeader"
+                    Margin="10,8"
                     ColumnDefinitions="72,200,100,90,90,105,110,55,65,80,170,250"
                     ColumnSpacing="8">
-                <Button Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
-                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Id" Content="ID" />
-                <Button Grid.Column="1" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
-                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="System" Content="SYSTEM" />
-                <Button Grid.Column="2" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
-                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Body" Content="BODY" />
-                <Button Grid.Column="3" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
-                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Distance" Content="DISTANCE" />
-                <Button Grid.Column="4" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
-                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Arrival" Content="ARRIVAL" />
-                <Button Grid.Column="5" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
-                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Visited" Content="VISITED" />
-                <Button Grid.Column="6" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
-                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Type" Content="TYPE" />
-                <Button Grid.Column="7" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
-                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Index" Content="INDEX" />
-                <Button Grid.Column="8" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
-                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Images" Content="IMAGES" />
-                <Button Grid.Column="9" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
-                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Survey" Content="SURVEY" />
-                <Button Grid.Column="10" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
-                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="RamTah" Content="RAM TAH" />
-                <Button Grid.Column="11" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
-                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Notes" Content="NOTES" />
+                <Button Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Id">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="table-heading" Text="ID" />
+                    <TextBlock Classes="table-heading" Text="{Binding Guardian.IdSortIndicator}" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="System">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="table-heading" Text="SYSTEM" />
+                    <TextBlock Classes="table-heading" Text="{Binding Guardian.SystemSortIndicator}" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Body">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="table-heading" Text="BODY" />
+                    <TextBlock Classes="table-heading" Text="{Binding Guardian.BodySortIndicator}" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Distance">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="table-heading" Text="DISTANCE" />
+                    <TextBlock Classes="table-heading" Text="{Binding Guardian.DistanceSortIndicator}" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Arrival">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="table-heading" Text="ARRIVAL" />
+                    <TextBlock Classes="table-heading" Text="{Binding Guardian.ArrivalSortIndicator}" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Visited">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="table-heading" Text="VISITED" />
+                    <TextBlock Classes="table-heading" Text="{Binding Guardian.VisitedSortIndicator}" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="6" Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Type">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="table-heading" Text="TYPE" />
+                    <TextBlock Classes="table-heading" Text="{Binding Guardian.TypeSortIndicator}" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="7" Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Index">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="table-heading" Text="INDEX" />
+                    <TextBlock Classes="table-heading" Text="{Binding Guardian.IndexSortIndicator}" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="8" Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Images">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="table-heading" Text="IMAGES" />
+                    <TextBlock Classes="table-heading" Text="{Binding Guardian.ImagesSortIndicator}" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="9" Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Survey">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="table-heading" Text="SURVEY" />
+                    <TextBlock Classes="table-heading" Text="{Binding Guardian.SurveySortIndicator}" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="10" Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="RamTah">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="table-heading" Text="RAM TAH" />
+                    <TextBlock Classes="table-heading" Text="{Binding Guardian.RamTahSortIndicator}" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="11" Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Notes">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="table-heading" Text="NOTES" />
+                    <TextBlock Classes="table-heading" Text="{Binding Guardian.NotesSortIndicator}" />
+                  </StackPanel>
+                </Button>
               </Grid>
               <Separator Grid.Row="1" />
               <ListBox Grid.Row="2"
+                       Classes="table-rows"
                        Height="370"
                        BorderThickness="0"
                        Background="Transparent"
                        ItemsSource="{Binding Guardian.Rows}"
-                       SelectedItem="{Binding Guardian.SelectedSite, Mode=TwoWay}">
+                       SelectedItem="{Binding Guardian.SelectedSite, Mode=TwoWay}"
+                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto">
                 <ListBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:GuardianSiteRowViewModel">
                     <Grid Margin="10,5"
@@ -308,7 +374,7 @@
               </ContentControl.ContentTemplate>
             </ContentControl>
             <WrapPanel>
-              <Button Classes="primary"
+              <Button Classes="secondary"
                       Margin="0,0,8,8"
                       IsEnabled="{Binding Guardian.HasSelectedSurvey}"
                       Command="{Binding Guardian.OpenSelectedSurveyCommand}"
@@ -549,6 +615,7 @@
             </Grid>
 
               <Expander x:Name="GuardianTemplateDeveloperTools"
+                        Classes="section-pill"
                         Header="Master template developer tools">
                 <Border Classes="card">
                   <StackPanel Spacing="14">
@@ -728,7 +795,7 @@
                       </Grid>
 
                       <WrapPanel>
-                        <Button Classes="primary"
+                        <Button Classes="secondary"
                                 Margin="0,0,8,8"
                                 Click="ExportGuardianTemplate_Click"
                                 Content="Export verified catalog..." />
@@ -750,7 +817,7 @@
                             <Button Classes="secondary"
                                     Command="{Binding Guardian.TemplateAuthoring.CancelDiscardCommand}"
                                     Content="Keep draft" />
-                            <Button Classes="primary"
+                            <Button Classes="danger"
                                     Command="{Binding Guardian.TemplateAuthoring.ConfirmDiscardCommand}"
                                     Content="Confirm discard" />
                           </StackPanel>
@@ -999,7 +1066,7 @@
                           Margin="0,0,8,8"
                           Click="CopyShareBundleFile_Click"
                           Content="Copy bundle file" />
-                  <Button Classes="primary"
+                  <Button Classes="secondary"
                           Margin="0,0,0,8"
                           Click="OpenShareDiscord_Click"
                           Content="Open Discord channel" />
@@ -1105,7 +1172,7 @@
                       <Button Classes="secondary"
                               Command="{Binding RamTah.CancelAncientRuinsResetCommand}"
                               Content="Keep progress" />
-                      <Button Classes="primary"
+                      <Button Classes="danger"
                               Command="{Binding RamTah.ConfirmAncientRuinsResetCommand}"
                               Content="Confirm clear" />
                     </StackPanel>
@@ -1186,7 +1253,7 @@
                       <Button Classes="secondary"
                               Command="{Binding RamTah.CancelGuardianLogsResetCommand}"
                               Content="Keep progress" />
-                      <Button Classes="primary"
+                      <Button Classes="danger"
                               Command="{Binding RamTah.ConfirmGuardianLogsResetCommand}"
                               Content="Confirm clear" />
                     </StackPanel>

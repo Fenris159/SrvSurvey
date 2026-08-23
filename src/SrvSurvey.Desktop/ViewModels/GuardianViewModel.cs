@@ -300,6 +300,30 @@ public sealed class GuardianViewModel
     public string SortStatusText => $"Sorted by {GetSortLabel(siteBrowserSort)} "
         + (siteBrowserSortDescending ? "descending" : "ascending");
 
+    public string IdSortIndicator => GetSortIndicator(GuardianSiteBrowserSort.Id);
+
+    public string SystemSortIndicator => GetSortIndicator(GuardianSiteBrowserSort.System);
+
+    public string BodySortIndicator => GetSortIndicator(GuardianSiteBrowserSort.Body);
+
+    public string DistanceSortIndicator => GetSortIndicator(GuardianSiteBrowserSort.Distance);
+
+    public string ArrivalSortIndicator => GetSortIndicator(GuardianSiteBrowserSort.Arrival);
+
+    public string VisitedSortIndicator => GetSortIndicator(GuardianSiteBrowserSort.Visited);
+
+    public string TypeSortIndicator => GetSortIndicator(GuardianSiteBrowserSort.Type);
+
+    public string IndexSortIndicator => GetSortIndicator(GuardianSiteBrowserSort.Index);
+
+    public string ImagesSortIndicator => GetSortIndicator(GuardianSiteBrowserSort.Images);
+
+    public string SurveySortIndicator => GetSortIndicator(GuardianSiteBrowserSort.Survey);
+
+    public string RamTahSortIndicator => GetSortIndicator(GuardianSiteBrowserSort.RamTah);
+
+    public string NotesSortIndicator => GetSortIndicator(GuardianSiteBrowserSort.Notes);
+
     public GuardianSurveyEditorViewModel SurveyEditor { get; }
 
     public GuardianTemplateAuthoringViewModel TemplateAuthoring { get; }
@@ -4900,8 +4924,30 @@ public sealed class GuardianViewModel
             siteBrowserSortDescending = false;
         }
 
-        OnPropertyChanged(nameof(SortStatusText));
+        RaiseSiteSortProperties();
         ApplyFilters();
+    }
+
+    private string GetSortIndicator(GuardianSiteBrowserSort sort) =>
+        siteBrowserSort == sort
+            ? siteBrowserSortDescending ? "▼" : "▲"
+            : string.Empty;
+
+    private void RaiseSiteSortProperties()
+    {
+        OnPropertyChanged(nameof(SortStatusText));
+        OnPropertyChanged(nameof(IdSortIndicator));
+        OnPropertyChanged(nameof(SystemSortIndicator));
+        OnPropertyChanged(nameof(BodySortIndicator));
+        OnPropertyChanged(nameof(DistanceSortIndicator));
+        OnPropertyChanged(nameof(ArrivalSortIndicator));
+        OnPropertyChanged(nameof(VisitedSortIndicator));
+        OnPropertyChanged(nameof(TypeSortIndicator));
+        OnPropertyChanged(nameof(IndexSortIndicator));
+        OnPropertyChanged(nameof(ImagesSortIndicator));
+        OnPropertyChanged(nameof(SurveySortIndicator));
+        OnPropertyChanged(nameof(RamTahSortIndicator));
+        OnPropertyChanged(nameof(NotesSortIndicator));
     }
 
     private IEnumerable<GuardianSiteRowViewModel> SortSiteRows(
