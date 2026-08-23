@@ -25,7 +25,8 @@ public sealed class DesktopBehaviorSettingsStore
                     settings,
                     "ApplicationWindowScalePercent",
                     ApplicationWindowScaleCatalog.DefaultPercent)),
-            GetApplicationWindowPosition(settings));
+            GetApplicationWindowPosition(settings),
+            GetBoolean(settings, "ReduceMotion", false));
     }
 
     public void Save(DesktopBehaviorPreferences preferences)
@@ -58,6 +59,7 @@ public sealed class DesktopBehaviorSettingsStore
             settings["ApplicationWindowScalePercent"] =
                 ApplicationWindowScaleCatalog.Normalize(
                     preferences.ApplicationWindowScalePercent);
+            settings["ReduceMotion"] = preferences.ReduceMotion;
             if (preferences.LastApplicationWindowPosition is not { } position)
             {
                 settings.Remove("ApplicationWindowPosition");
@@ -137,7 +139,8 @@ public sealed record DesktopBehaviorPreferences(
     string? PreferredMonitorId = null,
     int ApplicationWindowScalePercent =
         ApplicationWindowScaleCatalog.DefaultPercent,
-    ApplicationWindowPosition? LastApplicationWindowPosition = null);
+    ApplicationWindowPosition? LastApplicationWindowPosition = null,
+    bool ReduceMotion = false);
 
 public sealed record ApplicationWindowPosition(
     int X,

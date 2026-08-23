@@ -764,6 +764,7 @@
     </Border>
 
     <Expander x:Name="HumanTemplateAuthoringExpander"
+              Classes="section-pill"
               HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Stretch"
               IsExpanded="False">
@@ -982,7 +983,7 @@
                       Command="{Binding HumanSite.TemplateAuthor.RequestDiscardCommand}"
                       Content="Discard draft" />
               <Button Grid.Column="2"
-                      Classes="primary"
+                      Classes="secondary"
                       Click="ExportHumanSiteTemplates_Click"
                       Content="Export verified catalog..." />
             </Grid>
@@ -1000,7 +1001,7 @@
                         Command="{Binding HumanSite.TemplateAuthor.CancelDiscardCommand}"
                         Content="Keep draft" />
                 <Button Grid.Column="2"
-                        Classes="primary"
+                        Classes="danger"
                         Command="{Binding HumanSite.TemplateAuthor.ConfirmDiscardCommand}"
                         Content="Confirm discard" />
               </Grid>

@@ -51,7 +51,7 @@
     <Button Grid.Row="2"
             Margin="0,20,0,0"
             HorizontalAlignment="Right"
-            Classes="primary"
+            Classes="secondary"
             IsCancel="True"
             IsDefault="True"
             Click="Close_Click"

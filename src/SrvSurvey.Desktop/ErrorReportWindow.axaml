@@ -114,7 +114,7 @@
                 Click="OpenDiscord_Click"
                 Content="Discord" />
         <Button Grid.Column="2"
-                Classes="primary"
+                Classes="secondary"
                 Click="CreateIssue_Click"
                 Content="Create issue on GitHub" />
         <Button Grid.Column="3"

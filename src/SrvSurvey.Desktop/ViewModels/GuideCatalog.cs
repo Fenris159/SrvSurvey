@@ -552,7 +552,7 @@ public static class GuideCatalog
                         "Overlay appearance and saved states",
                         "The in-game palette is independent from the application light/dark theme.",
                         [
-                            "Open Settings > In-game overlay appearance and choose colors with the picker beside each overlay control.",
+                            "Open Theme > In-game overlay appearance and choose colors with the picker beside each overlay control.",
                             "Adjust Header, Title, Value, Body, Detail, and Caption font sizes in half-point increments. These shared roles keep related overlays consistent instead of resizing individual labels independently.",
                             "Use Refresh preview to apply unsaved colors and typography to open overlays and position previews, then Apply to overlays to keep them or Discard changes to restore theme.json.",
                             "Save a named overlay state when its palette and typography are ready; choose saved states from the dropdown or reload the original defaults.",
@@ -577,7 +577,7 @@ public static class GuideCatalog
                 "Keep application and overlay appearance separate, import an original profile without corruption, and understand every network/privacy gate.",
                 [
                     Section(
-                        "Application theme versus overlay theme",
+                        "Theme workspace: application versus overlay appearance",
                         "The shell and the in-game overlays are two separate appearance systems.",
                         [],
                         [

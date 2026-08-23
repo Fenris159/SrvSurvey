@@ -11,13 +11,12 @@
     <StackPanel Margin="32" Spacing="24" MaxWidth="1180">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
         <StackPanel Spacing="5">
-          <TextBlock Classes="eyebrow" Text="COMMANDER CONSOLE" />
           <TextBlock Classes="page-title" Text="Overview" />
           <TextBlock Classes="muted"
-                     Text="Live identity and location from the newest Elite journal." />
+                     Text="Commander identity, journal health, and companion status." />
         </StackPanel>
         <Button Grid.Column="1"
-                Classes="primary"
+                Classes="secondary"
                 MinWidth="116"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
@@ -106,14 +105,7 @@
       <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
         <Border Classes="card">
           <StackPanel Spacing="16">
-            <Grid ColumnDefinitions="*,Auto">
-              <TextBlock Classes="card-title" Text="Exploration trip" />
-              <Border Grid.Column="1" Classes="badge">
-                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                           FontSize="11"
-                           Text="LIVE" />
-              </Border>
-            </Grid>
+            <TextBlock Classes="card-title" Text="Trip since reset" />
             <Grid x:Name="ExplorationTripMetrics"
                   ColumnDefinitions="1*,2*,2*"
                   ColumnSpacing="18">
@@ -161,14 +153,7 @@
 
         <Border Grid.Column="1" Classes="card">
           <StackPanel Spacing="16">
-            <Grid ColumnDefinitions="*,Auto">
-              <TextBlock Classes="card-title" Text="Exobiology" />
-              <Border Grid.Column="1" Classes="badge">
-                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                           FontSize="11"
-                           Text="LIVE" />
-              </Border>
-            </Grid>
+            <TextBlock Classes="card-title" Text="Unclaimed biology" />
             <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
               <StackPanel Spacing="3">
                 <TextBlock Classes="metric" Text="{Binding UnclaimedBioScans}" />

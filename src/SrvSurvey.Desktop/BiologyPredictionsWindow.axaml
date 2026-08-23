@@ -162,7 +162,8 @@
                       Classes="card"
                       HorizontalAlignment="Stretch"
                       Padding="0">
-                <Expander HorizontalAlignment="Stretch"
+                <Expander Classes="section-pill"
+                          HorizontalAlignment="Stretch"
                           HorizontalContentAlignment="Stretch"
                           IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
                   <Expander.Header>

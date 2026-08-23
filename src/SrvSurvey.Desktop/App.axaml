@@ -14,18 +14,28 @@
     <SolidColorBrush x:Key="RavenSidebarBrush" Color="#01011C" />
     <SolidColorBrush x:Key="RavenSurfaceBrush" Color="#030325" />
     <SolidColorBrush x:Key="RavenRaisedSurfaceBrush" Color="#00324D" />
+    <SolidColorBrush x:Key="RavenHighestSurfaceBrush" Color="#00324D" />
     <SolidColorBrush x:Key="RavenHeaderBrush" Color="#CC0003" />
     <SolidColorBrush x:Key="RavenAccentBrush" Color="#3F87D4" />
     <SolidColorBrush x:Key="RavenAccentHoverBrush" Color="#5092D8" />
+    <SolidColorBrush x:Key="RavenControlAccentBrush" Color="#3F87D4" />
+    <SolidColorBrush x:Key="RavenControlAccentHoverBrush" Color="#5092D8" />
     <SolidColorBrush x:Key="RavenAccentMutedBrush" Color="#13293F" />
+    <SolidColorBrush x:Key="RavenSecondaryFillBrush" Color="#030325" />
+    <SolidColorBrush x:Key="RavenInteractiveHoverBrush" Color="#13293F" />
     <SolidColorBrush x:Key="RavenRouteGuidanceBadgeBrush" Color="#13293F" />
     <SolidColorBrush x:Key="RavenAccentForegroundBrush" Color="#000012" />
     <SolidColorBrush x:Key="RavenTextBrush" Color="#E5E5E5" />
     <SolidColorBrush x:Key="RavenMutedTextBrush" Color="#C8C8C8" />
+    <SolidColorBrush x:Key="RavenTertiaryTextBrush" Color="#C8C8C8" />
     <SolidColorBrush x:Key="RavenBorderBrush" Color="#195494" />
+    <SolidColorBrush x:Key="RavenStrongBorderBrush" Color="#195494" />
+    <SolidColorBrush x:Key="RavenFocusRingBrush" Color="#3F87D4" />
+    <SolidColorBrush x:Key="RavenModalScrimBrush" Color="#8C000000" />
     <SolidColorBrush x:Key="RavenSuccessBrush" Color="#6CCB72" />
     <SolidColorBrush x:Key="RavenWarningBrush" Color="#F7C948" />
     <BoxShadows x:Key="RavenWarningInsetShadow">inset 0 0 10 2 #99F7C948</BoxShadows>
+    <BoxShadows x:Key="RavenFloatingPanelShadow">0 8 24 0 #66000000</BoxShadows>
     <SolidColorBrush x:Key="RavenDangerBrush" Color="#FF7B72" />
     <!-- Stable legacy-overlay fallbacks. RavenThemeService replaces these
          from theme.json before normal runtime overlays are opened. -->

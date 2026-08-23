@@ -7,17 +7,30 @@
              x:Class="SrvSurvey.Desktop.Views.DiagnosticsView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
-  <ScrollViewer x:Name="DiagnosticsPageScroller"
+  <Grid RowDefinitions="Auto,*">
+    <TabControl Margin="32,24,32,0"
+                SelectedIndex="{Binding SelectedDiagnosticsTabIndex, Mode=TwoWay}">
+      <TabItem Header="Source"><Border Height="0" /></TabItem>
+      <TabItem Header="Updates"><Border Height="0" /></TabItem>
+      <TabItem Header="Processing"><Border Height="0" /></TabItem>
+      <TabItem Header="Inspector"><Border Height="0" /></TabItem>
+      <TabItem Header="Logs"><Border Height="0" /></TabItem>
+    </TabControl>
+
+  <ScrollViewer Grid.Row="1"
+                x:Name="DiagnosticsPageScroller"
                 HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="32" Spacing="24" MaxWidth="1000">
       <StackPanel Spacing="5">
         <TextBlock Classes="eyebrow" Text="DIAGNOSTICS" />
-        <TextBlock Classes="page-title" Text="Journal source" />
+        <TextBlock Classes="page-title" Text="{Binding DiagnosticsTabTitle}" />
         <TextBlock Classes="muted"
-                   Text="The active bootstrap source and the locations checked on this platform." />
+                   TextWrapping="Wrap"
+                   Text="{Binding DiagnosticsTabDescription}" />
       </StackPanel>
 
-      <Border Classes="card">
+      <Border Classes="card"
+              IsVisible="{Binding IsDiagnosticsSourceSelected}">
         <StackPanel Spacing="12">
           <TextBlock Classes="card-title" Text="Selected folder" />
           <TextBlock Classes="monospace"
@@ -27,7 +40,7 @@
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
                      Text="{Binding StatusMessage}" />
-          <Button Classes="primary"
+          <Button Classes="secondary"
                   HorizontalAlignment="Left"
                   MinWidth="116"
                   Command="{Binding RefreshCommand}"
@@ -35,8 +48,8 @@
         </StackPanel>
       </Border>
 
-      <Border x:Name="ApplicationUpdatesAnchor"
-              Classes="card">
+      <Border Classes="card"
+              IsVisible="{Binding IsDiagnosticsUpdatesSelected}">
         <StackPanel Spacing="12">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Application updates" />
@@ -67,7 +80,7 @@
                     Margin="0,0,8,8"
                     Command="{Binding ReleaseUpdates.CheckCommand}"
                     Content="{Binding ReleaseUpdates.CheckButtonText}" />
-            <Button Classes="primary"
+            <Button Classes="secondary"
                     Margin="0,0,0,8"
                     IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
                     Command="{Binding ReleaseUpdates.OpenReleaseCommand}"
@@ -143,7 +156,8 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card raised">
+      <Border Classes="card raised"
+              IsVisible="{Binding IsDiagnosticsProcessingSelected}">
         <StackPanel Spacing="14">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Historical journal processor" />
@@ -245,7 +259,7 @@
             </Grid>
           </Border>
 
-          <Expander Header="Species and atmosphere summary">
+          <Expander Classes="section-pill" Header="Species and atmosphere summary">
             <StackPanel Margin="0,10,0,0" Spacing="8">
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
@@ -323,7 +337,8 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card">
+      <Border Classes="card"
+              IsVisible="{Binding IsDiagnosticsInspectorSelected}">
         <StackPanel Spacing="14">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Journal inspector" />
@@ -444,7 +459,7 @@
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                      Text="{Binding JournalInspector.CodeText}" />
             <Button Grid.Column="1"
-                    Classes="primary"
+                    Classes="secondary"
                     VerticalAlignment="Top"
                     Command="{Binding JournalInspector.CopyCodeCommand}"
                     Content="Copy handler" />
@@ -457,7 +472,8 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card">
+      <Border Classes="card"
+              IsVisible="{Binding IsDiagnosticsProcessingSelected}">
         <StackPanel Spacing="8">
           <TextBlock Classes="card-title" Text="Commander Codex ledger" />
           <TextBlock Classes="muted"
@@ -466,7 +482,8 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card">
+      <Border Classes="card"
+              IsVisible="{Binding IsDiagnosticsInspectorSelected}">
         <Grid ColumnDefinitions="Auto,*"
               RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
               RowSpacing="10"
@@ -492,7 +509,8 @@
         </Grid>
       </Border>
 
-      <Border Classes="card">
+      <Border Classes="card"
+              IsVisible="{Binding IsDiagnosticsInspectorSelected}">
         <Grid ColumnDefinitions="Auto,*"
               RowDefinitions="Auto,Auto,Auto,Auto,Auto"
               RowSpacing="10"
@@ -512,7 +530,8 @@
         </Grid>
       </Border>
 
-      <Border Classes="card raised">
+      <Border Classes="card raised"
+              IsVisible="{Binding IsDiagnosticsSourceSelected}">
         <StackPanel Spacing="10">
           <TextBlock Classes="card-title" Text="Candidate paths" />
           <TextBlock Classes="monospace muted"
@@ -522,7 +541,8 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card raised">
+      <Border Classes="card raised"
+              IsVisible="{Binding IsDiagnosticsProcessingSelected}">
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
             <StackPanel Spacing="4">
@@ -609,7 +629,8 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card">
+      <Border Classes="card"
+              IsVisible="{Binding IsDiagnosticsLogsSelected}">
         <StackPanel Spacing="12">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Application logs" />
@@ -635,7 +656,7 @@
           </Border>
 
           <WrapPanel Orientation="Horizontal">
-            <Button Classes="primary"
+            <Button Classes="secondary"
                     Margin="0,0,8,8"
                     Command="{Binding DiagnosticsLog.CopyCommand}"
                     Content="Copy logs" />
@@ -668,4 +689,5 @@
                  Text="{Binding LastUpdated}" />
     </StackPanel>
   </ScrollViewer>
+  </Grid>
 </UserControl>

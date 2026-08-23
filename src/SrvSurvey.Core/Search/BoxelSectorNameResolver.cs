@@ -350,7 +350,6 @@ internal static class BoxelSectorNameResolver
             var match = cx_fragments.FirstOrDefault(p => name.StartsWith(p));
             if (match == null)
             {
-                Debug.WriteLine($"Sector fragment not matched: {name}");
                 return null;
             }
 

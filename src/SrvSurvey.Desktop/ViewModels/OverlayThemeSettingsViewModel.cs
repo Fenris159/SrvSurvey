@@ -536,6 +536,8 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         IReadOnlyDictionary<string, Color> colors,
         bool acceptChanges)
     {
+        var expandedCategoryName = Categories
+            .FirstOrDefault(category => category.IsExpanded)?.Name;
         var definitions = Definitions.ToList();
         var knownKeys = definitions.Select(definition => definition.Key)
             .ToHashSet(StringComparer.Ordinal);
@@ -547,7 +549,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
                 key,
                 key)));
 
-        Categories = definitions
+        var rebuiltCategories = definitions
             .GroupBy(definition => definition.Category, StringComparer.Ordinal)
             .Select(group => new OverlayThemeCategoryViewModel(
                 group.Key,
@@ -569,9 +571,26 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
                     }
 
                     return editor;
-                }).ToArray()))
+                }).ToArray(),
+                SelectExpandedCategory))
             .ToArray();
+        Categories = rebuiltCategories;
+        var categoryToExpand = rebuiltCategories.FirstOrDefault(category =>
+                string.Equals(
+                    category.Name,
+                    expandedCategoryName,
+                    StringComparison.Ordinal))
+            ?? rebuiltCategories.FirstOrDefault();
+        categoryToExpand?.SetExpanded(true);
         OnEditorsChanged();
+    }
+
+    private void SelectExpandedCategory(OverlayThemeCategoryViewModel selected)
+    {
+        foreach (var category in Categories)
+        {
+            category.SetExpanded(ReferenceEquals(category, selected));
+        }
     }
 
     private void ReplaceTypographyEditors(
@@ -721,9 +740,61 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed record OverlayThemeCategoryViewModel(
-    string Name,
-    IReadOnlyList<OverlayThemeColorEditorViewModel> Colors);
+public sealed class OverlayThemeCategoryViewModel : INotifyPropertyChanged
+{
+    private readonly Action<OverlayThemeCategoryViewModel> selectExpanded;
+    private bool isExpanded;
+
+    public OverlayThemeCategoryViewModel(
+        string name,
+        IReadOnlyList<OverlayThemeColorEditorViewModel> colors,
+        Action<OverlayThemeCategoryViewModel> selectExpanded)
+    {
+        Name = name;
+        Colors = colors;
+        this.selectExpanded = selectExpanded;
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string Name { get; }
+
+    public IReadOnlyList<OverlayThemeColorEditorViewModel> Colors { get; }
+
+    public bool IsExpanded
+    {
+        get => isExpanded;
+        set
+        {
+            if (isExpanded == value)
+            {
+                return;
+            }
+
+            isExpanded = value;
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(IsExpanded)));
+            if (value)
+            {
+                selectExpanded(this);
+            }
+        }
+    }
+
+    internal void SetExpanded(bool value)
+    {
+        if (isExpanded == value)
+        {
+            return;
+        }
+
+        isExpanded = value;
+        PropertyChanged?.Invoke(
+            this,
+            new PropertyChangedEventArgs(nameof(IsExpanded)));
+    }
+}
 
 public sealed class OverlayTypographyEditorViewModel : INotifyPropertyChanged
 {

@@ -46,6 +46,23 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     }
 
     [Fact]
+    public void ColorCategoriesBehaveAsASingleOpenAccordion()
+    {
+        var viewModel = CreateViewModel();
+        var general = viewModel.Categories.Single(category => category.Name == "General");
+        var guardian = viewModel.Categories.Single(category => category.Name == "Guardian");
+
+        Assert.True(general.IsExpanded);
+        Assert.Single(viewModel.Categories, category => category.IsExpanded);
+
+        guardian.IsExpanded = true;
+
+        Assert.False(general.IsExpanded);
+        Assert.True(guardian.IsExpanded);
+        Assert.Single(viewModel.Categories, category => category.IsExpanded);
+    }
+
+    [Fact]
     public void TypographyUsesExistingRoleSizesAndHalfPointSteps()
     {
         var viewModel = CreateViewModel();

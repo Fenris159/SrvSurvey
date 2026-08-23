@@ -1,9 +1,7 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using Avalonia.Threading;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -14,82 +12,13 @@ public sealed partial class DiagnosticsView : UserControl
     private DiagnosticsLogViewModel? connectedViewModel;
     private JournalInspectorViewModel? connectedInspector;
     private ReleaseUpdateViewModel? connectedReleaseUpdates;
-    private bool applicationUpdatesAlignmentPending;
-    private int applicationUpdatesAlignmentAttempts;
 
     public DiagnosticsView()
     {
         InitializeComponent();
         AttachedToVisualTree += (_, _) => ConnectPlatformServices();
-        DetachedFromVisualTree += (_, _) =>
-        {
-            CancelApplicationUpdatesAlignment();
-            DisconnectPlatformServices();
-        };
+        DetachedFromVisualTree += (_, _) => DisconnectPlatformServices();
         DataContextChanged += (_, _) => ConnectPlatformServices();
-    }
-
-    internal void ScrollToApplicationUpdates()
-    {
-        applicationUpdatesAlignmentPending = true;
-        applicationUpdatesAlignmentAttempts = 0;
-        LayoutUpdated -= OnApplicationUpdatesLayoutUpdated;
-        LayoutUpdated += OnApplicationUpdatesLayoutUpdated;
-        Dispatcher.UIThread.Post(
-            TryAlignApplicationUpdates,
-            DispatcherPriority.Loaded);
-    }
-
-    private void OnApplicationUpdatesLayoutUpdated(object? sender, EventArgs eventArgs)
-    {
-        TryAlignApplicationUpdates();
-    }
-
-    private void TryAlignApplicationUpdates()
-    {
-        if (!applicationUpdatesAlignmentPending
-            || !IsVisible
-            || DiagnosticsPageScroller.Viewport.Height <= 0)
-        {
-            return;
-        }
-
-        var origin = ApplicationUpdatesAnchor.TranslatePoint(
-            default,
-            DiagnosticsPageScroller);
-        if (origin is null)
-        {
-            return;
-        }
-
-        if (Math.Abs(origin.Value.Y) <= 0.5
-            || applicationUpdatesAlignmentAttempts >= 3)
-        {
-            CancelApplicationUpdatesAlignment();
-            return;
-        }
-
-        applicationUpdatesAlignmentAttempts++;
-        var maximumOffset = Math.Max(
-            0,
-            DiagnosticsPageScroller.Extent.Height
-                - DiagnosticsPageScroller.Viewport.Height);
-        var targetOffset = Math.Clamp(
-            DiagnosticsPageScroller.Offset.Y + origin.Value.Y,
-            0,
-            maximumOffset);
-        DiagnosticsPageScroller.Offset = new Vector(
-            DiagnosticsPageScroller.Offset.X,
-            targetOffset);
-        Dispatcher.UIThread.Post(
-            TryAlignApplicationUpdates,
-            DispatcherPriority.Background);
-    }
-
-    private void CancelApplicationUpdatesAlignment()
-    {
-        applicationUpdatesAlignmentPending = false;
-        LayoutUpdated -= OnApplicationUpdatesLayoutUpdated;
     }
 
     private void ConnectPlatformServices()

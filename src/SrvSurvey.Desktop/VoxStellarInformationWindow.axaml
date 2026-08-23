@@ -96,7 +96,7 @@
                 Content="Plugin source" />
       </WrapPanel>
       <Button Grid.Column="1"
-              Classes="primary"
+              Classes="secondary"
               HorizontalAlignment="Right"
               Click="Close_Click"
               Content="Close" />

@@ -391,9 +391,9 @@ public sealed partial class OverlayCoverageInventoryTests
     public void PositionEditorUsesCategorizedForcedPreviewsAndExplicitCommitControls()
     {
         var root = FindRepositoryRoot();
-        var settingsShell = File.ReadAllText(Path.Combine(
+        var themeShell = File.ReadAllText(Path.Combine(
             root,
-            Native("src/SrvSurvey.Desktop/Views/SettingsView.axaml")));
+            Native("src/SrvSurvey.Desktop/Views/ThemeView.axaml")));
         var overlaySettings = File.ReadAllText(Path.Combine(
             root,
             Native("src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml")));
@@ -515,32 +515,32 @@ public sealed partial class OverlayCoverageInventoryTests
             "Close the categorized overlay position editor before enabling interaction with live overlays.",
             interaction);
         Assert.Contains("<Expander", overlaySettings);
-        Assert.Contains("Classes=\"theme-selector\"", settingsShell);
-        Assert.Contains("Text=\"Theme selection\"", settingsShell);
-        Assert.Contains("Header=\"Overlay Settings\"", settingsShell);
-        Assert.Contains("<views:OverlaySettingsView", settingsShell);
+        Assert.Contains("Classes=\"theme-selector\"", themeShell);
+        Assert.Contains("Text=\"Theme\"", themeShell);
+        Assert.Contains("Header=\"Overlay Settings\"", themeShell);
+        Assert.Contains("<views:OverlaySettingsView", themeShell);
         Assert.Contains("BorderThickness=\"1\"", overlaySettings);
         Assert.Contains(
             "Command=\"{Binding OverlayTheme.PreviewCommand}\"",
-            settingsShell);
+            themeShell);
         Assert.Contains(
             "Text=\"Overlay theme presets and saved states\"",
-            settingsShell);
+            themeShell);
         Assert.Contains(
             "ColumnDefinitions=\"64,128,*,118\"",
-            settingsShell);
+            themeShell);
         Assert.Contains(
             "Slider.overlay-theme-opacity /template/ Thumb#thumb",
-            settingsShell);
-        Assert.Contains("Content=\"Load Defaults\"", settingsShell);
+            themeShell);
+        Assert.Contains("Content=\"Load Defaults\"", themeShell);
         Assert.Contains("Overlay Opacity Override", overlaySettings);
         Assert.Contains("OverlayLayout.SelectedOverlay", overlaySettings);
         Assert.Contains("OverlayLayout.SaveCommand", overlaySettings);
         Assert.DoesNotContain("HorizontalAnchorOptions", overlaySettings);
         Assert.DoesNotContain("VerticalAnchorOptions", overlaySettings);
-        Assert.DoesNotContain("GalaxyMap.AutoShow", settingsShell);
+        Assert.DoesNotContain("GalaxyMap.AutoShow", themeShell);
         Assert.Contains("GalaxyMap.AutoShow", overlaySettings);
-        Assert.DoesNotContain("Notifications.Enabled", settingsShell);
+        Assert.DoesNotContain("Notifications.Enabled", themeShell);
         Assert.Contains("Notifications.Enabled", overlaySettings);
 
         var routeOverlay = File.ReadAllText(Path.Combine(

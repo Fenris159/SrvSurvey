@@ -5,7 +5,7 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 public sealed class GuidesViewMarkupTests
 {
     [Fact]
-    public void WorkflowStepsUseALegibleFullSizeChevron()
+    public void CatalogueAndReadingFlowAvoidNumbersBulletsAndChevrons()
     {
         var document = XDocument.Load(Path.Combine(
             FindRepositoryRoot(),
@@ -13,16 +13,24 @@ public sealed class GuidesViewMarkupTests
             "SrvSurvey.Desktop",
             "Views",
             "GuidesView.axaml"));
-        var chevron = document.Descendants().Single(element =>
-            element.Name.LocalName == "TextBlock"
-            && element.Attribute("Text")?.Value == "❯");
-        var circle = chevron.Parent
-            ?? throw new InvalidDataException("Guide step chevron circle is missing.");
+        var values = document.Descendants()
+            .SelectMany(element => element.Attributes())
+            .Select(attribute => attribute.Value)
+            .ToArray();
+        var categoryTemplate = document.Descendants().Single(element =>
+            element.Name.LocalName == "ListBox.ItemTemplate");
 
-        Assert.Equal("17", chevron.Attribute("FontSize")?.Value);
-        Assert.Equal("22", circle.Attribute("Width")?.Value);
-        Assert.Equal("22", circle.Attribute("Height")?.Value);
-        Assert.Equal("11", circle.Attribute("CornerRadius")?.Value);
+        Assert.DoesNotContain("{Binding Number}", values);
+        Assert.DoesNotContain(values, value => value.Contains(
+            "CATEGORY {0}",
+            StringComparison.Ordinal));
+        Assert.DoesNotContain("❯", values);
+        Assert.DoesNotContain("•", values);
+        Assert.Contains("guide-step", values);
+        Assert.Contains("guide-detail", values);
+        Assert.Single(categoryTemplate.Descendants(), element =>
+            element.Name.LocalName == "TextBlock"
+            && element.Attribute("Text")?.Value == "{Binding Title}");
     }
 
     private static string FindRepositoryRoot()

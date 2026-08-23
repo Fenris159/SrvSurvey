@@ -42,7 +42,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private const int MaximumSystemBodyDataRetryAttempts = 5;
 
     private const string Unavailable = "—";
+    private const string ExplorationNavigationKey = "exploration";
+    private const string ExobiologyNavigationKey = "exobiology";
+    private const string TravelNavigationKey = "travel";
+    private const string BoxelNavigationKey = "boxel";
+    private const string SearchNavigationKey = "search";
+    private const string GuardianNavigationKey = "guardian";
+    private const string QuestsNavigationKey = "quests";
+    private const string ColonisationNavigationKey = "colonisation";
+    private const string DiagnosticsNavigationKey = "diagnostics";
     private const string SettingsNavigationKey = "settings";
+    private const string SurveyNavigationGroup = "survey";
+    private const string NavigationNavigationGroup = "navigation";
+    private const string ActivitiesNavigationGroup = "activities";
     private const string CommanderProfileLoadFailedMessage =
         "The commander profile could not be loaded.";
 
@@ -144,6 +156,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private string? activeProfileCommanderName;
     private bool activeProfileIsOdyssey = true;
     private NavigationItemViewModel? selectedNavigation;
+    private string? expandedNavigationGroup = SurveyNavigationGroup;
+    private DiagnosticsWorkspaceTab selectedDiagnosticsTab =
+        DiagnosticsWorkspaceTab.Source;
     private bool isProfileSelected;
     private ThemeOptionViewModel selectedTheme;
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
@@ -764,20 +779,83 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             NavigationItems =
             [
                 new("overview", "Overview", "Commander and current journal state"),
-                new("exploration", "Exploration", "Trip totals and body scans", true),
-                new("exobiology", "Exobiology", "Organic scans and unclaimed rewards", true),
-                new("travel", "Travel", "Ground targets, journeys, and routes", true),
-                new("boxel", "Boxel", "Procedural boxel searches and completion tracking", true),
-                new("search", "Search", "Spherical limits and nearby biology"),
-                new("guardian", "Guardian", "Sites, maps, and Ram Tah", true),
-                new("quests", "Quests", "Communications and active objectives", true),
-                new("colonisation", "Colonization", "Raven Colonial projects", true),
-                new("diagnostics", "Diagnostics", "Journal source and parsed state"),
-                new(SettingsNavigationKey, "Settings", "Appearance and application options"),
+                new(
+                    ExplorationNavigationKey,
+                    "Exploration",
+                    "Trip totals and body scans",
+                    true),
+                new(
+                    ExobiologyNavigationKey,
+                    "Exobiology",
+                    "Organic scans and unclaimed rewards",
+                    true),
+                new(
+                    TravelNavigationKey,
+                    "Travel",
+                    "Ground targets, journeys, and routes",
+                    true),
+                new(
+                    BoxelNavigationKey,
+                    "Boxel",
+                    "Procedural boxel searches and completion tracking",
+                    true),
+                new(
+                    SearchNavigationKey,
+                    "Search",
+                    "Spherical limits and nearby biology"),
+                new(
+                    GuardianNavigationKey,
+                    "Guardian",
+                    "Sites, maps, and Ram Tah",
+                    true),
+                new(
+                    QuestsNavigationKey,
+                    "Quests",
+                    "Communications and active objectives",
+                    true),
+                new(
+                    ColonisationNavigationKey,
+                    "Colonization",
+                    "Raven Colonial projects",
+                    true),
+                new(
+                    DiagnosticsNavigationKey,
+                    "Diagnostics",
+                    "Journal source and parsed state"),
+                new(SettingsNavigationKey, "Settings", "Application and integration options"),
+                new("theme", "Theme", "Application and in-game appearance"),
                 new("guides", "Guides", "Help documentation and overlay icon glossary"),
             ];
             selectedNavigation = NavigationItems[0];
+            selectedNavigation.IsSelected = true;
+            OverviewNavigationItems = NavigationItems
+                .Where(item => item.Key == "overview")
+                .ToArray();
+            SurveyNavigationItems = NavigationItems
+                .Where(item => item.Key is ExplorationNavigationKey
+                    or ExobiologyNavigationKey
+                    or BoxelNavigationKey)
+                .ToArray();
+            NavigationWorkspaceItems = NavigationItems
+                .Where(item => item.Key is TravelNavigationKey
+                    or SearchNavigationKey)
+                .ToArray();
+            ActivityNavigationItems = NavigationItems
+                .Where(item => item.Key is GuardianNavigationKey
+                    or QuestsNavigationKey
+                    or ColonisationNavigationKey)
+                .ToArray();
+            UtilityNavigationItems = new[]
+            {
+                SettingsNavigationKey,
+                "theme",
+                "guides",
+                DiagnosticsNavigationKey,
+            }
+                .Select(key => NavigationItems.Single(item => item.Key == key))
+                .ToArray();
             Guides = new GuidesViewModel(GuideCatalog.Create());
+            SettingsWorkspace = new SettingsWorkspaceViewModel();
 
             var currentTheme = themeService?.Current
                 ?? RavenThemeCatalog.Get(RavenThemeCatalog.DefaultThemeKey);
@@ -801,6 +879,25 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     public IReadOnlyList<NavigationItemViewModel> NavigationItems { get; }
 
+    public IReadOnlyList<NavigationItemViewModel> OverviewNavigationItems { get; }
+
+    public IReadOnlyList<NavigationItemViewModel> SurveyNavigationItems { get; }
+
+    public IReadOnlyList<NavigationItemViewModel> NavigationWorkspaceItems { get; }
+
+    public IReadOnlyList<NavigationItemViewModel> ActivityNavigationItems { get; }
+
+    public IReadOnlyList<NavigationItemViewModel> UtilityNavigationItems { get; }
+
+    public bool IsSurveyNavigationExpanded =>
+        expandedNavigationGroup == SurveyNavigationGroup;
+
+    public bool IsNavigationNavigationExpanded =>
+        expandedNavigationGroup == NavigationNavigationGroup;
+
+    public bool IsActivitiesNavigationExpanded =>
+        expandedNavigationGroup == ActivitiesNavigationGroup;
+
     public IReadOnlyList<ThemeOptionViewModel> ThemeOptions { get; }
 
     public GuidesViewModel Guides { get; }
@@ -812,6 +909,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public OverlayPanelVisibilityViewModel OverlayPanelVisibility { get; }
 
     public DesktopBehaviorViewModel DesktopBehavior { get; }
+
+    public SettingsWorkspaceViewModel SettingsWorkspace { get; }
 
     public BiologyRewardSettingsViewModel BiologyRewards { get; }
 
@@ -1079,9 +1178,21 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         get => selectedNavigation;
         set
         {
+            var previous = selectedNavigation;
             if (!SetField(ref selectedNavigation, value))
             {
                 return;
+            }
+
+            if (previous is not null)
+            {
+                previous.IsSelected = false;
+            }
+
+            if (value is not null)
+            {
+                value.IsSelected = true;
+                ExpandNavigationGroupFor(value.Key);
             }
 
             if (value is not null)
@@ -1098,34 +1209,119 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public bool IsOverviewSelected => SelectedNavigation?.Key == "overview"
         && !IsProfileSelected;
 
-    public bool IsExplorationSelected => SelectedNavigation?.Key == "exploration"
+    public bool IsExplorationSelected =>
+        SelectedNavigation?.Key == ExplorationNavigationKey
         && !IsProfileSelected;
 
-    public bool IsExobiologySelected => SelectedNavigation?.Key == "exobiology"
+    public bool IsExobiologySelected =>
+        SelectedNavigation?.Key == ExobiologyNavigationKey
         && !IsProfileSelected;
 
-    public bool IsTravelSelected => SelectedNavigation?.Key == "travel"
+    public bool IsTravelSelected =>
+        SelectedNavigation?.Key == TravelNavigationKey
         && !IsProfileSelected;
 
-    public bool IsBoxelSelected => SelectedNavigation?.Key == "boxel"
+    public bool IsBoxelSelected =>
+        SelectedNavigation?.Key == BoxelNavigationKey
         && !IsProfileSelected;
 
-    public bool IsSearchSelected => SelectedNavigation?.Key == "search"
+    public bool IsSearchSelected =>
+        SelectedNavigation?.Key == SearchNavigationKey
         && !IsProfileSelected;
 
-    public bool IsGuardianSelected => SelectedNavigation?.Key == "guardian"
+    public bool IsGuardianSelected =>
+        SelectedNavigation?.Key == GuardianNavigationKey
         && !IsProfileSelected;
 
-    public bool IsQuestsSelected => SelectedNavigation?.Key == "quests"
+    public bool IsQuestsSelected =>
+        SelectedNavigation?.Key == QuestsNavigationKey
         && !IsProfileSelected;
 
     public bool IsColonizationSelected =>
-        SelectedNavigation?.Key == "colonisation" && !IsProfileSelected;
-
-    public bool IsDiagnosticsSelected => SelectedNavigation?.Key == "diagnostics"
+        SelectedNavigation?.Key == ColonisationNavigationKey
         && !IsProfileSelected;
 
+    public bool IsDiagnosticsSelected =>
+        SelectedNavigation?.Key == DiagnosticsNavigationKey
+        && !IsProfileSelected;
+
+    public DiagnosticsWorkspaceTab SelectedDiagnosticsTab
+    {
+        get => selectedDiagnosticsTab;
+        set
+        {
+            if (!SetField(ref selectedDiagnosticsTab, value))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(SelectedDiagnosticsTabIndex));
+            OnPropertyChanged(nameof(IsDiagnosticsSourceSelected));
+            OnPropertyChanged(nameof(IsDiagnosticsUpdatesSelected));
+            OnPropertyChanged(nameof(IsDiagnosticsProcessingSelected));
+            OnPropertyChanged(nameof(IsDiagnosticsInspectorSelected));
+            OnPropertyChanged(nameof(IsDiagnosticsLogsSelected));
+            OnPropertyChanged(nameof(DiagnosticsTabTitle));
+            OnPropertyChanged(nameof(DiagnosticsTabDescription));
+        }
+    }
+
+    public int SelectedDiagnosticsTabIndex
+    {
+        get => (int)SelectedDiagnosticsTab;
+        set
+        {
+            if (Enum.IsDefined(typeof(DiagnosticsWorkspaceTab), value))
+            {
+                SelectedDiagnosticsTab = (DiagnosticsWorkspaceTab)value;
+            }
+        }
+    }
+
+    public bool IsDiagnosticsSourceSelected =>
+        SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.Source;
+
+    public bool IsDiagnosticsUpdatesSelected =>
+        SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.Updates;
+
+    public bool IsDiagnosticsProcessingSelected =>
+        SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.Processing;
+
+    public bool IsDiagnosticsInspectorSelected =>
+        SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.Inspector;
+
+    public bool IsDiagnosticsLogsSelected =>
+        SelectedDiagnosticsTab == DiagnosticsWorkspaceTab.Logs;
+
+    public string DiagnosticsTabTitle => SelectedDiagnosticsTab switch
+    {
+        DiagnosticsWorkspaceTab.Source => "Journal source",
+        DiagnosticsWorkspaceTab.Updates => "Updates",
+        DiagnosticsWorkspaceTab.Processing => "Processing",
+        DiagnosticsWorkspaceTab.Inspector => "Inspector",
+        DiagnosticsWorkspaceTab.Logs => "Logs",
+        _ => "Diagnostics",
+    };
+
+    public string DiagnosticsTabDescription => SelectedDiagnosticsTab switch
+    {
+        DiagnosticsWorkspaceTab.Source =>
+            "The active bootstrap source and the locations checked on this platform.",
+        DiagnosticsWorkspaceTab.Updates =>
+            "Check application and reference-data releases without changing profile data.",
+        DiagnosticsWorkspaceTab.Processing =>
+            "Process historical journals and maintain supporting reference data.",
+        DiagnosticsWorkspaceTab.Inspector =>
+            "Inspect parsed journal events and the current live status state.",
+        DiagnosticsWorkspaceTab.Logs =>
+            "Review, copy, and open this application's diagnostic logs.",
+        _ => string.Empty,
+    };
+
     public bool IsSettingsSelected => SelectedNavigation?.Key == SettingsNavigationKey
+        && !IsProfileSelected;
+
+    public bool IsThemeSelected => SelectedNavigation?.Key == "theme"
         && !IsProfileSelected;
 
     public bool IsGuidesSelected => SelectedNavigation?.Key == "guides"
@@ -1136,12 +1332,60 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         if (!isProfileSelected)
         {
             isProfileSelected = true;
+            selectedNavigation?.IsSelected = false;
             selectedNavigation = null;
             OnPropertyChanged(nameof(SelectedNavigation));
             RaiseNavigationSelectionChanged();
         }
 
         await FrontierProfile.OpenAsync(CancellationToken.None);
+    }
+
+    public void ToggleNavigationGroup(string groupKey)
+    {
+        if (groupKey is not (SurveyNavigationGroup
+            or NavigationNavigationGroup
+            or ActivitiesNavigationGroup))
+        {
+            return;
+        }
+
+        SetExpandedNavigationGroup(
+            expandedNavigationGroup == groupKey ? null : groupKey);
+    }
+
+    private void ExpandNavigationGroupFor(string navigationKey)
+    {
+        var group = navigationKey switch
+        {
+            ExplorationNavigationKey
+                or ExobiologyNavigationKey
+                or BoxelNavigationKey => SurveyNavigationGroup,
+            TravelNavigationKey
+                or SearchNavigationKey => NavigationNavigationGroup,
+            GuardianNavigationKey
+                or QuestsNavigationKey
+                or ColonisationNavigationKey =>
+                ActivitiesNavigationGroup,
+            _ => null,
+        };
+        if (group is not null)
+        {
+            SetExpandedNavigationGroup(group);
+        }
+    }
+
+    private void SetExpandedNavigationGroup(string? groupKey)
+    {
+        if (expandedNavigationGroup == groupKey)
+        {
+            return;
+        }
+
+        expandedNavigationGroup = groupKey;
+        OnPropertyChanged(nameof(IsSurveyNavigationExpanded));
+        OnPropertyChanged(nameof(IsNavigationNavigationExpanded));
+        OnPropertyChanged(nameof(IsActivitiesNavigationExpanded));
     }
 
     private void RaiseNavigationSelectionChanged()
@@ -1158,13 +1402,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         OnPropertyChanged(nameof(IsColonizationSelected));
         OnPropertyChanged(nameof(IsDiagnosticsSelected));
         OnPropertyChanged(nameof(IsSettingsSelected));
+        OnPropertyChanged(nameof(IsThemeSelected));
         OnPropertyChanged(nameof(IsGuidesSelected));
     }
 
-    public void ShowDiagnostics()
+    public void ShowDiagnostics(DiagnosticsWorkspaceTab? selectedTab = null)
     {
+        if (selectedTab is not null)
+        {
+            SelectedDiagnosticsTab = selectedTab.Value;
+        }
+
         SelectedNavigation = NavigationItems.Single(
-            item => item.Key == "diagnostics");
+            item => item.Key == DiagnosticsNavigationKey);
     }
 
     public void ShowSettings()
@@ -1209,14 +1459,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public void ShowQuests()
     {
         SelectedNavigation = NavigationItems.Single(
-            item => item.Key == "quests");
+            item => item.Key == QuestsNavigationKey);
     }
 
     public async Task OpenCodexBingoNearestSearchAsync(
         CodexBingoNearestRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        SelectedNavigation = NavigationItems.Single(item => item.Key == "search");
+        SelectedNavigation = NavigationItems.Single(
+            item => item.Key == SearchNavigationKey);
         if (request.Mode == CodexBingoNearestMode.Signal
             && !string.IsNullOrWhiteSpace(request.Signal))
         {

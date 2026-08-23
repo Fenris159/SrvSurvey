@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
@@ -51,6 +53,34 @@ public sealed class ApplicationLogTraceListenerTests : IDisposable
             log.Entries,
             line => line.EndsWith(
                 ": [Control] A different warning",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void HandAuthoredSectorProbeDoesNotPolluteTheApplicationLog()
+    {
+        var log = new ApplicationLogService(temporaryDirectory);
+        using var listener = new ApplicationLogTraceListener(log);
+        Trace.Listeners.Add(listener);
+
+        try
+        {
+            Assert.True(BoxelAddress.TryFromSystemAddress(
+                684107179361,
+                "Col 359 Sector JX-K b24-0",
+                out _));
+            Trace.Flush();
+            listener.Flush();
+        }
+        finally
+        {
+            Trace.Listeners.Remove(listener);
+        }
+
+        Assert.DoesNotContain(
+            log.Entries,
+            line => line.Contains(
+                "Sector fragment not matched",
                 StringComparison.Ordinal));
     }
 

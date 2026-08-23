@@ -63,6 +63,7 @@
              Link="plotters.json"
              CopyToOutputDirectory="PreserveNewest" />
     <AvaloniaResource Include="Assets\logo.ico" />
+    <AvaloniaResource Include="Assets\logo-remastered-linux-windows-split.png" />
     <AvaloniaResource Include="Assets\Frontier\**\*.png" />
     <AvaloniaResource Include="Assets\Routes\**\*.png" />
     <AvaloniaResource Include="Assets\Bodies\**\*.png" />

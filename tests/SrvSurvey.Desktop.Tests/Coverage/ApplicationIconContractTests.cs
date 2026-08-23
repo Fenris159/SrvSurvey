@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using SkiaSharp;
 
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
@@ -6,6 +7,7 @@ public sealed class ApplicationIconContractTests
 {
     private const string HighResolutionIconFileName =
         "logo-remastered-linux-windows-split.png";
+    private const int MaximumResamplingChannelDelta = 24;
 
     private static readonly int[] RequiredIconSizes =
         [16, 20, 24, 32, 48, 64, 128, 256];
@@ -60,6 +62,55 @@ public sealed class ApplicationIconContractTests
                 (long)entry.ImageOffset + entry.BytesInResource,
                 1,
                 stream.Length);
+        }
+    }
+
+    [Fact]
+    public void WindowsIconUsesTheCurrentRemasteredArtwork()
+    {
+        var assets = Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "Assets");
+        using var source = SKBitmap.Decode(Path.Combine(
+            assets,
+            HighResolutionIconFileName));
+        using var icon = SKBitmap.Decode(Path.Combine(assets, "logo.ico"));
+
+        Assert.NotNull(source);
+        Assert.NotNull(icon);
+        Assert.Equal(1024, source.Width);
+        Assert.Equal(1024, source.Height);
+        Assert.Equal(256, icon.Width);
+        Assert.Equal(256, icon.Height);
+
+        foreach (var (x, y) in new[]
+                 {
+                     (128, 28),
+                     (48, 128),
+                     (208, 128),
+                     (128, 220),
+                 })
+        {
+            var expected = source.GetPixel(x * 4, y * 4);
+            var actual = icon.GetPixel(x, y);
+            Assert.InRange(
+                Math.Abs(expected.Red - actual.Red),
+                0,
+                MaximumResamplingChannelDelta);
+            Assert.InRange(
+                Math.Abs(expected.Green - actual.Green),
+                0,
+                MaximumResamplingChannelDelta);
+            Assert.InRange(
+                Math.Abs(expected.Blue - actual.Blue),
+                0,
+                MaximumResamplingChannelDelta);
+            Assert.InRange(
+                Math.Abs(expected.Alpha - actual.Alpha),
+                0,
+                MaximumResamplingChannelDelta);
         }
     }
 
