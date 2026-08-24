@@ -22,7 +22,7 @@ public static class GuideCatalog
                 "Getting started",
                 "Connect SrvSurvey to the correct Commander and understand how the journal-driven workspaces and overlays behave.",
                 [
-                    Section(
+                    IntroSection(
                         "First launch",
                         "SrvSurvey reads Elite Dangerous Journal files and companion status files. It does not need to modify the game installation.",
                         [
@@ -34,7 +34,7 @@ public static class GuideCatalog
                             "Overview shows the active Commander, game mode, location, exploration totals, and unclaimed exobiology rewards.",
                             "If no Commander appears, use Diagnostics to inspect the selected folder and newest Journal file.",
                         ]),
-                    Section(
+                    IntroSection(
                         "How the interface is organized",
                         "The sidebar keeps the active Commander and the major SrvSurvey workflows close at hand. Guides remains available even when Elite is not running.",
                         [],
@@ -45,7 +45,7 @@ public static class GuideCatalog
                             "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
                             "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
                         ]),
-                    Section(
+                    IntroSection(
                         "What this field manual covers",
                         "The in-app guide reconciles the original SrvSurvey user guide with the current cross-platform implementation.",
                         [],
@@ -54,7 +54,7 @@ public static class GuideCatalog
                             "Legacy Windows-only steps are replaced with their current Avalonia workflow. Features that still require an operating-system capability report that status in the relevant setting.",
                             "Developer file formats are summarized as player tasks here; Diagnostics and repository documentation retain the lower-level evidence.",
                         ]),
-                    Section(
+                    IntroSection(
                         "Automatic overlays",
                         "Most overlays appear only when their information is useful, then hide when that game context ends.",
                         [
@@ -358,7 +358,7 @@ public static class GuideCatalog
                 "Guardian sites",
                 "Locate Guardian sites, align maps, survey points of interest, track Ram Tah progress, and share non-destructive survey packages.",
                 [
-                    Section(
+                    GuardianSection(
                         "Arriving at a Guardian system",
                         "Guardian summaries identify known sites, beacons, survey status, blueprint type, and extra notes for the current system.",
                         [],
@@ -367,7 +367,7 @@ public static class GuideCatalog
                             "Near a site, the live map projects the published layout around your current position and heading.",
                             "Map size, automatic zoom, SRV-turret zoom, measurement grid, material dots, notes, aerial grid, and legend are independently configurable.",
                         ]),
-                    Section(
+                    GuardianSection(
                         "Aligning and surveying a site",
                         "A correct site type and heading make the projected map line up with the ruins or structure.",
                         [
@@ -380,7 +380,7 @@ public static class GuideCatalog
                         [
                             "Present, absent, empty, active, scanned, and target states use different fills, outlines, and colors. The icon glossary shows the underlying shapes.",
                         ]),
-                    Section(
+                    GuardianSection(
                         "Ram Tah and obelisks",
                         "The Ram Tah workspace tracks mission logs, active obelisks, required combinations, and decoded entries.",
                         [],
@@ -389,7 +389,7 @@ public static class GuideCatalog
                             "Filters can show only mission logs still needed for the active Ram Tah task.",
                             "The nearest mapped point and target ring help correlate the in-game site with the survey layout.",
                         ]),
-                    Section(
+                    GuardianSection(
                         "Inspecting the Survey map",
                         "Reference maps and Commander surveys use the same selectable marker inspector so the preview matches the live editing workflow.",
                         [
@@ -401,7 +401,7 @@ public static class GuideCatalog
                             "The legend identifies each marker and explains active-obelisk wedges: gray is unscanned, orange is scanned, and cyan is still needed for Ram Tah.",
                             "At the active in-game site, the Commander position is mirrored onto the Survey map. It is a passive marker and cannot block selection of an overlapping survey point.",
                         ]),
-                    Section(
+                    GuardianSection(
                         "Editing a Commander survey",
                         "A live Commander survey unlocks the same point form used by the reference preview and adds survey-specific controls below the map.",
                         [
@@ -414,7 +414,7 @@ public static class GuideCatalog
                         [
                             "Published reference geometry is shared by every site of that type and cannot be changed through an ordinary Commander survey. Use a map draft when the shared template itself needs correction.",
                         ]),
-                    Section(
+                    GuardianSection(
                         "Building a map draft",
                         "Start map draft from the Selected Map card to author or correct shared template geometry without leaving the Survey map workspace.",
                         [
@@ -426,7 +426,7 @@ public static class GuideCatalog
                         [
                             "Draft changes preview immediately but remain session-only until verified export. Starting a draft naturally unlocks the same selected-point form that was read only in reference mode.",
                         ]),
-                    Section(
+                    GuardianSection(
                         "Sharing a Guardian survey",
                         "Share data packages meaningful Commander discoveries for review without changing published reference data.",
                         [
@@ -894,6 +894,18 @@ public static class GuideCatalog
     {
         return new GuideSectionViewModel(title, summary, steps, details);
     }
+
+    private static GuideSectionViewModel IntroSection(
+        string title,
+        string summary,
+        IReadOnlyList<string> steps,
+        IReadOnlyList<string> details) => Section(title, summary, steps, details);
+
+    private static GuideSectionViewModel GuardianSection(
+        string title,
+        string summary,
+        IReadOnlyList<string> steps,
+        IReadOnlyList<string> details) => Section(title, summary, steps, details);
 
     private static GuideIconViewModel Icon(
         GuideIconKind kind,
