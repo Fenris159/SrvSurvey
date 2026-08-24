@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.36**. Its development tag
-is `xp-v2.1.3.0-rc.36`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.36`. The assembly `FileVersion`
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.37**. Its development tag
+is `xp-v2.1.3.0-rc.37`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.37`. The assembly `FileVersion`
 remains numeric at `2.1.3.0` for Windows compatibility.
 
 ## Build contract

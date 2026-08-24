@@ -225,19 +225,11 @@ public sealed class GuidesViewModelTests
     public void CatalogDocumentsCurrentRouteBoxelOverlayAndDesktopFeatures()
     {
         var categories = GuideCatalog.Create();
-        string Instructions(string key) => string.Join(
-            ' ',
-            categories.Single(category => category.Key == key)
-                .Sections.SelectMany(section =>
-                    new[] { section.Title, section.Summary }
-                        .Concat(section.Steps)
-                        .Concat(section.Details)));
-
-        var exploration = Instructions("exploration");
-        var travel = Instructions("travel-search");
-        var boxel = Instructions("boxel");
-        var overlays = Instructions("overlays");
-        var settings = Instructions("settings-migration");
+        var exploration = Instructions(categories, "exploration");
+        var travel = Instructions(categories, "travel-search");
+        var boxel = Instructions(categories, "boxel");
+        var overlays = Instructions(categories, "overlays");
+        var settings = Instructions(categories, "settings-migration");
 
         Assert.Contains("Show flight warnings", exploration, StringComparison.Ordinal);
         Assert.Contains("8 g", exploration, StringComparison.Ordinal);
@@ -285,8 +277,49 @@ public sealed class GuidesViewModelTests
     }
 
     [Fact]
+    public void CatalogDocumentsCurrentRedesignSharingAndGuardianEditorWorkflows()
+    {
+        var categories = GuideCatalog.Create();
+        var gettingStarted = Instructions(categories, "getting-started");
+        var exploration = Instructions(categories, "exploration");
+        var guardian = Instructions(categories, "guardian");
+        var settings = Instructions(categories, "settings-migration");
+        var diagnostics = Instructions(categories, "diagnostics");
+        var expectedCoverage = new[]
+        {
+            (gettingStarted, "Survey groups Exploration"),
+            (gettingStarted, "Search settings"),
+            (exploration, "three retries"),
+            (guardian, "15x"),
+            (guardian, "Start map draft"),
+            (guardian, "0.1 steps"),
+            (guardian, "Commander position"),
+            (settings, "Configure sharing"),
+            (settings, "personal API key"),
+            (settings, "Monochrome dark"),
+            (diagnostics, "stale plans"),
+        };
+
+        Assert.All(expectedCoverage, expected => Assert.Contains(
+            expected.Item2,
+            expected.Item1,
+            StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain("Replay Controller", string.Join(' ', categories), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void EmptyCatalogIsRejected()
     {
         Assert.Throws<ArgumentException>(() => new GuidesViewModel([]));
     }
+
+    private static string Instructions(
+        IReadOnlyList<GuideCategoryViewModel> categories,
+        string key) => string.Join(
+            ' ',
+            categories.Single(category => category.Key == key)
+                .Sections.SelectMany(section =>
+                    new[] { section.Title, section.Summary }
+                        .Concat(section.Steps)
+                        .Concat(section.Details)));
 }

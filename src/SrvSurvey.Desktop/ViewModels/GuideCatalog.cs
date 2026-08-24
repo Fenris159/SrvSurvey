@@ -22,7 +22,7 @@ public static class GuideCatalog
                 "Getting started",
                 "Connect SrvSurvey to the correct Commander and understand how the journal-driven workspaces and overlays behave.",
                 [
-                    Section(
+                    IntroSection(
                         "First launch",
                         "SrvSurvey reads Elite Dangerous Journal files and companion status files. It does not need to modify the game installation.",
                         [
@@ -34,16 +34,18 @@ public static class GuideCatalog
                             "Overview shows the active Commander, game mode, location, exploration totals, and unclaimed exobiology rewards.",
                             "If no Commander appears, use Diagnostics to inspect the selected folder and newest Journal file.",
                         ]),
-                    Section(
+                    IntroSection(
                         "How the interface is organized",
-                        "The numbered navigation follows the major activities in SrvSurvey. Guides remains available even when Elite is not running.",
+                        "The sidebar keeps the active Commander and the major SrvSurvey workflows close at hand. Guides remains available even when Elite is not running.",
                         [],
                         [
-                            "Exploration, Exobiology, Travel, Search, Guardian, Quests, and Colonization contain activity-specific tools.",
-                            "Diagnostics explains the live data source and provides repair, update, cache, and journal-inspection tools.",
-                            "Settings controls application behavior, overlays, input bindings, privacy, profile migration, screenshots, and appearance.",
+                            "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
+                            "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel and Search; Activities groups Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
+                            "Diagnostics, Settings, Theme, and Guides remain in the utility area. The small overlay-settings button beside supported activities opens only that activity's overlay controls.",
+                            "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
+                            "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
                         ]),
-                    Section(
+                    IntroSection(
                         "What this field manual covers",
                         "The in-app guide reconciles the original SrvSurvey user guide with the current cross-platform implementation.",
                         [],
@@ -52,7 +54,7 @@ public static class GuideCatalog
                             "Legacy Windows-only steps are replaced with their current Avalonia workflow. Features that still require an operating-system capability report that status in the relevant setting.",
                             "Developer file formats are summarized as player tasks here; Diagnostics and repository documentation retain the lower-level evidence.",
                         ]),
-                    Section(
+                    IntroSection(
                         "Automatic overlays",
                         "Most overlays appear only when their information is useful, then hide when that game context ends.",
                         [
@@ -119,6 +121,8 @@ public static class GuideCatalog
                         [
                             "Low-value bodies can be dimmed or filtered in Settings while valuable bodies remain highlighted.",
                             "External-data enrichment can add prior discovery, traffic, station, and biological context when its privacy setting is enabled.",
+                            "EDSM and Spansh body lookups wait for an active Elite session and a confirmed visit to the current system. If newly discovered body data is not indexed yet, SrvSurvey allows up to three retries after the initial lookup and remembers the current-visit budget across application restarts.",
+                            "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
                         ]),
                     Section(
                         "Body information and values",
@@ -354,7 +358,7 @@ public static class GuideCatalog
                 "Guardian sites",
                 "Locate Guardian sites, align maps, survey points of interest, track Ram Tah progress, and share non-destructive survey packages.",
                 [
-                    Section(
+                    GuardianSection(
                         "Arriving at a Guardian system",
                         "Guardian summaries identify known sites, beacons, survey status, blueprint type, and extra notes for the current system.",
                         [],
@@ -363,7 +367,7 @@ public static class GuideCatalog
                             "Near a site, the live map projects the published layout around your current position and heading.",
                             "Map size, automatic zoom, SRV-turret zoom, measurement grid, material dots, notes, aerial grid, and legend are independently configurable.",
                         ]),
-                    Section(
+                    GuardianSection(
                         "Aligning and surveying a site",
                         "A correct site type and heading make the projected map line up with the ruins or structure.",
                         [
@@ -376,7 +380,7 @@ public static class GuideCatalog
                         [
                             "Present, absent, empty, active, scanned, and target states use different fills, outlines, and colors. The icon glossary shows the underlying shapes.",
                         ]),
-                    Section(
+                    GuardianSection(
                         "Ram Tah and obelisks",
                         "The Ram Tah workspace tracks mission logs, active obelisks, required combinations, and decoded entries.",
                         [],
@@ -385,14 +389,53 @@ public static class GuideCatalog
                             "Filters can show only mission logs still needed for the active Ram Tah task.",
                             "The nearest mapped point and target ring help correlate the in-game site with the survey layout.",
                         ]),
-                    Section(
-                        "Authoring and sharing",
-                        "Advanced tools can measure new layouts, edit points and groups, and package a survey for review.",
-                        [],
+                    GuardianSection(
+                        "Inspecting the Survey map",
+                        "Reference maps and Commander surveys use the same selectable marker inspector so the preview matches the live editing workflow.",
                         [
-                            "Authoring changes remain in a session until explicitly committed or discarded.",
-                            "Share data compares the local survey with published data, includes only meaningful differences, and creates a content-addressed ZIP.",
-                            "Packaging never clears the legacy staging folder or modifies the published reference catalogs.",
+                            "Hover a marker to show its segmented highlight ring, then select it to replace the Selected Map summary with the point inspector.",
+                            "Review the marker name, type, angle, distance, rotation, status, relic heading, and component materials. Reference values are shown in the same controls but remain disabled.",
+                            "Select empty map space to return to the map summary. Zoom as far as 15x and pan at higher zoom when nearby markers overlap.",
+                        ],
+                        [
+                            "The legend identifies each marker and explains active-obelisk wedges: gray is unscanned, orange is scanned, and cyan is still needed for Ram Tah.",
+                            "At the active in-game site, the Commander position is mirrored onto the Survey map. It is a passive marker and cannot block selection of an overlapping survey point.",
+                        ]),
+                    GuardianSection(
+                        "Editing a Commander survey",
+                        "A live Commander survey unlocks the same point form used by the reference preview and adds survey-specific controls below the map.",
+                        [
+                            "Choose the correct Site type to repair an unknown or misidentified survey, and enter both surface latitude and longitude when the surveyed origin is known.",
+                            "Select a marker to update its survey status, relic heading when it is a relic tower, and component materials. Commander-specific raw points also expose angle, distance, and rotation controls with 0.1 increments.",
+                            "Add, select, edit, scan or unscan, and delete active obelisks with their map-marker name, Ram Tah log code, and required artifact codes.",
+                            "Use Add measured point only while the selected survey is the active site and valid surface position, body radius, site heading, and Commander position agree.",
+                            "Save survey to persist the Commander record after reviewing notes, groups, obelisks, and survey points.",
+                        ],
+                        [
+                            "Published reference geometry is shared by every site of that type and cannot be changed through an ordinary Commander survey. Use a map draft when the shared template itself needs correction.",
+                        ]),
+                    GuardianSection(
+                        "Building a map draft",
+                        "Start map draft from the Selected Map card to author or correct shared template geometry without leaving the Survey map workspace.",
+                        [
+                            "Start the draft, then select a point to rename it, change its type, fine-tune angle, distance, or rotation in 0.1 steps, or remove it.",
+                            "Choose a local background image and adjust its X, Y, and scale values while reviewing the preview on the same map.",
+                            "At the live site, add a measured master point from the Commander position and place or remove obelisk group labels using label, angle, and distance.",
+                            "Export verified catalog to persist the draft for review, or Discard draft to abandon every unexported shared-template change.",
+                        ],
+                        [
+                            "Draft changes preview immediately but remain session-only until verified export. Starting a draft naturally unlocks the same selected-point form that was read only in reference mode.",
+                        ]),
+                    GuardianSection(
+                        "Sharing a Guardian survey",
+                        "Share data packages meaningful Commander discoveries for review without changing published reference data.",
+                        [
+                            "Open Share data from the selected site or Guardian workspace and prepare the survey bundle.",
+                            "Review the included sites and output path, then copy the bundle path or file, open its folder, or open the Guardian Science Corps destination.",
+                        ],
+                        [
+                            "The export preserves site identity, visits, headings, surface location, notes, point states, relic headings, obelisk groups and scan state, raw points, and component materials in the expected compact survey format.",
+                            "Only meaningful differences are included in a content-addressed ZIP. Packaging never clears the legacy staging folder or modifies the published catalogs.",
                         ]),
                 ]),
             Category(
@@ -524,6 +567,7 @@ public static class GuideCatalog
                             "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
                             "Manual show shortcuts do not fabricate live data; the full position editor is the intentional offline preview surface.",
                             "Use the overlay-settings icon beside a supported navigation category to open only that activity's overlay controls. The main Settings workspace remains the complete view.",
+                            "When overlays compete for the same context, SrvSurvey hides lower-priority panels first and restores them from their current settings and game state when the blocker ends.",
                         ]),
                     Section(
                         "Edit all overlay positions",
@@ -581,10 +625,19 @@ public static class GuideCatalog
                         "The shell and the in-game overlays are two separate appearance systems.",
                         [],
                         [
-                            "Application theme changes the main Avalonia windows and supports the Raven Colonial light and dark palettes.",
+                            "Application theme changes the main Avalonia windows. Choose Blue light/dark, Orange dark, Green light/dark, or the low-glare Monochrome dark palette.",
                             "In-game overlay appearance changes only detached overlays and retains the original SrvSurvey color roles, named states, and defaults.",
                             "Neither selector writes into the other control group, so a light application can use a dark orange overlay palette or any custom combination.",
                         ]),
+                    Section(
+                        "Finding settings",
+                        "Settings uses focused categories and a searchable catalog so long configuration pages do not have to be scanned manually.",
+                        [
+                            "Choose Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, or Data & migration from the Settings column.",
+                            "Enter one or more terms in Search settings. Use Up and Down to move through grouped results, Enter to open the selected setting, or select a result directly.",
+                            "Open Theme workspace from Global overlays when you need overlay colors, typography, opacity, layout, or individual overlay controls.",
+                        ],
+                        []),
                     Section(
                         "Desktop placement and focus",
                         "Desktop behavior controls where the main application returns, how large it appears, and whether focus is handed back to Elite Dangerous.",
@@ -623,15 +676,38 @@ public static class GuideCatalog
                         [],
                         [
                             "System enrichment may use EDSM, Spansh, Canonn, or Raven depending on the enabled feature.",
-                            "EDDN publication, human-settlement geometry, Green Gas Giant candidates, Raven cargo, Fleet Carrier data, system updates, and quest publication each require the corresponding setting, credential, or explicit confirmation.",
+                            "EDDN publication, Inara publication, human-settlement geometry, Green Gas Giant candidates, Raven cargo, Fleet Carrier data, system updates, and quest publication each require the corresponding setting, credential, or explicit confirmation.",
                             "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
+                        ]),
+                    Section(
+                        "EDDN sharing",
+                        "EDDN sharing is installation-wide, disabled by default, and configured from Settings > Privacy & sharing.",
+                        [
+                            "Select Configure sharing, review the journal and companion-file data SrvSurvey can send, then enable live-session sharing and save.",
+                            "Use only one EDDN uploader at a time. Disable sharing in SrvSurvey when EDMC or another application already publishes the same events.",
+                            "Return to the same dialog to disable sharing; pending local messages are removed when consent is withdrawn.",
+                        ],
+                        [
+                            "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
+                            "EDDN needs no personal account or API key. This release sends internally fixed test-schema messages through the Live gateway, so they are not consumed as production data.",
+                        ]),
+                    Section(
+                        "Inara publishing",
+                        "Inara publishing follows the active Commander and is enabled by saving that Commander's personal API key.",
+                        [
+                            "Open Settings > Privacy & sharing, confirm the Commander shown in the Inara card, enter the personal API key, and select Save API key.",
+                            "Remove API key and confirm to disable Inara uploads for that Commander. Switching Commanders loads that profile's separate key and publication state.",
+                            "Enable Inara uploads in only one application at a time to avoid duplicate Commander events.",
+                        ],
+                        [
+                            "Queued events never cross Commander or API-key boundaries. Live/beta eligibility, final session reporting, batching, retries, and shutdown flushes follow the bound Commander session.",
                         ]),
                     Section(
                         "Screenshots, notifications, stream, and VR",
                         "Optional desktop integrations are configured independently so unsupported platforms degrade without disabling core journal processing.",
                         [],
                         [
-                            "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls.",
+                            "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
                             "Notifications and the dedicated stream overlay can be enabled without changing ordinary overlay positions.",
                             "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
                         ]),
@@ -667,7 +743,8 @@ public static class GuideCatalog
                         "Executable releases and reference catalogs are checked and activated independently.",
                         [],
                         [
-                            "Application update checks verify checksum-indexed packages and can automatically roll back a failed startup.",
+                            "Application update checks verify checksum-indexed packages, prevent overlapping installations, and confirm before handing off when other SrvSurvey instances are running.",
+                            "Downloads are staged before shutdown; cancelled or failed pre-handoff attempts clean their candidates, stale plans are removed automatically, and failed startup can roll back safely.",
                             "Reference refresh updates only changed catalogs and retains verified backups.",
                             "Visited-star cache swap/restore is blocked while Elite is running, uses a persistent original backup, validates responses, and rolls back failed activation.",
                         ]),
@@ -817,6 +894,18 @@ public static class GuideCatalog
     {
         return new GuideSectionViewModel(title, summary, steps, details);
     }
+
+    private static GuideSectionViewModel IntroSection(
+        string title,
+        string summary,
+        IReadOnlyList<string> steps,
+        IReadOnlyList<string> details) => Section(title, summary, steps, details);
+
+    private static GuideSectionViewModel GuardianSection(
+        string title,
+        string summary,
+        IReadOnlyList<string> steps,
+        IReadOnlyList<string> details) => Section(title, summary, steps, details);
 
     private static GuideIconViewModel Icon(
         GuideIconKind kind,
