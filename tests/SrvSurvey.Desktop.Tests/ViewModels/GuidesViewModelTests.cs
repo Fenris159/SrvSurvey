@@ -285,6 +285,38 @@ public sealed class GuidesViewModelTests
     }
 
     [Fact]
+    public void CatalogDocumentsCurrentRedesignSharingAndGuardianEditorWorkflows()
+    {
+        var categories = GuideCatalog.Create();
+        string Instructions(string key) => string.Join(
+            ' ',
+            categories.Single(category => category.Key == key)
+                .Sections.SelectMany(section =>
+                    new[] { section.Title, section.Summary }
+                        .Concat(section.Steps)
+                        .Concat(section.Details)));
+
+        var gettingStarted = Instructions("getting-started");
+        var exploration = Instructions("exploration");
+        var guardian = Instructions("guardian");
+        var settings = Instructions("settings-migration");
+        var diagnostics = Instructions("diagnostics");
+
+        Assert.Contains("Survey groups Exploration", gettingStarted, StringComparison.Ordinal);
+        Assert.Contains("Search settings", gettingStarted, StringComparison.Ordinal);
+        Assert.Contains("three retries", exploration, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("15x", guardian, StringComparison.Ordinal);
+        Assert.Contains("Start map draft", guardian, StringComparison.Ordinal);
+        Assert.Contains("0.1 steps", guardian, StringComparison.Ordinal);
+        Assert.Contains("Commander position", guardian, StringComparison.Ordinal);
+        Assert.Contains("Configure sharing", settings, StringComparison.Ordinal);
+        Assert.Contains("personal API key", settings, StringComparison.Ordinal);
+        Assert.Contains("Monochrome dark", settings, StringComparison.Ordinal);
+        Assert.Contains("stale plans", diagnostics, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Replay Controller", string.Join(' ', categories), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void EmptyCatalogIsRejected()
     {
         Assert.Throws<ArgumentException>(() => new GuidesViewModel([]));
