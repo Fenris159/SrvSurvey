@@ -225,19 +225,11 @@ public sealed class GuidesViewModelTests
     public void CatalogDocumentsCurrentRouteBoxelOverlayAndDesktopFeatures()
     {
         var categories = GuideCatalog.Create();
-        string Instructions(string key) => string.Join(
-            ' ',
-            categories.Single(category => category.Key == key)
-                .Sections.SelectMany(section =>
-                    new[] { section.Title, section.Summary }
-                        .Concat(section.Steps)
-                        .Concat(section.Details)));
-
-        var exploration = Instructions("exploration");
-        var travel = Instructions("travel-search");
-        var boxel = Instructions("boxel");
-        var overlays = Instructions("overlays");
-        var settings = Instructions("settings-migration");
+        var exploration = Instructions(categories, "exploration");
+        var travel = Instructions(categories, "travel-search");
+        var boxel = Instructions(categories, "boxel");
+        var overlays = Instructions(categories, "overlays");
+        var settings = Instructions(categories, "settings-migration");
 
         Assert.Contains("Show flight warnings", exploration, StringComparison.Ordinal);
         Assert.Contains("8 g", exploration, StringComparison.Ordinal);
@@ -288,31 +280,30 @@ public sealed class GuidesViewModelTests
     public void CatalogDocumentsCurrentRedesignSharingAndGuardianEditorWorkflows()
     {
         var categories = GuideCatalog.Create();
-        string Instructions(string key) => string.Join(
-            ' ',
-            categories.Single(category => category.Key == key)
-                .Sections.SelectMany(section =>
-                    new[] { section.Title, section.Summary }
-                        .Concat(section.Steps)
-                        .Concat(section.Details)));
+        var gettingStarted = Instructions(categories, "getting-started");
+        var exploration = Instructions(categories, "exploration");
+        var guardian = Instructions(categories, "guardian");
+        var settings = Instructions(categories, "settings-migration");
+        var diagnostics = Instructions(categories, "diagnostics");
+        var expectedCoverage = new[]
+        {
+            (gettingStarted, "Survey groups Exploration"),
+            (gettingStarted, "Search settings"),
+            (exploration, "three retries"),
+            (guardian, "15x"),
+            (guardian, "Start map draft"),
+            (guardian, "0.1 steps"),
+            (guardian, "Commander position"),
+            (settings, "Configure sharing"),
+            (settings, "personal API key"),
+            (settings, "Monochrome dark"),
+            (diagnostics, "stale plans"),
+        };
 
-        var gettingStarted = Instructions("getting-started");
-        var exploration = Instructions("exploration");
-        var guardian = Instructions("guardian");
-        var settings = Instructions("settings-migration");
-        var diagnostics = Instructions("diagnostics");
-
-        Assert.Contains("Survey groups Exploration", gettingStarted, StringComparison.Ordinal);
-        Assert.Contains("Search settings", gettingStarted, StringComparison.Ordinal);
-        Assert.Contains("three retries", exploration, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("15x", guardian, StringComparison.Ordinal);
-        Assert.Contains("Start map draft", guardian, StringComparison.Ordinal);
-        Assert.Contains("0.1 steps", guardian, StringComparison.Ordinal);
-        Assert.Contains("Commander position", guardian, StringComparison.Ordinal);
-        Assert.Contains("Configure sharing", settings, StringComparison.Ordinal);
-        Assert.Contains("personal API key", settings, StringComparison.Ordinal);
-        Assert.Contains("Monochrome dark", settings, StringComparison.Ordinal);
-        Assert.Contains("stale plans", diagnostics, StringComparison.OrdinalIgnoreCase);
+        Assert.All(expectedCoverage, expected => Assert.Contains(
+            expected.Item2,
+            expected.Item1,
+            StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain("Replay Controller", string.Join(' ', categories), StringComparison.Ordinal);
     }
 
@@ -321,4 +312,14 @@ public sealed class GuidesViewModelTests
     {
         Assert.Throws<ArgumentException>(() => new GuidesViewModel([]));
     }
+
+    private static string Instructions(
+        IReadOnlyList<GuideCategoryViewModel> categories,
+        string key) => string.Join(
+            ' ',
+            categories.Single(category => category.Key == key)
+                .Sections.SelectMany(section =>
+                    new[] { section.Title, section.Summary }
+                        .Concat(section.Steps)
+                        .Concat(section.Details)));
 }
