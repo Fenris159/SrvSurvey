@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Core.Diagnostics.Replay;
 
@@ -5,6 +6,49 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class JournalHistoryViewModelTests
 {
+    [Fact]
+    public void ReplayCalendarBindingsUseCalendarCompatibleDateTypes()
+    {
+        var selectedDateType = CalendarDatePicker.SelectedDateProperty.PropertyType;
+
+        Assert.Equal(typeof(DateTime?), selectedDateType);
+        string[] calendarProperties =
+        [
+            nameof(JournalHistoryViewModel.RangeFromDate),
+            nameof(JournalHistoryViewModel.RangeToDate),
+            nameof(JournalHistoryViewModel.RangeMinimumDate),
+            nameof(JournalHistoryViewModel.RangeMaximumDate),
+            nameof(JournalHistoryViewModel.RangeToMaximumDate),
+        ];
+        Assert.All(calendarProperties, propertyName => Assert.Equal(
+            selectedDateType,
+            typeof(JournalHistoryViewModel)
+                .GetProperty(propertyName)!
+                .PropertyType));
+    }
+
+    [Fact]
+    public void ReplayCalendarSelectionsPreserveUtcJournalTime()
+    {
+        using var temp = new TemporaryDirectory();
+        using var viewModel = new JournalHistoryViewModel(
+            temp.Path,
+            "test-build");
+
+        viewModel.RangeFrom = DateTimeOffset.Parse(
+            "2026-08-21T00:30:45+02:00");
+
+        Assert.Equal(new DateTime(2026, 8, 20), viewModel.RangeFromDate);
+        Assert.Equal(new TimeSpan(22, 30, 45), viewModel.RangeFromTime);
+
+        viewModel.RangeFromDate = new DateTime(2026, 8, 19);
+        viewModel.RangeFromTime = new TimeSpan(10, 11, 12);
+
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-08-19T10:11:12Z"),
+            viewModel.RangeFrom);
+    }
+
     [Fact]
     public void SelectionDetailsAreEmptyUntilAnEventIsSelected()
     {
@@ -84,8 +128,8 @@ public sealed class JournalHistoryViewModelTests
             ]);
         var viewModel = new JournalHistoryViewModel(temp.Path, "test-build");
         await viewModel.RefreshAsync();
-        viewModel.RangeFromText = "2026-08-21T18:00:30Z";
-        viewModel.RangeToText = "2026-08-21T18:01:30Z";
+        viewModel.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:00:30Z");
+        viewModel.RangeTo = DateTimeOffset.Parse("2026-08-21T18:01:30Z");
         var packagePath = Path.Combine(temp.Path, "incident.srvreplay");
 
         Assert.Contains(
@@ -109,6 +153,83 @@ public sealed class JournalHistoryViewModelTests
         Assert.Equal(
             ["Commander", "FSDJump"],
             session.Events.Select(item => item.EventName));
+    }
+
+    [Fact]
+    public async Task ReplayRangeDefaultsToTodayAndYesterdayAndClampsBroadSelections()
+    {
+        var now = DateTimeOffset.Parse("2026-08-23T10:31:44Z");
+        using var temp = new TemporaryDirectory();
+        await File.WriteAllLinesAsync(
+            Path.Combine(temp.Path, "Journal.2026-08-21T180000.01.log"),
+            [
+                "{\"timestamp\":\"2026-06-01T12:00:00Z\",\"event\":\"Commander\",\"Name\":\"History Cmdr\",\"FID\":\"F123456\"}",
+                "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Sol\"}",
+            ]);
+        using var viewModel = new JournalHistoryViewModel(
+            temp.Path,
+            "test-build",
+            timeProvider: new FixedTimeProvider(now));
+
+        await viewModel.RefreshAsync();
+
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-08-22T10:31:44Z"),
+            viewModel.RangeFrom);
+        Assert.Equal(
+            now,
+            viewModel.RangeTo);
+
+        viewModel.RangeFromDate = DateTime.Parse("2026-06-01");
+        viewModel.RangeFromTime = TimeSpan.FromHours(12);
+        viewModel.RangeToDate = DateTime.Parse("2026-08-21");
+        viewModel.RangeToTime = TimeSpan.FromHours(18);
+
+        Assert.Equal(
+            viewModel.RangeFrom + JournalHistoryViewModel.MaximumExportRange,
+            viewModel.RangeTo);
+        Assert.Contains("31 days", viewModel.ExportPreview);
+    }
+
+    [Fact]
+    public async Task ReplayRangeDefaultsWithoutJournalEvents()
+    {
+        var now = DateTimeOffset.Parse("2026-08-23T10:31:44Z");
+        using var temp = new TemporaryDirectory();
+        using var viewModel = new JournalHistoryViewModel(
+            temp.Path,
+            "test-build",
+            timeProvider: new FixedTimeProvider(now));
+
+        await viewModel.RefreshAsync();
+
+        Assert.Equal(now.AddDays(-1), viewModel.RangeFrom);
+        Assert.Equal(now, viewModel.RangeTo);
+        Assert.Equal(new DateTime(2026, 8, 22), viewModel.RangeMinimumDate);
+        Assert.Equal(new DateTime(2026, 8, 23), viewModel.RangeMaximumDate);
+    }
+
+    [Fact]
+    public async Task ReplayCalendarBoundsIncludeFutureJournalEventsWithinTheRangeCap()
+    {
+        var now = DateTimeOffset.Parse("2026-08-23T10:31:44Z");
+        using var temp = new TemporaryDirectory();
+        await File.WriteAllTextAsync(
+            Path.Combine(temp.Path, "Journal.2026-10-01T120000.01.log"),
+            "{\"timestamp\":\"2026-10-01T12:00:00Z\",\"event\":\"Shutdown\"}\n");
+        using var viewModel = new JournalHistoryViewModel(
+            temp.Path,
+            "test-build",
+            timeProvider: new FixedTimeProvider(now));
+
+        await viewModel.RefreshAsync();
+
+        Assert.Equal(new DateTime(2026, 8, 22), viewModel.RangeMinimumDate);
+        Assert.Equal(new DateTime(2026, 10, 1), viewModel.RangeMaximumDate);
+
+        viewModel.RangeFrom = DateTimeOffset.Parse("2026-08-23T00:00:00Z");
+
+        Assert.Equal(new DateTime(2026, 9, 23), viewModel.RangeToMaximumDate);
     }
 
     [Fact]
@@ -158,8 +279,8 @@ public sealed class JournalHistoryViewModelTests
             new JournalReplayExporter());
 
         await viewModel.RefreshAsync();
-        viewModel.RangeFromText = "2026-08-21T18:01:00Z";
-        viewModel.RangeToText = "2026-08-21T18:01:00Z";
+        viewModel.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:01:00Z");
+        viewModel.RangeTo = DateTimeOffset.Parse("2026-08-21T18:01:00Z");
         var packagePath = Path.Combine(temp.Path, "older.srvreplay");
 
         Assert.Equal(4, viewModel.TotalEventCount);
@@ -191,24 +312,22 @@ public sealed class JournalHistoryViewModelTests
             temp.Path,
             "test-build");
         await populated.RefreshAsync();
+        populated.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:00:00Z");
+        populated.RangeTo = DateTimeOffset.Parse("2026-08-21T18:00:00Z");
         populated.RedactExport = false;
         Assert.Contains("remain raw", populated.ExportPreview);
         populated.SelectedEvent = populated.Events[0];
         populated.SearchText = "not present";
         Assert.Null(populated.SelectedEvent);
 
-        populated.RangeFromText = "not-a-timestamp";
-        Assert.Contains("valid ISO timestamp", populated.ExportPreview);
-        Assert.False(await populated.ExportAsync(
-            Path.Combine(temp.Path, "invalid-start.srvreplay")));
-        Assert.Contains("valid ISO timestamp", populated.StatusMessage);
+        populated.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:01:00Z");
+        populated.RangeTo = DateTimeOffset.Parse("2026-08-21T18:00:00Z");
+        Assert.Equal(populated.RangeFrom, populated.RangeTo);
+    }
 
-        populated.RangeFromText = "2026-08-21T18:01:00Z";
-        populated.RangeToText = "not-a-timestamp";
-        Assert.Contains("export end", populated.ExportPreview);
-
-        populated.RangeToText = "2026-08-21T18:00:00Z";
-        Assert.Contains("must not be after", populated.ExportPreview);
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => utcNow;
     }
 
     private sealed class TemporaryDirectory : IDisposable

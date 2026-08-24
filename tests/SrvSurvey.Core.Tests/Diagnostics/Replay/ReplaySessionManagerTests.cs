@@ -45,10 +45,15 @@ public sealed class ReplaySessionManagerTests
             ReplayPrivacyMode.Raw,
             1,
             0,
+            0,
+            0,
+            null,
+            null,
             null,
             null,
             new ReplayCommander("Replay Cmdr", "F123456"),
             new string('a', 64),
+            new string('b', 64),
             []);
 
         var exception = Assert.Throws<InvalidDataException>(() =>
@@ -58,6 +63,72 @@ public sealed class ReplaySessionManagerTests
             "source version",
             exception.Message,
             StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void PackageMetadataRejectsVersionOne()
+    {
+        var package = new JournalReplayPackageManifest(
+            1,
+            DateTimeOffset.UtcNow,
+            "test",
+            null,
+            null,
+            ReplayPrivacyMode.Raw,
+            1,
+            0,
+            0,
+            0,
+            null,
+            null,
+            null,
+            null,
+            new ReplayCommander("Replay Cmdr", "F123456"),
+            new string('a', 64),
+            new string('b', 64),
+            []);
+
+        var exception = Assert.Throws<InvalidDataException>(() =>
+            ReplaySessionManager.ValidatePackageMetadata(package));
+
+        Assert.Contains(
+            "format 1 is not supported",
+            exception.Message,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void MergeTimelinePreservesJournalSourceOrderAcrossMissingAndRegressingTimestamps()
+    {
+        var ten = DateTimeOffset.Parse("2026-08-23T10:00:00Z");
+        var journal = new[]
+        {
+            new JournalReplayEvent(0, ten, "First", "{}"),
+            new JournalReplayEvent(1, null, "Missing", "{}"),
+            new JournalReplayEvent(2, ten.AddMinutes(-1), "Regressing", "{}"),
+            new JournalReplayEvent(3, ten.AddMinutes(2), "Last", "{}"),
+        };
+        var companions = new[]
+        {
+            new CompanionTimelineEntry(
+                ten.AddSeconds(30),
+                ReplayInputKind.Status,
+                "{}"),
+            new CompanionTimelineEntry(
+                ten.AddMinutes(1),
+                ReplayInputKind.Cargo,
+                "{}"),
+        };
+
+        var merged = ReplaySessionManager.MergeTimeline(
+            journal,
+            journalBootstrapCount: 0,
+            companions,
+            companionBootstrapCount: 0);
+
+        Assert.Equal(
+            ["First", "Missing", "Regressing", "Status", "Cargo", "Last"],
+            merged.Select(item => item.EventName));
     }
 
     [Fact]

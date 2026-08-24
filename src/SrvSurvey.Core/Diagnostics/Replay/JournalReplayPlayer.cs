@@ -1,4 +1,5 @@
 using System.Text;
+using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Diagnostics.Replay;
 
@@ -140,6 +141,7 @@ public sealed class JournalReplayPlayer : IDisposable
                 string.Empty,
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
                 cancellationToken);
+            ClearCompanionFiles();
             position = 0;
             PositionChanged?.Invoke(
                 this,
@@ -180,10 +182,17 @@ public sealed class JournalReplayPlayer : IDisposable
 
         var replayEvent = session.Events[position];
         cancellationToken.ThrowIfCancellationRequested();
-        await writer.AppendLineAsync(
-            session.PlaybackJournalPath,
-            replayEvent.RawJson,
-            cancellationToken);
+        if (replayEvent.Kind == ReplayInputKind.Journal)
+        {
+            await writer.AppendLineAsync(
+                session.PlaybackJournalPath,
+                replayEvent.RawJson,
+                cancellationToken);
+        }
+        else
+        {
+            await WriteCompanionAsync(replayEvent, cancellationToken);
+        }
 
         position++;
         PositionChanged?.Invoke(
@@ -193,6 +202,51 @@ public sealed class JournalReplayPlayer : IDisposable
                 session.Events.Count,
                 replayEvent));
         return true;
+    }
+
+    private async Task WriteCompanionAsync(
+        JournalReplayEvent replayEvent,
+        CancellationToken cancellationToken)
+    {
+        var directory = Path.GetDirectoryName(session.PlaybackJournalPath)
+            ?? throw new InvalidDataException(
+                "The diagnostic playback journal has no containing directory.");
+        var path = Path.Combine(
+            directory,
+            CompanionTimelineFileNames.Resolve(replayEvent.Kind));
+        var temporaryPath = path + $".{Guid.NewGuid():N}.tmp";
+        try
+        {
+            await File.WriteAllTextAsync(
+                temporaryPath,
+                replayEvent.RawJson,
+                new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                cancellationToken);
+            File.Move(temporaryPath, path, overwrite: true);
+        }
+        finally
+        {
+            File.Delete(temporaryPath);
+        }
+    }
+
+    private void ClearCompanionFiles()
+    {
+        var directory = Path.GetDirectoryName(session.PlaybackJournalPath);
+        if (directory is null)
+        {
+            return;
+        }
+
+        foreach (var kind in Enum.GetValues<ReplayInputKind>())
+        {
+            if (kind != ReplayInputKind.Journal)
+            {
+                File.Delete(Path.Combine(
+                    directory,
+                    CompanionTimelineFileNames.Resolve(kind)));
+            }
+        }
     }
 
     private TimeSpan ResolveDelay(int nextPosition, double speed)

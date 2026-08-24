@@ -40,6 +40,53 @@ public sealed class DiagnosticsViewMarkupTests
             element.Name.LocalName == "CheckBox"
             && element.Attribute("Content")?.Value
                 == "Redact commander identities, chat, locations, coordinates, and screenshot paths");
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "CalendarDatePicker"
+            && element.Attribute("SelectedDate")?.Value
+                == "{Binding JournalHistory.RangeFromDate, Mode=TwoWay}");
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "TimePicker"
+            && element.Attribute("SelectedTime")?.Value
+                == "{Binding JournalHistory.RangeFromTime, Mode=TwoWay}");
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "CalendarDatePicker"
+            && element.Attribute("SelectedDate")?.Value
+                == "{Binding JournalHistory.RangeToDate, Mode=TwoWay}");
+        Assert.Contains(document.Descendants(), element =>
+            element.Name.LocalName == "TimePicker"
+            && element.Attribute("SelectedTime")?.Value
+                == "{Binding JournalHistory.RangeToTime, Mode=TwoWay}");
+        Assert.DoesNotContain(document.Descendants(), element =>
+            element.Name.LocalName == "TextBox"
+            && element.Attribute("Text")?.Value is
+                "{Binding JournalHistory.RangeFromText, Mode=TwoWay}"
+                or "{Binding JournalHistory.RangeToText, Mode=TwoWay}");
+    }
+
+    [Fact]
+    public void ReplayRangeUsesAlignedDateAndTimeRows()
+    {
+        var document = LoadDiagnosticsView();
+        var rangeFields = FindNamedElement(document, "ReplayRangeFields");
+
+        Assert.Equal("110,360", rangeFields.Attribute("ColumnDefinitions")?.Value);
+        Assert.Equal(
+            "Auto,Auto,Auto,Auto",
+            rangeFields.Attribute("RowDefinitions")?.Value);
+        AssertRangeFieldLayout(
+            rangeFields,
+            "Start Date:",
+            "{Binding JournalHistory.RangeFromDate, Mode=TwoWay}",
+            "0",
+            "{Binding JournalHistory.RangeFromTime, Mode=TwoWay}",
+            "1");
+        AssertRangeFieldLayout(
+            rangeFields,
+            "End Date:",
+            "{Binding JournalHistory.RangeToDate, Mode=TwoWay}",
+            "2",
+            "{Binding JournalHistory.RangeToTime, Mode=TwoWay}",
+            "3");
     }
 
     [Fact]
@@ -153,6 +200,34 @@ public sealed class DiagnosticsViewMarkupTests
             element.Attributes().Any(attribute =>
                 attribute.Name.LocalName == "Name"
                 && attribute.Value == name));
+
+    private static void AssertRangeFieldLayout(
+        XElement fields,
+        string dateLabel,
+        string dateBinding,
+        string dateRow,
+        string timeBinding,
+        string timeRow)
+    {
+        Assert.Contains(fields.Elements(), element =>
+            element.Name.LocalName == "TextBlock"
+            && element.Attribute("Text")?.Value == dateLabel
+            && element.Attribute("Grid.Row")?.Value == dateRow);
+        Assert.Contains(fields.Elements(), element =>
+            element.Name.LocalName == "TextBlock"
+            && element.Attribute("Text")?.Value == "Time H/M/S:"
+            && element.Attribute("Grid.Row")?.Value == timeRow);
+        Assert.Contains(fields.Elements(), element =>
+            element.Name.LocalName == "CalendarDatePicker"
+            && element.Attribute("SelectedDate")?.Value == dateBinding
+            && element.Attribute("Grid.Row")?.Value == dateRow
+            && element.Attribute("Grid.Column")?.Value == "1");
+        Assert.Contains(fields.Elements(), element =>
+            element.Name.LocalName == "TimePicker"
+            && element.Attribute("SelectedTime")?.Value == timeBinding
+            && element.Attribute("Grid.Row")?.Value == timeRow
+            && element.Attribute("Grid.Column")?.Value == "1");
+    }
 
     private static string FindRepositoryRoot()
     {

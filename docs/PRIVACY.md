@@ -6,6 +6,15 @@ exobiology, colonization, quest, and route tracking do not depend on Inara.
 The Community Goals dashboard can make a separate read-only Inara request for
 public global-goal details as described below.
 
+Diagnostic replay support keeps a rolling 24-hour local history of validated
+changes from `Status.json`, `Cargo.json`, `ShipLocker.json`, `NavRoute.json`, and
+`Market.json`. It is stored under SrvSurvey's application-data directory and is
+never uploaded automatically. The data leaves that directory only when the user
+explicitly exports a replay package. Redacted exports remove companion location
+names, identifiers, and coordinates; cargo and material names and quantities are
+retained so inventory-dependent behavior can be reproduced. Raw exports preserve
+the validated companion snapshots.
+
 ## EDDN
 
 EDDN upload is disabled by default. **Configure EDDN Sharing** opens a dedicated

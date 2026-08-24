@@ -102,6 +102,7 @@
             <Button Grid.Column="3" Command="{Binding PauseCommand}" Content="Pause" />
             <TextBlock Grid.Column="4" VerticalAlignment="Center" Margin="10,0,0,0" Text="Speed" />
             <ComboBox Grid.Column="5" Width="90"
+                      IsEnabled="{Binding CanChangeSpeed}"
                       ItemsSource="{Binding SpeedOptions}"
                       SelectedItem="{Binding SpeedMultiplier, Mode=TwoWay}" />
             <TextBlock Grid.Column="6" HorizontalAlignment="Right" VerticalAlignment="Center"
