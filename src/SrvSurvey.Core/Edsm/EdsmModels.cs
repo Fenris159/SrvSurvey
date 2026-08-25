@@ -97,7 +97,7 @@ internal sealed record EdsmSession(
             && IsBeta == other.IsBeta;
     }
 
-    internal EdsmCredentials? GetCredentials(
+    internal static EdsmCredentials? GetCredentials(
         string? edsmCommanderName,
         string? apiKey)
     {
@@ -222,7 +222,7 @@ internal sealed class EdsmJournalContext
     private void ApplySystem(JObject entry)
     {
         SystemName = entry.Value<string>("StarSystem") ?? SystemName;
-        SystemAddress = ReadInt64(entry, "SystemAddress") ?? SystemAddress;
+        SystemAddress = ReadInt64(entry, nameof(SystemAddress)) ?? SystemAddress;
         if (entry["StarPos"] is JArray { Count: >= 3 } starPosition
             && starPosition.Take(3).All(item => item.Type is
                 JTokenType.Integer or JTokenType.Float))
@@ -257,15 +257,18 @@ internal sealed class EdsmJournalContext
     private static long? ReadInt64(JObject entry, string propertyName)
     {
         var token = entry[propertyName];
-        return token?.Type == JTokenType.Integer
-            ? token.Value<long>()
-            : long.TryParse(
-                token?.Value<string>(),
-                System.Globalization.NumberStyles.Integer,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out var value)
-                ? value
-                : null;
+        if (token?.Type == JTokenType.Integer)
+        {
+            return token.Value<long>();
+        }
+
+        return long.TryParse(
+            token?.Value<string>(),
+            System.Globalization.NumberStyles.Integer,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out var value)
+            ? value
+            : null;
     }
 
     private static void SetIfKnown(

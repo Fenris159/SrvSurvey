@@ -222,7 +222,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
     private bool PreparePublicationAuthorization(EdsmPublicationOptions options)
     {
         var credentials = session is { IsLive: true, IsBeta: false }
-            ? session.GetCredentials(
+            ? EdsmSession.GetCredentials(
                 options.EdsmCommanderName,
                 options.ApiKey)
             : null;
@@ -770,34 +770,9 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 "EDSM returned an incomplete per-event response.");
         }
 
-        var accepted = 0;
-        var retryable = new List<EdsmQueuedEvent>();
-        var failures = new List<string>();
-        for (var index = 0; index < responseEvents.Count; index++)
-        {
-            if (responseEvents[index] is not JObject eventResult
-                || eventResult.Value<int?>("msgnum") is not { } status)
-            {
-                throw new InvalidDataException(
-                    "EDSM returned an invalid per-event response.");
-            }
-
-            var statusClass = status / 100;
-            if (statusClass is 1 or 5)
-            {
-                accepted++;
-                continue;
-            }
-
-            if (status == 402)
-            {
-                retryable.Add(batch[index]);
-                continue;
-            }
-
-            failures.Add(
-                $"EDSM rejected {batch[index].EventName} with API status {status}: {SafeStatusText(eventResult.Value<string>("msg"))}.");
-        }
+        var (accepted, retryable, failures) = ProcessEventResponses(
+            responseEvents,
+            batch);
 
         const int maximumReportedFailures = 10;
         warnings.AddRange(failures.Take(maximumReportedFailures));
@@ -820,6 +795,44 @@ public sealed class EdsmPublisher : IEdsmPublisher
         }
 
         return CreateSendResult(accepted, warnings);
+    }
+
+    private static (
+        int Accepted,
+        List<EdsmQueuedEvent> Retryable,
+        List<string> Failures) ProcessEventResponses(
+            JArray responseEvents,
+            List<EdsmQueuedEvent> batch)
+    {
+        var accepted = 0;
+        var retryable = new List<EdsmQueuedEvent>();
+        var failures = new List<string>();
+        for (var index = 0; index < responseEvents.Count; index++)
+        {
+            if (responseEvents[index] is not JObject eventResult
+                || eventResult.Value<int?>("msgnum") is not { } status)
+            {
+                throw new InvalidDataException(
+                    "EDSM returned an invalid per-event response.");
+            }
+
+            var statusClass = status / 100;
+            if (statusClass is 1 or 5)
+            {
+                accepted++;
+            }
+            else if (status == 402)
+            {
+                retryable.Add(batch[index]);
+            }
+            else
+            {
+                failures.Add(
+                    $"EDSM rejected {batch[index].EventName} with API status {status}: {SafeStatusText(eventResult.Value<string>("msg"))}.");
+            }
+        }
+
+        return (accepted, retryable, failures);
     }
 
     private void PausePublication()
@@ -845,7 +858,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
     }
 
     private EdsmPublicationResult DiscardUnauthorizedBatch(
-        IReadOnlyCollection<EdsmQueuedEvent> batch,
+        List<EdsmQueuedEvent> batch,
         List<string> warnings)
     {
         warnings.Add(

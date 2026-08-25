@@ -161,11 +161,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasCommanderProfile));
         OnPropertyChanged(nameof(HasStoredCredentials));
         OnPropertyChanged(nameof(ActiveCommanderDisplayName));
-        CredentialStatus = profileFrontierId is null
-            ? "Load a commander profile to configure EDSM synchronization."
-            : HasStoredCredentials
-                ? $"EDSM synchronization is enabled for {ActiveCommanderDisplayName}."
-                : $"No EDSM API key is saved for {ActiveCommanderDisplayName}.";
+        CredentialStatus = BuildCredentialStatus();
         RaiseCommandStates();
     }
 
@@ -272,6 +268,18 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
                 key,
                 storedApiKey,
                 StringComparison.Ordinal);
+    }
+
+    private string BuildCredentialStatus()
+    {
+        if (profileFrontierId is null)
+        {
+            return "Load a commander profile to configure EDSM synchronization.";
+        }
+
+        return HasStoredCredentials
+            ? $"EDSM synchronization is enabled for {ActiveCommanderDisplayName}."
+            : $"No EDSM API key is saved for {ActiveCommanderDisplayName}.";
     }
 
     private void RequestClearCredentials()
