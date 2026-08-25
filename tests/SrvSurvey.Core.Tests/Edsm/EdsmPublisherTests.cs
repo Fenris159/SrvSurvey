@@ -169,8 +169,12 @@ public sealed class EdsmPublisherTests
         Assert.Equal(0, handler.PostCount);
     }
 
-    [Fact]
-    public async Task MulticrewEventsAreSuppressedUntilCrewSessionEnds()
+    [Theory]
+    [InlineData("QuitACrew")]
+    [InlineData("EndCrewSession")]
+    [InlineData("CrewMemberQuits")]
+    public async Task MulticrewEventsAreSuppressedUntilCrewSessionEnds(
+        string crewEndEvent)
     {
         var handler = new EdsmResponseHandler
         {
@@ -193,17 +197,24 @@ public sealed class EdsmPublisherTests
                       "StarSystem": "Sirius"
                     }
                     """),
-                Event("""
+                Event($$"""
                     {
                       "timestamp": "2026-08-25T12:00:02Z",
-                      "event": "QuitACrew"
+                      "event": "{{crewEndEvent}}"
+                    }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-08-25T12:00:03Z",
+                      "event": "FSDJump",
+                      "StarSystem": "Vega"
                     }
                     """),
             ]));
         var sent = await publisher.FlushAsync();
 
-        Assert.Equal(["QuitACrew"], result.QueuedEventNames);
-        Assert.Equal(1, sent.AcceptedEventCount);
+        Assert.Equal([crewEndEvent, "FSDJump"], result.QueuedEventNames);
+        Assert.Equal(2, sent.AcceptedEventCount);
     }
 
     [Fact]

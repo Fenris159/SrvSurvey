@@ -240,7 +240,10 @@ internal sealed class EdsmJournalContext
 
     private void UpdateMulticrew(string? eventName, JObject entry)
     {
-        if (eventName == "LoadGame" || eventName == "QuitACrew")
+        if (eventName is "LoadGame"
+            or "QuitACrew"
+            or "EndCrewSession"
+            or "CrewMemberQuits")
         {
             InMulticrew = false;
         }
