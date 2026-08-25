@@ -248,7 +248,8 @@ internal sealed class EdsmJournalContext
             InMulticrew = false;
         }
         else if (eventName is "JoinACrew" or "ChangeCrewRole"
-            || entry.Value<bool?>("Multicrew") == true)
+            || entry["Multicrew"]?.Type == JTokenType.Boolean
+                && entry["Multicrew"]!.Value<bool>())
         {
             InMulticrew = true;
         }
