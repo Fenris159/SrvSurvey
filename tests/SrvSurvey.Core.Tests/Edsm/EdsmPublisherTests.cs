@@ -19,6 +19,35 @@ public sealed class EdsmPublisherTests
         IsOdyssey: true);
 
     [Fact]
+    public async Task StatisticsMulticrewObjectDoesNotTriggerCrewMode()
+    {
+        var handler = new EdsmResponseHandler();
+        using var publisher = CreatePublisher(handler);
+
+        var result = await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event("""
+                    {
+                      "timestamp": "2026-08-25T12:00:00Z",
+                      "event": "Statistics",
+                      "Multicrew": {
+                        "Multicrew_Time_Total": 1
+                      }
+                    }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-08-25T12:00:01Z",
+                      "event": "FSDJump",
+                      "StarSystem": "Sol"
+                    }
+                    """),
+            ]));
+
+        Assert.Equal(["Statistics", "FSDJump"], result.QueuedEventNames);
+    }
+
+    [Fact]
     public async Task BootstrapSeedsContextAndLiveBatchUsesRequiredFormFields()
     {
         var handler = new EdsmResponseHandler();
