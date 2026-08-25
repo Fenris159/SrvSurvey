@@ -6,10 +6,10 @@ privacy and sharing workflow completed in `2.1.3.0-rc.37`.
 ## EDSM account synchronization
 
 - Adds a dedicated EDSM opt-in card immediately below Inara under Settings >
-  Privacy & sharing, with the active Commander, independently editable
-  EDSM-registered Commander name, masked personal API key, direct settings-page
-  link, save/enable action, and confirmed disable action.
-- Stores the EDSM credential pair only in the active local Commander profile.
+  Privacy & sharing, with the active Commander, masked personal API key, direct
+  settings-page link, save/enable action, and confirmed disable action. The
+  active Commander name is used automatically and must match the EDSM account.
+- Stores the EDSM API key only in the active local Commander profile.
   Switching profiles loads separate credentials; clearing them cancels active
   delivery and removes pending in-memory events.
 - Sends supported new Live journal events directly to EDSM's authenticated

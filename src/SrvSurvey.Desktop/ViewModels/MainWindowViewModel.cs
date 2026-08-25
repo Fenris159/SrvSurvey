@@ -3361,7 +3361,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                         && !CommanderInstances.HasMultipleGameWindows,
                     new EdsmPublicationOptions(
                         Edsm.StoredApiKey,
-                        Edsm.StoredEdsmCommanderName,
+                        Edsm.UploadCommanderName,
                         activeProfileCommanderName
                             ?? journalState.CommanderName,
                         activeProfileFrontierId
@@ -3601,7 +3601,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 null,
                 journalState.CommanderName,
                 isOdyssey,
-                savedEdsmCommanderName: null,
                 savedApiKey: null);
             SurfaceSurvey.Reset();
             Combat.LoadProfile(null, null, isOdyssey, CombatSnapshot.Empty);
@@ -3631,7 +3630,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             result.Data.FrontierId,
             activeProfileCommanderName,
             result.Data.IsOdyssey,
-            result.Data.EdsmCommanderName,
             result.Data.EdsmApiKey);
         Colonization.SetCommanderProfile(
             result.Data.FrontierId,

@@ -578,7 +578,7 @@
             <StackPanel Spacing="10">
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="Saving both credentials enables direct EDSM account synchronization for the active Commander. This is separate from EDDN sharing and does not enable EDDN." />
+                         Text="Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN." />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="Supported Live journal events can update EDSM flight history, location, credits, ships and loadouts, cargo, materials, backpack and locker inventory, missions, engineering, community goals, statistics, social status, and discoveries." />
@@ -593,10 +593,6 @@
             <StackPanel Grid.Column="1" Spacing="10">
               <TextBlock FontWeight="SemiBold"
                          Text="{Binding Edsm.ActiveCommanderDisplayName}" />
-              <TextBox x:Name="EdsmCommanderNameTextBox"
-                       Text="{Binding Edsm.EdsmCommanderName, Mode=TwoWay}"
-                       IsEnabled="{Binding Edsm.HasCommanderProfile}"
-                       PlaceholderText="EDSM-registered Commander name" />
               <TextBox x:Name="EdsmApiKeyTextBox"
                        Text="{Binding Edsm.ApiKey, Mode=TwoWay}"
                        PasswordChar="*"
@@ -621,7 +617,7 @@
                            Text="Disable EDSM synchronization for this Commander?" />
                 <Button Classes="danger"
                         Command="{Binding Edsm.ConfirmClearCredentialsCommand}"
-                        Content="Remove credentials" />
+                        Content="Remove API key" />
                 <Button Classes="secondary"
                         Command="{Binding Edsm.CancelClearCredentialsCommand}"
                         Content="Cancel" />
@@ -631,7 +627,7 @@
                          Text="{Binding Edsm.CredentialStatus}" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="The credential pair is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events." />
+                         Text="The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events." />
             </StackPanel>
           </Grid>
 

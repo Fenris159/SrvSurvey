@@ -704,10 +704,10 @@ public static class GuideCatalog
                         ]),
                     Section(
                         "EDSM synchronization",
-                        "Direct EDSM synchronization follows the active Commander and is enabled by saving both that profile's EDSM-registered Commander name and personal API key.",
+                        "Direct EDSM synchronization follows the active Commander and is enabled by saving that profile's personal API key.",
                         [
-                            "Open Settings > Privacy & sharing, confirm the active Commander shown in the EDSM card, enter the name registered on EDSM and its personal API key, then select Save and enable.",
-                            "Select Disable and confirm to remove both credentials and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
+                            "Open Settings > Privacy & sharing, confirm that the active Commander shown in the EDSM card matches the Commander registered with EDSM, enter its personal API key, then select Save and enable.",
+                            "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
                             "Enable direct EDSM synchronization in only one application at a time to avoid duplicate requests.",
                         ],
                         [

@@ -26,7 +26,8 @@ public sealed class EdsmSettingsMarkupTests
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
-        Assert.Contains("{Binding Edsm.EdsmCommanderName, Mode=TwoWay}", values);
+        Assert.DoesNotContain("{Binding Edsm.EdsmCommanderName, Mode=TwoWay}", values);
+        Assert.Contains("{Binding Edsm.ActiveCommanderDisplayName}", values);
         Assert.Contains("{Binding Edsm.ApiKey, Mode=TwoWay}", values);
         Assert.Contains("{Binding Edsm.SaveCredentialsCommand}", values);
         Assert.Contains("{Binding Edsm.RequestClearCredentialsCommand}", values);
@@ -34,6 +35,10 @@ public sealed class EdsmSettingsMarkupTests
         Assert.Contains(
             "Enable direct EDSM synchronization in only one application at a time to avoid duplicate requests.",
             values);
+        Assert.Contains(
+            values,
+            value => value.Contains("current Commander name", StringComparison.Ordinal)
+                && value.Contains("must match", StringComparison.Ordinal));
         Assert.Contains(
             values,
             value => value.Contains("Startup history", StringComparison.Ordinal)

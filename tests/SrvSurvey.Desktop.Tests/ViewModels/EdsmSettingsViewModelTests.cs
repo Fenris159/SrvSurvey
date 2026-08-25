@@ -11,20 +11,17 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
         "SrvSurvey-EdsmViewModel-" + Guid.NewGuid().ToString("N"));
 
     [Fact]
-    public async Task CredentialPairIsSavedOnlyToTheCommanderProfile()
+    public async Task ApiKeyIsSavedWithTheCurrentCommanderName()
     {
         var viewModel = CreateViewModel();
         viewModel.SetCommanderProfile(
             "F123",
             "Game Commander",
             isOdyssey: true,
-            savedEdsmCommanderName: null,
             savedApiKey: null);
 
-        Assert.Equal("Game Commander", viewModel.EdsmCommanderName);
         Assert.False(viewModel.SaveCredentialsCommand.CanExecute(null));
 
-        viewModel.EdsmCommanderName = "  EDSM Commander  ";
         viewModel.ApiKey = "  personal-key  ";
         Assert.True(viewModel.SaveCredentialsCommand.CanExecute(null));
         viewModel.SaveCredentialsCommand.Execute(null);
@@ -32,7 +29,7 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
 
         var profile = await new CommanderProfileStore(temporaryDirectory)
             .LoadAsync("F123", isOdyssey: true);
-        Assert.Equal("EDSM Commander", profile.Data?.EdsmCommanderName);
+        Assert.Equal("Game Commander", profile.Data?.EdsmCommanderName);
         Assert.Equal("personal-key", profile.Data?.EdsmApiKey);
         Assert.False(File.Exists(Path.Combine(
             temporaryDirectory,
@@ -47,7 +44,6 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
             "F123",
             "Game Commander",
             isOdyssey: true,
-            savedEdsmCommanderName: "EDSM Commander",
             savedApiKey: "personal-key");
         var changes = 0;
         viewModel.CredentialsChanged += (_, _) => changes++;
@@ -100,9 +96,7 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
             "F123",
             "First Commander",
             isOdyssey: true,
-            savedEdsmCommanderName: null,
             savedApiKey: null);
-        viewModel.EdsmCommanderName = "First EDSM";
         viewModel.ApiKey = "first-key";
         viewModel.SaveCredentialsCommand.Execute(null);
         await saveStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
@@ -111,7 +105,6 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
             "F456",
             "Second Commander",
             isOdyssey: true,
-            savedEdsmCommanderName: "Second EDSM",
             savedApiKey: "second-key");
         var saveFinished = new TaskCompletionSource(
             TaskCreationOptions.RunContinuationsAsynchronously);
@@ -121,9 +114,9 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
         await saveFinished.Task.WaitAsync(TimeSpan.FromSeconds(1));
 
         Assert.Equal("F123", savedFrontierId);
-        Assert.Equal("First EDSM", savedEdsmName);
+        Assert.Equal("First Commander", savedEdsmName);
         Assert.Equal("first-key", savedApiKey);
-        Assert.Equal("Second EDSM", viewModel.EdsmCommanderName);
+        Assert.Equal("Second Commander", viewModel.UploadCommanderName);
         Assert.Equal("second-key", viewModel.ApiKey);
         Assert.Contains("Second Commander", viewModel.CredentialStatus);
         Assert.DoesNotContain("First Commander", viewModel.CredentialStatus);

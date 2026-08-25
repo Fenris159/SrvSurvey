@@ -29,7 +29,7 @@ The required upload fields are:
 
 | Field | Required content |
 |---|---|
-| `commanderName` | The Commander name registered with EDSM. This is an EDSM account identifier and cannot safely be assumed to equal the current journal Commander name. |
+| `commanderName` | The Commander name registered with EDSM. SrvSurvey uses the current journal Commander name, so that name must match the EDSM registration. |
 | `apiKey` | The personal API key associated with that EDSM Commander. EDSM directs users to `https://www.edsm.net/settings/api` to create or retrieve it. |
 | `fromSoftware` | The submitting application's name. |
 | `fromSoftwareVersion` | The submitting application's version. |
@@ -180,8 +180,8 @@ the journal object those integrations consume.
 
 Recommended invariants:
 
-- Upload is off unless the active Commander profile has both an EDSM Commander
-  name and personal API key. Saving either field alone does not opt in.
+- Upload is off unless the active Commander profile has a personal EDSM API key
+  and a current journal Commander name.
 - Session identity includes the journal series/path, journal Commander and FID,
   EDSM Commander name, credential generation, game version, and game build.
 - Only newly observed live events from an active non-replay session are
@@ -215,20 +215,14 @@ the same visual language: provider title, `OPT-IN` badge, active Commander,
 masked credential input, Save and Clear actions with confirmation, status text,
 and a button opening `https://www.edsm.net/settings/api`.
 
-Unlike Inara's current SrvSurvey panel, EDSM needs two editable values:
-
-- **EDSM Commander name**, initially suggested from the active journal
-  Commander but stored independently; and
-- **Personal EDSM API key**, masked by default.
-
-Both values must be stored in the active Commander profile. The EDSM Commander
-name is part of the authenticated credential pair, so silently forcing it to
-the journal name would make valid accounts fail when the EDSM registration
-differs.
+The only editable value is the **Personal EDSM API key**, masked by default and
+stored in the active Commander profile. SrvSurvey supplies the current journal
+Commander name as EDSM's authenticated `commanderName`; the panel must disclose
+that it needs to match the Commander registered with EDSM.
 
 A tailored disclosure should make these points visible before opt-in:
 
-- Saving both credentials enables direct synchronization with that Commander's
+- Saving the API key enables direct synchronization with that Commander's
   EDSM account; it is separate from EDDN sharing and does not enable EDDN.
 - Supported Live journal events can update EDSM flight history, location,
   credits, ships/loadouts, cargo, materials, backpack/locker, missions,
@@ -237,7 +231,7 @@ A tailored disclosure should make these points visible before opt-in:
   and several companion-file events; SrvSurvey checks that policy at startup.
 - Only future attributable live-session activity is uploaded. Legacy,
   alpha/beta, diagnostic replay, and multicrew activity are excluded.
-- The credential pair is stored only in the selected local Commander profile,
+- The API key is stored only in the selected local Commander profile,
   never written to logs or placed in queued payload records. Clearing it stops
   new uploads, cancels any active request, and removes pending in-memory events.
 - Only one EDSM uploader should be enabled at a time.

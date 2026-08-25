@@ -20,9 +20,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
     private readonly AsyncCommand confirmClearCredentialsCommand;
     private readonly DelegateCommand requestClearCredentialsCommand;
     private readonly DelegateCommand cancelClearCredentialsCommand;
-    private string edsmCommanderName = string.Empty;
     private string apiKey = string.Empty;
-    private string? storedEdsmCommanderName;
     private string? storedApiKey;
     private string? profileFrontierId;
     private string? activeCommanderName;
@@ -83,18 +81,6 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
     public ICommand CancelClearCredentialsCommand =>
         cancelClearCredentialsCommand;
 
-    public string EdsmCommanderName
-    {
-        get => edsmCommanderName;
-        set
-        {
-            if (SetField(ref edsmCommanderName, value ?? string.Empty))
-            {
-                saveCredentialsCommand.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
     public string ApiKey
     {
         get => apiKey;
@@ -109,8 +95,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
 
     public bool HasCommanderProfile => profileFrontierId is not null;
 
-    public bool HasStoredCredentials =>
-        storedEdsmCommanderName is not null && storedApiKey is not null;
+    public bool HasStoredCredentials => storedApiKey is not null;
 
     public string ActiveCommanderDisplayName =>
         activeCommanderName ?? "No commander loaded";
@@ -152,7 +137,8 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
     public bool HasPublicationStatus =>
         !string.IsNullOrWhiteSpace(PublicationStatus);
 
-    internal string? StoredEdsmCommanderName => storedEdsmCommanderName;
+    internal string? UploadCommanderName =>
+        HasStoredCredentials ? activeCommanderName : null;
 
     internal string? StoredApiKey => storedApiKey;
 
@@ -160,23 +146,17 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
         string? frontierId,
         string? commanderName,
         bool isOdyssey,
-        string? savedEdsmCommanderName,
         string? savedApiKey)
     {
         profileGeneration++;
         profileFrontierId = Normalize(frontierId);
         activeCommanderName = Normalize(commanderName);
         profileIsOdyssey = isOdyssey;
-        storedEdsmCommanderName = Normalize(savedEdsmCommanderName);
         storedApiKey = Normalize(savedApiKey);
-        edsmCommanderName = storedEdsmCommanderName
-            ?? activeCommanderName
-            ?? string.Empty;
         apiKey = storedApiKey ?? string.Empty;
         IsClearCredentialsConfirmationVisible = false;
         PublicationStatus = string.Empty;
 
-        OnPropertyChanged(nameof(EdsmCommanderName));
         OnPropertyChanged(nameof(ApiKey));
         OnPropertyChanged(nameof(HasCommanderProfile));
         OnPropertyChanged(nameof(HasStoredCredentials));
@@ -185,7 +165,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
             ? "Load a commander profile to configure EDSM synchronization."
             : HasStoredCredentials
                 ? $"EDSM synchronization is enabled for {ActiveCommanderDisplayName}."
-                : $"No EDSM credentials are saved for {ActiveCommanderDisplayName}.";
+                : $"No EDSM API key is saved for {ActiveCommanderDisplayName}.";
         RaiseCommandStates();
     }
 
@@ -220,7 +200,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
     private async Task SaveCredentialsAsync()
     {
         await PersistCredentialsAsync(
-            Normalize(EdsmCommanderName),
+            activeCommanderName,
             Normalize(ApiKey));
     }
 
@@ -256,11 +236,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
                 return;
             }
 
-            storedEdsmCommanderName = commanderName;
             storedApiKey = key;
-            EdsmCommanderName = commanderName
-                ?? activeCommanderName
-                ?? string.Empty;
             ApiKey = key ?? string.Empty;
             IsClearCredentialsConfirmationVisible = false;
             OnPropertyChanged(nameof(HasStoredCredentials));
@@ -288,19 +264,14 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
 
     private bool CanSaveCredentials()
     {
-        var commanderName = Normalize(EdsmCommanderName);
         var key = Normalize(ApiKey);
         return profileFrontierId is not null
-            && commanderName is not null
+            && activeCommanderName is not null
             && key is not null
-            && (!string.Equals(
-                    commanderName,
-                    storedEdsmCommanderName,
-                    StringComparison.Ordinal)
-                || !string.Equals(
-                    key,
-                    storedApiKey,
-                    StringComparison.Ordinal));
+            && !string.Equals(
+                key,
+                storedApiKey,
+                StringComparison.Ordinal);
     }
 
     private void RequestClearCredentials()

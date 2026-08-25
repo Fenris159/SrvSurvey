@@ -693,7 +693,7 @@ public sealed class MainWindowViewModelTests
 
             var bootstrap = Assert.Single(publisher.Calls);
             Assert.False(bootstrap.AllowPublishing);
-            Assert.Equal("EDSM Test Cmdr", bootstrap.Options.EdsmCommanderName);
+            Assert.Equal("Test Cmdr", bootstrap.Options.EdsmCommanderName);
             Assert.Equal("personal-key", bootstrap.Options.ApiKey);
             Assert.Equal("Test Cmdr", bootstrap.Options.ActiveCommanderName);
             Assert.Equal("F123", bootstrap.Options.FrontierId);

@@ -101,10 +101,10 @@ that belong to the instance's selected commander continue to be processed.
 
 ## EDSM
 
-Direct EDSM synchronization is disabled by default. Saving both an
-EDSM-registered Commander name and that account's personal API key opts in only
-the displayed local Commander profile. The EDSM name may differ from the name in
-the Elite journal. Clearing either stored credential disables synchronization,
+Direct EDSM synchronization is disabled by default. Saving an EDSM personal API
+key opts in only the displayed local Commander profile. SrvSurvey uses the
+current Elite journal Commander name as the EDSM account name, so the names must
+match. Clearing the stored key disables synchronization,
 cancels active delivery, and removes pending in-memory events for that profile.
 This setting is separate from EDDN and does not enable EDDN sharing.
 
@@ -117,7 +117,7 @@ EDSM's current discarded-event list and fails closed until a valid list is
 available. EDSM's current policy excludes chat, screenshot paths, `Status.json`,
 Market, Outfitting, Shipyard, NavRoute, and other unsupported event types.
 
-Each request includes the EDSM Commander name and personal API key, SrvSurvey's
+Each request includes the current Commander name and EDSM personal API key, SrvSurvey's
 name and version, the Elite game version and build, and a bounded ordered batch
 of journal messages. When available, SrvSurvey adds only the transient context
 fields sanctioned by EDSM: system address, system name, system coordinates,
