@@ -1,7 +1,16 @@
-# SrvSurvey-XP 2.1.3.0-rc.38
+# SrvSurvey-XP 2.1.3.0-rc.39
 
-This release candidate adds optional direct EDSM account synchronization to the
-privacy and sharing workflow completed in `2.1.3.0-rc.37`.
+This release candidate includes the optional direct EDSM account synchronization
+introduced in `2.1.3.0-rc.38` and fixes a journal compatibility problem found
+during live testing.
+
+## EDSM journal compatibility
+
+- Fixes EDSM processing of the object-valued `Multicrew` statistics section in
+  Elite's `Statistics` journal event. It is no longer misread as the Boolean
+  active-crew flag, preventing an isolated cast error after EDSM is enabled.
+- Preserves normal multicrew suppression for Boolean session flags and explicit
+  crew join, role-change, and exit events.
 
 ## EDSM account synchronization
 
@@ -34,11 +43,11 @@ privacy and sharing workflow completed in `2.1.3.0-rc.37`.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.38`
-- Tag: `xp-v2.1.3.0-rc.38`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.38-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.38-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.38-x86_64.AppImage`
+- Version: `2.1.3.0-rc.39`
+- Tag: `xp-v2.1.3.0-rc.39`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.39-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.39-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.39-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
