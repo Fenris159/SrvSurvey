@@ -11,4 +11,12 @@ public sealed class WellKnownUrisTests
             "https://discord.com/invite/GJjTFa9fsz",
             WellKnownUris.GuardianScienceCorpsDiscord.OriginalString);
     }
+
+    [Fact]
+    public void EdsmCommanderSettingsUsesConfiguredApiPage()
+    {
+        Assert.Equal(
+            "https://www.edsm.net/settings/api",
+            WellKnownUris.EdsmCommanderApiSettings.OriginalString);
+    }
 }

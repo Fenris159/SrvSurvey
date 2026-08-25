@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
@@ -26,6 +27,7 @@ internal sealed class MainWindowViewModelTestBuilder
     private GuardianOverlaySettingsStore? guardianOverlaySettingsStore;
     private HumanSiteSettingsStore? humanSiteSettingsStore;
     private IInaraPublisher? inaraPublisher;
+    private IEdsmPublisher? edsmPublisher;
     private OverlayThemeSettingsViewModel? overlayThemeSettings;
     private IScreenshotProcessingService? screenshotProcessingService;
     private StationInfoSettingsStore? stationInfoSettingsStore;
@@ -93,6 +95,7 @@ internal sealed class MainWindowViewModelTestBuilder
                     EddnPublisher = eddnPublisher,
                     VoxStellarPublisher = voxStellarPublisher,
                     InaraPublisher = inaraPublisher,
+                    EdsmPublisher = edsmPublisher,
                     GreenGasGiantPublicationCoordinator =
                         greenGasGiantPublicationCoordinator,
                 },
@@ -150,6 +153,10 @@ internal sealed class MainWindowViewModelTestBuilder
     public MainWindowViewModelTestBuilder WithInaraPublisher(
         IInaraPublisher value)
         => Set(ref inaraPublisher, value);
+
+    public MainWindowViewModelTestBuilder WithEdsmPublisher(
+        IEdsmPublisher value)
+        => Set(ref edsmPublisher, value);
 
     public MainWindowViewModelTestBuilder WithOverlayThemeSettings(
         OverlayThemeSettingsViewModel value)

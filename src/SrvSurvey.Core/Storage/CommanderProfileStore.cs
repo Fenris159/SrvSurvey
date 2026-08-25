@@ -87,7 +87,9 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             ReadCombat(root),
             GetString(root, "rccApiKey"),
             GetString(root, "activeJourney"),
-            GetString(root, "inaraApiKey"));
+            GetString(root, "inaraApiKey"),
+            GetString(root, "edsmCommanderName"),
+            GetString(root, "edsmApiKey"));
         return new CommanderProfileLoadResult(path, true, data, null);
     }
 
@@ -260,6 +262,41 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 else
                 {
                     root["inaraApiKey"] = normalized;
+                }
+            },
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SaveEdsmCredentialsAsync(
+        string frontierId,
+        string? commanderName,
+        bool isOdyssey,
+        string? edsmCommanderName,
+        string? apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedCommanderName = string.IsNullOrWhiteSpace(
+            edsmCommanderName)
+                ? null
+                : edsmCommanderName.Trim();
+        var normalizedApiKey = string.IsNullOrWhiteSpace(apiKey)
+            ? null
+            : apiKey.Trim();
+        await SaveFieldsAsync(
+            frontierId,
+            commanderName,
+            isOdyssey,
+            root =>
+            {
+                if (normalizedCommanderName is null || normalizedApiKey is null)
+                {
+                    root.Remove("edsmCommanderName");
+                    root.Remove("edsmApiKey");
+                }
+                else
+                {
+                    root["edsmCommanderName"] = normalizedCommanderName;
+                    root["edsmApiKey"] = normalizedApiKey;
                 }
             },
             cancellationToken).ConfigureAwait(false);
@@ -855,7 +892,9 @@ public sealed record CommanderProfileData(
     CombatSnapshot Combat,
     string? RavenColonialApiKey = null,
     string? ActiveJourneyFileName = null,
-    string? InaraApiKey = null);
+    string? InaraApiKey = null,
+    string? EdsmCommanderName = null,
+    string? EdsmApiKey = null);
 
 public sealed record CommanderProfileLoadResult(
     string Path,

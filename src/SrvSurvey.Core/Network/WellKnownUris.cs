@@ -26,6 +26,7 @@ public static class WellKnownUris
     public static Uri PublishedRavenNicknames => RequireUri("PublishedRavenNicknames");
     public static Uri ExampleInvalidPackage => RequireUri("ExampleInvalidPackage");
     public static Uri InaraCommanderApiSettings => RequireUri("InaraCommanderApiSettings");
+    public static Uri EdsmCommanderApiSettings => RequireUri("EdsmCommanderApiSettings");
     public static Uri CanonnChallenge => RequireUri("CanonnChallenge");
     public static Uri EdastroCodexMap => RequireUri("EdastroCodexMap");
     public static Uri CodexMissingForm => RequireUri("CodexMissingForm");

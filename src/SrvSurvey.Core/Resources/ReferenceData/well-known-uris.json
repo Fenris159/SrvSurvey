@@ -12,6 +12,7 @@
   "PublishedRavenNicknames": "https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/api/misc/nicknames",
   "ExampleInvalidPackage": "https://example.invalid/package",
   "InaraCommanderApiSettings": "https://inara.cz/elite/cmdr-settings-api/",
+  "EdsmCommanderApiSettings": "https://www.edsm.net/settings/api",
   "CanonnSignalsSystem": "https://canonn-science.github.io/canonn-signals/?system=",
   "CanonnCodexRegionsEntry": "https://canonn-science.github.io/Codex-Regions/?entryid=",
   "CanonnBioforgeEntry": "https://bioforge.canonn.tech/?entryid=",

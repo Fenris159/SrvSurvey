@@ -237,6 +237,8 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
             "EddnCard", "network publication journal upload privacy consent"),
         new("Inara API key", PrivacyCategoryKey, "InaraApiKeyTextBox",
             "InaraCard", "commander publication upload credential api token"),
+        new("EDSM synchronization", PrivacyCategoryKey, "EdsmApiKeyTextBox",
+            "EdsmCard", "commander journal publication upload credential api key flight log"),
         new("Screenshot processing", ScreenshotsCategoryKey, "ScreenshotEnabledCheckBox",
             "ScreenshotProcessingCard", "image convert source target folder graphics"),
         new("Codex reference images", DataCategoryKey, "CodexCacheTextBox",
