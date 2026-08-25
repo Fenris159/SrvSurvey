@@ -399,15 +399,14 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        isOverlayPresented = true;
-        if (!hasQueuedPlan)
+        if (hasQueuedPlan)
         {
-            return;
+            hasQueuedPlan = false;
+            followedRouteFinishedUntil = null;
+            RefreshPlan();
         }
 
-        hasQueuedPlan = false;
-        followedRouteFinishedUntil = null;
-        RefreshPlan();
+        isOverlayPresented = true;
     }
 
     internal void EndOverlayPresentation()
@@ -524,6 +523,13 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     private void RefreshPlan()
     {
+        if (routePlan is not null && isOverlayPresented)
+        {
+            hasQueuedPlan = true;
+            RaiseVisibilityProperties();
+            return;
+        }
+
         if (routePlan is not null
             && (jumpContentHeldUntil is not null
                 || isWaitingForOverlayHide

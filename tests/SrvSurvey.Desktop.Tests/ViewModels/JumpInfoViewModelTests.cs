@@ -446,6 +446,96 @@ public sealed class JumpInfoViewModelTests : IDisposable
                 && line.Value == "Inner Scutum-Centaurus Arm");
     }
 
+    [Fact]
+    public async Task ActivePresentationKeepsTargetWhenRouteAdvancesBeforeArrival()
+    {
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-25T12:00:00Z"));
+        var client = new FakeSummaryClient(CreateSummary());
+        using var viewModel = CreateViewModel(client, time);
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                null,
+                [FsdTarget("Beta", 3, "N")],
+                new EliteStatus
+                {
+                    Flags = StatusFlags.InMainShip,
+                    Flags2 = StatusFlags2.FsdChargingJump,
+                },
+                null));
+        await viewModel.PendingSummaryLoad;
+        viewModel.BeginOverlayPresentation();
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                null,
+                [Event("StartJump", "\"JumpType\":\"Hyperspace\"")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null));
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                null,
+                [FsdTarget("Gamma", 4, "K")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null));
+
+        Assert.Equal("Beta", viewModel.TargetName);
+        Assert.True(viewModel.ShouldShow);
+        Assert.Equal([("Beta", 3L)], client.Requests);
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Beta",
+                3,
+                new GalacticCoordinate(45, 0, 0),
+                null,
+                [Event("FSDJump", "\"StarSystem\":\"Beta\"")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null));
+        time.Advance(TimeSpan.FromSeconds(1));
+        viewModel.AdvanceTimedTransitions();
+
+        Assert.False(viewModel.ShouldShow);
+        Assert.Equal("Beta", viewModel.TargetName);
+
+        viewModel.EndOverlayPresentation();
+        Assert.Equal("Beta", viewModel.TargetName);
+
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Beta",
+                3,
+                new GalacticCoordinate(45, 0, 0),
+                null,
+                [],
+                new EliteStatus
+                {
+                    Flags = StatusFlags.InMainShip,
+                    Flags2 = StatusFlags2.FsdChargingJump,
+                },
+                null));
+
+        Assert.True(viewModel.ShouldShow);
+        Assert.Equal("Beta", viewModel.TargetName);
+
+        viewModel.BeginOverlayPresentation();
+        await viewModel.PendingSummaryLoad;
+
+        Assert.Equal("Gamma", viewModel.TargetName);
+        Assert.Equal([("Beta", 3L), ("Gamma", 4L)], client.Requests);
+    }
+
     [Theory]
     [InlineData("FSDJump")]
     [InlineData("CarrierJump")]
