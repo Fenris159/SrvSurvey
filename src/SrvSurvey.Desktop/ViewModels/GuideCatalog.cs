@@ -676,7 +676,7 @@ public static class GuideCatalog
                         [],
                         [
                             "System enrichment may use EDSM, Spansh, Canonn, or Raven depending on the enabled feature.",
-                            "EDDN publication, Inara publication, human-settlement geometry, Green Gas Giant candidates, Raven cargo, Fleet Carrier data, system updates, and quest publication each require the corresponding setting, credential, or explicit confirmation.",
+                            "EDDN publication, Inara publication, direct EDSM synchronization, human-settlement geometry, Green Gas Giant candidates, Raven cargo, Fleet Carrier data, system updates, and quest publication each require the corresponding setting, credential, or explicit confirmation.",
                             "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
                         ]),
                     Section(
@@ -701,6 +701,18 @@ public static class GuideCatalog
                         ],
                         [
                             "Queued events never cross Commander or API-key boundaries. Live/beta eligibility, final session reporting, batching, retries, and shutdown flushes follow the bound Commander session.",
+                        ]),
+                    Section(
+                        "EDSM synchronization",
+                        "Direct EDSM synchronization follows the active Commander and is enabled by saving both that profile's EDSM-registered Commander name and personal API key.",
+                        [
+                            "Open Settings > Privacy & sharing, confirm the active Commander shown in the EDSM card, enter the name registered on EDSM and its personal API key, then select Save and enable.",
+                            "Select Disable and confirm to remove both credentials and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
+                            "Enable direct EDSM synchronization in only one application at a time to avoid duplicate requests.",
+                        ],
+                        [
+                            "Only new attributable Live journal events are considered. SrvSurvey first loads EDSM's current discard policy, then sends bounded ordered batches with EDSM-sanctioned system, station, and ship context when known.",
+                            "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. The pending queue is memory-only and credentials or events never cross Commander sessions.",
                         ]),
                     Section(
                         "Screenshots, notifications, stream, and VR",

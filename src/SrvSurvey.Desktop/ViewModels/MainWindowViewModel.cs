@@ -8,6 +8,7 @@ using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Diagnostics.Replay;
+using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
@@ -103,6 +104,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private readonly IEddnPublisher eddnPublisher;
     private readonly IVoxStellarPublisher voxStellarPublisher;
     private readonly IInaraPublisher inaraPublisher;
+    private readonly IEdsmPublisher edsmPublisher;
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
@@ -251,6 +253,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         var resolvedVoxStellarPublisher = online.VoxStellarPublisher;
         var resolvedSystemBodyDataClient = exploration.SystemBodyDataClient;
         var resolvedInaraPublisher = online.InaraPublisher;
+        var resolvedEdsmPublisher = online.EdsmPublisher;
         var frontierProfile = foundation.FrontierProfile;
         var externalNetworkClient = foundation.ExternalNetworkClient;
 
@@ -265,6 +268,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 gameWindowSwitcher);
         rollback.Add(gameWindowOwnership);
         rollback.Add(resolvedInaraPublisher);
+        rollback.Add(resolvedEdsmPublisher);
         rollback.Add(resolvedEddnPublisher as IDisposable);
         rollback.Add(resolvedVoxStellarPublisher as IDisposable);
 
@@ -465,6 +469,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             rollback.AddIfCreated(resolvedInaraPublisher, this.inaraPublisher);
             Inara.ApiKeyChanged += OnInaraApiKeyChanged;
             rollback.Add(() => Inara.ApiKeyChanged -= OnInaraApiKeyChanged);
+            Edsm = new EdsmSettingsViewModel(commanderProfileStore);
+            this.edsmPublisher = resolvedEdsmPublisher ?? new EdsmPublisher(
+                (typeof(MainWindowViewModel).Assembly.GetName().Version
+                    ?? new Version(0, 0)).ToString(),
+                httpClient: externalNetworkClient);
+            rollback.AddIfCreated(resolvedEdsmPublisher, this.edsmPublisher);
+            Edsm.CredentialsChanged += OnEdsmCredentialsChanged;
+            rollback.Add(() =>
+                Edsm.CredentialsChanged -= OnEdsmCredentialsChanged);
             this.eddnPublisher = resolvedEddnPublisher ?? new EddnPublisher(
                 (typeof(MainWindowViewModel).Assembly.GetName().Version
                     ?? new Version(0, 0)).ToString(),
@@ -1015,6 +1028,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public VoxStellarSharingViewModel VoxStellar { get; }
 
     public InaraSettingsViewModel Inara { get; }
+
+    public EdsmSettingsViewModel Edsm { get; }
 
     public QuestWorkspaceViewModel QuestWorkspace { get; }
 
@@ -3334,6 +3349,41 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 "Inara processing was isolated from journal tracking: "
                     + exception.Message);
         }
+
+        try
+        {
+            var edsmResult = await edsmPublisher.ApplyAsync(
+                new EdsmPublicationUpdate(
+                    update.JournalEvents,
+                    update.JournalPath,
+                    AllowPublishing: !IsDiagnosticReplay
+                        && !update.IsBootstrapRead
+                        && !CommanderInstances.HasMultipleGameWindows,
+                    new EdsmPublicationOptions(
+                        Edsm.StoredApiKey,
+                        Edsm.StoredEdsmCommanderName,
+                        activeProfileCommanderName
+                            ?? journalState.CommanderName,
+                        activeProfileFrontierId
+                            ?? journalState.FrontierId,
+                        journalState.GameVersion,
+                        journalState.GameBuild,
+                        journalState.IsOdyssey ?? true)),
+                CancellationToken.None);
+            Edsm.ReportPublicationResult(edsmResult);
+            foreach (var warning in edsmResult.Warnings)
+            {
+                applicationLogService?.Append(warning);
+            }
+        }
+        catch (Exception exception) when (
+            exception is not OperationCanceledException)
+        {
+            Edsm.ReportPublicationFailure(exception);
+            applicationLogService?.Append(
+                "EDSM processing was isolated from journal tracking: "
+                    + exception.Message);
+        }
     }
 
     private async Task RefreshSystemSurveyCommanderCodexAsync(
@@ -3547,6 +3597,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 journalState.CommanderName,
                 isOdyssey,
                 inaraApiKey: null);
+            Edsm.SetCommanderProfile(
+                null,
+                journalState.CommanderName,
+                isOdyssey,
+                savedEdsmCommanderName: null,
+                savedApiKey: null);
             SurfaceSurvey.Reset();
             Combat.LoadProfile(null, null, isOdyssey, CombatSnapshot.Empty);
             Colonization.SetCommanderProfile(null, isOdyssey, apiKey: null);
@@ -3571,6 +3627,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             activeProfileCommanderName,
             result.Data.IsOdyssey,
             result.Data.InaraApiKey);
+        Edsm.SetCommanderProfile(
+            result.Data.FrontierId,
+            activeProfileCommanderName,
+            result.Data.IsOdyssey,
+            result.Data.EdsmCommanderName,
+            result.Data.EdsmApiKey);
         Colonization.SetCommanderProfile(
             result.Data.FrontierId,
             result.Data.IsOdyssey,
@@ -5247,6 +5309,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         inaraPublisher.CancelPendingPublication();
     }
 
+    private void OnEdsmCredentialsChanged(object? sender, EventArgs eventArgs)
+    {
+        edsmPublisher.CancelPendingPublication();
+    }
+
     private void OnVoxStellarUploadEnabledChanged(bool enabled)
     {
         voxStellarPublisher.SetEnabled(enabled);
@@ -5325,6 +5392,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         await TryDisposeAsync(
             () => new ValueTask(
                 inaraPublisher.StopAsync(inaraShutdownCancellation.Token)));
+        Edsm.CredentialsChanged -= OnEdsmCredentialsChanged;
+        using var edsmShutdownCancellation = new CancellationTokenSource(
+            TimeSpan.FromSeconds(45));
+        await TryDisposeAsync(
+            () => new ValueTask(
+                edsmPublisher.StopAsync(edsmShutdownCancellation.Token)));
         CommanderInstances.PropertyChanged -= OnCommanderInstancesPropertyChanged;
         TryDispose(CommanderInstances.Dispose);
         BiologyRewards.PropertyChanged -= OnBiologyRewardsChanged;

@@ -33,6 +33,8 @@ public sealed class CommanderProfileStoreTests : IDisposable
               "countLanded": 6,
               "rccApiKey": "legacy-secret",
               "inaraApiKey": "inara-secret",
+              "edsmCommanderName": "EDSM Drew",
+              "edsmApiKey": "edsm-secret",
               "futureSetting": { "enabled": true }
             }
             """);
@@ -46,6 +48,8 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.Equal("Drew", result.Data.CommanderName);
         Assert.Equal("legacy-secret", result.Data.RavenColonialApiKey);
         Assert.Equal("inara-secret", result.Data.InaraApiKey);
+        Assert.Equal("EDSM Drew", result.Data.EdsmCommanderName);
+        Assert.Equal("edsm-secret", result.Data.EdsmApiKey);
         Assert.Equal(
             new ExplorationSnapshot(123456, 42.5, 3, 4, 5, 6),
             result.Data.Exploration);
@@ -248,6 +252,45 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.Null(cleared.Data?.InaraApiKey);
         root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.False(root.ContainsKey("inaraApiKey"));
+        Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
+    }
+
+    [Fact]
+    public async Task SavesAndClearsCommanderScopedEdsmCredentialsLosslessly()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-live.json");
+        await File.WriteAllTextAsync(
+            path,
+            "{\"fid\":\"F123\",\"futureSetting\":42}");
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        await store.SaveEdsmCredentialsAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            "  EDSM Drew  ",
+            "  personal-key  ");
+
+        var saved = await store.LoadAsync("F123", isOdyssey: true);
+        Assert.Equal("EDSM Drew", saved.Data?.EdsmCommanderName);
+        Assert.Equal("personal-key", saved.Data?.EdsmApiKey);
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
+
+        await store.SaveEdsmCredentialsAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            null,
+            "  ");
+
+        var cleared = await store.LoadAsync("F123", isOdyssey: true);
+        Assert.Null(cleared.Data?.EdsmCommanderName);
+        Assert.Null(cleared.Data?.EdsmApiKey);
+        root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.False(root.ContainsKey("edsmCommanderName"));
+        Assert.False(root.ContainsKey("edsmApiKey"));
         Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
     }
 

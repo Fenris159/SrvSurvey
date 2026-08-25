@@ -2,7 +2,8 @@
 
 SrvSurvey Avalonia keeps every optional publication surface off until the user
 explicitly enables it in Settings. Local journal parsing, overlays, exploration,
-exobiology, colonization, quest, and route tracking do not depend on Inara.
+exobiology, colonization, quest, and route tracking do not depend on Inara or
+direct EDSM synchronization.
 The Community Goals dashboard can make a separate read-only Inara request for
 public global-goal details as described below.
 
@@ -98,6 +99,40 @@ safely attribute shared `Cargo.json`, `ShipLocker.json`, or `Status.json` data t
 a commander. Those shared inputs are suppressed for Inara while journal events
 that belong to the instance's selected commander continue to be processed.
 
+## EDSM
+
+Direct EDSM synchronization is disabled by default. Saving both an
+EDSM-registered Commander name and that account's personal API key opts in only
+the displayed local Commander profile. The EDSM name may differ from the name in
+the Elite journal. Clearing either stored credential disables synchronization,
+cancels active delivery, and removes pending in-memory events for that profile.
+This setting is separate from EDDN and does not enable EDDN sharing.
+
+SrvSurvey sends supported, new Live journal events to EDSM's authenticated
+Journal API. EDSM documents that accepted events can update account data such as
+flight history and location, credits, ships and loadouts, cargo, materials,
+backpack and locker inventory, missions, engineering, community goals,
+statistics, social status, and discoveries. Before uploading, SrvSurvey fetches
+EDSM's current discarded-event list and fails closed until a valid list is
+available. EDSM's current policy excludes chat, screenshot paths, `Status.json`,
+Market, Outfitting, Shipyard, NavRoute, and other unsupported event types.
+
+Each request includes the EDSM Commander name and personal API key, SrvSurvey's
+name and version, the Elite game version and build, and a bounded ordered batch
+of journal messages. When available, SrvSurvey adds only the transient context
+fields sanctioned by EDSM: system address, system name, system coordinates,
+market ID, station name, and ship ID. Credentials are stored only in the local
+Commander profile. Raw messages are held only in a bounded memory queue and are
+not written to SrvSurvey's normal logs or a durable retry file.
+
+Events are batched for about 30 seconds. Requests have bounded payloads and
+responses, one batch is in flight at a time, and transient failures use delayed
+retry while honoring EDSM's rate-limit and retry headers. Credential rejection
+pauses publication until the saved credentials change. Startup history, Legacy,
+alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite
+windows are not uploaded. Enable direct EDSM synchronization in only one
+application at a time, such as SrvSurvey or EDMC, to avoid duplicate requests.
+
 ## VoxStellar
 
 VoxStellar journal upload is disabled by default and is controlled separately
@@ -174,4 +209,4 @@ details.
 
 VoxStellar, Raven Colonial, Canonn settlement geometry, and Green Gas Giant
 publication retain their existing independent opt-in controls and payload
-rules. Enabling EDDN or Inara does not enable or modify any of them.
+rules. Enabling EDDN, Inara, or EDSM does not enable or modify any of them.

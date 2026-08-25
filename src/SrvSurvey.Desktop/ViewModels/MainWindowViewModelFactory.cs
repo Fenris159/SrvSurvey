@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Network;
@@ -286,6 +287,8 @@ internal sealed class MainWindowOnlineInputs
     public IVoxStellarPublisher? VoxStellarPublisher { get; init; }
 
     public IInaraPublisher? InaraPublisher { get; init; }
+
+    public IEdsmPublisher? EdsmPublisher { get; init; }
 
     public GreenGasGiantPublicationCoordinator?
         GreenGasGiantPublicationCoordinator

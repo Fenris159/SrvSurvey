@@ -269,6 +269,15 @@ public sealed partial class SettingsView : UserControl
             "the Inara API key page");
     }
 
+    private async void OpenEdsmApiKeyPage_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        await OpenSettingsUriAsync(
+            WellKnownUris.EdsmCommanderApiSettings,
+            "the EDSM API key page");
+    }
+
     private async void ConfigureEddnSharing_Click(
         object? sender,
         RoutedEventArgs eventArgs)

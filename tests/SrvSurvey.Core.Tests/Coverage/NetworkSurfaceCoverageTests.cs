@@ -10,6 +10,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Exobiology/CodexDiscoveryLocationClient.cs",
         "src/SrvSurvey.Core/Exploration/GreenGasGiantClient.cs",
         "src/SrvSurvey.Core/Exploration/SystemBodyDataClient.cs",
+        "src/SrvSurvey.Core/Edsm/EdsmPublisher.cs",
         "src/SrvSurvey.Core/Inara/InaraPublisher.cs",
         "src/SrvSurvey.Core/Navigation/SystemSummaryClient.cs",
         "src/SrvSurvey.Core/Network/EddnPublisher.cs",
@@ -140,6 +141,10 @@ public sealed class NetworkSurfaceCoverageTests
             "inara-publication",
             ["src/SrvSurvey.Core/Inara/InaraPublisher.cs"],
             ["tests/SrvSurvey.Core.Tests/Inara/InaraPublisherTests.cs"]),
+        new(
+            "edsm-publication",
+            ["src/SrvSurvey.Core/Edsm/EdsmPublisher.cs"],
+            ["tests/SrvSurvey.Core.Tests/Edsm/EdsmPublisherTests.cs"]),
         new(
             "voxstellar-publication",
             ["src/SrvSurvey.Core/Network/VoxStellarPublisher.cs"],

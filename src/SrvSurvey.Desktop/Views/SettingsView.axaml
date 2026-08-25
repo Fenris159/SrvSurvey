@@ -556,6 +556,95 @@
         </StackPanel>
       </Border>
 
+      <Border x:Name="EdsmCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="EDSM" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Synchronize supported live journal activity directly with an EDSM Commander account." />
+            </StackPanel>
+            <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         FontWeight="SemiBold"
+                         Text="OPT-IN" />
+            </Border>
+          </Grid>
+
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Saving both credentials enables direct EDSM account synchronization for the active Commander. This is separate from EDDN sharing and does not enable EDDN." />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Supported Live journal events can update EDSM flight history, location, credits, ships and loadouts, cargo, materials, backpack and locker inventory, missions, engineering, community goals, statistics, social status, and discoveries." />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="SrvSurvey downloads EDSM's current discard policy before uploading. Its current policy excludes chat, screenshot paths, Status.json, Market, Outfitting, Shipyard, NavRoute, and other unsupported events." />
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         TextWrapping="Wrap"
+                         Text="Enable direct EDSM synchronization in only one application at a time to avoid duplicate requests." />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="10">
+              <TextBlock FontWeight="SemiBold"
+                         Text="{Binding Edsm.ActiveCommanderDisplayName}" />
+              <TextBox x:Name="EdsmCommanderNameTextBox"
+                       Text="{Binding Edsm.EdsmCommanderName, Mode=TwoWay}"
+                       IsEnabled="{Binding Edsm.HasCommanderProfile}"
+                       PlaceholderText="EDSM-registered Commander name" />
+              <TextBox x:Name="EdsmApiKeyTextBox"
+                       Text="{Binding Edsm.ApiKey, Mode=TwoWay}"
+                       PasswordChar="*"
+                       IsEnabled="{Binding Edsm.HasCommanderProfile}"
+                       PlaceholderText="Personal EDSM API key" />
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Classes="primary"
+                        Command="{Binding Edsm.SaveCredentialsCommand}"
+                        Content="Save and enable" />
+                <Button Classes="secondary"
+                        Click="OpenEdsmApiKeyPage_Click"
+                        Content="Get API key" />
+                <Button Classes="secondary"
+                        Command="{Binding Edsm.RequestClearCredentialsCommand}"
+                        IsVisible="{Binding Edsm.HasStoredCredentials}"
+                        Content="Disable" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal"
+                          Spacing="10"
+                          IsVisible="{Binding Edsm.IsClearCredentialsConfirmationVisible}">
+                <TextBlock VerticalAlignment="Center"
+                           Text="Disable EDSM synchronization for this Commander?" />
+                <Button Classes="danger"
+                        Command="{Binding Edsm.ConfirmClearCredentialsCommand}"
+                        Content="Remove credentials" />
+                <Button Classes="secondary"
+                        Command="{Binding Edsm.CancelClearCredentialsCommand}"
+                        Content="Cancel" />
+              </StackPanel>
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding Edsm.CredentialStatus}" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="The credential pair is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events." />
+            </StackPanel>
+          </Grid>
+
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue." />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="{Binding Edsm.HasPublicationStatus}"
+                     TextWrapping="Wrap"
+                     Text="{Binding Edsm.PublicationStatus}" />
+        </StackPanel>
+      </Border>
+
       <Separator IsVisible="{Binding SettingsWorkspace.IsInputSelected}" />
 
       <StackPanel Spacing="5"

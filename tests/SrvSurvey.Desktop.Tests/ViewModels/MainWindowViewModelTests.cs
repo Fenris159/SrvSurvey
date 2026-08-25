@@ -1,5 +1,6 @@
 using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Inara;
@@ -636,6 +637,83 @@ public sealed class MainWindowViewModelTests
             Assert.Contains(
                 "Inara accepted",
                 viewModel.Inara.PublicationStatus);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task EdsmReceivesProfileCredentialsAndRequiresAttributableLiveEvents()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-edsm-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-08-25T120000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-08-25T12:00:00Z\",\"event\":\"Fileheader\",\"gameversion\":\"4.1\",\"build\":\"r1\",\"Odyssey\":true}\n"
+                    + "{\"timestamp\":\"2026-08-25T12:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"FID\":\"F123\",\"Odyssey\":true}\n"
+                    + "{\"timestamp\":\"2026-08-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            await new CommanderProfileStore(paths.DataDirectory)
+                .SaveEdsmCredentialsAsync(
+                    "F123",
+                    "Test Cmdr",
+                    isOdyssey: true,
+                    "EDSM Test Cmdr",
+                    "personal-key");
+            var publisher = new RecordingEdsmPublisher();
+            var gameWindows = new MutableGameWindowSwitcher
+            {
+                AvailableWindowCount = 2,
+            };
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder
+                    .WithAppDataPaths(paths)
+                    .WithGameWindowSwitcher(gameWindows)
+                    .WithEdsmPublisher(publisher));
+
+            await viewModel.RefreshAsync();
+
+            var bootstrap = Assert.Single(publisher.Calls);
+            Assert.False(bootstrap.AllowPublishing);
+            Assert.Equal("EDSM Test Cmdr", bootstrap.Options.EdsmCommanderName);
+            Assert.Equal("personal-key", bootstrap.Options.ApiKey);
+            Assert.Equal("Test Cmdr", bootstrap.Options.ActiveCommanderName);
+            Assert.Equal("F123", bootstrap.Options.FrontierId);
+            Assert.Equal("4.1", bootstrap.Options.GameVersion);
+            Assert.Equal("r1", bootstrap.Options.GameBuild);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-08-25T12:01:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Test B\",\"SystemAddress\":456,\"StarPos\":[4,5,6]}\n");
+            await viewModel.RefreshAsync();
+            Assert.False(publisher.Calls[1].AllowPublishing);
+
+            gameWindows.AvailableWindowCount = 1;
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-08-25T12:02:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Test C\",\"SystemAddress\":789,\"StarPos\":[7,8,9]}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.True(publisher.Calls[2].AllowPublishing);
+            Assert.Contains("EDSM accepted", viewModel.Edsm.PublicationStatus);
         }
         finally
         {
@@ -4101,6 +4179,44 @@ public sealed class MainWindowViewModelTests
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult(InaraPublicationResult.Empty);
+        }
+
+        public void CancelPendingPublication()
+        {
+            CancellationCount++;
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
+    private sealed class RecordingEdsmPublisher : IEdsmPublisher
+    {
+        public List<EdsmPublicationUpdate> Calls { get; } = [];
+
+        public int CancellationCount { get; private set; }
+
+        public Task<EdsmPublicationResult> ApplyAsync(
+            EdsmPublicationUpdate update,
+            CancellationToken cancellationToken = default)
+        {
+            Calls.Add(update);
+            return Task.FromResult(new EdsmPublicationResult(
+                QueuedEventCount: 0,
+                AcceptedEventCount: update.AllowPublishing
+                    && update.JournalEvents.Count > 0
+                        ? 1
+                        : 0,
+                PendingEventCount: 0,
+                QueuedEventNames: [],
+                Warnings: []));
+        }
+
+        public Task<EdsmPublicationResult> StopAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(EdsmPublicationResult.Empty);
         }
 
         public void CancelPendingPublication()
