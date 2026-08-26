@@ -1,8 +1,25 @@
-# SrvSurvey-XP 2.1.3.0-rc.39
+# SrvSurvey-XP 2.1.3.0-rc.40
 
-This release candidate includes the optional direct EDSM account synchronization
-introduced in `2.1.3.0-rc.38` and fixes a journal compatibility problem found
-during live testing.
+This release candidate retains the optional direct EDSM account synchronization
+and its RC39 journal compatibility fix, promotes EDDN from validation schemas to
+production sharing, and reduces routine upload log noise.
+
+## Network upload reporting
+
+- Replaces per-event EDSM and EDDN success messages with one aggregate count
+  after each 15-minute activity window, keeping the logs useful during long
+  survey sessions without recording every accepted event.
+- Removes EDSM summaries for events intentionally excluded by its current
+  Journal API discard policy. Hard failures, rejections, retries, pauses, and
+  possible data-loss warnings remain immediate.
+
+## EDDN production sharing
+
+- Sends eligible opted-in Live journal and companion-file data through EDDN's
+  Live gateway using production schema references rather than `/test` schemas.
+- Normalizes both new and restored durable messages to remove any legacy
+  `/test` suffix before delivery. Existing consent, attribution, multicrew,
+  multi-window, retry, and duplicate-uploader protections remain unchanged.
 
 ## EDSM journal compatibility
 
@@ -43,11 +60,11 @@ during live testing.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.39`
-- Tag: `xp-v2.1.3.0-rc.39`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.39-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.39-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.39-x86_64.AppImage`
+- Version: `2.1.3.0-rc.40`
+- Tag: `xp-v2.1.3.0-rc.40`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.40-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.40-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.40-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
