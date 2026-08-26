@@ -366,6 +366,8 @@ jobs:
           IS_PRERELEASE: ${{ needs.release-metadata.outputs.is_prerelease }}
           SOURCE_SHA: ${{ needs.release-metadata.outputs.source_sha }}
         run: |
+          set -e
+          
           release_args=(
             --generate-notes
             --notes "$(cat CurrentReleaseNotes.md)"
@@ -377,17 +379,47 @@ jobs:
           fi
 
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" packages/* --clobber
+            echo "Release exists. Uploading and updating assets..."
+            # Upload files individually with retry logic
+            for file in packages/*; do
+              if [ -f "$file" ]; then
+                filename=$(basename "$file")
+                echo "Uploading: $filename"
+                max_attempts=3
+                attempt=1
+                while [ $attempt -le $max_attempts ]; do
+                  if gh release upload "$RELEASE_TAG" "$file" --clobber; then
+                    echo "Successfully uploaded: $filename"
+                    break
+                  else
+                    if [ $attempt -lt $max_attempts ]; then
+                      echo "Upload attempt $attempt failed. Retrying in 5 seconds..."
+                      sleep 5
+                      ((attempt++))
+                    else
+                      echo "Failed to upload $filename after $max_attempts attempts"
+                      exit 1
+                    fi
+                  fi
+                done
+              fi
+            done
+            
+            echo "Updating release metadata..."
             gh release edit "$RELEASE_TAG" \
               --title "SrvSurvey-XP $RELEASE_VERSION" \
               --prerelease="$IS_PRERELEASE" \
               --latest=false
           elif git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Tag exists but release doesn't. Creating release from tag..."
             gh release create "$RELEASE_TAG" packages/* \
               --verify-tag \
               "${release_args[@]}"
           else
+            echo "Creating new release and tag..."
             gh release create "$RELEASE_TAG" packages/* \
               --target "$SOURCE_SHA" \
               "${release_args[@]}"
           fi
+          
+          echo "Release successfully published!"
