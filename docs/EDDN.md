@@ -67,12 +67,10 @@ Spansh, and Inara integrations do not wait for an EDDN network request. Queue
 logging occurs after synchronization locks are released, and shutdown cancels
 workers without disposing synchronization primitives underneath them.
 
-This release always uses EDDN's Live upload gateway with `/test` appended
-exactly once to every schema reference. The mode is fixed internally and is not
-a user preference. Existing queued records are normalized to `/test` before
-delivery, so validation traffic cannot enter the production stream. A future
-release can change the internal constant after the integration is accepted for
-production data.
+This release always uses EDDN's Live upload gateway with production schema
+references. The mode is fixed internally and is not a user preference. Existing
+queued records are normalized to remove any legacy `/test` suffix before
+delivery.
 
 Spansh remains a separate, read-only lookup integration. Its nearby setting
 only chooses the source of system last-updated timestamps and never sends

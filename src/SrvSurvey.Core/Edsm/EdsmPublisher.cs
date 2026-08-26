@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SrvSurvey.Core.Diagnostics;
 
 namespace SrvSurvey.Core.Edsm;
 
@@ -44,6 +45,8 @@ public sealed class EdsmPublisher : IEdsmPublisher
     private readonly bool ownsHttpClient;
     private readonly string appVersion;
     private readonly TimeProvider timeProvider;
+    private readonly Action<string> log;
+    private readonly UploadSuccessLogAggregator successfulUploads;
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
         "CA2213:Disposable fields should be disposed",
@@ -74,11 +77,15 @@ public sealed class EdsmPublisher : IEdsmPublisher
     public EdsmPublisher(
         string appVersion,
         HttpClient? httpClient = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        Action<string>? log = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(appVersion);
         this.appVersion = appVersion;
         this.timeProvider = timeProvider ?? TimeProvider.System;
+        this.log = log ?? (_ => { });
+        successfulUploads = new UploadSuccessLogAggregator(
+            () => this.timeProvider.GetUtcNow());
         if (httpClient is null)
         {
             this.httpClient = new HttpClient(new SocketsHttpHandler
@@ -522,7 +529,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
             generation,
             sendDiscardedEvents,
             out var discardedForCredentials,
-            out var discardedByEdsm);
+            out _);
         lock (stateSync)
         {
             nextSendAt = null;
@@ -534,12 +541,6 @@ public sealed class EdsmPublisher : IEdsmPublisher
         {
             warnings.Add(
                 $"EDSM discarded {discardedForCredentials} queued event(s) after the commander credentials changed or were cleared.");
-        }
-
-        if (discardedByEdsm > 0)
-        {
-            warnings.Add(
-                $"EDSM skipped {discardedByEdsm} event(s) that its current Journal API does not process.");
         }
 
         if (batch.Count == 0)
@@ -1271,12 +1272,34 @@ public sealed class EdsmPublisher : IEdsmPublisher
         int accepted,
         IReadOnlyList<string> warnings)
     {
+        if (accepted > 0
+            && successfulUploads.Record(accepted) is { } completedCount)
+        {
+            var eventLabel = completedCount == 1
+                ? "journal event"
+                : "journal events";
+            WriteLog(
+                $"EDSM uploaded {completedCount:N0} {eventLabel} in the previous 15-minute activity window.");
+        }
+
         return new EdsmPublicationResult(
             0,
             accepted,
             GetQueuedCount(),
             [],
             warnings);
+    }
+
+    private void WriteLog(string message)
+    {
+        try
+        {
+            log(message);
+        }
+        catch
+        {
+            // Diagnostics must never interrupt journal publication.
+        }
     }
 
     private int GetQueuedCount()

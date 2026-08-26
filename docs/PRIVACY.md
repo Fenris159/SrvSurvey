@@ -39,11 +39,10 @@ own the queue. Queueing and delivery pause while multiple Elite windows make
 shared state ambiguous; already-pending records remain local until attribution
 is safe.
 
-This release sends to EDDN's Live gateway using `/test` schema references fixed
-internally. Test-schema messages are not consumed as production data, and there
-is no user-selectable production/test toggle. Enable EDDN uploads in only one
-application at a time, such as SrvSurvey or EDMC, because multiple uploaders can
-create duplicate submissions.
+This release sends to EDDN's Live gateway using production schema references
+fixed internally. There is no user-selectable production/test toggle. Enable
+EDDN uploads in only one application at a time, such as SrvSurvey or EDMC,
+because multiple uploaders can create duplicate submissions.
 
 ## Inara
 

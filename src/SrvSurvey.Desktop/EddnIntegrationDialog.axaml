@@ -60,7 +60,7 @@
                        Text="Only one SrvSurvey process can own the queue. Queueing and delivery pause while multiple Elite windows make shared Status and companion files ambiguous; pending messages remain local until attribution is safe." />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="This release uses EDDN's Live upload gateway with /test schema references fixed internally. Test-schema messages are not consumed as production data." />
+                       Text="This release uses EDDN's Live upload gateway with production schema references fixed internally." />
           </StackPanel>
         </Border>
 

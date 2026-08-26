@@ -473,7 +473,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             this.edsmPublisher = resolvedEdsmPublisher ?? new EdsmPublisher(
                 (typeof(MainWindowViewModel).Assembly.GetName().Version
                     ?? new Version(0, 0)).ToString(),
-                httpClient: externalNetworkClient);
+                httpClient: externalNetworkClient,
+                log: message => resolvedApplicationLogService?.Append(message));
             rollback.AddIfCreated(resolvedEdsmPublisher, this.edsmPublisher);
             Edsm.CredentialsChanged += OnEdsmCredentialsChanged;
             rollback.Add(() =>

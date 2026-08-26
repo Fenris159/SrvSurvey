@@ -495,7 +495,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(live.AllowPublishing);
             Assert.Equal("DockingGranted", Assert.Single(live.Events).EventName);
             Assert.Contains(
-                "Queued DockingGranted for EDDN (test schemas)",
+                "Queued DockingGranted for EDDN.",
                 viewModel.NetworkPrivacy.StatusMessage);
         }
         finally
@@ -4285,8 +4285,8 @@ public sealed class MainWindowViewModelTests
                     && request.JournalEvents.Count > 0
                     ? [new EddnPublishedEvent(
                         request.JournalEvents[0].EventName,
-                        "https://eddn.edcd.io/schemas/test/1/test",
-                        UsesTestSchemas: true)]
+                        "https://eddn.edcd.io/schemas/test/1",
+                        UsesTestSchemas: false)]
                     : [];
             return Task.FromResult(new EddnPublicationResult(published, []));
         }
