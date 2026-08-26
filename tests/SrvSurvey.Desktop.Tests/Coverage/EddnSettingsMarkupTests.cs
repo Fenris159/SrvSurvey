@@ -30,7 +30,7 @@ public sealed class EddnSettingsMarkupTests
     }
 
     [Fact]
-    public void DialogExplainsIdentityStorageTestSchemasAndDuplicateUploaders()
+    public void DialogExplainsIdentityStorageLiveSchemasAndDuplicateUploaders()
     {
         var values = LoadMarkup("EddnIntegrationDialog.axaml")
             .Descendants()
@@ -42,7 +42,7 @@ public sealed class EddnSettingsMarkupTests
         Assert.Contains("Commander name", text, StringComparison.Ordinal);
         Assert.Contains("no account, personal API key", text, StringComparison.Ordinal);
         Assert.Contains("durable local retry queue", text, StringComparison.Ordinal);
-        Assert.Contains("/test schema references fixed internally", text, StringComparison.Ordinal);
+        Assert.Contains("production schema references", text, StringComparison.Ordinal);
         Assert.Contains("SrvSurvey or EDMC", text, StringComparison.Ordinal);
         Assert.Contains("duplicate submissions", text, StringComparison.Ordinal);
         Assert.Contains("Enable EDDN sharing for live Commander sessions", values);

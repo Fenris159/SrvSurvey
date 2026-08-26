@@ -689,7 +689,7 @@ public static class GuideCatalog
                         ],
                         [
                             "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
-                            "EDDN needs no personal account or API key. This release sends internally fixed test-schema messages through the Live gateway, so they are not consumed as production data.",
+                            "EDDN needs no personal account or API key. This release sends production-schema messages through the Live gateway.",
                         ]),
                     Section(
                         "Inara publishing",

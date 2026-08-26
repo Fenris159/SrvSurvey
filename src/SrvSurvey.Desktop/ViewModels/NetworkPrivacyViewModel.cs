@@ -170,13 +170,12 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         else if (result.Published.Count == 1)
         {
             StatusMessage =
-                $"Queued {result.Published[0].EventName} for EDDN (test schemas).";
+                $"Queued {result.Published[0].EventName} for EDDN.";
         }
         else if (result.Published.Count > 1)
         {
             StatusMessage =
-                $"Queued {result.Published.Count:N0} journal events for EDDN "
-                + "(test schemas).";
+                $"Queued {result.Published.Count:N0} journal events for EDDN.";
         }
     }
 

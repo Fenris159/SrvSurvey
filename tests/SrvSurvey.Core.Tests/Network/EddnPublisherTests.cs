@@ -9,7 +9,7 @@ namespace SrvSurvey.Core.Tests.Network;
 public sealed class EddnPublisherTests
 {
     [Fact]
-    public async Task BootstrapBuildsContextAndTestSchemasPublishThroughLiveGateway()
+    public async Task BootstrapBuildsContextAndLiveSchemasPublishThroughLiveGateway()
     {
         var requests = new List<RecordedRequest>();
         var publisher = CreatePublisher(requests);
@@ -55,9 +55,9 @@ public sealed class EddnPublisherTests
         var published = Assert.Single(live.Published);
         Assert.Equal("FSSBodySignals", published.EventName);
         Assert.Equal(
-            "https://eddn.edcd.io/schemas/fssbodysignals/1/test",
+            "https://eddn.edcd.io/schemas/fssbodysignals/1",
             published.SchemaReference);
-        Assert.True(published.UsesTestSchemas);
+        Assert.False(published.UsesTestSchemas);
         var request = Assert.Single(requests);
         Assert.Equal("https://live.example.test/upload/", request.Uri.ToString());
         Assert.Equal(HttpVersion.Version11, request.Version);
@@ -118,7 +118,7 @@ public sealed class EddnPublisherTests
         using var json = JsonDocument.Parse(Assert.Single(requests).Content);
         var root = json.RootElement;
         Assert.Equal(
-            "https://eddn.edcd.io/schemas/journal/1/test",
+            "https://eddn.edcd.io/schemas/journal/1",
             root.GetProperty("$schemaRef").GetString());
         var message = root.GetProperty("message");
         Assert.False(message.TryGetProperty("Wanted", out _));
@@ -392,7 +392,7 @@ public sealed class EddnPublisherTests
 
             using var payload = JsonDocument.Parse(Assert.Single(requests).Content);
             Assert.Equal(
-                "https://eddn.edcd.io/schemas/commodity/3/test",
+                "https://eddn.edcd.io/schemas/commodity/3",
                 payload.RootElement.GetProperty("$schemaRef").GetString());
             var message = payload.RootElement.GetProperty("message");
             Assert.Equal("Test A", message.GetProperty("systemName").GetString());

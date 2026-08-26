@@ -12,7 +12,7 @@ namespace SrvSurvey.Core.Network
         internal const int MaximumPayloadBytes = 1024 * 1024;
         internal const int MaximumUncompressedPayloadBytes = 10 * 1024 * 1024;
         internal const int MaximumResponseDetailBytes = 2048;
-        internal const bool TestSchemasEnabled = true;
+        internal const bool TestSchemasEnabled = false;
 
         private static readonly Uri defaultEndpoint =
             new("https://eddn.edcd.io:4430/upload/");

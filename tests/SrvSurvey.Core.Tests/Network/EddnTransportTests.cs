@@ -11,7 +11,7 @@ namespace SrvSurvey.Core.Tests.Network;
 public sealed class EddnTransportTests
 {
     [Fact]
-    public async Task UploadUsesGzipExactHttp11NoAuthenticationAndTestSchema()
+    public async Task UploadUsesGzipExactHttp11NoAuthenticationAndLiveSchema()
     {
         RecordedRequest? recorded = null;
         var transport = createTransport(async request =>
@@ -26,7 +26,7 @@ public sealed class EddnTransportTests
             header());
 
         Assert.True(result.isSuccess);
-        Assert.True(result.useTestSchemas);
+        Assert.False(result.useTestSchemas);
         Assert.NotNull(recorded);
         Assert.Equal("https://live.example.test/upload/", recorded.uri.ToString());
         Assert.Equal(HttpVersion.Version11, recorded.version);
@@ -38,7 +38,7 @@ public sealed class EddnTransportTests
 
         var payload = JObject.Parse(recorded.content);
         Assert.Equal(
-            "https://eddn.edcd.io/schemas/dockinggranted/1/test",
+            "https://eddn.edcd.io/schemas/dockinggranted/1",
             payload.Value<string>("$schemaRef"));
         var payloadHeader = Assert.IsType<JObject>(payload["header"]);
         Assert.Equal("Test Cmdr", payloadHeader.Value<string>("uploaderID"));
@@ -48,7 +48,7 @@ public sealed class EddnTransportTests
     }
 
     [Fact]
-    public async Task ExistingTestSuffixIsNotDuplicated()
+    public async Task ExistingTestSuffixIsRemovedForLiveSchemas()
     {
         RecordedRequest? recorded = null;
         var transport = createTransport(async request =>
@@ -63,11 +63,11 @@ public sealed class EddnTransportTests
             header());
 
         Assert.True(result.isSuccess);
-        Assert.True(result.useTestSchemas);
+        Assert.False(result.useTestSchemas);
         Assert.NotNull(recorded);
         Assert.Equal("https://live.example.test/upload/", recorded.uri.ToString());
         Assert.Equal(
-            "https://eddn.edcd.io/schemas/dockinggranted/1/test",
+            "https://eddn.edcd.io/schemas/dockinggranted/1",
             JObject.Parse(recorded.content).Value<string>("$schemaRef"));
     }
 

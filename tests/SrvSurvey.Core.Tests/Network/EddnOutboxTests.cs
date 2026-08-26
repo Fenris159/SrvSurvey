@@ -127,7 +127,7 @@ public sealed class EddnOutboxTests
     [InlineData("live")]
     [InlineData("beta")]
     [InlineData("dev")]
-    public async Task LegacyQueueUsesTestSchemasOnLiveGateway(
+    public async Task LegacyQueueUsesLiveSchemasOnLiveGateway(
         string legacyEnvironment)
     {
         using var folder = new TemporaryFolder();
@@ -169,7 +169,7 @@ public sealed class EddnOutboxTests
 
         Assert.Equal("https://live.example.test/upload/", requestUri?.ToString());
         Assert.Equal(
-            "https://eddn.edcd.io/schemas/dockinggranted/1/test",
+            "https://eddn.edcd.io/schemas/dockinggranted/1",
             schemaRef);
         Assert.False(File.Exists(path));
     }
@@ -275,7 +275,7 @@ public sealed class EddnOutboxTests
         await queue.processDue();
 
         Assert.Equal(
-            ["EDDN uploaded 2 journal messages in the previous 15-minute activity window using test schemas."],
+            ["EDDN uploaded 2 journal messages in the previous 15-minute activity window."],
             logs);
     }
 

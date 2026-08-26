@@ -524,7 +524,7 @@ namespace SrvSurvey.Core.Network
                 return (
                     persistenceLog,
                     completedCount is { } count
-                        ? $"EDDN uploaded {count:N0} {messageLabel} in the previous 15-minute activity window using test schemas."
+                        ? $"EDDN uploaded {count:N0} {messageLabel} in the previous 15-minute activity window."
                         : null);
             }
 

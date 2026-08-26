@@ -458,7 +458,7 @@ internal sealed class EddnSessionPublisher : IDisposable
             published.Add(new EddnPublishedEvent(
                 prepared!.eventName,
                 EddnTransport.NormalizeSchemaReference(prepared.schemaRef),
-                UsesTestSchemas: true));
+                UsesTestSchemas: EddnTransport.TestSchemasEnabled));
         }
         else if (IsCurrentSession(captured.SessionGeneration))
         {
@@ -549,7 +549,7 @@ internal sealed class EddnSessionPublisher : IDisposable
             published?.Add(new EddnPublishedEvent(
                 prepared!.eventName,
                 EddnTransport.NormalizeSchemaReference(prepared.schemaRef),
-                UsesTestSchemas: true));
+                UsesTestSchemas: EddnTransport.TestSchemasEnabled));
         }
         else if (!allowDisposedBatch
             && IsCurrentSession(batch.Context.SessionGeneration))

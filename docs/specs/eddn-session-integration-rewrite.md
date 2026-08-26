@@ -41,12 +41,11 @@ restarts.
 ## EDDN policy
 
 - Uploads use EDDN's live upload endpoint.
-- Every schema reference appends `/test`. This is an internal release policy,
-  not a persisted setting or user choice. A future release can change the
-  single policy constant after production readiness is confirmed.
+- Every upload uses a production schema reference. This is an internal release
+  policy, not a persisted setting or user choice.
 - Existing persisted environment/test-mode settings are removed when network
   privacy settings are next saved. Existing durable messages are normalized to
-  `/test` before delivery.
+  remove any legacy `/test` suffix before delivery.
 - Companion files are revalidated against the triggering journal event and
   session generation immediately before enqueueing.
 
@@ -71,7 +70,7 @@ restarts.
 
 - Regressions cover Commander A-to-B isolation, mismatched `LoadGame`, stale
   companion-read cancellation, captured signal-batch location, retry fairness,
-  fixed `/test` schemas, legacy queue migration, corruption isolation, consent
+  fixed production schemas, legacy queue migration, corruption isolation, consent
   deletion, exclusive ownership, and the dedicated disclosure window.
 - Core and Desktop tests, formatting, Windows/Linux builds, and the reopened PR
   checks must pass before the branch is handed off for review.

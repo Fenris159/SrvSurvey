@@ -41,19 +41,19 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     }
 
     [Fact]
-    public void EddnPublicationStatusAlwaysDescribesFixedTestSchemas()
+    public void EddnPublicationStatusDescribesLiveQueueing()
     {
         var viewModel = new NetworkPrivacyViewModel(CreateStore());
 
         viewModel.ReportPublicationResult(new EddnPublicationResult(
             [
-                new EddnPublishedEvent("FSDJump", "schema/1/test", true),
-                new EddnPublishedEvent("Scan", "schema/1/test", true),
+                new EddnPublishedEvent("FSDJump", "schema/1", false),
+                new EddnPublishedEvent("Scan", "schema/1", false),
             ],
             []));
 
         Assert.Equal(
-            "Queued 2 journal events for EDDN (test schemas).",
+            "Queued 2 journal events for EDDN.",
             viewModel.StatusMessage);
 
         viewModel.ReportPublicationResult(new EddnPublicationResult(
