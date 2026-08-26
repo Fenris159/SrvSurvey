@@ -259,31 +259,11 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
 
                 for (var index = 0; index < count; index++)
                 {
-                    ref readonly var inputEvent = ref events[index];
-                    var type = (SDL.EventType)inputEvent.Type;
-                    if (type is SDL.EventType.GamepadButtonDown
-                        or SDL.EventType.GamepadButtonUp)
+                    if (!ProcessGamepadEvent(
+                            instanceId,
+                            state,
+                            in events[index]))
                     {
-                        if (inputEvent.GButton.Which == instanceId)
-                        {
-                            state.UpdateButton(
-                                (SDL.GamepadButton)inputEvent.GButton.Button,
-                                inputEvent.GButton.Down);
-                        }
-                    }
-                    else if (type == SDL.EventType.GamepadAxisMotion)
-                    {
-                        if (inputEvent.GAxis.Which == instanceId)
-                        {
-                            state.UpdateAxis(
-                                (SDL.GamepadAxis)inputEvent.GAxis.Axis,
-                                inputEvent.GAxis.Value);
-                        }
-                    }
-                    else if (type == SDL.EventType.GamepadRemoved
-                        && inputEvent.GDevice.Which == instanceId)
-                    {
-                        state.Clear();
                         return false;
                     }
                 }
@@ -296,6 +276,47 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
         {
             state.EndBatch();
         }
+    }
+
+    private static bool ProcessGamepadEvent(
+        uint instanceId,
+        SdlGamepadInputState state,
+        in SDL.Event inputEvent)
+    {
+        var type = (SDL.EventType)inputEvent.Type;
+        if (type is SDL.EventType.GamepadButtonDown
+            or SDL.EventType.GamepadButtonUp)
+        {
+            if (inputEvent.GButton.Which == instanceId)
+            {
+                state.UpdateButton(
+                    (SDL.GamepadButton)inputEvent.GButton.Button,
+                    inputEvent.GButton.Down);
+            }
+
+            return true;
+        }
+
+        if (type == SDL.EventType.GamepadAxisMotion)
+        {
+            if (inputEvent.GAxis.Which == instanceId)
+            {
+                state.UpdateAxis(
+                    (SDL.GamepadAxis)inputEvent.GAxis.Axis,
+                    inputEvent.GAxis.Value);
+            }
+
+            return true;
+        }
+
+        if (type != SDL.EventType.GamepadRemoved
+            || inputEvent.GDevice.Which != instanceId)
+        {
+            return true;
+        }
+
+        state.Clear();
+        return false;
     }
 
     private static void SynchronizeGamepadState(
