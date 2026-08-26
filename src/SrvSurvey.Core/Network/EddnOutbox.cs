@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using SrvSurvey.Core.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -26,6 +27,7 @@ namespace SrvSurvey.Core.Network
         private readonly EddnTransport transport;
         private readonly Action<string> log;
         private readonly Func<DateTimeOffset> utcNow;
+        private readonly UploadSuccessLogAggregator successfulUploads;
         private readonly bool automaticProcessing;
         private readonly int maximumPendingMessages;
         private readonly long maximumStoreBytes;
@@ -77,6 +79,7 @@ namespace SrvSurvey.Core.Network
             this.transport = transport;
             this.log = log ?? (_ => { });
             this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
+            successfulUploads = new UploadSuccessLogAggregator(this.utcNow);
             this.automaticProcessing = automaticProcessing;
             this.maximumPendingMessages = maximumPendingMessages;
             this.maximumStoreBytes = maximumStoreBytes;
@@ -491,7 +494,7 @@ namespace SrvSurvey.Core.Network
             return (persistenceLog, resultLog);
         }
 
-        private (string? PersistenceLog, string ResultLog) CompleteUploadLocked(
+        private (string? PersistenceLog, string? ResultLog) CompleteUploadLocked(
             EddnQueuedMessage next,
             EddnUploadResult? result,
             List<string> reloadLogs)
@@ -514,9 +517,15 @@ namespace SrvSurvey.Core.Network
 
             if (result?.isSuccess == true)
             {
+                var completedCount = successfulUploads.Record(1);
+                var messageLabel = completedCount == 1
+                    ? "journal message"
+                    : "journal messages";
                 return (
                     persistenceLog,
-                    $"EDDN uploaded {eventName(next)} using test schemas.");
+                    completedCount is { } count
+                        ? $"EDDN uploaded {count:N0} {messageLabel} in the previous 15-minute activity window using test schemas."
+                        : null);
             }
 
             var detail = result?.skipReason

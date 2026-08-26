@@ -140,7 +140,7 @@ public sealed class EdsmPublisherTests
     }
 
     [Fact]
-    public async Task CurrentDiscardListFiltersUnsupportedEventsBeforePost()
+    public async Task CurrentDiscardListSilentlyFiltersUnsupportedEventsBeforePost()
     {
         var handler = new EdsmResponseHandler
         {
@@ -162,9 +162,57 @@ public sealed class EdsmPublisherTests
         Assert.Equal(0, result.AcceptedEventCount);
         Assert.Equal(0, result.PendingEventCount);
         Assert.Equal(0, handler.PostCount);
-        Assert.Contains(
-            result.Warnings,
-            warning => warning.Contains("does not process", StringComparison.Ordinal));
+        Assert.Empty(result.Warnings);
+    }
+
+    [Fact]
+    public async Task SuccessfulUploadsAreSummarizedOncePerFifteenMinuteWindow()
+    {
+        var handler = new EdsmResponseHandler();
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-25T12:00:00Z"));
+        var logs = new List<string>();
+        using var publisher = new EdsmPublisher(
+            "2.1.3.0",
+            new HttpClient(handler),
+            time,
+            logs.Add);
+
+        await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event("""
+                    {
+                      "timestamp": "2026-08-25T12:00:00Z",
+                      "event": "FSDJump",
+                      "StarSystem": "Sol"
+                    }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-08-25T12:00:01Z",
+                      "event": "FSDJump",
+                      "StarSystem": "Sirius"
+                    }
+                    """),
+            ]));
+        await publisher.FlushAsync();
+
+        Assert.Empty(logs);
+
+        time.Advance(TimeSpan.FromMinutes(15));
+        await publisher.ApplyAsync(CreateUpdate(
+            [Event("""
+                {
+                  "timestamp": "2026-08-25T12:15:00Z",
+                  "event": "FSDJump",
+                  "StarSystem": "Achenar"
+                }
+                """)]));
+        await publisher.FlushAsync();
+
+        Assert.Equal(
+            ["EDSM uploaded 2 journal events in the previous 15-minute activity window."],
+            logs);
     }
 
     [Fact]
@@ -472,6 +520,16 @@ public sealed class EdsmPublisherTests
         private static string Decode(string value)
         {
             return Uri.UnescapeDataString(value.Replace('+', ' '));
+        }
+    }
+
+    private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => utcNow;
+
+        public void Advance(TimeSpan elapsed)
+        {
+            utcNow += elapsed;
         }
     }
 }

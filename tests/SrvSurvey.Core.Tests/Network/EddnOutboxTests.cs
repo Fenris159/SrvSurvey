@@ -249,6 +249,37 @@ public sealed class EddnOutboxTests
     }
 
     [Fact]
+    public async Task SuccessfulUploadsAreSummarizedOncePerFifteenMinuteWindow()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var logs = new List<string>();
+        using var queue = new EddnOutbox(
+            path,
+            EddnTransportTests.createTransport(_ => Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK))),
+            logs.Add,
+            () => now,
+            automaticProcessing: false);
+        queue.setEnabled(true, discardPendingWhenDisabled: false);
+        Assert.True(queue.enqueue(queued(now, "First Port")));
+        Assert.True(queue.enqueue(queued(now, "Second Port")));
+
+        await queue.processDue();
+
+        Assert.Empty(logs);
+
+        now = now.AddMinutes(15);
+        Assert.True(queue.enqueue(queued(now, "Third Port")));
+        await queue.processDue();
+
+        Assert.Equal(
+            ["EDDN uploaded 2 journal messages in the previous 15-minute activity window using test schemas."],
+            logs);
+    }
+
+    [Fact]
     public async Task SuspensionPreservesPendingMessagesUntilResumed()
     {
         using var folder = new TemporaryFolder();
@@ -589,6 +620,9 @@ public sealed class EddnOutboxTests
             queue.setEnabled(true, discardPendingWhenDisabled: false);
             Assert.True(queue.enqueue(queued(now)));
 
+            await queue.processDue();
+            now = now.AddMinutes(15);
+            Assert.True(queue.enqueue(queued(now)));
             await queue.processDue();
 
             Assert.True(callbackCouldInspectQueue);
