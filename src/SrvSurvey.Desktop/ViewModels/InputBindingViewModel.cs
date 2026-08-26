@@ -51,7 +51,7 @@ public sealed class InputBindingViewModel : INotifyPropertyChanged
             {
                 chord = candidate;
                 ValidationMessage =
-                    "Enter one key with ALT, CTRL, or SHIFT, or leave blank.";
+                    "Enter a keyboard shortcut or controller chord, or leave blank.";
                 OnPropertyChanged();
                 return;
             }

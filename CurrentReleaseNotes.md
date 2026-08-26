@@ -1,8 +1,23 @@
-# SrvSurvey-XP 2.1.3.0-rc.40
+# SrvSurvey-XP 2.1.3.0-rc.41
 
 This release candidate retains the optional direct EDSM account synchronization
 and its RC39 journal compatibility fix, promotes EDDN from validation schemas to
-production sharing, and reduces routine upload log noise.
+production sharing, reduces routine upload log noise, and completes SDL3
+controller shortcut support on Windows and Linux.
+
+## Controller input and shortcut editing
+
+- Uses SDL3 gamepad events for standard controllers on Windows and Linux,
+  mapping buttons, D-pad directions, and triggers into the existing global
+  shortcut system. Joysticks and HOTAS devices retain their SDL polling
+  fallback.
+- Allows controller chords to be assigned directly from the existing shortcut
+  fields. D-pad updates are coalesced so diagonals remain assignable, while
+  disconnects clear partial input without triggering an action.
+- Makes shortcut editing transactional and easier to leave: clicking outside
+  accepts a completed binding, Escape restores the previous binding before a
+  second Escape releases focus, and outside clicks cancel incomplete input.
+  Clear instructions now appear above the input configuration controls.
 
 ## Network upload reporting
 
@@ -60,11 +75,11 @@ production sharing, and reduces routine upload log noise.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.40`
-- Tag: `xp-v2.1.3.0-rc.40`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.40-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.40-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.40-x86_64.AppImage`
+- Version: `2.1.3.0-rc.41`
+- Tag: `xp-v2.1.3.0-rc.41`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.41-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.41-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.41-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.

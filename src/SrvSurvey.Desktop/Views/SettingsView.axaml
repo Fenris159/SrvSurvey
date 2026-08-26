@@ -652,6 +652,21 @@
                    Text="Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus." />
       </StackPanel>
 
+      <Border x:Name="ShortcutBindingInstructionsCard"
+              Classes="card"
+              IsVisible="{Binding SettingsWorkspace.IsInputSelected}">
+        <StackPanel Spacing="6">
+          <TextBlock FontWeight="SemiBold"
+                     Text="Setting shortcut bindings" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Click a shortcut field, hold the keyboard keys or controller buttons you want, then release them. Click outside the field to accept the new binding." />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Press Escape once to restore the previous binding, then press Escape again to leave the field. Backspace or Delete clears a binding; click outside afterward to accept the cleared value." />
+        </StackPanel>
+      </Border>
+
       <Border x:Name="KeyboardHookCard"
               Classes="card raised"
               IsVisible="{Binding SettingsWorkspace.IsInputSelected}">
@@ -695,7 +710,7 @@
             <StackPanel Spacing="3">
               <TextBlock Classes="card-title" Text="Shortcut bindings" />
               <TextBlock Classes="muted"
-                         Text="Expand to edit all original keyboard actions." />
+                         Text="Expand to assign keyboard or controller inputs to actions." />
             </StackPanel>
             <Button Grid.Column="1"
                     Classes="secondary"
@@ -720,8 +735,8 @@
                   </StackPanel>
                   <StackPanel Grid.Column="1" Spacing="3">
                     <controls:ShortcutCaptureBox Chord="{Binding Chord, Mode=TwoWay}"
-                                                 PlaceholderText="Click, then hold shortcut keys"
-                                                 ToolTip.Tip="Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears." />
+                                                 PlaceholderText="Click, then hold keys or controller buttons"
+                                                 ToolTip.Tip="Hold a keyboard shortcut or controller buttons, then release to save. Esc cancels; Backspace or Delete clears." />
                     <TextBlock Classes="muted"
                                FontSize="10"
                                Text="{Binding DefaultChord}" />
@@ -747,7 +762,7 @@
               <TextBlock Classes="card-title" Text="Controller input" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="SDL supports standard gamepads, joysticks, and HOTAS devices. Input is accepted while SrvSurvey or Elite Dangerous has focus." />
+                         Text="SDL supports standard gamepads, joysticks, and HOTAS devices. Select a device, enable it, then click a shortcut field and press controller buttons to assign them. Input is accepted while SrvSurvey or Elite Dangerous has focus." />
             </StackPanel>
             <CheckBox x:Name="ControllerEnabledCheckBox"
                       Grid.Column="1"
