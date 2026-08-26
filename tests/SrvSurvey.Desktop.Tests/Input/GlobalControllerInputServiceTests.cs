@@ -4,6 +4,7 @@ using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Input;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class GlobalControllerInputServiceTests
 {
     [Fact]
@@ -72,6 +73,69 @@ public sealed class GlobalControllerInputServiceTests
         backend.Emit("B1", isPressed: false);
 
         Assert.Equal(1, triggerCount);
+    }
+
+    [Fact]
+    public async Task SendsInputToActiveShortcutCaptureInsteadOfActionRouter()
+    {
+        var backend = new StubControllerInputBackend();
+        await using var service = new GlobalControllerInputService(
+            EnabledSettings(),
+            OverlayHostKind.LinuxX11,
+            new StubGameWindowTracker(isForeground: true),
+            isApplicationActive: () => false,
+            backend);
+        var owner = new object();
+        List<ControllerInputChange> captured = [];
+        var triggerCount = 0;
+        service.ActionTriggered += (_, _) => triggerCount++;
+        ShortcutCaptureSession.Begin(owner, captured.Add);
+        try
+        {
+            service.Start();
+            backend.Emit("B1", isPressed: true);
+            backend.Emit("B2", isPressed: true);
+            backend.Emit("B1", isPressed: false);
+
+            Assert.Equal(3, captured.Count);
+            Assert.Equal(0, triggerCount);
+        }
+        finally
+        {
+            ShortcutCaptureSession.End(owner);
+        }
+    }
+
+    [Fact]
+    public async Task CaptureClearsAChordStartedBeforeCaptureBegan()
+    {
+        var backend = new StubControllerInputBackend();
+        await using var service = new GlobalControllerInputService(
+            EnabledSettings(),
+            OverlayHostKind.LinuxX11,
+            new StubGameWindowTracker(isForeground: true),
+            isApplicationActive: () => false,
+            backend);
+        var owner = new object();
+        var triggerCount = 0;
+        service.ActionTriggered += (_, _) => triggerCount++;
+        service.Start();
+        backend.Emit("B1", isPressed: true);
+
+        ShortcutCaptureSession.Begin(owner, _ => { });
+        try
+        {
+            backend.Emit("B1", isPressed: false);
+        }
+        finally
+        {
+            ShortcutCaptureSession.End(owner);
+        }
+
+        backend.Emit("B2", isPressed: true);
+        backend.Emit("B2", isPressed: false);
+
+        Assert.Equal(0, triggerCount);
     }
 
     [Fact]

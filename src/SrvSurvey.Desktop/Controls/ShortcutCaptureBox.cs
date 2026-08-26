@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Input;
 
 namespace SrvSurvey.Desktop.Controls;
@@ -16,17 +18,24 @@ public sealed class ShortcutCaptureBox : TextBox
             defaultBindingMode: BindingMode.TwoWay);
 
     private readonly HashSet<Key> heldModifiers = [];
+    private readonly ControllerChordTracker controllerTracker = new();
     private Key? heldKey;
     private string originalChord = string.Empty;
     private string candidateChord = string.Empty;
+    private TopLevel? captureTopLevel;
     private bool capturing;
+    private bool hasPendingCommit;
 
     public ShortcutCaptureBox()
     {
         IsReadOnly = true;
-        GotFocus += (_, _) => BeginCapture();
-        LostFocus += (_, _) => CancelCapture();
-        DetachedFromVisualTree += (_, _) => CancelCapture();
+        GotFocus += (_, _) =>
+        {
+            AttachOutsidePointerHandler();
+            BeginCapture();
+        };
+        LostFocus += (_, _) => EndFocusInteraction();
+        DetachedFromVisualTree += (_, _) => EndFocusInteraction();
         AddHandler(
             PointerPressedEvent,
             (_, _) => BeginCapture(),
@@ -63,30 +72,47 @@ public sealed class ShortcutCaptureBox : TextBox
 
         capturing = true;
         originalChord = Chord;
+        hasPendingCommit = false;
         candidateChord = string.Empty;
         heldModifiers.Clear();
         heldKey = null;
-        ShortcutCaptureSession.Begin();
+        controllerTracker.Clear();
+        ShortcutCaptureSession.Begin(this, OnControllerInput);
+        AttachOutsidePointerHandler();
         UpdateDisplay();
     }
 
-    internal void CaptureKeyDown(Key key)
+    internal bool CaptureKeyDown(Key key)
     {
         if (!capturing)
         {
-            BeginCapture();
+            if (key == Key.Escape)
+            {
+                if (hasPendingCommit)
+                {
+                    RevertPendingCommit();
+                }
+                else
+                {
+                    ReleaseFocus();
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         if (key == Key.Escape)
         {
             CancelCapture();
-            return;
+            return true;
         }
 
         if (key is Key.Back or Key.Delete)
         {
             Commit(string.Empty);
-            return;
+            return true;
         }
 
         if (IsModifier(key))
@@ -100,6 +126,7 @@ public sealed class ShortcutCaptureBox : TextBox
 
         candidateChord = FormatCandidate(includePrompt: false);
         UpdateDisplay();
+        return true;
     }
 
     internal void CaptureKeyUp(Key key)
@@ -131,6 +158,32 @@ public sealed class ShortcutCaptureBox : TextBox
         }
     }
 
+    internal void CaptureControllerInput(ControllerInputChange change)
+    {
+        if (!capturing)
+        {
+            return;
+        }
+
+        var chord = controllerTracker.UpdateToken(
+            change.Token,
+            change.IsPressed);
+        if (chord is not null)
+        {
+            Commit(chord);
+            return;
+        }
+
+        if (controllerTracker.Pressed.Count > 0
+            && InputChord.TryNormalize(
+                string.Join(' ', controllerTracker.Pressed),
+                out var candidate))
+        {
+            candidateChord = candidate;
+            UpdateDisplay();
+        }
+    }
+
     internal void CancelCapture()
     {
         if (!capturing)
@@ -154,14 +207,14 @@ public sealed class ShortcutCaptureBox : TextBox
 
     private void OnCaptureKeyDown(object? sender, KeyEventArgs eventArgs)
     {
-        CaptureKeyDown(eventArgs.Key);
-        eventArgs.Handled = true;
+        eventArgs.Handled = CaptureKeyDown(eventArgs.Key);
     }
 
     private void OnCaptureKeyUp(object? sender, KeyEventArgs eventArgs)
     {
+        var wasCapturing = capturing;
         CaptureKeyUp(eventArgs.Key);
-        eventArgs.Handled = true;
+        eventArgs.Handled = wasCapturing;
     }
 
     private void Commit(string chord)
@@ -169,6 +222,8 @@ public sealed class ShortcutCaptureBox : TextBox
         EndCapture();
         SetCurrentValue(ChordProperty, chord);
         Text = chord;
+        hasPendingCommit = true;
+        AttachOutsidePointerHandler();
     }
 
     private void EndCapture()
@@ -181,7 +236,91 @@ public sealed class ShortcutCaptureBox : TextBox
         capturing = false;
         heldModifiers.Clear();
         heldKey = null;
-        ShortcutCaptureSession.End();
+        controllerTracker.Clear();
+        ShortcutCaptureSession.End(this);
+    }
+
+    private void AttachOutsidePointerHandler()
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (ReferenceEquals(captureTopLevel, topLevel))
+        {
+            return;
+        }
+
+        DetachOutsidePointerHandler();
+        captureTopLevel = topLevel;
+        captureTopLevel?.AddHandler(
+            PointerPressedEvent,
+            OnTopLevelPointerPressed,
+            RoutingStrategies.Tunnel,
+            handledEventsToo: true);
+    }
+
+    private void DetachOutsidePointerHandler()
+    {
+        captureTopLevel?.RemoveHandler(
+            PointerPressedEvent,
+            OnTopLevelPointerPressed);
+        captureTopLevel = null;
+    }
+
+    private void OnTopLevelPointerPressed(
+        object? sender,
+        PointerPressedEventArgs eventArgs)
+    {
+        if (eventArgs.Source is Visual source
+                && (ReferenceEquals(source, this)
+                    || this.IsVisualAncestorOf(source)))
+        {
+            return;
+        }
+
+        if (capturing)
+        {
+            CancelCapture();
+        }
+        else
+        {
+            hasPendingCommit = false;
+        }
+
+        ReleaseFocus();
+    }
+
+    private void RevertPendingCommit()
+    {
+        SetCurrentValue(ChordProperty, originalChord);
+        Text = originalChord;
+        hasPendingCommit = false;
+    }
+
+    private void EndFocusInteraction()
+    {
+        if (capturing)
+        {
+            CancelCapture();
+        }
+
+        hasPendingCommit = false;
+        DetachOutsidePointerHandler();
+        Text = Chord;
+    }
+
+    private void ReleaseFocus()
+    {
+        TopLevel.GetTopLevel(this)?.FocusManager?.Focus(null);
+    }
+
+    private void OnControllerInput(ControllerInputChange change)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            CaptureControllerInput(change);
+            return;
+        }
+
+        Dispatcher.UIThread.Post(() => CaptureControllerInput(change));
     }
 
     private void UpdateDisplay()
@@ -215,7 +354,7 @@ public sealed class ShortcutCaptureBox : TextBox
         }
         else if (includePrompt)
         {
-            tokens.Add("Press shortcut keys");
+            tokens.Add("Press keys or controller buttons");
         }
 
         return string.Join(' ', tokens);

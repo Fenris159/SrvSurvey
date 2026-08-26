@@ -192,6 +192,16 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
             return;
         }
 
+        if (ShortcutCaptureSession.TryCapture(change))
+        {
+            lock (trackerLock)
+            {
+                tracker.Clear();
+            }
+
+            return;
+        }
+
         string? chord;
         lock (trackerLock)
         {
