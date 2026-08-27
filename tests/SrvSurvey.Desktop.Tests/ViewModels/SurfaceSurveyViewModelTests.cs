@@ -258,7 +258,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             [],
             survey.CurrentStatus,
             ExobiologySnapshot.Empty);
-        Assert.False(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShow);
         Assert.False(viewModel.ShouldShowMiniTrack);
 
         ApplySurveyContext(
@@ -297,7 +297,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task SupercruiseSuppressesSurfaceAndMiniTrackWithoutLandingGearPreference()
+    public async Task SupercruiseAllowsSurfaceAndMiniTrackWithoutLandingGearPreference()
     {
         var (viewModel, survey, store) = CreateViewModel();
         await store.AddBookmarkAsync(
@@ -319,9 +319,9 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
 
         Assert.False(survey.AutoHideSurfaceRadarWithoutLandingGear);
         Assert.True(viewModel.HasQuickTrackers);
-        Assert.False(viewModel.ShouldShowRadar);
-        Assert.False(viewModel.ShouldShow);
-        Assert.False(viewModel.ShouldShowMiniTrack);
+        Assert.True(viewModel.ShouldShowRadar);
+        Assert.True(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShowMiniTrack);
     }
 
     [Fact]

@@ -885,7 +885,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         }
 
         var mode = survey.CurrentOverlayGameMode;
-        var allowedMode = mode is OverlayGameMode.Flying
+        var allowedMode = mode is OverlayGameMode.SuperCruising
+            or OverlayGameMode.Flying
             or OverlayGameMode.Landed
             or OverlayGameMode.InSrv
             or OverlayGameMode.OnFoot
@@ -932,7 +933,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         }
 
         var mode = survey.CurrentOverlayGameMode;
-        return mode is OverlayGameMode.Flying
+        return mode is OverlayGameMode.SuperCruising
+            or OverlayGameMode.Flying
             or OverlayGameMode.Landed
             or OverlayGameMode.InSrv
             or OverlayGameMode.OnFoot

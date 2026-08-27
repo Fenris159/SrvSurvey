@@ -1,9 +1,18 @@
-# SrvSurvey-XP 2.1.3.0-rc.41
+# SrvSurvey-XP 2.1.3.0-rc.42
 
 This release candidate retains the optional direct EDSM account synchronization
 and its RC39 journal compatibility fix, promotes EDDN from validation schemas to
 production sharing, reduces routine upload log noise, and completes SDL3
-controller shortcut support on Windows and Linux.
+controller shortcut support on Windows and Linux. It also restores survey overlay
+visibility while supercruising above a planet.
+
+## Supercruise survey overlays
+
+- Restores Canonn prior-scan biological predictions, the surface survey radar,
+  and the mini tracker while supercruising above a planet.
+- Keeps the landing-gear gate for normal ship flight: gear up suppresses these
+  overlays, while deployed gear permits them when their other display conditions
+  are met.
 
 ## Controller input and shortcut editing
 
@@ -75,11 +84,11 @@ controller shortcut support on Windows and Linux.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.41`
-- Tag: `xp-v2.1.3.0-rc.41`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.41-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.41-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.41-x86_64.AppImage`
+- Version: `2.1.3.0-rc.42`
+- Tag: `xp-v2.1.3.0-rc.42`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.42-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.42-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.42-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
