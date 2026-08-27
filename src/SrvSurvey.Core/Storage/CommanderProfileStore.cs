@@ -79,7 +79,8 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 GetInt32(root, "countJumps") ?? 0,
                 GetInt32(root, "countScans") ?? 0,
                 GetInt32(root, "countDSS") ?? 0,
-                GetInt32(root, "countLanded") ?? 0),
+                GetInt32(root, "countLanded") ?? 0,
+                ReadExplorationRewardsBySystem(root)),
             ReadExobiology(root),
             ReadSphereLimit(root),
             ReadBoxelSearch(root),
@@ -113,6 +114,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 root["countScans"] = exploration.ScanCount;
                 root["countDSS"] = exploration.DetailedSurfaceScanCount;
                 root["countLanded"] = exploration.LandedBodyCount;
+                WriteExplorationRewardsBySystem(root, exploration);
             },
             cancellationToken).ConfigureAwait(false);
     }
@@ -411,6 +413,57 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             GetInt64(root, "organicRewards") ?? 0,
             ReadStringArray(root, "scannedBioEntryIds"),
             GetInt32(root, "countRadicoidaUnica") ?? 0);
+    }
+
+    private static IReadOnlyDictionary<string, long>?
+        ReadExplorationRewardsBySystem(JsonObject root)
+    {
+        if (root["explRewardsBySystem"] is not JsonObject rewardsBySystem)
+        {
+            return null;
+        }
+
+        var result = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in rewardsBySystem)
+        {
+            if (string.IsNullOrWhiteSpace(entry.Key)
+                || entry.Value is not JsonValue value
+                || !value.TryGetValue<long>(out var reward)
+                || reward <= 0)
+            {
+                continue;
+            }
+
+            var systemName = entry.Key.Trim();
+            result[systemName] = result.GetValueOrDefault(systemName) + reward;
+        }
+
+        return result.Count == 0 ? null : result;
+    }
+
+    private static void WriteExplorationRewardsBySystem(
+        JsonObject root,
+        ExplorationSnapshot exploration)
+    {
+        root.Remove("explRewardsBySystem");
+        if (exploration.EstimatedRewardsBySystem is not { Count: > 0 } rewards)
+        {
+            return;
+        }
+
+        var rewardsBySystem = new JsonObject();
+        foreach (var entry in rewards
+                     .Where(entry => !string.IsNullOrWhiteSpace(entry.Key)
+                         && entry.Value > 0)
+                     .OrderBy(entry => entry.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            rewardsBySystem[entry.Key] = entry.Value;
+        }
+
+        if (rewardsBySystem.Count > 0)
+        {
+            root["explRewardsBySystem"] = rewardsBySystem;
+        }
     }
 
     private static SphereLimitSnapshot ReadSphereLimit(JsonObject root)

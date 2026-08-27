@@ -2636,7 +2636,17 @@ public sealed class MainWindowViewModelTests
                 "F123",
                 "Drew",
                 isOdyssey: true,
-                new ExplorationSnapshot(1000, 100, 10, 2, 3, 4));
+                new ExplorationSnapshot(
+                    1000,
+                    100,
+                    10,
+                    2,
+                    3,
+                    4,
+                    new Dictionary<string, long>
+                    {
+                        ["Alpha"] = 400,
+                    }));
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 profile,
@@ -2655,13 +2665,23 @@ public sealed class MainWindowViewModelTests
 
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-07-24T10:00:03Z\",\"event\":\"StartJump\",\"JumpType\":\"Hyperspace\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:04Z\",\"event\":\"FSDJump\",\"JumpDist\":5.25}\n");
+                "{\"timestamp\":\"2026-07-24T10:00:03Z\",\"event\":\"SellExplorationData\",\"Systems\":[\"Alpha\"],\"Discovered\":[\"Alpha\"]}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.Equal("600 CR", viewModel.EstimatedExplorationValue);
+            var saved = await store.LoadAsync("F123", isOdyssey: true);
+            Assert.Equal(600, saved.Data!.Exploration.EstimatedRewards);
+            Assert.Null(saved.Data.Exploration.EstimatedRewardsBySystem);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-24T10:00:04Z\",\"event\":\"StartJump\",\"JumpType\":\"Hyperspace\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:05Z\",\"event\":\"FSDJump\",\"JumpDist\":5.25}\n");
             await viewModel.RefreshAsync();
 
             Assert.Equal("11", viewModel.ExplorationJumps);
             Assert.Equal("105.2 ly", viewModel.ExplorationDistance);
-            var saved = await store.LoadAsync("F123", isOdyssey: true);
+            saved = await store.LoadAsync("F123", isOdyssey: true);
             Assert.Equal(11, saved.Data!.Exploration.JumpCount);
             Assert.Equal(105.25, saved.Data.Exploration.DistanceTravelled);
 

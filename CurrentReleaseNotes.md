@@ -4,7 +4,8 @@ This release candidate retains the optional direct EDSM account synchronization
 and its RC39 journal compatibility fix, promotes EDDN from validation schemas to
 production sharing, reduces routine upload log noise, and completes SDL3
 controller shortcut support on Windows and Linux. It also restores survey overlay
-visibility while supercruising above a planet.
+visibility while supercruising above a planet and reconciles estimated exploration
+rewards as system data is sold.
 
 ## Supercruise survey overlays
 
@@ -13,6 +14,14 @@ visibility while supercruising above a planet.
 - Keeps the landing-gear gate for normal ship flight: gear up suppresses these
   overlays, while deployed gear permits them when their other display conditions
   are met.
+
+## Unsold exploration estimates
+
+- Tracks newly estimated scan and surface-mapping rewards by star system, then
+  removes matched systems from the displayed estimate after Frontier emits
+  `SellExplorationData` or `MultiSellExplorationData`.
+- Keeps older unattributed totals intact, makes replayed sale events idempotent,
+  and clears the per-system ledger with the existing exploration reset.
 
 ## Controller input and shortcut editing
 

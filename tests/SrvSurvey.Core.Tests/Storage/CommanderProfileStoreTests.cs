@@ -83,6 +83,58 @@ public sealed class CommanderProfileStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task LoadAndSaveRoundTripExplorationRewardsBySystem()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-live.json");
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "fid": "F123",
+              "explRewards": 1900,
+              "explRewardsBySystem": {
+                "Alpha": 600,
+                "alpha": 400,
+                "Ignored": 0
+              },
+              "futureSetting": true
+            }
+            """);
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        var loaded = await store.LoadAsync("F123", isOdyssey: true);
+
+        Assert.NotNull(loaded.Data);
+        var rewards = Assert.Single(
+            loaded.Data.Exploration.EstimatedRewardsBySystem!);
+        Assert.Equal("Alpha", rewards.Key);
+        Assert.Equal(1000, rewards.Value);
+
+        await store.SaveExplorationAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            loaded.Data.Exploration);
+
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.True(root["futureSetting"]!.GetValue<bool>());
+        Assert.Equal(
+            1000,
+            root["explRewardsBySystem"]!["Alpha"]!.GetValue<long>());
+        Assert.Equal("explRewardsBySystem", root.Last().Key);
+
+        await store.SaveExplorationAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            ExplorationSnapshot.Empty);
+
+        root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.False(root.ContainsKey("explRewardsBySystem"));
+    }
+
+    [Fact]
     public async Task SaveRefusesToOverwriteMalformedProfile()
     {
         Directory.CreateDirectory(temporaryDirectory);
