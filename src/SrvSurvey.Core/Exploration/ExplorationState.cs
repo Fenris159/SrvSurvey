@@ -233,7 +233,7 @@ public sealed class ExplorationState
         return copy;
     }
 
-    private static IReadOnlyDictionary<string, long>? NormalizeRewardsBySystem(
+    private static ReadOnlyDictionary<string, long>? NormalizeRewardsBySystem(
         IReadOnlyDictionary<string, long>? rewardsBySystem)
     {
         if (rewardsBySystem is not { Count: > 0 })

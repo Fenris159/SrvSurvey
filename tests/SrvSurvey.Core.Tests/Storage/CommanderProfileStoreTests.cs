@@ -135,6 +135,34 @@ public sealed class CommanderProfileStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveNormalizesExplorationRewardSystemNames()
+    {
+        var store = new CommanderProfileStore(temporaryDirectory);
+        var rewards = new Dictionary<string, long>(StringComparer.Ordinal)
+        {
+            ["Alpha"] = 600,
+            [" alpha "] = 300,
+            ["ALPHA"] = 100,
+            [" "] = 50,
+            ["Ignored"] = 0,
+            ["Negative"] = -1,
+        };
+
+        await store.SaveExplorationAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            new ExplorationSnapshot(1000, 0, 0, 0, 0, 0, rewards));
+
+        var path = store.GetProfilePath("F123", isOdyssey: true);
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        var savedRewards = root["explRewardsBySystem"]!.AsObject();
+        var savedReward = Assert.Single(savedRewards);
+        Assert.Equal("Alpha", savedReward.Key);
+        Assert.Equal(1000, savedReward.Value!.GetValue<long>());
+    }
+
+    [Fact]
     public async Task SaveRefusesToOverwriteMalformedProfile()
     {
         Directory.CreateDirectory(temporaryDirectory);

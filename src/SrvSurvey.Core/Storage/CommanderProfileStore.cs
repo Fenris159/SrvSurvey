@@ -415,7 +415,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             GetInt32(root, "countRadicoidaUnica") ?? 0);
     }
 
-    private static IReadOnlyDictionary<string, long>?
+    private static Dictionary<string, long>?
         ReadExplorationRewardsBySystem(JsonObject root)
     {
         if (root["explRewardsBySystem"] is not JsonObject rewardsBySystem)
@@ -451,10 +451,19 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             return;
         }
 
-        var rewardsBySystem = new JsonObject();
+        var normalizedRewards = new Dictionary<string, long>(
+            StringComparer.OrdinalIgnoreCase);
         foreach (var entry in rewards
                      .Where(entry => !string.IsNullOrWhiteSpace(entry.Key)
-                         && entry.Value > 0)
+                         && entry.Value > 0))
+        {
+            var systemName = entry.Key.Trim();
+            normalizedRewards[systemName] =
+                normalizedRewards.GetValueOrDefault(systemName) + entry.Value;
+        }
+
+        var rewardsBySystem = new JsonObject();
+        foreach (var entry in normalizedRewards
                      .OrderBy(entry => entry.Key, StringComparer.OrdinalIgnoreCase))
         {
             rewardsBySystem[entry.Key] = entry.Value;
