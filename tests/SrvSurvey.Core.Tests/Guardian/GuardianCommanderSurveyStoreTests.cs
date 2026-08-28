@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Guardian;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Tests.Guardian;
 
@@ -71,6 +72,11 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
         var roundTrip = Assert.Single(loaded.Surveys);
         Assert.Empty(loaded.Errors);
         Assert.Equal(survey.Name, roundTrip.Name);
+        Assert.Equal(7, roundTrip.LocalSiteId);
+        Assert.Equal("1 b", roundTrip.CatalogBodyName);
+        Assert.Equal(new GalacticCoordinate(10, 20, 30), roundTrip.StarPosition);
+        Assert.Equal(1234.5, roundTrip.DistanceToArrivalLs);
+        Assert.Equal(new GuardianMapPoint(12.5, -7.25), roundTrip.MapMarkerOffset);
         Assert.Equal(survey.Survey.Location, roundTrip.Survey.Location);
         Assert.Equal(
             GuardianPoiStatus.Present,
@@ -351,6 +357,13 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
                 ],
             },
             [new GuardianObelisk("A08", "H9", true, ["ca", "ca"])],
-            new HashSet<char>(['D', 'A', 'C']));
+            new HashSet<char>(['D', 'A', 'C']))
+        {
+            LocalSiteId = 7,
+            CatalogBodyName = "1 b",
+            StarPosition = new GalacticCoordinate(10, 20, 30),
+            DistanceToArrivalLs = 1234.5,
+            MapMarkerOffset = new GuardianMapPoint(12.5, -7.25),
+        };
     }
 }

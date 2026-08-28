@@ -407,8 +407,12 @@ public sealed record GuardianSiteReference(
 
     public string DisplayId => Kind switch
     {
-        GuardianSiteKind.Ruins => IsCommanderOnly ? "GR LOCAL" : $"GR {SiteId}",
-        GuardianSiteKind.Structure => IsCommanderOnly ? "GS LOCAL" : $"GS {SiteId}",
+        GuardianSiteKind.Ruins => IsCommanderOnly
+            ? $"GR L{SiteId:D2}"
+            : $"GR {SiteId}",
+        GuardianSiteKind.Structure => IsCommanderOnly
+            ? $"GS L{SiteId:D2}"
+            : $"GS {SiteId}",
         _ => IsCommanderOnly ? "GB LOCAL" : "GB",
     };
 

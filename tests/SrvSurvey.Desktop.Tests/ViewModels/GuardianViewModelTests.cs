@@ -149,6 +149,52 @@ public sealed class GuardianViewModelTests
     }
 
     [Fact]
+    public async Task LandedShipNavigationTracksBearingDistanceAndDeparture()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([]),
+                    Templates = new GuardianSiteTemplateCatalog([]),
+                });
+            viewModel.UpdateStatus(StatusNorthOfSite(100));
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"Touchdown","Latitude":0,"Longitude":0}""")],
+                "Drew");
+
+            Assert.True(viewModel.IsShipNavigationVisible);
+            Assert.Equal(180, viewModel.ShipRelativeBearingDegrees, 1);
+            Assert.False(viewModel.IsShipNavigationFar);
+            Assert.Equal("100 m", viewModel.ShipNavigationDistanceText);
+
+            viewModel.UpdateStatus(StatusNorthOfSite(1_100) with
+            {
+                Heading = 90,
+            });
+
+            Assert.True(viewModel.IsShipNavigationVisible);
+            Assert.Equal(90, viewModel.ShipRelativeBearingDegrees, 1);
+            Assert.True(viewModel.IsShipNavigationFar);
+            Assert.Equal("1.10 km", viewModel.ShipNavigationDistanceText);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"Liftoff"}""")],
+                "Drew");
+
+            Assert.False(viewModel.IsShipNavigationVisible);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public async Task GuardianSurveySharingPreparesAndCopiesBundle()
     {
         var root = CreateTemporaryDirectory();
@@ -226,7 +272,7 @@ public sealed class GuardianViewModelTests
     }
 
     [Fact]
-    public void CurrentPositionReordersRowsByGalacticDistance()
+    public void CurrentPositionDoesNotChangeDefaultSolDistances()
     {
         var root = CreateTemporaryDirectory();
         try
@@ -235,13 +281,16 @@ public sealed class GuardianViewModelTests
             var target = viewModel.Rows.Single(
                 row => row.Reference.Kind == GuardianSiteKind.Ruins
                     && row.Reference.SiteId == 1);
+            var firstBefore = viewModel.Rows[0].Reference;
+            var distanceBefore = target.Distance;
 
             viewModel.UpdateCurrentSystem("GR 1 system", target.Reference.Position);
 
-            Assert.Equal(target.Reference, viewModel.Rows[0].Reference);
-            Assert.Equal(0, viewModel.Rows[0].Distance);
-            Assert.Contains("GR 1 system", viewModel.OriginStatus);
-            Assert.Contains("GR 1", viewModel.MapTitle);
+            Assert.Equal(firstBefore, viewModel.Rows[0].Reference);
+            Assert.Equal(
+                distanceBefore,
+                viewModel.Rows.Single(row => row.Reference == target.Reference).Distance);
+            Assert.Equal("Distances from Sol.", viewModel.OriginStatus);
         }
         finally
         {
@@ -260,7 +309,7 @@ public sealed class GuardianViewModelTests
                 row.Reference.Kind == GuardianSiteKind.Ruins);
             var originalPoint = viewModel.MapProjection!.Points[0];
 
-            viewModel.TemplateAuthoring.StartCommand.Execute(null);
+            viewModel.TemplateAuthoring.EditCommand.Execute(null);
             viewModel.TemplateAuthoring.SelectedPoint =
                 viewModel.TemplateAuthoring.Points.Single(point =>
                     point.Name == originalPoint.Name);
@@ -290,7 +339,7 @@ public sealed class GuardianViewModelTests
     }
 
     [Fact]
-    public async Task CustomOriginLookupReordersRowsAndClearRestoresJournalOrigin()
+    public async Task CustomOriginLookupReordersRowsAndClearRestoresSolOrigin()
     {
         var root = CreateTemporaryDirectory();
         try
@@ -339,7 +388,7 @@ public sealed class GuardianViewModelTests
 
             Assert.False(viewModel.HasCustomOrigin);
             Assert.Equal(near, viewModel.Rows[0].Reference);
-            Assert.Contains("Near Origin", viewModel.OriginStatus);
+            Assert.Equal("Distances from Sol.", viewModel.OriginStatus);
         }
         finally
         {
@@ -942,6 +991,8 @@ public sealed class GuardianViewModelTests
                 .ReadAsync("F123", isOdyssey: true);
             Assert.Equal(123, Assert.Single(saved.Surveys).Survey.SiteHeading);
             Assert.Equal(GuardianLiveMapMode.Map, viewModel.LiveMapMode);
+            Assert.Equal(123, viewModel.SelectedSite?.Reference.SiteHeading);
+            Assert.Equal(123m, viewModel.SurveyEditor.SiteHeading);
             Assert.Contains("blink gesture", viewModel.StatusMessage);
 
             await viewModel.ApplyJournalEventsAsync(
@@ -1044,6 +1095,12 @@ public sealed class GuardianViewModelTests
                 .ReadAsync("F123", isOdyssey: true);
             Assert.Equal("Beta", Assert.Single(saved.Surveys).SiteType);
             Assert.Equal(GuardianLiveMapMode.Heading, viewModel.LiveMapMode);
+            Assert.Equal("Beta", viewModel.ResolvedActiveSiteType);
+            Assert.Equal("Beta", viewModel.SelectedSite?.Reference.SiteType);
+            Assert.Equal("Beta", viewModel.SurveyEditor.SiteType);
+            Assert.Equal(
+                viewModel.ActiveSite?.BodyId,
+                viewModel.SelectedSite?.Reference.BodyId);
         }
         finally
         {
@@ -1166,6 +1223,154 @@ public sealed class GuardianViewModelTests
             Assert.Equal(
                 GuardianPoiStatus.Empty,
                 Assert.Single(saved.Surveys).Survey.PoiStatuses["c1"]);
+            Assert.Equal(
+                GuardianPoiStatus.Empty,
+                viewModel.SurveyEditor.Points.Single(point => point.Name == "c1").Status);
+            Assert.Equal(
+                GuardianPoiStatus.Empty,
+                viewModel.MapProjection?.Points.Single(point => point.Name == "c1").Status);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task DoubleCockpitToggleScansCurrentObeliskAndRefreshesMap()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference() with { SiteHeading = 90 };
+            var obelisk = new GuardianObelisk("A01", "H1", false, []);
+            var published = CreatePublishedSite(reference, [obelisk]) with
+            {
+                SiteHeading = 90,
+            };
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([published]),
+                    Templates = new GuardianSiteTemplateCatalog(
+                    [
+                        new GuardianSiteTemplate(
+                            "Test",
+                            "Test",
+                            string.Empty,
+                            new GuardianMapPoint(0, 0),
+                            1,
+                            [
+                                new GuardianPointOfInterest(
+                                    "A01",
+                                    GuardianPoiType.Obelisk,
+                                    180,
+                                    10,
+                                    0),
+                            ],
+                            [],
+                            new Dictionary<string, GuardianMapPoint>()),
+                    ]),
+                });
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}""")],
+                "Drew");
+            var started = DateTimeOffset.Parse("2026-08-27T12:00:00Z");
+            var normal = StatusNorthOfSite(10);
+            var analysis = normal with
+            {
+                Flags = normal.Flags | StatusFlags.HudInAnalysisMode,
+            };
+
+            await viewModel.UpdateStatusAsync(normal, true, started);
+            Assert.Equal("A01", viewModel.CurrentObelisk?.Name);
+            await viewModel.UpdateStatusAsync(analysis, true, started.AddSeconds(1));
+            await viewModel.UpdateStatusAsync(normal, true, started.AddSeconds(2));
+
+            var saved = Assert.Single(
+                (await new GuardianCommanderDataReader(root)
+                    .ReadAsync("F123", isOdyssey: true)).Surveys);
+            Assert.True(Assert.Single(saved.ActiveObelisks).Scanned);
+            Assert.True(viewModel.CurrentObelisk?.Scanned);
+            Assert.True(viewModel.MapProjection?.Points.Single(point =>
+                point.Name == "A01").IsScannedObelisk);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task DoubleShieldToggleSetsRelicHeadingAndRefreshesSurvey()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference() with { SiteHeading = 90 };
+            var published = CreatePublishedSite(reference, []) with
+            {
+                SiteHeading = 90,
+            };
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([published]),
+                    Templates = new GuardianSiteTemplateCatalog(
+                    [
+                        new GuardianSiteTemplate(
+                            "Test",
+                            "Test",
+                            string.Empty,
+                            new GuardianMapPoint(0, 0),
+                            1,
+                            [
+                                new GuardianPointOfInterest(
+                                    "t1",
+                                    GuardianPoiType.Relic,
+                                    180,
+                                    10,
+                                    0),
+                            ],
+                            [],
+                            new Dictionary<string, GuardianMapPoint>()),
+                    ]),
+                });
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}""")],
+                "Drew");
+            var started = DateTimeOffset.Parse("2026-08-27T12:00:00Z");
+            var normal = StatusNorthOfSite(10) with
+            {
+                Flags = StatusFlags.HasLatLong,
+                Flags2 = StatusFlags2.OnFoot
+                    | StatusFlags2.OnFootOnPlanet
+                    | StatusFlags2.OnFootExterior,
+                SelectedWeapon = "$humanoid_companalyser_name;",
+                Heading = 123,
+            };
+            var shields = normal with
+            {
+                Flags = normal.Flags | StatusFlags.ShieldsUp,
+            };
+
+            await viewModel.UpdateStatusAsync(normal, true, started);
+            await viewModel.UpdateStatusAsync(shields, true, started.AddSeconds(1));
+            await viewModel.UpdateStatusAsync(normal, true, started.AddSeconds(2));
+
+            var saved = Assert.Single(
+                (await new GuardianCommanderDataReader(root)
+                    .ReadAsync("F123", isOdyssey: true)).Surveys);
+            Assert.Equal(123, saved.Survey.RelicTowerHeading);
+            Assert.Equal(123, saved.Survey.RelicHeadings["t1"]);
+            Assert.Equal(123m, viewModel.SurveyEditor.RelicTowerHeading);
+            Assert.Equal(123, viewModel.SelectedSite?.Reference.RelicTowerHeading);
         }
         finally
         {
@@ -1724,6 +1929,12 @@ public sealed class GuardianViewModelTests
                                 0,
                                 0,
                                 0),
+                            new GuardianPointOfInterest(
+                                "p2",
+                                GuardianPoiType.Tablet,
+                                180,
+                                100,
+                                0),
                         ],
                         [],
                         new Dictionary<string, GuardianMapPoint>()),
@@ -1739,6 +1950,18 @@ public sealed class GuardianViewModelTests
             Assert.Same(
                 viewModel.Proximity,
                 viewModel.SelectedMapCommanderPosition);
+            Assert.Equal("p1", viewModel.SelectedMapTargetPointName);
+            Assert.Equal("p1", viewModel.SelectedMapPointName);
+            Assert.Equal("p1", viewModel.ActiveMapSelectedPointName);
+            Assert.Null(viewModel.SurveyEditor.SelectedPointName);
+
+            viewModel.UpdateStatus(StatusNorthOfSite(76));
+            Assert.Null(viewModel.SelectedMapPointName);
+            Assert.Null(viewModel.ActiveMapSelectedPointName);
+
+            viewModel.UpdateStatus(StatusNorthOfSite(0));
+            Assert.Equal("p1", viewModel.SelectedMapPointName);
+            Assert.Equal("p1", viewModel.ActiveMapSelectedPointName);
 
             foreach (var (command, expected) in new[]
                      {
@@ -1758,6 +1981,60 @@ public sealed class GuardianViewModelTests
                     expected,
                     Assert.Single(saved.Surveys).Survey.PoiStatuses["p1"]);
             }
+
+            var changed = new List<string?>();
+            viewModel.PropertyChanged += (_, args) => changed.Add(
+                args.PropertyName);
+            viewModel.SurveyEditor.SelectedPointName = "p2";
+
+            Assert.Equal("p2", viewModel.SelectedMapPointName);
+            Assert.Equal("p2", viewModel.ActiveMapSelectedPointName);
+            Assert.Contains(nameof(viewModel.SelectedMapPointName), changed);
+            Assert.Contains(nameof(viewModel.ActiveMapSelectedPointName), changed);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task SurfaceOriginEditsPreviewCommanderPositionAndResetImmediately()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference();
+            var template = new GuardianSiteTemplate(
+                "Test",
+                "Test",
+                string.Empty,
+                new GuardianMapPoint(0, 0),
+                1,
+                [],
+                [],
+                new Dictionary<string, GuardianMapPoint>());
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    Templates = new GuardianSiteTemplateCatalog([template]),
+                });
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","Name_Localised":"Ancient Ruins (1)","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}""")],
+                "Drew");
+            var status = StatusNorthOfSite(10);
+            viewModel.UpdateStatus(status);
+            Assert.Equal(10d, viewModel.Proximity!.DistanceFromSite, 3);
+
+            viewModel.SurveyEditor.SurfaceLatitude = (decimal)status.Latitude;
+
+            Assert.Equal(0d, viewModel.Proximity!.DistanceFromSite, 3);
+            viewModel.SurveyEditor.ResetCoordinatesCommand.Execute(null);
+            Assert.Equal(10d, viewModel.Proximity!.DistanceFromSite, 3);
         }
         finally
         {
@@ -1827,7 +2104,25 @@ public sealed class GuardianViewModelTests
             viewModel.SurveyEditor.SelectedPointName = "p1";
             Assert.Equal("p1", viewModel.TemplateAuthoring.SelectedPoint?.Name);
 
-            viewModel.TemplateAuthoring.StartCommand.Execute(null);
+            viewModel.TemplateAuthoring.EditCommand.Execute(null);
+            viewModel.TemplateAuthoring.PointName = "p1-edited";
+            viewModel.TemplateAuthoring.PointDistance = 10.1m;
+
+            Assert.Equal(
+                10.1,
+                viewModel.MapProjection?.Points.Single(point =>
+                    point.Name == "p1-edited").Distance);
+
+            viewModel.SurveyEditor.SelectedPointName = null;
+
+            Assert.Contains(
+                viewModel.MapProjection!.Points,
+                point => point.Name == "p1" && point.Distance == 10);
+            Assert.DoesNotContain(
+                viewModel.MapProjection.Points,
+                point => point.Name == "p1-edited");
+
+            viewModel.SurveyEditor.SelectedPointName = "p1";
             viewModel.TemplateAuthoring.PointName = "p1-edited";
             viewModel.TemplateAuthoring.PointDistance = 10.1m;
             viewModel.TemplateAuthoring.ApplySelectedPointCommand.Execute(null);

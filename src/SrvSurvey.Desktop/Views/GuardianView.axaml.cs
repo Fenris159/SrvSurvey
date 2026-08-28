@@ -209,10 +209,28 @@ public sealed partial class GuardianView : UserControl
             return;
         }
 
+        var defaultPath = viewModel.Guardian.TemplateAuthoring.DefaultCatalogPath;
+        var defaultDirectory = Path.GetDirectoryName(defaultPath)!;
+        IStorageFolder? suggestedFolder = null;
+        try
+        {
+            Directory.CreateDirectory(defaultDirectory);
+            suggestedFolder = await storage.TryGetFolderFromPathAsync(
+                defaultDirectory);
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException
+                or IOException
+                or NotSupportedException
+                or UnauthorizedAccessException)
+        {
+            // The picker remains usable even if its suggested folder cannot be prepared.
+        }
         var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "Export Guardian template catalog",
-            SuggestedFileName = "guardianSiteTemplates.json",
+            Title = "Save Guardian map catalog",
+            SuggestedStartLocation = suggestedFolder,
+            SuggestedFileName = Path.GetFileName(defaultPath),
             DefaultExtension = "json",
             FileTypeChoices =
             [
@@ -239,11 +257,29 @@ public sealed partial class GuardianView : UserControl
             return;
         }
 
+        var backgroundDirectory =
+            viewModel.Guardian.TemplateAuthoring.ManagedBackgroundDirectory;
+        IStorageFolder? suggestedFolder = null;
+        try
+        {
+            Directory.CreateDirectory(backgroundDirectory);
+            suggestedFolder = await storage.TryGetFolderFromPathAsync(
+                backgroundDirectory);
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException
+                or IOException
+                or NotSupportedException
+                or UnauthorizedAccessException)
+        {
+            // The picker remains usable even if its suggested folder cannot be prepared.
+        }
         var files = await storage.OpenFilePickerAsync(
             new FilePickerOpenOptions
             {
                 Title = "Choose Guardian map background",
                 AllowMultiple = false,
+                SuggestedStartLocation = suggestedFolder,
                 FileTypeFilter =
                 [
                     new FilePickerFileType("PNG image")
@@ -258,7 +294,7 @@ public sealed partial class GuardianView : UserControl
             : null;
         if (!string.IsNullOrWhiteSpace(path))
         {
-            viewModel.Guardian.TemplateAuthoring.BackgroundImage = path;
+            viewModel.Guardian.TemplateAuthoring.ImportBackgroundImage(path);
         }
     }
 

@@ -39,6 +39,9 @@ public sealed class GuardianSiteProximityEvaluator
             return null;
         }
 
+        var surfaceMarkerOffset = GuardianMapMarkerOffsetCalculator
+            .ToSurfaceCoordinates(request.MarkerOffset, siteHeading);
+
         var commander = new SurfaceCoordinate(status.Latitude, status.Longitude);
         var site = new SurfaceCoordinate(
             siteLocation.Latitude,
@@ -77,8 +80,10 @@ public sealed class GuardianSiteProximityEvaluator
 
             var pointAngle = 180 - siteHeading - point.Angle;
             var pointRadians = DegreesToRadians(pointAngle);
-            var pointX = Math.Sin(pointRadians) * point.Distance;
-            var pointY = Math.Cos(pointRadians) * point.Distance;
+            var pointX = (Math.Sin(pointRadians) * point.Distance)
+                + surfaceMarkerOffset.X;
+            var pointY = (Math.Cos(pointRadians) * point.Distance)
+                + surfaceMarkerOffset.Y;
             var deltaX = pointX - commanderX;
             var deltaY = pointY - commanderY;
             var distance = Math.Sqrt((deltaX * deltaX) + (deltaY * deltaY));
@@ -195,6 +200,8 @@ public sealed class GuardianSiteProximityEvaluateRequest
     public IReadOnlySet<char>? ObeliskGroups { get; init; }
 
     public bool IncludeComponentMaterials { get; init; }
+
+    public GuardianMapPoint MarkerOffset { get; init; }
 }
 
 public sealed record GuardianSiteProximitySnapshot(

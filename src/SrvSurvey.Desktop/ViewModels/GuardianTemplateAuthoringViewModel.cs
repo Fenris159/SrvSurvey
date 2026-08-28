@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Windows.Input;
 using SrvSurvey.Core.Guardian;
 
@@ -10,8 +11,9 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     private GuardianSiteTemplateCatalog catalog;
     private readonly GuardianSiteTemplateCatalogExporter exporter;
     private readonly Action<bool> draftChanged;
+    private readonly Action? pointPreviewChanged;
     private readonly DelegateCommand startCommand;
-    private readonly DelegateCommand applyMetadataCommand;
+    private readonly DelegateCommand editCommand;
     private readonly DelegateCommand addMeasuredPointCommand;
     private readonly DelegateCommand applySelectedPointCommand;
     private readonly DelegateCommand removeSelectedPointCommand;
@@ -22,6 +24,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     private readonly DelegateCommand cancelDiscardCommand;
     private GuardianSiteTemplate? activeTemplate;
     private GuardianSiteTemplateAuthoringSession? session;
+    private GuardianTemplateDraftMode draftMode;
     private GuardianSurveyMeasurement? liveMeasurement;
     private IReadOnlyList<GuardianTemplatePointViewModel> points = [];
     private GuardianTemplatePointViewModel? selectedPoint;
@@ -44,6 +47,8 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     private decimal groupDistance;
     private bool isDiscardConfirmationPending;
     private bool isBusy;
+    private bool isLoadingSelectedPointFields;
+    private bool isLoadingMetadataFields;
     private string? lastExportPath;
     private string statusMessage =
         "Select a mapped Guardian ruins or structure survey to author its master template.";
@@ -51,16 +56,25 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     public GuardianTemplateAuthoringViewModel(
         GuardianSiteTemplateCatalog catalog,
         Action<bool> draftChanged,
-        GuardianSiteTemplateCatalogExporter? exporter = null)
+        GuardianSiteTemplateCatalogExporter? exporter = null,
+        Action? pointPreviewChanged = null,
+        string? defaultCatalogPath = null)
     {
         this.catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         this.draftChanged = draftChanged
             ?? throw new ArgumentNullException(nameof(draftChanged));
         this.exporter = exporter ?? new GuardianSiteTemplateCatalogExporter();
+        this.pointPreviewChanged = pointPreviewChanged;
+        DefaultCatalogPath = string.IsNullOrWhiteSpace(defaultCatalogPath)
+            ? Path.Combine(
+                Environment.GetFolderPath(
+                    Environment.SpecialFolder.ApplicationData),
+                "SrvSurvey",
+                "cross-platform",
+                "guardianSiteTemplates.json")
+            : Path.GetFullPath(defaultCatalogPath);
         startCommand = new DelegateCommand(Start, () => CanStart);
-        applyMetadataCommand = new DelegateCommand(
-            ApplyMetadata,
-            () => IsAuthoring && !IsBusy);
+        editCommand = new DelegateCommand(Edit, () => CanEdit);
         addMeasuredPointCommand = new DelegateCommand(
             AddMeasuredPoint,
             () => IsAuthoring && HasLiveMeasurement && !IsBusy);
@@ -88,7 +102,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             CancelDiscard,
             () => IsDiscardConfirmationPending && !IsBusy);
         StartCommand = startCommand;
-        ApplyMetadataCommand = applyMetadataCommand;
+        EditCommand = editCommand;
         AddMeasuredPointCommand = addMeasuredPointCommand;
         ApplySelectedPointCommand = applySelectedPointCommand;
         RemoveSelectedPointCommand = removeSelectedPointCommand;
@@ -103,7 +117,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
 
     public ICommand StartCommand { get; }
 
-    public ICommand ApplyMetadataCommand { get; }
+    public ICommand EditCommand { get; }
 
     public ICommand AddMeasuredPointCommand { get; }
 
@@ -126,13 +140,43 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
 
     public GuardianSiteTemplateCatalog Catalog => catalog;
 
-    public GuardianSiteTemplate? PreviewTemplate => session?.Template;
+    public GuardianSiteTemplate? PreviewTemplate => BuildPreviewTemplate();
 
     public bool HasActiveTemplate => activeTemplate is not null;
 
     public bool CanStart => activeTemplate is not null && !IsAuthoring && !IsBusy;
 
+    public bool CanEdit => CanStart;
+
     public bool IsAuthoring => session is not null;
+
+    public bool IsNewMapDraft => draftMode == GuardianTemplateDraftMode.NewMap;
+
+    public string DraftModeTitle => draftMode switch
+    {
+        GuardianTemplateDraftMode.NewMap => "NEW MAP DRAFT",
+        GuardianTemplateDraftMode.EditCurrent => "EDIT CURRENT MAP",
+        _ => "MAP DRAFT",
+    };
+
+    public string DraftDescription => draftMode switch
+    {
+        GuardianTemplateDraftMode.NewMap =>
+            "Build a replacement shared map from scratch for this site type. Choose a background, align it, then add measured master points and group labels.",
+        GuardianTemplateDraftMode.EditCurrent =>
+            "Adjust the existing shared map. Its background, alignment, master points, and group labels are copied into this draft.",
+        _ => string.Empty,
+    };
+
+    public string DefaultCatalogPath { get; }
+
+    public string ManagedBackgroundDirectory => Path.Combine(
+        Path.GetDirectoryName(DefaultCatalogPath)!,
+        "guardian-map-images");
+
+    public string SaveLocationText =>
+        "Keep the suggested folder and file name to install these map changes for future launches. Choose another location only to export a copy.\n"
+        + DefaultCatalogPath;
 
     public bool HasLiveMeasurement => liveMeasurement is not null;
 
@@ -160,17 +204,26 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
                 return;
             }
 
-            if (value is not null)
+            isLoadingSelectedPointFields = true;
+            try
             {
-                PointName = value.Point.Name;
-                PointType = value.Point.Type;
-                PointAngle = (decimal)value.Point.Angle;
-                PointDistance = (decimal)value.Point.Distance;
-                PointRotation = (decimal)value.Point.Rotation;
+                if (value is not null)
+                {
+                    PointName = value.Point.Name;
+                    PointType = value.Point.Type;
+                    PointAngle = (decimal)value.Point.Angle;
+                    PointDistance = (decimal)value.Point.Distance;
+                    PointRotation = (decimal)value.Point.Rotation;
+                }
+            }
+            finally
+            {
+                isLoadingSelectedPointFields = false;
             }
 
             OnPropertyChanged(nameof(HasSelectedPoint));
             RaiseCommandStates();
+            NotifySelectedPointPreviewChanged();
         }
     }
 
@@ -206,37 +259,73 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     public string TemplateName
     {
         get => templateName;
-        set => SetField(ref templateName, value ?? string.Empty);
+        set
+        {
+            if (SetField(ref templateName, value ?? string.Empty))
+            {
+                NotifyMetadataPreviewChanged();
+            }
+        }
     }
 
     public string BackgroundImage
     {
         get => backgroundImage;
-        set => SetField(ref backgroundImage, value ?? string.Empty);
+        set
+        {
+            if (SetField(ref backgroundImage, value ?? string.Empty))
+            {
+                NotifyMetadataPreviewChanged();
+            }
+        }
     }
 
     public decimal ImageOffsetX
     {
         get => imageOffsetX;
-        set => SetField(ref imageOffsetX, value);
+        set
+        {
+            if (SetField(ref imageOffsetX, value))
+            {
+                NotifyMetadataPreviewChanged();
+            }
+        }
     }
 
     public decimal ImageOffsetY
     {
         get => imageOffsetY;
-        set => SetField(ref imageOffsetY, value);
+        set
+        {
+            if (SetField(ref imageOffsetY, value))
+            {
+                NotifyMetadataPreviewChanged();
+            }
+        }
     }
 
     public decimal ScaleFactor
     {
         get => scaleFactor;
-        set => SetField(ref scaleFactor, value);
+        set
+        {
+            if (SetField(ref scaleFactor, value))
+            {
+                NotifyMetadataPreviewChanged();
+            }
+        }
     }
 
     public string PointName
     {
         get => pointName;
-        set => SetField(ref pointName, value ?? string.Empty);
+        set
+        {
+            if (SetField(ref pointName, value ?? string.Empty))
+            {
+                NotifySelectedPointPreviewChanged();
+            }
+        }
     }
 
     public string NewPointName
@@ -260,25 +349,49 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     public GuardianPoiType PointType
     {
         get => pointType;
-        set => SetField(ref pointType, value);
+        set
+        {
+            if (SetField(ref pointType, value))
+            {
+                NotifySelectedPointPreviewChanged();
+            }
+        }
     }
 
     public decimal PointAngle
     {
         get => pointAngle;
-        set => SetField(ref pointAngle, value);
+        set
+        {
+            if (SetField(ref pointAngle, value))
+            {
+                NotifySelectedPointPreviewChanged();
+            }
+        }
     }
 
     public decimal PointDistance
     {
         get => pointDistance;
-        set => SetField(ref pointDistance, value);
+        set
+        {
+            if (SetField(ref pointDistance, value))
+            {
+                NotifySelectedPointPreviewChanged();
+            }
+        }
     }
 
     public decimal PointRotation
     {
         get => pointRotation;
-        set => SetField(ref pointRotation, value);
+        set
+        {
+            if (SetField(ref pointRotation, value))
+            {
+                NotifySelectedPointPreviewChanged();
+            }
+        }
     }
 
     public string GroupName
@@ -353,8 +466,10 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             if (session is not null)
             {
                 session = null;
+                draftMode = GuardianTemplateDraftMode.None;
                 StatusMessage = "The selected Guardian site type changed, so its unexported template draft was discarded.";
                 draftChanged(false);
+                NotifyDraftModeChanged();
             }
 
             activeTemplate = template;
@@ -365,6 +480,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(TemplateTitle));
             OnPropertyChanged(nameof(HasActiveTemplate));
             OnPropertyChanged(nameof(CanStart));
+            OnPropertyChanged(nameof(CanEdit));
             OnPropertyChanged(nameof(IsAuthoring));
         }
         else
@@ -402,6 +518,11 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
         StatusMessage = "Staging and verifying the Guardian template catalog...";
         try
         {
+            if (!TryCommitMetadata())
+            {
+                return;
+            }
+
             var updated = catalog.WithTemplate(session.Template);
             var result = await exporter.ExportAsync(
                 updated,
@@ -410,9 +531,16 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             catalog = updated;
             activeTemplate = session.Template;
             LastExportPath = result.Path;
+            var installed = string.Equals(
+                Path.GetFullPath(result.Path),
+                DefaultCatalogPath,
+                StringComparison.OrdinalIgnoreCase);
+            var action = installed
+                ? "Saved and installed"
+                : "Exported a copy of";
             StatusMessage = result.BackupPath is null
-                ? $"Exported and verified {result.TemplateCount:N0} Guardian templates."
-                : $"Exported and verified {result.TemplateCount:N0} Guardian templates; the previous file was backed up.";
+                ? $"{action} {result.TemplateCount:N0} verified Guardian templates."
+                : $"{action} {result.TemplateCount:N0} verified Guardian templates; the previous file was backed up.";
             draftChanged(true);
         }
         catch (Exception exception) when (
@@ -438,32 +566,122 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             return;
         }
 
+        draftMode = GuardianTemplateDraftMode.NewMap;
+        session = new GuardianSiteTemplateAuthoringSession(
+            activeTemplate with
+            {
+                BackgroundImage = string.Empty,
+                ImageOffset = new GuardianMapPoint(0, 0),
+                ScaleFactor = 1,
+                PointsOfInterest = [],
+                DestructiblePanels = [],
+                ObeliskGroupNameLocations =
+                    new Dictionary<string, GuardianMapPoint>(
+                        StringComparer.OrdinalIgnoreCase),
+            });
+        LoadMetadata(session.Template);
+        RefreshDraft(
+            "Blank shared-map draft started. Choose a background image before saving.");
+        NewPointName = NextPointName(NewPointType);
+        NotifyDraftModeChanged();
+    }
+
+    public void ImportBackgroundImage(string path)
+    {
+        if (session is null)
+        {
+            StatusMessage = "Start or edit a map draft before choosing a background image.";
+            return;
+        }
+
+        try
+        {
+            var sourcePath = Path.GetFullPath(path);
+            if (!File.Exists(sourcePath))
+            {
+                StatusMessage = "The selected Guardian map background no longer exists.";
+                return;
+            }
+
+            Directory.CreateDirectory(ManagedBackgroundDirectory);
+            var siteType = SanitizeFileName(activeTemplate?.SiteType ?? "map");
+            using var source = File.OpenRead(sourcePath);
+            var hash = Convert.ToHexString(SHA256.HashData(source))
+                .ToLowerInvariant()[..12];
+            var targetPath = Path.Combine(
+                ManagedBackgroundDirectory,
+                $"{siteType}-{hash}-{Path.GetFileName(sourcePath)}");
+            if (!string.Equals(
+                    sourcePath,
+                    targetPath,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                File.Copy(sourcePath, targetPath, overwrite: true);
+            }
+
+            BackgroundImage = targetPath;
+            StatusMessage =
+                "Copied the background into SrvSurvey's managed Guardian map folder.";
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException
+                or IOException
+                or NotSupportedException
+                or UnauthorizedAccessException)
+        {
+            StatusMessage = "The Guardian map background could not be imported: "
+                + exception.Message;
+        }
+    }
+
+    private void Edit()
+    {
+        if (!CanEdit || activeTemplate is null)
+        {
+            return;
+        }
+
         var selectedName = SelectedPoint?.Name;
+        draftMode = GuardianTemplateDraftMode.EditCurrent;
         session = new GuardianSiteTemplateAuthoringSession(activeTemplate);
         LoadMetadata(session.Template);
         RefreshDraft(
-            "Master-template draft started. Changes remain local until a catalog export succeeds.",
+            "Existing shared map copied into an editable draft.",
             selectedName);
         NewPointName = NextPointName(NewPointType);
+        NotifyDraftModeChanged();
     }
 
-    private void ApplyMetadata()
+    private bool TryCommitMetadata()
     {
+        if (session is null)
+        {
+            return false;
+        }
+
+        if (IsNewMapDraft && string.IsNullOrWhiteSpace(BackgroundImage))
+        {
+            StatusMessage =
+                "Choose a PNG background image before saving a new map draft.";
+            return false;
+        }
+
         try
         {
-            session!.UpdateMetadata(
+            session.UpdateMetadata(
                 TemplateName,
                 BackgroundImage,
                 new GuardianMapPoint(
                     decimal.ToDouble(ImageOffsetX),
                     decimal.ToDouble(ImageOffsetY)),
                 decimal.ToDouble(ScaleFactor));
-            RefreshDraft("Updated the local template metadata draft.");
+            return true;
         }
         catch (Exception exception) when (
             exception is ArgumentException or InvalidOperationException)
         {
             StatusMessage = exception.Message;
+            return false;
         }
     }
 
@@ -587,11 +805,13 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     private void ConfirmDiscard()
     {
         session = null;
+        draftMode = GuardianTemplateDraftMode.None;
         IsDiscardConfirmationPending = false;
         LoadMetadata(activeTemplate);
         RefreshCollections();
         StatusMessage = "The local Guardian template draft was discarded. No file was changed.";
         NotifyDraftChanged(catalogChanged: false);
+        NotifyDraftModeChanged();
     }
 
     private void CancelDiscard()
@@ -605,6 +825,74 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
         RefreshCollections(selectedName);
         StatusMessage = message;
         NotifyDraftChanged(catalogChanged: false);
+    }
+
+    private GuardianSiteTemplate? BuildPreviewTemplate()
+    {
+        if (session is null)
+        {
+            return null;
+        }
+
+        var template = BuildSelectedPointPreview() ?? session.Template;
+        var previewBackground = IsNewMapDraft
+            && string.IsNullOrWhiteSpace(BackgroundImage)
+                ? "__guardian-map-draft-awaiting-background__.png"
+                : BackgroundImage.Trim();
+        var previewName = string.IsNullOrWhiteSpace(TemplateName)
+            ? template.Name
+            : TemplateName.Trim();
+        var previewScale = ScaleFactor > 0
+            ? decimal.ToDouble(ScaleFactor)
+            : template.ScaleFactor;
+        return template with
+        {
+            Name = previewName,
+            BackgroundImage = previewBackground,
+            ImageOffset = new GuardianMapPoint(
+                decimal.ToDouble(ImageOffsetX),
+                decimal.ToDouble(ImageOffsetY)),
+            ScaleFactor = previewScale,
+        };
+    }
+
+    private GuardianSiteTemplate? BuildSelectedPointPreview()
+    {
+        if (session is null || SelectedPoint is not { } selected)
+        {
+            return session?.Template;
+        }
+
+        try
+        {
+            var preview = new GuardianSiteTemplateAuthoringSession(
+                session.Template);
+            preview.UpdatePoint(
+                selected.Point.Name,
+                new GuardianPointOfInterest(
+                    PointName.Trim(),
+                    PointType,
+                    decimal.ToDouble(PointAngle),
+                    decimal.ToDouble(PointDistance),
+                    decimal.ToDouble(PointRotation)));
+            return preview.Template;
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException or InvalidOperationException)
+        {
+            return session.Template;
+        }
+    }
+
+    private void NotifySelectedPointPreviewChanged()
+    {
+        if (isLoadingSelectedPointFields || session is null)
+        {
+            return;
+        }
+
+        OnPropertyChanged(nameof(PreviewTemplate));
+        pointPreviewChanged?.Invoke();
     }
 
     private void RefreshCollections(string? selectedName = null)
@@ -637,11 +925,37 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
 
     private void LoadMetadata(GuardianSiteTemplate? template)
     {
-        TemplateName = template?.Name ?? string.Empty;
-        BackgroundImage = template?.BackgroundImage ?? string.Empty;
-        ImageOffsetX = (decimal)(template?.ImageOffset.X ?? 0);
-        ImageOffsetY = (decimal)(template?.ImageOffset.Y ?? 0);
-        ScaleFactor = (decimal)(template?.ScaleFactor ?? 1);
+        isLoadingMetadataFields = true;
+        try
+        {
+            TemplateName = template?.Name ?? string.Empty;
+            BackgroundImage = template?.BackgroundImage ?? string.Empty;
+            ImageOffsetX = (decimal)(template?.ImageOffset.X ?? 0);
+            ImageOffsetY = (decimal)(template?.ImageOffset.Y ?? 0);
+            ScaleFactor = (decimal)(template?.ScaleFactor ?? 1);
+        }
+        finally
+        {
+            isLoadingMetadataFields = false;
+        }
+    }
+
+    private void NotifyMetadataPreviewChanged()
+    {
+        if (session is null || isLoadingMetadataFields)
+        {
+            return;
+        }
+
+        OnPropertyChanged(nameof(PreviewTemplate));
+        draftChanged(false);
+    }
+
+    private void NotifyDraftModeChanged()
+    {
+        OnPropertyChanged(nameof(IsNewMapDraft));
+        OnPropertyChanged(nameof(DraftModeTitle));
+        OnPropertyChanged(nameof(DraftDescription));
     }
 
     private string NextPointName(GuardianPoiType type)
@@ -674,11 +988,21 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
         }
     }
 
+    private static string SanitizeFileName(string value)
+    {
+        var invalid = Path.GetInvalidFileNameChars().ToHashSet();
+        var sanitized = new string(value
+            .Select(character => invalid.Contains(character) ? '-' : character)
+            .ToArray());
+        return string.IsNullOrWhiteSpace(sanitized) ? "map" : sanitized;
+    }
+
     private void NotifyDraftChanged(bool catalogChanged)
     {
         OnPropertyChanged(nameof(PreviewTemplate));
         OnPropertyChanged(nameof(IsAuthoring));
         OnPropertyChanged(nameof(CanStart));
+        OnPropertyChanged(nameof(CanEdit));
         draftChanged(catalogChanged);
         RaiseCommandStates();
     }
@@ -686,7 +1010,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     private void RaiseCommandStates()
     {
         startCommand.RaiseCanExecuteChanged();
-        applyMetadataCommand.RaiseCanExecuteChanged();
+        editCommand.RaiseCanExecuteChanged();
         addMeasuredPointCommand.RaiseCanExecuteChanged();
         applySelectedPointCommand.RaiseCanExecuteChanged();
         removeSelectedPointCommand.RaiseCanExecuteChanged();
@@ -755,4 +1079,11 @@ public sealed record GuardianTemplateGroupViewModel(
     GuardianMapPoint Location)
 {
     public string GeometryText => $"{Location.Y:N1} m · {Location.X:N1}°";
+}
+
+public enum GuardianTemplateDraftMode
+{
+    None,
+    NewMap,
+    EditCurrent,
 }

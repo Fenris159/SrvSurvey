@@ -70,6 +70,32 @@ public sealed class GuardianSiteProximityEvaluatorTests
     }
 
     [Fact]
+    public void AppliesMapMarkerOffsetToNearbyPointTargeting()
+    {
+        var template = Template(new GuardianPointOfInterest(
+            "p1",
+            GuardianPoiType.Orb,
+            180,
+            10,
+            0));
+
+        var result = new GuardianSiteProximityEvaluator().Evaluate(
+            new GuardianSiteProximityEvaluateRequest
+            {
+                Status = StatusAt(Bearing.North, 0, inSrv: true),
+                SiteLocation = SiteLocation,
+                SiteHeading = 90,
+                Template = template,
+                MarkerOffset = new GuardianMapPoint(0, 10),
+            });
+
+        var nearby = Assert.IsType<GuardianNearbyPoint>(result?.NearestPoint);
+        Assert.Equal(0, nearby.Distance, precision: 5);
+        Assert.Equal(0, nearby.X, precision: 5);
+        Assert.Equal(0, nearby.Y, precision: 5);
+    }
+
+    [Fact]
     public void ClosestSelectablePointMustBeObeliskAndWithinThreshold()
     {
         var template = Template(

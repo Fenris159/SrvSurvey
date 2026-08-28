@@ -172,6 +172,61 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         runtimeWindow.Close();
     }
 
+    [AvaloniaFact]
+    public void EditorUsesPlacementOwnerGeometryWhenRelatedChildSharesPlotter()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var owner = new Window
+        {
+            Width = 500,
+            Height = 600,
+            Position = new PixelPoint(420, 310),
+        };
+        var child = new Window
+        {
+            Width = 120,
+            Height = 40,
+            Position = new PixelPoint(800, 850),
+        };
+        registry.Register(owner, "PlotGuardians");
+        registry.Register(
+            child,
+            "PlotGuardians",
+            participatesInPlacement: false);
+        owner.Show();
+        child.Show();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                new PixelRect(100, 200, 1200, 800),
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            activeLayout,
+            registry,
+            host);
+        viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
+            candidate.Category == OverlayLayoutCategory.Guardian);
+
+        Assert.True(viewModel.Begin());
+
+        var preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotGuardians");
+        Assert.Equal(
+            owner.Position,
+            preview.GetPanelScreenOrigin(preview.RenderScaling));
+
+        viewModel.Cancel();
+        owner.Close();
+        child.Close();
+    }
+
     [AvaloniaTheory]
     [InlineData(
         "PlotBioSystem",

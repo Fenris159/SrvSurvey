@@ -187,6 +187,11 @@ public sealed class RavenThemeService
         SetBrush("RavenAccentForegroundBrush", theme.AccentForegroundColor);
         SetBrush("RavenTextBrush", theme.TextColor);
         SetBrush("RavenMutedTextBrush", theme.MutedTextColor);
+        SetBrush(
+            "RavenSelectedMutedTextBrush",
+            theme.Key == "monochrome-dark"
+                ? theme.AccentForegroundColor
+                : theme.MutedTextColor);
         SetBrush("RavenTertiaryTextBrush", theme.TertiaryTextColor);
         SetBrush("RavenBorderBrush", theme.BorderColor);
         SetBrush("RavenStrongBorderBrush", theme.StrongBorderColor);

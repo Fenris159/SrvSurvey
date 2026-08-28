@@ -33,6 +33,7 @@ public sealed class RavenThemeServiceTests : IDisposable
             ["RavenStrongBorderBrush"] = "#3A3A3A",
             ["RavenTextBrush"] = "#EDEDED",
             ["RavenMutedTextBrush"] = "#A3A3A3",
+            ["RavenSelectedMutedTextBrush"] = "#0A0A0A",
             ["RavenTertiaryTextBrush"] = "#737373",
             ["RavenAccentForegroundBrush"] = "#0A0A0A",
             ["RavenAccentBrush"] = "#E6D59A",
@@ -109,6 +110,13 @@ public sealed class RavenThemeServiceTests : IDisposable
             var accent = Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenAccentBrush"]);
             Assert.Equal(Color.Parse(theme.AccentColor), accent.Color);
+            var selectedMutedText = Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenSelectedMutedTextBrush"]);
+            Assert.Equal(
+                Color.Parse(theme.Key == "monochrome-dark"
+                    ? theme.AccentForegroundColor
+                    : theme.MutedTextColor),
+                selectedMutedText.Color);
             var warning = Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenWarningBrush"]);
             var warningShadow = Assert.IsType<BoxShadows>(

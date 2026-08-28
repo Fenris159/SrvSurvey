@@ -1,9 +1,42 @@
-# SrvSurvey-XP 2.1.3.0-rc.41
+# SrvSurvey-XP 2.1.3.0-rc.42
 
-This release candidate retains the optional direct EDSM account synchronization
-and its RC39 journal compatibility fix, promotes EDDN from validation schemas to
-production sharing, reduces routine upload log noise, and completes SDL3
-controller shortcut support on Windows and Linux.
+This release candidate adds the ported Guardian survey-map authoring and live
+guidance workflow, while retaining the optional direct EDSM account
+synchronization and its RC39 journal compatibility fix, EDDN production
+sharing, quieter upload reporting, and SDL3 controller shortcut support on
+Windows and Linux.
+
+## Guardian survey workspace and authoring
+
+- Reworks the Survey map workspace around a compact selected-map sidebar,
+  collapsible legend, survey-point list, orientation help, and clearer controls
+  for editing the current site separately from drafting shared map geometry.
+- Adds editable site body, distance-from-origin, arrival distance, surface
+  coordinates, and coordinate reset controls. After its type is chosen, a newly
+  discovered uncatalogued site is selected automatically and uses local
+  `GR L01` / `GS L01` naming.
+- Adds live previews for point geometry, image placement, scale, labels, and
+  coordinate corrections. Verified catalog export now starts in the existing
+  Guardian catalog location while unsaved draft changes remain explicit.
+
+## Guardian map alignment and live guidance
+
+- Stores a portable survey-level marker offset so a corrected site origin moves
+  the commander and every shared marker together without changing the shared
+  template format; exported surveys retain the correction for other users.
+- Synchronizes manual and nearest-POI targeting between the application and
+  overlay for the configured active site, restores automatic selection within
+  range, and keeps map-point edits visible until they are applied or cancelled.
+- Keeps the application map fixed while rotating only the commander glyph to
+  match heading, corrects its orientation, and adds the docked ship chevron to
+  the Guardian overlay. Firegroup-driven choices now retain a visible selected
+  state.
+
+## Inspection and presentation fixes
+
+- Adds Avalonia developer-tool support for F12 inspection in development builds.
+- Improves selected-row text contrast in the monochrome theme and corrects
+  Guardian card, expander, overlay-position, and snap-to-center regressions.
 
 ## Controller input and shortcut editing
 
@@ -75,11 +108,11 @@ controller shortcut support on Windows and Linux.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.41`
-- Tag: `xp-v2.1.3.0-rc.41`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.41-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.41-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.41-x86_64.AppImage`
+- Version: `2.1.3.0-rc.42`
+- Tag: `xp-v2.1.3.0-rc.42`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.42-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.42-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.42-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.

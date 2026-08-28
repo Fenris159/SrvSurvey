@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Updates;
 
 namespace SrvSurvey.Core.Tests.Updates;
@@ -77,6 +78,26 @@ public sealed class LegacyReferenceCatalogLoaderTests : IDisposable
                 StringComparison.Ordinal));
         Assert.Equal(original, File.ReadAllBytes(archivePath));
         Assert.True(result.GuardianPublishedSites.Count > 0);
+    }
+
+    [Fact]
+    public async Task LoadPrefersLocalGuardianTemplateOverrideToPublishedCatalog()
+    {
+        WriteCompleteLegacyReferenceLayout();
+        var catalog = GuardianSiteTemplateCatalog.LoadEmbedded();
+        var beta = catalog.Find("Beta")!;
+        await new GuardianSiteTemplateCatalogExporter().ExportAsync(
+            catalog.WithTemplate(beta with { Name = "Local Beta override" }),
+            Path.Combine(root, "guardianSiteTemplates.json"));
+
+        var result = LegacyReferenceCatalogLoader.Load(root);
+
+        Assert.Equal("Local Beta override", result.GuardianTemplates.Find("Beta")?.Name);
+        var source = Assert.Single(result.Sources, candidate =>
+            candidate.Catalog == "Guardian site templates");
+        Assert.Equal(
+            Path.Combine(root, "guardianSiteTemplates.json"),
+            source.LocalPath);
     }
 
     public void Dispose()

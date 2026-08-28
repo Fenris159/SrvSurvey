@@ -179,7 +179,10 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
                 ],
             },
             [new GuardianObelisk("A01", "H1", true, ["ca", "or"])],
-            new HashSet<char>(['A', 'B']));
+            new HashSet<char>(['A', 'B']))
+        {
+            MapMarkerOffset = new GuardianMapPoint(6.5, -3.25),
+        };
 
         await store.SaveAsync(FrontierId, true, survey);
         var commanderData = await new GuardianCommanderDataReader(
@@ -220,6 +223,7 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
         Assert.Contains("No published survey", shared.Reasons);
         Assert.Contains("Raw points of interest", shared.Reasons);
         Assert.Contains("Component materials", shared.Reasons);
+        Assert.Contains("Map alignment offset", shared.Reasons);
         using var archive = ZipFile.OpenRead(result.ArchivePath);
         var entry = Assert.Single(archive.Entries);
         await using var entryStream = entry.Open();
@@ -237,6 +241,12 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
         Assert.Equal(
             -34.25,
             root.GetProperty("location").GetProperty("long").GetDouble());
+        Assert.Equal(
+            6.5,
+            root.GetProperty("mapMarkerOffset").GetProperty("x").GetDouble());
+        Assert.Equal(
+            -3.25,
+            root.GetProperty("mapMarkerOffset").GetProperty("y").GetDouble());
         Assert.Equal("c1,t1", root.GetProperty("poiPresent").GetString());
         Assert.Equal("p1", root.GetProperty("poiAbsent").GetString());
         Assert.Equal("p2", root.GetProperty("poiEmpty").GetString());
@@ -256,6 +266,51 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
                 .EnumerateArray()
                 .Select(item => item.GetString()!)
                 .ToArray());
+    }
+
+    [Fact]
+    public async Task SharedAlignmentOffsetLoadsForAnotherCommander()
+    {
+        const string otherFrontierId = "F999";
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var survey = Survey(string.Empty, new GuardianSurveyData
+        {
+            SiteType = "Alpha",
+        }) with
+        {
+            MapMarkerOffset = new GuardianMapPoint(8.25, -4.5),
+        };
+        var path = await store.SaveAsync(FrontierId, true, survey);
+        survey = survey with { Path = path };
+        var service = new GuardianSurveyShareService(
+            temporaryDirectory,
+            new GuardianPublishedSiteCatalog(
+                [Published(-1, new Dictionary<string, GuardianPoiStatus>())]));
+
+        var result = await service.PrepareAsync(
+            FrontierId,
+            true,
+            new GuardianCommanderDataReadResult([survey], [], []));
+
+        var shared = Assert.Single(result.Sites);
+        Assert.Equal(["Map alignment offset"], shared.Reasons);
+        using (var archive = ZipFile.OpenRead(result.ArchivePath))
+        {
+            var entry = Assert.Single(archive.Entries);
+            var destinationDirectory = Path.Combine(
+                temporaryDirectory,
+                "guardian",
+                otherFrontierId);
+            Directory.CreateDirectory(destinationDirectory);
+            entry.ExtractToFile(Path.Combine(destinationDirectory, entry.Name));
+        }
+
+        var loaded = await new GuardianCommanderDataReader(temporaryDirectory)
+            .ReadAsync(otherFrontierId, true);
+
+        Assert.Equal(
+            new GuardianMapPoint(8.25, -4.5),
+            Assert.Single(loaded.Surveys).MapMarkerOffset);
     }
 
     [Fact]

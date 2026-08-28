@@ -7,6 +7,10 @@ namespace SrvSurvey.Desktop;
 
 public sealed partial class App : Application
 {
+#if DEBUG
+    private static int developerToolsAttached;
+#endif
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "CodeQuality",
         "S4487:Unread private fields should be removed",
@@ -16,6 +20,12 @@ public sealed partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+#if DEBUG
+        if (Interlocked.Exchange(ref developerToolsAttached, 1) == 0)
+        {
+            this.AttachDeveloperTools();
+        }
+#endif
     }
 
     public override void OnFrameworkInitializationCompleted()

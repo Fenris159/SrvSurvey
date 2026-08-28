@@ -247,7 +247,10 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             overlay,
             overlayLayout,
             GuardianPlotterName);
-        windowRegistry.Register(overlay, GuardianPlotterName);
+        windowRegistry.Register(
+            overlay,
+            GuardianPlotterName,
+            participatesInPlacement: false);
         overlay.Opened += (_, _) => PrepareZoomWindow(overlay);
         overlay.Closed += (_, _) =>
         {

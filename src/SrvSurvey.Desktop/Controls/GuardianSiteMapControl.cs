@@ -28,9 +28,16 @@ public sealed class GuardianSiteMapControl : Control
     public static readonly StyledProperty<double> CommanderHeadingProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, double>(
             nameof(CommanderHeading));
+    public static readonly StyledProperty<bool> RotateMapWithCommanderProperty =
+        AvaloniaProperty.Register<GuardianSiteMapControl, bool>(
+            nameof(RotateMapWithCommander),
+            true);
     public static readonly StyledProperty<string?> TargetPointNameProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, string?>(
             nameof(TargetPointName));
+    public static readonly StyledProperty<string?> HighlightedPointNameProperty =
+        AvaloniaProperty.Register<GuardianSiteMapControl, string?>(
+            nameof(HighlightedPointName));
     public static readonly StyledProperty<string?> SelectedPointNameProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, string?>(
             nameof(SelectedPointName));
@@ -93,7 +100,9 @@ public sealed class GuardianSiteMapControl : Control
             CommanderMapPositionProperty,
             MapScaleProperty,
             CommanderHeadingProperty,
+            RotateMapWithCommanderProperty,
             TargetPointNameProperty,
+            HighlightedPointNameProperty,
             SelectedPointNameProperty,
             HoveredPointNameProperty,
             MapBackgroundProperty,
@@ -140,10 +149,30 @@ public sealed class GuardianSiteMapControl : Control
         set => SetValue(CommanderHeadingProperty, value);
     }
 
+    public bool RotateMapWithCommander
+    {
+        get => GetValue(RotateMapWithCommanderProperty);
+        set => SetValue(RotateMapWithCommanderProperty, value);
+    }
+
+    private double MapRotationHeading => ResolveMapRotationHeading(
+        CommanderHeading,
+        RotateMapWithCommander);
+
+    private double CommanderGlyphHeading => ResolveCommanderGlyphHeading(
+        CommanderHeading,
+        RotateMapWithCommander);
+
     public string? TargetPointName
     {
         get => GetValue(TargetPointNameProperty);
         set => SetValue(TargetPointNameProperty, value);
+    }
+
+    public string? HighlightedPointName
+    {
+        get => GetValue(HighlightedPointNameProperty);
+        set => SetValue(HighlightedPointNameProperty, value);
     }
 
     public string? SelectedPointName
@@ -276,7 +305,7 @@ public sealed class GuardianSiteMapControl : Control
             0,
             0,
             Proximity,
-            CommanderHeading,
+            MapRotationHeading,
             viewportCenter,
             scale);
         var gridExtent = Math.Max(bounds.Width, bounds.Height) / scale * 2;
@@ -294,7 +323,7 @@ public sealed class GuardianSiteMapControl : Control
             projection,
             mapOrigin,
             gridExtent * scale,
-            CommanderHeading,
+            MapRotationHeading,
             scale);
         if (Proximity is null && CommanderMapPosition is { } commander)
         {
@@ -308,7 +337,8 @@ public sealed class GuardianSiteMapControl : Control
                     viewportCenter,
                     scale),
                 projection.IsRuins,
-                scale);
+                scale,
+                CommanderGlyphHeading);
         }
 
         foreach (var point in projection.Points)
@@ -320,7 +350,7 @@ public sealed class GuardianSiteMapControl : Control
                     point.X,
                     point.Y,
                     Proximity,
-                    CommanderHeading,
+                    MapRotationHeading,
                     viewportCenter,
                     scale),
                 projection,
@@ -337,7 +367,7 @@ public sealed class GuardianSiteMapControl : Control
                     group.X,
                     group.Y,
                     Proximity,
-                    CommanderHeading,
+                    MapRotationHeading,
                     viewportCenter,
                     scale),
                 scale);
@@ -349,7 +379,8 @@ public sealed class GuardianSiteMapControl : Control
                 context,
                 viewportCenter,
                 projection.IsRuins,
-                scale);
+                scale,
+                CommanderGlyphHeading);
         }
 
         if (ShowLegend)
@@ -386,14 +417,14 @@ public sealed class GuardianSiteMapControl : Control
                 0,
                 -gridExtent,
                 Proximity,
-                CommanderHeading,
+                MapRotationHeading,
                 viewportCenter,
                 scale),
             TransformMapPoint(
                 0,
                 gridExtent,
                 Proximity,
-                CommanderHeading,
+                MapRotationHeading,
                 viewportCenter,
                 scale));
         context.DrawLine(
@@ -402,14 +433,14 @@ public sealed class GuardianSiteMapControl : Control
                 -gridExtent,
                 0,
                 Proximity,
-                CommanderHeading,
+                MapRotationHeading,
                 viewportCenter,
                 scale),
             TransformMapPoint(
                 gridExtent,
                 0,
                 Proximity,
-                CommanderHeading,
+                MapRotationHeading,
                 viewportCenter,
                 scale));
         for (var ring = 1; ring <= 4; ring++)
@@ -717,7 +748,7 @@ public sealed class GuardianSiteMapControl : Control
                     point.X,
                     point.Y,
                     Proximity,
-                    CommanderHeading,
+                    MapRotationHeading,
                     viewportCenter,
                     scale),
             })
@@ -772,7 +803,8 @@ public sealed class GuardianSiteMapControl : Control
         DrawingContext context,
         Point location,
         bool isRuins,
-        double markerScale)
+        double markerScale,
+        double heading)
     {
         var brush = PresentBrush ?? Brushes.LimeGreen;
         var radius = (isRuins ? 10 : 4) * markerScale;
@@ -781,7 +813,37 @@ public sealed class GuardianSiteMapControl : Control
         context.DrawLine(
             pen,
             location,
-            location + new Vector(0, radius * 2));
+            GetCommanderHeadingEnd(location, radius, heading));
+    }
+
+    internal static Point GetCommanderHeadingEnd(
+        Point location,
+        double radius,
+        double heading = 0)
+    {
+        var normalizedHeading = double.IsFinite(heading) ? heading : 0;
+        var radians = normalizedHeading * Math.PI / 180d;
+        return location + new Vector(
+            Math.Sin(radians) * radius * 2,
+            -Math.Cos(radians) * radius * 2);
+    }
+
+    internal static double ResolveMapRotationHeading(
+        double commanderHeading,
+        bool rotateMapWithCommander)
+    {
+        return rotateMapWithCommander && double.IsFinite(commanderHeading)
+            ? commanderHeading
+            : 0;
+    }
+
+    internal static double ResolveCommanderGlyphHeading(
+        double commanderHeading,
+        bool rotateMapWithCommander)
+    {
+        return !rotateMapWithCommander && double.IsFinite(commanderHeading)
+            ? commanderHeading
+            : 0;
     }
 
     private void DrawLegend(
@@ -907,7 +969,7 @@ public sealed class GuardianSiteMapControl : Control
             mapImage.Size.Height * projection.ImageScaleFactor);
         using (context.PushTransform(CreateMapTransform(
             Proximity,
-            CommanderHeading,
+            MapRotationHeading,
             viewportCenter,
             scale)))
         {
@@ -1105,7 +1167,7 @@ public sealed class GuardianSiteMapControl : Control
         var rotation = GuardianLegacyMapDrawing.GetGlyphRotation(
             point,
             projection,
-            CommanderHeading);
+            MapRotationHeading);
         DrawSurveyMarkerIfNeeded(context, point, location, projection, markerScale);
         DrawRelicHeadingIfNeeded(
             context,
@@ -1235,7 +1297,7 @@ public sealed class GuardianSiteMapControl : Control
             StringComparison.OrdinalIgnoreCase);
         var isSelected = string.Equals(
             point.Name,
-            SelectedPointName,
+            HighlightedPointName ?? SelectedPointName,
             StringComparison.OrdinalIgnoreCase);
         if (!isHovered && !isSelected)
         {

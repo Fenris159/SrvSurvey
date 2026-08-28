@@ -122,6 +122,9 @@
     <Setter Property="Foreground" Value="{DynamicResource RavenTertiaryTextBrush}" />
     <Setter Property="Opacity" Value="0.78" />
   </Style>
+  <Style Selector="ListBoxItem:selected TextBlock.muted">
+    <Setter Property="Foreground" Value="{DynamicResource RavenSelectedMutedTextBrush}" />
+  </Style>
   <Style Selector="Button.commander-card">
     <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />

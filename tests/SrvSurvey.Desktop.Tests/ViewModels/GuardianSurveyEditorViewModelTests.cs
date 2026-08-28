@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Guardian;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -73,6 +74,54 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         Assert.Contains('B', saved.ObeliskGroups);
         Assert.Single(saved.ActiveObelisks);
         Assert.True(saved.ActiveObelisks[0].Scanned);
+    }
+
+    [Fact]
+    public async Task SaveDerivesPortableMarkerOffsetFromOriginalSiteOrigin()
+    {
+        const double radius = 1_000_000;
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var correctedLocation = new GuardianSurfaceLocation(0, 0.01);
+        var source = CreateSurvey();
+        var initial = source with
+        {
+            Survey = new GuardianSurveyData
+            {
+                SiteType = source.Survey.SiteType,
+                SiteHeading = 0,
+                RelicTowerHeading = source.Survey.RelicTowerHeading,
+                Location = correctedLocation,
+                PoiStatuses = source.Survey.PoiStatuses,
+                RelicHeadings = source.Survey.RelicHeadings,
+                ComponentMaterials = source.Survey.ComponentMaterials,
+                RawPointsOfInterest = source.Survey.RawPointsOfInterest,
+            },
+        };
+        var editor = new GuardianSurveyEditorViewModel(
+            store,
+            (_, _) => Task.CompletedTask);
+        editor.Load(new GuardianSurveyEditorLoadContext(
+            "F123",
+            true,
+            initial,
+            CreateTemplate())
+        {
+            AlignmentOrigin = new GuardianSurfaceLocation(0, 0),
+            PlanetRadiusMeters = radius,
+        });
+
+        await editor.SaveAsync();
+
+        var saved = Assert.Single(
+            (await new GuardianCommanderDataReader(temporaryDirectory)
+                .ReadAsync("F123", isOdyssey: true)).Surveys);
+        var expected = GuardianMapMarkerOffsetCalculator.Calculate(
+            new GuardianSurfaceLocation(0, 0),
+            correctedLocation,
+            siteHeading: 0,
+            radius);
+        Assert.Equal(expected.X, saved.MapMarkerOffset.X, precision: 6);
+        Assert.Equal(expected.Y, saved.MapMarkerOffset.Y, precision: 6);
     }
 
     [Fact]
@@ -364,6 +413,42 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task ResetCoordinatesRestoresLastSavedSurfaceOrigin()
+    {
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var initial = CreateSurvey();
+        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        var editor = new GuardianSurveyEditorViewModel(
+            store,
+            (_, _) => Task.CompletedTask);
+        editor.Load(new GuardianSurveyEditorLoadContext(
+            "F123",
+            true,
+            initial with { Path = path },
+            CreateTemplate()));
+
+        editor.SurfaceLatitude = 12.345678m;
+        editor.SurfaceLongitude = -98.765432m;
+
+        Assert.True(editor.ResetCoordinatesCommand.CanExecute(null));
+        editor.ResetCoordinatesCommand.Execute(null);
+
+        Assert.Equal(1m, editor.SurfaceLatitude);
+        Assert.Equal(2m, editor.SurfaceLongitude);
+        Assert.False(editor.ResetCoordinatesCommand.CanExecute(null));
+
+        editor.SurfaceLatitude = 3m;
+        editor.SurfaceLongitude = 4m;
+        await editor.SaveAsync();
+        editor.SurfaceLatitude = 5m;
+        editor.SurfaceLongitude = 6m;
+        editor.ResetCoordinatesCommand.Execute(null);
+
+        Assert.Equal(3m, editor.SurfaceLatitude);
+        Assert.Equal(4m, editor.SurfaceLongitude);
+    }
+
+    [Fact]
     public async Task RejectsIncompleteOriginAndDuplicateActiveObeliskNames()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
@@ -466,6 +551,79 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         {
             Directory.Delete(temporaryDirectory, recursive: true);
         }
+    }
+
+    [Fact]
+    public async Task SavesEditableCatalogDetailsAndRescalesDistanceFromOrigin()
+    {
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var initial = CreateSurvey() with
+        {
+            CatalogBodyName = "A 1",
+            StarPosition = new GalacticCoordinate(10, 0, 0),
+            DistanceToArrivalLs = 100,
+        };
+        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        var editor = new GuardianSurveyEditorViewModel(
+            store,
+            (_, _) => Task.CompletedTask);
+        editor.Load(new GuardianSurveyEditorLoadContext(
+            "F123",
+            true,
+            initial with { Path = path },
+            CreateTemplate())
+        {
+            DistanceOrigin = new GalacticCoordinate(0, 0, 0),
+            DistanceOriginName = "Sol",
+        });
+
+        Assert.Equal(10m, editor.DistanceLy);
+        editor.CatalogBodyName = "B 2";
+        editor.DistanceLy = 20;
+        editor.ArrivalDistanceLs = 222.5m;
+
+        await editor.SaveAsync();
+
+        var saved = Assert.Single(
+            (await new GuardianCommanderDataReader(temporaryDirectory)
+                .ReadAsync("F123", isOdyssey: true)).Surveys);
+        Assert.Equal("B 2", saved.CatalogBodyName);
+        Assert.Equal(new GalacticCoordinate(20, 0, 0), saved.StarPosition);
+        Assert.Equal(222.5, saved.DistanceToArrivalLs);
+    }
+
+    [Fact]
+    public async Task NegativeDistanceDoesNotMirrorStoredStarPosition()
+    {
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var initial = CreateSurvey() with
+        {
+            CatalogBodyName = "A 1",
+            StarPosition = new GalacticCoordinate(10, 0, 0),
+        };
+        var editor = new GuardianSurveyEditorViewModel(
+            store,
+            (_, _) => Task.CompletedTask);
+        editor.Load(new GuardianSurveyEditorLoadContext(
+            "F123",
+            true,
+            initial,
+            CreateTemplate())
+        {
+            DistanceOrigin = new GalacticCoordinate(0, 0, 0),
+            DistanceOriginName = "Sol",
+        });
+
+        editor.DistanceLy = -20;
+        Assert.Equal(10m, editor.DistanceLy);
+        Assert.Contains("cannot be negative", editor.StatusMessage);
+
+        await editor.SaveAsync();
+
+        var saved = Assert.Single(
+            (await new GuardianCommanderDataReader(temporaryDirectory)
+                .ReadAsync("F123", isOdyssey: true)).Surveys);
+        Assert.Equal(new GalacticCoordinate(10, 0, 0), saved.StarPosition);
     }
 
     private static GuardianCommanderSiteSurvey CreateSurvey()

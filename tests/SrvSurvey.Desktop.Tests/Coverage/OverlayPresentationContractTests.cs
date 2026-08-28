@@ -339,6 +339,22 @@ public sealed class OverlayPresentationContractTests
         Assert.DoesNotContain("&lt;A01&gt;", ramTah);
     }
 
+    [Fact]
+    public void GuardianSiteOverlayTracksWorkspacePointSelection()
+    {
+        var root = FindRepositoryRoot();
+        var markup = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "GuardianSiteOverlayPresentation.axaml"));
+
+        Assert.Contains(
+            "HighlightedPointName=\"{Binding Guardian.ActiveMapSelectedPointName}\"",
+            markup,
+            StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("PlotFSSInfo", "FssInfoOverlayPresentation.axaml", "FssInfoOverlayWindow.axaml", 270, true)]
     [InlineData("PlotFSS", "LastFssBodyOverlayPresentation.axaml", "LastFssBodyOverlayWindow.axaml", 240, true)]
