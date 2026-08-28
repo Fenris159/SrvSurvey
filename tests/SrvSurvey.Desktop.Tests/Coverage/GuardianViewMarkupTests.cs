@@ -76,8 +76,17 @@ public sealed class GuardianViewMarkupTests
             "{Binding Guardian.SurveyEditor.SelectedPointName, Mode=TwoWay}",
             map.Attribute("SelectedPointName")?.Value);
         Assert.Equal(
+            "{Binding Guardian.SelectedMapPointName}",
+            map.Attribute("HighlightedPointName")?.Value);
+        Assert.Equal(
             "{Binding Guardian.SelectedMapCommanderPosition}",
             map.Attribute("CommanderMapPosition")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.SelectedMapCommanderPosition}",
+            map.Attribute("Proximity")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.SelectedMapTargetPointName}",
+            map.Attribute("TargetPointName")?.Value);
         Assert.Equal("15", zoom.Attribute("Maximum")?.Value);
         Assert.Contains(
             top.Descendants(),
@@ -102,10 +111,10 @@ public sealed class GuardianViewMarkupTests
             selectedContent.Attribute("IsEnabled")?.Value);
         Assert.Equal(
             [
-                "GuardianSelectedMap",
-                "GuardianSelectedMapPointEditor",
                 "GuardianSurveyMapLegend",
-                "GuardianSurveyMapOrientation",
+                "GuardianSelectedMap",
+                "GuardianSurveyPoints",
+                "GuardianSelectedMapPointEditor",
                 "GuardianSurveyMapNotes",
             ],
             cardNames);
@@ -210,14 +219,38 @@ public sealed class GuardianViewMarkupTests
             ?? throw new InvalidDataException("Survey map viewport grid is missing.");
         var slider = mapGrid.Descendants().Single(element =>
             element.Name.LocalName == "Slider");
+        var zoomBar = slider.Parent
+            ?? throw new InvalidDataException("Survey map zoom bar is missing.");
+        var orientation = zoomBar.Elements().Single(element =>
+            element.Name.LocalName == "StackPanel"
+            && element.Descendants().Any(candidate =>
+                candidate.Name.LocalName == "TextBlock"
+                && candidate.Attribute("Text")?.Value == "Orientation"));
+        var orientationHelp = orientation.Descendants().Single(element =>
+            element.Name.LocalName == "Button");
+        var orientationIcon = orientationHelp.Descendants().Single(element =>
+            element.Name.LocalName == "PathIcon");
 
         Assert.Equal("640,Auto", mapGrid.Attribute("RowDefinitions")?.Value);
+        Assert.Equal(
+            "Auto,*,Auto,Auto",
+            zoomBar.Attribute("ColumnDefinitions")?.Value);
         Assert.Equal("1", slider.Attribute("Minimum")?.Value);
         Assert.Equal("15", slider.Attribute("Maximum")?.Value);
         Assert.Contains(
             "ElementName=GuardianSurveyMap",
             slider.Attribute("Value")?.Value,
             StringComparison.Ordinal);
+        Assert.Equal("3", orientation.Attribute("Grid.Column")?.Value);
+        Assert.Equal(
+            "The legacy aerial image is fixed to the Guardian site template's surveyed origin and scale. Site, tower, marker, and commander geometry uses that same alignment.",
+            orientationHelp.Attribute("ToolTip.Tip")?.Value);
+        Assert.Null(orientationHelp.Attribute("Click"));
+        Assert.Equal(
+            "{StaticResource question_circle_regular}",
+            orientationIcon.Attribute("Data")?.Value);
+        Assert.DoesNotContain(document.Descendants(), element =>
+            GetName(element) == "GuardianSurveyMapOrientation");
     }
 
     [Fact]
@@ -240,10 +273,78 @@ public sealed class GuardianViewMarkupTests
     }
 
     [Fact]
+    public void SurveyPointsSitDirectlyBelowSelectedMapInSidebar()
+    {
+        var document = LoadGuardianView();
+        var sidebar = FindNamedElement(document, "GuardianSurveyMapSidebar");
+        var selectedMap = FindNamedElement(document, "GuardianSelectedMap");
+        var surveyPoints = FindNamedElement(document, "GuardianSurveyPoints");
+        var sidebarChildren = sidebar.Elements().ToArray();
+        var selectedMapIndex = Array.IndexOf(sidebarChildren, selectedMap);
+
+        Assert.Same(sidebar, surveyPoints.Parent);
+        Assert.Equal(selectedMapIndex + 1, Array.IndexOf(
+            sidebarChildren,
+            surveyPoints));
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.IsMapSummaryVisible}",
+            surveyPoints.Attribute("IsVisible")?.Value);
+
+        var list = surveyPoints.Descendants().Single(element =>
+            element.Name.LocalName == "ListBox");
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.Points}",
+            list.Attribute("ItemsSource")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.SurveyEditor.SelectedPoint, Mode=TwoWay}",
+            list.Attribute("SelectedItem")?.Value);
+
+        var editor = FindNamedElement(document, "GuardianSurveyEditor");
+        Assert.DoesNotContain(editor.Descendants(), element =>
+            element.Attribute("Text")?.Value == "SURVEY POINTS");
+    }
+
+    [Fact]
     public void ExternalLegendUsesOneRenderedCardWithRoomForAllStates()
     {
         var document = LoadGuardianView();
         var legend = FindNamedElement(document, "GuardianSurveyMapLegend");
+        var expander = FindNamedElement(
+            document,
+            "GuardianSurveyMapLegendExpander");
+        var headerStyle = document.Descendants().Single(element =>
+            element.Name.LocalName == "Style"
+            && element.Attribute("Selector")?.Value
+                == "Expander.guardian-map-legend /template/ ToggleButton /template/ Border#ToggleButtonBackground");
+        var monochromeHeaderStyle = document.Descendants().Single(element =>
+            element.Name.LocalName == "Style"
+            && element.Attribute("Selector")?.Value
+                == "Expander.guardian-map-legend.monochrome /template/ ToggleButton /template/ Border#ToggleButtonBackground");
+        var expanderContentStyle = document.Descendants().Single(element =>
+            element.Name.LocalName == "Style"
+            && element.Attribute("Selector")?.Value
+                == "Expander.guardian-map-legend /template/ Border#ExpanderContent");
+        var expandedContentStyle = document.Descendants().Single(element =>
+            element.Name.LocalName == "Style"
+            && element.Attribute("Selector")?.Value
+                == "Expander.guardian-map-legend:expanded /template/ Border#ExpanderContent");
+        var monochromeContentStyle = document.Descendants().Single(element =>
+            element.Name.LocalName == "Style"
+            && element.Attribute("Selector")?.Value
+                == "Expander.guardian-map-legend.monochrome /template/ Border#ExpanderContent");
+        static Dictionary<string, string?> GetSetters(XElement style) =>
+            style.Elements()
+                .Where(element => element.Name.LocalName == "Setter")
+                .ToDictionary(
+                    element => element.Attribute("Property")?.Value
+                        ?? throw new InvalidDataException(
+                            "Map legend template setter is missing its property."),
+                    element => element.Attribute("Value")?.Value);
+        var headerSetters = GetSetters(headerStyle);
+        var monochromeHeaderSetters = GetSetters(monochromeHeaderStyle);
+        var expanderContentSetters = GetSetters(expanderContentStyle);
+        var expandedContentSetters = GetSetters(expandedContentStyle);
+        var monochromeContentSetters = GetSetters(monochromeContentStyle);
         var mapLegend = legend.Descendants().Single(element =>
             element.Name.LocalName == "GuardianSiteMapControl");
         var labels = legend.Descendants()
@@ -252,8 +353,40 @@ public sealed class GuardianViewMarkupTests
             .OfType<string>()
             .ToArray();
 
+        Assert.Equal("False", expander.Attribute("IsExpanded")?.Value);
+        Assert.Equal(
+            "guardian-map-legend",
+            expander.Attribute("Classes")?.Value);
+        Assert.Equal(
+            "{Binding IsMonochromeTheme}",
+            expander.Attribute("Classes.monochrome")?.Value);
+        Assert.Null(legend.Attribute("Classes"));
+        Assert.Equal("0", legend.Attribute("Margin")?.Value);
+        Assert.Equal("0", legend.Attribute("Padding")?.Value);
+        Assert.Equal("1", headerSetters["BorderThickness"]);
+        Assert.Equal("12", headerSetters["CornerRadius"]);
+        Assert.Equal("none", headerSetters["BoxShadow"]);
+        Assert.Equal("0,0,0,10", headerSetters["Margin"]);
+        Assert.Equal("#1C1C1C", monochromeHeaderSetters["Background"]);
+        Assert.Equal("#33FFFFFF", monochromeHeaderSetters["BorderBrush"]);
+        Assert.Equal(
+            "OuterBorderEdge",
+            expanderContentSetters["BackgroundSizing"]);
+        Assert.Equal("1,0,1,1", expanderContentSetters["BorderThickness"]);
+        Assert.Equal("0,0,12,12", expanderContentSetters["CornerRadius"]);
+        Assert.Equal("none", expanderContentSetters["BoxShadow"]);
+        Assert.Equal("0", expanderContentSetters["Margin"]);
+        Assert.Equal("10,0,0,0", expanderContentSetters["Padding"]);
+        Assert.Equal("290", expanderContentSetters["MinWidth"]);
+        Assert.Equal("270", expanderContentSetters["MinHeight"]);
+        Assert.Equal("1", expandedContentSetters["BorderThickness"]);
+        Assert.Equal("12", expandedContentSetters["CornerRadius"]);
+        Assert.Equal("#2B2B2B", monochromeContentSetters["Background"]);
+        Assert.Equal("#33FFFFFF", monochromeContentSetters["BorderBrush"]);
+        Assert.Same(legend, expander.Parent);
         Assert.Equal("True", mapLegend.Attribute("IsLegendOnly")?.Value);
-        Assert.Equal("320", mapLegend.Attribute("Height")?.Value);
+        Assert.Equal("270", mapLegend.Attribute("Height")?.Value);
+        Assert.Equal("20,0,0,0", mapLegend.Attribute("Margin")?.Value);
         Assert.Equal("True", mapLegend.Attribute("ClipToBounds")?.Value);
         Assert.Equal(["Map legend"], labels);
         Assert.DoesNotContain(legend.Descendants(), element =>

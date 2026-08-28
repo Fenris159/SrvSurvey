@@ -605,7 +605,10 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 continue;
             }
 
-            AttachLiveWindow(registered);
+            if (registered.ParticipatesInPlacement)
+            {
+                AttachLiveWindow(registered);
+            }
         }
 
         if (liveWindows.Count == 0)
@@ -790,7 +793,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 registered.Window,
                 activeLayout,
                 registered.PlotterName);
-            if (game is not
+            if (!registered.ParticipatesInPlacement
+                || game is not
                 {
                     IsAvailable: true,
                     ClientBounds: { Width: > 0, Height: > 0 },
@@ -1116,7 +1120,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         liveEditSession.SetPlacement(plotterName, placement);
         activeLayout.SetPlacement(plotterName, placement);
         var registered = registry.Snapshot().FirstOrDefault(candidate =>
-            string.Equals(
+            candidate.ParticipatesInPlacement
+            && string.Equals(
                 candidate.PlotterName,
                 plotterName,
                 StringComparison.Ordinal));

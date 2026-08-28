@@ -24,6 +24,8 @@ public interface IGuardianOverlayPresentationState : INotifyPropertyChanged
 
     string? TargetObeliskName { get; }
 
+    string? ActiveMapSelectedPointName { get; }
+
     GuardianAlignmentMode? AlignmentMode { get; }
 
     double AlignmentOpacity { get; }

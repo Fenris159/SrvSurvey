@@ -39,6 +39,16 @@ public sealed class GuardianSiteMapControlTests
     }
 
     [Fact]
+    public void CommanderHeadingStemPointsUp()
+    {
+        Assert.Equal(
+            new Point(40, 20),
+            GuardianSiteMapControl.GetCommanderHeadingEnd(
+                new Point(40, 50),
+                radius: 15));
+    }
+
+    [Fact]
     public void MapRotatesSoCommanderHeadingPointsUp()
     {
         var proximity = new GuardianSiteProximitySnapshot(
@@ -557,6 +567,55 @@ public sealed class GuardianSiteMapControlTests
                 MouseButton.Left,
                 RawInputModifiers.None);
             Assert.Null(control.SelectedPointName);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void AutomaticHighlightDoesNotConsumeManualPointSelection()
+    {
+        var control = new GuardianSiteMapControl
+        {
+            Projection = new GuardianSiteMapProjection(
+                "Lacrosse",
+                [RenderPoint(
+                    "P1",
+                    GuardianPoiType.Orb,
+                    0,
+                    0,
+                    GuardianPoiStatus.Present)],
+                [],
+                1),
+            HighlightedPointName = "P1",
+            MapScale = 4,
+            AllowViewportInteraction = true,
+            ShowLegend = false,
+        };
+        var window = new Window
+        {
+            Width = 720,
+            Height = 640,
+            Content = control,
+        };
+
+        try
+        {
+            window.Show();
+            Assert.Null(control.SelectedPointName);
+
+            window.MouseDown(
+                new Point(360, 320),
+                MouseButton.Left,
+                RawInputModifiers.None);
+            window.MouseUp(
+                new Point(360, 320),
+                MouseButton.Left,
+                RawInputModifiers.None);
+
+            Assert.Equal("P1", control.SelectedPointName);
         }
         finally
         {

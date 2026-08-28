@@ -101,6 +101,26 @@ public sealed class GuardianTemplateAuthoringViewModelTests : IDisposable
         viewModel.PointAngle += 0.1m;
         viewModel.PointDistance += 0.1m;
         viewModel.PointRotation += 0.1m;
+
+        var livePreview = viewModel.PreviewTemplate!.PointsOfInterest.Single(
+            point => point.Name == "p2-edited");
+        Assert.Equal(90.1, livePreview.Angle);
+        Assert.Equal(20.1, livePreview.Distance);
+        Assert.Equal(45.1, livePreview.Rotation);
+
+        viewModel.SelectPoint("p1");
+        Assert.Contains(
+            viewModel.PreviewTemplate!.PointsOfInterest,
+            point => point.Name == "p2");
+        Assert.DoesNotContain(
+            viewModel.PreviewTemplate.PointsOfInterest,
+            point => point.Name == "p2-edited");
+
+        viewModel.SelectPoint("p2");
+        viewModel.PointName = "p2-edited";
+        viewModel.PointAngle += 0.1m;
+        viewModel.PointDistance += 0.1m;
+        viewModel.PointRotation += 0.1m;
         viewModel.ApplySelectedPointCommand.Execute(null);
 
         var updated = viewModel.PreviewTemplate!.PointsOfInterest.Single(point =>

@@ -196,7 +196,8 @@ public sealed class GuardianViewModel
             OnSurveySavedAsync);
         TemplateAuthoring = new GuardianTemplateAuthoringViewModel(
             this.templates,
-            OnTemplateDraftChanged);
+            OnTemplateDraftChanged,
+            pointPreviewChanged: OnTemplatePointPreviewChanged);
         SurveyEditor.PropertyChanged += OnSurveyEditorPropertyChanged;
         TemplateAuthoring.PropertyChanged +=
             OnTemplateAuthoringPropertyChanged;
@@ -944,6 +945,34 @@ public sealed class GuardianViewModel
         && selectedReference == activeReference
             ? Proximity
             : null;
+
+    public string? SelectedMapTargetPointName =>
+        SelectedMapCommanderPosition?.NearestPoint is
+        {
+            Distance: <= GuardianSiteProximityEvaluator.NearbyPointDistance,
+        } nearest
+            ? nearest.Point.Name
+            : SelectedSite?.Reference is { } selectedReference
+                && ActiveSite?.Reference is { } activeReference
+                && selectedReference == activeReference
+                    ? TargetObeliskName
+                    : null;
+
+    public string? SelectedMapPointName =>
+        SurveyEditor.SelectedPointName ?? SelectedMapTargetPointName;
+
+    public string? ActiveMapSelectedPointName =>
+        SelectedSite?.Reference is { } selectedReference
+        && ActiveSite?.Reference is { } activeReference
+        && selectedReference == activeReference
+        && !string.IsNullOrWhiteSpace(SurveyEditor.SelectedPointName)
+            ? SurveyEditor.SelectedPointName
+            : Proximity?.NearestPoint is
+            {
+                Distance: <= GuardianSiteProximityEvaluator.NearbyPointDistance,
+            } nearest
+                ? nearest.Point.Name
+                : TargetObeliskName;
 
     public GuardianSiteMapProjection? ActiveMapProjection => activeMapProjection;
 
@@ -2787,6 +2816,12 @@ public sealed class GuardianViewModel
         }
 
         var siteType = parsedType.SiteType;
+        var isInitialSiteType = ActiveSite is { } activeSite
+            && FindSurvey(activeSite) is { } activeSurvey
+            && string.Equals(
+                activeSurvey.SiteType,
+                UnknownLabel,
+                StringComparison.OrdinalIgnoreCase);
         if (await SaveActiveSurveyMutationAsync(
             survey => survey with
             {
@@ -2802,6 +2837,10 @@ public sealed class GuardianViewModel
             cancellationToken))
         {
             SetLiveMapModeFromSurvey();
+            if (isInitialSiteType && RevealAndSelectActiveReference())
+            {
+                SelectedWorkspaceTabIndex = 1;
+            }
         }
 
         return true;
@@ -3643,24 +3682,83 @@ public sealed class GuardianViewModel
             commanderData.Errors);
     }
 
-    private void SelectActiveReference()
+    private bool SelectActiveReference()
     {
         if (ActiveSite is not { } site)
         {
-            return;
+            return false;
         }
 
-        SelectedSite = Rows.FirstOrDefault(row =>
-                row.Reference.SystemAddress == site.SystemAddress
-                && row.Reference.Index == site.Index
-                && row.Reference.Kind == site.Kind
-                && (row.Reference.BodyId >= 0 && site.BodyId >= 0
-                    ? row.Reference.BodyId == site.BodyId
-                    : string.Equals(
-                        row.Reference.FullBodyName,
-                        site.BodyName,
-                        StringComparison.OrdinalIgnoreCase)))
-            ?? SelectedSite;
+        var activeRow = Rows.FirstOrDefault(row => IsSameSite(row.Reference, site));
+        if (activeRow is null)
+        {
+            return false;
+        }
+
+        SelectedSite = activeRow;
+        return true;
+    }
+
+    private bool RevealAndSelectActiveReference()
+    {
+        if (SelectActiveReference())
+        {
+            return true;
+        }
+
+        var filtersChanged = false;
+        filtersChanged |= ResetFilter(
+            ref filterText,
+            string.Empty,
+            nameof(FilterText));
+        filtersChanged |= ResetFilter(
+            ref selectedKindFilter,
+            AllKinds,
+            nameof(SelectedKindFilter));
+        filtersChanged |= ResetFilter(
+            ref selectedVisitFilter,
+            AllVisits,
+            nameof(SelectedVisitFilter));
+        filtersChanged |= ResetFilter(
+            ref selectedSiteTypeFilter,
+            AllTypes,
+            nameof(SelectedSiteTypeFilter));
+        if (filtersChanged)
+        {
+            ApplyFilters();
+        }
+
+        return SelectActiveReference();
+    }
+
+    private bool ResetFilter(
+        ref string field,
+        string value,
+        string propertyName)
+    {
+        if (string.Equals(field, value, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        field = value;
+        OnPropertyChanged(propertyName);
+        return true;
+    }
+
+    private static bool IsSameSite(
+        GuardianSiteReference reference,
+        GuardianLiveSiteSnapshot site)
+    {
+        return reference.SystemAddress == site.SystemAddress
+            && reference.Index == site.Index
+            && reference.Kind == site.Kind
+            && (reference.BodyId >= 0 && site.BodyId >= 0
+                ? reference.BodyId == site.BodyId
+                : string.Equals(
+                    reference.FullBodyName,
+                    site.BodyName,
+                    StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool IsSameBody(
@@ -3939,6 +4037,9 @@ public sealed class GuardianViewModel
         OnPropertyChanged(nameof(ShouldShowLiveSiteOverlay));
         OnPropertyChanged(nameof(ShouldShowGuardianStatusOverlay));
         OnPropertyChanged(nameof(SelectedMapCommanderPosition));
+        OnPropertyChanged(nameof(SelectedMapTargetPointName));
+        OnPropertyChanged(nameof(SelectedMapPointName));
+        OnPropertyChanged(nameof(ActiveMapSelectedPointName));
         NotifyAuxiliaryOverlayState();
     }
 
@@ -3947,6 +4048,9 @@ public sealed class GuardianViewModel
         RefreshAutomaticMapScale();
         OnPropertyChanged(nameof(Proximity));
         OnPropertyChanged(nameof(SelectedMapCommanderPosition));
+        OnPropertyChanged(nameof(SelectedMapTargetPointName));
+        OnPropertyChanged(nameof(SelectedMapPointName));
+        OnPropertyChanged(nameof(ActiveMapSelectedPointName));
         OnPropertyChanged(nameof(CurrentObelisk));
         OnPropertyChanged(nameof(HasCurrentObelisk));
         OnPropertyChanged(nameof(SiteDistanceText));
@@ -4290,6 +4394,9 @@ public sealed class GuardianViewModel
         targetObeliskName = target?.Name;
         currentRamTahLogs = BuildCurrentRamTahLogs();
         OnPropertyChanged(nameof(TargetObeliskName));
+        OnPropertyChanged(nameof(SelectedMapTargetPointName));
+        OnPropertyChanged(nameof(SelectedMapPointName));
+        OnPropertyChanged(nameof(ActiveMapSelectedPointName));
         OnPropertyChanged(nameof(HasTargetObelisk));
         OnPropertyChanged(nameof(TargetObeliskText));
         OnPropertyChanged(nameof(CurrentRamTahLogs));
@@ -4495,6 +4602,14 @@ public sealed class GuardianViewModel
         var location = survey?.Survey.Location
             ?? published?.Location
             ?? site.Location;
+        if (SelectedSite?.Reference is { } selectedReference
+            && IsSameSite(selectedReference, site)
+            && SurveyEditor.TryGetPreviewSurfaceLocation(
+                out var previewLocation))
+        {
+            location = previewLocation;
+        }
+
         var siteHeading = survey?.Survey.SiteHeading is >= 0 and <= 359
             ? survey.Survey.SiteHeading
             : (published?.SiteHeading is >= 0 and <= 359) switch
@@ -4833,6 +4948,12 @@ public sealed class GuardianViewModel
         UpdateProximity();
     }
 
+    private void OnTemplatePointPreviewChanged()
+    {
+        UpdateMapProjection();
+        UpdateProximity();
+    }
+
     private void OnSurveyEditorPropertyChanged(
         object? sender,
         PropertyChangedEventArgs args)
@@ -4840,7 +4961,15 @@ public sealed class GuardianViewModel
         if (args.PropertyName
             == nameof(GuardianSurveyEditorViewModel.SelectedPointName))
         {
+            OnPropertyChanged(nameof(SelectedMapPointName));
+            OnPropertyChanged(nameof(ActiveMapSelectedPointName));
             TemplateAuthoring.SelectPoint(SurveyEditor.SelectedPointName);
+        }
+        else if (args.PropertyName is
+                 nameof(GuardianSurveyEditorViewModel.SurfaceLatitude)
+                 or nameof(GuardianSurveyEditorViewModel.SurfaceLongitude))
+        {
+            UpdateProximity();
         }
     }
 

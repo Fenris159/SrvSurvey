@@ -8,6 +8,36 @@
              x:Class="SrvSurvey.Desktop.Views.GuardianView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="Expander.guardian-map-legend /template/ ToggleButton /template/ Border#ToggleButtonBackground">
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="BoxShadow" Value="none" />
+      <Setter Property="Margin" Value="0,0,0,10" />
+    </Style>
+    <Style Selector="Expander.guardian-map-legend.monochrome /template/ ToggleButton /template/ Border#ToggleButtonBackground">
+      <Setter Property="Background" Value="#1C1C1C" />
+      <Setter Property="BorderBrush" Value="#33FFFFFF" />
+    </Style>
+    <Style Selector="Expander.guardian-map-legend /template/ Border#ExpanderContent">
+      <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+      <Setter Property="BorderThickness" Value="1,0,1,1" />
+      <Setter Property="CornerRadius" Value="0,0,12,12" />
+      <Setter Property="BoxShadow" Value="none" />
+      <Setter Property="Margin" Value="0" />
+      <Setter Property="Padding" Value="10,0,0,0" />
+      <Setter Property="MinWidth" Value="290" />
+      <Setter Property="MinHeight" Value="270" />
+    </Style>
+    <Style Selector="Expander.guardian-map-legend:expanded /template/ Border#ExpanderContent">
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+    </Style>
+    <Style Selector="Expander.guardian-map-legend.monochrome /template/ Border#ExpanderContent">
+      <Setter Property="Background" Value="#2B2B2B" />
+      <Setter Property="BorderBrush" Value="#33FFFFFF" />
+    </Style>
+  </UserControl.Styles>
   <ScrollViewer HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="32" Spacing="20" MaxWidth="1050">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
@@ -513,6 +543,9 @@
                       AllowViewportInteraction="True"
                       Projection="{Binding Guardian.MapProjection}"
                       CommanderMapPosition="{Binding Guardian.SelectedMapCommanderPosition}"
+                      Proximity="{Binding Guardian.SelectedMapCommanderPosition}"
+                      TargetPointName="{Binding Guardian.SelectedMapTargetPointName}"
+                      HighlightedPointName="{Binding Guardian.SelectedMapPointName}"
                       SelectedPointName="{Binding Guardian.SurveyEditor.SelectedPointName, Mode=TwoWay}"
                       ShowLegend="False"
                       MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
@@ -523,7 +556,7 @@
                       AbsentBrush="{DynamicResource RavenDangerBrush}"
                       EmptyBrush="{DynamicResource RavenWarningBrush}" />
                   <Grid Grid.Row="1"
-                        ColumnDefinitions="Auto,*,Auto"
+                        ColumnDefinitions="Auto,*,Auto,Auto"
                         ColumnSpacing="10">
                     <TextBlock Classes="eyebrow"
                                VerticalAlignment="Center"
@@ -539,6 +572,26 @@
                                VerticalAlignment="Center"
                                FontWeight="SemiBold"
                                Text="{Binding ViewportZoom, ElementName=GuardianSurveyMap, StringFormat='{}{0:N2}x'}" />
+                    <StackPanel Grid.Column="3"
+                                Margin="8,0,0,0"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="4">
+                      <TextBlock Classes="muted"
+                                 VerticalAlignment="Center"
+                                 Text="Orientation" />
+                      <Button Classes="link"
+                              Width="18"
+                              Height="18"
+                              Padding="2"
+                              VerticalAlignment="Center"
+                              AutomationProperties.Name="Guardian map orientation information"
+                              ToolTip.Tip="The legacy aerial image is fixed to the Guardian site template's surveyed origin and scale. Site, tower, marker, and commander geometry uses that same alignment.">
+                        <PathIcon Width="14"
+                                  Height="14"
+                                  Data="{StaticResource question_circle_regular}" />
+                      </Button>
+                    </StackPanel>
                   </Grid>
                 </Grid>
               </Border>
@@ -546,6 +599,38 @@
               <StackPanel x:Name="GuardianSurveyMapSidebar"
                           Grid.Column="1"
                           Spacing="18">
+                <Border x:Name="GuardianSurveyMapLegend"
+                        Margin="0"
+                        Padding="0"
+                        IsVisible="{Binding Guardian.ShowMapLegend}">
+                  <Expander x:Name="GuardianSurveyMapLegendExpander"
+                            Classes="guardian-map-legend"
+                            Classes.monochrome="{Binding IsMonochromeTheme}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            IsExpanded="False">
+                    <Expander.Header>
+                      <TextBlock Margin="20,16"
+                                 Classes="card-title"
+                                 Text="Map legend" />
+                    </Expander.Header>
+                    <controls:GuardianSiteMapControl
+                        Height="270"
+                        Margin="20,0,0,0"
+                        ClipToBounds="True"
+                        IsLegendOnly="True"
+                        Projection="{Binding Guardian.MapProjection}"
+                        ShowLegend="False"
+                        MapBackground="{DynamicResource RavenSurfaceBrush}"
+                        GridBrush="{DynamicResource RavenBorderBrush}"
+                        AccentBrush="{DynamicResource RavenAccentBrush}"
+                        MutedBrush="{DynamicResource RavenTextBrush}"
+                        PresentBrush="{DynamicResource RavenSuccessBrush}"
+                        AbsentBrush="{DynamicResource RavenDangerBrush}"
+                        EmptyBrush="{DynamicResource RavenWarningBrush}" />
+                  </Expander>
+                </Border>
+
                 <Border x:Name="GuardianSelectedMap"
                         Classes="card raised"
                         IsVisible="{Binding Guardian.SurveyEditor.IsMapSummaryVisible}">
@@ -580,6 +665,40 @@
                       <CheckBox IsChecked="{Binding Guardian.ShowMapNotes, Mode=TwoWay}"
                                 Content="Show notes" />
                     </WrapPanel>
+                  </StackPanel>
+                </Border>
+
+                <Border x:Name="GuardianSurveyPoints"
+                        Classes="card raised"
+                        IsVisible="{Binding Guardian.SurveyEditor.IsMapSummaryVisible}">
+                  <StackPanel Spacing="6">
+                    <TextBlock Classes="muted" Text="SURVEY POINTS" />
+                    <ListBox Height="210"
+                             ItemsSource="{Binding Guardian.SurveyEditor.Points}"
+                             SelectedItem="{Binding Guardian.SurveyEditor.SelectedPoint, Mode=TwoWay}">
+                      <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:GuardianSurveyPoiViewModel">
+                          <Grid Margin="4,2"
+                                ColumnDefinitions="44,78,*,Auto"
+                                ColumnSpacing="6">
+                            <TextBlock Classes="monospace"
+                                       FontSize="12"
+                                       Text="{Binding Name}" />
+                            <TextBlock Grid.Column="1"
+                                       Classes="muted"
+                                       FontSize="12"
+                                       Text="{Binding TypeText}" />
+                            <TextBlock Grid.Column="2"
+                                       Classes="muted"
+                                       FontSize="12"
+                                       Text="{Binding PositionText}" />
+                            <TextBlock Grid.Column="3"
+                                       FontSize="12"
+                                       Text="{Binding Status}" />
+                          </Grid>
+                        </DataTemplate>
+                      </ListBox.ItemTemplate>
+                    </ListBox>
                   </StackPanel>
                 </Border>
 
@@ -783,37 +902,6 @@
                             IsVisible="{Binding Guardian.SurveyEditor.HasSelectedRawPoint}"
                             Command="{Binding Guardian.SurveyEditor.RemoveRawPointCommand}"
                             Content="Delete local raw point" />
-                  </StackPanel>
-                </Border>
-
-                <Border x:Name="GuardianSurveyMapLegend"
-                        Classes="card"
-                        IsVisible="{Binding Guardian.ShowMapLegend}">
-                  <StackPanel Spacing="12">
-                    <TextBlock Classes="card-title" Text="Map legend" />
-                    <controls:GuardianSiteMapControl
-                        Height="320"
-                        ClipToBounds="True"
-                        IsLegendOnly="True"
-                        Projection="{Binding Guardian.MapProjection}"
-                        ShowLegend="False"
-                        MapBackground="{DynamicResource RavenSurfaceBrush}"
-                        GridBrush="{DynamicResource RavenBorderBrush}"
-                        AccentBrush="{DynamicResource RavenAccentBrush}"
-                        MutedBrush="{DynamicResource RavenTextBrush}"
-                        PresentBrush="{DynamicResource RavenSuccessBrush}"
-                        AbsentBrush="{DynamicResource RavenDangerBrush}"
-                        EmptyBrush="{DynamicResource RavenWarningBrush}" />
-                  </StackPanel>
-                </Border>
-
-                <Border x:Name="GuardianSurveyMapOrientation"
-                        Classes="card">
-                  <StackPanel Spacing="5">
-                    <TextBlock Classes="card-title" Text="Orientation" />
-                    <TextBlock Classes="muted"
-                               TextWrapping="Wrap"
-                               Text="The legacy aerial image is fixed to the Guardian site template's surveyed origin and scale. Site, tower, marker, and commander geometry uses that same alignment." />
                   </StackPanel>
                 </Border>
 
@@ -1036,7 +1124,9 @@
                                          FormatString="0"
                                          Value="{Binding Guardian.SurveyEditor.RelicTowerHeading, Mode=TwoWay}" />
                         </StackPanel>
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Grid ColumnDefinitions="210,210,Auto,*"
+                              ColumnSpacing="12"
+                              HorizontalAlignment="Left">
                           <StackPanel Spacing="5">
                             <TextBlock Classes="muted" Text="SURFACE LATITUDE" />
                             <NumericUpDown x:Name="GuardianSurveyLatitude"
@@ -1055,6 +1145,10 @@
                                            FormatString="0.000000"
                                            Value="{Binding Guardian.SurveyEditor.SurfaceLongitude, Mode=TwoWay}" />
                           </StackPanel>
+                          <Button Grid.Column="2"
+                                  VerticalAlignment="Bottom"
+                                  Command="{Binding Guardian.SurveyEditor.ResetCoordinatesCommand}"
+                                  Content="Reset coordinates" />
                         </Grid>
                         <TextBlock Classes="muted"
                                    FontSize="11"
@@ -1174,30 +1268,6 @@
                                    Text="Raw points are commander-specific discoveries. The active site, selected survey, surface position, body radius, and site heading must all agree before a point can be measured." />
                       </StackPanel>
                     </Border>
-
-                    <StackPanel Spacing="6">
-                      <TextBlock Classes="muted" Text="SURVEY POINTS" />
-                      <ListBox Height="210"
-                               ItemsSource="{Binding Guardian.SurveyEditor.Points}"
-                               SelectedItem="{Binding Guardian.SurveyEditor.SelectedPoint, Mode=TwoWay}">
-                        <ListBox.ItemTemplate>
-                          <DataTemplate x:DataType="vm:GuardianSurveyPoiViewModel">
-                            <Grid Margin="6,3"
-                                  ColumnDefinitions="70,*,Auto,Auto"
-                                  ColumnSpacing="8">
-                              <TextBlock Classes="monospace" Text="{Binding Name}" />
-                              <TextBlock Grid.Column="1"
-                                         Classes="muted"
-                                         Text="{Binding TypeText}" />
-                              <TextBlock Grid.Column="2"
-                                         Classes="muted"
-                                         Text="{Binding PositionText}" />
-                              <TextBlock Grid.Column="3" Text="{Binding Status}" />
-                            </Grid>
-                          </DataTemplate>
-                        </ListBox.ItemTemplate>
-                      </ListBox>
-                    </StackPanel>
 
                     <Button Classes="primary"
                             HorizontalAlignment="Left"

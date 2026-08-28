@@ -1724,6 +1724,12 @@ public sealed class GuardianViewModelTests
                                 0,
                                 0,
                                 0),
+                            new GuardianPointOfInterest(
+                                "p2",
+                                GuardianPoiType.Tablet,
+                                180,
+                                100,
+                                0),
                         ],
                         [],
                         new Dictionary<string, GuardianMapPoint>()),
@@ -1739,6 +1745,18 @@ public sealed class GuardianViewModelTests
             Assert.Same(
                 viewModel.Proximity,
                 viewModel.SelectedMapCommanderPosition);
+            Assert.Equal("p1", viewModel.SelectedMapTargetPointName);
+            Assert.Equal("p1", viewModel.SelectedMapPointName);
+            Assert.Equal("p1", viewModel.ActiveMapSelectedPointName);
+            Assert.Null(viewModel.SurveyEditor.SelectedPointName);
+
+            viewModel.UpdateStatus(StatusNorthOfSite(76));
+            Assert.Null(viewModel.SelectedMapPointName);
+            Assert.Null(viewModel.ActiveMapSelectedPointName);
+
+            viewModel.UpdateStatus(StatusNorthOfSite(0));
+            Assert.Equal("p1", viewModel.SelectedMapPointName);
+            Assert.Equal("p1", viewModel.ActiveMapSelectedPointName);
 
             foreach (var (command, expected) in new[]
                      {
@@ -1758,6 +1776,60 @@ public sealed class GuardianViewModelTests
                     expected,
                     Assert.Single(saved.Surveys).Survey.PoiStatuses["p1"]);
             }
+
+            var changed = new List<string?>();
+            viewModel.PropertyChanged += (_, args) => changed.Add(
+                args.PropertyName);
+            viewModel.SurveyEditor.SelectedPointName = "p2";
+
+            Assert.Equal("p2", viewModel.SelectedMapPointName);
+            Assert.Equal("p2", viewModel.ActiveMapSelectedPointName);
+            Assert.Contains(nameof(viewModel.SelectedMapPointName), changed);
+            Assert.Contains(nameof(viewModel.ActiveMapSelectedPointName), changed);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task SurfaceOriginEditsPreviewCommanderPositionAndResetImmediately()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference();
+            var template = new GuardianSiteTemplate(
+                "Test",
+                "Test",
+                string.Empty,
+                new GuardianMapPoint(0, 0),
+                1,
+                [],
+                [],
+                new Dictionary<string, GuardianMapPoint>());
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    Templates = new GuardianSiteTemplateCatalog([template]),
+                });
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","Name_Localised":"Ancient Ruins (1)","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}""")],
+                "Drew");
+            var status = StatusNorthOfSite(10);
+            viewModel.UpdateStatus(status);
+            Assert.Equal(10d, viewModel.Proximity!.DistanceFromSite, 3);
+
+            viewModel.SurveyEditor.SurfaceLatitude = (decimal)status.Latitude;
+
+            Assert.Equal(0d, viewModel.Proximity!.DistanceFromSite, 3);
+            viewModel.SurveyEditor.ResetCoordinatesCommand.Execute(null);
+            Assert.Equal(10d, viewModel.Proximity!.DistanceFromSite, 3);
         }
         finally
         {
@@ -1828,6 +1900,24 @@ public sealed class GuardianViewModelTests
             Assert.Equal("p1", viewModel.TemplateAuthoring.SelectedPoint?.Name);
 
             viewModel.TemplateAuthoring.StartCommand.Execute(null);
+            viewModel.TemplateAuthoring.PointName = "p1-edited";
+            viewModel.TemplateAuthoring.PointDistance = 10.1m;
+
+            Assert.Equal(
+                10.1,
+                viewModel.MapProjection?.Points.Single(point =>
+                    point.Name == "p1-edited").Distance);
+
+            viewModel.SurveyEditor.SelectedPointName = null;
+
+            Assert.Contains(
+                viewModel.MapProjection!.Points,
+                point => point.Name == "p1" && point.Distance == 10);
+            Assert.DoesNotContain(
+                viewModel.MapProjection.Points,
+                point => point.Name == "p1-edited");
+
+            viewModel.SurveyEditor.SelectedPointName = "p1";
             viewModel.TemplateAuthoring.PointName = "p1-edited";
             viewModel.TemplateAuthoring.PointDistance = 10.1m;
             viewModel.TemplateAuthoring.ApplySelectedPointCommand.Execute(null);

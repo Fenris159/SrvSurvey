@@ -1592,6 +1592,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     public string SelectedThemeName => selectedTheme.DisplayName;
 
+    public bool IsMonochromeTheme =>
+        selectedTheme.Definition.Key == "monochrome-dark";
+
     public string ThemeStatusMessage
     {
         get => themeStatusMessage;
@@ -2298,6 +2301,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             selectedTheme = option;
             ThemeStatusMessage = string.Empty;
             OnPropertyChanged(nameof(SelectedThemeName));
+            OnPropertyChanged(nameof(IsMonochromeTheme));
         }
         catch (Exception exception) when (
             exception is IOException

@@ -27,6 +27,7 @@
     <SolidColorBrush x:Key="RavenAccentForegroundBrush" Color="#000012" />
     <SolidColorBrush x:Key="RavenTextBrush" Color="#E5E5E5" />
     <SolidColorBrush x:Key="RavenMutedTextBrush" Color="#C8C8C8" />
+    <SolidColorBrush x:Key="RavenSelectedMutedTextBrush" Color="#C8C8C8" />
     <SolidColorBrush x:Key="RavenTertiaryTextBrush" Color="#C8C8C8" />
     <SolidColorBrush x:Key="RavenBorderBrush" Color="#195494" />
     <SolidColorBrush x:Key="RavenStrongBorderBrush" Color="#195494" />

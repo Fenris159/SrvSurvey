@@ -224,6 +224,32 @@ public sealed class MainWindowRedesignMarkupTests
     }
 
     [Fact]
+    public void SelectedMutedListTextUsesTheThemeSpecificContrastResource()
+    {
+        var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        var styleMap = styles.Descendants()
+            .Where(element => element.Name.LocalName == "Style")
+            .ToDictionary(
+                element => element.Attribute("Selector")?.Value ?? string.Empty,
+                StringComparer.Ordinal);
+
+        AssertStyleSetter(
+            styleMap["ListBoxItem:selected TextBlock.muted"],
+            "Foreground",
+            "{DynamicResource RavenSelectedMutedTextBrush}");
+        Assert.DoesNotContain("ListBoxItem:selected", styleMap.Keys);
+        Assert.DoesNotContain("ListBoxItem:selected TextBlock", styleMap.Keys);
+        AssertStyleSetter(
+            styleMap["ListBox.nav ListBoxItem:selected"],
+            "Foreground",
+            "{DynamicResource RavenTextBrush}");
+        AssertStyleSetter(
+            styleMap["ListBox.guide-categories ListBoxItem:selected"],
+            "Foreground",
+            "{DynamicResource RavenTextBrush}");
+    }
+
+    [Fact]
     public void GlobalScrollbarTemplateUsesRoundedTrackWithoutLineButtons()
     {
         var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");

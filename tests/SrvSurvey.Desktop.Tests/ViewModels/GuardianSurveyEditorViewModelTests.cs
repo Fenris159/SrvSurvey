@@ -364,6 +364,42 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task ResetCoordinatesRestoresLastSavedSurfaceOrigin()
+    {
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var initial = CreateSurvey();
+        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        var editor = new GuardianSurveyEditorViewModel(
+            store,
+            (_, _) => Task.CompletedTask);
+        editor.Load(new GuardianSurveyEditorLoadContext(
+            "F123",
+            true,
+            initial with { Path = path },
+            CreateTemplate()));
+
+        editor.SurfaceLatitude = 12.345678m;
+        editor.SurfaceLongitude = -98.765432m;
+
+        Assert.True(editor.ResetCoordinatesCommand.CanExecute(null));
+        editor.ResetCoordinatesCommand.Execute(null);
+
+        Assert.Equal(1m, editor.SurfaceLatitude);
+        Assert.Equal(2m, editor.SurfaceLongitude);
+        Assert.False(editor.ResetCoordinatesCommand.CanExecute(null));
+
+        editor.SurfaceLatitude = 3m;
+        editor.SurfaceLongitude = 4m;
+        await editor.SaveAsync();
+        editor.SurfaceLatitude = 5m;
+        editor.SurfaceLongitude = 6m;
+        editor.ResetCoordinatesCommand.Execute(null);
+
+        Assert.Equal(3m, editor.SurfaceLatitude);
+        Assert.Equal(4m, editor.SurfaceLongitude);
+    }
+
+    [Fact]
     public async Task RejectsIncompleteOriginAndDuplicateActiveObeliskNames()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);

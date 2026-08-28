@@ -10,6 +10,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     private GuardianSiteTemplateCatalog catalog;
     private readonly GuardianSiteTemplateCatalogExporter exporter;
     private readonly Action<bool> draftChanged;
+    private readonly Action? pointPreviewChanged;
     private readonly DelegateCommand startCommand;
     private readonly DelegateCommand applyMetadataCommand;
     private readonly DelegateCommand addMeasuredPointCommand;
@@ -44,6 +45,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     private decimal groupDistance;
     private bool isDiscardConfirmationPending;
     private bool isBusy;
+    private bool isLoadingSelectedPointFields;
     private string? lastExportPath;
     private string statusMessage =
         "Select a mapped Guardian ruins or structure survey to author its master template.";
@@ -51,12 +53,14 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     public GuardianTemplateAuthoringViewModel(
         GuardianSiteTemplateCatalog catalog,
         Action<bool> draftChanged,
-        GuardianSiteTemplateCatalogExporter? exporter = null)
+        GuardianSiteTemplateCatalogExporter? exporter = null,
+        Action? pointPreviewChanged = null)
     {
         this.catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         this.draftChanged = draftChanged
             ?? throw new ArgumentNullException(nameof(draftChanged));
         this.exporter = exporter ?? new GuardianSiteTemplateCatalogExporter();
+        this.pointPreviewChanged = pointPreviewChanged;
         startCommand = new DelegateCommand(Start, () => CanStart);
         applyMetadataCommand = new DelegateCommand(
             ApplyMetadata,
@@ -126,7 +130,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
 
     public GuardianSiteTemplateCatalog Catalog => catalog;
 
-    public GuardianSiteTemplate? PreviewTemplate => session?.Template;
+    public GuardianSiteTemplate? PreviewTemplate => BuildSelectedPointPreview();
 
     public bool HasActiveTemplate => activeTemplate is not null;
 
@@ -160,17 +164,26 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
                 return;
             }
 
-            if (value is not null)
+            isLoadingSelectedPointFields = true;
+            try
             {
-                PointName = value.Point.Name;
-                PointType = value.Point.Type;
-                PointAngle = (decimal)value.Point.Angle;
-                PointDistance = (decimal)value.Point.Distance;
-                PointRotation = (decimal)value.Point.Rotation;
+                if (value is not null)
+                {
+                    PointName = value.Point.Name;
+                    PointType = value.Point.Type;
+                    PointAngle = (decimal)value.Point.Angle;
+                    PointDistance = (decimal)value.Point.Distance;
+                    PointRotation = (decimal)value.Point.Rotation;
+                }
+            }
+            finally
+            {
+                isLoadingSelectedPointFields = false;
             }
 
             OnPropertyChanged(nameof(HasSelectedPoint));
             RaiseCommandStates();
+            NotifySelectedPointPreviewChanged();
         }
     }
 
@@ -236,7 +249,13 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     public string PointName
     {
         get => pointName;
-        set => SetField(ref pointName, value ?? string.Empty);
+        set
+        {
+            if (SetField(ref pointName, value ?? string.Empty))
+            {
+                NotifySelectedPointPreviewChanged();
+            }
+        }
     }
 
     public string NewPointName
@@ -260,25 +279,49 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     public GuardianPoiType PointType
     {
         get => pointType;
-        set => SetField(ref pointType, value);
+        set
+        {
+            if (SetField(ref pointType, value))
+            {
+                NotifySelectedPointPreviewChanged();
+            }
+        }
     }
 
     public decimal PointAngle
     {
         get => pointAngle;
-        set => SetField(ref pointAngle, value);
+        set
+        {
+            if (SetField(ref pointAngle, value))
+            {
+                NotifySelectedPointPreviewChanged();
+            }
+        }
     }
 
     public decimal PointDistance
     {
         get => pointDistance;
-        set => SetField(ref pointDistance, value);
+        set
+        {
+            if (SetField(ref pointDistance, value))
+            {
+                NotifySelectedPointPreviewChanged();
+            }
+        }
     }
 
     public decimal PointRotation
     {
         get => pointRotation;
-        set => SetField(ref pointRotation, value);
+        set
+        {
+            if (SetField(ref pointRotation, value))
+            {
+                NotifySelectedPointPreviewChanged();
+            }
+        }
     }
 
     public string GroupName
@@ -605,6 +648,45 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
         RefreshCollections(selectedName);
         StatusMessage = message;
         NotifyDraftChanged(catalogChanged: false);
+    }
+
+    private GuardianSiteTemplate? BuildSelectedPointPreview()
+    {
+        if (session is null || SelectedPoint is not { } selected)
+        {
+            return session?.Template;
+        }
+
+        try
+        {
+            var preview = new GuardianSiteTemplateAuthoringSession(
+                session.Template);
+            preview.UpdatePoint(
+                selected.Point.Name,
+                new GuardianPointOfInterest(
+                    PointName.Trim(),
+                    PointType,
+                    decimal.ToDouble(PointAngle),
+                    decimal.ToDouble(PointDistance),
+                    decimal.ToDouble(PointRotation)));
+            return preview.Template;
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException or InvalidOperationException)
+        {
+            return session.Template;
+        }
+    }
+
+    private void NotifySelectedPointPreviewChanged()
+    {
+        if (isLoadingSelectedPointFields || session is null)
+        {
+            return;
+        }
+
+        OnPropertyChanged(nameof(PreviewTemplate));
+        pointPreviewChanged?.Invoke();
     }
 
     private void RefreshCollections(string? selectedName = null)

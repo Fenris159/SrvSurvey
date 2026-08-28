@@ -175,6 +175,13 @@ public sealed class MainWindowViewModelTests
             viewModel.ThemeOptions,
             option => option.Definition.Key == "monochrome-dark");
         Assert.Equal("Blue (dark)", viewModel.SelectedThemeName);
+        Assert.False(viewModel.IsMonochromeTheme);
+
+        viewModel.ThemeOptions.Single(option =>
+            option.Definition.Key == "monochrome-dark").SelectCommand.Execute(null);
+
+        Assert.Equal("Monochrome (dark)", viewModel.SelectedThemeName);
+        Assert.True(viewModel.IsMonochromeTheme);
     }
 
     [Fact]

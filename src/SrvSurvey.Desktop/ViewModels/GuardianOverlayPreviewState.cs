@@ -136,6 +136,9 @@ internal sealed class GuardianOverlayPreviewState
 
     public string? TargetObeliskName => "A01";
 
+    public string? ActiveMapSelectedPointName =>
+        Proximity?.NearestPoint?.Point.Name ?? TargetObeliskName;
+
     public GuardianAlignmentMode? AlignmentMode => null;
 
     public double AlignmentOpacity => 0;

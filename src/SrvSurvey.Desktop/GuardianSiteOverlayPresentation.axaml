@@ -16,6 +16,7 @@
           MapScale="{Binding Guardian.ActiveMapScale}"
           CommanderHeading="{Binding Guardian.ActiveMapRelativeHeading}"
           TargetPointName="{Binding Guardian.TargetObeliskName}"
+          HighlightedPointName="{Binding Guardian.ActiveMapSelectedPointName}"
           ShowLegend="False"
           MapBackground="{DynamicResource RavenGuardianSurfaceBrush}"
           GridBrush="{DynamicResource RavenGuardianSecondaryDimBrush}"

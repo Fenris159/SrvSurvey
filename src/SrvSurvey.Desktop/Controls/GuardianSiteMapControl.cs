@@ -31,6 +31,9 @@ public sealed class GuardianSiteMapControl : Control
     public static readonly StyledProperty<string?> TargetPointNameProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, string?>(
             nameof(TargetPointName));
+    public static readonly StyledProperty<string?> HighlightedPointNameProperty =
+        AvaloniaProperty.Register<GuardianSiteMapControl, string?>(
+            nameof(HighlightedPointName));
     public static readonly StyledProperty<string?> SelectedPointNameProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, string?>(
             nameof(SelectedPointName));
@@ -94,6 +97,7 @@ public sealed class GuardianSiteMapControl : Control
             MapScaleProperty,
             CommanderHeadingProperty,
             TargetPointNameProperty,
+            HighlightedPointNameProperty,
             SelectedPointNameProperty,
             HoveredPointNameProperty,
             MapBackgroundProperty,
@@ -144,6 +148,12 @@ public sealed class GuardianSiteMapControl : Control
     {
         get => GetValue(TargetPointNameProperty);
         set => SetValue(TargetPointNameProperty, value);
+    }
+
+    public string? HighlightedPointName
+    {
+        get => GetValue(HighlightedPointNameProperty);
+        set => SetValue(HighlightedPointNameProperty, value);
     }
 
     public string? SelectedPointName
@@ -781,7 +791,12 @@ public sealed class GuardianSiteMapControl : Control
         context.DrawLine(
             pen,
             location,
-            location + new Vector(0, radius * 2));
+            GetCommanderHeadingEnd(location, radius));
+    }
+
+    internal static Point GetCommanderHeadingEnd(Point location, double radius)
+    {
+        return location - new Vector(0, radius * 2);
     }
 
     private void DrawLegend(
@@ -1235,7 +1250,7 @@ public sealed class GuardianSiteMapControl : Control
             StringComparison.OrdinalIgnoreCase);
         var isSelected = string.Equals(
             point.Name,
-            SelectedPointName,
+            HighlightedPointName ?? SelectedPointName,
             StringComparison.OrdinalIgnoreCase);
         if (!isHovered && !isSelected)
         {

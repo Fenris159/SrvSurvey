@@ -28,6 +28,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         GuardianCommanderSiteSurvey,
         Task> surveySaved;
     private readonly AsyncCommand saveCommand;
+    private readonly AsyncCommand resetCoordinatesCommand;
     private readonly AsyncCommand addRawPointCommand;
     private readonly AsyncCommand removeRawPointCommand;
     private readonly AsyncCommand addActiveObeliskCommand;
@@ -72,6 +73,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         this.surveySaved = surveySaved
             ?? throw new ArgumentNullException(nameof(surveySaved));
         saveCommand = new AsyncCommand(SaveAsync, () => IsAvailable && !IsBusy);
+        resetCoordinatesCommand = new AsyncCommand(
+            ResetCoordinatesAsync,
+            () => IsAvailable && !IsBusy && CoordinatesDifferFromSaved);
         addRawPointCommand = new AsyncCommand(
             AddRawPointAsync,
             () => IsAvailable && !IsBusy && liveMeasurement is not null);
@@ -87,6 +91,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             RemoveSelectedActiveObeliskAsync,
             () => IsAvailable && !IsBusy && SelectedActiveObelisk is not null);
         SaveCommand = saveCommand;
+        ResetCoordinatesCommand = resetCoordinatesCommand;
         AddRawPointCommand = addRawPointCommand;
         RemoveRawPointCommand = removeRawPointCommand;
         AddActiveObeliskCommand = addActiveObeliskCommand;
@@ -96,6 +101,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand SaveCommand { get; }
+
+    public ICommand ResetCoordinatesCommand { get; }
 
     public ICommand AddRawPointCommand { get; }
 
@@ -120,6 +127,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             if (SetField(ref isAvailable, value))
             {
                 saveCommand.RaiseCanExecuteChanged();
+                resetCoordinatesCommand.RaiseCanExecuteChanged();
                 addRawPointCommand.RaiseCanExecuteChanged();
                 removeRawPointCommand.RaiseCanExecuteChanged();
                 addActiveObeliskCommand.RaiseCanExecuteChanged();
@@ -154,6 +162,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             if (SetField(ref isBusy, value))
             {
                 saveCommand.RaiseCanExecuteChanged();
+                resetCoordinatesCommand.RaiseCanExecuteChanged();
                 addRawPointCommand.RaiseCanExecuteChanged();
                 removeRawPointCommand.RaiseCanExecuteChanged();
                 addActiveObeliskCommand.RaiseCanExecuteChanged();
@@ -209,13 +218,41 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     public decimal? SurfaceLatitude
     {
         get => surfaceLatitude;
-        set => SetField(ref surfaceLatitude, value);
+        set
+        {
+            if (SetField(ref surfaceLatitude, value))
+            {
+                resetCoordinatesCommand.RaiseCanExecuteChanged();
+            }
+        }
     }
 
     public decimal? SurfaceLongitude
     {
         get => surfaceLongitude;
-        set => SetField(ref surfaceLongitude, value);
+        set
+        {
+            if (SetField(ref surfaceLongitude, value))
+            {
+                resetCoordinatesCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    private bool CoordinatesDifferFromSaved
+    {
+        get
+        {
+            var savedLocation = originalSurvey?.Survey.Location;
+            var savedLatitude = savedLocation is { } latitude
+                ? (decimal?)latitude.Latitude
+                : null;
+            var savedLongitude = savedLocation is { } longitude
+                ? (decimal?)longitude.Longitude
+                : null;
+            return SurfaceLatitude != savedLatitude
+                || SurfaceLongitude != savedLongitude;
+        }
     }
 
     public string Notes
@@ -769,6 +806,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             var saved = updated with { Path = path };
             var previous = originalSurvey!;
             originalSurvey = saved;
+            resetCoordinatesCommand.RaiseCanExecuteChanged();
             await surveySaved(previous, saved);
             StatusMessage = $"Saved Guardian survey to {Path.GetFileName(path)}.";
         }
@@ -928,6 +966,37 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             decimal.ToDouble(latitude),
             decimal.ToDouble(longitude));
         return true;
+    }
+
+    public bool TryGetPreviewSurfaceLocation(
+        out GuardianSurfaceLocation location)
+    {
+        location = default;
+        if (SurfaceLatitude is not { } latitude
+            || SurfaceLongitude is not { } longitude
+            || latitude is < -90 or > 90
+            || longitude is < -180 or > 180)
+        {
+            return false;
+        }
+
+        location = new GuardianSurfaceLocation(
+            decimal.ToDouble(latitude),
+            decimal.ToDouble(longitude));
+        return true;
+    }
+
+    private Task ResetCoordinatesAsync()
+    {
+        var savedLocation = originalSurvey?.Survey.Location;
+        SurfaceLatitude = savedLocation is { } latitude
+            ? (decimal)latitude.Latitude
+            : null;
+        SurfaceLongitude = savedLocation is { } longitude
+            ? (decimal)longitude.Longitude
+            : null;
+        StatusMessage = "Restored the last saved surface coordinates.";
+        return Task.CompletedTask;
     }
 
     private GuardianSurfaceLocation? BuildSurfaceLocation()

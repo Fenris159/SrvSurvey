@@ -48,6 +48,19 @@ public sealed class GuardianOverlayCoordinatorTests
                 guardianRegistrations,
                 registration =>
                     registration.Window is GuardianZoomOverlayWindow);
+            Assert.Single(
+                guardianRegistrations,
+                registration => registration.ParticipatesInPlacement);
+            Assert.Contains(
+                guardianRegistrations,
+                registration =>
+                    registration.Window is GuardianOverlayWindow
+                    && registration.ParticipatesInPlacement);
+            Assert.Contains(
+                guardianRegistrations,
+                registration =>
+                    registration.Window is GuardianZoomOverlayWindow
+                    && !registration.ParticipatesInPlacement);
         }
         finally
         {

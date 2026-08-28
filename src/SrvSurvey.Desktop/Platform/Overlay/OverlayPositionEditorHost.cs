@@ -579,7 +579,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     private void CaptureVisibleRuntimePlacements(
         IReadOnlyList<RegisteredOverlayWindow> snapshot)
     {
-        var currentPlotters = snapshot
+        var placementOwners = snapshot
+            .Where(registered => registered.ParticipatesInPlacement)
+            .ToArray();
+        var currentPlotters = placementOwners
             .Select(registered => registered.PlotterName)
             .ToHashSet(StringComparer.Ordinal);
         foreach (var stale in runtimePlacementReferences.Keys
@@ -589,7 +592,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             runtimePlacementReferences.Remove(stale);
         }
 
-        foreach (var registered in snapshot.Where(candidate => candidate.IsVisible))
+        foreach (var registered in placementOwners.Where(candidate =>
+                     candidate.IsVisible))
         {
             CaptureRuntimePlacement(registered);
         }

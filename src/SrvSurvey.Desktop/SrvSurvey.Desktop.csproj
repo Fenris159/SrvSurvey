@@ -31,6 +31,10 @@
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
+  </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="Resources\baseline-localization.json"
                       LogicalName="SrvSurvey.Desktop.Resources.baseline-localization.json" />
