@@ -204,7 +204,37 @@ public sealed class GuardianSiteVisitCatalog
             true);
     }
 
-    private static IReadOnlyDictionary<GuardianCommanderSiteSurvey, int>
+    private static GuardianSiteReference CreateCommanderReference(
+        GuardianCommanderBeaconVisit beacon,
+        GuardianSiteCatalog references)
+    {
+        var location = beacon.ScannedLocations
+            .OrderByDescending(pair => pair.Key)
+            .Select(pair => (GuardianSurfaceLocation?)pair.Value)
+            .FirstOrDefault();
+        return new GuardianSiteReference(
+            0,
+            GuardianSiteKind.Beacon,
+            beacon.SystemName,
+            beacon.SystemAddress,
+            RemoveSystemPrefix(beacon.BodyName, beacon.SystemName),
+            beacon.BodyId,
+            "Beacon",
+            0,
+            0,
+            GetKnownSystemPosition(references, beacon.SystemAddress),
+            location?.Latitude,
+            location?.Longitude,
+            -1,
+            -1,
+            0,
+            beacon.LastVisited,
+            null,
+            null,
+            true);
+    }
+
+    private static Dictionary<GuardianCommanderSiteSurvey, int>
         AssignLocalSiteIds(
             IReadOnlyList<GuardianCommanderSiteSurvey> surveys)
     {
@@ -292,36 +322,6 @@ public sealed class GuardianSiteVisitCatalog
     private static bool IsKnownHeading(int heading)
     {
         return heading is >= 0 and <= 359;
-    }
-
-    private static GuardianSiteReference CreateCommanderReference(
-        GuardianCommanderBeaconVisit beacon,
-        GuardianSiteCatalog references)
-    {
-        var location = beacon.ScannedLocations
-            .OrderByDescending(pair => pair.Key)
-            .Select(pair => (GuardianSurfaceLocation?)pair.Value)
-            .FirstOrDefault();
-        return new GuardianSiteReference(
-            0,
-            GuardianSiteKind.Beacon,
-            beacon.SystemName,
-            beacon.SystemAddress,
-            RemoveSystemPrefix(beacon.BodyName, beacon.SystemName),
-            beacon.BodyId,
-            "Beacon",
-            0,
-            0,
-            GetKnownSystemPosition(references, beacon.SystemAddress),
-            location?.Latitude,
-            location?.Longitude,
-            -1,
-            -1,
-            0,
-            beacon.LastVisited,
-            null,
-            null,
-            true);
     }
 
     private static GalacticCoordinate GetKnownSystemPosition(

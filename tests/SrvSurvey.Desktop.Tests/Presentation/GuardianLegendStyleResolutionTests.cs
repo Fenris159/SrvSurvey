@@ -26,7 +26,7 @@ public sealed class GuardianLegendStyleResolutionTests
             ?? throw new InvalidOperationException("Legend expander is missing.");
         var legend = view.FindControl<Border>("GuardianSurveyMapLegend")
             ?? throw new InvalidOperationException("Legend container is missing.");
-        var parent = Assert.IsAssignableFrom<Panel>(legend.Parent);
+        var parent = Assert.IsType<Panel>(legend.Parent, exactMatch: false);
         Assert.True(parent.Children.Remove(legend));
         legend.IsVisible = true;
         view.Content = legend;
@@ -84,20 +84,24 @@ public sealed class GuardianLegendStyleResolutionTests
             Assert.Contains("monochrome", expander.Classes);
             Assert.Equal(
                 Color.Parse("#1C1C1C"),
-                Assert.IsAssignableFrom<ISolidColorBrush>(
-                    headerBackground.Background).Color);
+                Assert.IsType<ISolidColorBrush>(
+                    headerBackground.Background,
+                    exactMatch: false).Color);
             Assert.Equal(
                 Color.Parse("#33FFFFFF"),
-                Assert.IsAssignableFrom<ISolidColorBrush>(
-                    headerBackground.BorderBrush).Color);
+                Assert.IsType<ISolidColorBrush>(
+                    headerBackground.BorderBrush,
+                    exactMatch: false).Color);
             Assert.Equal(
                 Color.Parse("#2B2B2B"),
-                Assert.IsAssignableFrom<ISolidColorBrush>(
-                    content.Background).Color);
+                Assert.IsType<ISolidColorBrush>(
+                    content.Background,
+                    exactMatch: false).Color);
             Assert.Equal(
                 Color.Parse("#33FFFFFF"),
-                Assert.IsAssignableFrom<ISolidColorBrush>(
-                    content.BorderBrush).Color);
+                Assert.IsType<ISolidColorBrush>(
+                    content.BorderBrush,
+                    exactMatch: false).Color);
 
             viewModel.ThemeOptions.Single(option =>
                 option.Definition.Key == RavenThemeCatalog.DefaultThemeKey)

@@ -966,33 +966,46 @@ public sealed class GuardianViewModel
             ? Proximity
             : null;
 
-    public string? SelectedMapTargetPointName =>
-        SelectedMapCommanderPosition?.NearestPoint is
+    public string? SelectedMapTargetPointName
+    {
+        get
         {
-            Distance: <= GuardianSiteProximityEvaluator.NearbyPointDistance,
-        } nearest
-            ? nearest.Point.Name
-            : SelectedSite?.Reference is { } selectedReference
-                && ActiveSite is { } activeSite
-                && IsSameSite(selectedReference, activeSite)
-                    ? TargetObeliskName
-                    : null;
+            if (SelectedMapCommanderPosition?.NearestPoint is
+                {
+                    Distance: <= GuardianSiteProximityEvaluator.NearbyPointDistance,
+                } nearest)
+            {
+                return nearest.Point.Name;
+            }
+
+            return IsSelectedSiteActive() ? TargetObeliskName : null;
+        }
+    }
 
     public string? SelectedMapPointName =>
         SurveyEditor.SelectedPointName ?? SelectedMapTargetPointName;
 
-    public string? ActiveMapSelectedPointName =>
-        SelectedSite?.Reference is { } selectedReference
-        && ActiveSite is { } activeSite
-        && IsSameSite(selectedReference, activeSite)
-        && !string.IsNullOrWhiteSpace(SurveyEditor.SelectedPointName)
-            ? SurveyEditor.SelectedPointName
-            : Proximity?.NearestPoint is
+    public string? ActiveMapSelectedPointName
+    {
+        get
+        {
+            if (IsSelectedSiteActive()
+                && !string.IsNullOrWhiteSpace(SurveyEditor.SelectedPointName))
             {
-                Distance: <= GuardianSiteProximityEvaluator.NearbyPointDistance,
-            } nearest
-                ? nearest.Point.Name
-                : TargetObeliskName;
+                return SurveyEditor.SelectedPointName;
+            }
+
+            if (Proximity?.NearestPoint is
+                {
+                    Distance: <= GuardianSiteProximityEvaluator.NearbyPointDistance,
+                } nearest)
+            {
+                return nearest.Point.Name;
+            }
+
+            return TargetObeliskName;
+        }
+    }
 
     public GuardianSiteMapProjection? ActiveMapProjection => activeMapProjection;
 
@@ -3848,6 +3861,13 @@ public sealed class GuardianViewModel
         return true;
     }
 
+    private bool IsSelectedSiteActive()
+    {
+        return SelectedSite?.Reference is { } selectedReference
+            && ActiveSite is { } activeSite
+            && IsSameSite(selectedReference, activeSite);
+    }
+
     private static bool IsSameSite(
         GuardianSiteReference reference,
         GuardianLiveSiteSnapshot site)
@@ -4762,13 +4782,7 @@ public sealed class GuardianViewModel
         var survey = FindSurvey(site);
         var reference = site.Reference;
         var published = GetPublishedSite(site);
-        var siteType = survey is not null
-            && !string.Equals(
-                survey.SiteType,
-                UnknownLabel,
-                StringComparison.OrdinalIgnoreCase)
-                    ? survey.SiteType
-                    : site.SiteType;
+        var siteType = GetEffectiveSiteType(survey, site.SiteType);
         var template = FindTemplate(siteType);
         var location = survey?.Survey.Location
             ?? published?.Location
@@ -4781,13 +4795,7 @@ public sealed class GuardianViewModel
             location = previewLocation;
         }
 
-        var siteHeading = survey?.Survey.SiteHeading is >= 0 and <= 359
-            ? survey.Survey.SiteHeading
-            : (published?.SiteHeading is >= 0 and <= 359) switch
-            {
-                true => published.SiteHeading,
-                false => reference?.SiteHeading ?? -1
-            };
+        var siteHeading = GetEffectiveSiteHeading(survey, published, reference);
         if (template is null)
         {
             NotifyCurrentObeliskChanged();
@@ -4875,13 +4883,7 @@ public sealed class GuardianViewModel
         }
 
         var survey = FindSurvey(row.Reference);
-        var siteType = survey is not null
-            && !string.Equals(
-                survey.SiteType,
-                UnknownLabel,
-                StringComparison.OrdinalIgnoreCase)
-                    ? survey.SiteType
-                    : row.Reference.SiteType;
+        var siteType = GetEffectiveSiteType(survey, row.Reference.SiteType);
         var template = FindTemplate(siteType)
             ?? FindTemplate(row.Reference.SiteType);
         var published = publishedSites.Find(row.Reference);
@@ -4912,6 +4914,34 @@ public sealed class GuardianViewModel
                     activeObelisks),
                 markerOffset);
         NotifyMapTextChanged();
+    }
+
+    private static string GetEffectiveSiteType(
+        GuardianCommanderSiteSurvey? survey,
+        string fallback)
+    {
+        return survey is not null
+            && !string.Equals(
+                survey.SiteType,
+                UnknownLabel,
+                StringComparison.OrdinalIgnoreCase)
+                    ? survey.SiteType
+                    : fallback;
+    }
+
+    private static int GetEffectiveSiteHeading(
+        GuardianCommanderSiteSurvey? survey,
+        GuardianPublishedSite? published,
+        GuardianSiteReference? reference)
+    {
+        if (survey?.Survey.SiteHeading is >= 0 and <= 359)
+        {
+            return survey.Survey.SiteHeading;
+        }
+
+        return published?.SiteHeading is >= 0 and <= 359
+            ? published.SiteHeading
+            : reference?.SiteHeading ?? -1;
     }
 
     internal static GuardianSurveyData MergeRendererSurvey(

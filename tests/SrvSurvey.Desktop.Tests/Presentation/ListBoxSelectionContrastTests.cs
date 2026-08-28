@@ -56,11 +56,14 @@ public sealed class ListBoxSelectionContrastTests
 
             Assert.Equal(
                 Color.Parse("#C8C8C8"),
-                Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+                Assert.IsType<ISolidColorBrush>(
+                    text.Foreground,
+                    exactMatch: false).Color);
             Assert.Equal(
                 Color.Parse("#FF7B72"),
-                Assert.IsAssignableFrom<ISolidColorBrush>(
-                    semanticText.Foreground).Color);
+                Assert.IsType<ISolidColorBrush>(
+                    semanticText.Foreground,
+                    exactMatch: false).Color);
 
             service.Select("monochrome-dark");
             Assert.NotNull(window.CaptureRenderedFrame());
@@ -68,21 +71,25 @@ public sealed class ListBoxSelectionContrastTests
             var selectedItem = listBox.GetVisualDescendants()
                 .OfType<ListBoxItem>()
                 .Single();
-            var foreground = Assert.IsAssignableFrom<ISolidColorBrush>(
-                text.Foreground);
+            var foreground = Assert.IsType<ISolidColorBrush>(
+                text.Foreground,
+                exactMatch: false);
 
             Assert.True(selectedItem.IsSelected);
             Assert.Equal(Color.Parse("#0A0A0A"), foreground.Color);
             Assert.Equal(
                 Color.Parse("#FF7B72"),
-                Assert.IsAssignableFrom<ISolidColorBrush>(
-                    semanticText.Foreground).Color);
+                Assert.IsType<ISolidColorBrush>(
+                    semanticText.Foreground,
+                    exactMatch: false).Color);
 
             service.Select(RavenThemeCatalog.DefaultThemeKey);
             Assert.NotNull(window.CaptureRenderedFrame());
             Assert.Equal(
                 Color.Parse("#C8C8C8"),
-                Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+                Assert.IsType<ISolidColorBrush>(
+                    text.Foreground,
+                    exactMatch: false).Color);
         }
         finally
         {
