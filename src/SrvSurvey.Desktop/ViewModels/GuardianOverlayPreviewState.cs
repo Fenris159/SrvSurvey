@@ -134,6 +134,14 @@ internal sealed class GuardianOverlayPreviewState
 
     public double ActiveMapRelativeHeading => 17;
 
+    public bool IsShipNavigationVisible => true;
+
+    public double ShipRelativeBearingDegrees => 235;
+
+    public bool IsShipNavigationFar => false;
+
+    public string ShipNavigationDistanceText => "284 m";
+
     public string? TargetObeliskName => "A01";
 
     public string? ActiveMapSelectedPointName =>

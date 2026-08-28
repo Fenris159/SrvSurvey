@@ -18,7 +18,8 @@ public sealed class GuardianSiteMapProjector
         IReadOnlyList<GuardianObelisk>? activeObelisks = null,
         IReadOnlySet<char>? obeliskGroups = null,
         bool includeComponentMaterials = false,
-        IReadOnlySet<string>? neededRamTahLogCodes = null)
+        IReadOnlySet<string>? neededRamTahLogCodes = null,
+        GuardianMapPoint markerOffset = default)
     {
         ArgumentNullException.ThrowIfNull(template);
         var points = template.PointsOfInterest
@@ -32,15 +33,21 @@ public sealed class GuardianSiteMapProjector
                 survey,
                 IsRuins(template.SiteType),
                 activeObelisks,
-                neededRamTahLogCodes))
+                neededRamTahLogCodes,
+                markerOffset))
             .ToArray();
         var groups = template.ObeliskGroupNameLocations
             .Where(group => obeliskGroups?.Contains(group.Key[0]) == true)
-            .Select(group => ProjectGroup(group.Key, group.Value))
+            .Select(group => ProjectGroup(
+                group.Key,
+                group.Value,
+                markerOffset))
             .ToArray();
         var maximumDistance = points
-            .Select(point => point.Distance)
-            .Concat(groups.Select(group => group.Distance))
+            .Select(point => Math.Sqrt(
+                (point.X * point.X) + (point.Y * point.Y)))
+            .Concat(groups.Select(group => Math.Sqrt(
+                (group.X * group.X) + (group.Y * group.Y))))
             .DefaultIfEmpty(1)
             .Max();
         if (!double.IsFinite(maximumDistance) || maximumDistance <= 0)
@@ -58,7 +65,8 @@ public sealed class GuardianSiteMapProjector
             NormalizeHeading(survey?.RelicTowerHeading ?? -1),
             template.BackgroundImage,
             template.ImageOffset,
-            template.ScaleFactor);
+            template.ScaleFactor,
+            markerOffset);
     }
 
     private static GuardianProjectedPoint ProjectPoint(
@@ -66,7 +74,8 @@ public sealed class GuardianSiteMapProjector
         GuardianSurveyData? survey,
         bool isRuins,
         IReadOnlyList<GuardianObelisk>? activeObelisks,
-        IReadOnlySet<string>? neededRamTahLogCodes)
+        IReadOnlySet<string>? neededRamTahLogCodes,
+        GuardianMapPoint markerOffset)
     {
         var active = activeObelisks?.FirstOrDefault(obelisk => string.Equals(
             obelisk.Name,
@@ -81,8 +90,8 @@ public sealed class GuardianSiteMapProjector
         return new GuardianProjectedPoint(
             point.Name,
             point.Type,
-            location.X,
-            location.Y,
+            location.X + markerOffset.X,
+            location.Y + markerOffset.Y,
             point.Angle,
             point.Distance,
             point.Rotation,
@@ -158,13 +167,14 @@ public sealed class GuardianSiteMapProjector
 
     private static GuardianProjectedGroup ProjectGroup(
         string name,
-        GuardianMapPoint point)
+        GuardianMapPoint point,
+        GuardianMapPoint markerOffset)
     {
         var location = ProjectPolar(point.X, point.Y);
         return new GuardianProjectedGroup(
             name,
-            location.X,
-            location.Y,
+            location.X + markerOffset.X,
+            location.Y + markerOffset.Y,
             point.X,
             point.Y);
     }
@@ -215,7 +225,8 @@ public sealed record GuardianSiteMapProjection(
     int RelicTowerHeading = -1,
     string BackgroundImage = "",
     GuardianMapPoint ImageOffset = default,
-    double ImageScaleFactor = 1)
+    double ImageScaleFactor = 1,
+    GuardianMapPoint MarkerOffset = default)
 {
     public int SurveyablePointCount => Points.Count(point =>
         point.Type is not GuardianPoiType.Obelisk

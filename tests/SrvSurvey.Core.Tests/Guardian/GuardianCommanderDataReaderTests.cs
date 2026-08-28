@@ -345,13 +345,46 @@ public sealed class GuardianCommanderDataReaderTests
 
         Assert.Equal(2, merged.Visits.Count);
         Assert.Contains(merged.Visits, visit =>
-            visit.Reference.DisplayId == "GR LOCAL"
+            visit.Reference.DisplayId == "GR L01"
             && visit.Reference.Index == 4
             && visit.HasCommanderData);
         Assert.Contains(merged.Visits, visit =>
             visit.Reference.DisplayId == "GB LOCAL"
             && visit.RecordedObeliskOrLocationCount == 1
             && visit.HasCommanderData);
+    }
+
+    [Fact]
+    public void MergeAssignsStableNumberedDisplayIdsToCommanderOnlySites()
+    {
+        var firstVisited = DateTimeOffset.Parse("2026-08-03T12:00:00Z");
+        var first = CreateCommanderOnlySurvey(
+            "first.json",
+            firstVisited,
+            42,
+            "First System",
+            7,
+            "First System A 1");
+        var second = CreateCommanderOnlySurvey(
+            "second.json",
+            firstVisited.AddHours(1),
+            84,
+            "Second System",
+            8,
+            "Second System B 1");
+
+        var merged = GuardianSiteVisitCatalog.Merge(
+            new GuardianSiteCatalog([]),
+            new GuardianCommanderDataReadResult([second, first], [], []),
+            new GuardianPublishedSiteCatalog([]),
+            new GuardianSurveyCompletionCalculator(
+                GuardianSiteTemplateCatalog.LoadEmbedded()));
+
+        Assert.Equal(
+            ["GR L01", "GR L02"],
+            merged.Visits
+                .OrderBy(visit => visit.FirstVisited)
+                .Select(visit => visit.Reference.DisplayId));
     }
 
     private static string CreateTemporaryDirectory()
@@ -361,5 +394,38 @@ public sealed class GuardianCommanderDataReaderTests
             $"SrvSurvey-guardian-reader-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static GuardianCommanderSiteSurvey CreateCommanderOnlySurvey(
+        string path,
+        DateTimeOffset visitedAt,
+        long systemAddress,
+        string systemName,
+        int bodyId,
+        string bodyName)
+    {
+        return new GuardianCommanderSiteSurvey(
+            path,
+            "$Ancient:#index=1;",
+            "Ancient Ruins (1)",
+            "Drew",
+            visitedAt,
+            visitedAt,
+            "Beta",
+            1,
+            systemAddress,
+            systemName,
+            bodyId,
+            bodyName,
+            string.Empty,
+            false,
+            new GuardianSurveyData
+            {
+                SiteType = "Beta",
+                SiteHeading = 0,
+                Location = new GuardianSurfaceLocation(1, 2),
+            },
+            [],
+            new HashSet<char>());
     }
 }

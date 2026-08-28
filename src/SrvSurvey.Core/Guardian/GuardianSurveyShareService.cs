@@ -34,6 +34,11 @@ public sealed class GuardianSurveyShareService
             reasons.Add("Component materials");
         }
 
+        if (survey.MapMarkerOffset != default)
+        {
+            reasons.Add("Map alignment offset");
+        }
+
         var kind = GetKind(survey);
         var published = publishedSites.Find(
             kind,
@@ -261,6 +266,7 @@ public sealed class GuardianSurveyShareService
             || survey.Survey.RelicHeadings.Count > 0
             || survey.Survey.ComponentMaterials.Count > 0
             || survey.Survey.RawPointsOfInterest?.Count > 0
+            || survey.MapMarkerOffset != default
             || survey.ObeliskGroups.Count > 0;
     }
 

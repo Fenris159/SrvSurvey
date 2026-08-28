@@ -75,9 +75,14 @@ public static class LegacyReferenceCatalogLoader
             path => LoadFile(path, GuardianPublishedSiteCatalog.LoadZip),
             candidate => candidate.Count,
             sources);
+        var editableGuardianTemplates = Path.Combine(
+            root,
+            "guardianSiteTemplates.json");
         var guardianTemplates = LoadCandidate(
             "Guardian site templates",
-            Path.Combine(published, "guardianSiteTemplates.json"),
+            File.Exists(editableGuardianTemplates)
+                ? editableGuardianTemplates
+                : Path.Combine(published, "guardianSiteTemplates.json"),
             GuardianSiteTemplateCatalog.LoadEmbedded,
             path => LoadFile(path, GuardianSiteTemplateCatalog.Load),
             candidate => candidate.Count,

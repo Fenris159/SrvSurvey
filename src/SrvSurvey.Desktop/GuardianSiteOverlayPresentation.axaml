@@ -44,6 +44,34 @@
             DataContext="{Binding $parent[UserControl].((vm:GuardianOverlayViewModel)DataContext).ZoomControls}" />
       </Border>
 
+      <Border Margin="8,0,0,8"
+              Padding="6,2"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Bottom"
+              Background="{DynamicResource RavenGuardianSurfaceBrush}"
+              BorderBrush="{DynamicResource RavenGuardianSecondaryBrush}"
+              BorderThickness="1"
+              CornerRadius="7"
+              IsHitTestVisible="False"
+              IsVisible="{Binding Guardian.IsShipNavigationVisible}">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan"
+                     VerticalAlignment="Center"
+                     FontWeight="SemiBold"
+                     Text="SHIP" />
+          <controls:DirectionalChevronControl
+              Width="14"
+              Height="14"
+              BearingDegrees="{Binding Guardian.ShipRelativeBearingDegrees}"
+              IsFar="{Binding Guardian.IsShipNavigationFar}"
+              Stroke="{DynamicResource RavenGuardianSecondaryBrush}"
+              StrokeThickness="1.6" />
+          <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan"
+                     VerticalAlignment="Center"
+                     Text="{Binding Guardian.ShipNavigationDistanceText}" />
+        </StackPanel>
+      </Border>
+
       <Grid Margin="2"
             RowDefinitions="Auto,*,Auto"
             IsHitTestVisible="False">

@@ -49,6 +49,37 @@ public sealed class GuardianSiteMapControlTests
     }
 
     [Fact]
+    public void FixedMapRotatesOnlyCommanderGlyph()
+    {
+        Assert.Equal(
+            90,
+            GuardianSiteMapControl.ResolveMapRotationHeading(
+                commanderHeading: 90,
+                rotateMapWithCommander: true));
+        Assert.Equal(
+            0,
+            GuardianSiteMapControl.ResolveCommanderGlyphHeading(
+                commanderHeading: 90,
+                rotateMapWithCommander: true));
+        Assert.Equal(
+            0,
+            GuardianSiteMapControl.ResolveMapRotationHeading(
+                commanderHeading: 90,
+                rotateMapWithCommander: false));
+        Assert.Equal(
+            90,
+            GuardianSiteMapControl.ResolveCommanderGlyphHeading(
+                commanderHeading: 90,
+                rotateMapWithCommander: false));
+        Assert.Equal(
+            new Point(70, 50),
+            GuardianSiteMapControl.GetCommanderHeadingEnd(
+                new Point(50, 50),
+                radius: 10,
+                heading: 90));
+    }
+
+    [Fact]
     public void MapRotatesSoCommanderHeadingPointsUp()
     {
         var proximity = new GuardianSiteProximitySnapshot(

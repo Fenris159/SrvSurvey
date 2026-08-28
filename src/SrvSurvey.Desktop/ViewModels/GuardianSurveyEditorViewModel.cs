@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Guardian;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -18,6 +19,14 @@ public sealed record GuardianSurveyEditorLoadContext(
     public GuardianSiteMapProjection? ReferenceProjection { get; init; }
 
     public GuardianSiteReference? SiteReference { get; init; }
+
+    public GalacticCoordinate? DistanceOrigin { get; init; }
+
+    public string? DistanceOriginName { get; init; }
+
+    public GuardianSurfaceLocation? AlignmentOrigin { get; init; }
+
+    public double? PlanetRadiusMeters { get; init; }
 }
 
 public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
@@ -49,6 +58,17 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private decimal relicTowerHeading = -1;
     private decimal? surfaceLatitude;
     private decimal? surfaceLongitude;
+    private string catalogBodyName = string.Empty;
+    private decimal? galacticX;
+    private decimal? galacticY;
+    private decimal? galacticZ;
+    private decimal? distanceLy;
+    private decimal? arrivalDistanceLs;
+    private GalacticCoordinate? distanceOrigin;
+    private string? distanceOriginName;
+    private GuardianSurfaceLocation? alignmentOrigin;
+    private double? planetRadiusMeters;
+    private bool catalogMetadataDirty;
     private string notes = string.Empty;
     private IReadOnlyList<GuardianSurveyPoiViewModel> points = [];
     private IReadOnlyList<GuardianSurveyPoiViewModel> selectableMapPoints = [];
@@ -239,6 +259,154 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         }
     }
 
+    public string CatalogBodyName
+    {
+        get => catalogBodyName;
+        set
+        {
+            if (SetField(ref catalogBodyName, value) && !isLoading)
+            {
+                catalogMetadataDirty = true;
+            }
+        }
+    }
+
+    public decimal? GalacticX
+    {
+        get => galacticX;
+        set => SetGalacticCoordinate(ref galacticX, value);
+    }
+
+    public decimal? GalacticY
+    {
+        get => galacticY;
+        set => SetGalacticCoordinate(ref galacticY, value);
+    }
+
+    public decimal? GalacticZ
+    {
+        get => galacticZ;
+        set => SetGalacticCoordinate(ref galacticZ, value);
+    }
+
+    public decimal? DistanceLy
+    {
+        get => distanceLy;
+        set
+        {
+            if (!SetField(ref distanceLy, value) || isLoading)
+            {
+                return;
+            }
+
+            catalogMetadataDirty = true;
+            if (value is not { } requested
+                || distanceOrigin is not { } origin
+                || !TryGetGalacticPosition(out var position))
+            {
+                UpdateDistanceFromGalacticCoordinates();
+                return;
+            }
+
+            var existingDistance = origin.DistanceTo(position);
+            if (existingDistance <= double.Epsilon)
+            {
+                StatusMessage = "Distance LY cannot establish a direction from the origin. Enter galactic X, Y, and Z first.";
+                UpdateDistanceFromGalacticCoordinates();
+                return;
+            }
+
+            var scale = decimal.ToDouble(requested) / existingDistance;
+            SetGalacticCoordinates(
+                new GalacticCoordinate(
+                    origin.X + ((position.X - origin.X) * scale),
+                    origin.Y + ((position.Y - origin.Y) * scale),
+                    origin.Z + ((position.Z - origin.Z) * scale)),
+                updateDistance: false);
+        }
+    }
+
+    public decimal? ArrivalDistanceLs
+    {
+        get => arrivalDistanceLs;
+        set
+        {
+            if (SetField(ref arrivalDistanceLs, value) && !isLoading)
+            {
+                catalogMetadataDirty = true;
+            }
+        }
+    }
+
+    public bool HasDistanceOrigin => distanceOrigin is not null;
+
+    public bool CanEditDistanceLy => distanceOrigin is { } origin
+        && TryGetGalacticPosition(out var position)
+        && origin.DistanceTo(position) > double.Epsilon;
+
+    public string DistanceOriginText => distanceOrigin is null
+        ? "Distance LY is unavailable until the journal or a custom origin supplies galactic coordinates."
+        : $"Distance LY is measured from {distanceOriginName ?? "the selected origin"}. Editing it preserves the journal-derived galactic bearing while correcting the stored distance.";
+
+    private void SetGalacticCoordinate(ref decimal? field, decimal? value)
+    {
+        if (!SetField(ref field, value) || isLoading)
+        {
+            return;
+        }
+
+        catalogMetadataDirty = true;
+        UpdateDistanceFromGalacticCoordinates();
+        OnPropertyChanged(nameof(CanEditDistanceLy));
+    }
+
+    private void SetGalacticCoordinates(
+        GalacticCoordinate? position,
+        bool updateDistance)
+    {
+        var wasLoading = isLoading;
+        isLoading = true;
+        GalacticX = position is { } x ? (decimal)x.X : null;
+        GalacticY = position is { } y ? (decimal)y.Y : null;
+        GalacticZ = position is { } z ? (decimal)z.Z : null;
+        isLoading = wasLoading;
+        if (updateDistance)
+        {
+            UpdateDistanceFromGalacticCoordinates();
+        }
+
+        OnPropertyChanged(nameof(CanEditDistanceLy));
+    }
+
+    private void UpdateDistanceFromGalacticCoordinates()
+    {
+        var nextDistance = distanceOrigin is { } origin
+            && TryGetGalacticPosition(out var position)
+                ? (decimal?)origin.DistanceTo(position)
+                : null;
+        var wasLoading = isLoading;
+        isLoading = true;
+        DistanceLy = nextDistance;
+        isLoading = wasLoading;
+    }
+
+    private bool TryGetGalacticPosition(out GalacticCoordinate position)
+    {
+        if (GalacticX is { } x
+            && GalacticY is { } y
+            && GalacticZ is { } z)
+        {
+            position = new GalacticCoordinate(
+                decimal.ToDouble(x),
+                decimal.ToDouble(y),
+                decimal.ToDouble(z));
+            return true;
+        }
+
+        position = default;
+        return false;
+    }
+
     private bool CoordinatesDifferFromSaved
     {
         get
@@ -411,6 +579,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         var previousSelectionName = selectionContext == nextSelectionContext
             ? SelectedPointName
             : null;
+        var preserveCatalogDraft = selectionContext == nextSelectionContext
+            && catalogMetadataDirty;
         selectionContext = nextSelectionContext;
         frontierId = context.FrontierId;
         isOdyssey = context.IsOdyssey;
@@ -421,6 +591,13 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 : new GuardianSiteTemplateCatalog([template]));
         referenceProjection = context.ReferenceProjection;
         originalSurvey = survey;
+        distanceOrigin = context.DistanceOrigin;
+        distanceOriginName = context.DistanceOriginName;
+        alignmentOrigin = context.AlignmentOrigin;
+        planetRadiusMeters = context.PlanetRadiusMeters;
+        OnPropertyChanged(nameof(HasDistanceOrigin));
+        OnPropertyChanged(nameof(CanEditDistanceLy));
+        OnPropertyChanged(nameof(DistanceOriginText));
         SelectedPointName = null;
         IsAvailable = frontierId is not null
             && survey is not null;
@@ -437,6 +614,10 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             RelicTowerHeading = -1;
             SurfaceLatitude = null;
             SurfaceLongitude = null;
+            CatalogBodyName = string.Empty;
+            SetGalacticCoordinates(null, updateDistance: true);
+            ArrivalDistanceLs = null;
+            catalogMetadataDirty = false;
             Notes = string.Empty;
             Points = [];
             selectableMapPoints = BuildSelectableMapPoints(
@@ -474,6 +655,18 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         SurfaceLongitude = survey.Survey.Location is { } longitude
             ? (decimal)longitude.Longitude
             : null;
+        if (!preserveCatalogDraft)
+        {
+            CatalogBodyName = survey.CatalogBodyName
+                ?? siteReference?.BodyName
+                ?? survey.BodyName;
+            SetGalacticCoordinates(
+                survey.StarPosition ?? siteReference?.Position,
+                updateDistance: true);
+            ArrivalDistanceLs = (decimal?)(survey.DistanceToArrivalLs
+                ?? siteReference?.DistanceToArrival);
+            catalogMetadataDirty = false;
+        }
         Notes = survey.Notes;
         ActiveObelisks = survey.ActiveObelisks
             .Select(obelisk => new GuardianActiveObeliskViewModel(obelisk))
@@ -806,6 +999,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             var saved = updated with { Path = path };
             var previous = originalSurvey!;
             originalSurvey = saved;
+            catalogMetadataDirty = false;
             resetCoordinatesCommand.RaiseCanExecuteChanged();
             await surveySaved(previous, saved);
             StatusMessage = $"Saved Guardian survey to {Path.GetFileName(path)}.";
@@ -860,7 +1054,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return false;
         }
 
-        return TryValidatePointsForSave()
+        return TryValidateCatalogMetadata()
+            && TryValidatePointsForSave()
             && TryValidateActiveObelisksForSave();
     }
 
@@ -878,6 +1073,18 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         {
             SiteType = SiteType,
             Notes = Notes,
+            CatalogBodyName = string.IsNullOrWhiteSpace(CatalogBodyName)
+                ? null
+                : CatalogBodyName.Trim(),
+            StarPosition = TryGetGalacticPosition(out var position)
+                ? position
+                : null,
+            DistanceToArrivalLs = ArrivalDistanceLs is { } arrival
+                ? decimal.ToDouble(arrival)
+                : null,
+            MapMarkerOffset = ResolveMapMarkerOffset(
+                surfaceLocation,
+                normalizedSiteHeading),
             Survey = new GuardianSurveyData
             {
                 SiteType = SiteType,
@@ -900,6 +1107,31 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 .OrderBy(obelisk => obelisk.Name, StringComparer.OrdinalIgnoreCase)
                 .ToArray(),
         };
+    }
+
+    private bool TryValidateCatalogMetadata()
+    {
+        if (string.IsNullOrWhiteSpace(CatalogBodyName))
+        {
+            StatusMessage = "Body is required for the selected site's catalog details.";
+            return false;
+        }
+
+        var coordinateCount = new[] { GalacticX, GalacticY, GalacticZ }
+            .Count(value => value is not null);
+        if (coordinateCount is > 0 and < 3)
+        {
+            StatusMessage = "Enter galactic X, Y, and Z together, or leave all three blank.";
+            return false;
+        }
+
+        if (ArrivalDistanceLs is < 0)
+        {
+            StatusMessage = "Arrival distance LS cannot be negative.";
+            return false;
+        }
+
+        return true;
     }
 
     private static GuardianPointOfInterest BuildRawPointForSave(
@@ -984,6 +1216,73 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             decimal.ToDouble(latitude),
             decimal.ToDouble(longitude));
         return true;
+    }
+
+    public GuardianMapPoint GetPreviewMapMarkerOffset()
+    {
+        return TryGetPreviewSurfaceLocation(out var location)
+            && TryGetHeading(SiteHeading, out var heading)
+            ? ResolveMapMarkerOffset(location, heading)
+            : originalSurvey?.MapMarkerOffset ?? default;
+    }
+
+    public bool TryGetPreviewMapMarkerOffset(
+        GuardianSiteReference reference,
+        out GuardianMapPoint markerOffset)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        var requestedContext = new GuardianSiteSelectionKey(
+            reference.Kind,
+            reference.SystemAddress,
+            reference.BodyId,
+            reference.Index,
+            reference.SiteId);
+        if (selectionContext != requestedContext)
+        {
+            markerOffset = default;
+            return false;
+        }
+
+        markerOffset = GetPreviewMapMarkerOffset();
+        return true;
+    }
+
+    private GuardianMapPoint ResolveMapMarkerOffset(
+        GuardianSurfaceLocation? correctedOrigin,
+        int siteHeading)
+    {
+        var savedOffset = originalSurvey?.MapMarkerOffset ?? default;
+        if (correctedOrigin is not { } corrected
+            || alignmentOrigin is not { } original
+            || planetRadiusMeters is not { } radius
+            || !double.IsFinite(radius)
+            || radius <= 0
+            || siteHeading is < 0 or > 359)
+        {
+            return savedOffset;
+        }
+
+        if (savedOffset != default
+            && originalSurvey?.Survey.Location is { } savedLocation
+            && AreSameLocation(corrected, savedLocation))
+        {
+            return savedOffset;
+        }
+
+        return GuardianMapMarkerOffsetCalculator.Calculate(
+            original,
+            corrected,
+            siteHeading,
+            radius);
+    }
+
+    private static bool AreSameLocation(
+        GuardianSurfaceLocation left,
+        GuardianSurfaceLocation right)
+    {
+        const double tolerance = 1e-10;
+        return Math.Abs(left.Latitude - right.Latitude) <= tolerance
+            && Math.Abs(left.Longitude - right.Longitude) <= tolerance;
     }
 
     private Task ResetCoordinatesAsync()

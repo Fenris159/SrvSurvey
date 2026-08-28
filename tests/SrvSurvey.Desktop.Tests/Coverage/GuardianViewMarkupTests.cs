@@ -63,6 +63,9 @@ public sealed class GuardianViewMarkupTests
         var startMapDraft = document.Descendants().Single(element =>
             element.Name.LocalName == "Button"
             && element.Attribute("Content")?.Value == "Start map draft");
+        var editCurrentMap = document.Descendants().Single(element =>
+            element.Name.LocalName == "Button"
+            && element.Attribute("Content")?.Value == "Edit Current Map");
         var cardNames = sidebar.Elements()
             .Select(GetName)
             .OfType<string>()
@@ -85,6 +88,12 @@ public sealed class GuardianViewMarkupTests
             "{Binding Guardian.SelectedMapCommanderPosition}",
             map.Attribute("Proximity")?.Value);
         Assert.Equal(
+            "{Binding Guardian.ActiveMapRelativeHeading}",
+            map.Attribute("CommanderHeading")?.Value);
+        Assert.Equal(
+            "False",
+            map.Attribute("RotateMapWithCommander")?.Value);
+        Assert.Equal(
             "{Binding Guardian.SelectedMapTargetPointName}",
             map.Attribute("TargetPointName")?.Value);
         Assert.Equal("15", zoom.Attribute("Maximum")?.Value);
@@ -101,6 +110,8 @@ public sealed class GuardianViewMarkupTests
             selectedPoint.Attribute("IsVisible")?.Value);
         Assert.Null(selectedPoint.Attribute("IsEnabled"));
         Assert.Contains(startMapDraft, selectedMap.Descendants());
+        Assert.Contains(editCurrentMap, selectedMap.Descendants());
+        Assert.Equal(startMapDraft.Parent, editCurrentMap.Parent);
         Assert.DoesNotContain(startMapDraft, selectedPoint.Descendants());
         var selectedContent = selectedPoint.Descendants().Single(element =>
             element.Name.LocalName == "ContentControl"
@@ -118,6 +129,45 @@ public sealed class GuardianViewMarkupTests
                 "GuardianSurveyMapNotes",
             ],
             cardNames);
+    }
+
+    [Fact]
+    public void SharedMapAndPerSiteSurveyEditorsExplainSeparateSaveScopes()
+    {
+        var document = LoadGuardianView();
+        var draftTools = FindNamedElement(document, "GuardianMapDraftTools");
+        var catalogDetails = FindNamedElement(
+            document,
+            "GuardianMapCatalogDetails");
+        var surveyEditor = FindNamedElement(document, "GuardianSurveyEditor");
+
+        Assert.Contains(draftTools.Descendants(), element =>
+            element.Attribute("Text")?.Value
+                == "{Binding Guardian.TemplateAuthoring.DraftDescription}");
+        Assert.Contains(draftTools.Descendants(), element =>
+            element.Attribute("Text")?.Value
+                == "{Binding Guardian.TemplateAuthoring.SaveLocationText}");
+        Assert.Contains(draftTools.Descendants(), element =>
+            element.Attribute("Content")?.Value == "Save map changes...");
+        Assert.DoesNotContain(draftTools.Descendants(), element =>
+            element.Attribute("Content")?.Value == "Apply metadata to draft");
+        Assert.Contains(catalogDetails, draftTools.Descendants());
+        Assert.Contains(catalogDetails.Descendants(), element =>
+            element.Attribute("Text")?.Value == "BODY");
+        Assert.Contains(catalogDetails.Descendants(), element =>
+            element.Attribute("Text")?.Value == "DISTANCE LY");
+        Assert.Contains(catalogDetails.Descendants(), element =>
+            element.Attribute("Text")?.Value == "ARRIVAL DISTANCE LS");
+        Assert.Contains(catalogDetails.Descendants(), element =>
+            element.Attribute("Content")?.Value == "Save site details");
+        Assert.DoesNotContain(catalogDetails.Descendants(), element =>
+            element.Attribute("Text")?.Value is "GALACTIC X" or "GALACTIC Y" or "GALACTIC Z");
+        Assert.Contains(surveyEditor.Descendants(), element =>
+            element.Attribute("Text")?.Value == "This site survey");
+        Assert.Contains(surveyEditor.Descendants(), element =>
+            element.Attribute("Text")?.Value?.Contains(
+                "belong only to the selected site",
+                StringComparison.Ordinal) == true);
     }
 
     [Fact]

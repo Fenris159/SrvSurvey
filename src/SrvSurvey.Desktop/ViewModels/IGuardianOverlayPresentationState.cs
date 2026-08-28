@@ -22,6 +22,14 @@ public interface IGuardianOverlayPresentationState : INotifyPropertyChanged
 
     double ActiveMapRelativeHeading { get; }
 
+    bool IsShipNavigationVisible { get; }
+
+    double ShipRelativeBearingDegrees { get; }
+
+    bool IsShipNavigationFar { get; }
+
+    string ShipNavigationDistanceText { get; }
+
     string? TargetObeliskName { get; }
 
     string? ActiveMapSelectedPointName { get; }

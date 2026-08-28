@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Guardian;
 
@@ -146,7 +147,16 @@ public sealed class GuardianCommanderDataReader
                         RawPointsOfInterest = ReadRawPoints(root),
                     },
                     ReadActiveObelisks(root),
-                    ReadObeliskGroups(root));
+                    ReadObeliskGroups(root))
+                {
+                    LocalSiteId = GetInt32(root, "localSiteId") ?? 0,
+                    CatalogBodyName = GetString(root, "catalogBodyName"),
+                    StarPosition = ReadStarPosition(root),
+                    DistanceToArrivalLs = GetDouble(
+                        root,
+                        "distanceToArrival"),
+                    MapMarkerOffset = ReadMapPoint(root, "mapMarkerOffset"),
+                };
             }
             catch (Exception exception) when (
                 exception is JsonException
@@ -157,6 +167,41 @@ public sealed class GuardianCommanderDataReader
                 return null;
             }
         }
+    }
+
+    private static GalacticCoordinate? ReadStarPosition(JsonElement root)
+    {
+        if (!root.TryGetProperty("starPos", out var value)
+            || value.ValueKind != JsonValueKind.Array
+            || value.GetArrayLength() < 3)
+        {
+            return null;
+        }
+
+        var values = value.EnumerateArray().Take(3).ToArray();
+        return values.All(coordinate => coordinate.TryGetDouble(out _))
+            ? new GalacticCoordinate(
+                values[0].GetDouble(),
+                values[1].GetDouble(),
+                values[2].GetDouble())
+            : null;
+    }
+
+    private static GuardianMapPoint ReadMapPoint(
+        JsonElement root,
+        string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out var value)
+            || value.ValueKind != JsonValueKind.Object)
+        {
+            return default;
+        }
+
+        var x = GetDouble(value, "x");
+        var y = GetDouble(value, "y");
+        return x is not null && y is not null
+            ? new GuardianMapPoint(x.Value, y.Value)
+            : default;
     }
 
     private static async Task<GuardianCommanderBeaconVisit?> ReadBeaconAsync(
@@ -546,6 +591,7 @@ public sealed class GuardianCommanderDataReader
     private static int? GetInt32(JsonElement root, string propertyName)
     {
         return root.TryGetProperty(propertyName, out var value)
+            && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt32(out var number)
                 ? number
                 : null;
@@ -554,6 +600,7 @@ public sealed class GuardianCommanderDataReader
     private static long? GetInt64(JsonElement root, string propertyName)
     {
         return root.TryGetProperty(propertyName, out var value)
+            && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt64(out var number)
                 ? number
                 : null;
@@ -562,6 +609,7 @@ public sealed class GuardianCommanderDataReader
     private static double? GetDouble(JsonElement root, string propertyName)
     {
         return root.TryGetProperty(propertyName, out var value)
+            && value.ValueKind == JsonValueKind.Number
             && value.TryGetDouble(out var number)
             && double.IsFinite(number)
                 ? number
@@ -623,7 +671,18 @@ public sealed record GuardianCommanderSiteSurvey(
     bool Legacy,
     GuardianSurveyData Survey,
     IReadOnlyList<GuardianObelisk> ActiveObelisks,
-    IReadOnlySet<char> ObeliskGroups);
+    IReadOnlySet<char> ObeliskGroups)
+{
+    public int LocalSiteId { get; init; }
+
+    public string? CatalogBodyName { get; init; }
+
+    public GalacticCoordinate? StarPosition { get; init; }
+
+    public double? DistanceToArrivalLs { get; init; }
+
+    public GuardianMapPoint MapMarkerOffset { get; init; }
+}
 
 public sealed record GuardianCommanderBeaconVisit(
     string Path,
