@@ -22,6 +22,7 @@ public sealed class ListBoxSelectionContrastTests
         var service = new RavenThemeService(
             application,
             new ThemePreferenceStore(Path.Combine(temporaryDirectory, "ui.json")));
+        service.ApplyCurrent();
         var text = new TextBlock { Text = "510.0 m · 86.0°" };
         text.Classes.Add("muted");
         var semanticText = new TextBlock

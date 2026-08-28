@@ -150,7 +150,7 @@ public sealed class GuardianUncataloguedSelectionTests
     }
 
     [Fact]
-    public async Task NewLocalSiteUsesJournalPositionAndBodyArrivalDistance()
+    public async Task NewLocalSiteUsesCurrentSystemPositionAndBodyArrivalDistance()
     {
         var root = Path.Combine(
             Path.GetTempPath(),
@@ -165,7 +165,7 @@ public sealed class GuardianUncataloguedSelectionTests
                 new GalacticCoordinate(100.5, 200.25, -300.75));
             await viewModel.ApplyJournalEventsAsync(
             [
-                Parse("""{"event":"Location","StarSystem":"Diagnostic Uncatalogued","SystemAddress":9000000000003,"StarPos":[100.5,200.25,-300.75]}"""),
+                Parse("""{"event":"Location","StarSystem":"Diagnostic Uncatalogued","SystemAddress":9000000000003,"StarPos":[9,8,7]}"""),
                 Parse("""{"event":"Scan","ScanType":"Detailed","StarSystem":"Diagnostic Uncatalogued","SystemAddress":9000000000003,"BodyID":7,"BodyName":"Diagnostic Uncatalogued A 1","DistanceFromArrivalLS":1234.5}"""),
                 Parse("""{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","Name_Localised":"Ancient Ruins (1)","SystemAddress":9000000000003,"BodyID":7,"BodyName":"Diagnostic Uncatalogued A 1","Latitude":10,"Longitude":20}"""),
             ],
@@ -178,6 +178,40 @@ public sealed class GuardianUncataloguedSelectionTests
             Assert.Equal(
                 new GalacticCoordinate(100.5, 200.25, -300.75),
                 local.Reference.Position);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task SameBatchUncataloguedSitesReceiveDistinctLocalIds()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-guardian-selection-tests-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var viewModel = new GuardianViewModel(root);
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+
+            await viewModel.ApplyJournalEventsAsync(
+            [
+                Parse("""{"event":"Location","StarSystem":"Local One","SystemAddress":9000000000011}"""),
+                Parse("""{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","Name_Localised":"Ancient Ruins (1)","SystemAddress":9000000000011,"BodyID":7,"BodyName":"Local One A 1","Latitude":10,"Longitude":20}"""),
+                Parse("""{"event":"Location","StarSystem":"Local Two","SystemAddress":9000000000012}"""),
+                Parse("""{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","Name_Localised":"Ancient Ruins (1)","SystemAddress":9000000000012,"BodyID":8,"BodyName":"Local Two B 2","Latitude":11,"Longitude":21}"""),
+            ],
+            "Drew");
+
+            var localIds = viewModel.Rows
+                .Where(row => row.Reference.IsCommanderOnly)
+                .Select(row => row.Reference.SiteId)
+                .Order()
+                .ToArray();
+            Assert.Equal([1, 2], localIds);
         }
         finally
         {

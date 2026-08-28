@@ -294,6 +294,12 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         get => distanceLy;
         set
         {
+            if (value is < 0)
+            {
+                StatusMessage = "Distance LY cannot be negative.";
+                return;
+            }
+
             if (!SetField(ref distanceLy, value) || isLoading)
             {
                 return;
@@ -1128,6 +1134,12 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         if (ArrivalDistanceLs is < 0)
         {
             StatusMessage = "Arrival distance LS cannot be negative.";
+            return false;
+        }
+
+        if (DistanceLy is < 0)
+        {
+            StatusMessage = "Distance LY cannot be negative.";
             return false;
         }
 

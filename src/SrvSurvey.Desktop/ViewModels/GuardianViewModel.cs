@@ -960,11 +960,7 @@ public sealed class GuardianViewModel
     }
 
     public GuardianSiteProximitySnapshot? SelectedMapCommanderPosition =>
-        SelectedSite?.Reference is { } selectedReference
-        && ActiveSite is { } activeSite
-        && IsSameSite(selectedReference, activeSite)
-            ? Proximity
-            : null;
+        IsSelectedSiteActive() ? Proximity : null;
 
     public string? SelectedMapTargetPointName
     {
@@ -2285,10 +2281,11 @@ public sealed class GuardianViewModel
             return existingReference.SiteId;
         }
 
-        return visits.Visits
-                .Where(visit => visit.Reference.IsCommanderOnly
-                    && visit.Reference.Kind == site.Kind)
-                .Select(visit => visit.Reference.SiteId)
+        var isRuins = site.Kind == GuardianSiteKind.Ruins;
+        return commanderData.Surveys
+                .Where(candidate => candidate.LocalSiteId > 0
+                    && IsRuins(candidate) == isRuins)
+                .Select(candidate => candidate.LocalSiteId)
                 .DefaultIfEmpty(0)
                 .Max()
             + 1;
@@ -4779,6 +4776,8 @@ public sealed class GuardianViewModel
             return;
         }
 
+        var isSelectedSiteActive = IsSelectedSiteActive();
+
         var survey = FindSurvey(site);
         var reference = site.Reference;
         var published = GetPublishedSite(site);
@@ -4787,8 +4786,7 @@ public sealed class GuardianViewModel
         var location = survey?.Survey.Location
             ?? published?.Location
             ?? site.Location;
-        if (SelectedSite?.Reference is { } selectedReference
-            && IsSameSite(selectedReference, site)
+        if (isSelectedSiteActive
             && SurveyEditor.TryGetPreviewSurfaceLocation(
                 out var previewLocation))
         {
@@ -4810,8 +4808,8 @@ public sealed class GuardianViewModel
             published,
             reference);
         var markerOffset = survey?.MapMarkerOffset ?? default;
-        if (SelectedSite?.Reference is { } offsetReference
-            && IsSameSite(offsetReference, site)
+        if (isSelectedSiteActive
+            && SelectedSite?.Reference is { } offsetReference
             && SurveyEditor.TryGetPreviewMapMarkerOffset(
                 offsetReference,
                 out var previewMarkerOffset))
@@ -4848,9 +4846,7 @@ public sealed class GuardianViewModel
             IncludeComponentMaterials = ShowComponentMaterials,
             MarkerOffset = markerOffset,
         });
-        if (proximity is { } measurement
-            && SelectedSite?.Reference is { } measurementReference
-            && IsSameSite(measurementReference, site))
+        if (proximity is { } measurement && isSelectedSiteActive)
         {
             var angle = GetSurveyPointAngle(
                 measurement.MapX,
@@ -5088,15 +5084,18 @@ public sealed class GuardianViewModel
         var displayCatalog = displayTemplate is null
             ? templates
             : templates.WithTemplate(displayTemplate);
-        var alignmentOrigin = row?.Reference is { } editorReference
-            && ActiveSite is { } activeSite
-            && IsSameSite(editorReference, activeSite)
-                ? activeSite.Location
-                : null;
-        var planetRadiusMeters = alignmentOrigin is not null
+        var activeSite = IsSelectedSiteActive() ? ActiveSite : null;
+        var planetRadiusMeters = activeSite is not null
             && currentStatus?.PlanetRadius is > 0
                 ? (double?)currentStatus.PlanetRadius
                 : null;
+        var alignmentOrigin = row is not null && activeSite is not null
+            ? ResolveAlignmentOrigin(
+                row.Reference,
+                survey,
+                activeSite,
+                planetRadiusMeters)
+            : null;
         SurveyEditor.Load(new GuardianSurveyEditorLoadContext(
             activeFrontierId,
             activeIsOdyssey,
@@ -5114,6 +5113,42 @@ public sealed class GuardianViewModel
         });
         TemplateAuthoring.UpdateContext(baseTemplate, measurement: null);
         TemplateAuthoring.SelectPoint(SurveyEditor.SelectedPointName);
+    }
+
+    private GuardianSurfaceLocation? ResolveAlignmentOrigin(
+        GuardianSiteReference selectedReference,
+        GuardianCommanderSiteSurvey? survey,
+        GuardianLiveSiteSnapshot activeSite,
+        double? planetRadiusMeters)
+    {
+        var catalogReference = references.Sites.FirstOrDefault(
+            candidate => IsSameSite(candidate, selectedReference));
+        if (catalogReference is { Latitude: { } latitude, Longitude: { } longitude })
+        {
+            return new GuardianSurfaceLocation(latitude, longitude);
+        }
+
+        var correctedOrigin = survey?.Survey.Location ?? activeSite.Location;
+        if (correctedOrigin is not { } corrected
+            || survey?.MapMarkerOffset is not { } markerOffset
+            || markerOffset == default
+            || planetRadiusMeters is not { } radius)
+        {
+            return correctedOrigin;
+        }
+
+        var published = GetPublishedSite(activeSite);
+        var siteHeading = GetEffectiveSiteHeading(
+            survey,
+            published,
+            catalogReference ?? selectedReference);
+        return siteHeading is >= 0 and <= 359
+            ? GuardianMapMarkerOffsetCalculator.RecoverAlignmentOrigin(
+                corrected,
+                markerOffset,
+                siteHeading,
+                radius)
+            : corrected;
     }
 
     private GuardianSiteTemplate? GetSelectedBaseTemplate()

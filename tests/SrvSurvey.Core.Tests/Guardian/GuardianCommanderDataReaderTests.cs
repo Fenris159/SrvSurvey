@@ -158,6 +158,38 @@ public sealed class GuardianCommanderDataReaderTests
     }
 
     [Fact]
+    public async Task MalformedStarPositionDoesNotAbortCommanderDataLoad()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var folder = Path.Combine(root, "guardian", "F123");
+            Directory.CreateDirectory(folder);
+            await File.WriteAllTextAsync(
+                Path.Combine(folder, "bad-position-ruins-1.json"),
+                """
+                {
+                  "type":"Alpha",
+                  "index":1,
+                  "systemAddress":1,
+                  "bodyId":2,
+                  "starPos":[1,"not-a-number",3]
+                }
+                """);
+
+            var result = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+
+            Assert.Empty(result.Errors);
+            Assert.Null(Assert.Single(result.Surveys).StarPosition);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public async Task OldObeliskRequirementsUseTheInjectedPublishedCatalog()
     {
         var root = CreateTemporaryDirectory();

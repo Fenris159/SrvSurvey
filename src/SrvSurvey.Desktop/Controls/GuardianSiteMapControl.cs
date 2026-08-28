@@ -155,6 +155,14 @@ public sealed class GuardianSiteMapControl : Control
         set => SetValue(RotateMapWithCommanderProperty, value);
     }
 
+    private double MapRotationHeading => ResolveMapRotationHeading(
+        CommanderHeading,
+        RotateMapWithCommander);
+
+    private double CommanderGlyphHeading => ResolveCommanderGlyphHeading(
+        CommanderHeading,
+        RotateMapWithCommander);
+
     public string? TargetPointName
     {
         get => GetValue(TargetPointNameProperty);
@@ -297,9 +305,7 @@ public sealed class GuardianSiteMapControl : Control
             0,
             0,
             Proximity,
-            ResolveMapRotationHeading(
-                CommanderHeading,
-                RotateMapWithCommander),
+            MapRotationHeading,
             viewportCenter,
             scale);
         var gridExtent = Math.Max(bounds.Width, bounds.Height) / scale * 2;
@@ -317,9 +323,7 @@ public sealed class GuardianSiteMapControl : Control
             projection,
             mapOrigin,
             gridExtent * scale,
-            ResolveMapRotationHeading(
-                CommanderHeading,
-                RotateMapWithCommander),
+            MapRotationHeading,
             scale);
         if (Proximity is null && CommanderMapPosition is { } commander)
         {
@@ -334,9 +338,7 @@ public sealed class GuardianSiteMapControl : Control
                     scale),
                 projection.IsRuins,
                 scale,
-                ResolveCommanderGlyphHeading(
-                    CommanderHeading,
-                    RotateMapWithCommander));
+                CommanderGlyphHeading);
         }
 
         foreach (var point in projection.Points)
@@ -348,9 +350,7 @@ public sealed class GuardianSiteMapControl : Control
                     point.X,
                     point.Y,
                     Proximity,
-                    ResolveMapRotationHeading(
-                        CommanderHeading,
-                        RotateMapWithCommander),
+                    MapRotationHeading,
                     viewportCenter,
                     scale),
                 projection,
@@ -367,9 +367,7 @@ public sealed class GuardianSiteMapControl : Control
                     group.X,
                     group.Y,
                     Proximity,
-                    ResolveMapRotationHeading(
-                        CommanderHeading,
-                        RotateMapWithCommander),
+                    MapRotationHeading,
                     viewportCenter,
                     scale),
                 scale);
@@ -382,9 +380,7 @@ public sealed class GuardianSiteMapControl : Control
                 viewportCenter,
                 projection.IsRuins,
                 scale,
-                ResolveCommanderGlyphHeading(
-                    CommanderHeading,
-                    RotateMapWithCommander));
+                CommanderGlyphHeading);
         }
 
         if (ShowLegend)
@@ -421,18 +417,14 @@ public sealed class GuardianSiteMapControl : Control
                 0,
                 -gridExtent,
                 Proximity,
-                ResolveMapRotationHeading(
-                    CommanderHeading,
-                    RotateMapWithCommander),
+                MapRotationHeading,
                 viewportCenter,
                 scale),
             TransformMapPoint(
                 0,
                 gridExtent,
                 Proximity,
-                ResolveMapRotationHeading(
-                    CommanderHeading,
-                    RotateMapWithCommander),
+                MapRotationHeading,
                 viewportCenter,
                 scale));
         context.DrawLine(
@@ -441,18 +433,14 @@ public sealed class GuardianSiteMapControl : Control
                 -gridExtent,
                 0,
                 Proximity,
-                ResolveMapRotationHeading(
-                    CommanderHeading,
-                    RotateMapWithCommander),
+                MapRotationHeading,
                 viewportCenter,
                 scale),
             TransformMapPoint(
                 gridExtent,
                 0,
                 Proximity,
-                ResolveMapRotationHeading(
-                    CommanderHeading,
-                    RotateMapWithCommander),
+                MapRotationHeading,
                 viewportCenter,
                 scale));
         for (var ring = 1; ring <= 4; ring++)
@@ -760,9 +748,7 @@ public sealed class GuardianSiteMapControl : Control
                     point.X,
                     point.Y,
                     Proximity,
-                    ResolveMapRotationHeading(
-                        CommanderHeading,
-                        RotateMapWithCommander),
+                    MapRotationHeading,
                     viewportCenter,
                     scale),
             })
@@ -983,9 +969,7 @@ public sealed class GuardianSiteMapControl : Control
             mapImage.Size.Height * projection.ImageScaleFactor);
         using (context.PushTransform(CreateMapTransform(
             Proximity,
-            ResolveMapRotationHeading(
-                CommanderHeading,
-                RotateMapWithCommander),
+            MapRotationHeading,
             viewportCenter,
             scale)))
         {
@@ -1183,9 +1167,7 @@ public sealed class GuardianSiteMapControl : Control
         var rotation = GuardianLegacyMapDrawing.GetGlyphRotation(
             point,
             projection,
-            ResolveMapRotationHeading(
-                CommanderHeading,
-                RotateMapWithCommander));
+            MapRotationHeading);
         DrawSurveyMarkerIfNeeded(context, point, location, projection, markerScale);
         DrawRelicHeadingIfNeeded(
             context,

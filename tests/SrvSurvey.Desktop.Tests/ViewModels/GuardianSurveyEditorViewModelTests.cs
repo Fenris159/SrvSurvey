@@ -592,6 +592,40 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         Assert.Equal(222.5, saved.DistanceToArrivalLs);
     }
 
+    [Fact]
+    public async Task NegativeDistanceDoesNotMirrorStoredStarPosition()
+    {
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var initial = CreateSurvey() with
+        {
+            CatalogBodyName = "A 1",
+            StarPosition = new GalacticCoordinate(10, 0, 0),
+        };
+        var editor = new GuardianSurveyEditorViewModel(
+            store,
+            (_, _) => Task.CompletedTask);
+        editor.Load(new GuardianSurveyEditorLoadContext(
+            "F123",
+            true,
+            initial,
+            CreateTemplate())
+        {
+            DistanceOrigin = new GalacticCoordinate(0, 0, 0),
+            DistanceOriginName = "Sol",
+        });
+
+        editor.DistanceLy = -20;
+        Assert.Equal(10m, editor.DistanceLy);
+        Assert.Contains("cannot be negative", editor.StatusMessage);
+
+        await editor.SaveAsync();
+
+        var saved = Assert.Single(
+            (await new GuardianCommanderDataReader(temporaryDirectory)
+                .ReadAsync("F123", isOdyssey: true)).Surveys);
+        Assert.Equal(new GalacticCoordinate(10, 0, 0), saved.StarPosition);
+    }
+
     private static GuardianCommanderSiteSurvey CreateSurvey()
     {
         return new GuardianCommanderSiteSurvey(

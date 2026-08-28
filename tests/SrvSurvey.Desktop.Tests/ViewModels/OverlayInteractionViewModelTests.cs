@@ -228,6 +228,36 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void LiveShortcutRestoresNonPlacementWindowWhenNoOverlayCanMove()
+    {
+        var platform = new FakeOverlayPlatform();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var registry = new OverlayWindowRegistry();
+        var window = new Window();
+        registry.Register(
+            window,
+            "PlotGuardians",
+            participatesInPlacement: false);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                new PixelRect(100, 200, 1200, 800),
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            store.Load(),
+            registry,
+            new FakeEditorHost());
+
+        Assert.False(viewModel.ToggleLiveOverlayInteraction());
+
+        Assert.Equal([true, false], platform.InteractiveStates);
+        Assert.False(viewModel.IsLiveInteractionEnabled);
+    }
+
+    [AvaloniaFact]
     public void LiveWindowDragPersistsAndIsReloadedByThePositionEditor()
     {
         Directory.CreateDirectory(temporaryDirectory);

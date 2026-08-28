@@ -12,8 +12,9 @@ Windows and Linux.
   collapsible legend, survey-point list, orientation help, and clearer controls
   for editing the current site separately from drafting shared map geometry.
 - Adds editable site body, distance-from-origin, arrival distance, surface
-  coordinates, and coordinate reset controls. Newly discovered uncatalogued
-  sites are selected automatically and use local `GR L01` / `GS L01` naming.
+  coordinates, and coordinate reset controls. After its type is chosen, a newly
+  discovered uncatalogued site is selected automatically and uses local
+  `GR L01` / `GS L01` naming.
 - Adds live previews for point geometry, image placement, scale, labels, and
   coordinate corrections. Verified catalog export now starts in the existing
   Guardian catalog location while unsaved draft changes remain explicit.
@@ -24,8 +25,8 @@ Windows and Linux.
   the commander and every shared marker together without changing the shared
   template format; exported surveys retain the correction for other users.
 - Synchronizes manual and nearest-POI targeting between the application and
-  overlay, restores automatic selection within range, and keeps map-point edits
-  visible until they are applied or cancelled.
+  overlay for the configured active site, restores automatic selection within
+  range, and keeps map-point edits visible until they are applied or cancelled.
 - Keeps the application map fixed while rotating only the commander glyph to
   match heading, corrects its orientation, and adds the docked ship chevron to
   the Guardian overlay. Firegroup-driven choices now retain a visible selected

@@ -175,11 +175,7 @@ public sealed class GuardianSiteVisitCatalog
         GuardianSiteCatalog references,
         int localSiteId)
     {
-        var kind = survey.Name.StartsWith(
-            "$Ancient:#index=",
-            StringComparison.Ordinal)
-                ? GuardianSiteKind.Ruins
-                : GuardianSiteKind.Structure;
+        var kind = GetSiteKind(survey);
         var position = GetKnownSystemPosition(references, survey.SystemAddress);
         return new GuardianSiteReference(
             localSiteId,

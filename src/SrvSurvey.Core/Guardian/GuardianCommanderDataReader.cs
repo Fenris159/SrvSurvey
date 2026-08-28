@@ -178,12 +178,15 @@ public sealed class GuardianCommanderDataReader
             return null;
         }
 
-        var values = value.EnumerateArray().Take(3).ToArray();
-        return values.All(coordinate => coordinate.TryGetDouble(out _))
+        var coordinates = value.EnumerateArray()
+            .Take(3)
+            .Select(ReadFiniteDouble)
+            .ToArray();
+        return coordinates.All(coordinate => coordinate is not null)
             ? new GalacticCoordinate(
-                values[0].GetDouble(),
-                values[1].GetDouble(),
-                values[2].GetDouble())
+                coordinates[0]!.Value,
+                coordinates[1]!.Value,
+                coordinates[2]!.Value)
             : null;
     }
 
@@ -610,6 +613,15 @@ public sealed class GuardianCommanderDataReader
     {
         return root.TryGetProperty(propertyName, out var value)
             && value.ValueKind == JsonValueKind.Number
+            && value.TryGetDouble(out var number)
+            && double.IsFinite(number)
+                ? number
+                : null;
+    }
+
+    private static double? ReadFiniteDouble(JsonElement value)
+    {
+        return value.ValueKind == JsonValueKind.Number
             && value.TryGetDouble(out var number)
             && double.IsFinite(number)
                 ? number
