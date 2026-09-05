@@ -709,7 +709,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     sharedExobiologyCatalog));
             rollback.Add(SurfaceSurvey.Dispose);
             Mining = new SurfaceMiningViewModel(new SystemSurfaceStore(
-                Path.Combine(AppDataPaths.DataDirectory, "mining")));
+                Path.Combine(AppDataPaths.DataDirectory, "mining")),
+                new SurfaceMiningSettingsStore(AppDataPaths.UiSettingsPath));
             rollback.Add(Mining.Dispose);
             BiologyPredictions = new BiologyPredictionsViewModel(
                 SystemSurvey,
@@ -3172,6 +3173,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             SurfaceSurvey.RadarMarkers,
             latestCargo,
             isSessionActive ? journalState.ParkedSrvType : null);
+        if (!skipPersistedBootstrapEvents && isSessionActive)
+        {
+            await Mining.ClearRigsFromChatAsync(update.JournalEvents, journalState.FrontierId);
+        }
     }
 
     private async Task ApplyBoxelSurveyStatsAsync(

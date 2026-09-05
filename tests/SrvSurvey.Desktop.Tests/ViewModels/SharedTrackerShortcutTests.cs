@@ -62,6 +62,53 @@ public sealed class SharedTrackerShortcutTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task LiveChatClearsBothStoresButReplayedChatDoesNotClearSavedRigs()
+    {
+        var paths = new AppDataPaths(Path.Combine(root, "config"),
+            Path.Combine(root, "data"), Path.Combine(root, "cache"), []);
+        var journals = Path.Combine(root, "journals");
+        Directory.CreateDirectory(journals);
+        var journalPath = Path.Combine(journals, "Journal.2026-09-05T120000.01.log");
+        await File.WriteAllTextAsync(journalPath,
+            """
+            {"timestamp":"2026-09-05T12:00:00Z","event":"Fileheader","gameversion":"4.1","Odyssey":true}
+            {"timestamp":"2026-09-05T12:00:01Z","event":"LoadGame","Commander":"Test Cmdr","FID":"F123","Ship":"mev_rhino","ShipID":42,"Odyssey":true}
+            {"timestamp":"2026-09-05T12:00:02Z","event":"Location","StarSystem":"Test System","SystemAddress":42,"Body":"Test System 1","BodyID":7,"BodyType":"Planet"}
+            {"timestamp":"2026-09-05T12:00:03Z","event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test System 1","BodyID":7,"PlanetClass":"Rocky body","Landable":true,"Radius":1000}
+
+            """);
+        await File.WriteAllTextAsync(Path.Combine(journals, "Status.json"),
+            $$"""
+            {"timestamp":"2026-09-05T12:00:04Z","event":"Status","Flags":{{(long)(StatusFlags.InSrv | StatusFlags.HasLatLong)}},"Latitude":0,"Longitude":0,"PlanetRadius":1000,"BodyName":"Test System 1"}
+            """);
+        using (var viewModel = MainWindowViewModelTestBuilder.Create(journals,
+            builder => builder.WithAppDataPaths(paths)))
+        {
+            await viewModel.RefreshAsync();
+            viewModel.Mining.AutoClearRigsOnShipBoarding = false;
+            Assert.True(await viewModel.Mining.ToggleRigAsync(1));
+            Assert.True(await viewModel.SurfaceSurvey.ToggleQuickTrackerAsync(8));
+            await File.AppendAllTextAsync(journalPath,
+                "{\"timestamp\":\"2026-09-05T12:00:05Z\",\"event\":\"SendText\",\"Message\":\"+helium\"}\n");
+            await viewModel.RefreshAsync();
+            Assert.Single(viewModel.Mining.Resources);
+            await File.AppendAllTextAsync(journalPath,
+                "{\"timestamp\":\"2026-09-05T12:00:06Z\",\"event\":\"SendText\",\"Message\":\"---\"}\n");
+            await viewModel.RefreshAsync();
+            Assert.Empty(viewModel.SurfaceSurvey.TrackerGroups);
+            Assert.Empty(viewModel.Mining.Resources);
+            Assert.DoesNotContain(viewModel.Mining.Rigs, rig => rig.IsSet);
+            Assert.True(await viewModel.Mining.ToggleRigAsync(2));
+        }
+
+        using var reopened = MainWindowViewModelTestBuilder.Create(journals,
+            builder => builder.WithAppDataPaths(paths));
+        await reopened.RefreshAsync();
+        Assert.False(reopened.Mining.AutoClearRigsOnShipBoarding);
+        Assert.True(reopened.Mining.Rigs[1].IsSet);
+    }
+
     private static JournalEventEnvelope Parse(string json)
     {
         Assert.True(JournalEventEnvelope.TryParse(json, out var entry, out var error), error);

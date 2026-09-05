@@ -240,7 +240,8 @@ public static class GuideCatalog
                             "Input settings lists Tracker/Mining Rig (1) through Tracker/Mining Rig (6), followed by regular Tracker (7) and Tracker (8) bindings. Defaults are Ctrl+Alt+F1 through Ctrl+Alt+F8. Outside Rhino mining these toggle surface trackers; slots 7 and 8 do not place rigs.",
                             "Edit the first six shared bindings in Settings > Input or in Mining's overlay settings, where they retain the Mining rig labels. Both locations edit the same bindings, including any replacement keyboard or controller chords.",
                             "Locations are saved for the current Commander and body separately from biology bookmarks. Placement accounts for the Rhino cockpit and deployment offsets and requires being aboard the Rhino.",
-                            "Returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
+                            "By default, returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Turn off Clear rigs automatically when boarding your ship in Mining overlay settings to keep your saved markers; this preference persists between sessions. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
+                            "Send --- in game chat to clear all rigs and surface bookmarks on the current body, including resource, biology, and regular tracker bookmarks. This works even when automatic rig clearing is disabled and does not erase scan history or bookmarks on other bodies.",
                         ]),
                     Section(
                         "Rig circles and distance cues",

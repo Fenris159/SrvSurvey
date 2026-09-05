@@ -171,6 +171,7 @@ public sealed class GuidesViewModelTests
     [InlineData("boxel hierarchy", "Navigate the boxel hierarchy")]
     [InlineData("FSSAllBodiesFound", "Survey the current boxel")]
     [InlineData("Ctrl+Alt+F1", "Rig tracking with key chords")]
+    [InlineData("Clear rigs automatically", "Rig tracking with key chords")]
     [InlineData("Rhino cargo", "Ship, Rhino, and cargo")]
     public void SearchFindsWorkflowAndGlossaryContent(
         string query,

@@ -10,6 +10,11 @@ otherwise; slots 7 and 8 are surface trackers only. Existing custom tracker
 bindings are preserved. A customized RC43 rig binding carries over when its
 matching tracker still uses the default; the old Alt+1–6 rig defaults are retired.
 
+Mining overlay settings now include **Clear rigs automatically when boarding
+your ship**, enabled by default and saved between sessions. Turn it off to keep
+rig markers after boarding. Sending `---` in game chat clears both surface
+bookmarks and mining rigs on the current body, regardless of this setting.
+
 This candidate retains the RC43 features below: survey overlays while
 supercruising above a planet and reconciliation of
 estimated exploration rewards as system data is sold. It also corrects Live
@@ -30,8 +35,9 @@ upload reporting, and SDL3 controller shortcut support on Windows and Linux.
   the Rhino cockpit and rig placement offsets.
 - Keeps mining guidance available while operating or walking back to a parked
   Rhino, suppressing Surface Survey and its mini tracker during that activity.
-- Automatically clears all saved rig locations when returning to your own
-  ship on foot or docking the Rhino; re-entering the Rhino keeps its markers.
+- By default, clears all saved rig locations when returning to your own
+  ship on foot or docking the Rhino; disable this in Mining overlay settings
+  to retain markers. Re-entering the Rhino keeps its markers.
 - Adds Mining under Activities with an overlay settings shortcut. The workspace
   is reserved for future mining tools; its settings provide the overlay toggle
   and editable visibility and rig shortcuts, shared with Input settings.
