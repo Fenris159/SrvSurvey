@@ -172,6 +172,25 @@ internal static class OverlayEditorPreviewFactories
                 DistanceMeters = 170, RelativeBearingDegrees = 300, RadiusMeters = 70,
                 Location = new SurfaceCoordinate(0, 0),
             },
+        ], [
+            new SurfaceRadarMarkerViewModel
+            {
+                Name = "helium", Kind = SurfaceRadarMarkerKind.Bookmark,
+                DistanceMeters = 2_350, RelativeBearingDegrees = 180, RadiusMeters = 70,
+                Location = new SurfaceCoordinate(0, 0),
+            },
+            new SurfaceRadarMarkerViewModel
+            {
+                Name = "thortveitite", Kind = SurfaceRadarMarkerKind.Bookmark,
+                DistanceMeters = 138, RelativeBearingDegrees = 205, RadiusMeters = 70,
+                Location = new SurfaceCoordinate(0, 0),
+            },
+            new SurfaceRadarMarkerViewModel
+            {
+                Name = "uraninite", Kind = SurfaceRadarMarkerKind.Bookmark,
+                DistanceMeters = 580, RelativeBearingDegrees = 40, RadiusMeters = 70,
+                Location = new SurfaceCoordinate(0, 0),
+            },
         ]);
         return new SurfaceMiningOverlayViewModel(mining, Caps());
     }

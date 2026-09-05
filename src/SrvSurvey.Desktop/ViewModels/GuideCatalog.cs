@@ -250,6 +250,19 @@ public static class GuideCatalog
                             "Colors follow the selected theme, while the text labels keep their meaning. On foot, distances use your position without the Rhino cockpit offset.",
                         ]),
                     Section(
+                        "Ground resource bookmarks",
+                        "Named resource locations appear below the rig trackers in two columns, filled left to right. Each saved location has its own material name, bearing chevron, and distance.",
+                        [
+                            "At a resource location, send +helium or +thortveitite in game chat to save your current position under that name. These are manual bookmarks; the overlay does not automatically detect mineral deposits.",
+                            "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
+                            "Send -helium to remove the nearest helium bookmark, or --helium to remove all saved helium locations on this body. Use the matching name for other materials.",
+                        ],
+                        [
+                            "Within 150 meters, the name and distance use the theme's near-target color and the chevron becomes a single arrow. Farther targets use the normal accent and double chevron; kilometers are shown for longer distances.",
+                            "Resource bookmarks also appear as 70-meter circles on the mining radar. Long lists scroll in the resource area using overlay interaction mode. Biological bookmarks and numbered quick trackers are excluded from these rows.",
+                            "Named resources use the existing Commander/body surface bookmarks. Boarding your own ship clears the six rig slots but preserves these resource locations.",
+                        ]),
+                    Section(
                         "Ship, Rhino, and cargo",
                         "Two vehicle columns sit above the rig chevrons, with cargo capacity below them.",
                         [

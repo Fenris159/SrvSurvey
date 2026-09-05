@@ -24,9 +24,21 @@
     <Style Selector="Border.rig.close controls|DirectionalChevronControl">
       <Setter Property="Stroke" Value="{DynamicResource RavenDangerBrush}" />
     </Style>
+    <Style Selector="Border.resource TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="Border.resource controls|DirectionalChevronControl">
+      <Setter Property="Stroke" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="Border.resource.near TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource RavenSecondaryBrush}" />
+    </Style>
+    <Style Selector="Border.resource.near controls|DirectionalChevronControl">
+      <Setter Property="Stroke" Value="{DynamicResource RavenSecondaryBrush}" />
+    </Style>
   </UserControl.Styles>
   <Border Padding="4" Background="{DynamicResource RavenWindowBrush}" CornerRadius="5">
-    <Grid RowDefinitions="Auto,*,Auto,Auto,Auto" RowSpacing="6">
+    <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,Auto" RowSpacing="6">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
         <StackPanel Spacing="2">
           <TextBlock Classes="overlay-header" Text="SURFACE MINING" />
@@ -94,7 +106,31 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
-      <StackPanel Grid.Row="4" Spacing="4">
+      <ScrollViewer Grid.Row="4" MaxHeight="180" IsVisible="{Binding SurfaceMining.HasResources}"
+                    HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <ItemsControl x:Name="ResourceTrackers" ItemsSource="{Binding SurfaceMining.Resources}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:MiningResourceViewModel">
+              <Border Classes="resource" Classes.near="{Binding IsNear}"
+                      Margin="1,2" Padding="5,5" CornerRadius="7" BorderThickness="1"
+                      Background="{DynamicResource RavenSurfaceBrush}" BorderBrush="{DynamicResource RavenBorderBrush}">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
+                  <TextBlock Text="{Binding Name}" FontSize="10" TextTrimming="CharacterEllipsis"
+                             ToolTip.Tip="{Binding Name}" VerticalAlignment="Center" />
+                  <controls:DirectionalChevronControl Grid.Column="1" Width="12" Height="12"
+                      BearingDegrees="{Binding Bearing}" IsFar="{Binding !IsNear}" StrokeThickness="1.5"
+                      VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="2" Text="{Binding DistanceText}" FontSize="9" VerticalAlignment="Center" />
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+      <StackPanel Grid.Row="5" Spacing="4">
         <TextBlock FontSize="9" Text="{Binding SurfaceMining.CargoText}" />
         <ProgressBar Minimum="0" Maximum="72" Value="{Binding SurfaceMining.CargoUsed}" Height="5"
                      Foreground="{DynamicResource RavenAccentBrush}" Background="{DynamicResource RavenBorderBrush}" />

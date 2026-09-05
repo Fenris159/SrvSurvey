@@ -44,6 +44,29 @@ the Rhino on foot keeps the markers. Taxi and multicrew boarding do not clear th
 Colors follow the overlay theme; text labels retain their meaning. The radar
 uses 70-meter rig circles and the legacy mining zoom as its default.
 
+## Ground resources
+
+Resource bookmarks appear below the rigs in two columns, filled left to right
+with new rows as needed. Every saved location has its own material name,
+direction chevron, and distance, including multiple locations for one material.
+
+These locations are **manually saved**, not automatically detected. At a deposit,
+send `+helium` or `+thortveitite` in game chat to save your current position under
+that name. Repeat elsewhere to add another location. Send `-helium` to remove
+the nearest matching bookmark, or `--helium` to remove all matching locations
+on the current body. Substitute the relevant material name.
+
+Distance and direction update automatically as you move and turn. Below
+150 meters, the tracker uses the theme's near-target color and a single
+chevron; farther targets use the normal accent and a double chevron. Distances
+switch to kilometers at 1 km. Resource circles on the radar have a 70-meter
+radius. Long lists scroll using overlay interaction mode, preserving room for
+the radar and cargo row.
+
+These use the existing Commander/body surface bookmarks, separate from the six
+rig slots. Boarding your ship clears rigs but preserves resource locations.
+Biology bookmarks and numbered quick trackers do not appear in resource rows.
+
 ## Vehicles and cargo
 
 The vehicle row is split into **Ship** and **Rhino** columns. On foot, the Rhino

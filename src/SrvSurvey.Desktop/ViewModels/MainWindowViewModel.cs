@@ -3137,7 +3137,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 journalState.IsShutdown || journalState.IsAtMainMenu ? null : journalState.ActiveSrvType,
                 SurfaceSurvey.NavigationMarkers,
                 latestCargo,
-                journalState.IsShutdown || journalState.IsAtMainMenu ? null : journalState.ParkedSrvType);
+                journalState.IsShutdown || journalState.IsAtMainMenu ? null : journalState.ParkedSrvType,
+                SurfaceSurvey.RadarMarkers);
         }
 
         if (exobiologyChanged)

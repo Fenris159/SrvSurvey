@@ -20,6 +20,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private bool isRhinoParked;
     private bool disposed;
     private IReadOnlyList<SurfaceRadarMarkerViewModel> navigation = [];
+    private IReadOnlyList<SurfaceRadarMarkerViewModel> surfaceBookmarks = [];
     private double cargoUsed;
 
     public SurfaceMiningViewModel(SystemSurfaceStore store)
@@ -31,6 +32,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
 
     public IReadOnlyList<SurfaceRadarMarkerViewModel> RadarMarkers { get; private set; } = [];
     public IReadOnlyList<MiningRigViewModel> Rigs { get; private set; } = EmptyRigs();
+    public IReadOnlyList<MiningResourceViewModel> Resources { get; private set; } = [];
+    public bool HasResources => Resources.Count > 0;
     public IReadOnlyList<SurfaceRadarMarkerViewModel> ShipMarkers { get; private set; } = [];
     public SurfaceRadarMarkerViewModel? RhinoMarker { get; private set; }
     public bool HasRhinoTracker => RhinoMarker is not null;
@@ -56,7 +59,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         SystemScanSnapshot snapshot, EliteStatus? currentStatus, string? srvType,
         IReadOnlyList<SurfaceRadarMarkerViewModel>? navigationMarkers = null,
         CargoSnapshot? cargo = null,
-        string? parkedSrvType = null)
+        string? parkedSrvType = null,
+        IReadOnlyList<SurfaceRadarMarkerViewModel>? surfaceBookmarks = null)
     {
         await updateLock.WaitAsync().ConfigureAwait(true);
         try
@@ -66,6 +70,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 ? cargo.Count : status?.Cargo ?? 0;
             cargoUsed = double.IsFinite(count) ? Math.Max(0, count) : 0;
             navigation = navigationMarkers ?? [];
+            this.surfaceBookmarks = surfaceBookmarks ?? [];
             isRhino = string.Equals(srvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
             isRhinoParked = string.Equals(parkedSrvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
             var body = snapshot.Bodies.FirstOrDefault(candidate => string.Equals(
@@ -227,6 +232,29 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             rigs.Add(new MiningRigViewModel(number, marker));
         }
 
+        var resources = validPosition ? surfaceBookmarks
+            .Where(marker => marker.IsBookmark && !marker.Name.StartsWith('#')
+                // Legacy treats named bookmarks without a biology sample range as ground resources.
+                && ExobiologyReferenceCatalog.GetSampleDistanceMeters(marker.Name) == 50)
+            .OrderBy(marker => marker.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(marker => marker.DistanceMeters)
+            .Select(marker => new SurfaceRadarMarkerViewModel
+            {
+                Name = marker.Name,
+                Kind = SurfaceRadarMarkerKind.Bookmark,
+                Location = marker.Location,
+                DistanceMeters = marker.DistanceMeters,
+                BearingDegrees = marker.BearingDegrees,
+                RelativeBearingDegrees = marker.RelativeBearingDegrees,
+                RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
+                IsInsideRadius = marker.DistanceMeters < SurfaceMiningGeometry.RigRadiusMeters,
+            }).ToArray() : [];
+        if (!SameMarkers(Resources.Select(resource => resource.Marker).ToArray(), resources))
+        {
+            Resources = resources.Select(marker => new MiningResourceViewModel(marker)).ToArray();
+        }
+        markers.AddRange(Resources.Select(resource => resource.Marker));
+
         var ships = validPosition ? navigation.Where(marker => marker.Kind is
             SurfaceRadarMarkerKind.Ship or SurfaceRadarMarkerKind.FormerShip).ToArray() : [];
         if (!SameMarkers(ShipMarkers, ships))
@@ -259,7 +287,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             && pair.First.DistanceMeters == pair.Second.DistanceMeters
             && pair.First.RelativeBearingDegrees == pair.Second.RelativeBearingDegrees);
 
-    internal void InstallEditorPreview(IReadOnlyList<SurfaceRadarMarkerViewModel> markers)
+    internal void InstallEditorPreview(IReadOnlyList<SurfaceRadarMarkerViewModel> markers,
+        IReadOnlyList<SurfaceRadarMarkerViewModel>? resources = null)
     {
         context = new SystemSurfaceContext("preview", null, "Synuefe NL-N c23-4", 42, null,
             3, "Synuefe NL-N c23-4 B 3", 1_000_000);
@@ -270,7 +299,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             Name = "Ship", Kind = SurfaceRadarMarkerKind.Ship, DistanceMeters = 250,
             RelativeBearingDegrees = 110, Location = new SurfaceCoordinate(0, 0),
         }];
-        RadarMarkers = [.. markers, .. ShipMarkers];
+        Resources = (resources ?? []).Select(marker => new MiningResourceViewModel(marker)).ToArray();
+        RadarMarkers = [.. markers, .. ShipMarkers, .. Resources.Select(resource => resource.Marker)];
         Rigs = Enumerable.Range(1, 6).Select(number => new MiningRigViewModel(number,
             markers.ElementAtOrDefault(number - 1))).ToArray();
         StatusText = "Rig locations · cyan: collect · red: too close to deploy";
@@ -301,6 +331,14 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         disposed = true;
         updateLock.Dispose();
     }
+}
+
+public sealed record MiningResourceViewModel(SurfaceRadarMarkerViewModel Marker)
+{
+    public string Name => Marker.Name;
+    public string DistanceText => Marker.DistanceText;
+    public double Bearing => Marker.RelativeBearingDegrees;
+    public bool IsNear => Marker.DistanceMeters < 150;
 }
 
 public sealed record MiningRigViewModel(int Number, SurfaceRadarMarkerViewModel? Marker)

@@ -96,6 +96,9 @@ distance cues, and vehicle tracking. Also see
 
 ## Inspection and presentation fixes
 
+- Adds named ground-resource trackers below the mining rigs in two columns,
+  with a chevron and live distance for each saved location. Manual surface
+  bookmarks use near/far styling and remain saved when ship boarding clears rigs.
 - Adds a sidebar toggle in the navigation column's top-right corner. Collapse
   the sidebar to a narrow strip to expand the current workspace, then use the
   same button to restore navigation without resizing the window.

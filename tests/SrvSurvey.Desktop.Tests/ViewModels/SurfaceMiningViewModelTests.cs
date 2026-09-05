@@ -13,6 +13,60 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
     private static SurfaceSurveySessionContext Session => new("F123", "Test", "Test", 42, null);
 
     [Fact]
+    public async Task NamedResourcesTrackEveryLocationWithoutBiologyOrRigSlots()
+    {
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
+        SurfaceRadarMarkerViewModel Resource(string name, double distance, double bearing = 20,
+            SurfaceRadarMarkerKind kind = SurfaceRadarMarkerKind.Bookmark) => new()
+            {
+                Name = name,
+                Kind = kind,
+                DistanceMeters = distance,
+                RelativeBearingDegrees = bearing,
+                Location = new(0, distance / 1_000_000 * 180 / Math.PI),
+                IsActive = false,
+            };
+        SurfaceRadarMarkerViewModel[] bookmarks = [
+            Resource("thortveitite", 149), Resource("helium", 2_350), Resource("helium", 150),
+            Resource("#1", 12), Resource("$Codex_Ent_Bacterial_Genus_Name;", 45),
+            Resource("Bacterium", 45), Resource("organic", 50, kind: SurfaceRadarMarkerKind.ActiveSample),
+        ];
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", surfaceBookmarks: bookmarks);
+        Assert.Equal(new[] { "helium", "helium", "thortveitite" }, mining.Resources.Select(resource => resource.Name));
+        Assert.Equal(new[] { 150d, 2_350d, 149d }, mining.Resources.Select(resource => resource.Marker.DistanceMeters));
+        Assert.Equal(new[] { false, false, true }, mining.Resources.Select(resource => resource.IsNear));
+        Assert.All(mining.Rigs, rig => Assert.False(rig.IsSet));
+        Assert.All(mining.Resources, resource =>
+        {
+            Assert.True(resource.Marker.IsActive);
+            Assert.Equal(70, resource.Marker.RadiusMeters);
+            Assert.Contains(resource.Marker, mining.RadarMarkers);
+        });
+        var original = mining.Resources;
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", surfaceBookmarks: bookmarks);
+        Assert.Same(original, mining.Resources);
+
+        await mining.ToggleRigAsync(1);
+        Assert.Equal(3, mining.Resources.Count);
+        Assert.True(mining.Rigs[0].IsSet);
+        Assert.True(JournalEventEnvelope.TryParse("""{"event":"DockSRV"}""", out var dock, out _));
+        await mining.ClearRigsOnShipBoardingAsync([dock!], Session.FrontierId);
+        Assert.Equal(3, mining.Resources.Count);
+        Assert.All(mining.Rigs, rig => Assert.False(rig.IsSet));
+
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino",
+            surfaceBookmarks: [Resource("helium", 10, 270)]);
+        var updated = Assert.Single(mining.Resources);
+        Assert.True(updated.IsNear);
+        Assert.Equal("10 m", updated.DistanceText);
+        Assert.Equal(270, updated.Bearing);
+
+        await mining.ApplyUpdateAsync(null, Snapshot(), Status(), "mev_rhino", surfaceBookmarks: bookmarks);
+        Assert.Empty(mining.Resources);
+        Assert.False(mining.HasResources);
+    }
+
+    [Fact]
     public async Task RigShortcutPersistsOffsetLocationAndTogglesOnlyItsSlot()
     {
         var store = new SystemSurfaceStore(root);

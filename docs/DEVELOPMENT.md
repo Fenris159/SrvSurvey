@@ -93,10 +93,13 @@ assumed covered by the standalone journal, network, and overlay inventories.
 ## Runtime verification
 
 RC43 local validation on 2026-09-05 passed the Release solution build with
-zero warnings/errors, formatting verification, and 3,235 tests (Core 1,423;
-Desktop 1,799; Replay Controller 13). Guide search and automatic rig cleanup
+zero warnings/errors, formatting verification, and 3,243 tests (Core 1,423;
+Desktop 1,807; Replay Controller 13). Guide search and automatic rig cleanup
 on ship boarding are covered. Sidebar collapse/restore preserves workspace
 selection and window size in dark/light themes and at increased application scale.
+Named-resource coverage includes chat bookmarks, live bearings/distances,
+near/far cues, rig isolation, and two-column layouts with 3, 7, and 21 targets.
+The joined stream overlay's focus-loss and tracker-override regressions pass.
 Production-template previews were inspected for the sidebar, mining layout,
 and Monochrome Companion palette. This records
 automated and headless validation; the native checks below remain separate.

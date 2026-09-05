@@ -14,6 +14,39 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Path.GetTempPath(),
         $"SrvSurvey-surface-survey-vm-tests-{Guid.NewGuid():N}");
 
+    [Fact]
+    public async Task NamedResourceChatCommandsReachMiningWhileBiologyPanelIsSuppressed()
+    {
+        var (surface, survey, _) = CreateViewModel();
+        using var disposable = surface;
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(Path.Combine(temporaryDirectory, "mining")));
+        var status = Status(StatusFlags.InSrv);
+        ApplySurveyContext(survey, status, "mev_rhino");
+        await surface.ApplyUpdateAsync(Session(), [Event("""{"event":"SendText","Message":"+helium"}""")],
+            status, ExobiologySnapshot.Empty);
+        await mining.ApplyUpdateAsync(Session(), survey.Snapshot, status, "mev_rhino",
+            surfaceBookmarks: surface.RadarMarkers);
+        Assert.False(surface.ShouldShow);
+        Assert.Equal("helium", Assert.Single(mining.Resources).Name);
+        Assert.Equal("0 m", mining.Resources[0].DistanceText);
+
+        status = status with { Latitude = 10, Heading = 90 };
+        ApplySurveyContext(survey, status, "mev_rhino");
+        await surface.ApplyUpdateAsync(Session(), [], status, ExobiologySnapshot.Empty);
+        await mining.ApplyUpdateAsync(Session(), survey.Snapshot, status, "mev_rhino",
+            surfaceBookmarks: surface.RadarMarkers);
+        var moved = Assert.Single(mining.Resources);
+        Assert.InRange(moved.Marker.DistanceMeters, 174, 175);
+        Assert.Equal(90, moved.Bearing, precision: 6);
+        Assert.False(moved.IsNear);
+
+        await surface.ApplyUpdateAsync(Session(), [Event("""{"event":"SendText","Message":"--helium"}""")],
+            status, ExobiologySnapshot.Empty);
+        await mining.ApplyUpdateAsync(Session(), survey.Snapshot, status, "mev_rhino",
+            surfaceBookmarks: surface.RadarMarkers);
+        Assert.Empty(mining.Resources);
+    }
+
     [Theory]
     [InlineData(499, 500, 500, false)]
     [InlineData(500, 500, 500, true)]

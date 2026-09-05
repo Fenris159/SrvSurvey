@@ -27,6 +27,14 @@ changes are in `c9e82b8db20eebece016735b1b6e8f281229eca6`.
   Returning to the own ship through Embark or DockSRV clears the mining body's
   saved rigs before live body context can disappear. Rhino re-entry, taxi, and
   multicrew boarding retain them; persisted bootstrap events are not reapplied.
+- Named ground resources reuse the existing surface-bookmark chat commands
+  (`+name`, `-name`, `--name`) and Commander/body persistence. As in legacy
+  `PlotTrackers`, every saved location has a bearing/distance and the near
+  highlight threshold is 150 meters. The port lays these out in two columns
+  below the rig slots with the existing single/double-chevron style and themed
+  colors. Generic mining bookmark circles use the legacy 70-meter radius.
+  This is manual bookmarking, not automatic mineral detection. Rig cleanup
+  leaves resource bookmarks intact; long lists scroll without hiding cargo.
 - Rhino identity is retained across launch, re-embark, and LoadGame, with parked
   identity tracked separately from the active vehicle. Passive mining requires
   a Rhino on a planetary surface or an on-foot player with a parked Rhino marker.
