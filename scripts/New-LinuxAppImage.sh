@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 6 ]]; then
-    echo "Usage: $0 PUBLISH_DIRECTORY VERSION ICON_PATH LINUXDEPLOY APPIMAGETOOL OUTPUT_PATH" >&2
+if [[ $# -ne 7 ]]; then
+    echo "Usage: $0 PUBLISH_DIRECTORY VERSION ICON_PATH LINUXDEPLOY APPIMAGETOOL RUNTIME_FILE OUTPUT_PATH" >&2
     exit 2
 fi
 
@@ -11,7 +11,8 @@ version=$2
 icon_path=$(realpath "$3")
 linuxdeploy=$(realpath "$4")
 appimagetool=$(realpath "$5")
-output_path=$6
+runtime_file=$(realpath "$6")
+output_path=$7
 repository_root=$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")
 packaging_root="$repository_root/packaging/linux"
 
@@ -37,6 +38,11 @@ fi
 
 if [[ ! -x "$appimagetool" ]]; then
     echo "appimagetool is missing or is not executable." >&2
+    exit 1
+fi
+
+if [[ ! -s "$runtime_file" ]]; then
+    echo "The verified AppImage runtime is missing or empty." >&2
     exit 1
 fi
 
@@ -92,7 +98,8 @@ pwsh -NoLogo -NoProfile -File \
 
 mkdir -p "$(dirname "$output_path")"
 ARCH=x86_64 VERSION="$version" \
-    "$appimagetool" --appimage-extract-and-run "$app_dir" "$output_path"
+    "$appimagetool" --appimage-extract-and-run \
+    --runtime-file "$runtime_file" "$app_dir" "$output_path"
 chmod 0755 "$output_path"
 
 echo "Created $output_path from the checksum-indexed Linux publish output."

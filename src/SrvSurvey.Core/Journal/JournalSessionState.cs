@@ -343,12 +343,12 @@ public sealed class JournalSessionState
         ShipId = loadedShipId ?? ShipId;
         ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
         ShipIdent = GetString(root, nameof(ShipIdent)) ?? ShipIdent;
-        if (string.Equals(loadedShipType, "mev_rhino", StringComparison.OrdinalIgnoreCase))
+        if (EliteSrvTypes.IsRhino(loadedShipType))
         {
             ActiveSrvType = loadedShipType;
             if (loadedShipId is { } rhinoId)
             {
-                srvTypesById[rhinoId] = "mev_rhino";
+                srvTypesById[rhinoId] = EliteSrvTypes.Rhino;
             }
         }
 

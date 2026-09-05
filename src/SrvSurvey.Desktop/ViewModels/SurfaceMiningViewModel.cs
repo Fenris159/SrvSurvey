@@ -68,8 +68,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 ? cargo.Count : status?.Cargo ?? 0;
             cargoUsed = double.IsFinite(count) ? Math.Max(0, count) : 0;
             navigation = surfaceMarkers ?? [];
-            isRhino = string.Equals(srvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
-            isRhinoParked = string.Equals(parkedSrvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
+            isRhino = EliteSrvTypes.IsRhino(srvType);
+            isRhinoParked = EliteSrvTypes.IsRhino(parkedSrvType);
             var body = snapshot.Bodies.FirstOrDefault(candidate => string.Equals(
                 candidate.Name, status?.BodyName, StringComparison.OrdinalIgnoreCase));
             var next = session is not null && body is not null && status?.PlanetRadius is > 0

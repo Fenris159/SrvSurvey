@@ -890,11 +890,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public EliteStatus? CurrentStatus => status;
 
     public bool IsRhinoActive => status?.InSrv == true
-        && string.Equals(activeSrvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
+        && EliteSrvTypes.IsRhino(activeSrvType);
 
     public bool IsRhinoSurfaceContext => IsRhinoActive
         || status?.OnFoot == true
-            && string.Equals(parkedSrvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
+            && EliteSrvTypes.IsRhino(parkedSrvType);
 
     internal OverlayGameMode CurrentOverlayGameMode => ResolveGameMode();
 

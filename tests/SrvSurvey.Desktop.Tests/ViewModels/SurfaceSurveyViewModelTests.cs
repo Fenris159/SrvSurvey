@@ -47,6 +47,39 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Assert.Empty(mining.Resources);
     }
 
+    [Fact]
+    public async Task ShipBoardingClearsPersistedRigsAndPreservesSurveyBookmarks()
+    {
+        var (surface, survey, surveyStore) = CreateViewModel();
+        using var disposable = surface;
+        var miningStore = new SystemSurfaceStore(Path.Combine(temporaryDirectory, "mining"));
+        using var mining = new SurfaceMiningViewModel(miningStore);
+        await surveyStore.AddBookmarkAsync(BodyContext(), "helium", new SurfaceCoordinate(0, 2));
+        await surveyStore.AddBookmarkAsync(BodyContext(), Genus, new SurfaceCoordinate(0, 3));
+        var status = Status(StatusFlags.InSrv);
+        ApplySurveyContext(survey, status, "mev_rhino");
+        await surface.ApplyUpdateAsync(Session(), [], status, ExobiologySnapshot.Empty);
+        await mining.ApplyUpdateAsync(Session(), survey.Snapshot, status, "mev_rhino",
+            surfaceMarkers: surface.RadarMarkers);
+        for (var number = 1; number <= 6; number++)
+        {
+            Assert.True(await mining.ToggleRigAsync(number));
+        }
+
+        Assert.True(await mining.ClearRigsOnShipBoardingAsync(
+            [Event("""{"event":"DockSRV"}""")], "F123"));
+
+        var savedRigs = await miningStore.LoadBodyAsync(BodyContext());
+        Assert.NotNull(savedRigs.Snapshot);
+        Assert.Empty(savedRigs.Snapshot.Bookmarks);
+        var savedSurvey = await surveyStore.LoadBodyAsync(BodyContext());
+        Assert.NotNull(savedSurvey.Snapshot);
+        Assert.Equal(2, savedSurvey.Snapshot.Bookmarks.Count);
+        Assert.Equal(new SurfaceCoordinate(0, 2), Assert.Single(savedSurvey.Snapshot.Bookmarks["helium"]));
+        Assert.Equal(new SurfaceCoordinate(0, 3), Assert.Single(savedSurvey.Snapshot.Bookmarks[Genus]));
+        Assert.Equal("helium", Assert.Single(mining.Resources).Name);
+    }
+
     [Theory]
     [InlineData(499, 500, 500, false)]
     [InlineData(500, 500, 500, true)]

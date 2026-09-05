@@ -196,6 +196,47 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.Equal(1000, savedReward.Value!.GetValue<long>());
     }
 
+    [Theory]
+    [InlineData(long.MaxValue, 1)]
+    [InlineData(long.MaxValue - 1, 1)]
+    [InlineData(long.MaxValue - 1, 2)]
+    public async Task DuplicateExplorationRewardsSaturateOnLoadAndSave(long first, long second)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var store = new CommanderProfileStore(temporaryDirectory);
+        var path = store.GetProfilePath("F123", isOdyssey: true);
+        var root = new JsonObject
+        {
+            ["fid"] = "F123",
+            ["explRewardsBySystem"] = new JsonObject
+            {
+                ["Alpha"] = first,
+                ["alpha"] = second,
+            },
+        };
+        await File.WriteAllTextAsync(path, root.ToJsonString());
+
+        var loaded = await store.LoadAsync("F123", isOdyssey: true);
+        Assert.NotNull(loaded.Data);
+        Assert.Equal(long.MaxValue, Assert.Single(
+            loaded.Data.Exploration.EstimatedRewardsBySystem!).Value);
+
+        var rewards = new Dictionary<string, long>(StringComparer.Ordinal)
+        {
+            ["Alpha"] = first,
+            [" alpha "] = second,
+        };
+        await store.SaveExplorationAsync("F123", "Drew", isOdyssey: true,
+            new ExplorationSnapshot(0, 0, 0, 0, 0, 0, rewards));
+        var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Equal(long.MaxValue, Assert.Single(
+            saved["explRewardsBySystem"]!.AsObject()).Value!.GetValue<long>());
+        var reloaded = await store.LoadAsync("F123", isOdyssey: true);
+        Assert.NotNull(reloaded.Data);
+        Assert.Equal(long.MaxValue, Assert.Single(
+            reloaded.Data.Exploration.EstimatedRewardsBySystem!).Value);
+    }
+
     [Fact]
     public async Task SaveRefusesToOverwriteMalformedProfile()
     {

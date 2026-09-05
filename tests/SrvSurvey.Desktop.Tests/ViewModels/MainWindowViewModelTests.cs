@@ -604,6 +604,50 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    [Theory]
+    [InlineData("3.8.0.0")]
+    [InlineData("4.1.0.0")]
+    [InlineData("")]
+    public async Task UnknownGalaxyPreservesPublisherVersionFallback(string gameVersion)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-unknown-galaxy-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(Path.Combine(journals, "Journal.2026-09-05T120000.01.log"),
+                $$"""
+                {"timestamp":"2026-09-05T12:00:00Z","event":"Fileheader","gameversion":"{{gameVersion}}"}
+                {"timestamp":"2026-09-05T12:00:01Z","event":"LoadGame","Commander":"Test Cmdr","FID":"F123"}
+                {"timestamp":"2026-09-05T12:00:02Z","event":"Location","StarSystem":"Sol","SystemAddress":123,"StarPos":[0,0,0]}
+
+                """);
+            var paths = new AppDataPaths(Path.Combine(root, "config"),
+                Path.Combine(root, "data"), Path.Combine(root, "cache"), []);
+            var inara = new RecordingInaraPublisher();
+            var edsm = new RecordingEdsmPublisher();
+            using var viewModel = MainWindowViewModelTestBuilder.Create(journals,
+                builder => builder.WithAppDataPaths(paths)
+                    .WithInaraPublisher(inara).WithEdsmPublisher(edsm));
+
+            await viewModel.RefreshAsync();
+
+            var inaraUpdate = Assert.Single(inara.Calls);
+            var edsmUpdate = Assert.Single(edsm.Calls);
+            Assert.False(inaraUpdate.Options.IsOdyssey);
+            Assert.False(edsmUpdate.Options.IsOdyssey);
+            Assert.Equal(gameVersion, inaraUpdate.Options.GameVersion ?? "");
+            Assert.Equal(gameVersion, edsmUpdate.Options.GameVersion ?? "");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     [Fact]
     public async Task InaraReceivesCommanderProfileAndMultiboxSafetyContext()
     {

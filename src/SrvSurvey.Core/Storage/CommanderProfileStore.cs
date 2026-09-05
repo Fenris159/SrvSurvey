@@ -442,7 +442,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             }
 
             var systemName = entry.Key.Trim();
-            result[systemName] = result.GetValueOrDefault(systemName) + reward;
+            result[systemName] = AddRewardsClamped(result.GetValueOrDefault(systemName), reward);
         }
 
         return result.Count == 0 ? null : result;
@@ -466,7 +466,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         {
             var systemName = entry.Key.Trim();
             normalizedRewards[systemName] =
-                normalizedRewards.GetValueOrDefault(systemName) + entry.Value;
+                AddRewardsClamped(normalizedRewards.GetValueOrDefault(systemName), entry.Value);
         }
 
         var rewardsBySystem = new JsonObject();
@@ -481,6 +481,9 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             root[ExplorationRewardsBySystemProperty] = rewardsBySystem;
         }
     }
+
+    private static long AddRewardsClamped(long total, long reward) =>
+        total > long.MaxValue - reward ? long.MaxValue : total + reward;
 
     private static SphereLimitSnapshot ReadSphereLimit(JsonObject root)
     {
