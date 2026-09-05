@@ -15,6 +15,10 @@ your ship**, enabled by default and saved between sessions. Turn it off to keep
 rig markers after boarding. Sending `---` in game chat clears both surface
 bookmarks and mining rigs on the current body, regardless of this setting.
 
+Guides now has a dedicated **Chat Commands** chapter, grouped by activity.
+It lists command syntax, examples, prerequisites, bookmark/rig clearing behavior,
+Guardian survey and alignment commands, settlement tools, and desktop utilities.
+
 This candidate retains the RC43 features below: survey overlays while
 supercruising above a planet and reconciliation of
 estimated exploration rewards as system data is sold. It also corrects Live

@@ -2,6 +2,10 @@
 
 Current release candidate version: **2.1.3.0-rc.44**
 
+In-app **Guides > Chat Commands** provides an activity-by-activity reference for
+surface bookmarks, mining, exobiology, ground targets, Guardian surveys, settlement
+tools, and application utilities.
+
 This build of SrvSurvey is a cross-platform version of the Elite Dangerous companion application
 for Windows and now Linux. It reads the game's journal and auxiliary files to drive
 exploration, exobiology, surface mining, travel, Guardian, settlement, combat, quest,
