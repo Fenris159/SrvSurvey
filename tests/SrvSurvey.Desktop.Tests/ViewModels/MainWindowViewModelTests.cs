@@ -2618,8 +2618,11 @@ public sealed class MainWindowViewModelTests
         }
     }
 
-    [Fact]
-    public async Task ExplorationUsesImportedTotalsThenPersistsNewEventsAndReset()
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task ExplorationUsesImportedTotalsThenPersistsNewEventsAndReset(bool isLive, bool hasOdyssey)
     {
         var root = Path.Combine(
             Path.GetTempPath(),
@@ -2635,14 +2638,15 @@ public sealed class MainWindowViewModelTests
                 "Journal.2026-07-24T100000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                $$"""{"timestamp":"2026-07-24T10:00:00Z","event":"Fileheader","Odyssey":{{(isLive ? "true" : "false")}}}""" + "\n"
                     + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + $$"""{"timestamp":"2026-07-24T10:00:01Z","event":"LoadGame","Commander":"Drew","FID":"F123","Odyssey":{{(hasOdyssey ? "true" : "false")}}}""" + "\n"
                     + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"StartJump\",\"JumpType\":\"Hyperspace\"}\n");
             var store = new CommanderProfileStore(profile);
             await store.SaveExplorationAsync(
                 "F123",
                 "Drew",
-                isOdyssey: true,
+                isOdyssey: isLive,
                 new ExplorationSnapshot(
                     1000,
                     100,
@@ -2676,7 +2680,7 @@ public sealed class MainWindowViewModelTests
             await viewModel.RefreshAsync();
 
             Assert.Equal("600 CR", viewModel.EstimatedExplorationValue);
-            var saved = await store.LoadAsync("F123", isOdyssey: true);
+            var saved = await store.LoadAsync("F123", isOdyssey: isLive);
             Assert.Equal(600, saved.Data!.Exploration.EstimatedRewards);
             Assert.Null(saved.Data.Exploration.EstimatedRewardsBySystem);
 
@@ -2688,7 +2692,7 @@ public sealed class MainWindowViewModelTests
 
             Assert.Equal("11", viewModel.ExplorationJumps);
             Assert.Equal("105.2 ly", viewModel.ExplorationDistance);
-            saved = await store.LoadAsync("F123", isOdyssey: true);
+            saved = await store.LoadAsync("F123", isOdyssey: isLive);
             Assert.Equal(11, saved.Data!.Exploration.JumpCount);
             Assert.Equal(105.25, saved.Data.Exploration.DistanceTravelled);
 
@@ -2698,7 +2702,7 @@ public sealed class MainWindowViewModelTests
 
             Assert.False(viewModel.IsResetExplorationPending);
             Assert.Equal("0", viewModel.ExplorationJumps);
-            saved = await store.LoadAsync("F123", isOdyssey: true);
+            saved = await store.LoadAsync("F123", isOdyssey: isLive);
             Assert.Equal(ExplorationSnapshot.Empty, saved.Data!.Exploration);
         }
         finally

@@ -8,6 +8,50 @@ namespace SrvSurvey.Core.Tests.Network;
 
 public sealed class EddnPublisherTests
 {
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("{\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\"}", null)]
+    [InlineData("{\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"Odyssey\":false,\"Horizons\":false}", false)]
+    public async Task ExpansionFlagsComeFromLatestLoadGameRatherThanFileheader(
+        string? loadGame,
+        bool? expectedExpansion)
+    {
+        var requests = new List<RecordedRequest>();
+        using var publisher = CreatePublisher(requests);
+        var subsequentEvents = new List<JournalEventEnvelope>
+        {
+            Event("""{"event":"Fileheader","gameversion":"4.1.2.3","build":"r123/r0 ","Odyssey":true,"Horizons":true}"""),
+        };
+        if (loadGame is not null)
+        {
+            subsequentEvents.Add(Event(loadGame));
+        }
+
+        await BootstrapAsync(publisher, subsequentEvents.ToArray());
+        await publisher.ApplyAsync(new EddnApplyRequest
+        {
+            JournalEvents = [CodexEvent("2026-07-25T12:01:00Z")],
+            Enabled = true,
+            CommanderName = "Test Cmdr",
+            FrontierId = "F123",
+            GameVersion = "4.1.2.3",
+            GameBuild = "r123/r0 ",
+            AllowPublishing = true,
+        });
+        await publisher.ProcessPendingAsync();
+
+        using var json = JsonDocument.Parse(Assert.Single(requests).Content);
+        var message = json.RootElement.GetProperty("message");
+        foreach (var name in new[] { "odyssey", "horizons" })
+        {
+            Assert.Equal(expectedExpansion.HasValue, message.TryGetProperty(name, out var value));
+            if (expectedExpansion.HasValue)
+            {
+                Assert.Equal(expectedExpansion.Value, value.GetBoolean());
+            }
+        }
+    }
+
     [Fact]
     public async Task BootstrapBuildsContextAndLiveSchemasPublishThroughLiveGateway()
     {

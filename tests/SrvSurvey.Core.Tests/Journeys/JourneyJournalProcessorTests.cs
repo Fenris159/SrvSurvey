@@ -19,12 +19,16 @@ public sealed class JourneyJournalProcessorTests
             7_252_500),
     ]);
 
-    [Fact]
-    public void TracksLegacyJourneyEventsAndCorrectMappingReward()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TracksLegacyJourneyEventsAndCorrectMappingReward(bool hasOdyssey)
     {
         var processor = new JourneyJournalProcessor(CreateJourney(), Catalog, true);
         var events = new[]
         {
+            Parse("""{"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}"""),
+            Parse($$"""{"timestamp":"2026-07-01T00:00:01Z","event":"LoadGame","Odyssey":{{(hasOdyssey ? "true" : "false")}}}"""),
             Parse("""{"timestamp":"2026-07-01T00:00:01Z","event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}"""),
             Parse("""{"timestamp":"2026-07-01T00:00:02Z","event":"FSSDiscoveryScan","BodyCount":2}"""),
             Parse("""{"timestamp":"2026-07-01T00:00:03Z","event":"Scan","SystemAddress":42,"BodyID":0,"StarType":"G","StellarMass":1,"WasDiscovered":false}"""),
@@ -47,7 +51,7 @@ public sealed class JourneyJournalProcessorTests
 
         var replay = processor.ApplyCatchUp(events);
 
-        Assert.Equal(events.Length, replay.ProcessedEventCount);
+        Assert.Equal(events.Length - 1, replay.ProcessedEventCount);
         Assert.Equal(DateTimeOffset.Parse("2026-07-01T00:00:18Z"), replay.Journey.Watermark);
         Assert.Equal(2, replay.Journey.VisitedSystems.Count);
         var sol = replay.Journey.VisitedSystems[0];
@@ -98,8 +102,10 @@ public sealed class JourneyJournalProcessorTests
         Assert.Equal("Achenar", replay.Journey.CurrentSystem!.StarSystem.Name);
     }
 
-    [Fact]
-    public void CatchUpPrimesOldScanForLaterMappingWithoutRecounting()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CatchUpPrimesOldScanForLaterMappingWithoutRecounting(bool hasOdyssey)
     {
         var scanReward = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
@@ -131,6 +137,7 @@ public sealed class JourneyJournalProcessorTests
         var result = processor.ApplyCatchUp(
         [
             Parse("""{"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}"""),
+            Parse($$"""{"timestamp":"2026-07-01T00:00:01Z","event":"LoadGame","Odyssey":{{(hasOdyssey ? "true" : "false")}}}"""),
             Parse("""{"timestamp":"2026-07-01T00:01:00Z","event":"Scan","SystemAddress":42,"BodyID":4,"PlanetClass":"Water world","TerraformState":"Terraformable","MassEM":1.2,"WasDiscovered":false,"WasMapped":false}"""),
             Parse("""{"timestamp":"2026-07-01T00:02:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyID":4,"ProbesUsed":4,"EfficiencyTarget":6}"""),
         ]);
@@ -149,7 +156,7 @@ public sealed class JourneyJournalProcessorTests
                 WithEfficiencyBonus = true
             });
         Assert.Equal(1, result.ProcessedEventCount);
-        Assert.Equal(2, result.IgnoredEventCount);
+        Assert.Equal(3, result.IgnoredEventCount);
         Assert.Equal(1, counts.BodyScans);
         Assert.Equal(1, counts.DetailedSurfaceScans);
         Assert.Equal(mappedReward, counts.ExplorationRewards);

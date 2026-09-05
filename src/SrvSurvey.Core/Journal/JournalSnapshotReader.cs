@@ -140,7 +140,7 @@ public static class JournalSnapshotReader
     private static bool HasBootstrapIdentity(JournalSnapshot snapshot)
     {
         return !string.IsNullOrWhiteSpace(snapshot.GameVersion)
-            && snapshot.IsOdyssey is not null
+            && snapshot.IsLegacy is not null
             && !string.IsNullOrWhiteSpace(snapshot.CommanderName)
             && !string.IsNullOrWhiteSpace(snapshot.FrontierId)
             && !string.IsNullOrWhiteSpace(snapshot.SystemName)

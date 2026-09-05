@@ -96,7 +96,7 @@ public sealed class JourneyJournalProcessor
 
     private void PrimeEvent(JournalEventEnvelope journalEvent)
     {
-        if (journalEvent.EventName is "Fileheader" or "LoadGame")
+        if (journalEvent.EventName == "Fileheader")
         {
             isOdyssey = GetBoolean(journalEvent.Payload, "Odyssey") ?? isOdyssey;
         }
@@ -112,7 +112,6 @@ public sealed class JourneyJournalProcessor
         switch (journalEvent.EventName)
         {
             case "Fileheader":
-            case "LoadGame":
                 isOdyssey = GetBoolean(root, "Odyssey") ?? isOdyssey;
                 break;
 

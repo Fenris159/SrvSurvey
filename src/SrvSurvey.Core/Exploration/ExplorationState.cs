@@ -36,8 +36,11 @@ public sealed class ExplorationState
         switch (journalEvent.EventName)
         {
             case "Fileheader":
-            case "LoadGame":
                 isOdyssey = GetBoolean(root, "Odyssey") ?? isOdyssey;
+                return true;
+
+            case "LoadGame":
+                // Expansion ownership does not change Live galaxy scan rewards.
                 return true;
 
             case "StartJump":

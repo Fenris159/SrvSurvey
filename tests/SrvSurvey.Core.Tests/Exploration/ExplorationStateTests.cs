@@ -5,11 +5,14 @@ namespace SrvSurvey.Core.Tests.Exploration;
 
 public sealed class ExplorationStateTests
 {
-    [Fact]
-    public void ApplyTracksLegacyCountersAndRewards()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ApplyTracksLegacyCountersAndRewards(bool hasOdyssey)
     {
         var state = new ExplorationState();
         state.Apply(Parse("""{"event":"Fileheader","Odyssey":true}"""));
+        state.Apply(Parse($$"""{"event":"LoadGame","Odyssey":{{(hasOdyssey ? "true" : "false")}}}"""));
         state.Apply(Parse("""{"event":"StartJump","JumpType":"Supercruise"}"""));
         state.Apply(Parse("""{"event":"StartJump","JumpType":"Hyperspace"}"""));
         state.Apply(Parse("""{"event":"FSDJump","JumpDist":12.345}"""));

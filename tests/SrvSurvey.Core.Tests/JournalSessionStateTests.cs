@@ -5,6 +5,50 @@ namespace SrvSurvey.Core.Tests;
 
 public sealed class JournalSessionStateTests
 {
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public void JournalGalaxyIsIndependentOfLoadedExpansions(bool isLive, bool hasOdyssey)
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse($$"""{"event":"Fileheader","Odyssey":{{(isLive ? "true" : "false")}}}"""));
+        Assert.Equal(!isLive, state.IsLegacy);
+        Assert.Null(state.IsOdyssey);
+        Assert.Null(state.IsHorizons);
+
+        state.Apply(Parse($$"""{"event":"LoadGame","Commander":"Drew","FID":"F123","Odyssey":{{(hasOdyssey ? "true" : "false")}},"Horizons":true}"""));
+        var snapshot = state.CreateSnapshot("Journal.fixture.log");
+        Assert.Equal(!isLive, snapshot.IsLegacy);
+        Assert.Equal(hasOdyssey, snapshot.IsOdyssey);
+        Assert.True(snapshot.IsHorizons);
+
+        state.Apply(Parse("""{"event":"LoadGame","Commander":"Drew","FID":"F123"}"""));
+        Assert.Equal(!isLive, state.IsLegacy);
+        Assert.Null(state.IsOdyssey);
+        Assert.Null(state.IsHorizons);
+    }
+
+    [Fact]
+    public void NewFileheaderClearsPreviousExpansionFlags()
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse("""{"event":"Fileheader","Odyssey":true}"""));
+        state.Apply(Parse("""{"event":"LoadGame","Odyssey":true,"Horizons":true}"""));
+
+        state.Apply(Parse("""{"event":"Fileheader","Odyssey":false}"""));
+        var snapshot = state.CreateSnapshot("Journal.next.log");
+        Assert.True(snapshot.IsLegacy);
+        Assert.Null(snapshot.IsOdyssey);
+        Assert.Null(snapshot.IsHorizons);
+
+        state.Apply(Parse("""{"event":"Fileheader"}"""));
+        state.Apply(Parse("""{"event":"LoadGame","Odyssey":true,"Horizons":true}"""));
+        Assert.Null(state.IsLegacy);
+        Assert.True(state.IsOdyssey);
+        Assert.True(state.IsHorizons);
+    }
+
     [Fact]
     public void ApplyBuildsStateIncrementallyAndObservesUnknownEvents()
     {

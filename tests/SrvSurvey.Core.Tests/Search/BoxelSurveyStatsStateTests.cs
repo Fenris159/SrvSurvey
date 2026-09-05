@@ -400,6 +400,25 @@ public sealed class BoxelSurveyStatsStateTests
         Assert.True(body.CurrentValue > 0);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void LoadGameExpansionDoesNotChangeGalaxyRewards(bool isLive)
+    {
+        var state = new BoxelSurveyStatsState();
+        state.Apply(Parse($$"""{"event":"Fileheader","Odyssey":{{isLive.ToString().ToLowerInvariant()}}}"""));
+        Jump(state, SystemA, SystemAAddress);
+        ScanPlanet(state, SystemAAddress, 1, "Rocky body", mass: 0.2, terraformable: true);
+        Assert.True(state.TryGet(Prefix(SystemA), out var expected));
+
+        state.Apply(Parse($$"""{"event":"LoadGame","Odyssey":{{(!isLive).ToString().ToLowerInvariant()}}}"""));
+        state.Apply(Parse($$"""{"event":"SAAScanComplete","SystemAddress":{{SystemAAddress}},"BodyID":1,"ProbesUsed":4,"EfficiencyTarget":6}"""));
+
+        Assert.True(state.TryGet(Prefix(SystemA), out var actual));
+        Assert.Equal(expected.MappedPotentialValue, actual.MappedPotentialValue);
+        Assert.Equal(expected.MappedPotentialValue, actual.CurrentValue);
+    }
+
     [Fact]
     public void OdysseyDefaultsTrueAndFileheaderApplies()
     {

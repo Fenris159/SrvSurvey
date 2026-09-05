@@ -14,7 +14,13 @@ public sealed class JournalSessionState
 
     public string? GameBuild { get; private set; }
 
+    /// <summary>Journal galaxy from Fileheader; independent of expansion ownership.</summary>
+    public bool? IsLegacy { get; private set; }
+
+    /// <summary>Odyssey expansion flag from the latest LoadGame.</summary>
     public bool? IsOdyssey { get; private set; }
+
+    public bool? IsHorizons { get; private set; }
 
     public string? CommanderName { get; private set; }
 
@@ -79,7 +85,11 @@ public sealed class JournalSessionState
                 ResetVehicleSessionState();
                 GameVersion = GetString(root, "gameversion") ?? GameVersion;
                 GameBuild = GetString(root, "build") ?? GameBuild;
-                IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
+                IsLegacy = GetBoolean(root, "Odyssey") is { } isLive
+                    ? !isLive
+                    : null;
+                IsOdyssey = null;
+                IsHorizons = null;
                 IsShutdown = false;
                 // Elite creates the journal before LoadGame while it is still
                 // in the initial front end, but does not consistently emit a
@@ -310,7 +320,8 @@ public sealed class JournalSessionState
         GameMode = GetString(root, nameof(GameMode)) ?? GameMode;
         GameVersion = GetString(root, "gameversion") ?? GameVersion;
         GameBuild = GetString(root, "build") ?? GameBuild;
-        IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
+        IsOdyssey = GetBoolean(root, "Odyssey");
+        IsHorizons = GetBoolean(root, "Horizons");
         ShipType = loadedShipType ?? ShipType;
         var loadedShipId = GetInt64(root, ShipIdProperty);
         ShipId = loadedShipId ?? ShipId;
@@ -485,7 +496,11 @@ public sealed class JournalSessionState
             LastEventTimestamp,
             ValidEventCount,
             RecognizedEventCount,
-            malformedLineCount);
+            malformedLineCount)
+        {
+            IsLegacy = IsLegacy,
+            IsHorizons = IsHorizons,
+        };
     }
 
     private static string? GetString(JsonElement root, string propertyName)

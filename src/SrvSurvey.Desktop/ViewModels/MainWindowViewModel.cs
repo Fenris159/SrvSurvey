@@ -2670,7 +2670,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         var initializedJourney = await Journey.UpdateContextAsync(
             journalState.FrontierId,
             journalState.CommanderName,
-            journalState.IsOdyssey ?? true,
+            journalState.IsLegacy != true,
             journalState.SystemName,
             journalState.SystemAddress);
         if (!initializedJourney)
@@ -3338,7 +3338,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                         activeProfileFrontierId
                             ?? journalState.FrontierId,
                         journalState.GameVersion,
-                        journalState.IsOdyssey ?? true)),
+                        journalState.IsLegacy == false)),
                 CancellationToken.None);
             Inara.ReportPublicationResult(inaraResult);
             foreach (var warning in inaraResult.Warnings)
@@ -3373,7 +3373,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                             ?? journalState.FrontierId,
                         journalState.GameVersion,
                         journalState.GameBuild,
-                        journalState.IsOdyssey ?? true)),
+                        journalState.IsLegacy == false)),
                 CancellationToken.None);
             Edsm.ReportPublicationResult(edsmResult);
             foreach (var warning in edsmResult.Warnings)
@@ -3563,7 +3563,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             return false;
         }
 
-        var isOdyssey = journalState.IsOdyssey ?? true;
+        var isOdyssey = journalState.IsLegacy != true;
         if (string.Equals(
                 activeProfileFrontierId,
                 journalState.FrontierId,

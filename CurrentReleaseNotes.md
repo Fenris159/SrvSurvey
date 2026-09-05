@@ -1,7 +1,8 @@
 # SrvSurvey-XP 2.1.3.0-rc.43
 
 RC43 restores survey overlays while supercruising above a planet and reconciles
-estimated exploration rewards as system data is sold. It retains the RC42
+estimated exploration rewards as system data is sold. It also corrects Live
+Horizons profile selection and reward estimates. It retains the RC42
 Guardian survey workspace, map alignment, and live guidance improvements,
 along with EDSM account synchronization, EDDN production sharing, quieter
 upload reporting, and SDL3 controller shortcut support on Windows and Linux.
@@ -23,6 +24,15 @@ upload reporting, and SDL3 controller shortcut support on Windows and Linux.
   and clears the per-system ledger with the existing exploration reset.
 - Keeps per-system reward data at the end of the Commander profile after every
   settings save, making the file easier to inspect without changing its values.
+
+## Live Horizons journal handling
+
+- Separates the Live or Legacy galaxy from expansion ownership so a Live
+  Horizons session keeps its Live Commander profile, journey history, and
+  exploration, system, and boxel reward estimates.
+- Reads EDDN expansion flags from the latest loaded session, preserves explicit
+  `false` values, and omits unknown values instead of carrying over flags from
+  a journal header or earlier session.
 
 ## Guardian survey workspace and authoring
 

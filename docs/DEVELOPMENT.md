@@ -60,6 +60,18 @@ collection. Focused data and screenshot tests lock the absorbed behavior; the
 Guardian backend contract is recorded in
 [`GUARDIAN_SURVEY_PARITY.md`](GUARDIAN_SURVEY_PARITY.md).
 
+An additional delta review on 2026-09-05 covers upstream
+[#1051](https://github.com/njthomson/SrvSurvey/pull/1051), merged as
+`347846175ad531b68d0ce797a08d375483cefc10`. The port now keeps Fileheader
+galaxy classification separate from LoadGame expansion flags throughout
+profile selection, journey context, scan rewards, and network options.
+EDDN retains nullable expansion flags and sends known `false` values; it does
+not copy the legacy patch's truthiness filter. Inara already guards absent
+commander identity, excludes Legacy uploads, and ignores object-valued
+`Statistics.Multicrew`. Regression coverage includes Live Horizons profiles,
+exploration/journey/system/boxel rewards, and EDDN session flag resets. This
+targeted review does not advance the broader upstream baseline above.
+
 Because this branch intentionally excludes the previous application source,
 future upstream commits must receive an explicit delta review rather than being
 assumed covered by the standalone journal, network, and overlay inventories.
