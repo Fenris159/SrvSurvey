@@ -24,6 +24,9 @@ changes are in `c9e82b8db20eebece016735b1b6e8f281229eca6`.
 - Rig bookmarks are stored under the application's `mining` data directory,
   using the existing Commander/system/body persistence format. They are
   independent of biological bookmarks and survive restart.
+  Returning to the own ship through Embark or DockSRV clears the mining body's
+  saved rigs before live body context can disappear. Rhino re-entry, taxi, and
+  multicrew boarding retain them; persisted bootstrap events are not reapplied.
 - Rhino identity is retained across launch, re-embark, and LoadGame, with parked
   identity tracked separately from the active vehicle. Passive mining requires
   a Rhino on a planetary surface or an on-foot player with a parked Rhino marker.

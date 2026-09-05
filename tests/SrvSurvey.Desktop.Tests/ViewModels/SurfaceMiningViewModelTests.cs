@@ -129,6 +129,58 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.Equal(13, mining.CargoUsed);
     }
 
+    [Theory]
+    [InlineData("""{"event":"Embark","SRV":false,"Taxi":false,"Multicrew":false}""", true)]
+    [InlineData("""{"event":"DockSRV","SRVType":"mev_rhino"}""", true)]
+    [InlineData("""{"event":"Embark","SRV":true}""", false)]
+    [InlineData("""{"event":"Embark","SRV":false,"Taxi":true}""", false)]
+    [InlineData("""{"event":"Embark","SRV":false,"Multicrew":true}""", false)]
+    [InlineData("""{"event":"Embark"}""", false)]
+    [InlineData("""{"event":"Disembark","SRV":true}""", false)]
+    public async Task ReturningToOwnShipClearsEverySavedRig(string json, bool expectedCleared)
+    {
+        var store = new SystemSurfaceStore(root);
+        using var mining = new SurfaceMiningViewModel(store);
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        for (var number = 1; number <= 6; number++)
+        {
+            Assert.True(await mining.ToggleRigAsync(number));
+        }
+
+        Assert.True(JournalEventEnvelope.TryParse(json, out var boarding, out _));
+        Assert.Equal(expectedCleared, await mining.ClearRigsOnShipBoardingAsync([boarding!], Session.FrontierId));
+        // Re-entering the Rhino and reopening the store must not restore destroyed rigs.
+        using var reopened = new SurfaceMiningViewModel(store);
+        await reopened.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        Assert.Equal(expectedCleared ? 0 : 6, reopened.Rigs.Count(rig => rig.IsSet));
+    }
+
+    [Fact]
+    public async Task ShipBoardingCannotClearAnotherCommandersRigLocations()
+    {
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        await mining.ToggleRigAsync(1);
+        Assert.True(JournalEventEnvelope.TryParse("""{"event":"DockSRV"}""", out var boarding, out _));
+        Assert.False(await mining.ClearRigsOnShipBoardingAsync([boarding!], "F456"));
+        Assert.True(mining.Rigs[0].IsSet);
+    }
+
+    [Fact]
+    public async Task ShipBoardingClearsRigsWhenStatusLosesSurfaceContextFirst()
+    {
+        var store = new SystemSurfaceStore(root);
+        using var mining = new SurfaceMiningViewModel(store);
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        await mining.ToggleRigAsync(1);
+        await mining.ApplyUpdateAsync(null, Snapshot(), new EliteStatus(), null);
+        Assert.True(JournalEventEnvelope.TryParse("""{"event":"Embark","SRV":false}""", out var boarding, out _));
+        Assert.True(await mining.ClearRigsOnShipBoardingAsync([boarding!], Session.FrontierId));
+        using var reopened = new SurfaceMiningViewModel(store);
+        await reopened.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        Assert.All(reopened.Rigs, rig => Assert.False(rig.IsSet));
+    }
+
     private static EliteStatus Status() => new()
     {
         Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,

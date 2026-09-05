@@ -40,7 +40,7 @@ public static class GuideCatalog
                         [],
                         [
                             "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
-                            "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel and Search; Activities groups Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
+                            "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel and Search; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
                             "Diagnostics, Settings, Theme, and Guides remain in the utility area. The small overlay-settings button beside supported activities opens only that activity's overlay controls.",
                             "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
                             "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
@@ -210,8 +210,58 @@ public static class GuideCatalog
                         ]),
                 ]),
             Category(
-                "travel-search",
+                "surface-mining",
                 "05",
+                "Surface mining",
+                "Use the Rhino mining radar, rig key chords, vehicle guidance, and cargo display while working on a planetary surface.",
+                [
+                    Section(
+                        "Enable Surface mining",
+                        "The Mining workspace is reserved for future tools. Current mining guidance appears in the Surface mining overlay.",
+                        [
+                            "Expand Activities and select Mining. Use the overlay-settings button beside Mining to enable Surface mining and assign a show/hide shortcut if desired.",
+                            "Operate a Rhino on a planetary surface with journal and status tracking active. The overlay appears when the normal overlay display conditions are met.",
+                        ],
+                        [
+                            "Surface Survey and its mini tracker remain hidden while operating the Rhino or returning to its parked location on foot, even if the Mining panel is toggled off.",
+                            "Use the overlay position editor to move or resize the panel. Its colors follow the selected overlay theme, including Monochrome Companion.",
+                        ]),
+                    Section(
+                        "Rig tracking with key chords",
+                        "Alt+1 through Alt+6 toggle the six saved rig locations. Each numbered radar circle is paired with the matching rig chevron below the vehicle row.",
+                        [
+                            "While aboard the Rhino, hold Alt and press 1 to set Rig 1 at the deployment position. Release the keys after each chord.",
+                            "Press Alt+1 again to unset Rig 1: its radar circle disappears and its slot returns to NOT SET. Alt+2 through Alt+6 work the same way for their numbered rigs.",
+                            "To move an existing marker, clear it first, drive to the new position, and press its chord again to set it there.",
+                        ],
+                        [
+                            "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
+                            "Edit the six rig bindings in Settings > Input or in Mining's overlay settings. Both locations edit the same bindings, including any replacement keyboard or controller chords.",
+                            "Locations are saved for the current Commander and body separately from biology bookmarks. Placement accounts for the Rhino cockpit and deployment offsets and requires being aboard the Rhino.",
+                            "Returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
+                        ]),
+                    Section(
+                        "Rig circles and distance cues",
+                        "The radar shows 70-meter rig circles at the legacy mining zoom. Chevrons turn with your heading and show distance to each saved location.",
+                        [],
+                        [
+                            "COLLECT uses cyan when within 5 meters of a saved rig. TOO CLOSE uses red inside the 78-meter deployment exclusion distance. TRACKED means outside that distance; NOT SET means the slot has no saved location.",
+                            "Colors follow the selected theme, while the text labels keep their meaning. On foot, distances use your position without the Rhino cockpit offset.",
+                        ]),
+                    Section(
+                        "Ship, Rhino, and cargo",
+                        "Two vehicle columns sit above the rig chevrons, with cargo capacity below them.",
+                        [
+                            "Follow Ship for ship guidance. After disembarking, follow the Rhino chevron back to the parked vehicle.",
+                            "Re-enter the Rhino: its chevron becomes X to indicate untracked while aboard. Mining remains available during the walk back.",
+                        ],
+                        [
+                            "The cargo row shows occupied capacity out of 72. Rig-setting chords remain disabled on foot.",
+                        ]),
+                ]),
+            Category(
+                "travel-search",
+                "06",
                 "Travel and search",
                 "Set surface targets, record journeys, follow routes, and search the galaxy by sphere or nearby-system criteria.",
                 [
@@ -257,7 +307,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "boxel",
-                "06",
+                "07",
                 "Boxel",
                 "Understand procedural boxels, run bounded system surveys, navigate nested search trees, and preserve multiple research projects.",
                 [
@@ -354,7 +404,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "guardian",
-                "07",
+                "08",
                 "Guardian sites",
                 "Locate Guardian sites, align maps, survey points of interest, track Ram Tah progress, and share non-destructive survey packages.",
                 [
@@ -440,7 +490,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "quests",
-                "08",
+                "09",
                 "Quests",
                 "Follow communications, objectives, settlement routes, massacre progress, and optional developer-authored quest chapters.",
                 [
@@ -473,7 +523,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "colonisation",
-                "09",
+                "10",
                 "Colonization",
                 "Connect Raven Colonial, manage construction projects safely, plan cargo, repair completed build-site records, and reconcile system data.",
                 [
@@ -554,7 +604,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "overlays",
-                "10",
+                "11",
                 "Overlays and controls",
                 "Control when overlays appear, edit their positions safely, customize their independent palette, and configure keyboard or controller actions.",
                 [
@@ -616,7 +666,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "settings-migration",
-                "11",
+                "12",
                 "Settings and migration",
                 "Keep application and overlay appearance separate, import an original profile without corruption, and understand every network/privacy gate.",
                 [
@@ -726,7 +776,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "diagnostics",
-                "12",
+                "13",
                 "Diagnostics and troubleshooting",
                 "Inspect current inputs, application logs, journal events, updates, caches, crash reports, and safe recovery tools.",
                 [
@@ -775,7 +825,7 @@ public static class GuideCatalog
                 ]),
             Category(
                 "icons",
-                "13",
+                "14",
                 "Overlay icon glossary",
                 "A visual reference for route and body artwork, text symbols, biology reward PIPs, surface-radar markers, Guardian points, and human-settlement map icons.",
                 [

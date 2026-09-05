@@ -2,6 +2,7 @@
 
 Available in **SrvSurvey-XP 2.1.3.0-rc.43**. The Surface mining overlay provides
 Rhino rig locations, vehicle guidance, and cargo capacity during surface mining.
+The same workflow is covered inside the application under **Guides > Surface mining**.
 
 ## Setup
 
@@ -28,6 +29,10 @@ a replacement location. This records a location; it does not deploy a rig in-gam
 Rig locations are saved separately from biology bookmarks for the current
 Commander and body. Distance and direction update as the player moves.
 The placement calculation accounts for the Rhino's cockpit and deployment offsets.
+
+Returning to your own ship on foot or docking the Rhino automatically clears
+all six saved rigs, matching the game's destruction of deployed rigs. Re-entering
+the Rhino on foot keeps the markers. Taxi and multicrew boarding do not clear them.
 
 | Cue | Meaning |
 | --- | --- |

@@ -93,8 +93,9 @@ assumed covered by the standalone journal, network, and overlay inventories.
 ## Runtime verification
 
 RC43 local validation on 2026-09-05 passed the Release solution build with
-zero warnings/errors, formatting verification, and 3,222 tests (Core 1,423;
-Desktop 1,786; Replay Controller 13). Production-template previews were
+zero warnings/errors, formatting verification, and 3,233 tests (Core 1,423;
+Desktop 1,797; Replay Controller 13). Guide search and automatic rig cleanup
+on ship boarding are covered. Production-template previews were
 inspected for the mining layout and Monochrome Companion palette. This records
 automated and headless validation; the native checks below remain separate.
 

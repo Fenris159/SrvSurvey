@@ -3098,6 +3098,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             || exobiologyChanged
             || isManualRefresh)
         {
+            if (!skipPersistedBootstrapEvents)
+            {
+                // Clear the mining body's rigs before boarding can remove its live surface context.
+                await Mining.ClearRigsOnShipBoardingAsync(update.JournalEvents, journalState.FrontierId);
+            }
+
             await SurfaceSurvey.ApplyUpdateAsync(
                 surfaceSession,
                 update.JournalEvents,

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
@@ -12,6 +13,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private readonly SystemSurfaceStore store;
     private readonly SemaphoreSlim updateLock = new(1, 1);
     private SystemSurfaceContext? context;
+    private SystemSurfaceContext? lastMiningContext;
     private SystemSurfaceBodySnapshot? surface;
     private EliteStatus? status;
     private bool isRhino;
@@ -85,6 +87,11 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 }
             }
 
+            if (context is not null && (isRhino || isRhinoParked))
+            {
+                lastMiningContext = context;
+            }
+
             Recalculate();
         }
         finally
@@ -126,6 +133,62 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         {
             updateLock.Release();
         }
+    }
+
+    public async Task<bool> ClearRigsOnShipBoardingAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        string? frontierId)
+    {
+        if (!journalEvents.Any(IsOwnShipBoarding))
+        {
+            return false;
+        }
+
+        await updateLock.WaitAsync().ConfigureAwait(true);
+        try
+        {
+            var miningContext = lastMiningContext ?? context;
+            if (miningContext is null || !string.Equals(miningContext.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            await store.ClearBookmarksAsync(miningContext).ConfigureAwait(true);
+            if (context == miningContext)
+            {
+                surface = (await store.LoadBodyAsync(miningContext).ConfigureAwait(true)).Snapshot;
+            }
+
+            lastMiningContext = null;
+            StatusText = "Rig locations cleared after returning to your ship.";
+            Recalculate();
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException
+            or InvalidDataException or InvalidOperationException)
+        {
+            StatusText = "Rig locations could not be cleared: " + exception.Message;
+            Notify();
+            return false;
+        }
+        finally
+        {
+            updateLock.Release();
+        }
+    }
+
+    private static bool IsOwnShipBoarding(JournalEventEnvelope journalEvent)
+    {
+        var entry = journalEvent.Payload;
+        if (entry.TryGetProperty("Taxi", out var taxi) && taxi.ValueKind != JsonValueKind.False
+            || entry.TryGetProperty("Multicrew", out var multicrew) && multicrew.ValueKind != JsonValueKind.False)
+        {
+            return false;
+        }
+
+        return journalEvent.EventName == "DockSRV"
+            || journalEvent.EventName == "Embark"
+                && entry.TryGetProperty("SRV", out var srv) && srv.ValueKind == JsonValueKind.False;
     }
 
     private void Recalculate()

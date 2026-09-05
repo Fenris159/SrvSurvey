@@ -19,11 +19,15 @@ upload reporting, and SDL3 controller shortcut support on Windows and Linux.
   the Rhino cockpit and rig placement offsets.
 - Keeps mining guidance available while operating or walking back to a parked
   Rhino, suppressing Surface Survey and its mini tracker during that activity.
+- Automatically clears all saved rig locations when returning to your own
+  ship on foot or docking the Rhino; re-entering the Rhino keeps its markers.
 - Adds Mining under Activities with an overlay settings shortcut. The workspace
   is reserved for future mining tools; its settings provide the overlay toggle
   and editable visibility and rig shortcuts, shared with Input settings.
 
-See [Surface mining setup and controls](docs/SURFACE_MINING.md).
+The in-app **Guides > Surface mining** chapter explains rig key chords,
+distance cues, and vehicle tracking. Also see
+[Surface mining setup and controls](docs/SURFACE_MINING.md).
 
 ## Monochrome Companion overlays
 
