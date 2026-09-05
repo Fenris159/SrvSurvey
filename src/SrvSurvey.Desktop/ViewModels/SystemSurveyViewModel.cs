@@ -888,6 +888,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public EliteStatus? CurrentStatus => status;
 
+    public bool IsRhinoActive => status?.InSrv == true
+        && string.Equals(activeSrvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
+
     internal OverlayGameMode CurrentOverlayGameMode => ResolveGameMode();
 
     public ExobiologySnapshot CurrentExobiology => exobiology;
@@ -1601,6 +1604,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
         // Raise status/exobiology after Snapshot and RefreshDisplay so
         // listeners that also read Snapshot observe a consistent state.
+        OnPropertyChanged(nameof(IsRhinoActive));
         if (nextStatus is not null)
         {
             OnPropertyChanged(nameof(CurrentStatus));

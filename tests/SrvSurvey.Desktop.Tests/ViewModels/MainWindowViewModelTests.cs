@@ -24,12 +24,35 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MainWindowViewModelTests
 {
     [Fact]
+    public async Task MiningNavigationAndSettingsShareInputBindings()
+    {
+        using var viewModel = new MainWindowViewModel(
+            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "mining");
+        Assert.True(viewModel.IsMiningSelected);
+        Assert.True(viewModel.IsActivitiesNavigationExpanded);
+        var panel = Assert.Single(viewModel.OverlayPanelVisibility.ForCategory(OverlaySettingsCategory.Mining));
+        Assert.Equal("PlotSurfaceMining", panel.PlotterName);
+        Assert.Same(viewModel.InputSettings.Bindings.Single(binding =>
+            binding.Definition.OverlayPlotterName == "PlotSurfaceMining"), panel.Shortcut);
+        Assert.Equal(6, viewModel.InputSettings.MiningBindings.Count);
+        foreach (var binding in viewModel.InputSettings.MiningBindings)
+        {
+            Assert.Same(viewModel.InputSettings.Bindings.Single(candidate =>
+                candidate.Definition.Action == binding.Definition.Action), binding);
+        }
+
+        await viewModel.ShowProfileAsync();
+        Assert.False(viewModel.IsMiningSelected);
+    }
+
+    [Fact]
     public void NavigationContainsEveryImplementedSurface()
     {
         var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
-        Assert.Equal(13, viewModel.NavigationItems.Count);
+        Assert.Equal(14, viewModel.NavigationItems.Count);
         Assert.Equal(
             [
                 "Overview",
@@ -38,6 +61,7 @@ public sealed class MainWindowViewModelTests
                 "Travel",
                 "Boxel",
                 "Search",
+                "Mining",
                 "Guardian",
                 "Quests",
                 "Colonization",
@@ -53,6 +77,7 @@ public sealed class MainWindowViewModelTests
                 "exobiology",
                 "travel",
                 "boxel",
+                "mining",
                 "guardian",
                 "quests",
                 "colonisation",
@@ -77,7 +102,7 @@ public sealed class MainWindowViewModelTests
             ["Travel", "Search"],
             viewModel.NavigationWorkspaceItems.Select(item => item.Label));
         Assert.Equal(
-            ["Guardian", "Quests", "Colonization"],
+            ["Mining", "Guardian", "Quests", "Colonization"],
             viewModel.ActivityNavigationItems.Select(item => item.Label));
         Assert.Equal(
             ["Settings", "Theme", "Guides", "Diagnostics"],

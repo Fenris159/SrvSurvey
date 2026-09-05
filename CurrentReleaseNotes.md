@@ -2,10 +2,36 @@
 
 RC43 restores survey overlays while supercruising above a planet and reconciles
 estimated exploration rewards as system data is sold. It also corrects Live
-Horizons profile selection and reward estimates. It retains the RC42
+Horizons profile selection and reward estimates, adds Rhino surface mining
+guidance, and introduces the Monochrome Companion overlay preset. It retains the RC42
 Guardian survey workspace, map alignment, and live guidance improvements,
 along with EDSM account synchronization, EDDN production sharing, quieter
 upload reporting, and SDL3 controller shortcut support on Windows and Linux.
+
+## Rhino surface mining
+
+- Adds a theme-aware Surface mining overlay with a radar, saved rig circles,
+  ship guidance, six rig direction indicators, and a cargo capacity row.
+- Uses Alt+1 through Alt+6 to save or clear rig locations for the current
+  Commander and body. Collection and deployment-distance cues account for
+  the Rhino cockpit and rig placement offsets.
+- Shows mining guidance while operating the Rhino and suppresses Surface
+  Survey and its mini tracker until another vehicle is active.
+- Adds Mining under Activities with an overlay settings shortcut. The workspace
+  is reserved for future mining tools; its settings provide the overlay toggle
+  and editable visibility and rig shortcuts, shared with Input settings.
+
+## Monochrome Companion overlays
+
+- Adds a muted overlay preset to pair with the Monochrome dark application
+  theme, using champagne headings, soft gray text, and restrained status colors.
+- Keeps flight warnings unchanged and retains distinct pill, biology pip,
+  colonization commodity, and segmented jump-progress cues.
+
+## Colonization site compatibility
+
+- Recognizes demolished RavenColonial sites while keeping them out of the
+  planned-project picker.
 
 ## Supercruise survey overlays
 

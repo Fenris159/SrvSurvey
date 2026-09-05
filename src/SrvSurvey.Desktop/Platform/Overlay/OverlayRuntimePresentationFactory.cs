@@ -23,6 +23,7 @@ internal static class OverlayRuntimePresentationFactory
             or "PlotFSS"
             or "PlotFSSInfo"
             or "PlotGalMap"
+            or "PlotSurfaceMining"
             or "PlotGrounded"
             or "PlotGuardians"
             or "PlotGuardianStatus"
@@ -114,6 +115,7 @@ internal static class OverlayRuntimePresentationFactory
             "PlotFSS" => new LastFssBodyOverlayPresentation(),
             "PlotFSSInfo" => new FssInfoOverlayPresentation(),
             "PlotGalMap" => new GalaxyMapOverlayPresentation(),
+            "PlotSurfaceMining" => new SurfaceMiningOverlayPresentation(),
             "PlotGrounded" => new SurfaceSurveyOverlayPresentation(),
             "PlotGuardians" => new GuardianSiteOverlayPresentation(),
             "PlotGuardianStatus" => new GuardianStatusOverlayPresentation(),

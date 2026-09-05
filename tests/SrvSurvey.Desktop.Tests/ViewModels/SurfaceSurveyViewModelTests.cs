@@ -72,6 +72,27 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task RhinoExclusivelyOwnsSurfaceTrackingUntilVehicleChanges()
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        using var disposable = viewModel;
+        survey.AutoShowSurfaceRadar = true;
+        survey.AutoShowMiniTrack = true;
+        await store.AddBookmarkAsync(BodyContext(), "#1", new SurfaceCoordinate(0, 2));
+        await store.AddBookmarkAsync(BodyContext(), Genus, new SurfaceCoordinate(0, 3));
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        await viewModel.ApplyUpdateAsync(Session(), [], survey.CurrentStatus, ExobiologySnapshot.Empty);
+        Assert.True(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShowMiniTrack);
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv), "mev_rhino");
+        Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.ShouldShowMiniTrack);
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv), "testbuggy");
+        Assert.True(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShowMiniTrack);
+    }
+
+    [Fact]
     public async Task ClearAllTrackersRequiresBodyContext()
     {
         var (viewModel, _, _) = CreateViewModel();

@@ -177,6 +177,7 @@
       </ContentControl>
       <views:OverviewView IsVisible="{Binding IsOverviewSelected}" />
       <views:ExplorationView IsVisible="{Binding IsExplorationSelected}" />
+      <views:MiningView IsVisible="{Binding IsMiningSelected}" />
       <views:ExobiologyView IsVisible="{Binding IsExobiologySelected}" />
       <views:TravelView IsVisible="{Binding IsTravelSelected}" />
       <views:BoxelView IsVisible="{Binding IsBoxelSelected}" />

@@ -39,7 +39,7 @@ XWayland startup.
   production consumer and event-specific assertions.
 - Network coverage inventories all runtime surfaces and every `HttpClient`
   owner, including bounded streaming requirements.
-- Overlay coverage inventories all 28 supported overlay contracts and requires
+- Overlay coverage inventories 32 contracts, including 30 positionable panels, and requires
   production markup plus assertion evidence.
 - Profile import remains backup-first, hash-verified, staged, and recoverable.
   Compatibility code and tests are part of the converted product, not a build
@@ -71,6 +71,18 @@ commander identity, excludes Legacy uploads, and ignores object-valued
 `Statistics.Multicrew`. Regression coverage includes Live Horizons profiles,
 exploration/journey/system/boxel rewards, and EDDN session flag resets. This
 targeted review does not advance the broader upstream baseline above.
+
+A further delta review on 2026-09-05 covers upstream
+[#1055](https://github.com/njthomson/SrvSurvey/pull/1055), merged as
+`91e07f84b98f658fe662fe2d89cf44ff9ac59dce`. Rhino geometry and rig tracking
+are adapted into a dedicated, theme-aware Surface mining panel, with the
+existing Surface Survey panels suppressed while operating the Rhino.
+Demolished RavenColonial sites are recognized by the API model; the existing
+Plan-only project picker excludes them. Unknown Guardian sites already use
+nullable catalog/profile handling and site-type guidance in this port.
+Spansh Fleet Carrier routes are deliberately excluded from this delta because
+the port has its own implementation. Details and regression evidence are in
+[`RHINO_MINING_PARITY.md`](RHINO_MINING_PARITY.md).
 
 Because this branch intentionally excludes the previous application source,
 future upstream commits must receive an explicit delta review rather than being

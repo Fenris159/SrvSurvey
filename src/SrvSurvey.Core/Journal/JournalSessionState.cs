@@ -182,11 +182,10 @@ public sealed class JournalSessionState
             case "Embark" when GetBoolean(root, "SRV") == true:
                 var embarkedVehicleId = GetInt64(root, "ID");
                 if (embarkedVehicleId is { } embarkedId
-                    && srvTypesById.TryGetValue(embarkedId, out var embarkedSrvType)
-                    && EliteSrvTypes.IsNomad(embarkedSrvType))
+                    && srvTypesById.TryGetValue(embarkedId, out var embarkedSrvType))
                 {
-                    ActiveSrvType = EliteSrvTypes.Nomad;
-                    isNomadStatusConfirmationPending = true;
+                    ActiveSrvType = embarkedSrvType;
+                    isNomadStatusConfirmationPending = EliteSrvTypes.IsNomad(embarkedSrvType);
                 }
 
                 break;
@@ -327,6 +326,15 @@ public sealed class JournalSessionState
         ShipId = loadedShipId ?? ShipId;
         ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
         ShipIdent = GetString(root, nameof(ShipIdent)) ?? ShipIdent;
+        if (string.Equals(loadedShipType, "mev_rhino", StringComparison.OrdinalIgnoreCase))
+        {
+            ActiveSrvType = loadedShipType;
+            if (loadedShipId is { } rhinoId)
+            {
+                srvTypesById[rhinoId] = "mev_rhino";
+            }
+        }
+
         if (EliteSrvTypes.IsNomad(loadedShipType))
         {
             ActiveSrvType = EliteSrvTypes.Nomad;

@@ -866,6 +866,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     private bool IsEligibleStatus()
     {
         if (!survey.AutoShowSurfaceRadar
+            || survey.IsRhinoActive
             || surface is null
             || survey.CurrentStatus is not { } status
             || survey.ShouldSuppressForActiveBuildProjects
@@ -924,7 +925,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
 
     private bool IsMiniTrackStatusEligible()
     {
-        if (surface is null
+        if (survey.IsRhinoActive || surface is null
             || survey.CurrentStatus is not { } status
             || !status.HasLatitudeLongitude
             || survey.ShouldSuppressSurfaceNavigationForLandingGear)
@@ -986,6 +987,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.AutoShowSurfaceRadar)
+            or nameof(SystemSurveyViewModel.IsRhinoActive)
             or nameof(SystemSurveyViewModel.AutoShowMiniTrack)
             or nameof(SystemSurveyViewModel.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn)
             or nameof(SystemSurveyViewModel.SurfaceRadarSize)
@@ -1160,4 +1162,5 @@ public enum SurfaceRadarMarkerKind
     Ship,
     FormerShip,
     Srv,
+    MiningRig,
 }

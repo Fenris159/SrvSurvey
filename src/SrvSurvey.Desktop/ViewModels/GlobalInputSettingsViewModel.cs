@@ -60,6 +60,9 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
 
     public IReadOnlyList<InputBindingViewModel> Bindings { get; }
 
+    public IReadOnlyList<InputBindingViewModel> MiningBindings => Bindings.Where(binding =>
+        binding.Definition.Action is >= GlobalInputAction.MiningRig1 and <= GlobalInputAction.MiningRig6).ToArray();
+
     public ICommand ResetBindingsCommand { get; }
 
     public ICommand RefreshControllersCommand { get; }

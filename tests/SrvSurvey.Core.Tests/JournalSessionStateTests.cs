@@ -5,6 +5,22 @@ namespace SrvSurvey.Core.Tests;
 
 public sealed class JournalSessionStateTests
 {
+    [Fact]
+    public void RhinoIdentitySurvivesReembarkAndLoadGameButClearsOnDock()
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse("""{"event":"LaunchSRV","SRVType":"mev_rhino","ID":7}"""));
+        Assert.Equal("mev_rhino", state.ActiveSrvType);
+        state.Apply(Parse("""{"event":"Disembark","SRV":true,"ID":7}"""));
+        Assert.Null(state.ActiveSrvType);
+        state.Apply(Parse("""{"event":"Embark","SRV":true,"ID":7}"""));
+        Assert.Equal("mev_rhino", state.ActiveSrvType);
+        state.Apply(Parse("""{"event":"DockSRV","SRVType":"mev_rhino","ID":7}"""));
+        Assert.Null(state.ActiveSrvType);
+        state.Apply(Parse("""{"event":"LoadGame","Ship":"mev_rhino","ShipID":7}"""));
+        Assert.Equal("mev_rhino", state.ActiveSrvType);
+    }
+
     [Theory]
     [InlineData(true, true)]
     [InlineData(true, false)]

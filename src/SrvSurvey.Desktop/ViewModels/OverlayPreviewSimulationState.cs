@@ -132,6 +132,14 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Security", "Medium"),
                 Row("Economy", "Industrial | Refinery"),
                 Row("Points of interest", "2 stations | 1 settlement")),
+            "PlotSurfaceMining" => Content(
+                state.CurrentBody,
+                "Surface mining - Rhino",
+                "3 OF 6 RIGS TRACKED",
+                Row("Rig 1", "3 m | COLLECT"),
+                Row("Rig 2", "65 m | TOO CLOSE"),
+                Row("Rig 3", "170 m | TRACKED"),
+                Row("Cargo", "36 of 72", 50)),
             "PlotGrounded" => Content(
                 state.CurrentBody,
                 "Surface survey - heading 074 degrees",

@@ -6,11 +6,12 @@ namespace SrvSurvey.Desktop.Tests.Theming;
 public sealed class OverlayThemePresetCatalogTests
 {
     [Fact]
-    public void IncludesDefaultAndFiveExpandedRavenColonialPalettes()
+    public void IncludesDefaultMonochromeAndFiveExpandedRavenColonialPalettes()
     {
         Assert.Equal(
             [
                 "Default",
+                "Monochrome Companion",
                 "Nebula Cyan",
                 "Toxic Green",
                 "Crimson Wake",

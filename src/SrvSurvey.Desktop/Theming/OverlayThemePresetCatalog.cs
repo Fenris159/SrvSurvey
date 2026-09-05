@@ -74,6 +74,7 @@ public static class OverlayThemePresetCatalog
     public static IReadOnlyList<OverlayThemePreset> Presets { get; } =
     [
         new(DefaultName, LegacyOverlayThemeStore.CreateDefault().Colors),
+        CreateMonochromeCompanion(),
         CreateExpandedPreset(
             "Nebula Cyan",
             "#5EC8F2",
@@ -199,6 +200,28 @@ public static class OverlayThemePresetCatalog
             ? existingValue
             : LegacyOverlayThemeStore.CreateDefault().Colors[HeaderKey];
         return true;
+    }
+
+    private static OverlayThemePreset CreateMonochromeCompanion()
+    {
+        var colors = CreateExpandedPreset("Monochrome Companion", "#C8CBD0", "#8DB2BE",
+            "#D7D4CC", "#D4BF8F").Colors.ToDictionary(entry => entry.Key, entry => entry.Value,
+                StringComparer.Ordinal);
+        colors["black"] = Color.Parse("#111315");
+        colors["grey"] = Color.Parse("#90979E");
+        colors["green"] = Color.Parse("#91B69B");
+        colors["greenDark"] = Color.Parse("#405849");
+        colors["red"] = Color.Parse("#CF8C86");
+        colors["redDark"] = Color.Parse("#69433F");
+        colors["colonise.surplus"] = colors["green"];
+        colors["colonise.surplusDark"] = colors["greenDark"];
+        colors["colonise.deficit"] = colors["red"];
+        colors["colonise.deficitDark"] = colors["redDark"];
+        colors["guardian.background"] = colors["black"];
+        colors["guardian.success"] = colors["green"];
+        colors["guardian.danger"] = colors["red"];
+        colors["bio.empty"] = colors["black"];
+        return new OverlayThemePreset("Monochrome Companion", colors);
     }
 
     private static OverlayThemePreset CreateExpandedPreset(
