@@ -134,6 +134,40 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.False(root.ContainsKey("explRewardsBySystem"));
     }
 
+    [Theory]
+    [InlineData("{\"Alpha\":600,\"alpha\":400,\"Ignored\":0}")]
+    [InlineData("null")]
+    [InlineData(null)]
+    public async Task SaveActiveJourneyPreservesExplorationLedgerAndKeepsItLast(
+        string? ledgerJson)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-live.json");
+        var original = JsonNode.Parse(
+            """{"fid":"F123","futureSetting":{"enabled":true}}""")!.AsObject();
+        if (ledgerJson is not null)
+        {
+            original["explRewardsBySystem"] = JsonNode.Parse(ledgerJson);
+        }
+
+        await File.WriteAllTextAsync(path, original.ToJsonString());
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        await store.SaveActiveJourneyAsync(
+            "F123", "Drew", isOdyssey: true, "journey.json");
+
+        var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Equal("journey.json", saved["activeJourney"]!.GetValue<string>());
+        Assert.True(JsonNode.DeepEquals(original["futureSetting"], saved["futureSetting"]));
+        Assert.Equal(ledgerJson is not null, saved.ContainsKey("explRewardsBySystem"));
+        if (ledgerJson is not null)
+        {
+            Assert.Equal("explRewardsBySystem", saved.Last().Key);
+            Assert.True(JsonNode.DeepEquals(
+                original["explRewardsBySystem"], saved["explRewardsBySystem"]));
+        }
+    }
+
     [Fact]
     public async Task SaveNormalizesExplorationRewardSystemNames()
     {

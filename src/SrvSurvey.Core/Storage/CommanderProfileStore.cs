@@ -367,6 +367,12 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             root["isOdyssey"] = isOdyssey;
             update(root);
 
+            // Keep the potentially large ledger last after any profile update.
+            if (root.Remove("explRewardsBySystem", out var rewardsBySystem))
+            {
+                root["explRewardsBySystem"] = rewardsBySystem;
+            }
+
             Directory.CreateDirectory(ProfileDirectory);
             var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
             try
