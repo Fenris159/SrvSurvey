@@ -12,11 +12,13 @@ upload reporting, and SDL3 controller shortcut support on Windows and Linux.
 
 - Adds a theme-aware Surface mining overlay with a radar, saved rig circles,
   ship guidance, six rig direction indicators, and a cargo capacity row.
+- Splits vehicle guidance into Ship and Rhino columns. On foot, the Rhino
+  chevron points back to its parked location; aboard, an X marks it untracked.
 - Uses Alt+1 through Alt+6 to save or clear rig locations for the current
   Commander and body. Collection and deployment-distance cues account for
   the Rhino cockpit and rig placement offsets.
-- Shows mining guidance while operating the Rhino and suppresses Surface
-  Survey and its mini tracker until another vehicle is active.
+- Keeps mining guidance available while operating or walking back to a parked
+  Rhino, suppressing Surface Survey and its mini tracker during that activity.
 - Adds Mining under Activities with an overlay settings shortcut. The workspace
   is reserved for future mining tools; its settings provide the overlay toggle
   and editable visibility and rig shortcuts, shared with Input settings.

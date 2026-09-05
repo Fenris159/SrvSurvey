@@ -17,14 +17,18 @@ changes are in `c9e82b8db20eebece016735b1b6e8f281229eca6`.
 - Six Alt+1 through Alt+6 bindings toggle saved rig circles and matching
   chevrons. Rings are 70 meters; pickup is below 5 meters and the deployment
   exclusion cue is below 78 meters from vehicle center. Rig chevrons sit below
-  the ship tracker. Cargo uses SRV inventory with status fallback, out of 72.
+  the two-column Ship/Rhino tracker. Cargo uses SRV inventory with status fallback,
+  out of 72. On foot the Rhino chevron uses the existing journal-derived parked
+  SRV location; aboard it shows an X. Rig distances on foot use the player
+  position without the cockpit offset, and rig placement still requires the Rhino.
 - Rig bookmarks are stored under the application's `mining` data directory,
   using the existing Commander/system/body persistence format. They are
   independent of biological bookmarks and survive restart.
-- Rhino identity is retained across launch, re-embark, and LoadGame. Passive
-  mining requires a Rhino on a planetary surface. Surface Survey and its mini
-  tracker are suppressed whenever the active vehicle is the Rhino, even when
-  the Mining panel is disabled. Leaving the Rhino restores their normal rules.
+- Rhino identity is retained across launch, re-embark, and LoadGame, with parked
+  identity tracked separately from the active vehicle. Passive mining requires
+  a Rhino on a planetary surface or an on-foot player with a parked Rhino marker.
+  Surface Survey and its mini tracker are suppressed during that mining activity,
+  even when the Mining panel is disabled. Ending the activity restores normal rules.
 - Mining appears under Activities with the existing overlay settings shortcut.
   Its workspace is intentionally WIP. The Mining settings and Input settings
   edit the same shortcut objects, including the panel visibility binding.

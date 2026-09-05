@@ -3053,7 +3053,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 update.JournalEvents,
                 update.Status,
                 exobiologyAfter,
-                journalState.ActiveSrvType);
+                journalState.ActiveSrvType,
+                journalState.ParkedSrvType);
         }
 
         UpdateActiveSystemVisit(update.JournalEvents);
@@ -3111,7 +3112,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 SystemSurvey.CurrentStatus,
                 journalState.IsShutdown || journalState.IsAtMainMenu ? null : journalState.ActiveSrvType,
                 SurfaceSurvey.NavigationMarkers,
-                latestCargo);
+                latestCargo,
+                journalState.IsShutdown || journalState.IsAtMainMenu ? null : journalState.ParkedSrvType);
         }
 
         if (exobiologyChanged)

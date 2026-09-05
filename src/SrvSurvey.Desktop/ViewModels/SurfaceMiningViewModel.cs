@@ -15,6 +15,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private SystemSurfaceBodySnapshot? surface;
     private EliteStatus? status;
     private bool isRhino;
+    private bool isRhinoParked;
     private bool disposed;
     private IReadOnlyList<SurfaceRadarMarkerViewModel> navigation = [];
     private double cargoUsed;
@@ -29,20 +30,31 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     public IReadOnlyList<SurfaceRadarMarkerViewModel> RadarMarkers { get; private set; } = [];
     public IReadOnlyList<MiningRigViewModel> Rigs { get; private set; } = EmptyRigs();
     public IReadOnlyList<SurfaceRadarMarkerViewModel> ShipMarkers { get; private set; } = [];
+    public SurfaceRadarMarkerViewModel? RhinoMarker { get; private set; }
+    public bool HasRhinoTracker => RhinoMarker is not null;
+    public double RhinoBearing => RhinoMarker?.RelativeBearingDegrees ?? 0;
+    public string RhinoDistanceText => RhinoMarker?.DistanceText ?? "—";
+    public bool HasShipTracker => ShipMarkers.Count > 0;
+    public double ShipBearing => ShipMarkers.FirstOrDefault()?.RelativeBearingDegrees ?? 0;
+    public string ShipDistanceText => ShipMarkers.FirstOrDefault()?.DistanceText ?? "—";
     public string BodyName => context?.BodyName ?? "Current body";
     public string HeadingText => $"HEADING {status?.NormalizedHeading ?? 0:000}°";
     public string HistoryText => $"{Rigs.Count(rig => rig.IsSet)} of 6 rigs tracked";
     public double CargoUsed => cargoUsed;
     public string CargoText => $"Cargo capacity: {CargoUsed:N0} of 72";
     public string StatusText { get; private set; } = "Waiting for a Rhino on a planetary surface.";
-    public bool ShouldShow => !disposed && isRhino && context is not null
-        && status is { InSrv: true, HasLatitudeLongitude: true, PlanetRadius: > 0 }
-        && !status.Docked && !status.InTaxi && !status.FsdChargingJump && TryGetCockpit(out _);
+    public bool ShouldShow => !disposed && context is not null
+        && (isRhino && status?.InSrv == true
+            || isRhinoParked && status?.OnFoot == true
+                && navigation.Any(marker => marker.Kind == SurfaceRadarMarkerKind.Srv))
+        && status is { HasLatitudeLongitude: true, PlanetRadius: > 0 }
+        && !status.Docked && !status.InTaxi && !status.FsdChargingJump && TryGetPosition(out _);
 
     public async Task ApplyUpdateAsync(SurfaceSurveySessionContext? session,
         SystemScanSnapshot snapshot, EliteStatus? currentStatus, string? srvType,
         IReadOnlyList<SurfaceRadarMarkerViewModel>? navigationMarkers = null,
-        CargoSnapshot? cargo = null)
+        CargoSnapshot? cargo = null,
+        string? parkedSrvType = null)
     {
         await updateLock.WaitAsync().ConfigureAwait(true);
         try
@@ -53,6 +65,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             cargoUsed = double.IsFinite(count) ? Math.Max(0, count) : 0;
             navigation = navigationMarkers ?? [];
             isRhino = string.Equals(srvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
+            isRhinoParked = string.Equals(parkedSrvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
             var body = snapshot.Bodies.FirstOrDefault(candidate => string.Equals(
                 candidate.Name, status?.BodyName, StringComparison.OrdinalIgnoreCase));
             var next = session is not null && body is not null && status?.PlanetRadius is > 0
@@ -87,7 +100,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         await updateLock.WaitAsync().ConfigureAwait(true);
         try
         {
-            if (!ShouldShow || !TryGetCockpit(out var cockpit))
+            if (!ShouldShow || !isRhino || status?.InSrv != true || !TryGetPosition(out var cockpit))
             {
                 return false;
             }
@@ -119,17 +132,18 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     {
         var markers = new List<SurfaceRadarMarkerViewModel>();
         var rigs = new List<MiningRigViewModel>();
-        var validPosition = ShouldShow && TryGetCockpit(out _);
+        var validPosition = ShouldShow && TryGetPosition(out _);
         for (var number = 1; number <= 6; number++)
         {
             SurfaceRadarMarkerViewModel? marker = null;
             if (validPosition && surface?.Bookmarks.TryGetValue($"#{number}", out var locations) == true
-                && locations.Count > 0 && TryGetCockpit(out var cockpit))
+                && locations.Count > 0 && TryGetPosition(out var cockpit))
             {
-                var current = SurfaceMiningGeometry.VehicleCenter(cockpit,
-                    status!.NormalizedHeading, context!.RadiusMeters);
+                var current = status!.InSrv
+                    ? SurfaceMiningGeometry.VehicleCenter(cockpit, status.NormalizedHeading, context!.RadiusMeters)
+                    : cockpit;
                 var location = locations[0];
-                var distance = SurfaceNavigation.GetDistance(current, location, context.RadiusMeters);
+                var distance = SurfaceNavigation.GetDistance(current, location, context!.RadiusMeters);
                 var bearing = SurfaceNavigation.GetBearing(current, location);
                 marker = new SurfaceRadarMarkerViewModel
                 {
@@ -158,6 +172,13 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         }
 
         markers.AddRange(ShipMarkers);
+        RhinoMarker = validPosition && status?.OnFoot == true && isRhinoParked
+            ? navigation.FirstOrDefault(marker => marker.Kind == SurfaceRadarMarkerKind.Srv)
+            : null;
+        if (RhinoMarker is not null)
+        {
+            markers.Add(RhinoMarker);
+        }
         if (!SameMarkers(RadarMarkers, markers))
         {
             RadarMarkers = markers;
@@ -193,7 +214,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         Notify();
     }
 
-    private bool TryGetCockpit(out SurfaceCoordinate location)
+    private bool TryGetPosition(out SurfaceCoordinate location)
     {
         location = default;
         if (status is not { HasLatitudeLongitude: true } || !double.IsFinite((double)status.Latitude)

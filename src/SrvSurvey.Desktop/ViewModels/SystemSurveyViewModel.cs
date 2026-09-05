@@ -49,6 +49,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private readonly Func<DateTimeOffset> utcNow;
     private EliteStatus? status;
     private string? activeSrvType;
+    private string? parkedSrvType;
     private string? musicTrack;
     private ExobiologySnapshot exobiology = ExobiologySnapshot.Empty;
     private BiologyDiscoveryContext biologyDiscoveryContext =
@@ -891,6 +892,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool IsRhinoActive => status?.InSrv == true
         && string.Equals(activeSrvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
 
+    public bool IsRhinoSurfaceContext => IsRhinoActive
+        || status?.OnFoot == true
+            && string.Equals(parkedSrvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
+
     internal OverlayGameMode CurrentOverlayGameMode => ResolveGameMode();
 
     public ExobiologySnapshot CurrentExobiology => exobiology;
@@ -1557,7 +1562,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? nextStatus,
         ExobiologySnapshot? nextExobiology = null,
-        string? nextActiveSrvType = null)
+        string? nextActiveSrvType = null,
+        string? nextParkedSrvType = null)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         if (journalEvents.Count == 0
@@ -1578,6 +1584,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         if (nextStatus is not null || journalEvents.Count > 0)
         {
             activeSrvType = nextActiveSrvType;
+            parkedSrvType = nextParkedSrvType;
         }
 
         ApplyStatusUpdate(nextStatus, previousStatus);
@@ -1605,6 +1612,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         // Raise status/exobiology after Snapshot and RefreshDisplay so
         // listeners that also read Snapshot observe a consistent state.
         OnPropertyChanged(nameof(IsRhinoActive));
+        OnPropertyChanged(nameof(IsRhinoSurfaceContext));
         if (nextStatus is not null)
         {
             OnPropertyChanged(nameof(CurrentStatus));

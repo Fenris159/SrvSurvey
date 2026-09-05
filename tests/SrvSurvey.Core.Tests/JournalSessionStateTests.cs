@@ -13,12 +13,31 @@ public sealed class JournalSessionStateTests
         Assert.Equal("mev_rhino", state.ActiveSrvType);
         state.Apply(Parse("""{"event":"Disembark","SRV":true,"ID":7}"""));
         Assert.Null(state.ActiveSrvType);
+        Assert.Equal("mev_rhino", state.ParkedSrvType);
         state.Apply(Parse("""{"event":"Embark","SRV":true,"ID":7}"""));
         Assert.Equal("mev_rhino", state.ActiveSrvType);
+        Assert.Null(state.ParkedSrvType);
         state.Apply(Parse("""{"event":"DockSRV","SRVType":"mev_rhino","ID":7}"""));
         Assert.Null(state.ActiveSrvType);
         state.Apply(Parse("""{"event":"LoadGame","Ship":"mev_rhino","ShipID":7}"""));
         Assert.Equal("mev_rhino", state.ActiveSrvType);
+    }
+
+    [Theory]
+    [InlineData("DockSRV")]
+    [InlineData("SRVDestroyed")]
+    [InlineData("LeaveBody")]
+    [InlineData("Died")]
+    public void ParkedRhinoIdentitySurvivesSuitLoadButClearsWhenUnavailable(string nextEvent)
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse("""{"event":"LoadGame","Commander":"Test","FID":"F123","Ship":"mev_rhino","ShipID":7}"""));
+        state.Apply(Parse("""{"event":"Disembark","SRV":true,"ID":7}"""));
+        state.Apply(Parse("""{"event":"LoadGame","Commander":"Test","FID":"F123","Ship":"explorationsuit_class1"}"""));
+        Assert.Equal("mev_rhino", state.ParkedSrvType);
+        Assert.Null(state.ActiveSrvType);
+        state.Apply(Parse($$"""{"event":"{{nextEvent}}","ID":7}"""));
+        Assert.Null(state.ParkedSrvType);
     }
 
     [Theory]

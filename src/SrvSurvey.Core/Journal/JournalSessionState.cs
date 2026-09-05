@@ -38,6 +38,8 @@ public sealed class JournalSessionState
 
     public string? ActiveSrvType { get; private set; }
 
+    public string? ParkedSrvType { get; private set; }
+
     public bool IsNomadActive => EliteSrvTypes.IsNomad(ActiveSrvType);
 
     public long? KnownNomadVehicleId { get; private set; }
@@ -146,6 +148,7 @@ public sealed class JournalSessionState
                 break;
 
             case "LaunchSRV":
+                ParkedSrvType = null;
                 var launchedSrvType = GetString(root, "SRVType");
                 ActiveSrvType = launchedSrvType ?? ActiveSrvType;
                 RememberSrvType(root, launchedSrvType);
@@ -155,11 +158,13 @@ public sealed class JournalSessionState
                 break;
 
             case "DockSRV":
+                ParkedSrvType = null;
                 RememberSrvType(root, GetString(root, "SRVType"));
                 ResetActiveVehicleState();
                 break;
 
             case "SRVDestroyed":
+                ParkedSrvType = null;
                 ForgetSrvType(root);
                 ResetActiveVehicleState();
                 break;
@@ -180,6 +185,7 @@ public sealed class JournalSessionState
                 break;
 
             case "Embark" when GetBoolean(root, "SRV") == true:
+                ParkedSrvType = null;
                 var embarkedVehicleId = GetInt64(root, "ID");
                 if (embarkedVehicleId is { } embarkedId
                     && srvTypesById.TryGetValue(embarkedId, out var embarkedSrvType))
@@ -191,6 +197,9 @@ public sealed class JournalSessionState
                 break;
 
             case "Disembark" when GetBoolean(root, "SRV") == true:
+                ParkedSrvType = GetInt64(root, "ID") is { } disembarkedId
+                    && srvTypesById.TryGetValue(disembarkedId, out var disembarkedType)
+                        ? disembarkedType : ActiveSrvType;
                 ActiveSrvType = null;
                 pendingPlayerControlledFighterId = null;
                 isNomadStatusConfirmationPending = false;
@@ -215,6 +224,7 @@ public sealed class JournalSessionState
                 break;
 
             case "Docked":
+                ParkedSrvType = null;
                 SystemName = GetString(root, "StarSystem") ?? SystemName;
                 SystemAddress = GetInt64(root, nameof(SystemAddress)) ?? SystemAddress;
                 StationName = GetString(root, nameof(StationName)) ?? StationName;
@@ -229,6 +239,7 @@ public sealed class JournalSessionState
             case "SupercruiseExit":
             case "FSDJump":
             case "CarrierJump":
+                ParkedSrvType = null;
                 SystemName = GetString(root, "StarSystem") ?? SystemName;
                 SystemAddress = GetInt64(root, nameof(SystemAddress)) ?? SystemAddress;
                 StarPosition = GetGalacticCoordinate(root, "StarPos")
@@ -244,6 +255,7 @@ public sealed class JournalSessionState
                 break;
 
             case "LeaveBody":
+                ParkedSrvType = null;
                 // The legacy application clears touchdown/SRV coordinates but
                 // retains the current planet until another location event.
                 break;
@@ -283,6 +295,7 @@ public sealed class JournalSessionState
                 break;
 
             case "Shutdown":
+                ParkedSrvType = null;
                 IsShutdown = true;
                 IsAtMainMenu = false;
                 IsAtCarrierManagement = false;
@@ -414,6 +427,7 @@ public sealed class JournalSessionState
 
     private void ClearLiveLocationContext()
     {
+        ParkedSrvType = null;
         ActiveSrvType = null;
         IsFighterLaunched = false;
         pendingPlayerControlledFighterId = null;
@@ -479,6 +493,7 @@ public sealed class JournalSessionState
 
     private void ResetVehicleSessionState()
     {
+        ParkedSrvType = null;
         ResetActiveVehicleState();
         srvTypesById.Clear();
         KnownNomadVehicleId = null;

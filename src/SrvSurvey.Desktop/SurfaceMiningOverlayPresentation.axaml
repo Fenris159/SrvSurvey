@@ -47,21 +47,32 @@
           GridBrush="{DynamicResource RavenBorderBrush}" AccentBrush="{DynamicResource RavenSecondaryBrush}"
           MutedBrush="{DynamicResource RavenMutedTextBrush}" SuccessBrush="{DynamicResource RavenSuccessBrush}"
           WarningBrush="{DynamicResource RavenWarningBrush}" DangerBrush="{DynamicResource RavenDangerBrush}" />
-      <ItemsControl Grid.Row="2" ItemsSource="{Binding SurfaceMining.ShipMarkers}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:SurfaceRadarMarkerViewModel">
-            <Border Padding="7,5" CornerRadius="7" BorderThickness="1"
-                    BorderBrush="{DynamicResource RavenBorderBrush}" Background="{DynamicResource RavenSurfaceBrush}">
-              <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="7">
-                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource RavenAccentBrush}" FontSize="10" />
-                <controls:DirectionalChevronControl Grid.Column="1" Width="12" Height="12"
-                    BearingDegrees="{Binding RelativeBearingDegrees}" Stroke="{DynamicResource RavenAccentBrush}" />
-                <TextBlock Grid.Column="2" Text="{Binding DistanceText}" FontSize="9" />
-              </Grid>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
+      <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="4">
+        <Border Padding="7,5" CornerRadius="7" BorderThickness="1"
+                BorderBrush="{DynamicResource RavenBorderBrush}" Background="{DynamicResource RavenSurfaceBrush}">
+          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="5">
+            <TextBlock Text="Ship" Foreground="{DynamicResource RavenAccentBrush}" FontSize="10" />
+            <controls:DirectionalChevronControl Grid.Column="1" Width="12" Height="12"
+                IsVisible="{Binding SurfaceMining.HasShipTracker}"
+                BearingDegrees="{Binding SurfaceMining.ShipBearing}" Stroke="{DynamicResource RavenAccentBrush}" />
+            <TextBlock Grid.Column="1" Text="X" FontSize="10" IsVisible="{Binding !SurfaceMining.HasShipTracker}"
+                       Foreground="{DynamicResource RavenMutedTextBrush}" />
+            <TextBlock Grid.Column="2" Text="{Binding SurfaceMining.ShipDistanceText}" FontSize="9" />
+          </Grid>
+        </Border>
+        <Border Grid.Column="1" Padding="7,5" CornerRadius="7" BorderThickness="1"
+                BorderBrush="{DynamicResource RavenBorderBrush}" Background="{DynamicResource RavenSurfaceBrush}">
+          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="5">
+            <TextBlock Text="Rhino" Foreground="{DynamicResource RavenAccentBrush}" FontSize="10" />
+            <controls:DirectionalChevronControl Grid.Column="1" Width="12" Height="12"
+                IsVisible="{Binding SurfaceMining.HasRhinoTracker}"
+                BearingDegrees="{Binding SurfaceMining.RhinoBearing}" Stroke="{DynamicResource RavenAccentBrush}" />
+            <TextBlock Grid.Column="1" Text="X" FontSize="10" IsVisible="{Binding !SurfaceMining.HasRhinoTracker}"
+                       Foreground="{DynamicResource RavenMutedTextBrush}" />
+            <TextBlock Grid.Column="2" Text="{Binding SurfaceMining.RhinoDistanceText}" FontSize="9" />
+          </Grid>
+        </Border>
+      </Grid>
       <ItemsControl Grid.Row="3" ItemsSource="{Binding SurfaceMining.Rigs}">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate><UniformGrid Columns="6" /></ItemsPanelTemplate>

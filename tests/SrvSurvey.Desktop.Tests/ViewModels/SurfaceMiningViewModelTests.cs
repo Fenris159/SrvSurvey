@@ -60,6 +60,47 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.Empty(mining.RadarMarkers);
     }
 
+    [Fact]
+    public async Task DisembarkedRhinoRemainsTrackableAndRigPlacementRequiresBeingAboard()
+    {
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        await mining.ToggleRigAsync(1);
+        Assert.False(mining.HasRhinoTracker);
+        var parked = new SurfaceRadarMarkerViewModel
+        {
+            Kind = SurfaceRadarMarkerKind.Srv,
+            Name = "SRV",
+            Location = new(0, 0),
+            DistanceMeters = 100,
+            RelativeBearingDegrees = 270,
+        };
+        var onFoot = Status() with
+        {
+            Flags = StatusFlags.HasLatLong,
+            Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
+        };
+        await mining.ApplyUpdateAsync(Session, Snapshot(), onFoot, null, [parked], parkedSrvType: "mev_rhino");
+        Assert.True(mining.ShouldShow);
+        Assert.True(mining.HasRhinoTracker);
+        Assert.Equal(270, mining.RhinoBearing);
+        Assert.Same(parked, mining.RhinoMarker);
+        Assert.Contains(parked, mining.RadarMarkers);
+        // On foot the observer is the player, without the 4 m cockpit offset.
+        Assert.InRange(mining.Rigs[0].Marker!.DistanceMeters, 6.99, 7.01);
+        Assert.False(await mining.ToggleRigAsync(1));
+        Assert.True(mining.Rigs[0].IsSet);
+
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", [parked]);
+        Assert.True(mining.ShouldShow);
+        Assert.False(mining.HasRhinoTracker);
+        Assert.DoesNotContain(parked, mining.RadarMarkers);
+        await mining.ApplyUpdateAsync(Session, Snapshot(), onFoot, null, [parked], parkedSrvType: "testbuggy");
+        Assert.False(mining.ShouldShow);
+        await mining.ApplyUpdateAsync(Session, Snapshot(), onFoot, null, [], parkedSrvType: "mev_rhino");
+        Assert.False(mining.ShouldShow);
+    }
+
     [Theory]
     [InlineData(4.9, "COLLECT")]
     [InlineData(5.1, "TOO CLOSE")]

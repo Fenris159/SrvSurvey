@@ -87,6 +87,12 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         ApplySurveyContext(survey, Status(StatusFlags.InSrv), "mev_rhino");
         Assert.False(viewModel.ShouldShow);
         Assert.False(viewModel.ShouldShowMiniTrack);
+        survey.ApplyUpdate([], Status(StatusFlags.None) with
+        {
+            Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
+        }, nextParkedSrvType: "mev_rhino");
+        Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.ShouldShowMiniTrack);
         ApplySurveyContext(survey, Status(StatusFlags.InSrv), "testbuggy");
         Assert.True(viewModel.ShouldShow);
         Assert.True(viewModel.ShouldShowMiniTrack);
