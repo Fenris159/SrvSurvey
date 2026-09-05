@@ -96,6 +96,9 @@ distance cues, and vehicle tracking. Also see
 
 ## Inspection and presentation fixes
 
+- Adds a sidebar toggle in the navigation column's top-right corner. Collapse
+  the sidebar to a narrow strip to expand the current workspace, then use the
+  same button to restore navigation without resizing the window.
 - Adds Avalonia developer-tool support for F12 inspection in development builds.
 - Improves selected-row text contrast in the monochrome theme and corrects
   Guardian card, expander, overlay-position, and snap-to-center regressions.

@@ -173,6 +173,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private DiagnosticsWorkspaceTab selectedDiagnosticsTab =
         DiagnosticsWorkspaceTab.Source;
     private bool isProfileSelected;
+    private bool isSidebarCollapsed;
     private ThemeOptionViewModel selectedTheme;
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
     private string legacyProfileSourcePath;
@@ -977,6 +978,23 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public IReadOnlyList<NavigationItemViewModel> ActivityNavigationItems { get; }
 
     public IReadOnlyList<NavigationItemViewModel> UtilityNavigationItems { get; }
+
+    public bool IsSidebarCollapsed
+    {
+        get => isSidebarCollapsed;
+        set
+        {
+            if (SetField(ref isSidebarCollapsed, value))
+            {
+                OnPropertyChanged(nameof(SidebarWidth));
+                OnPropertyChanged(nameof(SidebarToggleLabel));
+            }
+        }
+    }
+
+    public double SidebarWidth => IsSidebarCollapsed ? 44 : 248;
+
+    public string SidebarToggleLabel => IsSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar";
 
     public bool IsSurveyNavigationExpanded =>
         expandedNavigationGroup == SurveyNavigationGroup;

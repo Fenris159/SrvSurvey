@@ -58,14 +58,19 @@
   <Border Classes="diagnostic-shell"
           Classes.active="{Binding IsDiagnosticReplay}">
   <LayoutTransformControl x:Name="ApplicationScaleContainer">
-  <Grid ColumnDefinitions="248,*">
-    <Border Background="{DynamicResource RavenSidebarBrush}"
+  <Grid ColumnDefinitions="Auto,*">
+    <Border x:Name="MainSidebar"
+            Width="{Binding SidebarWidth}"
+            Background="{DynamicResource RavenSidebarBrush}"
             BorderBrush="{DynamicResource RavenBorderBrush}"
             BorderThickness="0,0,1,0">
-      <Grid Margin="16"
+      <Grid>
+      <Grid x:Name="SidebarContent"
+            IsVisible="{Binding !IsSidebarCollapsed}"
+            Margin="16"
             RowDefinitions="Auto,Auto,*,Auto"
             RowSpacing="14">
-        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,0,28,0">
           <Image Width="42"
                  Height="42"
                  Source="/Assets/logo-remastered-linux-windows-split.png"
@@ -136,7 +141,7 @@
                     CommandParameter="activities"
                     Click="ToggleNavigationGroup_Click"
                     Content="Activities"
-                    ToolTip.Tip="Show Guardian, quest, and colonization workspaces" />
+                    ToolTip.Tip="Show mining, Guardian, quest, and colonization workspaces" />
             <Border Classes="nav-group-container"
                     Classes.expanded="{Binding IsActivitiesNavigationExpanded}"
                     Classes.reduced-motion="{Binding DesktopBehavior.ReduceMotion}">
@@ -169,9 +174,31 @@
           </WrapPanel>
         </StackPanel>
       </Grid>
+      <Button x:Name="SidebarToggleButton"
+              Classes="nav-overlay-settings"
+              Width="28" Height="28" Padding="4"
+              HorizontalAlignment="Right" VerticalAlignment="Top"
+              Margin="0,16,8,0"
+              Click="ToggleSidebar_Click"
+              ToolTip.Tip="{Binding SidebarToggleLabel}"
+              AutomationProperties.Name="{Binding SidebarToggleLabel}">
+        <Grid Width="20" Height="20">
+          <Path Data="M4,2 H16 A2,2 0 0 1 18,4 V16 A2,2 0 0 1 16,18 H4 A2,2 0 0 1 2,16 V4 A2,2 0 0 1 4,2 Z M7,2 V18"
+                Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.5" StrokeJoin="Round" />
+          <Path Data="M13.5,6.5 L10,10 L13.5,13.5"
+                IsVisible="{Binding !IsSidebarCollapsed}"
+                Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.5"
+                StrokeLineCap="Round" StrokeJoin="Round" />
+          <Path Data="M11,6.5 L14.5,10 L11,13.5"
+                IsVisible="{Binding IsSidebarCollapsed}"
+                Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.5"
+                StrokeLineCap="Round" StrokeJoin="Round" />
+        </Grid>
+      </Button>
+      </Grid>
     </Border>
 
-    <Grid Grid.Column="1">
+    <Grid x:Name="MainWorkspace" Grid.Column="1">
       <ContentControl IsVisible="{Binding IsProfileSelected}">
         <views:CommanderProfileView DataContext="{Binding FrontierProfile}" />
       </ContentControl>

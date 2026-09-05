@@ -77,6 +77,11 @@ public sealed partial class MainWindow : Window
 
     public ApplicationInputContext InputContext { get; }
 
+    private void ToggleSidebar_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        viewModel.IsSidebarCollapsed = !viewModel.IsSidebarCollapsed;
+    }
+
     private void SelectNavigationItem_Click(
         object? sender,
         RoutedEventArgs eventArgs)

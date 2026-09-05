@@ -42,6 +42,7 @@ public static class GuideCatalog
                             "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
                             "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel and Search; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
                             "Diagnostics, Settings, Theme, and Guides remain in the utility area. The small overlay-settings button beside supported activities opens only that activity's overlay controls.",
+                            "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
                             "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
                             "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
                         ]),

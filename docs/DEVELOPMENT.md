@@ -93,10 +93,12 @@ assumed covered by the standalone journal, network, and overlay inventories.
 ## Runtime verification
 
 RC43 local validation on 2026-09-05 passed the Release solution build with
-zero warnings/errors, formatting verification, and 3,233 tests (Core 1,423;
-Desktop 1,797; Replay Controller 13). Guide search and automatic rig cleanup
-on ship boarding are covered. Production-template previews were
-inspected for the mining layout and Monochrome Companion palette. This records
+zero warnings/errors, formatting verification, and 3,235 tests (Core 1,423;
+Desktop 1,799; Replay Controller 13). Guide search and automatic rig cleanup
+on ship boarding are covered. Sidebar collapse/restore preserves workspace
+selection and window size in dark/light themes and at increased application scale.
+Production-template previews were inspected for the sidebar, mining layout,
+and Monochrome Companion palette. This records
 automated and headless validation; the native checks below remain separate.
 
 Automated builds do not replace native testing with a live Elite Dangerous
