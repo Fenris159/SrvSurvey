@@ -76,7 +76,9 @@ A further delta review on 2026-09-05 covers upstream
 [#1055](https://github.com/njthomson/SrvSurvey/pull/1055), merged as
 `91e07f84b98f658fe662fe2d89cf44ff9ac59dce`. Rhino geometry and rig tracking
 are adapted into a dedicated, theme-aware Surface mining panel, with the
-existing Surface Survey panels suppressed while operating the Rhino.
+existing Surface Survey panels suppressed while operating the Rhino or returning
+to it on foot. The vehicle row provides separate Ship and Rhino guidance, with
+an untracked X for the Rhino while aboard.
 Demolished RavenColonial sites are recognized by the API model; the existing
 Plan-only project picker excludes them. Unknown Guardian sites already use
 nullable catalog/profile handling and site-type guidance in this port.
@@ -89,6 +91,12 @@ future upstream commits must receive an explicit delta review rather than being
 assumed covered by the standalone journal, network, and overlay inventories.
 
 ## Runtime verification
+
+RC43 local validation on 2026-09-05 passed the Release solution build with
+zero warnings/errors, formatting verification, and 3,222 tests (Core 1,423;
+Desktop 1,786; Replay Controller 13). Production-template previews were
+inspected for the mining layout and Monochrome Companion palette. This records
+automated and headless validation; the native checks below remain separate.
 
 Automated builds do not replace native testing with a live Elite Dangerous
 session. Before promoting a release, verify on clean supported systems:

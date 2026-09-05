@@ -23,6 +23,8 @@ upload reporting, and SDL3 controller shortcut support on Windows and Linux.
   is reserved for future mining tools; its settings provide the overlay toggle
   and editable visibility and rig shortcuts, shared with Input settings.
 
+See [Surface mining setup and controls](docs/SURFACE_MINING.md).
+
 ## Monochrome Companion overlays
 
 - Adds a muted overlay preset to pair with the Monochrome dark application
