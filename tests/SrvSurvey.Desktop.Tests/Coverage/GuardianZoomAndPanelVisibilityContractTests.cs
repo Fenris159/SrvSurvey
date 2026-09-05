@@ -34,6 +34,74 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
     }
 
     [Fact]
+    public void GuardianMapShowsLandedShipChevronAtBottomLeft()
+    {
+        var desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
+        var presentation = XDocument.Load(Path.Combine(
+            desktop,
+            "GuardianSiteOverlayPresentation.axaml"));
+        var shipIndicator = presentation.Descendants()
+            .Single(element => element.Name.LocalName == "Border"
+                && element.Attribute("IsVisible")?.Value
+                    == "{Binding Guardian.IsShipNavigationVisible}");
+        var chevron = shipIndicator.Descendants().Single(element =>
+            element.Name.LocalName == "DirectionalChevronControl");
+
+        Assert.Equal("Left", shipIndicator.Attribute("HorizontalAlignment")?.Value);
+        Assert.Equal("Bottom", shipIndicator.Attribute("VerticalAlignment")?.Value);
+        Assert.Equal("8,0,0,8", shipIndicator.Attribute("Margin")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.ShipRelativeBearingDegrees}",
+            chevron.Attribute("BearingDegrees")?.Value);
+        Assert.Equal(
+            "{Binding Guardian.IsShipNavigationFar}",
+            chevron.Attribute("IsFar")?.Value);
+        Assert.Contains(shipIndicator.Descendants(), element =>
+            element.Attribute("Text")?.Value
+                == "{Binding Guardian.ShipNavigationDistanceText}");
+    }
+
+    [Fact]
+    public void GuardianFiregroupChoicesUseHighContrastSelectedState()
+    {
+        var desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
+        var presentation = XDocument.Load(Path.Combine(
+            desktop,
+            "GuardianStatusOverlayPresentation.axaml"));
+        var styles = presentation.Descendants()
+            .Where(element => element.Name.LocalName == "Style")
+            .ToArray();
+        var selectedChoice = styles.Single(style =>
+            style.Attribute("Selector")?.Value
+                == "Border.guardian-legacy-choice.selected");
+        var selectedText = styles.Single(style =>
+            style.Attribute("Selector")?.Value
+                == "Border.guardian-legacy-choice.selected TextBlock");
+        var selectedBindings = presentation.Descendants()
+            .SelectMany(element => element.Attributes())
+            .Count(attribute => attribute.Name.LocalName == "Classes.selected"
+                && attribute.Value.StartsWith(
+                    "{Binding Guardian.IsGuardianChoice",
+                    StringComparison.Ordinal));
+
+        Assert.Equal(6, selectedBindings);
+        Assert.Contains(selectedChoice.Elements(), setter =>
+            setter.Attribute("Property")?.Value == "BorderThickness"
+            && setter.Attribute("Value")?.Value == "2");
+        Assert.Contains(selectedChoice.Elements(), setter =>
+            setter.Attribute("Property")?.Value == "Background"
+            && setter.Attribute("Value")?.Value
+                == "{DynamicResource RavenGuardianSecondaryBrush}");
+        Assert.Contains(selectedText.Elements(), setter =>
+            setter.Attribute("Property")?.Value == "Foreground"
+            && setter.Attribute("Value")?.Value
+                == "{DynamicResource RavenGuardianBackgroundBrush}");
+        Assert.Contains(selectedText.Elements(), setter =>
+            setter.Attribute("Property")?.Value == "FontWeight"
+            && setter.Attribute("Value")?.Value == "Bold");
+    }
+
+    [Fact]
     public void OverlaySettingsOfferMasterAvailabilityAndOptionalShortcuts()
     {
         var path = Path.Combine(

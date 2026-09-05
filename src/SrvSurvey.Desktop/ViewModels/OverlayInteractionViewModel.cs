@@ -23,6 +23,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private readonly IOverlayPositionEditorHost? editorHost;
     private readonly OverlayWindowRegistry? registry;
     private readonly Dictionary<Window, LiveOverlayWindowState> liveWindows = [];
+    private readonly HashSet<Window> interactiveWindows = [];
     private readonly DelegateCommand toggleCommand;
     private readonly DelegateCommand snapToCenterCommand;
     private readonly DelegateCommand saveCommand;
@@ -605,13 +606,20 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 continue;
             }
 
-            AttachLiveWindow(registered);
+            interactiveWindows.Add(registered.Window);
+            if (registered.ParticipatesInPlacement)
+            {
+                AttachLiveWindow(registered);
+            }
         }
 
         if (liveWindows.Count == 0)
         {
+            var failures = DetachAndRestoreClickThrough();
             liveEditSession = null;
-            StatusMessage = "No live overlays could be made clickable. " + lastStatus;
+            StatusMessage = "No live overlays could be made clickable. "
+                + lastStatus
+                + FormatFailureSuffix(failures);
             return false;
         }
 
@@ -670,11 +678,10 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private List<string> DetachAndRestoreClickThrough()
     {
         var failures = new List<string>();
-        foreach (var window in liveWindows.Values
-            .Select(state => state.Window)
-            .ToArray())
+        foreach (var window in interactiveWindows.ToArray())
         {
             DetachLiveWindow(window);
+            interactiveWindows.Remove(window);
             if (platform is null)
             {
                 continue;
@@ -790,7 +797,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 registered.Window,
                 activeLayout,
                 registered.PlotterName);
-            if (game is not
+            if (!registered.ParticipatesInPlacement
+                || game is not
                 {
                     IsAvailable: true,
                     ClientBounds: { Width: > 0, Height: > 0 },
@@ -1116,7 +1124,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         liveEditSession.SetPlacement(plotterName, placement);
         activeLayout.SetPlacement(plotterName, placement);
         var registered = registry.Snapshot().FirstOrDefault(candidate =>
-            string.Equals(
+            candidate.ParticipatesInPlacement
+            && string.Equals(
                 candidate.PlotterName,
                 plotterName,
                 StringComparison.Ordinal));

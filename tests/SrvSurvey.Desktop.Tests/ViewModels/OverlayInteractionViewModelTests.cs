@@ -228,6 +228,36 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void LiveShortcutRestoresNonPlacementWindowWhenNoOverlayCanMove()
+    {
+        var platform = new FakeOverlayPlatform();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var registry = new OverlayWindowRegistry();
+        var window = new Window();
+        registry.Register(
+            window,
+            "PlotGuardians",
+            participatesInPlacement: false);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                new PixelRect(100, 200, 1200, 800),
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            store.Load(),
+            registry,
+            new FakeEditorHost());
+
+        Assert.False(viewModel.ToggleLiveOverlayInteraction());
+
+        Assert.Equal([true, false], platform.InteractiveStates);
+        Assert.False(viewModel.IsLiveInteractionEnabled);
+    }
+
+    [AvaloniaFact]
     public void LiveWindowDragPersistsAndIsReloadedByThePositionEditor()
     {
         Directory.CreateDirectory(temporaryDirectory);
@@ -284,6 +314,59 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Equal(
             store.Load().Placements["PlotJumpInfo"],
             host.OpenedJumpInfoPlacement);
+    }
+
+    [AvaloniaFact]
+    public void RelatedChildWindowCannotOverwriteItsOwnersLivePlacement()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            "{\"PlotGuardians\":\"right:20, bottom:20\"}");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var gameBounds = new PixelRect(100, 200, 1200, 800);
+        var owner = new Window
+        {
+            Width = 600,
+            Height = 600,
+            Position = new PixelPoint(680, 380),
+        };
+        var child = new Window
+        {
+            Width = 120,
+            Height = 40,
+            Position = new PixelPoint(1140, 920),
+        };
+        registry.Register(owner, "PlotGuardians");
+        registry.Register(
+            child,
+            "PlotGuardians",
+            participatesInPlacement: false);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                gameBounds,
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            activeLayout,
+            registry,
+            new FakeEditorHost());
+        var original = activeLayout.Placements["PlotGuardians"];
+
+        Assert.True(viewModel.ToggleLiveOverlayInteraction());
+        child.Position = new PixelPoint(-800, -700);
+
+        Assert.Equal(original, activeLayout.Placements["PlotGuardians"]);
+
+        owner.Position = new PixelPoint(510, 330);
+
+        Assert.NotEqual(original, activeLayout.Placements["PlotGuardians"]);
     }
 
     [AvaloniaFact]

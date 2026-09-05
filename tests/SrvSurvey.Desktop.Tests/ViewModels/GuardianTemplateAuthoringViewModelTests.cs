@@ -28,7 +28,6 @@ public sealed class GuardianTemplateAuthoringViewModelTests : IDisposable
         viewModel.ImageOffsetX = 12;
         viewModel.ImageOffsetY = 34;
         viewModel.ScaleFactor = 1.5m;
-        viewModel.ApplyMetadataCommand.Execute(null);
         viewModel.NewPointName = "qa1";
         viewModel.NewPointType = GuardianPoiType.Orb;
         viewModel.NewPointName = "qa1";
@@ -71,13 +70,13 @@ public sealed class GuardianTemplateAuthoringViewModelTests : IDisposable
             new GuardianSiteTemplateCatalog([first, second]),
             _ => { });
         viewModel.UpdateContext(first, measurement: null);
-        viewModel.StartCommand.Execute(null);
+        viewModel.EditCommand.Execute(null);
         viewModel.TemplateName = "Unexported";
-        viewModel.ApplyMetadataCommand.Execute(null);
 
         viewModel.UpdateContext(second, measurement: null);
 
         Assert.False(viewModel.IsAuthoring);
+        Assert.Equal("MAP DRAFT", viewModel.DraftModeTitle);
         Assert.Equal("Second · Original", viewModel.TemplateTitle);
         Assert.Contains("discarded", viewModel.StatusMessage);
     }
@@ -93,10 +92,30 @@ public sealed class GuardianTemplateAuthoringViewModelTests : IDisposable
 
         Assert.False(viewModel.HasSelectedPoint);
         viewModel.SelectPoint("p2");
-        viewModel.StartCommand.Execute(null);
+        viewModel.EditCommand.Execute(null);
 
         Assert.True(viewModel.HasSelectedPoint);
         Assert.Equal("p2", viewModel.SelectedPoint?.Name);
+        viewModel.PointName = "p2-edited";
+        viewModel.PointAngle += 0.1m;
+        viewModel.PointDistance += 0.1m;
+        viewModel.PointRotation += 0.1m;
+
+        var livePreview = viewModel.PreviewTemplate!.PointsOfInterest.Single(
+            point => point.Name == "p2-edited");
+        Assert.Equal(90.1, livePreview.Angle);
+        Assert.Equal(20.1, livePreview.Distance);
+        Assert.Equal(45.1, livePreview.Rotation);
+
+        viewModel.SelectPoint("p1");
+        Assert.Contains(
+            viewModel.PreviewTemplate!.PointsOfInterest,
+            point => point.Name == "p2");
+        Assert.DoesNotContain(
+            viewModel.PreviewTemplate.PointsOfInterest,
+            point => point.Name == "p2-edited");
+
+        viewModel.SelectPoint("p2");
         viewModel.PointName = "p2-edited";
         viewModel.PointAngle += 0.1m;
         viewModel.PointDistance += 0.1m;
@@ -112,6 +131,78 @@ public sealed class GuardianTemplateAuthoringViewModelTests : IDisposable
 
         viewModel.SelectPoint("not-a-template-point");
         Assert.False(viewModel.HasSelectedPoint);
+    }
+
+    [Fact]
+    public void StartMapDraftIsBlankWhileEditCurrentMapPreservesGeometry()
+    {
+        var template = CreateTemplate("Test");
+        var viewModel = new GuardianTemplateAuthoringViewModel(
+            new GuardianSiteTemplateCatalog([template]),
+            _ => { });
+        viewModel.UpdateContext(template, measurement: null);
+
+        viewModel.StartCommand.Execute(null);
+
+        Assert.True(viewModel.IsNewMapDraft);
+        Assert.Empty(viewModel.PreviewTemplate!.PointsOfInterest);
+        Assert.Empty(viewModel.PreviewTemplate.ObeliskGroupNameLocations);
+        Assert.Empty(viewModel.BackgroundImage);
+        Assert.Contains("awaiting-background", viewModel.PreviewTemplate.BackgroundImage);
+
+        viewModel.RequestDiscardCommand.Execute(null);
+        viewModel.ConfirmDiscardCommand.Execute(null);
+        viewModel.EditCommand.Execute(null);
+
+        Assert.False(viewModel.IsNewMapDraft);
+        Assert.Equal(template.PointsOfInterest, viewModel.PreviewTemplate!.PointsOfInterest);
+        Assert.Equal(
+            template.ObeliskGroupNameLocations["A"],
+            viewModel.PreviewTemplate.ObeliskGroupNameLocations["A"]);
+    }
+
+    [Fact]
+    public void MetadataFieldsPreviewWithoutAnApplyStep()
+    {
+        var template = CreateTemplate("Test");
+        var viewModel = new GuardianTemplateAuthoringViewModel(
+            new GuardianSiteTemplateCatalog([template]),
+            _ => { });
+        viewModel.UpdateContext(template, measurement: null);
+        viewModel.EditCommand.Execute(null);
+
+        viewModel.BackgroundImage = "preview.png";
+        viewModel.ImageOffsetX = 12;
+        viewModel.ImageOffsetY = 34;
+        viewModel.ScaleFactor = 1.5m;
+
+        Assert.Equal("preview.png", viewModel.PreviewTemplate!.BackgroundImage);
+        Assert.Equal(new GuardianMapPoint(12, 34), viewModel.PreviewTemplate.ImageOffset);
+        Assert.Equal(1.5, viewModel.PreviewTemplate.ScaleFactor);
+    }
+
+    [Fact]
+    public void BackgroundImageIsCopiedIntoManagedMapFolder()
+    {
+        Directory.CreateDirectory(directory);
+        var source = Path.Combine(directory, "source.png");
+        File.WriteAllBytes(source, [1, 2, 3]);
+        var catalogPath = Path.Combine(directory, "data", "guardianSiteTemplates.json");
+        var template = CreateTemplate("Test");
+        var viewModel = new GuardianTemplateAuthoringViewModel(
+            new GuardianSiteTemplateCatalog([template]),
+            _ => { },
+            defaultCatalogPath: catalogPath);
+        viewModel.UpdateContext(template, measurement: null);
+        viewModel.EditCommand.Execute(null);
+
+        viewModel.ImportBackgroundImage(source);
+
+        Assert.StartsWith(
+            viewModel.ManagedBackgroundDirectory,
+            viewModel.BackgroundImage,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.True(File.Exists(viewModel.BackgroundImage));
     }
 
     public void Dispose()

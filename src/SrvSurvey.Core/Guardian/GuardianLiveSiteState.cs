@@ -199,7 +199,7 @@ public sealed class GuardianLiveSiteState
                 SiteType = siteType,
                 SiteHeading = survey?.SiteHeading ?? -1,
                 RelicTowerHeading = survey?.RelicTowerHeading ?? -1,
-                Location = site.Location ?? survey?.Location,
+                Location = survey?.Location ?? site.Location,
                 PoiStatuses = survey?.PoiStatuses
                     ?? new Dictionary<string, GuardianPoiStatus>(
                         StringComparer.Ordinal),
@@ -212,7 +212,10 @@ public sealed class GuardianLiveSiteState
             },
             existing?.ActiveObelisks ?? [],
             existing?.ObeliskGroups
-                ?? new HashSet<char>());
+                ?? new HashSet<char>())
+        {
+            MapMarkerOffset = existing?.MapMarkerOffset ?? default,
+        };
     }
 
     private void ApplyLocation(JsonElement root, bool clearCurrentSite)

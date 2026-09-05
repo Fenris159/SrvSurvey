@@ -18,11 +18,13 @@
       <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="Border.guardian-legacy-choice.selected">
-      <Setter Property="BorderBrush" Value="{DynamicResource RavenGuardianSecondaryBrush}" />
-      <Setter Property="Background" Value="{DynamicResource RavenGuardianPrimaryDimBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenGuardianPrimaryBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenGuardianSecondaryBrush}" />
     </Style>
     <Style Selector="Border.guardian-legacy-choice.selected TextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource RavenGuardianSecondaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenGuardianBackgroundBrush}" />
+      <Setter Property="FontWeight" Value="Bold" />
     </Style>
     <Style Selector="TextBlock.guardian-artifact.missing">
       <Setter Property="Foreground" Value="{DynamicResource RavenGuardianDangerBrush}" />

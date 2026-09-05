@@ -8,6 +8,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Core.Settlements;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 
@@ -21,6 +22,7 @@ public sealed class GuardianViewModel
     private const string AllVisits = "All visits";
     private const string AllTypes = "All types";
     private const string UnknownLabel = "Unknown";
+    private static readonly GalacticCoordinate SolOrigin = new(0, 0, 0);
     private static readonly IReadOnlyList<GuardianOverlaySizeOption>
         OverlaySizes =
         [
@@ -43,6 +45,7 @@ public sealed class GuardianViewModel
     private readonly GuardianCommanderSurveyStore commanderSurveyStore;
     private readonly GuardianCommanderBeaconStore commanderBeaconStore;
     private readonly GuardianSurveyShareService surveyShareService;
+    private HumanSiteVehicleTracker vehicleTracker = new();
     private readonly RamTahViewModel? ramTah;
     private readonly GuardianOverlaySettingsStore? overlaySettingsStore;
     private readonly Func<GuardianAerialAltitudes> aerialAltitudeProvider;
@@ -71,13 +74,15 @@ public sealed class GuardianViewModel
     private string selectedVisitFilter = AllVisits;
     private string selectedSiteTypeFilter = AllTypes;
     private GuardianSiteRowViewModel? selectedSite;
+    private readonly Dictionary<(long SystemAddress, int BodyId), double>
+        bodyArrivalDistances = [];
     private GalacticCoordinate? currentPosition;
     private string? currentSystemName;
     private string originSystemName = string.Empty;
     private StarSystemReference? customOrigin;
     private bool isOriginLookupBusy;
     private string originLookupStatus =
-        "Distances use the current journal system until a custom origin is selected.";
+        "Distances use Sol until a custom origin is selected.";
     private bool includeRamTahLogs;
     private bool showOnlyNeededRamTahLogs;
     private int selectedWorkspaceTabIndex;
@@ -102,6 +107,10 @@ public sealed class GuardianViewModel
     private bool automaticMapZoom = true;
     private double activeMapScale = 1;
     private double activeMapRelativeHeading;
+    private bool isShipNavigationVisible;
+    private double shipRelativeBearingDegrees;
+    private bool isShipNavigationFar;
+    private string shipNavigationDistanceText = string.Empty;
     private GuardianLiveMapMode liveMapMode = GuardianLiveMapMode.SiteType;
     private string? targetObeliskName;
     private bool hasActiveBuildProjects;
@@ -196,7 +205,11 @@ public sealed class GuardianViewModel
             OnSurveySavedAsync);
         TemplateAuthoring = new GuardianTemplateAuthoringViewModel(
             this.templates,
-            OnTemplateDraftChanged);
+            OnTemplateDraftChanged,
+            pointPreviewChanged: OnTemplatePointPreviewChanged,
+            defaultCatalogPath: Path.Combine(
+                dataDirectory,
+                "guardianSiteTemplates.json"));
         SurveyEditor.PropertyChanged += OnSurveyEditorPropertyChanged;
         TemplateAuthoring.PropertyChanged +=
             OnTemplateAuthoringPropertyChanged;
@@ -561,6 +574,14 @@ public sealed class GuardianViewModel
     public double ActiveMapScale => activeMapScale;
 
     public double ActiveMapRelativeHeading => activeMapRelativeHeading;
+
+    public bool IsShipNavigationVisible => isShipNavigationVisible;
+
+    public double ShipRelativeBearingDegrees => shipRelativeBearingDegrees;
+
+    public bool IsShipNavigationFar => isShipNavigationFar;
+
+    public string ShipNavigationDistanceText => shipNavigationDistanceText;
 
     public GuardianLiveMapMode LiveMapMode
     {
@@ -939,11 +960,48 @@ public sealed class GuardianViewModel
     }
 
     public GuardianSiteProximitySnapshot? SelectedMapCommanderPosition =>
-        SelectedSite?.Reference is { } selectedReference
-        && ActiveSite?.Reference is { } activeReference
-        && selectedReference == activeReference
-            ? Proximity
-            : null;
+        IsSelectedSiteActive() ? Proximity : null;
+
+    public string? SelectedMapTargetPointName
+    {
+        get
+        {
+            if (SelectedMapCommanderPosition?.NearestPoint is
+                {
+                    Distance: <= GuardianSiteProximityEvaluator.NearbyPointDistance,
+                } nearest)
+            {
+                return nearest.Point.Name;
+            }
+
+            return IsSelectedSiteActive() ? TargetObeliskName : null;
+        }
+    }
+
+    public string? SelectedMapPointName =>
+        SurveyEditor.SelectedPointName ?? SelectedMapTargetPointName;
+
+    public string? ActiveMapSelectedPointName
+    {
+        get
+        {
+            if (IsSelectedSiteActive()
+                && !string.IsNullOrWhiteSpace(SurveyEditor.SelectedPointName))
+            {
+                return SurveyEditor.SelectedPointName;
+            }
+
+            if (Proximity?.NearestPoint is
+                {
+                    Distance: <= GuardianSiteProximityEvaluator.NearbyPointDistance,
+                } nearest)
+            {
+                return nearest.Point.Name;
+            }
+
+            return TargetObeliskName;
+        }
+    }
 
     public GuardianSiteMapProjection? ActiveMapProjection => activeMapProjection;
 
@@ -1631,12 +1689,7 @@ public sealed class GuardianViewModel
                 return $"Distances from custom origin {origin.Name}.";
             }
 
-            if (currentPosition is null)
-            {
-                return "Distances unavailable until a journal supplies galactic coordinates.";
-            }
-
-            return $"Distances from {currentSystemName ?? "current system"}.";
+            return "Distances from Sol.";
         }
     }
 
@@ -1733,9 +1786,7 @@ public sealed class GuardianViewModel
         OnPropertyChanged(nameof(HasCustomOrigin));
         OnPropertyChanged(nameof(OriginStatus));
         clearOriginCommand.RaiseCanExecuteChanged();
-        OriginLookupStatus = currentPosition is null
-            ? "Custom origin cleared. Distances will appear when the journal supplies coordinates."
-            : $"Custom origin cleared. Distances now use {currentSystemName ?? "the current system"}.";
+        OriginLookupStatus = "Custom origin cleared. Distances now use Sol.";
         ApplyFilters();
         return Task.CompletedTask;
     }
@@ -1826,6 +1877,7 @@ public sealed class GuardianViewModel
         var blink = statusBlinkDetector.Update(status, DateTimeOffset.UtcNow);
         IsBlinkGesturePrimed = blink.IsPrimed;
         UpdateProximity();
+        RefreshShipNavigation();
         NotifyAuxiliaryOverlayState();
     }
 
@@ -1848,6 +1900,7 @@ public sealed class GuardianViewModel
             observedAt ?? DateTimeOffset.UtcNow);
         IsBlinkGesturePrimed = blink.IsPrimed;
         UpdateProximity();
+        RefreshShipNavigation();
         NotifyAuxiliaryOverlayState();
         if (allowGesture && blink.Detected)
         {
@@ -1886,12 +1939,14 @@ public sealed class GuardianViewModel
             || activeIsOdyssey != isOdyssey)
         {
             liveSiteState = new GuardianLiveSiteState(references);
+            vehicleTracker = new HumanSiteVehicleTracker();
             guardianEncodedMaterialsFull = false;
             guardianMaterialWarningFrame = -1;
             OnPropertyChanged(nameof(AreGuardianEncodedMaterialsFull));
             OnPropertyChanged(nameof(HasGuardianMaterialCapacityWarning));
             NotifyActiveSiteChanged();
             UpdateProximity();
+            RefreshShipNavigation();
         }
 
         activeFrontierId = frontierId;
@@ -1923,6 +1978,7 @@ public sealed class GuardianViewModel
             currentStatus = status;
             SynchronizeActiveSiteFromStatus(status);
             UpdateProximity();
+            RefreshShipNavigation();
         }
 
         var activeSiteChanged = false;
@@ -2005,6 +2061,11 @@ public sealed class GuardianViewModel
             await ramTah.ApplyJournalEventsAsync([journalEvent]);
         }
 
+        CaptureBodyCatalogMetadata(journalEvent);
+        if (vehicleTracker.Apply(journalEvent, currentStatus))
+        {
+            RefreshShipNavigation();
+        }
         var modeChanged = ApplyMusicOrHeaderTrack(journalEvent);
         ApplyEncodedMaterialCapacityWarning(journalEvent);
         var inventoryChanged = artifactInventory.Apply(journalEvent, isInSrv);
@@ -2135,8 +2196,18 @@ public sealed class GuardianViewModel
                 commanderName ?? string.Empty,
                 legacy: !activeIsOdyssey,
                 existing);
+            var activeSite = liveSiteState.CurrentSite;
+            survey = survey with
+            {
+                LocalSiteId = ResolveLocalSiteId(activeSite, existing),
+                CatalogBodyName = existing?.CatalogBodyName
+                    ?? RemoveSystemPrefix(activeSite.BodyName, activeSite.SystemName),
+                StarPosition = existing?.StarPosition ?? currentPosition,
+                DistanceToArrivalLs = existing?.DistanceToArrivalLs
+                    ?? GetCapturedArrivalDistance(activeSite),
+            };
             survey = HydrateSurveyFromPublished(
-                liveSiteState.CurrentSite,
+                activeSite,
                 survey);
             var path = await commanderSurveyStore.SaveAsync(
                 activeFrontierId,
@@ -2157,6 +2228,76 @@ public sealed class GuardianViewModel
                 + "could not be saved: "
                 + exception.Message;
         }
+    }
+
+    private void CaptureBodyCatalogMetadata(JournalEventEnvelope journalEvent)
+    {
+        if (!string.Equals(
+                journalEvent.EventName,
+                "Scan",
+                StringComparison.Ordinal)
+            || GetJsonInt64(journalEvent.Payload, "SystemAddress") is not { } systemAddress
+            || GetJsonInt32(journalEvent.Payload, "BodyID") is not { } bodyId
+            || GetJsonDouble(
+                journalEvent.Payload,
+                "DistanceFromArrivalLS") is not { } distance
+            || distance < 0)
+        {
+            return;
+        }
+
+        bodyArrivalDistances[(systemAddress, bodyId)] = distance;
+    }
+
+    private double? GetCapturedArrivalDistance(GuardianLiveSiteSnapshot site)
+    {
+        return bodyArrivalDistances.TryGetValue(
+            (site.SystemAddress, site.BodyId),
+            out var distance)
+                ? distance
+                : null;
+    }
+
+    private int ResolveLocalSiteId(
+        GuardianLiveSiteSnapshot site,
+        GuardianCommanderSiteSurvey? existing)
+    {
+        if (site.Reference is not null)
+        {
+            return 0;
+        }
+
+        if (existing?.LocalSiteId is > 0)
+        {
+            return existing.LocalSiteId;
+        }
+
+        var existingReference = visits.Visits
+            .Select(visit => visit.Reference)
+            .FirstOrDefault(reference => reference.IsCommanderOnly
+                && IsSameSite(reference, site));
+        if (existingReference?.SiteId is > 0)
+        {
+            return existingReference.SiteId;
+        }
+
+        var isRuins = site.Kind == GuardianSiteKind.Ruins;
+        return commanderData.Surveys
+                .Where(candidate => candidate.LocalSiteId > 0
+                    && IsRuins(candidate) == isRuins)
+                .Select(candidate => candidate.LocalSiteId)
+                .DefaultIfEmpty(0)
+                .Max()
+            + 1;
+    }
+
+    private static string RemoveSystemPrefix(string bodyName, string systemName)
+    {
+        return bodyName.StartsWith(
+            systemName,
+            StringComparison.OrdinalIgnoreCase)
+                ? bodyName[systemName.Length..].Trim()
+                : bodyName;
     }
 
     private readonly record struct JournalEventApplyOutcome(
@@ -2787,6 +2928,12 @@ public sealed class GuardianViewModel
         }
 
         var siteType = parsedType.SiteType;
+        var isInitialSiteType = ActiveSite is { } activeSite
+            && FindSurvey(activeSite) is { } activeSurvey
+            && string.Equals(
+                activeSurvey.SiteType,
+                UnknownLabel,
+                StringComparison.OrdinalIgnoreCase);
         if (await SaveActiveSurveyMutationAsync(
             survey => survey with
             {
@@ -2802,6 +2949,10 @@ public sealed class GuardianViewModel
             cancellationToken))
         {
             SetLiveMapModeFromSurvey();
+            if (isInitialSiteType && RevealAndSelectActiveReference())
+            {
+                SelectedWorkspaceTabIndex = 1;
+            }
         }
 
         return true;
@@ -3643,24 +3794,105 @@ public sealed class GuardianViewModel
             commanderData.Errors);
     }
 
-    private void SelectActiveReference()
+    private bool SelectActiveReference()
     {
         if (ActiveSite is not { } site)
         {
-            return;
+            return false;
         }
 
-        SelectedSite = Rows.FirstOrDefault(row =>
-                row.Reference.SystemAddress == site.SystemAddress
-                && row.Reference.Index == site.Index
-                && row.Reference.Kind == site.Kind
-                && (row.Reference.BodyId >= 0 && site.BodyId >= 0
-                    ? row.Reference.BodyId == site.BodyId
-                    : string.Equals(
-                        row.Reference.FullBodyName,
-                        site.BodyName,
-                        StringComparison.OrdinalIgnoreCase)))
-            ?? SelectedSite;
+        var activeRow = Rows.FirstOrDefault(row => IsSameSite(row.Reference, site));
+        if (activeRow is null)
+        {
+            return false;
+        }
+
+        SelectedSite = activeRow;
+        return true;
+    }
+
+    private bool RevealAndSelectActiveReference()
+    {
+        if (SelectActiveReference())
+        {
+            return true;
+        }
+
+        var filtersChanged = false;
+        filtersChanged |= ResetFilter(
+            ref filterText,
+            string.Empty,
+            nameof(FilterText));
+        filtersChanged |= ResetFilter(
+            ref selectedKindFilter,
+            AllKinds,
+            nameof(SelectedKindFilter));
+        filtersChanged |= ResetFilter(
+            ref selectedVisitFilter,
+            AllVisits,
+            nameof(SelectedVisitFilter));
+        filtersChanged |= ResetFilter(
+            ref selectedSiteTypeFilter,
+            AllTypes,
+            nameof(SelectedSiteTypeFilter));
+        if (filtersChanged)
+        {
+            ApplyFilters();
+        }
+
+        return SelectActiveReference();
+    }
+
+    private bool ResetFilter(
+        ref string field,
+        string value,
+        string propertyName)
+    {
+        if (string.Equals(field, value, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        field = value;
+        OnPropertyChanged(propertyName);
+        return true;
+    }
+
+    private bool IsSelectedSiteActive()
+    {
+        return SelectedSite?.Reference is { } selectedReference
+            && ActiveSite is { } activeSite
+            && IsSameSite(selectedReference, activeSite);
+    }
+
+    private static bool IsSameSite(
+        GuardianSiteReference reference,
+        GuardianLiveSiteSnapshot site)
+    {
+        return reference.SystemAddress == site.SystemAddress
+            && reference.Index == site.Index
+            && reference.Kind == site.Kind
+            && (reference.BodyId >= 0 && site.BodyId >= 0
+                ? reference.BodyId == site.BodyId
+                : string.Equals(
+                    reference.FullBodyName,
+                    site.BodyName,
+                    StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsSameSite(
+        GuardianSiteReference left,
+        GuardianSiteReference right)
+    {
+        return left.SystemAddress == right.SystemAddress
+            && left.Index == right.Index
+            && left.Kind == right.Kind
+            && (left.BodyId >= 0 && right.BodyId >= 0
+                ? left.BodyId == right.BodyId
+                : string.Equals(
+                    left.FullBodyName,
+                    right.FullBodyName,
+                    StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool IsSameBody(
@@ -3926,6 +4158,60 @@ public sealed class GuardianViewModel
         OnPropertyChanged(nameof(ShouldShowRamTahOverlay));
     }
 
+    private void RefreshShipNavigation()
+    {
+        var status = currentStatus;
+        var ship = vehicleTracker.ShipLocation;
+        if (status is null
+            || ship is null
+            || vehicleTracker.HasShipDeparted
+            || !(status.OnFoot || status.InSrv)
+            || !status.HasLatitudeLongitude
+            || status.PlanetRadius <= 0)
+        {
+            SetField(ref isShipNavigationVisible, false,
+                nameof(IsShipNavigationVisible));
+            return;
+        }
+
+        SurfaceCoordinate commander;
+        try
+        {
+            commander = new SurfaceCoordinate(
+                status.Latitude,
+                status.Longitude);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            SetField(ref isShipNavigationVisible, false,
+                nameof(IsShipNavigationVisible));
+            return;
+        }
+
+        var distance = SurfaceNavigation.GetDistance(
+            commander,
+            ship.Value,
+            (double)status.PlanetRadius);
+        var bearing = SurfaceNavigation.GetBearing(commander, ship.Value);
+        SetField(
+            ref shipRelativeBearingDegrees,
+            SurfaceNavigation.NormalizeDegrees(
+                bearing - status.NormalizedHeading),
+            nameof(ShipRelativeBearingDegrees));
+        SetField(
+            ref isShipNavigationFar,
+            distance >= 1_000,
+            nameof(IsShipNavigationFar));
+        SetField(
+            ref shipNavigationDistanceText,
+            distance >= 1_000
+                ? $"{distance / 1_000:N2} km"
+                : $"{distance:N0} m",
+            nameof(ShipNavigationDistanceText));
+        SetField(ref isShipNavigationVisible, true,
+            nameof(IsShipNavigationVisible));
+    }
+
     private void NotifyActiveSiteChanged()
     {
         OnPropertyChanged(nameof(ActiveSite));
@@ -3939,6 +4225,9 @@ public sealed class GuardianViewModel
         OnPropertyChanged(nameof(ShouldShowLiveSiteOverlay));
         OnPropertyChanged(nameof(ShouldShowGuardianStatusOverlay));
         OnPropertyChanged(nameof(SelectedMapCommanderPosition));
+        OnPropertyChanged(nameof(SelectedMapTargetPointName));
+        OnPropertyChanged(nameof(SelectedMapPointName));
+        OnPropertyChanged(nameof(ActiveMapSelectedPointName));
         NotifyAuxiliaryOverlayState();
     }
 
@@ -3947,6 +4236,9 @@ public sealed class GuardianViewModel
         RefreshAutomaticMapScale();
         OnPropertyChanged(nameof(Proximity));
         OnPropertyChanged(nameof(SelectedMapCommanderPosition));
+        OnPropertyChanged(nameof(SelectedMapTargetPointName));
+        OnPropertyChanged(nameof(SelectedMapPointName));
+        OnPropertyChanged(nameof(ActiveMapSelectedPointName));
         OnPropertyChanged(nameof(CurrentObelisk));
         OnPropertyChanged(nameof(HasCurrentObelisk));
         OnPropertyChanged(nameof(SiteDistanceText));
@@ -4290,6 +4582,9 @@ public sealed class GuardianViewModel
         targetObeliskName = target?.Name;
         currentRamTahLogs = BuildCurrentRamTahLogs();
         OnPropertyChanged(nameof(TargetObeliskName));
+        OnPropertyChanged(nameof(SelectedMapTargetPointName));
+        OnPropertyChanged(nameof(SelectedMapPointName));
+        OnPropertyChanged(nameof(ActiveMapSelectedPointName));
         OnPropertyChanged(nameof(HasTargetObelisk));
         OnPropertyChanged(nameof(TargetObeliskText));
         OnPropertyChanged(nameof(CurrentRamTahLogs));
@@ -4481,27 +4776,24 @@ public sealed class GuardianViewModel
             return;
         }
 
+        var isSelectedSiteActive = IsSelectedSiteActive();
+
         var survey = FindSurvey(site);
         var reference = site.Reference;
         var published = GetPublishedSite(site);
-        var siteType = survey is not null
-            && !string.Equals(
-                survey.SiteType,
-                UnknownLabel,
-                StringComparison.OrdinalIgnoreCase)
-                    ? survey.SiteType
-                    : site.SiteType;
+        var siteType = GetEffectiveSiteType(survey, site.SiteType);
         var template = FindTemplate(siteType);
         var location = survey?.Survey.Location
             ?? published?.Location
             ?? site.Location;
-        var siteHeading = survey?.Survey.SiteHeading is >= 0 and <= 359
-            ? survey.Survey.SiteHeading
-            : (published?.SiteHeading is >= 0 and <= 359) switch
-            {
-                true => published.SiteHeading,
-                false => reference?.SiteHeading ?? -1
-            };
+        if (isSelectedSiteActive
+            && SurveyEditor.TryGetPreviewSurfaceLocation(
+                out var previewLocation))
+        {
+            location = previewLocation;
+        }
+
+        var siteHeading = GetEffectiveSiteHeading(survey, published, reference);
         if (template is null)
         {
             NotifyCurrentObeliskChanged();
@@ -4515,13 +4807,24 @@ public sealed class GuardianViewModel
             survey?.Survey,
             published,
             reference);
+        var markerOffset = survey?.MapMarkerOffset ?? default;
+        if (isSelectedSiteActive
+            && SelectedSite?.Reference is { } offsetReference
+            && SurveyEditor.TryGetPreviewMapMarkerOffset(
+                offsetReference,
+                out var previewMarkerOffset))
+        {
+            markerOffset = previewMarkerOffset;
+        }
+
         activeMapProjection = mapProjector.Project(
             template,
             rendererSurvey,
             activeObelisks,
             obeliskGroups,
             ShowComponentMaterials,
-            GetNeededRamTahLogCodes(site.Kind, activeObelisks));
+            GetNeededRamTahLogCodes(site.Kind, activeObelisks),
+            markerOffset);
         if (currentStatus is null || location is null)
         {
             NotifyCurrentObeliskChanged();
@@ -4541,10 +4844,9 @@ public sealed class GuardianViewModel
             ActiveObelisks = activeObelisks,
             ObeliskGroups = obeliskGroups,
             IncludeComponentMaterials = ShowComponentMaterials,
+            MarkerOffset = markerOffset,
         });
-        if (proximity is { } measurement
-            && reference is not null
-            && SelectedSite?.Reference == reference)
+        if (proximity is { } measurement && isSelectedSiteActive)
         {
             var angle = GetSurveyPointAngle(
                 measurement.MapX,
@@ -4577,13 +4879,7 @@ public sealed class GuardianViewModel
         }
 
         var survey = FindSurvey(row.Reference);
-        var siteType = survey is not null
-            && !string.Equals(
-                survey.SiteType,
-                UnknownLabel,
-                StringComparison.OrdinalIgnoreCase)
-                    ? survey.SiteType
-                    : row.Reference.SiteType;
+        var siteType = GetEffectiveSiteType(survey, row.Reference.SiteType);
         var template = FindTemplate(siteType)
             ?? FindTemplate(row.Reference.SiteType);
         var published = publishedSites.Find(row.Reference);
@@ -4593,6 +4889,14 @@ public sealed class GuardianViewModel
             survey?.Survey,
             published,
             row.Reference);
+        var markerOffset = survey?.MapMarkerOffset ?? default;
+        if (SurveyEditor.TryGetPreviewMapMarkerOffset(
+                row.Reference,
+                out var previewMarkerOffset))
+        {
+            markerOffset = previewMarkerOffset;
+        }
+
         MapProjection = template is null
             ? null
             : mapProjector.Project(
@@ -4603,8 +4907,37 @@ public sealed class GuardianViewModel
                 ShowComponentMaterials,
                 GetNeededRamTahLogCodes(
                     row.Reference.Kind,
-                    activeObelisks));
+                    activeObelisks),
+                markerOffset);
         NotifyMapTextChanged();
+    }
+
+    private static string GetEffectiveSiteType(
+        GuardianCommanderSiteSurvey? survey,
+        string fallback)
+    {
+        return survey is not null
+            && !string.Equals(
+                survey.SiteType,
+                UnknownLabel,
+                StringComparison.OrdinalIgnoreCase)
+                    ? survey.SiteType
+                    : fallback;
+    }
+
+    private static int GetEffectiveSiteHeading(
+        GuardianCommanderSiteSurvey? survey,
+        GuardianPublishedSite? published,
+        GuardianSiteReference? reference)
+    {
+        if (survey?.Survey.SiteHeading is >= 0 and <= 359)
+        {
+            return survey.Survey.SiteHeading;
+        }
+
+        return published?.SiteHeading is >= 0 and <= 359
+            ? published.SiteHeading
+            : reference?.SiteHeading ?? -1;
     }
 
     internal static GuardianSurveyData MergeRendererSurvey(
@@ -4751,6 +5084,18 @@ public sealed class GuardianViewModel
         var displayCatalog = displayTemplate is null
             ? templates
             : templates.WithTemplate(displayTemplate);
+        var activeSite = IsSelectedSiteActive() ? ActiveSite : null;
+        var planetRadiusMeters = activeSite is not null
+            && currentStatus?.PlanetRadius is > 0
+                ? (double?)currentStatus.PlanetRadius
+                : null;
+        var alignmentOrigin = row is not null && activeSite is not null
+            ? ResolveAlignmentOrigin(
+                row.Reference,
+                survey,
+                activeSite,
+                planetRadiusMeters)
+            : null;
         SurveyEditor.Load(new GuardianSurveyEditorLoadContext(
             activeFrontierId,
             activeIsOdyssey,
@@ -4761,9 +5106,49 @@ public sealed class GuardianViewModel
             TemplateCatalog = displayCatalog,
             ReferenceProjection = MapProjection,
             SiteReference = row?.Reference,
+            DistanceOrigin = customOrigin?.Position ?? SolOrigin,
+            DistanceOriginName = customOrigin?.Name ?? "Sol",
+            AlignmentOrigin = alignmentOrigin,
+            PlanetRadiusMeters = planetRadiusMeters,
         });
         TemplateAuthoring.UpdateContext(baseTemplate, measurement: null);
         TemplateAuthoring.SelectPoint(SurveyEditor.SelectedPointName);
+    }
+
+    private GuardianSurfaceLocation? ResolveAlignmentOrigin(
+        GuardianSiteReference selectedReference,
+        GuardianCommanderSiteSurvey? survey,
+        GuardianLiveSiteSnapshot activeSite,
+        double? planetRadiusMeters)
+    {
+        var catalogReference = references.Sites.FirstOrDefault(
+            candidate => IsSameSite(candidate, selectedReference));
+        if (catalogReference is { Latitude: { } latitude, Longitude: { } longitude })
+        {
+            return new GuardianSurfaceLocation(latitude, longitude);
+        }
+
+        var correctedOrigin = survey?.Survey.Location ?? activeSite.Location;
+        if (correctedOrigin is not { } corrected
+            || survey?.MapMarkerOffset is not { } markerOffset
+            || markerOffset == default
+            || planetRadiusMeters is not { } radius)
+        {
+            return correctedOrigin;
+        }
+
+        var published = GetPublishedSite(activeSite);
+        var siteHeading = GetEffectiveSiteHeading(
+            survey,
+            published,
+            catalogReference ?? selectedReference);
+        return siteHeading is >= 0 and <= 359
+            ? GuardianMapMarkerOffsetCalculator.RecoverAlignmentOrigin(
+                corrected,
+                markerOffset,
+                siteHeading,
+                radius)
+            : corrected;
     }
 
     private GuardianSiteTemplate? GetSelectedBaseTemplate()
@@ -4833,6 +5218,12 @@ public sealed class GuardianViewModel
         UpdateProximity();
     }
 
+    private void OnTemplatePointPreviewChanged()
+    {
+        UpdateMapProjection();
+        UpdateProximity();
+    }
+
     private void OnSurveyEditorPropertyChanged(
         object? sender,
         PropertyChangedEventArgs args)
@@ -4840,7 +5231,17 @@ public sealed class GuardianViewModel
         if (args.PropertyName
             == nameof(GuardianSurveyEditorViewModel.SelectedPointName))
         {
+            OnPropertyChanged(nameof(SelectedMapPointName));
+            OnPropertyChanged(nameof(ActiveMapSelectedPointName));
             TemplateAuthoring.SelectPoint(SurveyEditor.SelectedPointName);
+        }
+        else if (args.PropertyName is
+                 nameof(GuardianSurveyEditorViewModel.SurfaceLatitude)
+                 or nameof(GuardianSurveyEditorViewModel.SurfaceLongitude)
+                 or nameof(GuardianSurveyEditorViewModel.SiteHeading))
+        {
+            UpdateMapProjection();
+            UpdateProximity();
         }
     }
 
@@ -4875,7 +5276,7 @@ public sealed class GuardianViewModel
         if (selectedReference is not null)
         {
             SelectedSite = Rows.FirstOrDefault(
-                row => row.Reference == selectedReference)
+                row => IsSameSite(row.Reference, selectedReference))
                 ?? SelectedSite;
         }
 
@@ -4894,7 +5295,7 @@ public sealed class GuardianViewModel
     private void ApplyFilters()
     {
         var previousReference = SelectedSite?.Reference;
-        var origin = customOrigin?.Position ?? currentPosition;
+        var origin = customOrigin?.Position ?? SolOrigin;
         IEnumerable<GuardianSiteVisit> filtered = visits.Visits;
         filtered = selectedKindFilter switch
         {
@@ -4935,19 +5336,18 @@ public sealed class GuardianViewModel
         var projected = filteredVisits
             .Select(visit => new GuardianSiteRowViewModel(
                 visit,
-                origin is GalacticCoordinate coordinate
-                    ? coordinate.DistanceTo(visit.Reference.Position)
-                    : null,
+                origin.DistanceTo(visit.Reference.Position),
                 ramTahLogCodes: GetRamTahLogCodes(visit.Reference),
                 hasImages: HasGuardianSiteImages(
                     visit.Reference,
                     screenshots)));
-        projected = SortSiteRows(projected, origin is not null);
+        projected = SortSiteRows(projected, hasOrigin: true);
         Rows = projected.ToArray();
         var firstRow = Rows.Count > 0 ? Rows[0] : null;
         SelectedSite = previousReference is null
             ? firstRow
-            : Rows.FirstOrDefault(row => row.Reference == previousReference)
+            : Rows.FirstOrDefault(
+                row => IsSameSite(row.Reference, previousReference))
                 ?? firstRow;
         var visited = Rows.Count(row => row.Visit.IsVisited);
         var surveyed = Rows.Count(row => row.Visit.IsSurveyComplete);

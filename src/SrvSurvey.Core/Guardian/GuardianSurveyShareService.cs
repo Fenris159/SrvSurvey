@@ -24,15 +24,7 @@ public sealed class GuardianSurveyShareService
     {
         ArgumentNullException.ThrowIfNull(survey);
         var reasons = new List<string>();
-        if (survey.Survey.RawPointsOfInterest?.Count > 0)
-        {
-            reasons.Add("Raw points of interest");
-        }
-
-        if (survey.Survey.ComponentMaterials.Count > 0)
-        {
-            reasons.Add("Component materials");
-        }
+        AddPortableSurveyReasons(survey, reasons);
 
         var kind = GetKind(survey);
         var published = publishedSites.Find(
@@ -49,6 +41,36 @@ public sealed class GuardianSurveyShareService
             return reasons;
         }
 
+        AddPublishedDifferenceReasons(survey, kind, published, reasons);
+        return reasons;
+    }
+
+    private static void AddPortableSurveyReasons(
+        GuardianCommanderSiteSurvey survey,
+        List<string> reasons)
+    {
+        if (survey.Survey.RawPointsOfInterest?.Count > 0)
+        {
+            reasons.Add("Raw points of interest");
+        }
+
+        if (survey.Survey.ComponentMaterials.Count > 0)
+        {
+            reasons.Add("Component materials");
+        }
+
+        if (survey.MapMarkerOffset != default)
+        {
+            reasons.Add("Map alignment offset");
+        }
+    }
+
+    private static void AddPublishedDifferenceReasons(
+        GuardianCommanderSiteSurvey survey,
+        GuardianSiteKind kind,
+        GuardianPublishedSite published,
+        List<string> reasons)
+    {
         if (published.SiteHeading == -1 && survey.Survey.SiteHeading != -1)
         {
             reasons.Add("Site heading");
@@ -87,8 +109,6 @@ public sealed class GuardianSurveyShareService
         {
             reasons.Add("Obelisk groups");
         }
-
-        return reasons;
     }
 
     public async Task<GuardianSurveyShareBundle> PrepareAsync(
@@ -261,6 +281,7 @@ public sealed class GuardianSurveyShareService
             || survey.Survey.RelicHeadings.Count > 0
             || survey.Survey.ComponentMaterials.Count > 0
             || survey.Survey.RawPointsOfInterest?.Count > 0
+            || survey.MapMarkerOffset != default
             || survey.ObeliskGroups.Count > 0;
     }
 

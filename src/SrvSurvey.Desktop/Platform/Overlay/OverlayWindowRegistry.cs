@@ -28,7 +28,10 @@ public sealed class OverlayWindowRegistry
 
     public bool IsGalaxyMapContextActive => galaxyMapContextActive;
 
-    public void Register(Window window, string plotterName)
+    public void Register(
+        Window window,
+        string plotterName,
+        bool participatesInPlacement = true)
     {
         Dispatcher.UIThread.VerifyAccess();
         ArgumentNullException.ThrowIfNull(window);
@@ -60,7 +63,8 @@ public sealed class OverlayWindowRegistry
                 opened,
                 closed,
                 facts,
-                OverlayVisibilityPolicy.Evaluate(facts)));
+                OverlayVisibilityPolicy.Evaluate(facts),
+                participatesInPlacement));
         windows.Add(new WeakReference<Window>(window));
         window.Opened += opened;
         window.Closed += closed;
@@ -161,7 +165,8 @@ public sealed class OverlayWindowRegistry
                 window,
                 registration.PlotterName,
                 registration.PresentationVisual,
-                registration.Presented));
+                registration.Presented,
+                registration.ParticipatesInPlacement));
         }
 
         result.Reverse();
@@ -472,7 +477,8 @@ public sealed class OverlayWindowRegistry
         EventHandler openedHandler,
         EventHandler closedHandler,
         OverlayVisibilityFacts facts,
-        OverlayVisibilityDecision decision)
+        OverlayVisibilityDecision decision,
+        bool participatesInPlacement)
     {
         public OverlayId Id { get; } = id;
 
@@ -488,6 +494,8 @@ public sealed class OverlayWindowRegistry
 
         public bool Presented { get; set; }
 
+        public bool ParticipatesInPlacement { get; } = participatesInPlacement;
+
         public OverlayVisibilityFacts Facts { get; set; } = facts;
 
         public OverlayVisibilityDecision Decision { get; set; } = decision;
@@ -498,7 +506,8 @@ public sealed record RegisteredOverlayWindow(
     Window Window,
     string PlotterName,
     Visual? PresentationVisual = null,
-    bool IsVisible = false)
+    bool IsVisible = false,
+    bool ParticipatesInPlacement = true)
 {
     public Visual RenderSource => PresentationVisual ?? Window;
 }

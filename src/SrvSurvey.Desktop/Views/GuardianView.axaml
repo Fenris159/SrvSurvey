@@ -8,6 +8,36 @@
              x:Class="SrvSurvey.Desktop.Views.GuardianView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="Expander.guardian-map-legend /template/ ToggleButton /template/ Border#ToggleButtonBackground">
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="BoxShadow" Value="none" />
+      <Setter Property="Margin" Value="0,0,0,10" />
+    </Style>
+    <Style Selector="Expander.guardian-map-legend.monochrome /template/ ToggleButton /template/ Border#ToggleButtonBackground">
+      <Setter Property="Background" Value="#1C1C1C" />
+      <Setter Property="BorderBrush" Value="#33FFFFFF" />
+    </Style>
+    <Style Selector="Expander.guardian-map-legend /template/ Border#ExpanderContent">
+      <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+      <Setter Property="BorderThickness" Value="1,0,1,1" />
+      <Setter Property="CornerRadius" Value="0,0,12,12" />
+      <Setter Property="BoxShadow" Value="none" />
+      <Setter Property="Margin" Value="0" />
+      <Setter Property="Padding" Value="10,0,0,0" />
+      <Setter Property="MinWidth" Value="290" />
+      <Setter Property="MinHeight" Value="270" />
+    </Style>
+    <Style Selector="Expander.guardian-map-legend:expanded /template/ Border#ExpanderContent">
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+    </Style>
+    <Style Selector="Expander.guardian-map-legend.monochrome /template/ Border#ExpanderContent">
+      <Setter Property="Background" Value="#2B2B2B" />
+      <Setter Property="BorderBrush" Value="#33FFFFFF" />
+    </Style>
+  </UserControl.Styles>
   <ScrollViewer HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="32" Spacing="20" MaxWidth="1050">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
@@ -513,6 +543,11 @@
                       AllowViewportInteraction="True"
                       Projection="{Binding Guardian.MapProjection}"
                       CommanderMapPosition="{Binding Guardian.SelectedMapCommanderPosition}"
+                      Proximity="{Binding Guardian.SelectedMapCommanderPosition}"
+                      CommanderHeading="{Binding Guardian.ActiveMapRelativeHeading}"
+                      RotateMapWithCommander="False"
+                      TargetPointName="{Binding Guardian.SelectedMapTargetPointName}"
+                      HighlightedPointName="{Binding Guardian.SelectedMapPointName}"
                       SelectedPointName="{Binding Guardian.SurveyEditor.SelectedPointName, Mode=TwoWay}"
                       ShowLegend="False"
                       MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
@@ -523,7 +558,7 @@
                       AbsentBrush="{DynamicResource RavenDangerBrush}"
                       EmptyBrush="{DynamicResource RavenWarningBrush}" />
                   <Grid Grid.Row="1"
-                        ColumnDefinitions="Auto,*,Auto"
+                        ColumnDefinitions="Auto,*,Auto,Auto"
                         ColumnSpacing="10">
                     <TextBlock Classes="eyebrow"
                                VerticalAlignment="Center"
@@ -539,6 +574,26 @@
                                VerticalAlignment="Center"
                                FontWeight="SemiBold"
                                Text="{Binding ViewportZoom, ElementName=GuardianSurveyMap, StringFormat='{}{0:N2}x'}" />
+                    <StackPanel Grid.Column="3"
+                                Margin="8,0,0,0"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="4">
+                      <TextBlock Classes="muted"
+                                 VerticalAlignment="Center"
+                                 Text="Orientation" />
+                      <Button Classes="link"
+                              Width="18"
+                              Height="18"
+                              Padding="2"
+                              VerticalAlignment="Center"
+                              AutomationProperties.Name="Guardian map orientation information"
+                              ToolTip.Tip="The legacy aerial image is fixed to the Guardian site template's surveyed origin and scale. Site, tower, marker, and commander geometry uses that same alignment.">
+                        <PathIcon Width="14"
+                                  Height="14"
+                                  Data="{StaticResource question_circle_regular}" />
+                      </Button>
+                    </StackPanel>
                   </Grid>
                 </Grid>
               </Border>
@@ -546,6 +601,38 @@
               <StackPanel x:Name="GuardianSurveyMapSidebar"
                           Grid.Column="1"
                           Spacing="18">
+                <Border x:Name="GuardianSurveyMapLegend"
+                        Margin="0"
+                        Padding="0"
+                        IsVisible="{Binding Guardian.ShowMapLegend}">
+                  <Expander x:Name="GuardianSurveyMapLegendExpander"
+                            Classes="guardian-map-legend"
+                            Classes.monochrome="{Binding IsMonochromeTheme}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            IsExpanded="False">
+                    <Expander.Header>
+                      <TextBlock Margin="20,16"
+                                 Classes="card-title"
+                                 Text="Map legend" />
+                    </Expander.Header>
+                    <controls:GuardianSiteMapControl
+                        Height="270"
+                        Margin="20,0,0,0"
+                        ClipToBounds="True"
+                        IsLegendOnly="True"
+                        Projection="{Binding Guardian.MapProjection}"
+                        ShowLegend="False"
+                        MapBackground="{DynamicResource RavenSurfaceBrush}"
+                        GridBrush="{DynamicResource RavenBorderBrush}"
+                        AccentBrush="{DynamicResource RavenAccentBrush}"
+                        MutedBrush="{DynamicResource RavenTextBrush}"
+                        PresentBrush="{DynamicResource RavenSuccessBrush}"
+                        AbsentBrush="{DynamicResource RavenDangerBrush}"
+                        EmptyBrush="{DynamicResource RavenWarningBrush}" />
+                  </Expander>
+                </Border>
+
                 <Border x:Name="GuardianSelectedMap"
                         Classes="card raised"
                         IsVisible="{Binding Guardian.SurveyEditor.IsMapSummaryVisible}">
@@ -568,11 +655,20 @@
                                FontSize="11"
                                TextWrapping="Wrap"
                                Text="Gradient wedges mark active obelisks: gray is unscanned, orange is scanned, and cyan is still needed for Ram Tah." />
-                    <Button Classes="secondary"
-                            HorizontalAlignment="Left"
-                            IsVisible="{Binding Guardian.TemplateAuthoring.CanStart}"
-                            Command="{Binding Guardian.TemplateAuthoring.StartCommand}"
-                            Content="Start map draft" />
+                    <TextBlock Classes="muted"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Text="Map-layout tools are shared by every site of this type. Start with a blank map or edit the existing shared map; this site's heading, origin, notes, and observations are saved separately below." />
+                    <WrapPanel IsVisible="{Binding Guardian.TemplateAuthoring.CanStart}">
+                      <Button Classes="secondary"
+                              Margin="0,0,8,8"
+                              Command="{Binding Guardian.TemplateAuthoring.StartCommand}"
+                              Content="Start map draft" />
+                      <Button Classes="secondary"
+                              Margin="0,0,0,8"
+                              Command="{Binding Guardian.TemplateAuthoring.EditCommand}"
+                              Content="Edit Current Map" />
+                    </WrapPanel>
                     <WrapPanel Orientation="Horizontal">
                       <CheckBox Margin="0,0,14,0"
                                 IsChecked="{Binding Guardian.ShowMapLegend, Mode=TwoWay}"
@@ -580,6 +676,40 @@
                       <CheckBox IsChecked="{Binding Guardian.ShowMapNotes, Mode=TwoWay}"
                                 Content="Show notes" />
                     </WrapPanel>
+                  </StackPanel>
+                </Border>
+
+                <Border x:Name="GuardianSurveyPoints"
+                        Classes="card raised"
+                        IsVisible="{Binding Guardian.SurveyEditor.IsMapSummaryVisible}">
+                  <StackPanel Spacing="6">
+                    <TextBlock Classes="muted" Text="SURVEY POINTS" />
+                    <ListBox Height="210"
+                             ItemsSource="{Binding Guardian.SurveyEditor.Points}"
+                             SelectedItem="{Binding Guardian.SurveyEditor.SelectedPoint, Mode=TwoWay}">
+                      <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:GuardianSurveyPoiViewModel">
+                          <Grid Margin="4,2"
+                                ColumnDefinitions="44,78,*,Auto"
+                                ColumnSpacing="6">
+                            <TextBlock Classes="monospace"
+                                       FontSize="12"
+                                       Text="{Binding Name}" />
+                            <TextBlock Grid.Column="1"
+                                       Classes="muted"
+                                       FontSize="12"
+                                       Text="{Binding TypeText}" />
+                            <TextBlock Grid.Column="2"
+                                       Classes="muted"
+                                       FontSize="12"
+                                       Text="{Binding PositionText}" />
+                            <TextBlock Grid.Column="3"
+                                       FontSize="12"
+                                       Text="{Binding Status}" />
+                          </Grid>
+                        </DataTemplate>
+                      </ListBox.ItemTemplate>
+                    </ListBox>
                   </StackPanel>
                 </Border>
 
@@ -592,7 +722,7 @@
                     <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                                IsVisible="{Binding Guardian.SurveyEditor.IsSelectedPointReadOnly}"
                                TextWrapping="Wrap"
-                               Text="Reference marker preview. This is the same point form used while editing; survey values remain locked, and map geometry enables after you start a map draft." />
+                               Text="Reference marker preview. Survey values remain locked until you choose Start map draft or Edit Current Map; map geometry is shared by every site of this type." />
                     <StackPanel x:Name="GuardianSelectedTemplatePointEditor"
                                 Spacing="10"
                                 IsVisible="{Binding Guardian.TemplateAuthoring.HasSelectedPoint}">
@@ -786,37 +916,6 @@
                   </StackPanel>
                 </Border>
 
-                <Border x:Name="GuardianSurveyMapLegend"
-                        Classes="card"
-                        IsVisible="{Binding Guardian.ShowMapLegend}">
-                  <StackPanel Spacing="12">
-                    <TextBlock Classes="card-title" Text="Map legend" />
-                    <controls:GuardianSiteMapControl
-                        Height="320"
-                        ClipToBounds="True"
-                        IsLegendOnly="True"
-                        Projection="{Binding Guardian.MapProjection}"
-                        ShowLegend="False"
-                        MapBackground="{DynamicResource RavenSurfaceBrush}"
-                        GridBrush="{DynamicResource RavenBorderBrush}"
-                        AccentBrush="{DynamicResource RavenAccentBrush}"
-                        MutedBrush="{DynamicResource RavenTextBrush}"
-                        PresentBrush="{DynamicResource RavenSuccessBrush}"
-                        AbsentBrush="{DynamicResource RavenDangerBrush}"
-                        EmptyBrush="{DynamicResource RavenWarningBrush}" />
-                  </StackPanel>
-                </Border>
-
-                <Border x:Name="GuardianSurveyMapOrientation"
-                        Classes="card">
-                  <StackPanel Spacing="5">
-                    <TextBlock Classes="card-title" Text="Orientation" />
-                    <TextBlock Classes="muted"
-                               TextWrapping="Wrap"
-                               Text="The legacy aerial image is fixed to the Guardian site template's surveyed origin and scale. Site, tower, marker, and commander geometry uses that same alignment." />
-                  </StackPanel>
-                </Border>
-
                 <Border x:Name="GuardianSurveyMapNotes"
                         Classes="card"
                         IsVisible="{Binding Guardian.ShouldShowMapNotes}">
@@ -838,15 +937,64 @@
                       Classes="card"
                       IsVisible="{Binding Guardian.TemplateAuthoring.IsAuthoring}">
                   <StackPanel Spacing="14">
-                    <TextBlock Classes="card-title" Text="Map draft tools" />
+                    <TextBlock Classes="eyebrow"
+                               Text="{Binding Guardian.TemplateAuthoring.DraftModeTitle}" />
                     <TextBlock FontWeight="SemiBold"
                                Text="{Binding Guardian.TemplateAuthoring.TemplateTitle}" />
                     <TextBlock Classes="muted"
                                TextWrapping="Wrap"
-                               Text="The legacy map-editor workflow is integrated here. Edit background alignment, add a measured point, place group labels, then export or discard the shared template draft." />
+                               Text="{Binding Guardian.TemplateAuthoring.DraftDescription}" />
+
+                    <Border x:Name="GuardianMapCatalogDetails"
+                            Classes="card raised"
+                            IsEnabled="{Binding Guardian.SurveyEditor.IsAvailable}">
+                      <StackPanel Spacing="10">
+                        <TextBlock Classes="muted" Text="THIS SITE'S CATALOG DETAILS" />
+                        <TextBlock Classes="muted"
+                                   FontSize="11"
+                                   TextWrapping="Wrap"
+                                   Text="These values identify this particular site in the systems table. They are autofilled from the journal when available and are saved to this commander survey, separately from the shared map geometry." />
+                        <Grid ColumnDefinitions="220,150,180,*" ColumnSpacing="10">
+                          <StackPanel Spacing="4">
+                            <TextBlock Classes="muted" Text="BODY" />
+                            <TextBox Text="{Binding Guardian.SurveyEditor.CatalogBodyName, Mode=TwoWay}" />
+                          </StackPanel>
+                          <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Classes="muted" Text="DISTANCE LY" />
+                            <NumericUpDown Minimum="0"
+                                           Maximum="100000"
+                                           Increment="0.01"
+                                           FormatString="0.00"
+                                           IsEnabled="{Binding Guardian.SurveyEditor.CanEditDistanceLy}"
+                                           Value="{Binding Guardian.SurveyEditor.DistanceLy, Mode=TwoWay}" />
+                          </StackPanel>
+                          <StackPanel Grid.Column="2" Spacing="4">
+                            <TextBlock Classes="muted" Text="ARRIVAL DISTANCE LS" />
+                            <NumericUpDown Minimum="0"
+                                           Maximum="1000000000"
+                                           Increment="0.1"
+                                           FormatString="0.0"
+                                           Value="{Binding Guardian.SurveyEditor.ArrivalDistanceLs, Mode=TwoWay}" />
+                          </StackPanel>
+                          <Button Grid.Column="3"
+                                  VerticalAlignment="Bottom"
+                                  HorizontalAlignment="Left"
+                                  Command="{Binding Guardian.SurveyEditor.SaveCommand}"
+                                  Content="Save site details" />
+                        </Grid>
+                        <TextBlock Classes="muted"
+                                   FontSize="11"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding Guardian.SurveyEditor.DistanceOriginText}" />
+                      </StackPanel>
+                    </Border>
 
                     <StackPanel Spacing="14"
                                 IsVisible="{Binding Guardian.TemplateAuthoring.IsAuthoring}">
+                      <TextBlock Classes="muted"
+                                 FontSize="11"
+                                 TextWrapping="Wrap"
+                                 Text="Background and alignment changes preview immediately on the map. They remain part of this draft until the complete map catalog is saved." />
                       <Grid ColumnDefinitions="*,*"
                             RowDefinitions="Auto,Auto,Auto"
                             ColumnSpacing="8"
@@ -885,16 +1033,15 @@
                                          Value="{Binding Guardian.TemplateAuthoring.ScaleFactor, Mode=TwoWay}" />
                         </StackPanel>
                       </Grid>
-                      <Button Classes="secondary"
-                              HorizontalAlignment="Left"
-                              Command="{Binding Guardian.TemplateAuthoring.ApplyMetadataCommand}"
-                              Content="Apply metadata to draft" />
-
                       <Border Classes="card raised">
                         <StackPanel Spacing="10">
                           <TextBlock Classes="muted" Text="MEASURED MASTER POINT" />
                           <TextBlock TextWrapping="Wrap"
                                      Text="{Binding Guardian.TemplateAuthoring.LiveMeasurementText}" />
+                          <TextBlock Classes="muted"
+                                     FontSize="11"
+                                     TextWrapping="Wrap"
+                                     Text="Stand at the shared point, choose its name and type, then add it directly to this draft. No additional Apply action is required." />
                           <Grid ColumnDefinitions="2*,*,Auto" ColumnSpacing="8">
                             <TextBox Text="{Binding Guardian.TemplateAuthoring.NewPointName, Mode=TwoWay}"
                                      PlaceholderText="Unique point name" />
@@ -909,6 +1056,10 @@
                         </StackPanel>
                       </Border>
 
+                      <TextBlock Classes="muted"
+                                 FontSize="11"
+                                 TextWrapping="Wrap"
+                                 Text="Group-label positions are shared map geometry. Set or remove a label here; the result is included when the map catalog is saved." />
                       <Grid ColumnDefinitions="2*,3*" ColumnSpacing="12">
                         <ListBox Height="150"
                                  ItemsSource="{Binding Guardian.TemplateAuthoring.Groups}"
@@ -957,11 +1108,15 @@
                         </StackPanel>
                       </Grid>
 
+                      <TextBlock Classes="muted"
+                                 FontSize="11"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding Guardian.TemplateAuthoring.SaveLocationText}" />
                       <WrapPanel>
                         <Button Classes="secondary"
                                 Margin="0,0,8,8"
                                 Click="ExportGuardianTemplate_Click"
-                                Content="Export verified catalog..." />
+                                Content="Save map changes..." />
                         <Button Classes="secondary"
                                 Margin="0,0,0,8"
                                 Command="{Binding Guardian.TemplateAuthoring.RequestDiscardCommand}"
@@ -1001,7 +1156,10 @@
               <Border x:Name="GuardianSurveyEditor"
                       Classes="card">
                 <StackPanel Spacing="14">
-                  <TextBlock Classes="card-title" Text="Survey editor" />
+                  <TextBlock Classes="card-title" Text="This site survey" />
+                  <TextBlock Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes." />
                   <TextBlock Classes="muted"
                              TextWrapping="Wrap"
                              Text="{Binding Guardian.SurveyEditor.AvailabilityMessage}" />
@@ -1036,7 +1194,9 @@
                                          FormatString="0"
                                          Value="{Binding Guardian.SurveyEditor.RelicTowerHeading, Mode=TwoWay}" />
                         </StackPanel>
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Grid ColumnDefinitions="210,210,Auto,*"
+                              ColumnSpacing="12"
+                              HorizontalAlignment="Left">
                           <StackPanel Spacing="5">
                             <TextBlock Classes="muted" Text="SURFACE LATITUDE" />
                             <NumericUpDown x:Name="GuardianSurveyLatitude"
@@ -1055,6 +1215,10 @@
                                            FormatString="0.000000"
                                            Value="{Binding Guardian.SurveyEditor.SurfaceLongitude, Mode=TwoWay}" />
                           </StackPanel>
+                          <Button Grid.Column="2"
+                                  VerticalAlignment="Bottom"
+                                  Command="{Binding Guardian.SurveyEditor.ResetCoordinatesCommand}"
+                                  Content="Reset coordinates" />
                         </Grid>
                         <TextBlock Classes="muted"
                                    FontSize="11"
@@ -1174,30 +1338,6 @@
                                    Text="Raw points are commander-specific discoveries. The active site, selected survey, surface position, body radius, and site heading must all agree before a point can be measured." />
                       </StackPanel>
                     </Border>
-
-                    <StackPanel Spacing="6">
-                      <TextBlock Classes="muted" Text="SURVEY POINTS" />
-                      <ListBox Height="210"
-                               ItemsSource="{Binding Guardian.SurveyEditor.Points}"
-                               SelectedItem="{Binding Guardian.SurveyEditor.SelectedPoint, Mode=TwoWay}">
-                        <ListBox.ItemTemplate>
-                          <DataTemplate x:DataType="vm:GuardianSurveyPoiViewModel">
-                            <Grid Margin="6,3"
-                                  ColumnDefinitions="70,*,Auto,Auto"
-                                  ColumnSpacing="8">
-                              <TextBlock Classes="monospace" Text="{Binding Name}" />
-                              <TextBlock Grid.Column="1"
-                                         Classes="muted"
-                                         Text="{Binding TypeText}" />
-                              <TextBlock Grid.Column="2"
-                                         Classes="muted"
-                                         Text="{Binding PositionText}" />
-                              <TextBlock Grid.Column="3" Text="{Binding Status}" />
-                            </Grid>
-                          </DataTemplate>
-                        </ListBox.ItemTemplate>
-                      </ListBox>
-                    </StackPanel>
 
                     <Button Classes="primary"
                             HorizontalAlignment="Left"

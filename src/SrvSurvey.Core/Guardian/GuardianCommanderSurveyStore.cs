@@ -128,6 +128,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         root["systemName"] = survey.SystemName;
         root["bodyId"] = survey.BodyId;
         root["bodyName"] = survey.BodyName;
+        WriteOptionalCatalogMetadata(root, survey);
         root["siteHeading"] = survey.Survey.SiteHeading;
         root["relicTowerHeading"] = survey.Survey.RelicTowerHeading;
         root["notes"] = survey.Notes;
@@ -142,6 +143,48 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
             ? null
             : WriteRawPoints(survey.Survey.RawPointsOfInterest);
         WriteComponentMaterials(root, survey.Survey.ComponentMaterials);
+    }
+
+    private static void WriteOptionalCatalogMetadata(
+        JsonObject root,
+        GuardianCommanderSiteSurvey survey)
+    {
+        SetOrRemove(
+            root,
+            "localSiteId",
+            survey.LocalSiteId > 0 ? survey.LocalSiteId : null);
+        SetOrRemove(root, "catalogBodyName", survey.CatalogBodyName);
+        SetOrRemove(
+            root,
+            "starPos",
+            survey.StarPosition is { } position
+                ? new JsonArray(position.X, position.Y, position.Z)
+                : null);
+        SetOrRemove(root, "distanceToArrival", survey.DistanceToArrivalLs);
+        SetOrRemove(
+            root,
+            "mapMarkerOffset",
+            survey.MapMarkerOffset == default
+                ? null
+                : new JsonObject
+                {
+                    ["x"] = survey.MapMarkerOffset.X,
+                    ["y"] = survey.MapMarkerOffset.Y,
+                });
+    }
+
+    private static void SetOrRemove(
+        JsonObject root,
+        string propertyName,
+        JsonNode? value)
+    {
+        if (value is null)
+        {
+            root.Remove(propertyName);
+            return;
+        }
+
+        root[propertyName] = value;
     }
 
     private static void WriteLocation(

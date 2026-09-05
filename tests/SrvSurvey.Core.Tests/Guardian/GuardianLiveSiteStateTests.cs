@@ -195,7 +195,7 @@ public sealed class GuardianLiveSiteStateTests
     }
 
     [Fact]
-    public void SurveyUpdatePreservesCollectedDataAndRefreshesVisitFields()
+    public void SurveyUpdatePreservesCollectedDataAndCorrectedSurfaceOrigin()
     {
         var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
         state.Apply(Parse(
@@ -231,7 +231,10 @@ public sealed class GuardianLiveSiteStateTests
                 },
             },
             [new GuardianObelisk("A01", "H1", true, ["ca"])],
-            new HashSet<char> { 'A' });
+            new HashSet<char> { 'A' })
+        {
+            MapMarkerOffset = new GuardianMapPoint(4, -6),
+        };
 
         var survey = state.CreateOrUpdateSurvey("Drew", legacy: true, existing);
 
@@ -241,10 +244,11 @@ public sealed class GuardianLiveSiteStateTests
         Assert.Equal("Beta", survey.SiteType);
         Assert.Equal("keep this note", survey.Notes);
         Assert.Equal(123, survey.Survey.SiteHeading);
-        Assert.Equal(new GuardianSurfaceLocation(3, 4), survey.Survey.Location);
+        Assert.Equal(new GuardianSurfaceLocation(1, 2), survey.Survey.Location);
         Assert.Equal(GuardianPoiStatus.Present, survey.Survey.PoiStatuses["p1"]);
         Assert.Single(survey.ActiveObelisks);
         Assert.Contains('A', survey.ObeliskGroups);
+        Assert.Equal(new GuardianMapPoint(4, -6), survey.MapMarkerOffset);
         Assert.True(survey.Legacy);
     }
 

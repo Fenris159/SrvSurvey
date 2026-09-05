@@ -50,6 +50,44 @@ public sealed class GuardianSiteMapProjectorTests
     }
 
     [Fact]
+    public void ProjectionAppliesCommanderMarkerOffsetWithoutMutatingTemplate()
+    {
+        var template = new GuardianSiteTemplate(
+            "Beta",
+            "Beta",
+            "beta-background.png",
+            new GuardianMapPoint(487, 556),
+            1.88,
+            [new GuardianPointOfInterest(
+                "p1",
+                GuardianPoiType.Orb,
+                0,
+                10,
+                0)],
+            [],
+            new Dictionary<string, GuardianMapPoint>
+            {
+                ["A"] = new GuardianMapPoint(0, 15),
+            });
+        var offset = new GuardianMapPoint(12, -7);
+
+        var projection = new GuardianSiteMapProjector().Project(
+            template,
+            obeliskGroups: new HashSet<char> { 'A' },
+            markerOffset: offset);
+
+        AssertPoint(Assert.Single(projection.Points), 12, 3);
+        AssertPoint(Assert.Single(projection.Groups).X,
+            Assert.Single(projection.Groups).Y,
+            12,
+            8);
+        Assert.Equal(offset, projection.MarkerOffset);
+        Assert.Equal(new GuardianMapPoint(487, 556), template.ImageOffset);
+        Assert.Equal(0, template.PointsOfInterest[0].Angle);
+        Assert.Equal(10, template.PointsOfInterest[0].Distance);
+    }
+
+    [Fact]
     public void CombinesSurveyStateRawPointsAndActiveObelisks()
     {
         var template = CreateTemplate(
