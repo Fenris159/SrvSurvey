@@ -25,7 +25,7 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:InputBindingViewModel">
               <Grid ColumnDefinitions="*,260" ColumnSpacing="24" Margin="0,4">
-                <TextBlock Text="{Binding Definition.DisplayName}" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding MiningDisplayName}" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1">
                   <controls:ShortcutCaptureBox Chord="{Binding Chord, Mode=TwoWay}"
                                                PlaceholderText="Click, then hold shortcut keys" />

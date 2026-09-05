@@ -1119,6 +1119,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     public SurfaceMiningViewModel Mining { get; }
 
+    public Task<bool> ToggleTrackerOrMiningRigAsync(
+        int number,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(number, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(number, 8);
+        if (SystemSurvey.IsRhinoSurfaceContext)
+        {
+            return number <= 6 ? Mining.ToggleRigAsync(number) : Task.FromResult(false);
+        }
+
+        return SurfaceSurvey.ToggleQuickTrackerAsync(number, cancellationToken);
+    }
+
     public CombatViewModel Combat { get; }
 
     public BiologyPredictionsViewModel BiologyPredictions { get; }

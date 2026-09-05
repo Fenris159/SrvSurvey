@@ -170,7 +170,7 @@ public sealed class GuidesViewModelTests
     [InlineData("checksum manifest", "Import an original SrvSurvey profile")]
     [InlineData("boxel hierarchy", "Navigate the boxel hierarchy")]
     [InlineData("FSSAllBodiesFound", "Survey the current boxel")]
-    [InlineData("Alt+1", "Rig tracking with key chords")]
+    [InlineData("Ctrl+Alt+F1", "Rig tracking with key chords")]
     [InlineData("Rhino cargo", "Ship, Rhino, and cargo")]
     public void SearchFindsWorkflowAndGlossaryContent(
         string query,

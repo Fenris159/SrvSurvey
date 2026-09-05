@@ -11,7 +11,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
     [Fact]
     public void CatalogPreservesLegacyActionsAndAddsOverlayEditShortcut()
     {
-        Assert.Equal(67, GlobalInputActionCatalog.All.Count);
+        Assert.Equal(61, GlobalInputActionCatalog.All.Count);
         Assert.Equal(
             GlobalInputActionCatalog.All.Count,
             GlobalInputActionCatalog.All
@@ -48,6 +48,39 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
             Assert.Contains("rendered inactive", definition.Description);
             Assert.Contains("until toggled on", definition.Description);
         });
+    }
+
+    [Theory]
+    [InlineData("ALT 1", "ALT CTRL F1", "ALT CTRL F1")]
+    [InlineData("CTRL X", "ALT CTRL F1", "CTRL X")]
+    [InlineData("", "ALT CTRL F1", "")]
+    [InlineData("CTRL X", "CTRL Y", "CTRL Y")]
+    [InlineData("CTRL X", "", "")]
+    public void SharedTrackersMigrateCustomizedRigBindingsAndResetCleanly(
+        string rigChord, string trackerChord, string expectedChord)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "ui.json");
+        var root = new System.Text.Json.Nodes.JsonObject
+        {
+            ["Input"] = new System.Text.Json.Nodes.JsonObject
+            {
+                ["Bindings"] = new System.Text.Json.Nodes.JsonObject
+                {
+                    ["miningRig1"] = rigChord,
+                    ["track1"] = trackerChord,
+                },
+            },
+        };
+        File.WriteAllText(path, root.ToJsonString());
+        var store = new GlobalInputSettingsStore(path);
+        var loaded = store.Load();
+        Assert.Equal(expectedChord, loaded.Bindings[GlobalInputAction.Track1]);
+        store.Save(loaded);
+        Assert.Equal(expectedChord, store.Load().Bindings[GlobalInputAction.Track1]);
+        Assert.DoesNotContain("miningRig1", File.ReadAllText(path));
+        store.Save(GlobalInputSettings.Default);
+        Assert.Equal("ALT CTRL F1", store.Load().Bindings[GlobalInputAction.Track1]);
     }
 
     [Fact]

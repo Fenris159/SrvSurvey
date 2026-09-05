@@ -12,6 +12,32 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
         Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public void EightSharedTrackersKeepSixMiningLabelsAndLiveBindings()
+    {
+        var viewModel = Create(OverlayHostKind.Windows);
+        var trackers = viewModel.Bindings.Where(binding => binding.Definition.Action is
+            >= GlobalInputAction.Track1 and <= GlobalInputAction.Track8).ToArray();
+        Assert.Equal(8, trackers.Length);
+        Assert.Equal(6, viewModel.MiningBindings.Count);
+        for (var index = 0; index < trackers.Length; index++)
+        {
+            var expectedLabel = index < 6 ? $"Tracker/Mining Rig ({index + 1})" : $"Tracker ({index + 1})";
+            Assert.Equal(expectedLabel, trackers[index].DisplayName);
+            Assert.Equal($"ALT CTRL F{index + 1}", trackers[index].Chord);
+            if (index < 6)
+            {
+                Assert.Same(trackers[index], viewModel.MiningBindings[index]);
+                Assert.Equal($"Mining rig {index + 1}", viewModel.MiningBindings[index].MiningDisplayName);
+            }
+        }
+
+        viewModel.MiningBindings[0].Chord = "CTRL X";
+        Assert.Equal("CTRL X", trackers[0].Chord);
+        trackers[0].Chord = "CTRL Y";
+        Assert.Equal("CTRL Y", viewModel.MiningBindings[0].Chord);
+    }
+
+    [Fact]
     public void SavesKeyboardToggleAndNormalizedBinding()
     {
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");

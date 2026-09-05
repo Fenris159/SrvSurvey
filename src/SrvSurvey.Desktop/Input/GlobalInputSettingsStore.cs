@@ -51,6 +51,8 @@ public sealed class GlobalInputSettingsStore
                     bindings[definition.Action] = chord;
                 }
             }
+
+            MigrateMiningBindings(storedBindings, bindings);
         }
 
         return new GlobalInputSettings(
@@ -86,11 +88,36 @@ public sealed class GlobalInputSettingsStore
                     ?? definition.DefaultChord;
             }
 
+            for (var number = 1; number <= 6; number++)
+            {
+                bindings.Remove($"miningRig{number}");
+            }
+
             root["Version"] = 1;
             input["KeyboardEnabled"] = settings.KeyboardEnabled;
             input["ControllerEnabled"] = settings.ControllerEnabled;
             input["ControllerDeviceId"] = settings.ControllerDeviceId;
         });
+    }
+
+    private static void MigrateMiningBindings(
+        JsonObject storedBindings,
+        Dictionary<GlobalInputAction, string> bindings)
+    {
+        for (var number = 1; number <= 6; number++)
+        {
+            var action = GlobalInputAction.Track1 + number - 1;
+            var defaultChord = GlobalInputActionCatalog.Get(action).DefaultChord;
+            if (storedBindings[$"miningRig{number}"] is JsonValue value
+                && value.TryGetValue<string>(out var chord)
+                && !string.Equals(chord, $"ALT {number}", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(bindings[action], defaultChord, StringComparison.OrdinalIgnoreCase))
+            {
+                // Preserve a customized RC43 rig chord when the tracker still uses its default.
+                // An explicit tracker customization wins if the old settings disagree.
+                bindings[action] = chord;
+            }
+        }
     }
 
     private static bool GetBoolean(JsonObject root, string name)
