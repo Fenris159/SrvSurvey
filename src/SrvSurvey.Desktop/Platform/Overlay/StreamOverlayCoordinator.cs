@@ -108,7 +108,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         }
 
         var gameWindow = gameWindowTracker.GetSnapshot();
-        if (!gameWindow.IsAvailable || !gameWindow.IsVisible)
+        if (!gameWindow.IsAvailable || !gameWindow.IsVisible || !gameWindow.IsForeground)
         {
             CloseWindow();
             viewModel.StatusMessage =
