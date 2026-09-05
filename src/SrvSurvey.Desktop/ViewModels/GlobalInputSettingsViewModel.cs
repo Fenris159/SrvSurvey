@@ -41,7 +41,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
             .ToArray();
         ResetBindingsCommand = new DelegateCommand(ResetBindings);
         MiningBindings = Bindings.Where(binding => binding.Definition.Action is
-            >= GlobalInputAction.MiningRig1 and <= GlobalInputAction.MiningRig6).ToArray();
+            >= GlobalInputAction.Track1 and <= GlobalInputAction.Track6).ToArray();
         RefreshControllersCommand = new DelegateCommand(
             RefreshControllerDevices);
         runtimeStatus = IsKeyboardAvailable

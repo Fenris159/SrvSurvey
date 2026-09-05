@@ -14,7 +14,7 @@ changes are in `c9e82b8db20eebece016735b1b6e8f281229eca6`.
   scale. Vehicle center is 4 meters behind the cockpit; deployed rigs are 7
   meters behind it. Spherical offsets preserve distance at high latitudes and
   across the longitude boundary.
-- Six Alt+1 through Alt+6 bindings toggle saved rig circles and matching
+- Six Ctrl+Alt+F1 through Ctrl+Alt+F6 bindings toggle saved rig circles and matching
   chevrons. Rings are 70 meters; pickup is below 5 meters and the deployment
   exclusion cue is below 78 meters from vehicle center. Rig chevrons sit below
   the two-column Ship/Rhino tracker. Cargo uses SRV inventory with status fallback,

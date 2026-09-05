@@ -1481,12 +1481,6 @@ internal sealed partial class DesktopRuntime
             GlobalInputAction.AdjustVr => BeginVrAdjustment(),
             GlobalInputAction.ResetVr =>
                 vrOverlayCoordinator?.ResetOrientation() == true,
-            GlobalInputAction.MiningRig1 => await viewModel.Mining.ToggleRigAsync(1),
-            GlobalInputAction.MiningRig2 => await viewModel.Mining.ToggleRigAsync(2),
-            GlobalInputAction.MiningRig3 => await viewModel.Mining.ToggleRigAsync(3),
-            GlobalInputAction.MiningRig4 => await viewModel.Mining.ToggleRigAsync(4),
-            GlobalInputAction.MiningRig5 => await viewModel.Mining.ToggleRigAsync(5),
-            GlobalInputAction.MiningRig6 => await viewModel.Mining.ToggleRigAsync(6),
             GlobalInputAction.Track1 => await ToggleQuickTrackerAsync(1),
             GlobalInputAction.Track2 => await ToggleQuickTrackerAsync(2),
             GlobalInputAction.Track3 => await ToggleQuickTrackerAsync(3),
@@ -1600,7 +1594,7 @@ internal sealed partial class DesktopRuntime
             return Task.FromResult(false);
         }
 
-        return viewModel.SurfaceSurvey.ToggleQuickTrackerAsync(
+        return viewModel.ToggleTrackerOrMiningRigAsync(
             trackerNumber,
             CancellationToken.None);
     }

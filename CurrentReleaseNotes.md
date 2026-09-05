@@ -1,6 +1,16 @@
-# SrvSurvey-XP 2.1.3.0-rc.43
+# SrvSurvey-XP 2.1.3.0-rc.44
 
-RC43 restores survey overlays while supercruising above a planet and reconciles
+RC44 combines surface-tracker and mining-rig shortcuts into eight shared
+**Tracker/Mining Rig (1)** through **Tracker/Mining Rig (8)** options in Input
+settings, defaulting to **Ctrl+Alt+F1** through **Ctrl+Alt+F8**. Mining overlay
+settings retain six **Mining rig** entries linked to the first six bindings.
+The shared shortcuts toggle rigs while operating the Rhino and surface trackers
+otherwise; slots 7 and 8 are surface trackers only. Existing custom tracker
+bindings are preserved. A customized RC43 rig binding carries over when its
+matching tracker still uses the default; the old Alt+1–6 rig defaults are retired.
+
+This candidate retains the RC43 features below: survey overlays while
+supercruising above a planet and reconciliation of
 estimated exploration rewards as system data is sold. It also corrects Live
 Horizons profile selection and reward estimates, adds Rhino surface mining
 guidance, and introduces the Monochrome Companion overlay preset. It retains the RC42
@@ -14,7 +24,7 @@ upload reporting, and SDL3 controller shortcut support on Windows and Linux.
   ship guidance, six rig direction indicators, and a cargo capacity row.
 - Splits vehicle guidance into Ship and Rhino columns. On foot, the Rhino
   chevron points back to its parked location; aboard, an X marks it untracked.
-- Uses Alt+1 through Alt+6 to save or clear rig locations for the current
+- Uses Ctrl+Alt+F1 through Ctrl+Alt+F6 to save or clear rig locations for the current
   Commander and body. Collection and deployment-distance cues account for
   the Rhino cockpit and rig placement offsets.
 - Keeps mining guidance available while operating or walking back to a parked
@@ -179,11 +189,11 @@ distance cues, and vehicle tracking. Also see
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.43`
-- Tag: `xp-v2.1.3.0-rc.43`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.43-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.43-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.43-x86_64.AppImage`
+- Version: `2.1.3.0-rc.44`
+- Tag: `xp-v2.1.3.0-rc.44`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.44-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.44-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.44-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.

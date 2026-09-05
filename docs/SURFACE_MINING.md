@@ -1,6 +1,6 @@
 # Surface mining
 
-Available in **SrvSurvey-XP 2.1.3.0-rc.43**. The Surface mining overlay provides
+Available in **SrvSurvey-XP 2.1.3.0-rc.44**. The Surface mining overlay provides
 Rhino rig locations, vehicle guidance, and cargo capacity during surface mining.
 The same workflow is covered inside the application under **Guides > Surface mining**.
 
@@ -11,7 +11,12 @@ The same workflow is covered inside the application under **Guides > Surface min
    a show/hide shortcut if desired. The Mining workspace is reserved for future
    tools; current mining guidance appears in the overlay.
 3. Set the six rig shortcuts in that settings window or in **Input** settings.
-   Both locations edit the same bindings. Defaults are **Alt+1** through **Alt+6**.
+   Both locations edit the same bindings. Defaults are **Ctrl+Alt+F1** through **Ctrl+Alt+F6**.
+   Input names these **Tracker/Mining Rig (1)** through **Tracker/Mining Rig (8)**.
+   Outside Rhino mining, all eight shortcuts toggle surface trackers; slots 7 and 8
+   do not place rigs. Mining settings retain the six **Mining rig** labels.
+   Existing custom tracker bindings are preserved. A customized RC43 rig chord is
+   retained when its matching tracker still uses the default.
 4. Operate a Rhino on a planetary surface with journal/status tracking active.
    The panel appears when its normal overlay display conditions are met.
 

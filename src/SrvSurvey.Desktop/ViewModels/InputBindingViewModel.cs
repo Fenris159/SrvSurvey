@@ -28,6 +28,8 @@ public sealed class InputBindingViewModel : INotifyPropertyChanged
 
     public string DisplayName => Definition.DisplayName;
 
+    public string MiningDisplayName => $"Mining rig {Definition.Action - GlobalInputAction.Track1 + 1}";
+
     public string Description => Definition.Description;
 
     public string DefaultChord => string.IsNullOrEmpty(Definition.DefaultChord)
