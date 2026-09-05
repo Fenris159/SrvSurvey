@@ -20,7 +20,6 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private bool isRhinoParked;
     private bool disposed;
     private IReadOnlyList<SurfaceRadarMarkerViewModel> navigation = [];
-    private IReadOnlyList<SurfaceRadarMarkerViewModel> surfaceBookmarks = [];
     private double cargoUsed;
 
     public SurfaceMiningViewModel(SystemSurfaceStore store)
@@ -40,8 +39,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     public double RhinoBearing => RhinoMarker?.RelativeBearingDegrees ?? 0;
     public string RhinoDistanceText => RhinoMarker?.DistanceText ?? "—";
     public bool HasShipTracker => ShipMarkers.Count > 0;
-    public double ShipBearing => ShipMarkers.FirstOrDefault()?.RelativeBearingDegrees ?? 0;
-    public string ShipDistanceText => ShipMarkers.FirstOrDefault()?.DistanceText ?? "—";
+    public double ShipBearing => HasShipTracker ? ShipMarkers[0].RelativeBearingDegrees : 0;
+    public string ShipDistanceText => HasShipTracker ? ShipMarkers[0].DistanceText : "—";
     public string BodyName => context?.BodyName ?? "Current body";
     public string HeadingText => $"HEADING {status?.NormalizedHeading ?? 0:000}°";
     public string HistoryText => $"{Rigs.Count(rig => rig.IsSet)} of 6 rigs tracked";
@@ -57,10 +56,9 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
 
     public async Task ApplyUpdateAsync(SurfaceSurveySessionContext? session,
         SystemScanSnapshot snapshot, EliteStatus? currentStatus, string? srvType,
-        IReadOnlyList<SurfaceRadarMarkerViewModel>? navigationMarkers = null,
+        IReadOnlyList<SurfaceRadarMarkerViewModel>? surfaceMarkers = null,
         CargoSnapshot? cargo = null,
-        string? parkedSrvType = null,
-        IReadOnlyList<SurfaceRadarMarkerViewModel>? surfaceBookmarks = null)
+        string? parkedSrvType = null)
     {
         await updateLock.WaitAsync().ConfigureAwait(true);
         try
@@ -69,8 +67,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             var count = cargo is not null && string.Equals(cargo.Vessel, "SRV", StringComparison.OrdinalIgnoreCase)
                 ? cargo.Count : status?.Cargo ?? 0;
             cargoUsed = double.IsFinite(count) ? Math.Max(0, count) : 0;
-            navigation = navigationMarkers ?? [];
-            this.surfaceBookmarks = surfaceBookmarks ?? [];
+            navigation = surfaceMarkers ?? [];
             isRhino = string.Equals(srvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
             isRhinoParked = string.Equals(parkedSrvType, "mev_rhino", StringComparison.OrdinalIgnoreCase);
             var body = snapshot.Bodies.FirstOrDefault(candidate => string.Equals(
@@ -118,7 +115,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             }
 
             var location = SurfaceMiningGeometry.DeployedRig(cockpit,
-                status!.NormalizedHeading, context!.RadiusMeters);
+                status.NormalizedHeading, context!.RadiusMeters);
             var result = await store.ToggleBookmarkGroupAsync(context, $"#{number}", location)
                 .ConfigureAwait(true);
             surface = (await store.LoadBodyAsync(context).ConfigureAwait(true)).Snapshot;
@@ -203,52 +200,16 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         var validPosition = ShouldShow && TryGetPosition(out _);
         for (var number = 1; number <= 6; number++)
         {
-            SurfaceRadarMarkerViewModel? marker = null;
-            if (validPosition && surface?.Bookmarks.TryGetValue($"#{number}", out var locations) == true
-                && locations.Count > 0 && TryGetPosition(out var cockpit))
+            var marker = validPosition ? CreateRigMarker(number) : null;
+            if (marker is not null)
             {
-                var current = status!.InSrv
-                    ? SurfaceMiningGeometry.VehicleCenter(cockpit, status.NormalizedHeading, context!.RadiusMeters)
-                    : cockpit;
-                var location = locations[0];
-                var distance = SurfaceNavigation.GetDistance(current, location, context!.RadiusMeters);
-                var bearing = SurfaceNavigation.GetBearing(current, location);
-                marker = new SurfaceRadarMarkerViewModel
-                {
-                    Name = $"Rig {number}",
-                    Kind = SurfaceRadarMarkerKind.MiningRig,
-                    Location = location,
-                    DistanceMeters = distance,
-                    BearingDegrees = bearing,
-                    RelativeBearingDegrees = SurfaceNavigation.NormalizeDegrees(bearing - status.NormalizedHeading),
-                    RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
-                    IsInsideRadius = distance < SurfaceMiningGeometry.ExclusionDistanceMeters,
-                    Status = distance < SurfaceMiningGeometry.PickupDistanceMeters ? "COLLECT"
-                        : distance < SurfaceMiningGeometry.ExclusionDistanceMeters ? "TOO CLOSE" : "TRACKED",
-                };
                 markers.Add(marker);
             }
 
             rigs.Add(new MiningRigViewModel(number, marker));
         }
 
-        var resources = validPosition ? surfaceBookmarks
-            .Where(marker => marker.IsBookmark && !marker.Name.StartsWith('#')
-                // Legacy treats named bookmarks without a biology sample range as ground resources.
-                && ExobiologyReferenceCatalog.GetSampleDistanceMeters(marker.Name) == 50)
-            .OrderBy(marker => marker.Name, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(marker => marker.DistanceMeters)
-            .Select(marker => new SurfaceRadarMarkerViewModel
-            {
-                Name = marker.Name,
-                Kind = SurfaceRadarMarkerKind.Bookmark,
-                Location = marker.Location,
-                DistanceMeters = marker.DistanceMeters,
-                BearingDegrees = marker.BearingDegrees,
-                RelativeBearingDegrees = marker.RelativeBearingDegrees,
-                RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
-                IsInsideRadius = marker.DistanceMeters < SurfaceMiningGeometry.RigRadiusMeters,
-            }).ToArray() : [];
+        var resources = validPosition ? CreateResourceMarkers() : [];
         if (!SameMarkers(Resources.Select(resource => resource.Marker).ToArray(), resources))
         {
             Resources = resources.Select(marker => new MiningResourceViewModel(marker)).ToArray();
@@ -279,13 +240,65 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         Notify();
     }
 
+    private SurfaceRadarMarkerViewModel? CreateRigMarker(int number)
+    {
+        if (surface is null || !surface.Bookmarks.TryGetValue($"#{number}", out var locations)
+            || locations.Count == 0 || !TryGetPosition(out var cockpit))
+        {
+            return null;
+        }
+
+        var current = status!.InSrv
+            ? SurfaceMiningGeometry.VehicleCenter(cockpit, status.NormalizedHeading, context!.RadiusMeters)
+            : cockpit;
+        var location = locations[0];
+        var distance = SurfaceNavigation.GetDistance(current, location, context!.RadiusMeters);
+        var bearing = SurfaceNavigation.GetBearing(current, location);
+        var proximity = distance < SurfaceMiningGeometry.ExclusionDistanceMeters ? "TOO CLOSE" : "TRACKED";
+        if (distance < SurfaceMiningGeometry.PickupDistanceMeters)
+        {
+            proximity = "COLLECT";
+        }
+
+        return new SurfaceRadarMarkerViewModel
+        {
+            Name = $"Rig {number}",
+            Kind = SurfaceRadarMarkerKind.MiningRig,
+            Location = location,
+            DistanceMeters = distance,
+            BearingDegrees = bearing,
+            RelativeBearingDegrees = SurfaceNavigation.NormalizeDegrees(bearing - status.NormalizedHeading),
+            RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
+            IsInsideRadius = distance < SurfaceMiningGeometry.ExclusionDistanceMeters,
+            Status = proximity,
+        };
+    }
+
+    private SurfaceRadarMarkerViewModel[] CreateResourceMarkers() => navigation
+            .Where(marker => marker.IsBookmark && !marker.Name.StartsWith('#')
+                // Legacy treats named bookmarks without a biology sample range as ground resources.
+                && ExobiologyReferenceCatalog.GetSampleDistanceMeters(marker.Name) == 50)
+            .OrderBy(marker => marker.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(marker => marker.DistanceMeters)
+            .Select(marker => new SurfaceRadarMarkerViewModel
+            {
+                Name = marker.Name,
+                Kind = SurfaceRadarMarkerKind.Bookmark,
+                Location = marker.Location,
+                DistanceMeters = marker.DistanceMeters,
+                BearingDegrees = marker.BearingDegrees,
+                RelativeBearingDegrees = marker.RelativeBearingDegrees,
+                RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
+                IsInsideRadius = marker.DistanceMeters < SurfaceMiningGeometry.RigRadiusMeters,
+            }).ToArray();
+
     private static bool SameMarkers(IReadOnlyList<SurfaceRadarMarkerViewModel> first,
         IReadOnlyList<SurfaceRadarMarkerViewModel> second) => first.Count == second.Count
         && first.Zip(second).All(pair => pair.First.Name == pair.Second.Name
             && pair.First.Kind == pair.Second.Kind && pair.First.Status == pair.Second.Status
             && pair.First.Location == pair.Second.Location
-            && pair.First.DistanceMeters == pair.Second.DistanceMeters
-            && pair.First.RelativeBearingDegrees == pair.Second.RelativeBearingDegrees);
+            && pair.First.DistanceMeters.Equals(pair.Second.DistanceMeters)
+            && pair.First.RelativeBearingDegrees.Equals(pair.Second.RelativeBearingDegrees));
 
     internal void InstallEditorPreview(IReadOnlyList<SurfaceRadarMarkerViewModel> markers,
         IReadOnlyList<SurfaceRadarMarkerViewModel>? resources = null)
@@ -310,14 +323,14 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private bool TryGetPosition(out SurfaceCoordinate location)
     {
         location = default;
-        if (status is not { HasLatitudeLongitude: true } || !double.IsFinite((double)status.Latitude)
-            || !double.IsFinite((double)status.Longitude)
+        if (status is not { HasLatitudeLongitude: true } || !double.IsFinite(status.Latitude)
+            || !double.IsFinite(status.Longitude)
             || status.Latitude is < -90 or > 90 || status.Longitude is < -180 or > 180)
         {
             return false;
         }
 
-        location = new SurfaceCoordinate((double)status.Latitude, (double)status.Longitude);
+        location = new SurfaceCoordinate(status.Latitude, status.Longitude);
         return true;
     }
 

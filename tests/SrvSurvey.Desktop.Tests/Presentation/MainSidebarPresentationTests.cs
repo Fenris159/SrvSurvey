@@ -21,7 +21,7 @@ public sealed class MainSidebarPresentationTests
     {
         var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-sidebar-{Guid.NewGuid():N}");
         using var viewModel = MainWindowViewModelTestBuilder.Create(null, _ => { });
-        var theme = new RavenThemeService(Assert.IsAssignableFrom<Application>(Application.Current),
+        var theme = new RavenThemeService(Assert.IsType<Application>(Application.Current, exactMatch: false),
             new ThemePreferenceStore(Path.Combine(root, "theme.json")));
         var originalTheme = theme.Current.Key;
         theme.Select(themeKey);

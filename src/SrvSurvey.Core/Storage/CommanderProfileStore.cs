@@ -15,6 +15,7 @@ namespace SrvSurvey.Core.Storage;
     Justification = "The store is profile-scoped and its semaphore may still have in-flight waiters.")]
 public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearchProfileStore
 {
+    private const string ExplorationRewardsBySystemProperty = "explRewardsBySystem";
     private const string ActiveProperty = "active";
     private const string RadiusProperty = "radius";
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -368,9 +369,9 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             update(root);
 
             // Keep the potentially large ledger last after any profile update.
-            if (root.Remove("explRewardsBySystem", out var rewardsBySystem))
+            if (root.Remove(ExplorationRewardsBySystemProperty, out var rewardsBySystem))
             {
-                root["explRewardsBySystem"] = rewardsBySystem;
+                root[ExplorationRewardsBySystemProperty] = rewardsBySystem;
             }
 
             Directory.CreateDirectory(ProfileDirectory);
@@ -424,7 +425,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
     private static Dictionary<string, long>?
         ReadExplorationRewardsBySystem(JsonObject root)
     {
-        if (root["explRewardsBySystem"] is not JsonObject rewardsBySystem)
+        if (root[ExplorationRewardsBySystemProperty] is not JsonObject rewardsBySystem)
         {
             return null;
         }
@@ -451,7 +452,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         JsonObject root,
         ExplorationSnapshot exploration)
     {
-        root.Remove("explRewardsBySystem");
+        root.Remove(ExplorationRewardsBySystemProperty);
         if (exploration.EstimatedRewardsBySystem is not { Count: > 0 } rewards)
         {
             return;
@@ -477,7 +478,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
 
         if (rewardsBySystem.Count > 0)
         {
-            root["explRewardsBySystem"] = rewardsBySystem;
+            root[ExplorationRewardsBySystemProperty] = rewardsBySystem;
         }
     }
 

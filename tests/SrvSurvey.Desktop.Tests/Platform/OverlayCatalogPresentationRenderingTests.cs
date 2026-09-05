@@ -18,7 +18,7 @@ public sealed class OverlayCatalogPresentationRenderingTests
     [AvaloniaFact]
     public void MonochromeCompanionRendersMiningAndStatusPanels()
     {
-        var app = Assert.IsAssignableFrom<Application>(Application.Current);
+        var app = Assert.IsType<Application>(Application.Current, exactMatch: false);
         var service = new RavenThemeService(app, new ThemePreferenceStore(
             Path.Combine(Path.GetTempPath(), $"SrvSurvey-theme-preview-{Guid.NewGuid():N}.json")));
         Assert.True(OverlayThemePresetCatalog.TryGet("Monochrome Companion", out var preset));

@@ -25,7 +25,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         await surface.ApplyUpdateAsync(Session(), [Event("""{"event":"SendText","Message":"+helium"}""")],
             status, ExobiologySnapshot.Empty);
         await mining.ApplyUpdateAsync(Session(), survey.Snapshot, status, "mev_rhino",
-            surfaceBookmarks: surface.RadarMarkers);
+            surfaceMarkers: surface.RadarMarkers);
         Assert.False(surface.ShouldShow);
         Assert.Equal("helium", Assert.Single(mining.Resources).Name);
         Assert.Equal("0 m", mining.Resources[0].DistanceText);
@@ -34,7 +34,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         ApplySurveyContext(survey, status, "mev_rhino");
         await surface.ApplyUpdateAsync(Session(), [], status, ExobiologySnapshot.Empty);
         await mining.ApplyUpdateAsync(Session(), survey.Snapshot, status, "mev_rhino",
-            surfaceBookmarks: surface.RadarMarkers);
+            surfaceMarkers: surface.RadarMarkers);
         var moved = Assert.Single(mining.Resources);
         Assert.InRange(moved.Marker.DistanceMeters, 174, 175);
         Assert.Equal(90, moved.Bearing, precision: 6);
@@ -43,7 +43,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         await surface.ApplyUpdateAsync(Session(), [Event("""{"event":"SendText","Message":"--helium"}""")],
             status, ExobiologySnapshot.Empty);
         await mining.ApplyUpdateAsync(Session(), survey.Snapshot, status, "mev_rhino",
-            surfaceBookmarks: surface.RadarMarkers);
+            surfaceMarkers: surface.RadarMarkers);
         Assert.Empty(mining.Resources);
     }
 

@@ -96,6 +96,9 @@ distance cues, and vehicle tracking. Also see
 
 ## Inspection and presentation fixes
 
+- Fixes the joined stream overlay remaining above other applications after
+  Elite loses focus, while preserving the existing keep-visible and interaction
+  overrides. The overlay returns as topmost when Elite regains focus.
 - Adds named ground-resource trackers below the mining rigs in two columns,
   with a chevron and live distance for each saved location. Manual surface
   bookmarks use near/far styling and remain saved when ship boarding clears rigs.

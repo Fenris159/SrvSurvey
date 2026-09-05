@@ -25,7 +25,7 @@ public sealed class SurfaceMiningResourcePresentationTests
         var examples = mining.Resources.Select(resource => resource.Marker).ToArray();
         mining.InstallEditorPreview(mining.RadarMarkers.Where(marker => marker.Kind == SurfaceRadarMarkerKind.MiningRig).ToArray(),
             Enumerable.Range(0, count).Select(index => examples[index % examples.Length]).ToArray());
-        var service = new RavenThemeService(Assert.IsAssignableFrom<Application>(Application.Current),
+        var service = new RavenThemeService(Assert.IsType<Application>(Application.Current, exactMatch: false),
             new ThemePreferenceStore(Path.Combine(Path.GetTempPath(), $"SrvSurvey-mining-theme-{Guid.NewGuid():N}.json")));
         Assert.True(OverlayThemePresetCatalog.TryGet("Monochrome Companion", out var preset));
         service.ApplyOverlayTheme(new LegacyOverlayTheme(preset.Colors, true, null));

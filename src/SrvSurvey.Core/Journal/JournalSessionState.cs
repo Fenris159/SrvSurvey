@@ -185,15 +185,7 @@ public sealed class JournalSessionState
                 break;
 
             case "Embark" when GetBoolean(root, "SRV") == true:
-                ParkedSrvType = null;
-                var embarkedVehicleId = GetInt64(root, "ID");
-                if (embarkedVehicleId is { } embarkedId
-                    && srvTypesById.TryGetValue(embarkedId, out var embarkedSrvType))
-                {
-                    ActiveSrvType = embarkedSrvType;
-                    isNomadStatusConfirmationPending = EliteSrvTypes.IsNomad(embarkedSrvType);
-                }
-
+                ApplySrvEmbark(root);
                 break;
 
             case "Disembark" when GetBoolean(root, "SRV") == true:
@@ -308,6 +300,18 @@ public sealed class JournalSessionState
 
         RecognizedEventCount++;
         return true;
+    }
+
+    private void ApplySrvEmbark(JsonElement root)
+    {
+        ParkedSrvType = null;
+        var embarkedVehicleId = GetInt64(root, "ID");
+        if (embarkedVehicleId is { } embarkedId
+            && srvTypesById.TryGetValue(embarkedId, out var embarkedSrvType))
+        {
+            ActiveSrvType = embarkedSrvType;
+            isNomadStatusConfirmationPending = EliteSrvTypes.IsNomad(embarkedSrvType);
+        }
     }
 
     private void ApplyLoadGame(JsonElement root)

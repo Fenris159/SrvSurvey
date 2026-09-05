@@ -9,6 +9,9 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class SurfaceMiningViewModelTests : IDisposable
 {
+    private static readonly string[] ExpectedResourceNames = ["helium", "helium", "thortveitite"];
+    private static readonly double[] ExpectedResourceDistances = [150, 2_350, 149];
+    private static readonly bool[] ExpectedResourceNearStates = [false, false, true];
     private readonly string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-mining-{Guid.NewGuid():N}");
     private static SurfaceSurveySessionContext Session => new("F123", "Test", "Test", 42, null);
 
@@ -31,10 +34,10 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
             Resource("#1", 12), Resource("$Codex_Ent_Bacterial_Genus_Name;", 45),
             Resource("Bacterium", 45), Resource("organic", 50, kind: SurfaceRadarMarkerKind.ActiveSample),
         ];
-        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", surfaceBookmarks: bookmarks);
-        Assert.Equal(new[] { "helium", "helium", "thortveitite" }, mining.Resources.Select(resource => resource.Name));
-        Assert.Equal(new[] { 150d, 2_350d, 149d }, mining.Resources.Select(resource => resource.Marker.DistanceMeters));
-        Assert.Equal(new[] { false, false, true }, mining.Resources.Select(resource => resource.IsNear));
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", surfaceMarkers: bookmarks);
+        Assert.Equal(ExpectedResourceNames, mining.Resources.Select(resource => resource.Name));
+        Assert.Equal(ExpectedResourceDistances, mining.Resources.Select(resource => resource.Marker.DistanceMeters));
+        Assert.Equal(ExpectedResourceNearStates, mining.Resources.Select(resource => resource.IsNear));
         Assert.All(mining.Rigs, rig => Assert.False(rig.IsSet));
         Assert.All(mining.Resources, resource =>
         {
@@ -43,7 +46,7 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
             Assert.Contains(resource.Marker, mining.RadarMarkers);
         });
         var original = mining.Resources;
-        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", surfaceBookmarks: bookmarks);
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", surfaceMarkers: bookmarks);
         Assert.Same(original, mining.Resources);
 
         await mining.ToggleRigAsync(1);
@@ -55,13 +58,13 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.All(mining.Rigs, rig => Assert.False(rig.IsSet));
 
         await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino",
-            surfaceBookmarks: [Resource("helium", 10, 270)]);
+            surfaceMarkers: [Resource("helium", 10, 270)]);
         var updated = Assert.Single(mining.Resources);
         Assert.True(updated.IsNear);
         Assert.Equal("10 m", updated.DistanceText);
         Assert.Equal(270, updated.Bearing);
 
-        await mining.ApplyUpdateAsync(null, Snapshot(), Status(), "mev_rhino", surfaceBookmarks: bookmarks);
+        await mining.ApplyUpdateAsync(null, Snapshot(), Status(), "mev_rhino", surfaceMarkers: bookmarks);
         Assert.Empty(mining.Resources);
         Assert.False(mining.HasResources);
     }

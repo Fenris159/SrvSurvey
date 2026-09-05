@@ -3110,35 +3110,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             await BiologyCodex.OpenEntryAsync(entryId);
         }
 
-        var surfaceSession = CreateSurfaceSurveySessionContext();
         if (update.Cargo is not null || update.JournalEvents.Count > 0
             || update.Status is not null
             || exobiologyChanged
             || isManualRefresh)
         {
-            if (!skipPersistedBootstrapEvents)
-            {
-                // Clear the mining body's rigs before boarding can remove its live surface context.
-                await Mining.ClearRigsOnShipBoardingAsync(update.JournalEvents, journalState.FrontierId);
-            }
-
-            await SurfaceSurvey.ApplyUpdateAsync(
-                surfaceSession,
-                update.JournalEvents,
-                update.Status,
-                exobiologyAfter,
-                processJournalMutations: !skipPersistedBootstrapEvents,
-                scansLostToDeath: scansLostToDeath.ToArray(),
-                cancellationToken: CancellationToken.None);
-            await Mining.ApplyUpdateAsync(
-                surfaceSession,
-                SystemSurvey.Snapshot,
-                SystemSurvey.CurrentStatus,
-                journalState.IsShutdown || journalState.IsAtMainMenu ? null : journalState.ActiveSrvType,
-                SurfaceSurvey.NavigationMarkers,
-                latestCargo,
-                journalState.IsShutdown || journalState.IsAtMainMenu ? null : journalState.ParkedSrvType,
-                SurfaceSurvey.RadarMarkers);
+            await ApplySurfaceTrackingAsync(update, exobiologyAfter, skipPersistedBootstrapEvents, scansLostToDeath);
         }
 
         if (exobiologyChanged)
@@ -3152,6 +3129,35 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         }
 
         return exobiologyAfter;
+    }
+
+    private async Task ApplySurfaceTrackingAsync(JournalMonitorUpdate update,
+        ExobiologySnapshot exobiologyAfter, bool skipPersistedBootstrapEvents, HashSet<string> scansLostToDeath)
+    {
+        var surfaceSession = CreateSurfaceSurveySessionContext();
+        if (!skipPersistedBootstrapEvents)
+        {
+            // Clear the mining body's rigs before boarding can remove its live surface context.
+            await Mining.ClearRigsOnShipBoardingAsync(update.JournalEvents, journalState.FrontierId);
+        }
+
+        await SurfaceSurvey.ApplyUpdateAsync(
+            surfaceSession,
+            update.JournalEvents,
+            update.Status,
+            exobiologyAfter,
+            processJournalMutations: !skipPersistedBootstrapEvents,
+            scansLostToDeath: scansLostToDeath.ToArray(),
+            cancellationToken: CancellationToken.None);
+        var isSessionActive = !journalState.IsShutdown && !journalState.IsAtMainMenu;
+        await Mining.ApplyUpdateAsync(
+            surfaceSession,
+            SystemSurvey.Snapshot,
+            SystemSurvey.CurrentStatus,
+            isSessionActive ? journalState.ActiveSrvType : null,
+            SurfaceSurvey.RadarMarkers,
+            latestCargo,
+            isSessionActive ? journalState.ParkedSrvType : null);
     }
 
     private async Task ApplyBoxelSurveyStatsAsync(
