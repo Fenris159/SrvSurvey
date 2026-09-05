@@ -244,7 +244,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             BodyName = "Test 1",
             PlanetRadius = 1_000_000,
         });
-        Assert.False(viewModel.ShouldLoadPriorScans);
+        Assert.True(viewModel.ShouldLoadPriorScans);
 
         viewModel.ApplyUpdate([], new EliteStatus
         {

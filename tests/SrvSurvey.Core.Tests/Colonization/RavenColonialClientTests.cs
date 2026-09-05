@@ -8,6 +8,17 @@ namespace SrvSurvey.Core.Tests.Colonization;
 public sealed class RavenColonialClientTests
 {
     [Fact]
+    public async Task ReadsDemolishedSitesWithoutRejectingTheSystem()
+    {
+        var client = Create(new StubHandler(_ => Json(
+            """[{"id":"old","name":"Old Port","status":"demolish"},{"id":"new","name":"New Port","status":"plan"}]""")));
+        var sites = await client.GetSystemSitesAsync("Test System");
+        Assert.Equal(2, sites.Count);
+        Assert.Equal(ColonizationSystemSiteStatus.Demolish, sites[0].Status);
+        Assert.Equal(ColonizationSystemSiteStatus.Plan, sites[1].Status);
+    }
+
+    [Fact]
     public async Task LoadsCommanderWorkspaceFromFourLegacyEndpoints()
     {
         var requested = new List<string>();

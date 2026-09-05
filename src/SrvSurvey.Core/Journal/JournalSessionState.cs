@@ -14,7 +14,13 @@ public sealed class JournalSessionState
 
     public string? GameBuild { get; private set; }
 
+    /// <summary>Journal galaxy from Fileheader; independent of expansion ownership.</summary>
+    public bool? IsLegacy { get; private set; }
+
+    /// <summary>Odyssey expansion flag from the latest LoadGame.</summary>
     public bool? IsOdyssey { get; private set; }
+
+    public bool? IsHorizons { get; private set; }
 
     public string? CommanderName { get; private set; }
 
@@ -31,6 +37,8 @@ public sealed class JournalSessionState
     public string? ShipIdent { get; private set; }
 
     public string? ActiveSrvType { get; private set; }
+
+    public string? ParkedSrvType { get; private set; }
 
     public bool IsNomadActive => EliteSrvTypes.IsNomad(ActiveSrvType);
 
@@ -79,7 +87,11 @@ public sealed class JournalSessionState
                 ResetVehicleSessionState();
                 GameVersion = GetString(root, "gameversion") ?? GameVersion;
                 GameBuild = GetString(root, "build") ?? GameBuild;
-                IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
+                IsLegacy = GetBoolean(root, "Odyssey") is { } isLive
+                    ? !isLive
+                    : null;
+                IsOdyssey = null;
+                IsHorizons = null;
                 IsShutdown = false;
                 // Elite creates the journal before LoadGame while it is still
                 // in the initial front end, but does not consistently emit a
@@ -136,6 +148,7 @@ public sealed class JournalSessionState
                 break;
 
             case "LaunchSRV":
+                ParkedSrvType = null;
                 var launchedSrvType = GetString(root, "SRVType");
                 ActiveSrvType = launchedSrvType ?? ActiveSrvType;
                 RememberSrvType(root, launchedSrvType);
@@ -145,11 +158,13 @@ public sealed class JournalSessionState
                 break;
 
             case "DockSRV":
+                ParkedSrvType = null;
                 RememberSrvType(root, GetString(root, "SRVType"));
                 ResetActiveVehicleState();
                 break;
 
             case "SRVDestroyed":
+                ParkedSrvType = null;
                 ForgetSrvType(root);
                 ResetActiveVehicleState();
                 break;
@@ -170,18 +185,13 @@ public sealed class JournalSessionState
                 break;
 
             case "Embark" when GetBoolean(root, "SRV") == true:
-                var embarkedVehicleId = GetInt64(root, "ID");
-                if (embarkedVehicleId is { } embarkedId
-                    && srvTypesById.TryGetValue(embarkedId, out var embarkedSrvType)
-                    && EliteSrvTypes.IsNomad(embarkedSrvType))
-                {
-                    ActiveSrvType = EliteSrvTypes.Nomad;
-                    isNomadStatusConfirmationPending = true;
-                }
-
+                ApplySrvEmbark(root);
                 break;
 
             case "Disembark" when GetBoolean(root, "SRV") == true:
+                ParkedSrvType = GetInt64(root, "ID") is { } disembarkedId
+                    && srvTypesById.TryGetValue(disembarkedId, out var disembarkedType)
+                        ? disembarkedType : ActiveSrvType;
                 ActiveSrvType = null;
                 pendingPlayerControlledFighterId = null;
                 isNomadStatusConfirmationPending = false;
@@ -206,6 +216,7 @@ public sealed class JournalSessionState
                 break;
 
             case "Docked":
+                ParkedSrvType = null;
                 SystemName = GetString(root, "StarSystem") ?? SystemName;
                 SystemAddress = GetInt64(root, nameof(SystemAddress)) ?? SystemAddress;
                 StationName = GetString(root, nameof(StationName)) ?? StationName;
@@ -220,6 +231,7 @@ public sealed class JournalSessionState
             case "SupercruiseExit":
             case "FSDJump":
             case "CarrierJump":
+                ParkedSrvType = null;
                 SystemName = GetString(root, "StarSystem") ?? SystemName;
                 SystemAddress = GetInt64(root, nameof(SystemAddress)) ?? SystemAddress;
                 StarPosition = GetGalacticCoordinate(root, "StarPos")
@@ -235,6 +247,7 @@ public sealed class JournalSessionState
                 break;
 
             case "LeaveBody":
+                ParkedSrvType = null;
                 // The legacy application clears touchdown/SRV coordinates but
                 // retains the current planet until another location event.
                 break;
@@ -274,6 +287,7 @@ public sealed class JournalSessionState
                 break;
 
             case "Shutdown":
+                ParkedSrvType = null;
                 IsShutdown = true;
                 IsAtMainMenu = false;
                 IsAtCarrierManagement = false;
@@ -286,6 +300,18 @@ public sealed class JournalSessionState
 
         RecognizedEventCount++;
         return true;
+    }
+
+    private void ApplySrvEmbark(JsonElement root)
+    {
+        ParkedSrvType = null;
+        var embarkedVehicleId = GetInt64(root, "ID");
+        if (embarkedVehicleId is { } embarkedId
+            && srvTypesById.TryGetValue(embarkedId, out var embarkedSrvType))
+        {
+            ActiveSrvType = embarkedSrvType;
+            isNomadStatusConfirmationPending = EliteSrvTypes.IsNomad(embarkedSrvType);
+        }
     }
 
     private void ApplyLoadGame(JsonElement root)
@@ -310,12 +336,22 @@ public sealed class JournalSessionState
         GameMode = GetString(root, nameof(GameMode)) ?? GameMode;
         GameVersion = GetString(root, "gameversion") ?? GameVersion;
         GameBuild = GetString(root, "build") ?? GameBuild;
-        IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
+        IsOdyssey = GetBoolean(root, "Odyssey");
+        IsHorizons = GetBoolean(root, "Horizons");
         ShipType = loadedShipType ?? ShipType;
         var loadedShipId = GetInt64(root, ShipIdProperty);
         ShipId = loadedShipId ?? ShipId;
         ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
         ShipIdent = GetString(root, nameof(ShipIdent)) ?? ShipIdent;
+        if (EliteSrvTypes.IsRhino(loadedShipType))
+        {
+            ActiveSrvType = loadedShipType;
+            if (loadedShipId is { } rhinoId)
+            {
+                srvTypesById[rhinoId] = EliteSrvTypes.Rhino;
+            }
+        }
+
         if (EliteSrvTypes.IsNomad(loadedShipType))
         {
             ActiveSrvType = EliteSrvTypes.Nomad;
@@ -395,6 +431,7 @@ public sealed class JournalSessionState
 
     private void ClearLiveLocationContext()
     {
+        ParkedSrvType = null;
         ActiveSrvType = null;
         IsFighterLaunched = false;
         pendingPlayerControlledFighterId = null;
@@ -460,6 +497,7 @@ public sealed class JournalSessionState
 
     private void ResetVehicleSessionState()
     {
+        ParkedSrvType = null;
         ResetActiveVehicleState();
         srvTypesById.Clear();
         KnownNomadVehicleId = null;
@@ -485,7 +523,11 @@ public sealed class JournalSessionState
             LastEventTimestamp,
             ValidEventCount,
             RecognizedEventCount,
-            malformedLineCount);
+            malformedLineCount)
+        {
+            IsLegacy = IsLegacy,
+            IsHorizons = IsHorizons,
+        };
     }
 
     private static string? GetString(JsonElement root, string propertyName)

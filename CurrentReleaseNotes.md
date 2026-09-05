@@ -1,10 +1,72 @@
-# SrvSurvey-XP 2.1.3.0-rc.42
+# SrvSurvey-XP 2.1.3.0-rc.43
 
-This release candidate adds the ported Guardian survey-map authoring and live
-guidance workflow, while retaining the optional direct EDSM account
-synchronization and its RC39 journal compatibility fix, EDDN production
-sharing, quieter upload reporting, and SDL3 controller shortcut support on
-Windows and Linux.
+RC43 restores survey overlays while supercruising above a planet and reconciles
+estimated exploration rewards as system data is sold. It also corrects Live
+Horizons profile selection and reward estimates, adds Rhino surface mining
+guidance, and introduces the Monochrome Companion overlay preset. It retains the RC42
+Guardian survey workspace, map alignment, and live guidance improvements,
+along with EDSM account synchronization, EDDN production sharing, quieter
+upload reporting, and SDL3 controller shortcut support on Windows and Linux.
+
+## Rhino surface mining
+
+- Adds a theme-aware Surface mining overlay with a radar, saved rig circles,
+  ship guidance, six rig direction indicators, and a cargo capacity row.
+- Splits vehicle guidance into Ship and Rhino columns. On foot, the Rhino
+  chevron points back to its parked location; aboard, an X marks it untracked.
+- Uses Alt+1 through Alt+6 to save or clear rig locations for the current
+  Commander and body. Collection and deployment-distance cues account for
+  the Rhino cockpit and rig placement offsets.
+- Keeps mining guidance available while operating or walking back to a parked
+  Rhino, suppressing Surface Survey and its mini tracker during that activity.
+- Automatically clears all saved rig locations when returning to your own
+  ship on foot or docking the Rhino; re-entering the Rhino keeps its markers.
+- Adds Mining under Activities with an overlay settings shortcut. The workspace
+  is reserved for future mining tools; its settings provide the overlay toggle
+  and editable visibility and rig shortcuts, shared with Input settings.
+
+The in-app **Guides > Surface mining** chapter explains rig key chords,
+distance cues, and vehicle tracking. Also see
+[Surface mining setup and controls](docs/SURFACE_MINING.md).
+
+## Monochrome Companion overlays
+
+- Adds a muted overlay preset to pair with the Monochrome dark application
+  theme, using champagne headings, soft gray text, and restrained status colors.
+- Keeps flight warnings unchanged and retains distinct pill, biology pip,
+  colonization commodity, and segmented jump-progress cues.
+
+## Colonization site compatibility
+
+- Recognizes demolished RavenColonial sites while keeping them out of the
+  planned-project picker.
+
+## Supercruise survey overlays
+
+- Restores Canonn prior-scan biological predictions, the surface survey radar,
+  and the mini tracker while supercruising above a planet.
+- Keeps the landing-gear gate for normal ship flight: gear up suppresses these
+  overlays, while deployed gear permits them when their other display conditions
+  are met.
+
+## Unsold exploration estimates
+
+- Tracks newly estimated scan and surface-mapping rewards by star system, then
+  removes matched systems from the displayed estimate after Frontier emits
+  `SellExplorationData` or `MultiSellExplorationData`.
+- Keeps older unattributed totals intact, makes replayed sale events idempotent,
+  and clears the per-system ledger with the existing exploration reset.
+- Keeps per-system reward data at the end of the Commander profile after every
+  settings save, making the file easier to inspect without changing its values.
+
+## Live Horizons journal handling
+
+- Separates the Live or Legacy galaxy from expansion ownership so a Live
+  Horizons session keeps its Live Commander profile, journey history, and
+  exploration, system, and boxel reward estimates.
+- Reads EDDN expansion flags from the latest loaded session, preserves explicit
+  `false` values, and omits unknown values instead of carrying over flags from
+  a journal header or earlier session.
 
 ## Guardian survey workspace and authoring
 
@@ -34,6 +96,15 @@ Windows and Linux.
 
 ## Inspection and presentation fixes
 
+- Fixes the joined stream overlay remaining above other applications after
+  Elite loses focus, while preserving the existing keep-visible and interaction
+  overrides. The overlay returns as topmost when Elite regains focus.
+- Adds named ground-resource trackers below the mining rigs in two columns,
+  with a chevron and live distance for each saved location. Manual surface
+  bookmarks use near/far styling and remain saved when ship boarding clears rigs.
+- Adds a sidebar toggle in the navigation column's top-right corner. Collapse
+  the sidebar to a narrow strip to expand the current workspace, then use the
+  same button to restore navigation without resizing the window.
 - Adds Avalonia developer-tool support for F12 inspection in development builds.
 - Improves selected-row text contrast in the monochrome theme and corrects
   Guardian card, expander, overlay-position, and snap-to-center regressions.
@@ -108,11 +179,11 @@ Windows and Linux.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.42`
-- Tag: `xp-v2.1.3.0-rc.42`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.42-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.42-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.42-x86_64.AppImage`
+- Version: `2.1.3.0-rc.43`
+- Tag: `xp-v2.1.3.0-rc.43`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.43-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.43-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.43-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.

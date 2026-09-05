@@ -6,6 +6,85 @@ namespace SrvSurvey.Core.Tests;
 public sealed class JournalSessionStateTests
 {
     [Fact]
+    public void RhinoIdentitySurvivesReembarkAndLoadGameButClearsOnDock()
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse("""{"event":"LaunchSRV","SRVType":"mev_rhino","ID":7}"""));
+        Assert.Equal("mev_rhino", state.ActiveSrvType);
+        state.Apply(Parse("""{"event":"Disembark","SRV":true,"ID":7}"""));
+        Assert.Null(state.ActiveSrvType);
+        Assert.Equal("mev_rhino", state.ParkedSrvType);
+        state.Apply(Parse("""{"event":"Embark","SRV":true,"ID":7}"""));
+        Assert.Equal("mev_rhino", state.ActiveSrvType);
+        Assert.Null(state.ParkedSrvType);
+        state.Apply(Parse("""{"event":"DockSRV","SRVType":"mev_rhino","ID":7}"""));
+        Assert.Null(state.ActiveSrvType);
+        state.Apply(Parse("""{"event":"LoadGame","Ship":"mev_rhino","ShipID":7}"""));
+        Assert.Equal("mev_rhino", state.ActiveSrvType);
+    }
+
+    [Theory]
+    [InlineData("DockSRV")]
+    [InlineData("SRVDestroyed")]
+    [InlineData("LeaveBody")]
+    [InlineData("Died")]
+    public void ParkedRhinoIdentitySurvivesSuitLoadButClearsWhenUnavailable(string nextEvent)
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse("""{"event":"LoadGame","Commander":"Test","FID":"F123","Ship":"mev_rhino","ShipID":7}"""));
+        state.Apply(Parse("""{"event":"Disembark","SRV":true,"ID":7}"""));
+        state.Apply(Parse("""{"event":"LoadGame","Commander":"Test","FID":"F123","Ship":"explorationsuit_class1"}"""));
+        Assert.Equal("mev_rhino", state.ParkedSrvType);
+        Assert.Null(state.ActiveSrvType);
+        state.Apply(Parse($$"""{"event":"{{nextEvent}}","ID":7}"""));
+        Assert.Null(state.ParkedSrvType);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public void JournalGalaxyIsIndependentOfLoadedExpansions(bool isLive, bool hasOdyssey)
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse($$"""{"event":"Fileheader","Odyssey":{{(isLive ? "true" : "false")}}}"""));
+        Assert.Equal(!isLive, state.IsLegacy);
+        Assert.Null(state.IsOdyssey);
+        Assert.Null(state.IsHorizons);
+
+        state.Apply(Parse($$"""{"event":"LoadGame","Commander":"Drew","FID":"F123","Odyssey":{{(hasOdyssey ? "true" : "false")}},"Horizons":true}"""));
+        var snapshot = state.CreateSnapshot("Journal.fixture.log");
+        Assert.Equal(!isLive, snapshot.IsLegacy);
+        Assert.Equal(hasOdyssey, snapshot.IsOdyssey);
+        Assert.True(snapshot.IsHorizons);
+
+        state.Apply(Parse("""{"event":"LoadGame","Commander":"Drew","FID":"F123"}"""));
+        Assert.Equal(!isLive, state.IsLegacy);
+        Assert.Null(state.IsOdyssey);
+        Assert.Null(state.IsHorizons);
+    }
+
+    [Fact]
+    public void NewFileheaderClearsPreviousExpansionFlags()
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse("""{"event":"Fileheader","Odyssey":true}"""));
+        state.Apply(Parse("""{"event":"LoadGame","Odyssey":true,"Horizons":true}"""));
+
+        state.Apply(Parse("""{"event":"Fileheader","Odyssey":false}"""));
+        var snapshot = state.CreateSnapshot("Journal.next.log");
+        Assert.True(snapshot.IsLegacy);
+        Assert.Null(snapshot.IsOdyssey);
+        Assert.Null(snapshot.IsHorizons);
+
+        state.Apply(Parse("""{"event":"Fileheader"}"""));
+        state.Apply(Parse("""{"event":"LoadGame","Odyssey":true,"Horizons":true}"""));
+        Assert.Null(state.IsLegacy);
+        Assert.True(state.IsOdyssey);
+        Assert.True(state.IsHorizons);
+    }
+
+    [Fact]
     public void ApplyBuildsStateIncrementallyAndObservesUnknownEvents()
     {
         var state = new JournalSessionState();

@@ -15,6 +15,7 @@ namespace SrvSurvey.Core.Storage;
     Justification = "The store is profile-scoped and its semaphore may still have in-flight waiters.")]
 public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearchProfileStore
 {
+    private const string ExplorationRewardsBySystemProperty = "explRewardsBySystem";
     private const string ActiveProperty = "active";
     private const string RadiusProperty = "radius";
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -79,7 +80,8 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 GetInt32(root, "countJumps") ?? 0,
                 GetInt32(root, "countScans") ?? 0,
                 GetInt32(root, "countDSS") ?? 0,
-                GetInt32(root, "countLanded") ?? 0),
+                GetInt32(root, "countLanded") ?? 0,
+                ReadExplorationRewardsBySystem(root)),
             ReadExobiology(root),
             ReadSphereLimit(root),
             ReadBoxelSearch(root),
@@ -113,6 +115,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 root["countScans"] = exploration.ScanCount;
                 root["countDSS"] = exploration.DetailedSurfaceScanCount;
                 root["countLanded"] = exploration.LandedBodyCount;
+                WriteExplorationRewardsBySystem(root, exploration);
             },
             cancellationToken).ConfigureAwait(false);
     }
@@ -365,6 +368,12 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             root["isOdyssey"] = isOdyssey;
             update(root);
 
+            // Keep the potentially large ledger last after any profile update.
+            if (root.Remove(ExplorationRewardsBySystemProperty, out var rewardsBySystem))
+            {
+                root[ExplorationRewardsBySystemProperty] = rewardsBySystem;
+            }
+
             Directory.CreateDirectory(ProfileDirectory);
             var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
             try
@@ -412,6 +421,69 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             ReadStringArray(root, "scannedBioEntryIds"),
             GetInt32(root, "countRadicoidaUnica") ?? 0);
     }
+
+    private static Dictionary<string, long>?
+        ReadExplorationRewardsBySystem(JsonObject root)
+    {
+        if (root[ExplorationRewardsBySystemProperty] is not JsonObject rewardsBySystem)
+        {
+            return null;
+        }
+
+        var result = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in rewardsBySystem)
+        {
+            if (string.IsNullOrWhiteSpace(entry.Key)
+                || entry.Value is not JsonValue value
+                || !value.TryGetValue<long>(out var reward)
+                || reward <= 0)
+            {
+                continue;
+            }
+
+            var systemName = entry.Key.Trim();
+            result[systemName] = AddRewardsClamped(result.GetValueOrDefault(systemName), reward);
+        }
+
+        return result.Count == 0 ? null : result;
+    }
+
+    private static void WriteExplorationRewardsBySystem(
+        JsonObject root,
+        ExplorationSnapshot exploration)
+    {
+        root.Remove(ExplorationRewardsBySystemProperty);
+        if (exploration.EstimatedRewardsBySystem is not { Count: > 0 } rewards)
+        {
+            return;
+        }
+
+        var normalizedRewards = new Dictionary<string, long>(
+            StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in rewards
+                     .Where(entry => !string.IsNullOrWhiteSpace(entry.Key)
+                         && entry.Value > 0))
+        {
+            var systemName = entry.Key.Trim();
+            normalizedRewards[systemName] =
+                AddRewardsClamped(normalizedRewards.GetValueOrDefault(systemName), entry.Value);
+        }
+
+        var rewardsBySystem = new JsonObject();
+        foreach (var entry in normalizedRewards
+                     .OrderBy(entry => entry.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            rewardsBySystem[entry.Key] = entry.Value;
+        }
+
+        if (rewardsBySystem.Count > 0)
+        {
+            root[ExplorationRewardsBySystemProperty] = rewardsBySystem;
+        }
+    }
+
+    private static long AddRewardsClamped(long total, long reward) =>
+        total > long.MaxValue - reward ? long.MaxValue : total + reward;
 
     private static SphereLimitSnapshot ReadSphereLimit(JsonObject root)
     {

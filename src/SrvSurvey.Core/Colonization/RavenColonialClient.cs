@@ -1167,6 +1167,7 @@ public enum ColonizationSystemSiteStatus
     Plan,
     Build,
     Complete,
+    Demolish,
 }
 
 public sealed record ColonizationSystemRecord

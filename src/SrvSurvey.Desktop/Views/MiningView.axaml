@@ -1,0 +1,9 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.Views.MiningView">
+  <StackPanel Margin="32" Spacing="12">
+    <TextBlock Classes="eyebrow" Text="MINING" />
+    <TextBlock Classes="page-title" Text="Surface mining" />
+    <TextBlock Classes="muted" Text="Workspace in progress." />
+  </StackPanel>
+</UserControl>

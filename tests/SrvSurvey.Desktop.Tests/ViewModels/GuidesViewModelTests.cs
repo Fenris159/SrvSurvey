@@ -10,9 +10,9 @@ public sealed class GuidesViewModelTests
     {
         var categories = GuideCatalog.Create();
 
-        Assert.Equal(13, categories.Count);
+        Assert.Equal(14, categories.Count);
         Assert.Equal(
-            Enumerable.Range(1, 13)
+            Enumerable.Range(1, 14)
                 .Select(number => number.ToString("00"))
                 .ToArray(),
             categories.Select(category => category.Number).ToArray());
@@ -170,6 +170,8 @@ public sealed class GuidesViewModelTests
     [InlineData("checksum manifest", "Import an original SrvSurvey profile")]
     [InlineData("boxel hierarchy", "Navigate the boxel hierarchy")]
     [InlineData("FSSAllBodiesFound", "Survey the current boxel")]
+    [InlineData("Alt+1", "Rig tracking with key chords")]
+    [InlineData("Rhino cargo", "Ship, Rhino, and cargo")]
     public void SearchFindsWorkflowAndGlossaryContent(
         string query,
         string expectedTitle)
@@ -203,7 +205,7 @@ public sealed class GuidesViewModelTests
                     .Concat(section.Details)));
 
         Assert.Equal("Boxel", boxel.Title);
-        Assert.Equal("06", boxel.Number);
+        Assert.Equal("07", boxel.Number);
         Assert.Equal(
             categories.ToList().IndexOf(boxel) + 1,
             categories.ToList().IndexOf(guardian));

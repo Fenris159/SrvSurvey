@@ -18,4 +18,10 @@ public sealed record JournalSnapshot(
     DateTimeOffset? LastEventTimestamp,
     int ValidLineCount,
     int RecognizedEventCount,
-    int MalformedLineCount);
+    int MalformedLineCount)
+{
+    /// <summary>Journal galaxy from Fileheader; IsOdyssey describes the loaded expansion.</summary>
+    public bool? IsLegacy { get; init; }
+
+    public bool? IsHorizons { get; init; }
+}

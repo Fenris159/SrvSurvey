@@ -62,6 +62,13 @@ public enum GlobalInputAction
     ToggleStationInformationVisibility,
     ToggleSystemStatusVisibility,
     ToggleGroundTargetVisibility,
+    ToggleSurfaceMiningVisibility,
+    MiningRig1,
+    MiningRig2,
+    MiningRig3,
+    MiningRig4,
+    MiningRig5,
+    MiningRig6,
 }
 
 public sealed record GlobalInputActionDefinition(
@@ -97,6 +104,13 @@ public static class GlobalInputActionCatalog
         Define(GlobalInputAction.AdjustVr, "adjustVR", "Adjust VR overlay", "Open VR overlay adjustment mode.", "ALT V"),
         Define(GlobalInputAction.ResetVr, "resetVR", "Reset VR orientation", "Reset the captured VR headset orientation.", string.Empty),
         Define(GlobalInputAction.ToggleFirstFootfall, "toggleFF", "Toggle first footfall", "Toggle first-footfall state for the current body.", string.Empty),
+        DefineOverlayToggle(GlobalInputAction.ToggleSurfaceMiningVisibility, "toggleSurfaceMiningVisibility", "Surface mining", "PlotSurfaceMining"),
+        Define(GlobalInputAction.MiningRig1, "miningRig1", "Mining rig 1", "Set or clear rig 1 at the Rhino deployment position.", "ALT 1"),
+        Define(GlobalInputAction.MiningRig2, "miningRig2", "Mining rig 2", "Set or clear rig 2 at the Rhino deployment position.", "ALT 2"),
+        Define(GlobalInputAction.MiningRig3, "miningRig3", "Mining rig 3", "Set or clear rig 3 at the Rhino deployment position.", "ALT 3"),
+        Define(GlobalInputAction.MiningRig4, "miningRig4", "Mining rig 4", "Set or clear rig 4 at the Rhino deployment position.", "ALT 4"),
+        Define(GlobalInputAction.MiningRig5, "miningRig5", "Mining rig 5", "Set or clear rig 5 at the Rhino deployment position.", "ALT 5"),
+        Define(GlobalInputAction.MiningRig6, "miningRig6", "Mining rig 6", "Set or clear rig 6 at the Rhino deployment position.", "ALT 6"),
         Define(GlobalInputAction.Track1, "track1", "Track location 1", "Toggle surface bookmark number 1.", "ALT CTRL F1"),
         Define(GlobalInputAction.Track2, "track2", "Track location 2", "Toggle surface bookmark number 2.", "ALT CTRL F2"),
         Define(GlobalInputAction.Track3, "track3", "Track location 3", "Toggle surface bookmark number 3.", "ALT CTRL F3"),

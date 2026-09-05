@@ -29,6 +29,12 @@ public static class OverlaySettingsCategoryCatalog
             "BOXEL",
             "Configure Galaxy Map boxel guidance and completion notifications."),
         new(
+            OverlaySettingsCategory.Mining,
+            "mining",
+            "Mining",
+            "MINING",
+            "Configure the Rhino surface mining overlay and rig location shortcuts."),
+        new(
             OverlaySettingsCategory.Guardian,
             "guardian",
             "Guardian",
@@ -70,6 +76,7 @@ public enum OverlaySettingsCategory
     Guardian,
     Quests,
     Colonization,
+    Mining,
 }
 
 public sealed record OverlaySettingsCategoryDefinition(

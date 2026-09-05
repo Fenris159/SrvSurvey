@@ -38,6 +38,7 @@ internal sealed partial class DesktopRuntime
         fleetCarrierRouteOverlayCoordinator;
     private FleetCarrierJumpCountdownCoordinator?
         fleetCarrierJumpCountdownCoordinator;
+    private SurfaceMiningOverlayCoordinator? surfaceMiningOverlayCoordinator;
     private GroundTargetOverlayCoordinator? groundTargetOverlayCoordinator;
     private CombatOverlayCoordinator? combatOverlayCoordinator;
     private StationInfoOverlayCoordinator? stationInfoOverlayCoordinator;
@@ -353,6 +354,7 @@ internal sealed partial class DesktopRuntime
                 overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
+        surfaceMiningOverlayCoordinator = new SurfaceMiningOverlayCoordinator(viewModel.Mining, overlayPresentation);
         groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
             viewModel.GroundTarget,
             overlayPresentation);
@@ -876,6 +878,7 @@ internal sealed partial class DesktopRuntime
         DisposeResource(ref jumpInfoOverlayCoordinator);
         DisposeResource(ref routeBioOverlayCoordinator);
         DisposeResource(ref fleetCarrierRouteOverlayCoordinator);
+        DisposeResource(ref surfaceMiningOverlayCoordinator);
         DisposeResource(ref groundTargetOverlayCoordinator);
         DisposeResource(ref combatOverlayCoordinator);
         DisposeResource(ref stationInfoOverlayCoordinator);
@@ -1368,6 +1371,7 @@ internal sealed partial class DesktopRuntime
         routeBioOverlayCoordinator?.SetSuppressed(suppress);
         fleetCarrierRouteOverlayCoordinator?.SetSuppressed(suppress);
         systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
+        surfaceMiningOverlayCoordinator?.SetSuppressed(suppress);
         groundTargetOverlayCoordinator?.SetSuppressed(suppress);
         combatOverlayCoordinator?.SetSuppressed(suppress);
         guardianOverlayCoordinator?.SetSuppressed(suppress);
@@ -1477,6 +1481,12 @@ internal sealed partial class DesktopRuntime
             GlobalInputAction.AdjustVr => BeginVrAdjustment(),
             GlobalInputAction.ResetVr =>
                 vrOverlayCoordinator?.ResetOrientation() == true,
+            GlobalInputAction.MiningRig1 => await viewModel.Mining.ToggleRigAsync(1),
+            GlobalInputAction.MiningRig2 => await viewModel.Mining.ToggleRigAsync(2),
+            GlobalInputAction.MiningRig3 => await viewModel.Mining.ToggleRigAsync(3),
+            GlobalInputAction.MiningRig4 => await viewModel.Mining.ToggleRigAsync(4),
+            GlobalInputAction.MiningRig5 => await viewModel.Mining.ToggleRigAsync(5),
+            GlobalInputAction.MiningRig6 => await viewModel.Mining.ToggleRigAsync(6),
             GlobalInputAction.Track1 => await ToggleQuickTrackerAsync(1),
             GlobalInputAction.Track2 => await ToggleQuickTrackerAsync(2),
             GlobalInputAction.Track3 => await ToggleQuickTrackerAsync(3),

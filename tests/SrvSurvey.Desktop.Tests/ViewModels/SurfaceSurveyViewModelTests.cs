@@ -14,6 +14,72 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Path.GetTempPath(),
         $"SrvSurvey-surface-survey-vm-tests-{Guid.NewGuid():N}");
 
+    [Fact]
+    public async Task NamedResourceChatCommandsReachMiningWhileBiologyPanelIsSuppressed()
+    {
+        var (surface, survey, _) = CreateViewModel();
+        using var disposable = surface;
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(Path.Combine(temporaryDirectory, "mining")));
+        var status = Status(StatusFlags.InSrv);
+        ApplySurveyContext(survey, status, "mev_rhino");
+        await surface.ApplyUpdateAsync(Session(), [Event("""{"event":"SendText","Message":"+helium"}""")],
+            status, ExobiologySnapshot.Empty);
+        await mining.ApplyUpdateAsync(Session(), survey.Snapshot, status, "mev_rhino",
+            surfaceMarkers: surface.RadarMarkers);
+        Assert.False(surface.ShouldShow);
+        Assert.Equal("helium", Assert.Single(mining.Resources).Name);
+        Assert.Equal("0 m", mining.Resources[0].DistanceText);
+
+        status = status with { Latitude = 10, Heading = 90 };
+        ApplySurveyContext(survey, status, "mev_rhino");
+        await surface.ApplyUpdateAsync(Session(), [], status, ExobiologySnapshot.Empty);
+        await mining.ApplyUpdateAsync(Session(), survey.Snapshot, status, "mev_rhino",
+            surfaceMarkers: surface.RadarMarkers);
+        var moved = Assert.Single(mining.Resources);
+        Assert.InRange(moved.Marker.DistanceMeters, 174, 175);
+        Assert.Equal(90, moved.Bearing, precision: 6);
+        Assert.False(moved.IsNear);
+
+        await surface.ApplyUpdateAsync(Session(), [Event("""{"event":"SendText","Message":"--helium"}""")],
+            status, ExobiologySnapshot.Empty);
+        await mining.ApplyUpdateAsync(Session(), survey.Snapshot, status, "mev_rhino",
+            surfaceMarkers: surface.RadarMarkers);
+        Assert.Empty(mining.Resources);
+    }
+
+    [Fact]
+    public async Task ShipBoardingClearsPersistedRigsAndPreservesSurveyBookmarks()
+    {
+        var (surface, survey, surveyStore) = CreateViewModel();
+        using var disposable = surface;
+        var miningStore = new SystemSurfaceStore(Path.Combine(temporaryDirectory, "mining"));
+        using var mining = new SurfaceMiningViewModel(miningStore);
+        await surveyStore.AddBookmarkAsync(BodyContext(), "helium", new SurfaceCoordinate(0, 2));
+        await surveyStore.AddBookmarkAsync(BodyContext(), Genus, new SurfaceCoordinate(0, 3));
+        var status = Status(StatusFlags.InSrv);
+        ApplySurveyContext(survey, status, "mev_rhino");
+        await surface.ApplyUpdateAsync(Session(), [], status, ExobiologySnapshot.Empty);
+        await mining.ApplyUpdateAsync(Session(), survey.Snapshot, status, "mev_rhino",
+            surfaceMarkers: surface.RadarMarkers);
+        for (var number = 1; number <= 6; number++)
+        {
+            Assert.True(await mining.ToggleRigAsync(number));
+        }
+
+        Assert.True(await mining.ClearRigsOnShipBoardingAsync(
+            [Event("""{"event":"DockSRV"}""")], "F123"));
+
+        var savedRigs = await miningStore.LoadBodyAsync(BodyContext());
+        Assert.NotNull(savedRigs.Snapshot);
+        Assert.Empty(savedRigs.Snapshot.Bookmarks);
+        var savedSurvey = await surveyStore.LoadBodyAsync(BodyContext());
+        Assert.NotNull(savedSurvey.Snapshot);
+        Assert.Equal(2, savedSurvey.Snapshot.Bookmarks.Count);
+        Assert.Equal(new SurfaceCoordinate(0, 2), Assert.Single(savedSurvey.Snapshot.Bookmarks["helium"]));
+        Assert.Equal(new SurfaceCoordinate(0, 3), Assert.Single(savedSurvey.Snapshot.Bookmarks[Genus]));
+        Assert.Equal("helium", Assert.Single(mining.Resources).Name);
+    }
+
     [Theory]
     [InlineData(499, 500, 500, false)]
     [InlineData(500, 500, 500, true)]
@@ -69,6 +135,33 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         // Second clear on empty bookmarks remains successful and idempotent.
         Assert.True(await viewModel.ClearAllTrackersAsync());
         Assert.Empty(viewModel.TrackerGroups);
+    }
+
+    [Fact]
+    public async Task RhinoExclusivelyOwnsSurfaceTrackingUntilVehicleChanges()
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        using var disposable = viewModel;
+        survey.AutoShowSurfaceRadar = true;
+        survey.AutoShowMiniTrack = true;
+        await store.AddBookmarkAsync(BodyContext(), "#1", new SurfaceCoordinate(0, 2));
+        await store.AddBookmarkAsync(BodyContext(), Genus, new SurfaceCoordinate(0, 3));
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        await viewModel.ApplyUpdateAsync(Session(), [], survey.CurrentStatus, ExobiologySnapshot.Empty);
+        Assert.True(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShowMiniTrack);
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv), "mev_rhino");
+        Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.ShouldShowMiniTrack);
+        survey.ApplyUpdate([], Status(StatusFlags.None) with
+        {
+            Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
+        }, nextParkedSrvType: "mev_rhino");
+        Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.ShouldShowMiniTrack);
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv), "testbuggy");
+        Assert.True(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShowMiniTrack);
     }
 
     [Fact]
@@ -258,7 +351,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             [],
             survey.CurrentStatus,
             ExobiologySnapshot.Empty);
-        Assert.False(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShow);
         Assert.False(viewModel.ShouldShowMiniTrack);
 
         ApplySurveyContext(
@@ -297,7 +390,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task SupercruiseSuppressesSurfaceAndMiniTrackWithoutLandingGearPreference()
+    public async Task SupercruiseAllowsSurfaceAndMiniTrackWithoutLandingGearPreference()
     {
         var (viewModel, survey, store) = CreateViewModel();
         await store.AddBookmarkAsync(
@@ -319,9 +412,9 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
 
         Assert.False(survey.AutoHideSurfaceRadarWithoutLandingGear);
         Assert.True(viewModel.HasQuickTrackers);
-        Assert.False(viewModel.ShouldShowRadar);
-        Assert.False(viewModel.ShouldShow);
-        Assert.False(viewModel.ShouldShowMiniTrack);
+        Assert.True(viewModel.ShouldShowRadar);
+        Assert.True(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShowMiniTrack);
     }
 
     [Fact]

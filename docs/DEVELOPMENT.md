@@ -1,6 +1,6 @@
 # Development and Validation
 
-Last updated: 2026-08-26
+Last updated: 2026-09-05
 
 ## Branch purpose
 
@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.42**. Its development tag
-is `xp-v2.1.3.0-rc.42`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.42`. The assembly `FileVersion`
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.43**. Its development tag
+is `xp-v2.1.3.0-rc.43`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.43`. The assembly `FileVersion`
 remains numeric at `2.1.3.0` for Windows compatibility.
 
 ## Build contract
@@ -39,7 +39,7 @@ XWayland startup.
   production consumer and event-specific assertions.
 - Network coverage inventories all runtime surfaces and every `HttpClient`
   owner, including bounded streaming requirements.
-- Overlay coverage inventories all 28 supported overlay contracts and requires
+- Overlay coverage inventories 32 contracts, including 30 positionable panels, and requires
   production markup plus assertion evidence.
 - Profile import remains backup-first, hash-verified, staged, and recoverable.
   Compatibility code and tests are part of the converted product, not a build
@@ -60,11 +60,49 @@ collection. Focused data and screenshot tests lock the absorbed behavior; the
 Guardian backend contract is recorded in
 [`GUARDIAN_SURVEY_PARITY.md`](GUARDIAN_SURVEY_PARITY.md).
 
+An additional delta review on 2026-09-05 covers upstream
+[#1051](https://github.com/njthomson/SrvSurvey/pull/1051), merged as
+`347846175ad531b68d0ce797a08d375483cefc10`. The port now keeps Fileheader
+galaxy classification separate from LoadGame expansion flags throughout
+profile selection, journey context, scan rewards, and network options.
+EDDN retains nullable expansion flags and sends known `false` values; it does
+not copy the legacy patch's truthiness filter. Inara already guards absent
+commander identity, excludes Legacy uploads, and ignores object-valued
+`Statistics.Multicrew`. Regression coverage includes Live Horizons profiles,
+exploration/journey/system/boxel rewards, and EDDN session flag resets. This
+targeted review does not advance the broader upstream baseline above.
+
+A further delta review on 2026-09-05 covers upstream
+[#1055](https://github.com/njthomson/SrvSurvey/pull/1055), merged as
+`91e07f84b98f658fe662fe2d89cf44ff9ac59dce`. Rhino geometry and rig tracking
+are adapted into a dedicated, theme-aware Surface mining panel, with the
+existing Surface Survey panels suppressed while operating the Rhino or returning
+to it on foot. The vehicle row provides separate Ship and Rhino guidance, with
+an untracked X for the Rhino while aboard.
+Demolished RavenColonial sites are recognized by the API model; the existing
+Plan-only project picker excludes them. Unknown Guardian sites already use
+nullable catalog/profile handling and site-type guidance in this port.
+Spansh Fleet Carrier routes are deliberately excluded from this delta because
+the port has its own implementation. Details and regression evidence are in
+[`RHINO_MINING_PARITY.md`](RHINO_MINING_PARITY.md).
+
 Because this branch intentionally excludes the previous application source,
 future upstream commits must receive an explicit delta review rather than being
 assumed covered by the standalone journal, network, and overlay inventories.
 
 ## Runtime verification
+
+RC43 local validation on 2026-09-05 passed the Release solution build with
+zero warnings/errors, formatting verification, and 3,243 tests (Core 1,423;
+Desktop 1,807; Replay Controller 13). Guide search and automatic rig cleanup
+on ship boarding are covered. Sidebar collapse/restore preserves workspace
+selection and window size in dark/light themes and at increased application scale.
+Named-resource coverage includes chat bookmarks, live bearings/distances,
+near/far cues, rig isolation, and two-column layouts with 3, 7, and 21 targets.
+The joined stream overlay's focus-loss and tracker-override regressions pass.
+Production-template previews were inspected for the sidebar, mining layout,
+and Monochrome Companion palette. This records
+automated and headless validation; the native checks below remain separate.
 
 Automated builds do not replace native testing with a live Elite Dangerous
 session. Before promoting a release, verify on clean supported systems:

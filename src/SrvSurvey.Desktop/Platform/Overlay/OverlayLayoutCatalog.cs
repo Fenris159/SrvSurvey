@@ -8,6 +8,7 @@ public static class OverlayLayoutCatalog
     public static IReadOnlyList<OverlayLayoutCategoryDefinition> Categories { get; } =
     [
         new(OverlayLayoutCategory.ExplorationAndNavigation, "Exploration & navigation"),
+        new(OverlayLayoutCategory.Mining, "Mining"),
         new(OverlayLayoutCategory.BiologyAndSurface, "Biology & surface"),
         new(OverlayLayoutCategory.Guardian, "Guardian"),
         new(OverlayLayoutCategory.SitesAndQuests, "Sites & quests"),
@@ -29,6 +30,7 @@ public static class OverlayLayoutCatalog
         Define("PlotFSS", "FSS body feed", "SystemSurvey.AutoShowLastFssBody", OverlayLayoutCategory.ExplorationAndNavigation, OverlaySettingsCategory.Exploration, new(240, 100), new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8)),
         Define("PlotFSSInfo", "FSS information", "SystemSurvey.AutoShowFssInfo", OverlayLayoutCategory.ExplorationAndNavigation, OverlaySettingsCategory.Exploration, new(270, 400), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)),
         Define("PlotGalMap", "Galaxy Map system intelligence", "GalaxyMap.AutoShow", OverlayLayoutCategory.ExplorationAndNavigation, OverlaySettingsCategory.Exploration, new(240, 180), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)),
+        Define("PlotSurfaceMining", "Surface mining", "Mining.ShouldShow", OverlayLayoutCategory.Mining, OverlaySettingsCategory.Mining, new(320, 530), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Middle, 0, MoveVerticalAnchor: LegacyVerticalAnchor.Top)),
         Define("PlotGrounded", "Surface survey", "SystemSurvey.AutoShowSurfaceRadar", OverlayLayoutCategory.BiologyAndSurface, OverlaySettingsCategory.Exobiology, new(320, 440), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Middle, 0, MoveVerticalAnchor: LegacyVerticalAnchor.Top)),
         Define("PlotGuardians", "Guardian site", "Guardian.EnableGuardianSites", OverlayLayoutCategory.Guardian, OverlaySettingsCategory.Guardian, new(300, 400), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Middle, 0, MoveVerticalAnchor: LegacyVerticalAnchor.Top)),
         Define("PlotGuardianStatus", "Guardian status", "Guardian.EnableGuardianSites", OverlayLayoutCategory.Guardian, OverlaySettingsCategory.Guardian, new(260, 108), new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8)),
@@ -162,4 +164,5 @@ public enum OverlayLayoutCategory
     SitesAndQuests,
     CombatAndColonization,
     StatusAndUtilities,
+    Mining,
 }

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using SrvSurvey.Core.Journal;
 
@@ -7,6 +8,7 @@ public sealed class ExplorationState
 {
     private readonly Dictionary<BodyKey, BodyExplorationState> bodies = [];
     private readonly HashSet<BodyKey> landedBodies = [];
+    private IReadOnlyDictionary<string, long>? estimatedRewardsBySystem;
     private bool isOdyssey = true;
 
     public ExplorationState(ExplorationSnapshot? seed = null)
@@ -34,8 +36,11 @@ public sealed class ExplorationState
         switch (journalEvent.EventName)
         {
             case "Fileheader":
-            case "LoadGame":
                 isOdyssey = GetBoolean(root, "Odyssey") ?? isOdyssey;
+                return true;
+
+            case "LoadGame":
+                // Expansion ownership does not change Live galaxy scan rewards.
                 return true;
 
             case "StartJump":
@@ -62,6 +67,16 @@ public sealed class ExplorationState
                 ApplyTouchdown(root);
                 return true;
 
+            case "SellExplorationData":
+                ApplySoldSystems(
+                    GetStringArray(root, "Systems")
+                        .Concat(GetStringArray(root, "Discovered")));
+                return true;
+
+            case "MultiSellExplorationData":
+                ApplySoldSystems(GetSystemNames(root, "Discovered"));
+                return true;
+
             default:
                 return false;
         }
@@ -75,7 +90,8 @@ public sealed class ExplorationState
             JumpCount,
             ScanCount,
             DetailedSurfaceScanCount,
-            LandedBodyCount);
+            LandedBodyCount,
+            estimatedRewardsBySystem);
     }
 
     public void Reset(ExplorationSnapshot? seed = null)
@@ -87,6 +103,8 @@ public sealed class ExplorationState
         ScanCount = seed.ScanCount;
         DetailedSurfaceScanCount = seed.DetailedSurfaceScanCount;
         LandedBodyCount = seed.LandedBodyCount;
+        estimatedRewardsBySystem = NormalizeRewardsBySystem(
+            seed.EstimatedRewardsBySystem);
         bodies.Clear();
         landedBodies.Clear();
     }
@@ -107,6 +125,7 @@ public sealed class ExplorationState
         }
 
         var body = bodies.GetValueOrDefault(key.Value) ?? new BodyExplorationState();
+        body.SystemName = GetString(root, "StarSystem") ?? body.SystemName;
         body.BodyClass = bodyClass;
         body.IsTerraformable = GetString(root, "TerraformState") == "Terraformable";
         var planetMass = GetDouble(root, "MassEM");
@@ -122,7 +141,7 @@ public sealed class ExplorationState
         {
             body.Reward = reward;
             ScanCount++;
-            EstimatedRewards += reward;
+            ApplyEstimatedReward(reward, body.SystemName);
         }
     }
 
@@ -145,8 +164,101 @@ public sealed class ExplorationState
             body.Reward = reward;
             body.IsMapped = true;
             DetailedSurfaceScanCount++;
-            EstimatedRewards += reward;
+            ApplyEstimatedReward(reward, body.SystemName);
         }
+    }
+
+    private void ApplyEstimatedReward(long reward, string? systemName)
+    {
+        EstimatedRewards += reward;
+        if (string.IsNullOrWhiteSpace(systemName))
+        {
+            return;
+        }
+
+        var normalizedName = systemName.Trim();
+        var updated = CopyRewardsBySystem();
+        updated[normalizedName] = updated.GetValueOrDefault(normalizedName) + reward;
+        estimatedRewardsBySystem = new ReadOnlyDictionary<string, long>(updated);
+    }
+
+    private void ApplySoldSystems(IEnumerable<string> systemNames)
+    {
+        if (estimatedRewardsBySystem is not { Count: > 0 })
+        {
+            return;
+        }
+
+        var soldSystemNames = systemNames
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => name.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (soldSystemNames.Length == 0)
+        {
+            return;
+        }
+
+        var updated = CopyRewardsBySystem();
+        long removedRewards = 0;
+        foreach (var soldSystemName in soldSystemNames)
+        {
+            if (updated.Remove(soldSystemName, out var systemRewards))
+            {
+                removedRewards += systemRewards;
+            }
+        }
+
+        if (removedRewards == 0)
+        {
+            return;
+        }
+
+        EstimatedRewards -= Math.Min(EstimatedRewards, removedRewards);
+        estimatedRewardsBySystem = updated.Count == 0
+            ? null
+            : new ReadOnlyDictionary<string, long>(updated);
+    }
+
+    private Dictionary<string, long> CopyRewardsBySystem()
+    {
+        var copy = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        if (estimatedRewardsBySystem is null)
+        {
+            return copy;
+        }
+
+        foreach (var entry in estimatedRewardsBySystem)
+        {
+            copy[entry.Key] = entry.Value;
+        }
+
+        return copy;
+    }
+
+    private static ReadOnlyDictionary<string, long>? NormalizeRewardsBySystem(
+        IReadOnlyDictionary<string, long>? rewardsBySystem)
+    {
+        if (rewardsBySystem is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var normalized = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in rewardsBySystem)
+        {
+            if (string.IsNullOrWhiteSpace(entry.Key) || entry.Value <= 0)
+            {
+                continue;
+            }
+
+            var systemName = entry.Key.Trim();
+            normalized[systemName] = normalized.GetValueOrDefault(systemName) + entry.Value;
+        }
+
+        return normalized.Count == 0
+            ? null
+            : new ReadOnlyDictionary<string, long>(normalized);
     }
 
     private void ApplyTouchdown(JsonElement root)
@@ -199,6 +311,40 @@ public sealed class ExplorationState
                 : null;
     }
 
+    private static IEnumerable<string> GetStringArray(
+        JsonElement root,
+        string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out var value)
+            || value.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        return value.EnumerateArray()
+            .Where(item => item.ValueKind == JsonValueKind.String)
+            .Select(item => item.GetString())
+            .Where(item => item is not null)
+            .Select(item => item!);
+    }
+
+    private static IEnumerable<string> GetSystemNames(
+        JsonElement root,
+        string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out var value)
+            || value.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        return value.EnumerateArray()
+            .Where(item => item.ValueKind == JsonValueKind.Object)
+            .Select(item => GetString(item, "SystemName"))
+            .Where(item => item is not null)
+            .Select(item => item!);
+    }
+
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
         return root.TryGetProperty(propertyName, out var value)
@@ -238,6 +384,8 @@ public sealed class ExplorationState
 
     private sealed class BodyExplorationState
     {
+        public string? SystemName { get; set; }
+
         public string? BodyClass { get; set; }
 
         public bool IsTerraformable { get; set; }
@@ -260,7 +408,8 @@ public sealed record ExplorationSnapshot(
     int JumpCount,
     int ScanCount,
     int DetailedSurfaceScanCount,
-    int LandedBodyCount)
+    int LandedBodyCount,
+    IReadOnlyDictionary<string, long>? EstimatedRewardsBySystem = null)
 {
     public static ExplorationSnapshot Empty { get; } = new(0, 0, 0, 0, 0, 0);
 }

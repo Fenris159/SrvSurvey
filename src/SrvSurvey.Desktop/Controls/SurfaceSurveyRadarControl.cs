@@ -243,6 +243,8 @@ public sealed class SurfaceSurveyRadarControl : Control
 
         return marker.Kind switch
         {
+            SurfaceRadarMarkerKind.MiningRig when marker.Status == "COLLECT" => accent,
+            SurfaceRadarMarkerKind.MiningRig => marker.IsInsideRadius ? danger : warning,
             SurfaceRadarMarkerKind.HistoricalScan =>
                 marker.IsInsideRadius ? danger : muted,
             // Bookmarks and Canonn prior rings: muted when inactive, green when

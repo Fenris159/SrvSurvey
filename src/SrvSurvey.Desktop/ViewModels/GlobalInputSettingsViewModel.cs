@@ -40,6 +40,8 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
                 SaveBinding))
             .ToArray();
         ResetBindingsCommand = new DelegateCommand(ResetBindings);
+        MiningBindings = Bindings.Where(binding => binding.Definition.Action is
+            >= GlobalInputAction.MiningRig1 and <= GlobalInputAction.MiningRig6).ToArray();
         RefreshControllersCommand = new DelegateCommand(
             RefreshControllerDevices);
         runtimeStatus = IsKeyboardAvailable
@@ -59,6 +61,8 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
     public OverlayPlatformCapabilities Capabilities { get; }
 
     public IReadOnlyList<InputBindingViewModel> Bindings { get; }
+
+    public IReadOnlyList<InputBindingViewModel> MiningBindings { get; }
 
     public ICommand ResetBindingsCommand { get; }
 

@@ -1,16 +1,27 @@
 # SrvSurvey-XP Cross-Platform
 
-Current release candidate version: **2.1.3.0-rc.42**
+Current release candidate version: **2.1.3.0-rc.43**
 
 This build of SrvSurvey is a cross-platform version of the Elite Dangerous companion application
 for Windows and now Linux. It reads the game's journal and auxiliary files to drive
-exploration, exobiology, travel, Guardian, settlement, combat, quest,
+exploration, exobiology, surface mining, travel, Guardian, settlement, combat, quest,
 colonization, notification, and in-game overlay features.
 
 This branch contains only the converted Avalonia application, its shared core,
 tests, packaging, and development tools. Existing SrvSurvey profiles remain
 supported through a verified, backup-first import; the imported source is never
 modified.
+
+## RC43 highlights
+
+- [Rhino surface mining](docs/SURFACE_MINING.md): six saved rig locations,
+  Ship/Rhino guidance, cargo capacity, and shared keyboard/controller bindings.
+- Monochrome Companion overlay colors to pair with the dark Monochrome
+  application theme.
+- Corrected survey visibility, exploration sale estimates, and Live Horizons
+  handling, with the RC42 Guardian improvements retained.
+
+See the [complete RC43 release notes](CurrentReleaseNotes.md).
 
 ## Install
 

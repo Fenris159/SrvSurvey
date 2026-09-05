@@ -83,6 +83,161 @@ public sealed class CommanderProfileStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task LoadAndSaveRoundTripExplorationRewardsBySystem()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-live.json");
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "fid": "F123",
+              "explRewards": 1900,
+              "explRewardsBySystem": {
+                "Alpha": 600,
+                "alpha": 400,
+                "Ignored": 0
+              },
+              "futureSetting": true
+            }
+            """);
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        var loaded = await store.LoadAsync("F123", isOdyssey: true);
+
+        Assert.NotNull(loaded.Data);
+        var rewards = Assert.Single(
+            loaded.Data.Exploration.EstimatedRewardsBySystem!);
+        Assert.Equal("Alpha", rewards.Key);
+        Assert.Equal(1000, rewards.Value);
+
+        await store.SaveExplorationAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            loaded.Data.Exploration);
+
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.True(root["futureSetting"]!.GetValue<bool>());
+        Assert.Equal(
+            1000,
+            root["explRewardsBySystem"]!["Alpha"]!.GetValue<long>());
+        Assert.Equal("explRewardsBySystem", root.Last().Key);
+
+        await store.SaveExplorationAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            ExplorationSnapshot.Empty);
+
+        root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.False(root.ContainsKey("explRewardsBySystem"));
+    }
+
+    [Theory]
+    [InlineData("{\"Alpha\":600,\"alpha\":400,\"Ignored\":0}")]
+    [InlineData("null")]
+    [InlineData(null)]
+    public async Task SaveActiveJourneyPreservesExplorationLedgerAndKeepsItLast(
+        string? ledgerJson)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-live.json");
+        var original = JsonNode.Parse(
+            """{"fid":"F123","futureSetting":{"enabled":true}}""")!.AsObject();
+        if (ledgerJson is not null)
+        {
+            original["explRewardsBySystem"] = JsonNode.Parse(ledgerJson);
+        }
+
+        await File.WriteAllTextAsync(path, original.ToJsonString());
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        await store.SaveActiveJourneyAsync(
+            "F123", "Drew", isOdyssey: true, "journey.json");
+
+        var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Equal("journey.json", saved["activeJourney"]!.GetValue<string>());
+        Assert.True(JsonNode.DeepEquals(original["futureSetting"], saved["futureSetting"]));
+        Assert.Equal(ledgerJson is not null, saved.ContainsKey("explRewardsBySystem"));
+        if (ledgerJson is not null)
+        {
+            Assert.Equal("explRewardsBySystem", saved.Last().Key);
+            Assert.True(JsonNode.DeepEquals(
+                original["explRewardsBySystem"], saved["explRewardsBySystem"]));
+        }
+    }
+
+    [Fact]
+    public async Task SaveNormalizesExplorationRewardSystemNames()
+    {
+        var store = new CommanderProfileStore(temporaryDirectory);
+        var rewards = new Dictionary<string, long>(StringComparer.Ordinal)
+        {
+            ["Alpha"] = 600,
+            [" alpha "] = 300,
+            ["ALPHA"] = 100,
+            [" "] = 50,
+            ["Ignored"] = 0,
+            ["Negative"] = -1,
+        };
+
+        await store.SaveExplorationAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            new ExplorationSnapshot(1000, 0, 0, 0, 0, 0, rewards));
+
+        var path = store.GetProfilePath("F123", isOdyssey: true);
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        var savedRewards = root["explRewardsBySystem"]!.AsObject();
+        var savedReward = Assert.Single(savedRewards);
+        Assert.Equal("Alpha", savedReward.Key);
+        Assert.Equal(1000, savedReward.Value!.GetValue<long>());
+    }
+
+    [Theory]
+    [InlineData(long.MaxValue, 1)]
+    [InlineData(long.MaxValue - 1, 1)]
+    [InlineData(long.MaxValue - 1, 2)]
+    public async Task DuplicateExplorationRewardsSaturateOnLoadAndSave(long first, long second)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var store = new CommanderProfileStore(temporaryDirectory);
+        var path = store.GetProfilePath("F123", isOdyssey: true);
+        var root = new JsonObject
+        {
+            ["fid"] = "F123",
+            ["explRewardsBySystem"] = new JsonObject
+            {
+                ["Alpha"] = first,
+                ["alpha"] = second,
+            },
+        };
+        await File.WriteAllTextAsync(path, root.ToJsonString());
+
+        var loaded = await store.LoadAsync("F123", isOdyssey: true);
+        Assert.NotNull(loaded.Data);
+        Assert.Equal(long.MaxValue, Assert.Single(
+            loaded.Data.Exploration.EstimatedRewardsBySystem!).Value);
+
+        var rewards = new Dictionary<string, long>(StringComparer.Ordinal)
+        {
+            ["Alpha"] = first,
+            [" alpha "] = second,
+        };
+        await store.SaveExplorationAsync("F123", "Drew", isOdyssey: true,
+            new ExplorationSnapshot(0, 0, 0, 0, 0, 0, rewards));
+        var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Equal(long.MaxValue, Assert.Single(
+            saved["explRewardsBySystem"]!.AsObject()).Value!.GetValue<long>());
+        var reloaded = await store.LoadAsync("F123", isOdyssey: true);
+        Assert.NotNull(reloaded.Data);
+        Assert.Equal(long.MaxValue, Assert.Single(
+            reloaded.Data.Exploration.EstimatedRewardsBySystem!).Value);
+    }
+
+    [Fact]
     public async Task SaveRefusesToOverwriteMalformedProfile()
     {
         Directory.CreateDirectory(temporaryDirectory);

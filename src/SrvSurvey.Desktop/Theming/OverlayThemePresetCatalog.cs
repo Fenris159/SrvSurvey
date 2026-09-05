@@ -6,6 +6,8 @@ public static class OverlayThemePresetCatalog
 {
     public const string DefaultName = "Default";
 
+    private const string BioEmptyKey = "bio.empty";
+    private const string BlackKey = "black";
     private const string HeaderKey = "header";
     private const string OrangeKey = "orange";
     private const string OrangeDarkKey = "orangeDark";
@@ -49,7 +51,7 @@ public static class OverlayThemePresetCatalog
         BioGalacticRegionKey,
         "bio.galacticRegionPotential",
         "bio.unknownGlyph",
-        "bio.empty",
+        BioEmptyKey,
         "bio.confirmedEdge",
         "bio.confirmedDimEdge",
         "bio.predictionEdge",
@@ -74,6 +76,7 @@ public static class OverlayThemePresetCatalog
     public static IReadOnlyList<OverlayThemePreset> Presets { get; } =
     [
         new(DefaultName, LegacyOverlayThemeStore.CreateDefault().Colors),
+        CreateMonochromeCompanion(),
         CreateExpandedPreset(
             "Nebula Cyan",
             "#5EC8F2",
@@ -201,6 +204,28 @@ public static class OverlayThemePresetCatalog
         return true;
     }
 
+    private static OverlayThemePreset CreateMonochromeCompanion()
+    {
+        var colors = CreateExpandedPreset("Monochrome Companion", "#C8CBD0", "#8DB2BE",
+            "#D7D4CC", "#D4BF8F").Colors.ToDictionary(entry => entry.Key, entry => entry.Value,
+                StringComparer.Ordinal);
+        colors[BlackKey] = Color.Parse("#111315");
+        colors["grey"] = Color.Parse("#90979E");
+        colors["green"] = Color.Parse("#91B69B");
+        colors["greenDark"] = Color.Parse("#405849");
+        colors["red"] = Color.Parse("#CF8C86");
+        colors["redDark"] = Color.Parse("#69433F");
+        colors["colonise.surplus"] = colors["green"];
+        colors["colonise.surplusDark"] = colors["greenDark"];
+        colors["colonise.deficit"] = colors["red"];
+        colors["colonise.deficitDark"] = colors["redDark"];
+        colors["guardian.background"] = colors[BlackKey];
+        colors["guardian.success"] = colors["green"];
+        colors["guardian.danger"] = colors["red"];
+        colors[BioEmptyKey] = colors[BlackKey];
+        return new OverlayThemePreset("Monochrome Companion", colors);
+    }
+
     private static OverlayThemePreset CreateExpandedPreset(
         string name,
         string headerPrimary,
@@ -306,7 +331,7 @@ public static class OverlayThemePresetCatalog
         colors[BioUnknownKey] = palette.Muted;
         colors["bio.unknownGlyph"] = palette.Muted;
         colors["bio.hatch"] = WithAlpha(palette.Muted, 242);
-        colors["bio.empty"] = colors["black"];
+        colors[BioEmptyKey] = colors[BlackKey];
         colors[BioWhiteKey] = palette.Text;
         colors["bio.confirmedEdge"] = WithAlpha(palette.Primary, 96);
         colors["bio.confirmedDimEdge"] = WithAlpha(palette.PrimaryDark, 96);
@@ -379,7 +404,7 @@ public static class OverlayThemePresetCatalog
                 140),
             "bio.unknownGlyph" =>
                 Get(BioUnknownKey, Get("grey", fallback)),
-            "bio.empty" => Get("black", fallback),
+            BioEmptyKey => Get(BlackKey, fallback),
             "bio.confirmedEdge" => WithAlpha(
                 Get(BioConfirmedKey, Get(OrangeKey, fallback)),
                 96),

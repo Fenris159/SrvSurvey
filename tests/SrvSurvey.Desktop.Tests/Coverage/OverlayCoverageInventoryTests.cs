@@ -19,6 +19,7 @@ public sealed partial class OverlayCoverageInventoryTests
             ["PlotFSS"] = "LastFssBodyOverlayWindow.axaml",
             ["PlotFSSInfo"] = "FssInfoOverlayWindow.axaml",
             ["PlotGalMap"] = "GalaxyMapOverlayWindow.axaml",
+            ["PlotSurfaceMining"] = "SurfaceMiningOverlayWindow.axaml",
             ["PlotGrounded"] = "SurfaceSurveyOverlayWindow.axaml",
             ["PlotGuardians"] = "GuardianOverlayWindow.axaml",
             ["PlotGuardianStatus"] = "GuardianStatusOverlayWindow.axaml",
@@ -132,6 +133,10 @@ public sealed partial class OverlayCoverageInventoryTests
         Map("PlotMassacre", ["src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/CombatViewModelTests.cs",
         ]),
+        Map("PlotSurfaceMining", ["src/SrvSurvey.Desktop/SurfaceMiningOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/SurfaceMiningOverlayPresentation.axaml"], [
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/SurfaceMiningViewModelTests.cs",
+        ]),
         Map("PlotMiniTrack", ["src/SrvSurvey.Desktop/MiniTrackOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/SurfaceSurveyViewModelTests.cs",
         ]),
@@ -175,7 +180,7 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void InventoryContainsEverySupportedOverlayExactlyOnce()
     {
-        Assert.Equal(31, Mappings.Length);
+        Assert.Equal(32, Mappings.Length);
         Assert.Equal(
             Mappings.Length,
             Mappings.Select(mapping => mapping.ContractName).Distinct().Count());

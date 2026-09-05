@@ -6,6 +6,25 @@ namespace SrvSurvey.Core.Tests.Exploration;
 
 public sealed class SystemScanStateTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void LoadGameExpansionDoesNotChangeGalaxyRewards(bool isLive)
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse($$"""{"event":"Fileheader","Odyssey":{{isLive.ToString().ToLowerInvariant()}}}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse(PlanetScan));
+        var expected = Assert.Single(state.CreateSnapshot().Bodies).EstimatedMappedValue;
+
+        state.Apply(Parse($$"""{"event":"LoadGame","Odyssey":{{(!isLive).ToString().ToLowerInvariant()}}}"""));
+        state.Apply(Parse("""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"ProbesUsed":4,"EfficiencyTarget":6}"""));
+
+        var body = Assert.Single(state.CreateSnapshot().Bodies);
+        Assert.Equal(expected, body.EstimatedMappedValue);
+        Assert.Equal(expected, body.CurrentScanValue);
+    }
+
     [Fact]
     public void ExplicitFirstFootfallCorrectionRequiresAndUpdatesCurrentBody()
     {

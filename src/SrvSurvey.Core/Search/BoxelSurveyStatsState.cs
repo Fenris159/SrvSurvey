@@ -46,7 +46,8 @@ public sealed class BoxelSurveyStatsState
         ArgumentNullException.ThrowIfNull(journalEvent);
         return journalEvent.EventName switch
         {
-            "Fileheader" or "LoadGame" => ApplyOdyssey(journalEvent.Payload),
+            "Fileheader" => ApplyOdyssey(journalEvent.Payload),
+            "LoadGame" => true, // Expansion ownership does not change galaxy rewards.
             "FSDJump" or "Location" or "CarrierJump" => ApplyJump(journalEvent),
             "Scan" => ApplyScan(journalEvent.Payload),
             "SAAScanComplete" => ApplySaaScanComplete(journalEvent.Payload),

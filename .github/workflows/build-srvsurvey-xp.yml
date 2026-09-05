@@ -270,17 +270,23 @@ jobs:
           linuxdeploy="$RUNNER_TEMP/appimage-tools/linuxdeploy-x86_64.AppImage"
           curl --fail --location --retry 3 --proto '=https' --proto-redir '=https' \
             --output "$linuxdeploy" \
-            "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
-          echo "421ca71d5c69ea97c6309276232990d43df1dcece0edfaa26bbf926ff96ed12e  $linuxdeploy" \
+            "https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20251107-1/linuxdeploy-x86_64.AppImage"
+          echo "c20cd71e3a4e3b80c3483cef793cda3f4e990aca14014d23c544ca3ce1270b4d  $linuxdeploy" \
             | sha256sum --check --strict
           chmod +x "$linuxdeploy"
           tool="$RUNNER_TEMP/appimage-tools/appimagetool-x86_64.AppImage"
           curl --fail --location --retry 3 --proto '=https' --proto-redir '=https' \
             --output "$tool" \
-            "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
-          echo "a6d71e2b6cd66f8e8d16c37ad164658985e0cf5fcaa950c90a482890cb9d13e0  $tool" \
+            "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage"
+          echo "ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0  $tool" \
             | sha256sum --check --strict
           chmod +x "$tool"
+          runtime="$RUNNER_TEMP/appimage-tools/runtime-x86_64"
+          curl --fail --location --retry 3 --proto '=https' --proto-redir '=https' \
+            --output "$runtime" \
+            "https://github.com/AppImage/type2-runtime/releases/download/20251108/runtime-x86_64"
+          echo "2fca8b443c92510f1483a883f60061ad09b46b978b2631c807cd873a47ec260d  $runtime" \
+            | sha256sum --check --strict
           convert "src/SrvSurvey.Desktop/Assets/logo-remastered-linux-windows-split.png" \
             -background none \
             -resize 256x256 \
@@ -291,6 +297,7 @@ jobs:
             "artifacts/appimage/srvsurvey.png" \
             "$linuxdeploy" \
             "$tool" \
+            "$runtime" \
             "packages/SrvSurvey-XP-${{ needs.release-metadata.outputs.package_version }}-x86_64.AppImage"
 
       - name: Inspect Linux AppImage payload

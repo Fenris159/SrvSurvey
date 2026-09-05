@@ -49,6 +49,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private readonly Func<DateTimeOffset> utcNow;
     private EliteStatus? status;
     private string? activeSrvType;
+    private string? parkedSrvType;
     private string? musicTrack;
     private ExobiologySnapshot exobiology = ExobiologySnapshot.Empty;
     private BiologyDiscoveryContext biologyDiscoveryContext =
@@ -888,6 +889,13 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public EliteStatus? CurrentStatus => status;
 
+    public bool IsRhinoActive => status?.InSrv == true
+        && EliteSrvTypes.IsRhino(activeSrvType);
+
+    public bool IsRhinoSurfaceContext => IsRhinoActive
+        || status?.OnFoot == true
+            && EliteSrvTypes.IsRhino(parkedSrvType);
+
     internal OverlayGameMode CurrentOverlayGameMode => ResolveGameMode();
 
     public ExobiologySnapshot CurrentExobiology => exobiology;
@@ -1537,7 +1545,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             }
 
             var mode = ResolveGameMode();
-            return mode is OverlayGameMode.Flying
+            return mode is OverlayGameMode.SuperCruising
+                or OverlayGameMode.Flying
                 or OverlayGameMode.Landed
                 or OverlayGameMode.InSrv
                 or OverlayGameMode.OnFoot
@@ -1553,7 +1562,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? nextStatus,
         ExobiologySnapshot? nextExobiology = null,
-        string? nextActiveSrvType = null)
+        string? nextActiveSrvType = null,
+        string? nextParkedSrvType = null)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         if (journalEvents.Count == 0
@@ -1574,6 +1584,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         if (nextStatus is not null || journalEvents.Count > 0)
         {
             activeSrvType = nextActiveSrvType;
+            parkedSrvType = nextParkedSrvType;
         }
 
         ApplyStatusUpdate(nextStatus, previousStatus);
@@ -1600,6 +1611,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
         // Raise status/exobiology after Snapshot and RefreshDisplay so
         // listeners that also read Snapshot observe a consistent state.
+        OnPropertyChanged(nameof(IsRhinoActive));
+        OnPropertyChanged(nameof(IsRhinoSurfaceContext));
         if (nextStatus is not null)
         {
             OnPropertyChanged(nameof(CurrentStatus));

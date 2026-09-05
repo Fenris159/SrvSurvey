@@ -46,6 +46,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     private const string Unavailable = "—";
     private const string ExplorationNavigationKey = "exploration";
+    private const string MiningNavigationKey = "mining";
     private const string ExobiologyNavigationKey = "exobiology";
     private const string TravelNavigationKey = "travel";
     private const string BoxelNavigationKey = "boxel";
@@ -172,6 +173,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private DiagnosticsWorkspaceTab selectedDiagnosticsTab =
         DiagnosticsWorkspaceTab.Source;
     private bool isProfileSelected;
+    private bool isSidebarCollapsed;
     private ThemeOptionViewModel selectedTheme;
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
     private string legacyProfileSourcePath;
@@ -706,6 +708,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     systemSurfaceStore,
                     sharedExobiologyCatalog));
             rollback.Add(SurfaceSurvey.Dispose);
+            Mining = new SurfaceMiningViewModel(new SystemSurfaceStore(
+                Path.Combine(AppDataPaths.DataDirectory, "mining")));
+            rollback.Add(Mining.Dispose);
             BiologyPredictions = new BiologyPredictionsViewModel(
                 SystemSurvey,
                 new BiologyPredictionsSettingsStore(
@@ -887,6 +892,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     SearchNavigationKey,
                     "Search",
                     "Spherical limits and nearby biology"),
+                new(MiningNavigationKey, "Mining", "Surface mining workspace", true),
                 new(
                     GuardianNavigationKey,
                     "Guardian",
@@ -925,7 +931,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     or SearchNavigationKey)
                 .ToArray();
             ActivityNavigationItems = NavigationItems
-                .Where(item => item.Key is GuardianNavigationKey
+                .Where(item => item.Key is MiningNavigationKey or GuardianNavigationKey
                     or QuestsNavigationKey
                     or ColonisationNavigationKey)
                 .ToArray();
@@ -972,6 +978,23 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public IReadOnlyList<NavigationItemViewModel> ActivityNavigationItems { get; }
 
     public IReadOnlyList<NavigationItemViewModel> UtilityNavigationItems { get; }
+
+    public bool IsSidebarCollapsed
+    {
+        get => isSidebarCollapsed;
+        set
+        {
+            if (SetField(ref isSidebarCollapsed, value))
+            {
+                OnPropertyChanged(nameof(SidebarWidth));
+                OnPropertyChanged(nameof(SidebarToggleLabel));
+            }
+        }
+    }
+
+    public double SidebarWidth => IsSidebarCollapsed ? 44 : 248;
+
+    public string SidebarToggleLabel => IsSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar";
 
     public bool IsSurveyNavigationExpanded =>
         expandedNavigationGroup == SurveyNavigationGroup;
@@ -1093,6 +1116,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public SystemSurveyViewModel SystemSurvey { get; }
 
     public SurfaceSurveyViewModel SurfaceSurvey { get; }
+
+    public SurfaceMiningViewModel Mining { get; }
 
     public CombatViewModel Combat { get; }
 
@@ -1305,6 +1330,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         SelectedNavigation?.Key == ExplorationNavigationKey
         && !IsProfileSelected;
 
+    public bool IsMiningSelected => SelectedNavigation?.Key == MiningNavigationKey && !IsProfileSelected;
+
     public bool IsExobiologySelected =>
         SelectedNavigation?.Key == ExobiologyNavigationKey
         && !IsProfileSelected;
@@ -1467,7 +1494,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 or BoxelNavigationKey => SurveyNavigationGroup,
             TravelNavigationKey
                 or SearchNavigationKey => NavigationNavigationGroup,
-            GuardianNavigationKey
+            MiningNavigationKey or GuardianNavigationKey
                 or QuestsNavigationKey
                 or ColonisationNavigationKey =>
                 ActivitiesNavigationGroup,
@@ -1497,6 +1524,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         OnPropertyChanged(nameof(IsProfileSelected));
         OnPropertyChanged(nameof(IsOverviewSelected));
         OnPropertyChanged(nameof(IsExplorationSelected));
+        OnPropertyChanged(nameof(IsMiningSelected));
         OnPropertyChanged(nameof(IsExobiologySelected));
         OnPropertyChanged(nameof(IsTravelSelected));
         OnPropertyChanged(nameof(IsBoxelSelected));
@@ -2670,7 +2698,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         var initializedJourney = await Journey.UpdateContextAsync(
             journalState.FrontierId,
             journalState.CommanderName,
-            journalState.IsOdyssey ?? true,
+            journalState.IsLegacy != true,
             journalState.SystemName,
             journalState.SystemAddress);
         if (!initializedJourney)
@@ -3043,7 +3071,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 update.JournalEvents,
                 update.Status,
                 exobiologyAfter,
-                journalState.ActiveSrvType);
+                journalState.ActiveSrvType,
+                journalState.ParkedSrvType);
         }
 
         UpdateActiveSystemVisit(update.JournalEvents);
@@ -3081,20 +3110,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             await BiologyCodex.OpenEntryAsync(entryId);
         }
 
-        var surfaceSession = CreateSurfaceSurveySessionContext();
-        if (update.JournalEvents.Count > 0
+        if (update.Cargo is not null || update.JournalEvents.Count > 0
             || update.Status is not null
             || exobiologyChanged
             || isManualRefresh)
         {
-            await SurfaceSurvey.ApplyUpdateAsync(
-                surfaceSession,
-                update.JournalEvents,
-                update.Status,
-                exobiologyAfter,
-                processJournalMutations: !skipPersistedBootstrapEvents,
-                scansLostToDeath: scansLostToDeath.ToArray(),
-                cancellationToken: CancellationToken.None);
+            await ApplySurfaceTrackingAsync(update, exobiologyAfter, skipPersistedBootstrapEvents, scansLostToDeath);
         }
 
         if (exobiologyChanged)
@@ -3108,6 +3129,35 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         }
 
         return exobiologyAfter;
+    }
+
+    private async Task ApplySurfaceTrackingAsync(JournalMonitorUpdate update,
+        ExobiologySnapshot exobiologyAfter, bool skipPersistedBootstrapEvents, HashSet<string> scansLostToDeath)
+    {
+        var surfaceSession = CreateSurfaceSurveySessionContext();
+        if (!skipPersistedBootstrapEvents)
+        {
+            // Clear the mining body's rigs before boarding can remove its live surface context.
+            await Mining.ClearRigsOnShipBoardingAsync(update.JournalEvents, journalState.FrontierId);
+        }
+
+        await SurfaceSurvey.ApplyUpdateAsync(
+            surfaceSession,
+            update.JournalEvents,
+            update.Status,
+            exobiologyAfter,
+            processJournalMutations: !skipPersistedBootstrapEvents,
+            scansLostToDeath: scansLostToDeath.ToArray(),
+            cancellationToken: CancellationToken.None);
+        var isSessionActive = !journalState.IsShutdown && !journalState.IsAtMainMenu;
+        await Mining.ApplyUpdateAsync(
+            surfaceSession,
+            SystemSurvey.Snapshot,
+            SystemSurvey.CurrentStatus,
+            isSessionActive ? journalState.ActiveSrvType : null,
+            SurfaceSurvey.RadarMarkers,
+            latestCargo,
+            isSessionActive ? journalState.ParkedSrvType : null);
     }
 
     private async Task ApplyBoxelSurveyStatsAsync(
@@ -3338,7 +3388,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                         activeProfileFrontierId
                             ?? journalState.FrontierId,
                         journalState.GameVersion,
-                        journalState.IsOdyssey ?? true)),
+                        journalState.IsLegacy == false)),
                 CancellationToken.None);
             Inara.ReportPublicationResult(inaraResult);
             foreach (var warning in inaraResult.Warnings)
@@ -3373,7 +3423,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                             ?? journalState.FrontierId,
                         journalState.GameVersion,
                         journalState.GameBuild,
-                        journalState.IsOdyssey ?? true)),
+                        journalState.IsLegacy == false)),
                 CancellationToken.None);
             Edsm.ReportPublicationResult(edsmResult);
             foreach (var warning in edsmResult.Warnings)
@@ -3563,7 +3613,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             return false;
         }
 
-        var isOdyssey = journalState.IsOdyssey ?? true;
+        var isOdyssey = journalState.IsLegacy != true;
         if (string.Equals(
                 activeProfileFrontierId,
                 journalState.FrontierId,
@@ -5381,6 +5431,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(JumpInfo.Dispose);
         TryDispose(BiologyPredictions.Dispose);
         TryDispose(BiologyCodex.Dispose);
+        TryDispose(Mining.Dispose);
         TryDispose(SurfaceSurvey.Dispose);
         TryDispose(CodexBingo.Dispose);
         TryDispose(StationInfo.Dispose);

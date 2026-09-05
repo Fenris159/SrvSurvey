@@ -12,6 +12,7 @@ namespace SrvSurvey.Core.Network;
 /// </summary>
 internal sealed class EddnSessionPublisher : IDisposable
 {
+    private const string EventProperty = "event";
     private const string PlanetBodyType = "Planet";
 
     private static readonly HashSet<string> JournalEvents = new(
@@ -691,7 +692,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         CompanionCandidate candidate,
         CancellationToken cancellationToken)
     {
-        var eventName = candidate.JournalEvent.Value<string>("event")
+        var eventName = candidate.JournalEvent.Value<string>(EventProperty)
             ?? "companion file";
         try
         {
@@ -917,18 +918,25 @@ internal sealed class EddnSessionPublisher : IDisposable
 
     private void UpdateExpansionFlagsLocked(JObject raw)
     {
-        if (raw.Value<string>("event") is not ("Fileheader" or "LoadGame"))
+        if (raw.Value<string>(EventProperty) == "Fileheader")
+        {
+            horizons = null;
+            odyssey = null;
+            return;
+        }
+
+        if (raw.Value<string>(EventProperty) != "LoadGame")
         {
             return;
         }
 
-        horizons = raw.Value<bool?>("Horizons") ?? horizons;
-        odyssey = raw.Value<bool?>("Odyssey") ?? odyssey;
+        horizons = raw.Value<bool?>("Horizons");
+        odyssey = raw.Value<bool?>("Odyssey");
     }
 
     private void UpdateBodyContextLocked(JObject raw)
     {
-        var eventName = raw.Value<string>("event");
+        var eventName = raw.Value<string>(EventProperty);
         if (eventName is "FSDJump" or "CarrierJump" or "StartJump")
         {
             ClearTrackedBodyLocked();

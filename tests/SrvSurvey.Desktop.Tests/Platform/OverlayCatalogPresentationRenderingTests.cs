@@ -8,12 +8,54 @@ using SrvSurvey.Core.Colonization;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Theming;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayCatalogPresentationRenderingTests
 {
+    [AvaloniaFact]
+    public void MonochromeCompanionRendersMiningAndStatusPanels()
+    {
+        var app = Assert.IsType<Application>(Application.Current, exactMatch: false);
+        var service = new RavenThemeService(app, new ThemePreferenceStore(
+            Path.Combine(Path.GetTempPath(), $"SrvSurvey-theme-preview-{Guid.NewGuid():N}.json")));
+        Assert.True(OverlayThemePresetCatalog.TryGet("Monochrome Companion", out var preset));
+        service.ApplyOverlayTheme(new LegacyOverlayTheme(preset.Colors, true, null));
+        try
+        {
+            foreach (var name in new[] { "PlotSurfaceMining", "PlotBioSystem", "PlotJumpInfo", "PlotBuildCommodities", "PlotFlightWarning" })
+            {
+                var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired(name));
+                try
+                {
+                    OverlayThemeResources.Apply(preview);
+                    preview.ApplyRuntimePresentationTheme();
+                    preview.Show();
+                    using var frame = preview.CaptureRenderedFrame();
+                    Assert.NotNull(frame);
+                    Assert.True(frame.PixelSize.Width > 100);
+                    var output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+                    if (!string.IsNullOrWhiteSpace(output))
+                    {
+                        Directory.CreateDirectory(output);
+                        using var stream = File.Create(Path.Combine(output, $"{name}-monochrome.png"));
+                        frame.Save(stream, PngBitmapEncoderOptions.Default);
+                    }
+                }
+                finally
+                {
+                    preview.Close();
+                }
+            }
+        }
+        finally
+        {
+            service.ApplyOverlayTheme(LegacyOverlayThemeStore.CreateDefault());
+        }
+    }
+
     [AvaloniaFact]
     public void EveryEditorOverlayPresentationRendersAtItsExpectedSize()
     {

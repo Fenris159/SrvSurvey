@@ -84,7 +84,7 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task LandingGearPreferenceSuppressesLoadedPlanDuringShipFlight()
+    public async Task LandingGearPreferenceSuppressesFlightButNotSupercruise()
     {
         var survey = CreateSurvey();
         var client = new StubClient(new CanonnSystemPoiResult(
@@ -109,7 +109,7 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
             BodyName = "Test 1",
             PlanetRadius = 1_000_000,
         });
-        Assert.False(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShow);
     }
 
     [Fact]
@@ -258,7 +258,6 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
                     : StatusFlags.None),
             BodyName = "Test 1",
             PlanetRadius = 1_000_000,
-            GuiFocus = GuiFocus.CommsPanel,
         };
     }
 

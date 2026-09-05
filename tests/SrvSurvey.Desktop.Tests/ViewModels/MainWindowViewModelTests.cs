@@ -24,12 +24,35 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MainWindowViewModelTests
 {
     [Fact]
+    public async Task MiningNavigationAndSettingsShareInputBindings()
+    {
+        using var viewModel = new MainWindowViewModel(
+            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "mining");
+        Assert.True(viewModel.IsMiningSelected);
+        Assert.True(viewModel.IsActivitiesNavigationExpanded);
+        var panel = Assert.Single(viewModel.OverlayPanelVisibility.ForCategory(OverlaySettingsCategory.Mining));
+        Assert.Equal("PlotSurfaceMining", panel.PlotterName);
+        Assert.Same(viewModel.InputSettings.Bindings.Single(binding =>
+            binding.Definition.OverlayPlotterName == "PlotSurfaceMining"), panel.Shortcut);
+        Assert.Equal(6, viewModel.InputSettings.MiningBindings.Count);
+        foreach (var binding in viewModel.InputSettings.MiningBindings)
+        {
+            Assert.Same(viewModel.InputSettings.Bindings.Single(candidate =>
+                candidate.Definition.Action == binding.Definition.Action), binding);
+        }
+
+        await viewModel.ShowProfileAsync();
+        Assert.False(viewModel.IsMiningSelected);
+    }
+
+    [Fact]
     public void NavigationContainsEveryImplementedSurface()
     {
         var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
-        Assert.Equal(13, viewModel.NavigationItems.Count);
+        Assert.Equal(14, viewModel.NavigationItems.Count);
         Assert.Equal(
             [
                 "Overview",
@@ -38,6 +61,7 @@ public sealed class MainWindowViewModelTests
                 "Travel",
                 "Boxel",
                 "Search",
+                "Mining",
                 "Guardian",
                 "Quests",
                 "Colonization",
@@ -53,6 +77,7 @@ public sealed class MainWindowViewModelTests
                 "exobiology",
                 "travel",
                 "boxel",
+                "mining",
                 "guardian",
                 "quests",
                 "colonisation",
@@ -77,7 +102,7 @@ public sealed class MainWindowViewModelTests
             ["Travel", "Search"],
             viewModel.NavigationWorkspaceItems.Select(item => item.Label));
         Assert.Equal(
-            ["Guardian", "Quests", "Colonization"],
+            ["Mining", "Guardian", "Quests", "Colonization"],
             viewModel.ActivityNavigationItems.Select(item => item.Label));
         Assert.Equal(
             ["Settings", "Theme", "Guides", "Diagnostics"],
@@ -569,6 +594,50 @@ public sealed class MainWindowViewModelTests
 
             viewModel.VoxStellar.JournalUploadEnabled = false;
             Assert.False(publisher.EnabledStates[^1]);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("3.8.0.0")]
+    [InlineData("4.1.0.0")]
+    [InlineData("")]
+    public async Task UnknownGalaxyPreservesPublisherVersionFallback(string gameVersion)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-unknown-galaxy-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(Path.Combine(journals, "Journal.2026-09-05T120000.01.log"),
+                $$"""
+                {"timestamp":"2026-09-05T12:00:00Z","event":"Fileheader","gameversion":"{{gameVersion}}"}
+                {"timestamp":"2026-09-05T12:00:01Z","event":"LoadGame","Commander":"Test Cmdr","FID":"F123"}
+                {"timestamp":"2026-09-05T12:00:02Z","event":"Location","StarSystem":"Sol","SystemAddress":123,"StarPos":[0,0,0]}
+
+                """);
+            var paths = new AppDataPaths(Path.Combine(root, "config"),
+                Path.Combine(root, "data"), Path.Combine(root, "cache"), []);
+            var inara = new RecordingInaraPublisher();
+            var edsm = new RecordingEdsmPublisher();
+            using var viewModel = MainWindowViewModelTestBuilder.Create(journals,
+                builder => builder.WithAppDataPaths(paths)
+                    .WithInaraPublisher(inara).WithEdsmPublisher(edsm));
+
+            await viewModel.RefreshAsync();
+
+            var inaraUpdate = Assert.Single(inara.Calls);
+            var edsmUpdate = Assert.Single(edsm.Calls);
+            Assert.False(inaraUpdate.Options.IsOdyssey);
+            Assert.False(edsmUpdate.Options.IsOdyssey);
+            Assert.Equal(gameVersion, inaraUpdate.Options.GameVersion ?? "");
+            Assert.Equal(gameVersion, edsmUpdate.Options.GameVersion ?? "");
         }
         finally
         {
@@ -2618,8 +2687,11 @@ public sealed class MainWindowViewModelTests
         }
     }
 
-    [Fact]
-    public async Task ExplorationUsesImportedTotalsThenPersistsNewEventsAndReset()
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task ExplorationUsesImportedTotalsThenPersistsNewEventsAndReset(bool isLive, bool hasOdyssey)
     {
         var root = Path.Combine(
             Path.GetTempPath(),
@@ -2635,15 +2707,26 @@ public sealed class MainWindowViewModelTests
                 "Journal.2026-07-24T100000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                $$"""{"timestamp":"2026-07-24T10:00:00Z","event":"Fileheader","Odyssey":{{(isLive ? "true" : "false")}}}""" + "\n"
                     + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + $$"""{"timestamp":"2026-07-24T10:00:01Z","event":"LoadGame","Commander":"Drew","FID":"F123","Odyssey":{{(hasOdyssey ? "true" : "false")}}}""" + "\n"
                     + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"StartJump\",\"JumpType\":\"Hyperspace\"}\n");
             var store = new CommanderProfileStore(profile);
             await store.SaveExplorationAsync(
                 "F123",
                 "Drew",
-                isOdyssey: true,
-                new ExplorationSnapshot(1000, 100, 10, 2, 3, 4));
+                isOdyssey: isLive,
+                new ExplorationSnapshot(
+                    1000,
+                    100,
+                    10,
+                    2,
+                    3,
+                    4,
+                    new Dictionary<string, long>
+                    {
+                        ["Alpha"] = 400,
+                    }));
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 profile,
@@ -2662,13 +2745,23 @@ public sealed class MainWindowViewModelTests
 
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-07-24T10:00:03Z\",\"event\":\"StartJump\",\"JumpType\":\"Hyperspace\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:04Z\",\"event\":\"FSDJump\",\"JumpDist\":5.25}\n");
+                "{\"timestamp\":\"2026-07-24T10:00:03Z\",\"event\":\"SellExplorationData\",\"Systems\":[\"Alpha\"],\"Discovered\":[\"Alpha\"]}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.Equal("600 CR", viewModel.EstimatedExplorationValue);
+            var saved = await store.LoadAsync("F123", isOdyssey: isLive);
+            Assert.Equal(600, saved.Data!.Exploration.EstimatedRewards);
+            Assert.Null(saved.Data.Exploration.EstimatedRewardsBySystem);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-24T10:00:04Z\",\"event\":\"StartJump\",\"JumpType\":\"Hyperspace\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:05Z\",\"event\":\"FSDJump\",\"JumpDist\":5.25}\n");
             await viewModel.RefreshAsync();
 
             Assert.Equal("11", viewModel.ExplorationJumps);
             Assert.Equal("105.2 ly", viewModel.ExplorationDistance);
-            var saved = await store.LoadAsync("F123", isOdyssey: true);
+            saved = await store.LoadAsync("F123", isOdyssey: isLive);
             Assert.Equal(11, saved.Data!.Exploration.JumpCount);
             Assert.Equal(105.25, saved.Data.Exploration.DistanceTravelled);
 
@@ -2678,7 +2771,7 @@ public sealed class MainWindowViewModelTests
 
             Assert.False(viewModel.IsResetExplorationPending);
             Assert.Equal("0", viewModel.ExplorationJumps);
-            saved = await store.LoadAsync("F123", isOdyssey: true);
+            saved = await store.LoadAsync("F123", isOdyssey: isLive);
             Assert.Equal(ExplorationSnapshot.Empty, saved.Data!.Exploration);
         }
         finally
