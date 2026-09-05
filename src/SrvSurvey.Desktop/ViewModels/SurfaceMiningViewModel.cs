@@ -297,8 +297,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         && first.Zip(second).All(pair => pair.First.Name == pair.Second.Name
             && pair.First.Kind == pair.Second.Kind && pair.First.Status == pair.Second.Status
             && pair.First.Location == pair.Second.Location
-            && pair.First.DistanceMeters.Equals(pair.Second.DistanceMeters)
-            && pair.First.RelativeBearingDegrees.Equals(pair.Second.RelativeBearingDegrees));
+            && Math.Abs(pair.First.DistanceMeters - pair.Second.DistanceMeters) < 0.000001
+            && Math.Abs(pair.First.RelativeBearingDegrees - pair.Second.RelativeBearingDegrees) < 0.000001);
 
     internal void InstallEditorPreview(IReadOnlyList<SurfaceRadarMarkerViewModel> markers,
         IReadOnlyList<SurfaceRadarMarkerViewModel>? resources = null)
