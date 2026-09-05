@@ -1,7 +1,8 @@
 # SrvSurvey-XP 2.1.3.0-rc.44
 
-RC44 combines surface-tracker and mining-rig shortcuts into eight shared
-**Tracker/Mining Rig (1)** through **Tracker/Mining Rig (8)** options in Input
+RC44 combines surface-tracker and mining-rig shortcuts into six shared
+**Tracker/Mining Rig (1)** through **Tracker/Mining Rig (6)** options, followed
+by regular **Tracker (7)** and **Tracker (8)** options in Input
 settings, defaulting to **Ctrl+Alt+F1** through **Ctrl+Alt+F8**. Mining overlay
 settings retain six **Mining rig** entries linked to the first six bindings.
 The shared shortcuts toggle rigs while operating the Rhino and surface trackers

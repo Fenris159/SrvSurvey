@@ -12,7 +12,8 @@ The same workflow is covered inside the application under **Guides > Surface min
    tools; current mining guidance appears in the overlay.
 3. Set the six rig shortcuts in that settings window or in **Input** settings.
    Both locations edit the same bindings. Defaults are **Ctrl+Alt+F1** through **Ctrl+Alt+F6**.
-   Input names these **Tracker/Mining Rig (1)** through **Tracker/Mining Rig (8)**.
+   Input names the first six **Tracker/Mining Rig (1)** through **Tracker/Mining Rig (6)**,
+   followed by regular **Tracker (7)** and **Tracker (8)** entries.
    Outside Rhino mining, all eight shortcuts toggle surface trackers; slots 7 and 8
    do not place rigs. Mining settings retain the six **Mining rig** labels.
    Existing custom tracker bindings are preserved. A customized RC43 rig chord is

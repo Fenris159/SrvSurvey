@@ -21,7 +21,8 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
         Assert.Equal(6, viewModel.MiningBindings.Count);
         for (var index = 0; index < trackers.Length; index++)
         {
-            Assert.Equal($"Tracker/Mining Rig ({index + 1})", trackers[index].DisplayName);
+            var expectedLabel = index < 6 ? $"Tracker/Mining Rig ({index + 1})" : $"Tracker ({index + 1})";
+            Assert.Equal(expectedLabel, trackers[index].DisplayName);
             Assert.Equal($"ALT CTRL F{index + 1}", trackers[index].Chord);
             if (index < 6)
             {
