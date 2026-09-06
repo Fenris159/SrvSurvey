@@ -52,6 +52,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     private readonly Dictionary<string, RuntimeOverlayGeometry>
         runtimePlacementReferences = new(StringComparer.Ordinal);
     private OverlayPositionEditorWindow? editor;
+    private MiningCalibrationWindow? miningCalibration;
     private OverlayPositionEditSession? editSession;
     private PixelRect hostBounds;
     private double hostScaling = 1;
@@ -75,6 +76,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
     internal IReadOnlyList<OverlayPositionPreviewWindow> PreviewWindows =>
         previews;
+    internal MiningCalibrationWindow? MiningCalibration => miningCalibration;
 
     public bool Open(
         OverlayInteractionViewModel viewModel,
@@ -139,6 +141,13 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
         editSession = session;
         ClosePreviews();
+        if (category == OverlayLayoutCategory.Mining && viewModel?.MiningDetection is { } detection)
+        {
+            miningCalibration = new MiningCalibrationWindow(detection, hostBounds, hostScaling);
+            detection.PropertyChanged += OnMiningDetectionChanged;
+            miningCalibration.Show();
+            _ = platform.PrepareInteractiveWindow(miningCalibration);
+        }
         foreach (var definition in OverlayLayoutCatalog.ForCategory(category))
         {
             var preview = new OverlayPositionPreviewWindow(definition);
@@ -395,6 +404,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
     private void ClosePreviews()
     {
+        if (miningCalibration is not null && viewModel?.MiningDetection is { } detection)
+            detection.PropertyChanged -= OnMiningDetectionChanged;
+        miningCalibration?.Close();
+        miningCalibration = null;
         foreach (var preview in previews)
         {
             preview.PointerPressed -= OnPreviewPointerPressed;
@@ -405,6 +418,17 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
 
         previews.Clear();
+    }
+
+    private void OnMiningDetectionChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (miningCalibration is null) return;
+        var testing = viewModel?.MiningDetection?.IsCalibrationTesting == true;
+        foreach (var preview in previews)
+        {
+            if (testing) preview.Hide();
+            else if (!preview.IsVisible) preview.Show();
+        }
     }
 
     private void OnEditorClosed(object? sender, EventArgs eventArgs)

@@ -109,6 +109,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+    public MiningDetectionViewModel? MiningDetection { get; set; }
 
     public OverlayPlatformCapabilities Capabilities { get; }
 
@@ -471,6 +472,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         var session = new OverlayPositionEditSession(activeLayout);
+        MiningDetection?.BeginEdit();
         editSession = session;
         globalOpacityPercent = session.DefaultOpacity * 100d;
         OnPropertyChanged(nameof(GlobalOpacityPercent));
@@ -493,6 +495,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         editSession = null;
         IsEditing = false;
         StatusMessage = "The overlay position editor could not find a usable display.";
+        MiningDetection?.EndEdit();
         return false;
     }
 
@@ -508,7 +511,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
         var changes = editSession.Changes;
         var saveDefaultOpacity = editSession.HasDefaultOpacityChange;
-        if (changes.Count == 0 && !saveDefaultOpacity)
+        if (changes.Count == 0 && !saveDefaultOpacity && MiningDetection?.HasCalibrationChanges != true)
         {
             EndSession(closeHost: true, restoreRuntimeWindows: true);
             StatusMessage = "Overlay editing closed; no positions or opacity values changed.";
@@ -517,6 +520,14 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
         try
         {
+            var saveMiningCalibration = MiningDetection?.HasCalibrationChanges == true;
+            if (changes.Count == 0 && !saveDefaultOpacity)
+            {
+                MiningDetection?.SaveEdit();
+                EndSession(closeHost: true, restoreRuntimeWindows: true);
+                StatusMessage = "Saved mining HUD calibration.";
+                return;
+            }
             var result = layoutStore.Save(
                 changes,
                 editSession.DefaultOpacity,
@@ -527,12 +538,14 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 throw new InvalidDataException(updated.Error);
             }
 
+            MiningDetection?.SaveEdit();
             activeLayout.ReplaceWith(updated);
             ApplySavedLayoutToRuntimeWindows();
 
             EndSession(closeHost: true, restoreRuntimeWindows: true);
             StatusMessage = $"Saved {result.UpdatedPlacementCount:N0} overlay position/opacity override(s), including scale settings"
                 + (saveDefaultOpacity ? " and the global opacity." : ".")
+                + (saveMiningCalibration ? " Saved mining HUD calibration." : string.Empty)
                 + (result.BackupPath is null
                     ? string.Empty
                     : $" Previous layout backup: {result.BackupPath}");
@@ -1178,6 +1191,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     private void EndSession(bool closeHost, bool restoreRuntimeWindows)
     {
+        MiningDetection?.EndEdit();
         CloseOverlaySettings();
         editSession = null;
         IsEditing = false;

@@ -88,6 +88,9 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Water purifiers", "420 need | 120 FC | 16 ship", 48),
                 Row("CMM composites", "300 need | 80 FC | 12 ship", 61),
                 Row("Emergency power cells", "200 need | 30 FC | 12 ship", 35)),
+            "PlotMiningWarning" => Content(
+                "WARNING", "TOO FAR FROM RIGS", "Moving beyond 4.5Km will Destroy Rigs",
+                Row("Warning", "TOO FAR FROM RIGS", glyph: "!", glyphTone: OverlayPreviewGlyphTone.Danger)),
             "PlotFlightWarning" => Content(
                 state.CurrentBody,
                 "HIGH-GRAVITY APPROACH",

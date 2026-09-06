@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -399,6 +400,68 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
                     currentMetrics.PanelSize.Height + 120))!.Value.Y);
     }
 
+    [AvaloniaTheory]
+    [InlineData(13)]
+    [InlineData(1)]
+    public void MiningPanelPreservesPlacedTopLeftWhenReturningToGameAtTwoHundredPercent(int initialScaleIndex)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"),
+            $$"""{"PlotSurfaceMining":"right:20, middle:100 { s: {{initialScaleIndex}} }"}""");
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var hostBounds = new PixelRect(100, 200, 1600, 1200);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var miningModel = OverlayEditorPreviewFactories.CreateSurfaceMining();
+        using var mining = miningModel.SurfaceMining;
+        mining.InstallEditorPreview([]);
+        var runtimeWindow = new SurfaceMiningOverlayWindow(miningModel);
+        OverlayThemeResources.Apply(runtimeWindow, activeLayout, "PlotSurfaceMining", registry);
+        runtimeWindow.Show();
+        using var initialFrame = runtimeWindow.CaptureRenderedFrame();
+        runtimeWindow.Position = new PixelPoint(420, 310);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, hostBounds,
+                IsVisible: true, IsForeground: true)), store, activeLayout, registry, host);
+        viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
+            candidate.Category == OverlayLayoutCategory.Mining);
+        try
+        {
+            Assert.True(viewModel.Begin());
+            var preview = Assert.Single(host.PreviewWindows, candidate => candidate.Definition.Name == "PlotSurfaceMining");
+            using var previewFrame = preview.CaptureRenderedFrame();
+            Assert.Equal(runtimeWindow.Position, preview.GetPanelScreenOrigin(preview.RenderScaling));
+            viewModel.OpenOverlaySettings("PlotSurfaceMining");
+            viewModel.SelectedOverlayScaleOrdinal = OverlayScaleCatalog.Options
+                .Where(option => option.AbsoluteScale is not null)
+                .OrderBy(option => option.AbsoluteScale)
+                .Select((option, index) => (option, index))
+                .Single(pair => pair.option.Index == 13).index;
+            using var scaledFrame = preview.CaptureRenderedFrame();
+            var metrics = preview.GetPanelMetrics(preview.RenderScaling);
+            var placedTopLeft = new PixelPoint(510, 430);
+            preview.Position = new PixelPoint(placedTopLeft.X - metrics.OriginOffset.X,
+                placedTopLeft.Y - metrics.OriginOffset.Y);
+            viewModel.Save();
+            using var savedFrame = runtimeWindow.CaptureRenderedFrame();
+            Assert.Equal(placedTopLeft, runtimeWindow.Position);
+            var runtimeSize = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
+            Assert.Equal(metrics.PanelSize.Width, runtimeSize.Width);
+            Assert.Equal(placedTopLeft, store.Load().GetPosition("PlotSurfaceMining", hostBounds, runtimeSize));
+
+            Assert.True(viewModel.Begin());
+            preview = Assert.Single(host.PreviewWindows, candidate => candidate.Definition.Name == "PlotSurfaceMining");
+            Assert.Equal(placedTopLeft, preview.GetPanelScreenOrigin(preview.RenderScaling));
+            viewModel.Cancel();
+        }
+        finally
+        {
+            runtimeWindow.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void SavedCompactPanelReopensAtItsNewPosition()
     {
@@ -463,6 +526,89 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
 
         viewModel.Cancel();
         runtimeWindow.Close();
+    }
+
+    [AvaloniaFact]
+    public void MiningCalibrationUsesTheCaptureBoundsAndSavesWithoutMovingOtherOverlays()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var miningStore = new SurfaceMiningSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
+        var detection = new MiningDetectionViewModel(miningStore);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var viewport = new PixelRect(100, 200, 1920, 1080);
+        using var vm = new OverlayInteractionViewModel(platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, viewport, true, true)),
+            store, store.Load(), registry, host)
+        { MiningDetection = detection };
+        vm.SelectedCategory = vm.Categories.Single(c => c.Category == OverlayLayoutCategory.Mining);
+        Assert.True(vm.Begin());
+        var calibration = Assert.IsType<MiningCalibrationWindow>(host.MiningCalibration);
+        var expected = detection.Settings.GetBounds(viewport);
+        Assert.Equal(expected.Position, calibration.Position);
+        Assert.Equal(expected.Width, (int)Math.Round(calibration.Width * calibration.RenderScaling));
+        Assert.Equal(expected.Height, (int)Math.Round(calibration.Height * calibration.RenderScaling));
+        Assert.True(calibration.ToolsWindow.IsVisible);
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        Assert.True(calibration.ToolsWindow.Position.Y + calibration.ToolsWindow.Bounds.Height * calibration.ToolsWindow.RenderScaling < calibration.Position.Y,
+            $"Tools at {calibration.ToolsWindow.Position}, bounds {calibration.ToolsWindow.Bounds}; frame {calibration.Position}");
+        void Click(string content) => calibration.ToolsWindow.GetVisualDescendants().OfType<Button>()
+            .Single(b => Equals(b.Content, content)).RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        var original = detection.Settings;
+        Click("Size+");
+        Assert.Equal(original.CircleWidth * expected.Width + 2, detection.Settings.CircleWidth * expected.Width, 6);
+        Click("R+");
+        Assert.Equal(original.RotationDegrees + 2, detection.Settings.RotationDegrees);
+        Click("Height+");
+        Assert.Equal(original.CircleAspectRatio + .05, detection.Settings.CircleAspectRatio, 6);
+        Click("Gap+");
+        Assert.Equal(original.BarGap + .05, detection.Settings.BarGap, 6);
+        Click("Search+");
+        Assert.Equal(original.MotionMargin * expected.Width + 8, detection.Settings.MotionMargin * expected.Width, 6);
+        Assert.True(calibration.ToolsWindow.GetVisualDescendants().OfType<CheckBox>()
+            .Single(b => Equals(b.Content, "Search bounds")).IsChecked);
+        Assert.Contains(calibration.ToolsWindow.GetVisualDescendants().OfType<TextBlock>(),
+            block => block.Text?.Contains("Rotation -6°", StringComparison.Ordinal) == true);
+        using (var frame = calibration.CaptureRenderedFrame())
+        {
+            Assert.NotNull(frame);
+            var output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                Directory.CreateDirectory(output);
+                using var stream = File.Create(Path.Combine(output, "mining-calibration.png"));
+                frame.Save(stream, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+                using var toolsFrame = calibration.ToolsWindow.CaptureRenderedFrame();
+                Assert.NotNull(toolsFrame);
+                using var toolsStream = File.Create(Path.Combine(output, "mining-calibration-controls.png"));
+                toolsFrame.Save(toolsStream, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+            }
+        }
+        detection.StartCalibrationTest();
+        Assert.Contains(calibration.ToolsWindow.GetVisualDescendants().OfType<TextBlock>(),
+            block => block.Text == detection.StatusText);
+        Assert.All(host.PreviewWindows, preview => Assert.False(preview.IsVisible));
+        detection.StopCalibrationTest();
+        Assert.All(host.PreviewWindows, preview => Assert.True(preview.IsVisible));
+        var markers = detection.Settings.Markers.ToArray();
+        markers[0] = new(.25, .35);
+        detection.UpdateCalibration(detection.Settings with { Markers = markers });
+        vm.Save();
+        Assert.False(vm.IsEditing);
+        Assert.Null(host.MiningCalibration);
+        Assert.False(calibration.IsVisible);
+        Assert.False(calibration.ToolsWindow.IsVisible);
+        Assert.Equal(new MiningDetectionPoint(.25, .35), miningStore.LoadDetection().Markers[0]);
+        Assert.Contains("calibration", vm.StatusMessage, StringComparison.OrdinalIgnoreCase);
+
+        Assert.True(vm.Begin());
+        detection.UpdateCalibration(detection.Settings with { X = .3 });
+        vm.Cancel();
+        Assert.Equal(.15, miningStore.LoadDetection().X);
+        Assert.Equal(.15, detection.Settings.X);
+        Assert.False(detection.IsCalibrating);
+        Assert.False(detection.IsCalibrationTesting);
     }
 
     public void Dispose()

@@ -647,7 +647,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             JumpInfo = new JumpInfoViewModel(
                 sharedSystemSummaryClient,
                 sharedJumpInfoSettingsStore,
-                legacyReferences.GuardianSites);
+                legacyReferences.GuardianSites,
+                log: message => resolvedApplicationLogService?.Append(message));
             rollback.Add(JumpInfo.Dispose);
             GalaxyMap = new GalaxyMapOverlayViewModel(
                 sharedSystemSummaryClient,
@@ -712,6 +713,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 Path.Combine(AppDataPaths.DataDirectory, "mining")),
                 new SurfaceMiningSettingsStore(AppDataPaths.UiSettingsPath));
             rollback.Add(Mining.Dispose);
+            OverlayInteraction.MiningDetection = Mining.Detection;
             BiologyPredictions = new BiologyPredictionsViewModel(
                 SystemSurvey,
                 new BiologyPredictionsSettingsStore(

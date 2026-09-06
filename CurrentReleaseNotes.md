@@ -1,9 +1,48 @@
-# SrvSurvey-XP 2.1.3.0-rc.44.5
+# SrvSurvey-XP 2.1.3.0-rc.45
 
-RC44.5 brings the RC43 and RC44 changes together in one cumulative candidate:
-Rhino surface mining, shared tracker shortcuts, configurable rig cleanup,
-a complete chat-command reference, and fixes to survey overlays, exploration
-estimates, and Live Horizons tracking.
+RC45 adds experimental Rhino HUD rig tracking and corrects overlay sizing and
+next-jump error handling. It retains the combined RC43, RC44, and RC44.5 features
+summarized below.
+
+## New in RC45
+
+- Rig radar circles now have a 78-meter radius, matching restricted placement
+  spacing. Resource circles retain their 70-meter radius.
+- Adds a Mining rig range warning using the Flight Warning high-risk style.
+  Aboard the Rhino, it appears beyond 4 km from the farthest saved rig and clears
+  when all rigs return within range. It warns that moving beyond 4.5 km destroys
+  rigs, copies the saved Flight Warning placement initially, and has independent
+  Mining visibility, shortcut, and position controls.
+- Hides flight warnings on foot and in ground vehicles, while retaining them
+  aboard the Nomad and in normal ship/fighter flight.
+
+- Adds opt-in, experimental detection of the Rhino's six deployment bars on
+  Windows. A movable Mining calibration frame in the overlay editor provides
+  independent circle centres, diameter, oval height, rotation, bar gap, and
+  movement-search controls. The color picker supports modified HUD palettes;
+  bright green is the default, and gray, white, and black do not count as bars.
+- Automatically saves a missing rig tracker when its bar is detected, preserving
+  the original location on repeated readings. Three continuous seconds of empty
+  readings remove only that rig. Uncertain readings leave trackers unchanged and
+  restart the removal delay. Calibration Test previews detection without changing
+  trackers; normal detection requires the active game, aboard the Rhino and
+  looking forward with no cockpit panel open.
+- Pauses automatic tracker changes while surface coordinates or heading change,
+  resuming after one second of stillness. HUD movement or reacquisition also
+  requires a steady second. Rig 1 establishes the initial anchor; relative bar
+  spacing and circle alignment protect slot identity. Incomplete bars, ambiguous
+  layouts, night-vision backgrounds, and bright ice are handled conservatively.
+  Reacquiring the empty circle grid allows the last retrieved rig to clear.
+  This feature remains experimental and requires calibration for the player's HUD.
+- Keeps the Surface mining panel's width and placed top-left position consistent
+  between the editor and game, regardless of body-name length or empty trackers.
+  Resource rows can still expand or contract it vertically. Rig detection status
+  sits directly below the rig cards; cargo capacity sits above its progress bar.
+- Next-jump lookup failures show a short provider notice and log the full error
+  with the destination name and address. The panel retains its preview width at
+  the selected scale instead of expanding to fit long error messages.
+- Updates the in-app Surface mining guide and setup documentation for calibration,
+  automatic tracker changes, movement safeguards, and uncertain readings.
 
 ## Surface mining and resource tracking
 
@@ -122,11 +161,11 @@ The candidate also retains the preceding Guardian, controller, and sharing work:
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.44.5`
-- Tag: `xp-v2.1.3.0-rc.44.5`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.44.5-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.44.5-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.44.5-x86_64.AppImage`
+- Version: `2.1.3.0-rc.45`
+- Tag: `xp-v2.1.3.0-rc.45`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.45-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.45-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.45-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

@@ -39,6 +39,7 @@ internal sealed partial class DesktopRuntime
     private FleetCarrierJumpCountdownCoordinator?
         fleetCarrierJumpCountdownCoordinator;
     private SurfaceMiningOverlayCoordinator? surfaceMiningOverlayCoordinator;
+    private MiningDetectionCoordinator? miningDetectionCoordinator;
     private GroundTargetOverlayCoordinator? groundTargetOverlayCoordinator;
     private CombatOverlayCoordinator? combatOverlayCoordinator;
     private StationInfoOverlayCoordinator? stationInfoOverlayCoordinator;
@@ -355,6 +356,7 @@ internal sealed partial class DesktopRuntime
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
         surfaceMiningOverlayCoordinator = new SurfaceMiningOverlayCoordinator(viewModel.Mining, overlayPresentation);
+        miningDetectionCoordinator = new MiningDetectionCoordinator(viewModel.Mining, CreateRawGameWindowTracker());
         groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
             viewModel.GroundTarget,
             overlayPresentation);
@@ -879,6 +881,7 @@ internal sealed partial class DesktopRuntime
         DisposeResource(ref routeBioOverlayCoordinator);
         DisposeResource(ref fleetCarrierRouteOverlayCoordinator);
         DisposeResource(ref surfaceMiningOverlayCoordinator);
+        DisposeResource(ref miningDetectionCoordinator);
         DisposeResource(ref groundTargetOverlayCoordinator);
         DisposeResource(ref combatOverlayCoordinator);
         DisposeResource(ref stationInfoOverlayCoordinator);

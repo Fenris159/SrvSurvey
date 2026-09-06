@@ -10,12 +10,9 @@
         mc:Ignorable="d"
         d:DesignWidth="380"
         d:DesignHeight="500"
-        Width="320"
-        Height="530"
-        MinWidth="250"
-        MinHeight="240"
-        MaxWidth="440"
-        MaxHeight="600"
+        SizeToContent="WidthAndHeight"
+        MinWidth="1"
+        MinHeight="1"
         CanResize="False"
         ShowActivated="False"
         ShowInTaskbar="False"
@@ -27,6 +24,7 @@
         Title="SrvSurvey surface mining overlay">
   <Border Background="Transparent"
           BorderThickness="0">
-    <local:SurfaceMiningOverlayPresentation />
+    <local:SurfaceMiningOverlayPresentation HorizontalAlignment="Left"
+                                            VerticalAlignment="Top" />
   </Border>
 </Window>

@@ -6,6 +6,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -24,15 +25,36 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private bool disposed;
     private IReadOnlyList<SurfaceRadarMarkerViewModel> navigation = [];
     private double cargoUsed;
+    private readonly TimeProvider detectionTime;
+    private SurfaceCoordinate? detectionPosition;
+    private double detectionHeading;
+    private long? detectionStillSince;
 
-    public SurfaceMiningViewModel(SystemSurfaceStore store, SurfaceMiningSettingsStore? settingsStore = null)
+    public SurfaceMiningViewModel(SystemSurfaceStore store, SurfaceMiningSettingsStore? settingsStore = null,
+        TimeProvider? detectionTimeProvider = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.settingsStore = settingsStore;
+        detectionTime = detectionTimeProvider ?? TimeProvider.System;
+        Detection = new MiningDetectionViewModel(settingsStore, detectionTimeProvider);
         autoClearRigsOnShipBoarding = settingsStore?.LoadAutoClearRigsOnShipBoarding() ?? true;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public MiningDetectionViewModel Detection { get; }
+    internal SystemSurfaceContext? DetectionContext => context;
+    internal bool IsDetectionPositionSteady => CanDetectRigs && detectionStillSince is { } since
+        && detectionTime.GetElapsedTime(since, detectionTime.GetTimestamp()) >= TimeSpan.FromSeconds(1);
+    internal const string DetectionMovementMessage = "Rhino moving — tracker changes paused until position and heading are steady for one second.";
+    public bool ShouldShowRigWarning => ShouldShow && isRhino && status?.InSrv == true
+        && status.OnFoot == false
+        && Rigs.Any(rig => rig.Marker is { DistanceMeters: > SurfaceMiningGeometry.RigWarningDistanceMeters });
+
+    // NoFocus also includes free head-look. This only permits analysis; the image detector
+    // must independently locate the HUD before reporting a present or absent bar.
+    public bool CanDetectRigs => ShouldShow && isRhino && status?.InSrv == true
+        && status.GuiFocus == GuiFocus.NoFocus;
 
     public bool AutoClearRigsOnShipBoarding
     {
@@ -110,6 +132,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             if (context != next)
             {
                 context = next;
+                detectionPosition = null;
+                detectionStillSince = null;
                 surface = null;
                 if (context is not null)
                 {
@@ -124,12 +148,34 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 lastMiningContext = context;
             }
 
+            UpdateDetectionMotion();
             Recalculate();
         }
         finally
         {
             updateLock.Release();
         }
+    }
+
+    private void UpdateDetectionMotion()
+    {
+        if (!CanDetectRigs || !TryGetPosition(out var position))
+        {
+            detectionPosition = null;
+            detectionStillSince = null;
+            return;
+        }
+        var heading = status!.NormalizedHeading;
+        var turn = Math.Abs(heading - detectionHeading);
+        turn = Math.Min(turn, 360 - turn);
+        // Ignore sub-decimetre coordinate noise, but compare with the stationary origin
+        // so a sequence of small steps still counts as driving.
+        if (detectionPosition is { } origin
+            && SurfaceNavigation.GetDistance(origin, position, context!.RadiusMeters) <= .1 && turn <= .5) return;
+        detectionPosition = position;
+        detectionHeading = heading;
+        detectionStillSince = detectionTime.GetTimestamp();
+        if (Detection.Enabled && !Detection.IsCalibrating) Detection.Pause(DetectionMovementMessage);
     }
 
     public async Task<bool> ToggleRigAsync(int number)
@@ -165,6 +211,51 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         {
             updateLock.Release();
         }
+    }
+
+    internal async Task ApplyDetectedRigsAsync(IReadOnlyList<MiningBarState> states,
+        SystemSurfaceContext expectedContext, MiningDetectionSettings expectedSettings)
+    {
+        await updateLock.WaitAsync().ConfigureAwait(true);
+        try
+        {
+            if (context != expectedContext || !ReferenceEquals(Detection.Settings, expectedSettings)
+                || !Detection.Enabled || Detection.IsCalibrating || !IsDetectionPositionSteady || !TryGetPosition(out var cockpit)) return;
+            if (!Enumerable.Range(0, 6).Any(i => states[i] == MiningBarState.Present && !Rigs[i].IsSet
+                || states[i] == MiningBarState.Absent && Rigs[i].IsSet)) return;
+            // Refresh before mutations, including retries after a partially successful write.
+            surface = (await store.LoadBodyAsync(context).ConfigureAwait(true)).Snapshot;
+            var changed = false;
+            var location = SurfaceMiningGeometry.DeployedRig(cockpit, status!.NormalizedHeading, context.RadiusMeters);
+            for (var i = 0; i < 6; i++)
+            {
+                var name = $"#{i + 1}";
+                var exists = surface?.Bookmarks.TryGetValue(name, out var locations) == true && locations.Count > 0;
+                if (states[i] == MiningBarState.Present && !exists)
+                {
+                    await store.AddBookmarkAsync(context, name, location).ConfigureAwait(true);
+                    changed = true;
+                }
+                else if (states[i] == MiningBarState.Absent && exists)
+                {
+                    await store.RemoveBookmarkGroupAsync(context, name).ConfigureAwait(true);
+                    changed = true;
+                }
+            }
+            if (changed)
+            {
+                surface = (await store.LoadBodyAsync(context).ConfigureAwait(true)).Snapshot;
+                StatusText = "Rig trackers updated from the Rhino HUD.";
+            }
+            Recalculate();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException
+            or InvalidDataException or InvalidOperationException)
+        {
+            StatusText = "Rig trackers could not be updated: " + exception.Message;
+            Notify();
+        }
+        finally { updateLock.Release(); }
     }
 
     public Task<bool> ClearRigsOnShipBoardingAsync(
@@ -338,8 +429,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 DistanceMeters = marker.DistanceMeters,
                 BearingDegrees = marker.BearingDegrees,
                 RelativeBearingDegrees = marker.RelativeBearingDegrees,
-                RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
-                IsInsideRadius = marker.DistanceMeters < SurfaceMiningGeometry.RigRadiusMeters,
+                RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
+                IsInsideRadius = marker.DistanceMeters < SurfaceMiningGeometry.ResourceRadiusMeters,
             }).ToArray();
 
     private static bool SameMarkers(IReadOnlyList<SurfaceRadarMarkerViewModel> first,

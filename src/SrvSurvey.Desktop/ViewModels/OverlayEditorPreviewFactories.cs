@@ -157,38 +157,38 @@ internal static class OverlayEditorPreviewFactories
             new SurfaceRadarMarkerViewModel
             {
                 Name = "Rig 1", Kind = SurfaceRadarMarkerKind.MiningRig, Status = "COLLECT",
-                DistanceMeters = 3, RelativeBearingDegrees = 180, RadiusMeters = 70,
+                DistanceMeters = 3, RelativeBearingDegrees = 180, RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
                 IsInsideRadius = true, Location = new SurfaceCoordinate(0, 0),
             },
             new SurfaceRadarMarkerViewModel
             {
                 Name = "Rig 2", Kind = SurfaceRadarMarkerKind.MiningRig, Status = "TOO CLOSE",
-                DistanceMeters = 65, RelativeBearingDegrees = 55, RadiusMeters = 70,
+                DistanceMeters = 65, RelativeBearingDegrees = 55, RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
                 IsInsideRadius = true, Location = new SurfaceCoordinate(0, 0),
             },
             new SurfaceRadarMarkerViewModel
             {
                 Name = "Rig 3", Kind = SurfaceRadarMarkerKind.MiningRig, Status = "TRACKED",
-                DistanceMeters = 170, RelativeBearingDegrees = 300, RadiusMeters = 70,
+                DistanceMeters = 170, RelativeBearingDegrees = 300, RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
                 Location = new SurfaceCoordinate(0, 0),
             },
         ], [
             new SurfaceRadarMarkerViewModel
             {
                 Name = "helium", Kind = SurfaceRadarMarkerKind.Bookmark,
-                DistanceMeters = 2_350, RelativeBearingDegrees = 180, RadiusMeters = 70,
+                DistanceMeters = 2_350, RelativeBearingDegrees = 180, RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
                 Location = new SurfaceCoordinate(0, 0),
             },
             new SurfaceRadarMarkerViewModel
             {
                 Name = "thortveitite", Kind = SurfaceRadarMarkerKind.Bookmark,
-                DistanceMeters = 138, RelativeBearingDegrees = 205, RadiusMeters = 70,
+                DistanceMeters = 138, RelativeBearingDegrees = 205, RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
                 Location = new SurfaceCoordinate(0, 0),
             },
             new SurfaceRadarMarkerViewModel
             {
                 Name = "uraninite", Kind = SurfaceRadarMarkerKind.Bookmark,
-                DistanceMeters = 580, RelativeBearingDegrees = 40, RadiusMeters = 70,
+                DistanceMeters = 580, RelativeBearingDegrees = 40, RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
                 Location = new SurfaceCoordinate(0, 0),
             },
         ]);

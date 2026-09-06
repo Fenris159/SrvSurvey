@@ -181,6 +181,14 @@ public sealed class LegacyOverlayLayoutStore
             }
         }
 
+        // New mining warnings start at the player's flight-warning placement.
+        // Once saved independently, never overwrite their position or scale.
+        if (!positions.ContainsKey("PlotMiningWarning")
+            && positions.TryGetValue("PlotFlightWarning", out var flightWarning))
+        {
+            positions["PlotMiningWarning"] = flightWarning;
+        }
+
         return new LegacyOverlayLayout(
             positions,
             defaultOpacity,

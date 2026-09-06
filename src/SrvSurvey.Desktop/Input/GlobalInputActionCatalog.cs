@@ -63,6 +63,7 @@ public enum GlobalInputAction
     ToggleSystemStatusVisibility,
     ToggleGroundTargetVisibility,
     ToggleSurfaceMiningVisibility,
+    ToggleMiningWarningVisibility,
 }
 
 public sealed record GlobalInputActionDefinition(
@@ -98,6 +99,7 @@ public static class GlobalInputActionCatalog
         Define(GlobalInputAction.AdjustVr, "adjustVR", "Adjust VR overlay", "Open VR overlay adjustment mode.", "ALT V"),
         Define(GlobalInputAction.ResetVr, "resetVR", "Reset VR orientation", "Reset the captured VR headset orientation.", string.Empty),
         Define(GlobalInputAction.ToggleFirstFootfall, "toggleFF", "Toggle first footfall", "Toggle first-footfall state for the current body.", string.Empty),
+        DefineOverlayToggle(GlobalInputAction.ToggleMiningWarningVisibility, "toggleMiningWarningVisibility", "Mining rig range warning", "PlotMiningWarning"),
         DefineOverlayToggle(GlobalInputAction.ToggleSurfaceMiningVisibility, "toggleSurfaceMiningVisibility", "Surface mining", "PlotSurfaceMining"),
         Define(GlobalInputAction.Track1, "track1", "Tracker/Mining Rig (1)", "Set or clear tracker 1, or mining rig 1 while operating the Rhino.", "ALT CTRL F1"),
         Define(GlobalInputAction.Track2, "track2", "Tracker/Mining Rig (2)", "Set or clear tracker 2, or mining rig 2 while operating the Rhino.", "ALT CTRL F2"),

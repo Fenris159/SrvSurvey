@@ -231,6 +231,23 @@ public static class GuideCatalog
                             "Use the overlay position editor to move or resize the panel. Its colors follow the selected overlay theme, including Monochrome Companion.",
                         ]),
                     Section(
+                        "Experimental rig bar detection",
+                        "Track the six rigs automatically from their HUD bars. Detection adds a missing tracker immediately and clears its location only after three continuous seconds of empty readings.",
+                        [
+                            "Open Mining overlay settings and enable Automatically track rigs from the Rhino HUD. Deployment bar color defaults to the bright green game HUD; use the color picker if your HUD mod changes it. Open Edit Overlay Positions and choose Mining to show the calibration frame.",
+                            "Drag the frame over the six HUD circles. Resize it from the lower-right corner, leaving room for cockpit movement; resizing changes the capture area without stretching or moving the guides inside it. Drag each numbered red dot onto its matching circle centre. Keep all six circles and their complete bars inside the frame; the small numbers are not read.",
+                            "Use Size−/Size+ for circle diameter, Height−/Height+ for oval proportions, and R−/R+ for outline rotation. Gap−/Gap+ move the cyan bar curves closer to or farther below the circles without changing the outlines. Align them with the middle of the deployed rig's segmented bar. The curves show the expected bar shape; detection groups matching colored segments and ignores neutral circle outlines. Each circle centre can be positioned independently to match the sloping cockpit HUD.",
+                            "Search−/Search+ adjust the movement search allowance in pixels. The readout and optional Search bounds outline show its extent; this does not move or rotate the guides. Keep the search area inside the capture frame. After changing size, height, rotation or alignment, select Test again. No label learning is required.",
+                            "While stationary and looking forward, select Test to hide the guides and previews. Start with rig 1 as the first deployed bar to establish the anchor, then deploy the other rigs. Their calibrated spacing and relative movement preserve their numbers when an earlier bar disappears. Check the six slot readings before driving. A question mark means uncertain, not detected; the controls display the reason when capture is blocked. An ellipsis means a change is awaiting confirmation. BAR means confirmed present; empty means confirmed absent. BAR immediately saves a missing tracker at the Rhino deployment position. Repeated BAR readings keep that original position. An ellipsis during empty readings means the three-second removal delay is running; empty confirms that the specific tracker can be cleared. A question mark, a returning bar or interrupted capture restarts the delay.",
+                            "Calibration Test is a preview and never changes saved trackers. Use the editor's save button and close the editor before automatic tracking takes effect, or cancel to discard calibration changes. Start automatic tracking before deploying rigs so each position is recorded at deployment. During normal play the frame is invisible; detection results appear in Mining settings and directly below the overlay's rig trackers.",
+                        ],
+                        [
+                            "Detection runs only aboard the Rhino with no cockpit panel open. Automatic tracker changes freeze while surface coordinates or heading change and resume after one second of stillness. HUD movement or reacquisition also waits for one steady second; all pending removal timers restart. Stop before deploying so the saved location corresponds to deployment. Free head look does not change the game's panel status, so the six-circle layout must also be visible. Looking away produces unknown readings rather than empty rig slots. After the final bar disappears, detection uses the visible circle grid to update alignment; it needs matching circles in both rows before declaring slots empty. Keep the whole six-circle group inside the capture frame. Circle outlines are used only for alignment, never as deployment bars. A partial bar can show a question mark when its full shape is unreadable; those surviving colored segments prevent an empty reading from clearing its saved location. The detector does not shift the grid just to preserve whichever rig numbers were visible in the previous frame.",
+                            "Detection groups bright segments matching the selected bar color, allowing for shading and small hue differences. Gray, white, black and dark pixels do not count as a deployment bar. Gaps separate rig groups; calibrated positions and the established anchor determine their numbers. Unreadable or ambiguous groups remain uncertain instead of being renumbered. Low brightness, changed HUD geometry, head look, or obscuring windows can prevent recognition.",
+                            "The top row maps left to right to rigs 1, 2, and 3; the bottom row maps to rigs 4, 5, and 6. A bar adds its tracker immediately; clearing requires three continuous seconds of empty readings. Missing frames and uncertain readings do not clear your trackers. Symbols and counters inside circles do not determine deployment.",
+                            "Calibration follows the game viewport when resolution changes. Check alignment after changing aspect ratio, field of view or HUD layout; update the selected color after changing HUD colors. Only calibration and the selected color are saved; screen captures are processed in memory and discarded. Audio is not captured.",
+                        ]),
+                    Section(
                         "Rig tracking with key chords",
                         "Ctrl+Alt+F1 through Ctrl+Alt+F6 toggle the six saved rig locations. Each numbered radar circle is paired with the matching rig chevron below the vehicle row.",
                         [
@@ -248,11 +265,20 @@ public static class GuideCatalog
                         ]),
                     Section(
                         "Rig circles and distance cues",
-                        "The radar shows 70-meter rig circles at the legacy mining zoom. Chevrons turn with your heading and show distance to each saved location.",
+                        "The radar shows 78-meter-radius rig circles at the legacy mining zoom. Chevrons turn with your heading and show distance to each saved location.",
                         [],
                         [
                             "COLLECT uses cyan when within 5 meters of a saved rig. TOO CLOSE uses red inside the 78-meter deployment exclusion distance. TRACKED means outside that distance; NOT SET means the slot has no saved location.",
                             "Colors follow the selected theme, while the text labels keep their meaning. On foot, distances use your position without the Rhino cockpit offset.",
+                        ]),
+                    Section(
+                        "Rig range warning",
+                        "Aboard the Rhino, the Mining warning appears beyond 4 km from the farthest saved rig and clears when every rig is back within range.",
+                        [],
+                        [
+                            "TOO FAR FROM RIGS uses the high-risk flight warning colors and the reminder: Moving beyond 4.5Km will Destroy Rigs. Only saved rig bookmarks count; resource bookmarks do not.",
+                            "Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
+                            "The warning is hidden when you leave the Rhino. Flight warnings are also hidden on foot and in ground vehicles, with the Nomad retaining its flight warnings.",
                         ]),
                     Section(
                         "Ground resource bookmarks",

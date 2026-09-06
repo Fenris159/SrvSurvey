@@ -5,7 +5,9 @@ public static class SurfaceMiningGeometry
 {
     public const double PickupDistanceMeters = 5;
     public const double ExclusionDistanceMeters = 78;
-    public const double RigRadiusMeters = 70;
+    public const double RigRadiusMeters = ExclusionDistanceMeters;
+    public const double ResourceRadiusMeters = 70;
+    public const double RigWarningDistanceMeters = 4_000;
 
     public static SurfaceCoordinate VehicleCenter(SurfaceCoordinate cockpit, double heading, double radius)
         => OffsetBehind(cockpit, heading, radius, 4);
