@@ -115,7 +115,9 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store, 
         SlotsText = string.Join("   ", analysis.Slots.Select((state, i) =>
             $"{i + 1} {(state == MiningBarState.Unknown ? "?" : state != confirmation.States[i] ? "…" : confirmation.States[i] switch
             { MiningBarState.Present => "BAR", MiningBarState.Absent => "empty", _ => "…" })}"));
-        StatusText = analysis.Slots.All(s => s == MiningBarState.Unknown)
+        StatusText = confirmation.IsSettling
+            ? "HUD moving or reacquiring — tracker changes paused until steady for one second."
+            : analysis.Slots.All(s => s == MiningBarState.Unknown)
             ? "HUD not located — adjust alignment or return to the cockpit view."
             : IsCalibrating ? "Calibration preview — saved trackers are unchanged."
             : "Rig bars set trackers immediately; three seconds empty clears them.";

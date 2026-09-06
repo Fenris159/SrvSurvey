@@ -9,6 +9,79 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 public sealed class MiningBarDetectorTests
 {
     [Fact]
+    public void OutOfRangeRigOneCannotFallBackToAnotherRow()
+    {
+        var source = Load(20);
+        var settings = CalibratedSettings() with { MotionMargin = .025 };
+        var first = MiningBarDetector.Analyze(source, settings);
+        Assert.Equal(MiningBarState.Present, first.Slots[0]);
+        var moved = new byte[source.Width * source.Height * 4];
+        source.BgraPixels.Span[..(source.Width * (source.Height - 40) * 4)]
+            .CopyTo(moved.AsSpan(source.Width * 40 * 4));
+        var result = MiningBarDetector.Analyze(new CapturedPixelBuffer(source.Width, source.Height, moved), settings, first);
+        Assert.All(result.Slots, state => Assert.Equal(MiningBarState.Unknown, state));
+        var returned = MiningBarDetector.Analyze(source, settings, result);
+        Assert.Equal(MiningBarState.Present, returned.Slots[0]);
+    }
+
+    [Fact]
+    public void HudMovementHoldsAllChangesUntilItSettlesThenRestartsEmptyDelay()
+    {
+        var clock = new TestClock();
+        var confirmation = new MiningBarConfirmation(clock);
+        static MiningBarAnalysis Frame(double y, bool empty = false) => new(
+            [empty ? MiningBarState.Absent : MiningBarState.Present, MiningBarState.Unknown,
+             MiningBarState.Unknown, MiningBarState.Present, MiningBarState.Unknown, MiningBarState.Unknown], 0, y)
+        { HasAnchor = true };
+        confirmation.Apply(Frame(0));
+        Assert.Equal(MiningBarState.Present, confirmation.States[0]);
+        confirmation.Apply(Frame(40, true));
+        Assert.All(confirmation.States, state => Assert.Equal(MiningBarState.Unknown, state));
+        clock.Advance(.5);
+        confirmation.Apply(Frame(40, true));
+        Assert.All(confirmation.States, state => Assert.Equal(MiningBarState.Unknown, state));
+        clock.Advance(.5);
+        confirmation.Apply(Frame(20, true)); // Further bounce restarts the settling interval.
+        clock.Advance(.5);
+        confirmation.Apply(Frame(20, true));
+        Assert.All(confirmation.States, state => Assert.Equal(MiningBarState.Unknown, state));
+        clock.Advance(.5);
+        confirmation.Apply(Frame(20, true));
+        Assert.Equal(MiningBarState.Present, confirmation.States[3]);
+        Assert.Equal(MiningBarState.Unknown, confirmation.States[0]);
+        for (var i = 0; i < 5; i++) { clock.Advance(.5); confirmation.Apply(Frame(20, true)); }
+        Assert.Equal(MiningBarState.Unknown, confirmation.States[0]);
+        clock.Advance(.5);
+        confirmation.Apply(Frame(20, true));
+        Assert.Equal(MiningBarState.Absent, confirmation.States[0]);
+    }
+
+    [Fact]
+    public void RigOneCannotBecomeRigFourAfterAnUnreadableMovingFrame()
+    {
+        var settings = CalibratedSettings();
+        var source = Load(20);
+        var first = MiningBarDetector.Analyze(source, settings);
+        Assert.Equal(MiningBarState.Present, first.Slots[0]);
+        var obscured = MiningBarDetector.Analyze(
+            new CapturedPixelBuffer(source.Width, source.Height, new byte[source.Width * source.Height * 4]), settings, first);
+        Assert.All(obscured.Slots, state => Assert.Equal(MiningBarState.Unknown, state));
+        // Cockpit bounce places rig 1 near the old position of rig 4.
+        var moved = new byte[source.Width * source.Height * 4];
+        source.BgraPixels.Span[..(source.Width * (source.Height - 40) * 4)]
+            .CopyTo(moved.AsSpan(source.Width * 40 * 4));
+        var image = new CapturedPixelBuffer(source.Width, source.Height, moved);
+        var result = MiningBarDetector.Analyze(image, settings, obscured);
+        Assert.NotEqual(MiningBarState.Present, result.Slots[3]);
+        Assert.Equal(MiningBarState.Present, result.Slots[0]);
+        for (var i = 0; i < 12; i++)
+        {
+            result = MiningBarDetector.Analyze(image, settings, result);
+            Assert.NotEqual(MiningBarState.Present, result.Slots[3]);
+        }
+    }
+
+    [Fact]
     public void MovementAndReturningRigOneDoNotRenumberRemainingRigs()
     {
         var settings = CalibratedSettings();

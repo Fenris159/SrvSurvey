@@ -44,7 +44,6 @@ internal static class MiningColorBarDetector
                 if (previous?.HasAnchor != true && candidates.Count == 1 && anchor != 0) continue;
                 var dx = candidate.X - centers[anchor].X;
                 var dy = candidate.Y - centers[anchor].Y;
-                if (Math.Abs(dx) > allowance || Math.Abs(dy) > allowance) continue;
                 var distance = Math.Pow(dx - offsetX, 2) + Math.Pow(dy - offsetY, 2);
                 var matches = new Dictionary<int, int>();
                 for (var i = 0; i < candidates.Count; i++)
@@ -59,7 +58,7 @@ internal static class MiningColorBarDetector
                 if (matches.Count != candidates.Count) continue;
                 // Common movement must fit the complete group. Previous placement breaks ties
                 // without renumbering the remaining bars when rig 1 disappears.
-                var retained = matches.Keys.Count(slot => previous?.Slots[slot] == MiningBarState.Present);
+                var retained = matches.Keys.Count(slot => ((previous?.AnchorSlots ?? 0) & (1 << slot)) != 0);
                 if (matches.Count < bestCount || matches.Count == bestCount && retained < bestRetained
                     || matches.Count == bestCount && retained == bestRetained && distance >= bestDistance) continue;
                 bestCount = matches.Count; bestDistance = distance; bestRetained = retained;
@@ -67,12 +66,19 @@ internal static class MiningColorBarDetector
             }
         if (assignments.Count > 0)
         {
-            offsetX = assignments.Select(p => candidates[p.Value].X - centers[p.Key].X).Average();
-            offsetY = assignments.Select(p => candidates[p.Value].Y - centers[p.Key].Y).Average();
+            var nextX = assignments.Select(p => candidates[p.Value].X - centers[p.Key].X).Average();
+            var nextY = assignments.Select(p => candidates[p.Value].Y - centers[p.Key].Y).Average();
+            // Reject an out-of-range identity, rather than trying a different row inside the margin.
+            if (Math.Abs(nextX) > allowance || Math.Abs(nextY) > allowance) assignments.Clear();
+            else { offsetX = nextX; offsetY = nextY; }
         }
-        else if (candidates.Count > 0)
+        if (assignments.Count == 0 && candidates.Count > 0)
         {
-            return new(states, offsetX, offsetY) { HasAnchor = previous?.HasAnchor == true };
+            return new(states, offsetX, offsetY)
+            {
+                HasAnchor = previous?.HasAnchor == true,
+                AnchorSlots = previous?.AnchorSlots ?? 0
+            };
         }
         for (var i = 0; i < 6; i++)
         {
@@ -86,7 +92,14 @@ internal static class MiningColorBarDetector
             var rim = MiningCircleMask.Locate(image, center.X + offsetX, center.Y + offsetY, radius, geometry);
             states[i] = rim.Confidence >= 8 ? MiningBarState.Absent : MiningBarState.Unknown;
         }
-        return new(states, offsetX, offsetY) { BarScores = scores, HasAnchor = assignments.Count > 0 || previous?.HasAnchor == true };
+        return new(states, offsetX, offsetY)
+        {
+            BarScores = scores,
+            HasAnchor = assignments.Count > 0 || previous?.HasAnchor == true,
+            AnchorSlots = assignments.Count > 0
+                ? assignments.Keys.Aggregate(0, (mask, slot) => mask | (1 << slot))
+                : previous?.AnchorSlots ?? 0
+        };
     }
     private static double ScoreGroup(IFssPixelSource source, double x, double y, double radius,
         MiningHudGeometry geometry, double gap)

@@ -57,6 +57,11 @@ public sealed class MiningDetectionCoordinator : IDisposable
             model.Pause(capture.UnavailableReason ?? "Screen capture unavailable.");
             return;
         }
+        if (!model.IsCalibrating && !mining.IsDetectionPositionSteady)
+        {
+            model.Pause(SurfaceMiningViewModel.DetectionMovementMessage);
+            return;
+        }
         var settings = model.Settings;
         var previous = ReferenceEquals(settings, previousSettings) ? previousAnalysis : null;
         var bounds = settings.GetBounds(game.ClientBounds);
@@ -76,6 +81,12 @@ public sealed class MiningDetectionCoordinator : IDisposable
                 if (current.IsAvailable && current.ClientBounds == game.ClientBounds && current.IsVisible
                     && (current.IsForeground || model.IsCalibrating) && mining.CanDetectRigs)
                 {
+                    // Status can change while pixels are being captured on the worker thread.
+                    if (!model.IsCalibrating && !mining.IsDetectionPositionSteady)
+                    {
+                        model.Pause(SurfaceMiningViewModel.DetectionMovementMessage);
+                        return;
+                    }
                     previousAnalysis = result;
                     previousSettings = settings;
                     previousContext = context;

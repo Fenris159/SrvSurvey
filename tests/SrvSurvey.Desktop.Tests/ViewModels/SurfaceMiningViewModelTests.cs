@@ -16,6 +16,43 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
     private readonly string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-mining-{Guid.NewGuid():N}");
     private static SurfaceSurveySessionContext Session => new("F123", "Test", "Test", 42, null);
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CoordinateOrHeadingMotionFreezesAdditionsAndRemovals(bool translate)
+    {
+        var clock = new TestClock();
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root), detectionTimeProvider: clock);
+        mining.Detection.Enabled = true;
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        clock.Advance(1);
+        await mining.ToggleRigAsync(1);
+        var location = mining.Rigs[0].Marker!.Location;
+        MiningBarState[] wrong = [MiningBarState.Absent, MiningBarState.Unknown, MiningBarState.Unknown,
+            MiningBarState.Present, MiningBarState.Unknown, MiningBarState.Unknown];
+        for (var i = 1; i <= 8; i++)
+        {
+            clock.Advance(.5);
+            var moved = translate ? Status() with { Latitude = .0001 * i } : Status() with { Heading = i * 10 };
+            await mining.ApplyUpdateAsync(Session, Snapshot(), moved, "mev_rhino");
+            await mining.ApplyDetectedRigsAsync(wrong, mining.DetectionContext!, mining.Detection.Settings);
+            Assert.True(mining.Rigs[0].IsSet);
+            Assert.Equal(location, mining.Rigs[0].Marker!.Location);
+            Assert.False(mining.Rigs[3].IsSet);
+        }
+        clock.Advance(.5);
+        await mining.ApplyDetectedRigsAsync(wrong, mining.DetectionContext!, mining.Detection.Settings);
+        Assert.True(mining.Rigs[0].IsSet);
+        Assert.False(mining.Rigs[3].IsSet);
+        clock.Advance(.5);
+        MiningBarState[] corrected = [MiningBarState.Present, MiningBarState.Present, MiningBarState.Unknown,
+            MiningBarState.Absent, MiningBarState.Unknown, MiningBarState.Unknown];
+        await mining.ApplyDetectedRigsAsync(corrected, mining.DetectionContext!, mining.Detection.Settings);
+        Assert.Equal(location, mining.Rigs[0].Marker!.Location);
+        Assert.True(mining.Rigs[1].IsSet);
+        Assert.False(mining.Rigs[3].IsSet);
+    }
+
     [Fact]
     public async Task DetectedRigsPersistImmediatelyKeepTheirLocationAndClearOnlyAfterSustainedEmpty()
     {
@@ -24,6 +61,7 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         using var mining = new SurfaceMiningViewModel(store, detectionTimeProvider: clock);
         mining.Detection.Enabled = true;
         await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        clock.Advance(1);
         async Task Apply(MiningBarState first, MiningBarState second)
         {
             var states = mining.Detection.Apply(new([first, second, MiningBarState.Unknown,

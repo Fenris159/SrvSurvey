@@ -25,12 +25,17 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private bool disposed;
     private IReadOnlyList<SurfaceRadarMarkerViewModel> navigation = [];
     private double cargoUsed;
+    private readonly TimeProvider detectionTime;
+    private SurfaceCoordinate? detectionPosition;
+    private double detectionHeading;
+    private long? detectionStillSince;
 
     public SurfaceMiningViewModel(SystemSurfaceStore store, SurfaceMiningSettingsStore? settingsStore = null,
         TimeProvider? detectionTimeProvider = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.settingsStore = settingsStore;
+        detectionTime = detectionTimeProvider ?? TimeProvider.System;
         Detection = new MiningDetectionViewModel(settingsStore, detectionTimeProvider);
         autoClearRigsOnShipBoarding = settingsStore?.LoadAutoClearRigsOnShipBoarding() ?? true;
     }
@@ -39,6 +44,9 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
 
     public MiningDetectionViewModel Detection { get; }
     internal SystemSurfaceContext? DetectionContext => context;
+    internal bool IsDetectionPositionSteady => CanDetectRigs && detectionStillSince is { } since
+        && detectionTime.GetElapsedTime(since, detectionTime.GetTimestamp()) >= TimeSpan.FromSeconds(1);
+    internal const string DetectionMovementMessage = "Rhino moving — tracker changes paused until position and heading are steady for one second.";
     // NoFocus also includes free head-look. This only permits analysis; the image detector
     // must independently locate the HUD before reporting a present or absent bar.
     public bool CanDetectRigs => ShouldShow && isRhino && status?.InSrv == true
@@ -120,6 +128,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             if (context != next)
             {
                 context = next;
+                detectionPosition = null;
+                detectionStillSince = null;
                 surface = null;
                 if (context is not null)
                 {
@@ -134,12 +144,34 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 lastMiningContext = context;
             }
 
+            UpdateDetectionMotion();
             Recalculate();
         }
         finally
         {
             updateLock.Release();
         }
+    }
+
+    private void UpdateDetectionMotion()
+    {
+        if (!CanDetectRigs || !TryGetPosition(out var position))
+        {
+            detectionPosition = null;
+            detectionStillSince = null;
+            return;
+        }
+        var heading = status!.NormalizedHeading;
+        var turn = Math.Abs(heading - detectionHeading);
+        turn = Math.Min(turn, 360 - turn);
+        // Ignore sub-decimetre coordinate noise, but compare with the stationary origin
+        // so a sequence of small steps still counts as driving.
+        if (detectionPosition is { } origin
+            && SurfaceNavigation.GetDistance(origin, position, context!.RadiusMeters) <= .1 && turn <= .5) return;
+        detectionPosition = position;
+        detectionHeading = heading;
+        detectionStillSince = detectionTime.GetTimestamp();
+        if (Detection.Enabled && !Detection.IsCalibrating) Detection.Pause(DetectionMovementMessage);
     }
 
     public async Task<bool> ToggleRigAsync(int number)
@@ -184,7 +216,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         try
         {
             if (context != expectedContext || !ReferenceEquals(Detection.Settings, expectedSettings)
-                || !Detection.Enabled || Detection.IsCalibrating || !CanDetectRigs || !TryGetPosition(out var cockpit)) return;
+                || !Detection.Enabled || Detection.IsCalibrating || !IsDetectionPositionSteady || !TryGetPosition(out var cockpit)) return;
             if (!Enumerable.Range(0, 6).Any(i => states[i] == MiningBarState.Present && !Rigs[i].IsSet
                 || states[i] == MiningBarState.Absent && Rigs[i].IsSet)) return;
             // Refresh before mutations, including retries after a partially successful write.

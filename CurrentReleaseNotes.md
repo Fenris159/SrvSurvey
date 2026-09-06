@@ -19,7 +19,12 @@ estimates, and Live Horizons tracking.
   The observer no longer learns label images or depends on the terrain behind them.
   Rig 1 establishes the first anchor; relative spacing and tracked movement keep
   later rigs numbered when earlier bars disappear. Ambiguous groups show uncertainty.
-  Enabled HUD tracking now saves a rig location immediately when its bar is detected
+  Preserves the last located rig identities across unreadable frames and rejects
+  out-of-range matches instead of falling back to another row. Automatic tracker
+  changes pause while surface coordinates or heading change, and resume after one
+  second of stillness. HUD movement or reacquisition also requires one steady second.
+  Pending removal timers restart after movement; saved locations remain unchanged.
+  While stationary, enabled HUD tracking saves a rig location immediately when its bar is detected
   and clears only that rig after three continuous seconds of empty readings. Unknown
   readings or interrupted capture cancel pending removal; repeated detections preserve
   the saved location. Calibration Test remains a preview without tracker changes.
