@@ -13,7 +13,7 @@ public static class GuideCatalog
     private const string HumanSettlementQuestMap = "Human settlement quest map";
     private const string HumanSettlementConflictZoneMap = "Human settlement conflict-zone map";
 
-    private static readonly Lazy<IReadOnlyList<GuideSectionViewModel>> ChatCommandSections = new(LoadChatCommandSections);
+    private static readonly Lazy<GuideSectionViewModel[]> ChatCommandSections = new(LoadChatCommandSections);
 
     public static IReadOnlyList<GuideCategoryViewModel> Create()
     {
@@ -868,7 +868,7 @@ public static class GuideCatalog
         ];
     }
 
-    private static IReadOnlyList<GuideSectionViewModel> LoadChatCommandSections()
+    private static GuideSectionViewModel[] LoadChatCommandSections()
     {
         using var stream = typeof(GuideCatalog).Assembly.GetManifestResourceStream(
             "SrvSurvey.Desktop.Resources.chat-commands-guide.json")
