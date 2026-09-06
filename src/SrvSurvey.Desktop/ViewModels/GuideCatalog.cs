@@ -1,3 +1,4 @@
+using System.Text.Json;
 using SrvSurvey.Desktop.Presentation;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -11,6 +12,8 @@ public static class GuideCatalog
     private const string HumanSettlementMap = "Human settlement map";
     private const string HumanSettlementQuestMap = "Human settlement quest map";
     private const string HumanSettlementConflictZoneMap = "Human settlement conflict-zone map";
+
+    private static readonly Lazy<IReadOnlyList<GuideSectionViewModel>> ChatCommandSections = new(LoadChatCommandSections);
 
     public static IReadOnlyList<GuideCategoryViewModel> Create()
     {
@@ -844,7 +847,7 @@ public static class GuideCatalog
                 "14",
                 "Chat Commands",
                 "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
-                CreateChatCommandSections()),
+                ChatCommandSections.Value),
             Category(
                 "icons",
                 "15",
@@ -865,164 +868,13 @@ public static class GuideCatalog
         ];
     }
 
-    private static IReadOnlyList<GuideSectionViewModel> CreateChatCommandSections()
+    private static IReadOnlyList<GuideSectionViewModel> LoadChatCommandSections()
     {
-        return
-        [
-            Section(
-                "Using chat commands",
-                "Send the command as a message in Elite Dangerous chat, then press Enter. SrvSurvey reads your sent message from the live journal; these are not keyboard shortcuts.",
-                [
-                    "Keep SrvSurvey running with the correct Commander and journal folder selected.",
-                    "Type the command exactly as shown. Replace <name>, <body>, <degrees>, and similar placeholders with your value; do not type the angle brackets.",
-                    "Use a period for decimal values, such as z2.5. Use the lowercase spellings shown here.",
-                ],
-                [
-                    "The relevant activity must have live context: surface commands need a known body, Guardian commands need an active site, and settlement commands need an active settlement.",
-                    "Commands change SrvSurvey's saved data, guidance, or application state. They do not deploy mining rigs or change discoveries in Elite.",
-                    "Ctrl+Alt+F1–F8 are separate configurable input chords, not chat messages. See Surface mining and Input settings for tracker/rig shortcuts.",
-                ]),
-            Section(
-                "Surface survey and exobiology — bookmarks",
-                "Bookmark commands apply to the current Commander's current body. Names can identify organisms, resources, or your own locations.",
-                [
-                    "+<name> — Save your current surface position under that name. Example: +bacterium or +helium. Repeat elsewhere to save multiple locations with the same name.",
-                    "-<name> — Remove the nearest matching bookmark to your current position. Example: -helium.",
-                    "=<name> — Remove the farthest matching bookmark from your current position. Example: =helium.",
-                    "--<name> — Remove every bookmark with that name on this body. Example: --helium.",
-                    "--- — Clear all surface bookmarks and mining rigs on this body, including named resources, biology bookmarks, and numbered trackers.",
-                ],
-                [
-                    "Adding and removing individual locations needs live surface coordinates. A new location within 20 meters of an existing bookmark with the same name is ignored.",
-                    "The = command selects by distance, not by the order bookmarks were created. Clearing bookmarks does not erase biological scan history, sample history, ship/Rhino location guidance, or another body's bookmarks.",
-                    "Numbered regular trackers use names such as #7: --#7 removes that tracker group. Mining rigs use their own store; use their rig chords or --- to clear them.",
-                ]),
-            Section(
-                "Exobiology — bookmark name abbreviations",
-                "Use these short names after +, -, =, or --. For example, +bac saves Bacterium and --tus clears the Tussock bookmark group.",
-                [
-                    "ale = Aleoida; amp = Amphora Plant; ane = Anemone; bac = Bacterium.",
-                    "bar = Bark Mounds; bra = Brain Trees; cac = Cactoida; cly = Clypeus.",
-                    "con = Concha; cry = Crystalline Shards; ele = Electricae; fon = Fonticulua.",
-                    "fru = Frutexa; fum = Fumerola; fun = Fungoida; oss = Osseus.",
-                    "rec = Recepta; sin = Sinuous Tubers; str = Stratum; tub = Tubus; tus = Tussock.",
-                ],
-                [
-                    "An exact existing bookmark name takes precedence over abbreviation expansion. Other names are kept as named bookmarks.",
-                ]),
-            Section(
-                "Surface mining — resources and rig cleanup",
-                "Named resource locations appear below the six rig slots. They are manually bookmarked; names are not automatically detected from the ground.",
-                [
-                    "+helium or +thortveitite — Save a resource location at your current position.",
-                    "-helium — Remove the nearest helium location; =helium removes the farthest; --helium removes all helium locations on this body.",
-                    "--- — Clear all six saved rigs and all surface bookmarks on this body, even if automatic boarding cleanup is disabled.",
-                ],
-                [
-                    "Set or unset individual rigs with their configured Tracker/Mining Rig (1–6) chords, defaulting to Ctrl+Alt+F1–F6 while aboard the Rhino. These are key chords, not chat commands.",
-                    "Mining overlay settings has Clear rigs automatically when boarding your ship, enabled by default. Turning it off keeps rig markers after boarding; --- remains available for deliberate cleanup.",
-                    "Automatic boarding cleanup affects rigs only. The --- command also clears regular trackers, resource bookmarks, and biology bookmarks.",
-                ]),
-            Section(
-                "Exobiology — first footfall and Codex",
-                "These commands update your local first-footfall records or open information about the latest biology discovery.",
-                [
-                    ".ff or .firstfoot — Toggle first-footfall state for the current known body.",
-                    ".ff <body> or .firstfoot <body> — Toggle a known body's state in the current system. Examples: .ff A 1 and .firstfoot A1.",
-                    ".show — Open the in-app Codex entry for the latest known biology entry.",
-                ],
-                [
-                    "First-footfall commands toggle the state rather than always setting it on. They update local exploration/biology tracking, not the game's discovery record.",
-                    "Use the body's local name or short name. If the supplied name is not found, the command falls back to the current body; check the resulting status message.",
-                    ".show requires a latest biology entry to have been identified.",
-                ]),
-            Section(
-                "Surface navigation — ground target",
-                "A ground target is a separate latitude/longitude destination, not a named bookmark or mining rig.",
-                [
-                    ".target here or @ — Set and activate the ground target at your current surface position.",
-                    ".target off — Disable ground-target guidance while retaining the saved coordinates.",
-                    ".target on — Re-enable guidance to the saved ground target.",
-                    "! — Set the active settlement's origin as the ground target.",
-                ],
-                [
-                    "Setting a target at your location requires live surface coordinates and a known body. The ! command requires an active settlement.",
-                    "The --- bookmark command does not disable or delete the separate ground target.",
-                ]),
-            Section(
-                "Guardian survey — map and alignment",
-                "These commands operate on the active Guardian site. Site type and heading commands change the saved survey alignment.",
-                [
-                    ".aerial — Enter the appropriate alignment stage; an already mapped site returns to origin-alignment mode.",
-                    ".map — Request the map view for the active site.",
-                    "z — Restore automatic Guardian map zoom.",
-                    "z<number> — Set manual zoom, limited to 0.1–20. Example: z2.5.",
-                    ".site <type> — Set the site's template type. Example: .site Alpha. Short forms a, b, and g mean Alpha, Beta, and Gamma.",
-                    ".heading — Enter heading-alignment mode. Face the alignment feature and send .heading again to capture your current heading.",
-                    ".heading <degrees> — Set a numeric site heading. Example: .heading 90. Headings wrap into 0–359 degrees.",
-                    ".alphaflip — Rotate the saved site heading by 180 degrees.",
-                    ".tower — At ruins, record your current heading as the site's relic-tower heading.",
-                    ".tower <degrees> — Set the nearest relic tower's heading and mark it present. Example: .tower 180.",
-                ],
-                [
-                    "While choosing a site type, the template name or a/b/g can be sent without .site. While in heading mode, an integer such as 90 can be sent without .heading.",
-                    "Use a template name available to the site map. Approach a relic tower before using .tower with a numeric heading.",
-                ]),
-            Section(
-                "Guardian survey — objects, obelisks, and notes",
-                "Use these with an active Commander survey and the relevant nearby point or obelisk.",
-                [
-                    ".p — Mark the nearest eligible template point Present.",
-                    ".m — Mark the nearest eligible template point Absent.",
-                    ".e — Mark the nearest eligible Orb, Casket, Tablet, Totem, or Urn point Empty.",
-                    ".empty — Mark the nearest mapped point Empty, including a locally added point.",
-                    ".os — Toggle the current obelisk's scanned state. Ram Tah checklist progress also changes when the mission is active and the required artifacts are carried.",
-                    ".to <obelisk> — Target an obelisk by its name. Example: .to A01. Send .to without a name to clear the target; an unmatched name also clears it.",
-                    ".note <text> — Append a note to the active site's saved survey. Example: .note Relic tower checked.",
-                    ".add <type> — Add a local survey point at your current site-map position. Example: .add Relic.",
-                    ".remove — Remove the nearest point if it is a locally added raw point; template points are retained.",
-                ],
-                [
-                    ".p, .m, and .e do not change obelisks, broken obelisks, or empty-puddle points. Use .os for the current obelisk's scanned state.",
-                    "Point types for .add: Relic, Orb, Casket, Tablet, Totem, Urn, Component, Pylon, Obelisk, BrokenObelisk, DestructiblePanel, and Unknown. The legacy spellings brokeObelisk and destructablePanel are accepted. EmptyPuddle is not accepted.",
-                    "Adding points requires a measured site-map position; points too close to existing ones are rejected. These commands edit local survey data, not objects in the game.",
-                ]),
-            Section(
-                "Human settlements — alignment and material surveys",
-                "These commands apply to the active settlement and its local survey record.",
-                [
-                    ".settlement — Request manual settlement alignment from your current on-foot position and heading.",
-                    ".threat <integer> — Save the settlement material survey's threat level. Example: .threat 3.",
-                    ".stop — Complete the active settlement material survey.",
-                ],
-                [
-                    "Manual alignment requires an active settlement, an exterior on-foot position, valid surface coordinates, and the alignment position/direction appropriate to that settlement layout.",
-                    ".threat requires an active Commander and settlement. .stop also requires material-collection tracking to be enabled; it does not shut down SrvSurvey or disable all tracking.",
-                ]),
-            Section(
-                "Settlement mapping — measurements and calibration",
-                "These specialist commands support map surveying. Set the ground target first; measurements require live surface coordinates and a valid planet radius.",
-                [
-                    "@@ — Capture the current ship's cockpit offset relative to the ground target, apply it for this session, and copy/log the calibration result.",
-                    "!! — Copy and log your offset from the ground target, with rotation relative to the settlement heading.",
-                    ".. — Copy and log your position relative to the active settlement origin.",
-                    "// — Compare two settlement-offset calculations and write the results to the application log.",
-                ],
-                [
-                    "@@ requires a known current ship. The !!, .., and // commands require an active aligned settlement with a known heading.",
-                    "Clipboard and log output describe survey measurements. @@ changes the current session's cockpit calibration; it is not a rig-placement shortcut.",
-                ]),
-            Section(
-                "Application utilities — screenshots and exit",
-                "These commands operate on SrvSurvey itself.",
-                [
-                    ".imgs — Open the current system's folder beneath the configured processed-screenshot destination. The folder must already exist.",
-                    ".kill — Request that the SrvSurvey desktop application close. Elite stays running.",
-                ],
-                [
-                    "Use the normal desktop application for folder opening, clipboard commands, and application exit; these need the desktop services to be available.",
-                ]),
-        ];
+        using var stream = typeof(GuideCatalog).Assembly.GetManifestResourceStream(
+            "SrvSurvey.Desktop.Resources.chat-commands-guide.json")
+            ?? throw new InvalidOperationException("The chat command guide resource is missing.");
+        return JsonSerializer.Deserialize<GuideSectionViewModel[]>(stream)
+            ?? throw new InvalidOperationException("The chat command guide resource is empty.");
     }
 
     private static IReadOnlyList<GuideIconViewModel> CreateIconGlossary()

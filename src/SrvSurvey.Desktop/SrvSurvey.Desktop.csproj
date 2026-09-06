@@ -36,6 +36,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\chat-commands-guide.json"
+                      LogicalName="SrvSurvey.Desktop.Resources.chat-commands-guide.json" />
     <EmbeddedResource Include="Resources\baseline-localization.json"
                       LogicalName="SrvSurvey.Desktop.Resources.baseline-localization.json" />
     <EmbeddedResource Include="Resources\avalonia-localization.json"

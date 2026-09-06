@@ -1,7 +1,18 @@
+using System.Text.RegularExpressions;
+
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
-public sealed class ReleaseWorkflowContractTests
+public sealed partial class ReleaseWorkflowContractTests
 {
+    [GeneratedRegex("-notmatch '([^']+)'")]
+    private static partial Regex WorkflowVersionPattern();
+
+    [GeneratedRegex(@"ValidatePattern\('([^']+)'\)")]
+    private static partial Regex PackageVersionPattern();
+
+    [GeneratedRegex("-match '([^']+)'")]
+    private static partial Regex WorkflowPrereleasePattern();
+
     [Theory]
     [InlineData("2.1.3.0", true)]
     [InlineData("2.1.3.0-rc.44", true)]
@@ -15,20 +26,20 @@ public sealed class ReleaseWorkflowContractTests
     {
         var root = FindRepositoryRoot();
         var workflow = File.ReadAllText(Path.Combine(root, ".github", "workflows", "build-srvsurvey-xp.yml"));
-        var workflowPattern = System.Text.RegularExpressions.Regex.Match(workflow, "-notmatch '([^']+)'");
+        var workflowPattern = WorkflowVersionPattern().Match(workflow);
         Assert.True(workflowPattern.Success);
         Assert.Equal(expected, System.Text.RegularExpressions.Regex.IsMatch(version, workflowPattern.Groups[1].Value));
         foreach (var file in new[] { "New-CrossPlatformPackageManifest.ps1", "New-CrossPlatformReleaseIndex.ps1" })
         {
             var script = File.ReadAllText(Path.Combine(root, "scripts", file));
-            var pattern = System.Text.RegularExpressions.Regex.Match(script, @"ValidatePattern\('([^']+)'\)");
+            var pattern = PackageVersionPattern().Match(script);
             Assert.True(pattern.Success);
             Assert.Equal(expected, System.Text.RegularExpressions.Regex.IsMatch(version, pattern.Groups[1].Value));
         }
 
         if (expected)
         {
-            var prereleasePattern = System.Text.RegularExpressions.Regex.Match(workflow, "-match '([^']+)'");
+            var prereleasePattern = WorkflowPrereleasePattern().Match(workflow);
             Assert.True(prereleasePattern.Success);
             Assert.Equal(version.Contains("-rc.", StringComparison.Ordinal),
                 System.Text.RegularExpressions.Regex.IsMatch(version, prereleasePattern.Groups[1].Value));
