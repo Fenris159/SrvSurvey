@@ -647,7 +647,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             JumpInfo = new JumpInfoViewModel(
                 sharedSystemSummaryClient,
                 sharedJumpInfoSettingsStore,
-                legacyReferences.GuardianSites);
+                legacyReferences.GuardianSites,
+                log: message => resolvedApplicationLogService?.Append(message));
             rollback.Add(JumpInfo.Dispose);
             GalaxyMap = new GalaxyMapOverlayViewModel(
                 sharedSystemSummaryClient,

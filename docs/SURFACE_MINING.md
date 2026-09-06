@@ -1,6 +1,6 @@
 # Surface mining
 
-Available in **SrvSurvey-XP 2.1.3.0-rc.44.5**. The Surface mining overlay provides
+Available in **SrvSurvey-XP 2.1.3.0-rc.45**. The Surface mining overlay provides
 Rhino rig locations, vehicle guidance, and cargo capacity during surface mining.
 The same workflow is covered inside the application under **Guides > Surface mining**.
 
@@ -57,6 +57,42 @@ history or bookmarks on other bodies.
 
 Colors follow the overlay theme; text labels retain their meaning. The radar
 uses 70-meter rig circles and the legacy mining zoom as its default.
+
+## Experimental automatic rig tracking (Windows)
+
+In Mining overlay settings, enable rig bar detection and select the deployment
+bar color. Bright green is the default; update it if your HUD mod changes the
+bars. Gray, white, and black are ignored. Manual rig shortcuts remain available.
+
+1. While aboard the Rhino, open **Edit overlay positions** and choose **Mining**.
+2. Move and resize the capture frame around all six HUD circles. Drag the red
+   centres into place: slots 1–3 run left to right on the top row, then 4–6 on
+   the bottom row. Adjust **Size**, **Height**, and **R** for their shape and rotation.
+3. Use **Gap** to align the cyan curves with the middle of the segmented deployment
+   bars. **Search** adjusts the movement allowance independently of circle size.
+4. Stop, look forward with cockpit panels closed, and start with rig 1 deployed
+   first to establish the anchor. Select **Test** to hide the guides and check
+   the slot readings. Calibration Test does not change saved trackers.
+5. Save the editor layout and close it to use automatic tracking. Recheck
+   calibration after changing aspect ratio, field of view, or HUD layout.
+
+Once tracking is steady, **BAR** immediately saves a missing rig tracker at the
+Rhino deployment position. Repeated readings preserve that location. Three
+continuous seconds without a bar remove that specific tracker. **?** means
+uncertain: no tracker changes occur, and any pending removal delay restarts.
+An ellipsis indicates confirmation is pending.
+
+Automatic changes pause while your surface position or heading changes and resume
+after one second of stillness. HUD movement or reacquisition also needs one steady
+second. Stop before deploying so the recorded location is useful. Detection only
+runs with the game active, aboard the Rhino and looking forward with no cockpit
+panel open. Incomplete or ambiguous views can remain uncertain; use the manual
+shortcut when necessary. This remains an experimental feature, particularly under
+changing lighting or HUD movement.
+
+Only calibration and the selected color are saved. Captures are processed in
+memory and discarded; audio is not captured. Resource deposits remain manually
+bookmarked, as described below.
 
 ## Ground resources
 

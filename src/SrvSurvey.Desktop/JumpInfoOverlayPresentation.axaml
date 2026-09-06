@@ -7,6 +7,7 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:JumpInfoOverlayViewModel"
              mc:Ignorable="d"
+             Width="600"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"

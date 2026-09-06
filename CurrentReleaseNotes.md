@@ -1,48 +1,43 @@
-# SrvSurvey-XP 2.1.3.0-rc.44.5
+# SrvSurvey-XP 2.1.3.0-rc.45
 
-RC44.5 brings the RC43 and RC44 changes together in one cumulative candidate:
-Rhino surface mining, shared tracker shortcuts, configurable rig cleanup,
-a complete chat-command reference, and fixes to survey overlays, exploration
-estimates, and Live Horizons tracking.
+RC45 adds experimental Rhino HUD rig tracking and corrects overlay sizing and
+next-jump error handling. It retains the combined RC43, RC44, and RC44.5 features
+summarized below.
+
+## New in RC45
+
+- Adds opt-in, experimental detection of the Rhino's six deployment bars on
+  Windows. A movable Mining calibration frame in the overlay editor provides
+  independent circle centres, diameter, oval height, rotation, bar gap, and
+  movement-search controls. The color picker supports modified HUD palettes;
+  bright green is the default, and gray, white, and black do not count as bars.
+- Automatically saves a missing rig tracker when its bar is detected, preserving
+  the original location on repeated readings. Three continuous seconds of empty
+  readings remove only that rig. Uncertain readings leave trackers unchanged and
+  restart the removal delay. Calibration Test previews detection without changing
+  trackers; normal detection requires the active game, aboard the Rhino and
+  looking forward with no cockpit panel open.
+- Pauses automatic tracker changes while surface coordinates or heading change,
+  resuming after one second of stillness. HUD movement or reacquisition also
+  requires a steady second. Rig 1 establishes the initial anchor; relative bar
+  spacing and circle alignment protect slot identity. Incomplete bars, ambiguous
+  layouts, night-vision backgrounds, and bright ice are handled conservatively.
+  Reacquiring the empty circle grid allows the last retrieved rig to clear.
+  This feature remains experimental and requires calibration for the player's HUD.
+- Keeps the Surface mining panel's width and placed top-left position consistent
+  between the editor and game, regardless of body-name length or empty trackers.
+  Resource rows can still expand or contract it vertically. Rig detection status
+  sits directly below the rig cards; cargo capacity sits above its progress bar.
+- Next-jump lookup failures show a short provider notice and log the full error
+  with the destination name and address. The panel retains its preview width at
+  the selected scale instead of expanding to fit long error messages.
+- Updates the in-app Surface mining guide and setup documentation for calibration,
+  automatic tracker changes, movement safeguards, and uncertain readings.
 
 ## Surface mining and resource tracking
 
-- Adds an opt-in, experimental rig-bar observer and a resizable Mining calibration
-  frame in the overlay position editor. Six draggable alignment markers, movement
-  allowance, and a live test help check detection. Circle size, oval height and
-  rotation are independent of capture-frame size, with unobstructed numbered dots,
-  curved bar guides shared with detection, and visible movement-search bounds.
-  Bar-gap controls align the sampling curve independently of circle size; the
-  observer rejects circle-rim matches and displays calibration status directly.
-  Detection now groups bars of a selected HUD color, defaulting to bright green.
-  A color picker supports modified HUD palettes; gray, white and black are excluded.
-  The observer no longer learns label images or depends on the terrain behind them.
-  Rig 1 establishes the first anchor; relative spacing and tracked movement keep
-  later rigs numbered when earlier bars disappear. Ambiguous groups show uncertainty.
-  Preserves the last located rig identities across unreadable frames and rejects
-  out-of-range matches instead of falling back to another row. Automatic tracker
-  changes pause while surface coordinates or heading change, and resume after one
-  second of stillness. HUD movement or reacquisition also requires one steady second.
-  Pending removal timers restart after movement; saved locations remain unchanged.
-  After the last colored bar disappears, detection reacquires the empty circle grid
-  to avoid getting stuck at an old HUD position. Several matching circles in both
-  rows are required; incomplete or ambiguous views remain unknown.
-  Fixes ice-planet cases where changing bar visibility could slide rig numbers into
-  another column. Circle alignment takes priority over old visible-bar identities;
-  larger or conflicting changes need independent layout evidence. Surviving green
-  bar fragments remain uncertain instead of being treated as empty, preserving
-  saved rig locations through incomplete detections.
-  While stationary, enabled HUD tracking saves a rig location immediately when its bar is detected
-  and clears only that rig after three continuous seconds of empty readings. Unknown
-  readings or interrupted capture cancel pending removal; repeated detections preserve
-  the saved location. Calibration Test remains a preview without tracker changes.
-  The rig-status row now sits directly below the rig trackers, with cargo capacity
-  immediately above its progress bar and no appearance/retrieval timestamp line.
 - Adds a theme-aware Surface mining overlay with a radar, six saved rig circles
   and direction indicators, and an SRV cargo-capacity row.
-- Keeps the Surface mining panel's width and placed top-left position consistent
-  between the editor and game, regardless of body-name length or empty trackers.
-  Resource rows can still expand or contract the panel vertically.
 - Splits vehicle guidance into Ship and Rhino columns. On foot, the Rhino
   chevron points back to the parked vehicle; aboard, an X marks it untracked.
 - Accounts for Rhino cockpit and deployment offsets when marking rigs, with
@@ -156,11 +151,11 @@ The candidate also retains the preceding Guardian, controller, and sharing work:
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.44.5`
-- Tag: `xp-v2.1.3.0-rc.44.5`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.44.5-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.44.5-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.44.5-x86_64.AppImage`
+- Version: `2.1.3.0-rc.45`
+- Tag: `xp-v2.1.3.0-rc.45`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.45-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.45-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.45-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated
