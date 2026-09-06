@@ -527,6 +527,61 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         runtimeWindow.Close();
     }
 
+    [AvaloniaFact]
+    public void MiningCalibrationUsesTheCaptureBoundsAndSavesWithoutMovingOtherOverlays()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var miningStore = new SurfaceMiningSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
+        var detection = new MiningDetectionViewModel(miningStore);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var viewport = new PixelRect(100, 200, 1920, 1080);
+        using var vm = new OverlayInteractionViewModel(platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, viewport, true, true)),
+            store, store.Load(), registry, host)
+        { MiningDetection = detection };
+        vm.SelectedCategory = vm.Categories.Single(c => c.Category == OverlayLayoutCategory.Mining);
+        Assert.True(vm.Begin());
+        var calibration = Assert.IsType<MiningCalibrationWindow>(host.MiningCalibration);
+        var expected = detection.Settings.GetBounds(viewport);
+        Assert.Equal(expected.Position, calibration.Position);
+        Assert.Equal(expected.Width, (int)Math.Round(calibration.Width * calibration.RenderScaling));
+        Assert.Equal(expected.Height, (int)Math.Round(calibration.Height * calibration.RenderScaling));
+        using (var frame = calibration.CaptureRenderedFrame())
+        {
+            Assert.NotNull(frame);
+            var output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                Directory.CreateDirectory(output);
+                using var stream = File.Create(Path.Combine(output, "mining-calibration.png"));
+                frame.Save(stream, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+            }
+        }
+        detection.RequestReference();
+        Assert.All(host.PreviewWindows, preview => Assert.False(preview.IsVisible));
+        detection.StopCalibrationTest();
+        Assert.All(host.PreviewWindows, preview => Assert.True(preview.IsVisible));
+        var markers = detection.Settings.Markers.ToArray();
+        markers[0] = new(.25, .35);
+        detection.UpdateCalibration(detection.Settings with { Markers = markers });
+        vm.Save();
+        Assert.False(vm.IsEditing);
+        Assert.Null(host.MiningCalibration);
+        Assert.False(calibration.IsVisible);
+        Assert.Equal(new MiningDetectionPoint(.25, .35), miningStore.LoadDetection().Markers[0]);
+        Assert.Contains("calibration", vm.StatusMessage, StringComparison.OrdinalIgnoreCase);
+
+        Assert.True(vm.Begin());
+        detection.UpdateCalibration(detection.Settings with { X = .3 });
+        vm.Cancel();
+        Assert.Equal(.15, miningStore.LoadDetection().X);
+        Assert.Equal(.15, detection.Settings.X);
+        Assert.False(detection.IsCalibrating);
+        Assert.False(detection.IsCalibrationTesting);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

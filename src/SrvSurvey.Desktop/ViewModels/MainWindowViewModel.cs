@@ -712,6 +712,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 Path.Combine(AppDataPaths.DataDirectory, "mining")),
                 new SurfaceMiningSettingsStore(AppDataPaths.UiSettingsPath));
             rollback.Add(Mining.Dispose);
+            OverlayInteraction.MiningDetection = Mining.Detection;
             BiologyPredictions = new BiologyPredictionsViewModel(
                 SystemSurvey,
                 new BiologyPredictionsSettingsStore(

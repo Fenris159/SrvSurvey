@@ -231,6 +231,21 @@ public static class GuideCatalog
                             "Use the overlay position editor to move or resize the panel. Its colors follow the selected overlay theme, including Monochrome Companion.",
                         ]),
                     Section(
+                        "Experimental rig bar detection",
+                        "Observe the six HUD bars without changing your saved rig locations. This first version reports detections only; continue using your normal rig shortcuts.",
+                        [
+                            "Open Mining overlay settings and enable Observe rig bars while operating the Rhino. Open Edit Overlay Positions and choose Mining to show the calibration frame.",
+                            "Drag the frame over the six HUD circles. Resize it from the lower-right corner, leaving room for cockpit movement. Drag each numbered red dot onto its matching circle centre; the small cyan boxes should enclose the HUD labels.",
+                            "Use minus and plus to match circle size. M− and M+ adjust the movement allowance. While stationary and looking forward, select Test to hide the guides and previews, then return focus to Elite to learn the small labels next to your circles. Check the six slot readings before driving. A question mark means the view is not recognized.",
+                            "Use the editor's save button to keep calibration, or cancel to discard it. During normal play the frame is invisible; detection results appear in Mining settings and the Surface mining overlay.",
+                        ],
+                        [
+                            "Detection runs only aboard the Rhino with no cockpit panel open. Free head look does not change the game's panel status, so the six-circle layout must also be visible. Looking away produces unknown readings rather than empty rig slots.",
+                            "Detection compares the bar's shape and contrast without requiring a specific HUD color. Very low contrast, changed HUD geometry, head look, or obscuring windows can prevent recognition.",
+                            "The top row maps left to right to rigs 1, 2, and 3; the bottom row maps to rigs 4, 5, and 6. Appearance and disappearance reports require three agreeing readings after a baseline. Missing frames do not clear your trackers. Symbols and counters inside circles do not determine deployment.",
+                            "Calibration follows the game viewport when resolution changes. Relearn after changing aspect ratio, field of view, HUD colors, or HUD layout. Only alignment and tiny grayscale label references are saved; screen captures are processed in memory and discarded. Audio is not captured.",
+                        ]),
+                    Section(
                         "Rig tracking with key chords",
                         "Ctrl+Alt+F1 through Ctrl+Alt+F6 toggle the six saved rig locations. Each numbered radar circle is paired with the matching rig chevron below the vehicle row.",
                         [

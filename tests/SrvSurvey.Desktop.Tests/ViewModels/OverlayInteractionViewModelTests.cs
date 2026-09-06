@@ -169,6 +169,26 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     }
 
     [Fact]
+    public void CalibrationAloneCanBeSavedWithoutCreatingOverlayPlacements()
+    {
+        var platform = new FakeOverlayPlatform();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var miningStore = new SurfaceMiningSettingsStore(Path.Combine(temporaryDirectory, "ui.json"));
+        var detection = new MiningDetectionViewModel(miningStore);
+        using var vm = new OverlayInteractionViewModel(platform,
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable), store, store.Load(),
+            new OverlayWindowRegistry(), new FakeEditorHost())
+        { MiningDetection = detection };
+        Assert.True(vm.Begin());
+        detection.UpdateCalibration(detection.Settings with { X = .3 });
+        vm.Save();
+        Assert.False(vm.IsEditing);
+        Assert.Equal(.3, miningStore.LoadDetection().X);
+        Assert.False(File.Exists(Path.Combine(temporaryDirectory, "plotters.json")));
+        Assert.Contains("calibration", vm.StatusMessage, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void ModeCanArmWithoutEliteAndShowsTheSelectedCategory()
     {
         var platform = new FakeOverlayPlatform();

@@ -117,6 +117,31 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.Empty(mining.RadarMarkers);
     }
 
+    [Theory]
+    [InlineData("mev_rhino", true, 0, true)]
+    [InlineData("mev_rhino", true, 1, false)]
+    [InlineData("mev_rhino", true, 2, false)]
+    [InlineData("mev_rhino", true, 3, false)]
+    [InlineData("mev_rhino", true, 4, false)]
+    [InlineData("mev_rhino", true, 9, false)]
+    [InlineData("mev_rhino", false, 0, false)]
+    [InlineData("testbuggy", true, 0, false)]
+    [InlineData(null, true, 0, false)]
+    public async Task HudAnalysisRequiresRhinoCockpitWithoutAnOpenPanel(string? srv, bool inSrv,
+        int focus, bool expected)
+    {
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
+        var status = Status() with
+        {
+            Flags = StatusFlags.HasLatLong | (inSrv ? StatusFlags.InSrv : StatusFlags.None),
+            GuiFocus = (GuiFocus)focus,
+        };
+        await mining.ApplyUpdateAsync(Session, Snapshot(), status, srv);
+        Assert.Equal(expected, mining.CanDetectRigs);
+        await mining.ApplyUpdateAsync(null, Snapshot(), status, srv);
+        Assert.False(mining.CanDetectRigs);
+    }
+
     [Fact]
     public async Task DisembarkedRhinoRemainsTrackableAndRigPlacementRequiresBeingAboard()
     {

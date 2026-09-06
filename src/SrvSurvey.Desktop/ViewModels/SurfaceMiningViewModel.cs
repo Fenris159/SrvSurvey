@@ -29,10 +29,17 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.settingsStore = settingsStore;
+        Detection = new MiningDetectionViewModel(settingsStore);
         autoClearRigsOnShipBoarding = settingsStore?.LoadAutoClearRigsOnShipBoarding() ?? true;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public MiningDetectionViewModel Detection { get; }
+    // NoFocus also includes free head-look. This only permits analysis; the image detector
+    // must independently locate the HUD before reporting a present or absent bar.
+    public bool CanDetectRigs => ShouldShow && isRhino && status?.InSrv == true
+        && status.GuiFocus == GuiFocus.NoFocus;
 
     public bool AutoClearRigsOnShipBoarding
     {

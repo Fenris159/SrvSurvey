@@ -134,6 +134,10 @@
       </ScrollViewer>
       <StackPanel Grid.Row="5" Spacing="4">
         <TextBlock FontSize="9" Text="{Binding SurfaceMining.CargoText}" />
+        <StackPanel IsVisible="{Binding SurfaceMining.Detection.Enabled}">
+          <TextBlock FontSize="8" Text="{Binding SurfaceMining.Detection.SlotsText}" TextWrapping="Wrap" />
+          <TextBlock FontSize="8" Text="{Binding SurfaceMining.Detection.LastAppearance}" TextWrapping="Wrap" />
+        </StackPanel>
         <ProgressBar Minimum="0" Maximum="72" Value="{Binding SurfaceMining.CargoUsed}" Height="5"
                      Foreground="{DynamicResource RavenAccentBrush}" Background="{DynamicResource RavenBorderBrush}" />
         <TextBlock Classes="muted" FontSize="8" Text="{Binding SurfaceMining.StatusText}"
