@@ -4,6 +4,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -14,6 +15,70 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
     private static readonly bool[] ExpectedResourceNearStates = [false, false, true];
     private readonly string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-mining-{Guid.NewGuid():N}");
     private static SurfaceSurveySessionContext Session => new("F123", "Test", "Test", 42, null);
+
+    [Fact]
+    public async Task DetectedRigsPersistImmediatelyKeepTheirLocationAndClearOnlyAfterSustainedEmpty()
+    {
+        var clock = new TestClock();
+        var store = new SystemSurfaceStore(root);
+        using var mining = new SurfaceMiningViewModel(store, detectionTimeProvider: clock);
+        mining.Detection.Enabled = true;
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        async Task Apply(MiningBarState first, MiningBarState second)
+        {
+            var states = mining.Detection.Apply(new([first, second, MiningBarState.Unknown,
+                MiningBarState.Unknown, MiningBarState.Unknown, MiningBarState.Unknown], 0, 0));
+            await mining.ApplyDetectedRigsAsync(states, mining.DetectionContext!, mining.Detection.Settings);
+        }
+        await Apply(MiningBarState.Present, MiningBarState.Present);
+        Assert.True(mining.Rigs[0].IsSet);
+        Assert.True(mining.Rigs[1].IsSet);
+        var original = mining.Rigs[0].Marker!.Location;
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status() with { Latitude = .01 }, "mev_rhino");
+        await Apply(MiningBarState.Present, MiningBarState.Present);
+        Assert.Equal(original, mining.Rigs[0].Marker!.Location);
+        await Apply(MiningBarState.Absent, MiningBarState.Unknown);
+        for (var i = 0; i < 5; i++) { clock.Advance(.5); await Apply(MiningBarState.Absent, MiningBarState.Unknown); }
+        Assert.True(mining.Rigs[0].IsSet);
+        await Apply(MiningBarState.Unknown, MiningBarState.Unknown);
+        clock.Advance(1);
+        await Apply(MiningBarState.Absent, MiningBarState.Unknown);
+        for (var i = 0; i < 5; i++) { clock.Advance(.5); await Apply(MiningBarState.Absent, MiningBarState.Unknown); }
+        Assert.True(mining.Rigs[0].IsSet);
+        clock.Advance(.5);
+        await Apply(MiningBarState.Absent, MiningBarState.Unknown);
+        Assert.False(mining.Rigs[0].IsSet);
+        Assert.True(mining.Rigs[1].IsSet);
+        using var reloaded = new SurfaceMiningViewModel(store);
+        await reloaded.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        Assert.False(reloaded.Rigs[0].IsSet);
+        Assert.True(reloaded.Rigs[1].IsSet);
+    }
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, true)]
+    public async Task DetectionDoesNotWriteWhenDisabledCalibratingOrContextChanged(bool enabled, bool calibrating, bool changedContext)
+    {
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
+        mining.Detection.Enabled = enabled;
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        var context = mining.DetectionContext!;
+        mining.Detection.IsCalibrating = calibrating;
+        if (changedContext)
+            await mining.ApplyUpdateAsync(Session with { FrontierId = "F456" }, Snapshot(), Status(), "mev_rhino");
+        await mining.ApplyDetectedRigsAsync(Enumerable.Repeat(MiningBarState.Present, 6).ToArray(), context, mining.Detection.Settings);
+        Assert.All(mining.Rigs, rig => Assert.False(rig.IsSet));
+    }
+
+    private sealed class TestClock : TimeProvider
+    {
+        private long ticks;
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+        public override long GetTimestamp() => ticks;
+        internal void Advance(double seconds) => ticks += TimeSpan.FromSeconds(seconds).Ticks;
+    }
 
     [Fact]
     public async Task NamedResourcesTrackEveryLocationWithoutBiologyOrRigSlots()

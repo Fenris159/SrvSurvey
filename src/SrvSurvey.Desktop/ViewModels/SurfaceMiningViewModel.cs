@@ -6,6 +6,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -25,11 +26,12 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private IReadOnlyList<SurfaceRadarMarkerViewModel> navigation = [];
     private double cargoUsed;
 
-    public SurfaceMiningViewModel(SystemSurfaceStore store, SurfaceMiningSettingsStore? settingsStore = null)
+    public SurfaceMiningViewModel(SystemSurfaceStore store, SurfaceMiningSettingsStore? settingsStore = null,
+        TimeProvider? detectionTimeProvider = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.settingsStore = settingsStore;
-        Detection = new MiningDetectionViewModel(settingsStore);
+        Detection = new MiningDetectionViewModel(settingsStore, detectionTimeProvider);
         autoClearRigsOnShipBoarding = settingsStore?.LoadAutoClearRigsOnShipBoarding() ?? true;
     }
 
@@ -173,6 +175,51 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         {
             updateLock.Release();
         }
+    }
+
+    internal async Task ApplyDetectedRigsAsync(IReadOnlyList<MiningBarState> states,
+        SystemSurfaceContext expectedContext, MiningDetectionSettings expectedSettings)
+    {
+        await updateLock.WaitAsync().ConfigureAwait(true);
+        try
+        {
+            if (context != expectedContext || !ReferenceEquals(Detection.Settings, expectedSettings)
+                || !Detection.Enabled || Detection.IsCalibrating || !CanDetectRigs || !TryGetPosition(out var cockpit)) return;
+            if (!Enumerable.Range(0, 6).Any(i => states[i] == MiningBarState.Present && !Rigs[i].IsSet
+                || states[i] == MiningBarState.Absent && Rigs[i].IsSet)) return;
+            // Refresh before mutations, including retries after a partially successful write.
+            surface = (await store.LoadBodyAsync(context).ConfigureAwait(true)).Snapshot;
+            var changed = false;
+            var location = SurfaceMiningGeometry.DeployedRig(cockpit, status!.NormalizedHeading, context.RadiusMeters);
+            for (var i = 0; i < 6; i++)
+            {
+                var name = $"#{i + 1}";
+                var exists = surface?.Bookmarks.TryGetValue(name, out var locations) == true && locations.Count > 0;
+                if (states[i] == MiningBarState.Present && !exists)
+                {
+                    await store.AddBookmarkAsync(context, name, location).ConfigureAwait(true);
+                    changed = true;
+                }
+                else if (states[i] == MiningBarState.Absent && exists)
+                {
+                    await store.RemoveBookmarkGroupAsync(context, name).ConfigureAwait(true);
+                    changed = true;
+                }
+            }
+            if (changed)
+            {
+                surface = (await store.LoadBodyAsync(context).ConfigureAwait(true)).Snapshot;
+                StatusText = "Rig trackers updated from the Rhino HUD.";
+            }
+            Recalculate();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException
+            or InvalidDataException or InvalidOperationException)
+        {
+            StatusText = "Rig trackers could not be updated: " + exception.Message;
+            Notify();
+        }
+        finally { updateLock.Release(); }
     }
 
     public Task<bool> ClearRigsOnShipBoardingAsync(

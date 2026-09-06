@@ -22,35 +22,40 @@ public static class MiningBarDetector
         return MiningColorBarDetector.Analyze(pixels, settings.Normalize(), previous);
     }
 }
-/// <summary>Only emits transitions after a baseline, never treats lost visibility as a removed bar.</summary>
-public sealed class MiningBarConfirmation
+/// <summary>Adds immediately, but requires uninterrupted empty readings for three seconds before removal.</summary>
+public sealed class MiningBarConfirmation(TimeProvider? timeProvider = null)
 {
+    private readonly TimeProvider time = timeProvider ?? TimeProvider.System;
     private readonly MiningBarState[] stable = new MiningBarState[6];
-    private readonly MiningBarState[] candidate = new MiningBarState[6];
-    private readonly int[] counts = new int[6];
+    private readonly long?[] emptySince = new long?[6];
+    private long? lastReading;
     public IReadOnlyList<MiningBarState> States => stable;
-    public IReadOnlyList<int> Disappeared { get; private set; } = [];
 
-    public int[] Apply(MiningBarAnalysis analysis)
+    public void Apply(MiningBarAnalysis analysis)
     {
-        var appeared = new List<int>();
-        var disappeared = new List<int>();
+        var now = time.GetTimestamp();
+        // A capture stall does not prove the HUD stayed empty throughout the gap.
+        if (lastReading is { } last && time.GetElapsedTime(last, now) > TimeSpan.FromSeconds(1.5))
+            Array.Clear(emptySince);
+        lastReading = now;
         for (var i = 0; i < 6; i++)
         {
-            var next = analysis.Slots[i];
-            if (next == MiningBarState.Unknown)
+            switch (analysis.Slots[i])
             {
-                counts[i] = 0;
-                continue;
+                case MiningBarState.Present:
+                    emptySince[i] = null;
+                    stable[i] = MiningBarState.Present;
+                    break;
+                case MiningBarState.Absent:
+                    emptySince[i] ??= now;
+                    stable[i] = time.GetElapsedTime(emptySince[i]!.Value, now) >= TimeSpan.FromSeconds(3)
+                        ? MiningBarState.Absent : MiningBarState.Unknown;
+                    break;
+                default:
+                    emptySince[i] = null;
+                    stable[i] = MiningBarState.Unknown;
+                    break;
             }
-            counts[i] = candidate[i] == next ? Math.Min(3, counts[i] + 1) : 1;
-            candidate[i] = next;
-            if (counts[i] < 3) continue;
-            if (stable[i] == MiningBarState.Absent && next == MiningBarState.Present) appeared.Add(i + 1);
-            if (stable[i] == MiningBarState.Present && next == MiningBarState.Absent) disappeared.Add(i + 1);
-            stable[i] = next;
         }
-        Disappeared = disappeared;
-        return appeared.ToArray();
     }
 }

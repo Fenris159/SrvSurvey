@@ -40,7 +40,10 @@ public sealed class MiningDetectionCoordinator : IDisposable
         var game = tracker.GetSnapshot();
         var context = mining.DetectionContext;
         if (!mining.ShouldShow || context != previousContext)
+        {
             previousAnalysis = null;
+            model.Pause("Waiting for Elite's Rhino cockpit view.");
+        }
         if (!(model.Enabled || model.IsCalibrating)) return;
         if (model.IsCalibrating && !model.IsCalibrationTesting) return;
         if (!game.IsAvailable || !game.IsVisible || (!model.IsCalibrating && !game.IsForeground)
@@ -76,7 +79,9 @@ public sealed class MiningDetectionCoordinator : IDisposable
                     previousAnalysis = result;
                     previousSettings = settings;
                     previousContext = context;
-                    model.Apply(result);
+                    var confirmed = model.Apply(result);
+                    if (context is not null && current.IsForeground && model.Enabled && !model.IsCalibrating)
+                        await mining.ApplyDetectedRigsAsync(confirmed, context, settings);
                 }
                 else model.Pause("Waiting for Elite's Rhino cockpit view.");
             }

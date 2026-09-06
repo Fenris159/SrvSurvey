@@ -5,11 +5,11 @@ using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store) : INotifyPropertyChanged
+public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store, TimeProvider? timeProvider = null) : INotifyPropertyChanged
 {
     private MiningDetectionSettings saved = store?.LoadDetection() ?? new();
     private MiningDetectionSettings? draft;
-    private MiningBarConfirmation confirmation = new();
+    private MiningBarConfirmation confirmation = new(timeProvider);
     public event PropertyChangedEventHandler? PropertyChanged;
     public MiningDetectionSettings Settings => draft ?? saved;
     public bool IsCalibrating { get; set; }
@@ -57,9 +57,8 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store) 
         }
     }
 
-    public string StatusText { get; private set; } = "Detection only — rig locations are never changed.";
+    public string StatusText { get; private set; } = "Rig bars set trackers immediately; three seconds empty clears them.";
     public string SlotsText { get; private set; } = "1 ?   2 ?   3 ?   4 ?   5 ?   6 ?";
-    public string LastAppearance { get; private set; } = "No new bar appearance observed.";
     public MiningBarAnalysis Latest { get; private set; } = MiningBarAnalysis.Unknown();
     public void BeginEdit() { draft = saved; Reset(); }
     public void UpdateCalibration(MiningDetectionSettings value)
@@ -103,27 +102,25 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store) 
     }
     public void Pause(string reason)
     {
-        confirmation = new();
+        confirmation = new(timeProvider);
         Latest = MiningBarAnalysis.Unknown();
         SlotsText = "1 ?   2 ?   3 ?   4 ?   5 ?   6 ?";
         StatusText = reason;
         Notify();
     }
-    public void Apply(MiningBarAnalysis analysis)
+    public IReadOnlyList<MiningBarState> Apply(MiningBarAnalysis analysis)
     {
         Latest = analysis;
-        var appeared = confirmation.Apply(analysis);
+        confirmation.Apply(analysis);
         SlotsText = string.Join("   ", analysis.Slots.Select((state, i) =>
             $"{i + 1} {(state == MiningBarState.Unknown ? "?" : state != confirmation.States[i] ? "…" : confirmation.States[i] switch
             { MiningBarState.Present => "BAR", MiningBarState.Absent => "empty", _ => "…" })}"));
         StatusText = analysis.Slots.All(s => s == MiningBarState.Unknown)
             ? "HUD not located — adjust alignment or return to the cockpit view."
-            : "Detection only — rig locations are never changed.";
-        if (appeared.Length > 0)
-            LastAppearance = $"Bar appeared: {string.Join(", ", appeared)} at {DateTime.Now:HH:mm:ss}";
-        if (confirmation.Disappeared.Count > 0)
-            LastAppearance = $"Bar disappeared: {string.Join(", ", confirmation.Disappeared)} at {DateTime.Now:HH:mm:ss}";
+            : IsCalibrating ? "Calibration preview — saved trackers are unchanged."
+            : "Rig bars set trackers immediately; three seconds empty clears them.";
         Notify();
+        return confirmation.States.ToArray();
     }
     private void Reset() => Pause(Enabled || IsCalibrating
         ? "Waiting for a clear view of the six HUD circles." : "Rig bar detection is off.");

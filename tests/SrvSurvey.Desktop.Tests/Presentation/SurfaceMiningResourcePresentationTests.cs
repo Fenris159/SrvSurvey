@@ -22,6 +22,7 @@ public sealed class SurfaceMiningResourcePresentationTests
     {
         var viewModel = OverlayEditorPreviewFactories.CreateSurfaceMining();
         using var mining = viewModel.SurfaceMining;
+        mining.Detection.Enabled = true;
         var examples = mining.Resources.Select(resource => resource.Marker).ToArray();
         mining.InstallEditorPreview(mining.RadarMarkers.Where(marker => marker.Kind == SurfaceRadarMarkerKind.MiningRig).ToArray(),
             Enumerable.Range(0, count).Select(index => examples[index % examples.Length]).ToArray());
@@ -59,6 +60,15 @@ public sealed class SurfaceMiningResourcePresentationTests
             }
             var cargo = Assert.Single(window.GetVisualDescendants().OfType<TextBlock>(),
                 block => block.Text == mining.CargoText);
+            var status = Assert.Single(window.GetVisualDescendants().OfType<TextBlock>(),
+                block => block.Text == mining.Detection.SlotsText);
+            var rigs = window.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("rig"));
+            Assert.All(rigs, rig => Assert.True(rig.TranslatePoint(default, window)!.Value.Y + rig.Bounds.Height
+                <= status.TranslatePoint(default, window)!.Value.Y));
+            Assert.True(status.TranslatePoint(default, window)!.Value.Y + status.Bounds.Height <= first.Y);
+            var progress = Assert.Single(window.GetVisualDescendants().OfType<ProgressBar>());
+            Assert.True(cargo.TranslatePoint(default, window)!.Value.Y + cargo.Bounds.Height
+                <= progress.TranslatePoint(default, window)!.Value.Y);
             Assert.True(cargo.TranslatePoint(default, window)!.Value.Y + cargo.Bounds.Height <= window.Bounds.Height);
             var output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
             if (!string.IsNullOrWhiteSpace(output))

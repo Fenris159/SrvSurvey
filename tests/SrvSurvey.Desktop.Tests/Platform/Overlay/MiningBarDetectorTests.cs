@@ -153,7 +153,8 @@ public sealed class MiningBarDetectorTests
     [Fact]
     public void SlotDisplayDoesNotPresentAContradictedStableBarAsCurrent()
     {
-        var model = new MiningDetectionViewModel(null);
+        var clock = new TestClock();
+        var model = new MiningDetectionViewModel(null, clock);
         var present = new MiningBarAnalysis(Enumerable.Repeat(MiningBarState.Present, 6).ToArray(), 0, 0);
         var absent = new MiningBarAnalysis(Enumerable.Repeat(MiningBarState.Absent, 6).ToArray(), 0, 0);
         for (var i = 0; i < 3; i++) model.Apply(present);
@@ -161,10 +162,8 @@ public sealed class MiningBarDetectorTests
         model.Apply(absent);
         Assert.Contains("1 …", model.SlotsText);
         Assert.DoesNotContain("BAR", model.SlotsText);
-        model.Apply(absent);
-        model.Apply(absent);
+        for (var i = 0; i < 6; i++) { clock.Advance(.5); model.Apply(absent); }
         Assert.Contains("1 empty", model.SlotsText);
-        Assert.Contains("Bar disappeared", model.LastAppearance);
     }
     [Theory]
     [InlineData(48.5, .75)]
@@ -422,31 +421,39 @@ public sealed class MiningBarDetectorTests
     }
 
     [Fact]
-    public void AppearanceNeedsBaselineAndThreeReadingsAndDoesNotRepeat()
+    public void PresentIsImmediateAndEmptyNeedsThreeContinuousSeconds()
     {
-        var confirm = new MiningBarConfirmation();
+        var clock = new TestClock();
+        var confirm = new MiningBarConfirmation(clock);
         var present = new MiningBarAnalysis(Enumerable.Repeat(MiningBarState.Present, 6).ToArray(), 0, 0);
         var absent = new MiningBarAnalysis(Enumerable.Repeat(MiningBarState.Absent, 6).ToArray(), 0, 0);
-        for (var i = 0; i < 4; i++) Assert.Empty(confirm.Apply(present));
-        for (var i = 0; i < 3; i++) confirm.Apply(absent);
-        Assert.Empty(confirm.Apply(present));
-        Assert.Empty(confirm.Apply(MiningBarAnalysis.Unknown()));
-        Assert.Empty(confirm.Apply(present));
-        Assert.Empty(confirm.Apply(present));
-        Assert.Equal([1, 2, 3, 4, 5, 6], confirm.Apply(present));
-        Assert.Empty(confirm.Apply(present));
-        Assert.Empty(confirm.Apply(MiningBarAnalysis.Unknown()));
+        confirm.Apply(present);
         Assert.All(confirm.States, state => Assert.Equal(MiningBarState.Present, state));
         confirm.Apply(absent);
+        for (var i = 0; i < 5; i++) { clock.Advance(.5); confirm.Apply(absent); }
+        Assert.All(confirm.States, state => Assert.Equal(MiningBarState.Unknown, state));
         confirm.Apply(MiningBarAnalysis.Unknown());
-        Assert.Empty(confirm.Disappeared);
+        clock.Advance(.5);
         confirm.Apply(absent);
+        for (var i = 0; i < 5; i++) { clock.Advance(.5); confirm.Apply(absent); }
+        Assert.All(confirm.States, state => Assert.Equal(MiningBarState.Unknown, state));
+        clock.Advance(.5);
         confirm.Apply(absent);
-        Assert.Empty(confirm.Disappeared);
+        Assert.All(confirm.States, state => Assert.Equal(MiningBarState.Absent, state));
+        confirm.Apply(present);
+        Assert.All(confirm.States, state => Assert.Equal(MiningBarState.Present, state));
         confirm.Apply(absent);
-        Assert.Equal([1, 2, 3, 4, 5, 6], confirm.Disappeared);
+        clock.Advance(10);
         confirm.Apply(absent);
-        Assert.Empty(confirm.Disappeared);
+        Assert.All(confirm.States, state => Assert.Equal(MiningBarState.Unknown, state));
+    }
+
+    private sealed class TestClock : TimeProvider
+    {
+        private long ticks;
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+        public override long GetTimestamp() => ticks;
+        internal void Advance(double seconds) => ticks += TimeSpan.FromSeconds(seconds).Ticks;
     }
 
     [Fact]

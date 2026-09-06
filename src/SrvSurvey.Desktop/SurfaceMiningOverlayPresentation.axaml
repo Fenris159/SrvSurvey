@@ -38,7 +38,7 @@
     </Style>
   </UserControl.Styles>
   <Border Padding="4" Background="{DynamicResource RavenWindowBrush}" CornerRadius="5">
-    <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,Auto" RowSpacing="6">
+    <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto" RowSpacing="6">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
         <StackPanel Spacing="2">
           <TextBlock Classes="overlay-header" Text="SURFACE MINING" />
@@ -108,7 +108,9 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
-      <ScrollViewer Grid.Row="4" MaxHeight="180" IsVisible="{Binding SurfaceMining.HasResources}"
+      <TextBlock Grid.Row="4" FontSize="8" Text="{Binding SurfaceMining.Detection.SlotsText}"
+                 IsVisible="{Binding SurfaceMining.Detection.Enabled}" TextWrapping="Wrap" />
+      <ScrollViewer Grid.Row="5" MaxHeight="180" IsVisible="{Binding SurfaceMining.HasResources}"
                     HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <ItemsControl x:Name="ResourceTrackers" ItemsSource="{Binding SurfaceMining.Resources}">
           <ItemsControl.ItemsPanel>
@@ -132,12 +134,8 @@
           </ItemsControl.ItemTemplate>
         </ItemsControl>
       </ScrollViewer>
-      <StackPanel Grid.Row="5" Spacing="4">
+      <StackPanel Grid.Row="6" Spacing="4">
         <TextBlock FontSize="9" Text="{Binding SurfaceMining.CargoText}" />
-        <StackPanel IsVisible="{Binding SurfaceMining.Detection.Enabled}">
-          <TextBlock FontSize="8" Text="{Binding SurfaceMining.Detection.SlotsText}" TextWrapping="Wrap" />
-          <TextBlock FontSize="8" Text="{Binding SurfaceMining.Detection.LastAppearance}" TextWrapping="Wrap" />
-        </StackPanel>
         <ProgressBar Minimum="0" Maximum="72" Value="{Binding SurfaceMining.CargoUsed}" Height="5"
                      Foreground="{DynamicResource RavenAccentBrush}" Background="{DynamicResource RavenBorderBrush}" />
         <TextBlock Classes="muted" FontSize="8" Text="{Binding SurfaceMining.StatusText}"

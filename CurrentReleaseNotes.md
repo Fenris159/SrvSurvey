@@ -19,7 +19,12 @@ estimates, and Live Horizons tracking.
   The observer no longer learns label images or depends on the terrain behind them.
   Rig 1 establishes the first anchor; relative spacing and tracked movement keep
   later rigs numbered when earlier bars disappear. Ambiguous groups show uncertainty.
-  This build reports detections only and never changes saved rig locations automatically.
+  Enabled HUD tracking now saves a rig location immediately when its bar is detected
+  and clears only that rig after three continuous seconds of empty readings. Unknown
+  readings or interrupted capture cancel pending removal; repeated detections preserve
+  the saved location. Calibration Test remains a preview without tracker changes.
+  The rig-status row now sits directly below the rig trackers, with cargo capacity
+  immediately above its progress bar and no appearance/retrieval timestamp line.
 - Adds a theme-aware Surface mining overlay with a radar, six saved rig circles
   and direction indicators, and an SRV cargo-capacity row.
 - Keeps the Surface mining panel's width and placed top-left position consistent
