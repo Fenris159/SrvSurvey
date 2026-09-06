@@ -1,6 +1,6 @@
 # Surface mining
 
-Available in **SrvSurvey-XP 2.1.3.0-rc.44**. The Surface mining overlay provides
+Available in **SrvSurvey-XP 2.1.3.0-rc.44.5**. The Surface mining overlay provides
 Rhino rig locations, vehicle guidance, and cargo capacity during surface mining.
 The same workflow is covered inside the application under **Guides > Surface mining**.
 

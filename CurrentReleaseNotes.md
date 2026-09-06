@@ -1,213 +1,137 @@
-# SrvSurvey-XP 2.1.3.0-rc.44
+# SrvSurvey-XP 2.1.3.0-rc.44.5
 
-RC44 combines surface-tracker and mining-rig shortcuts into six shared
-**Tracker/Mining Rig (1)** through **Tracker/Mining Rig (6)** options, followed
-by regular **Tracker (7)** and **Tracker (8)** options in Input
-settings, defaulting to **Ctrl+Alt+F1** through **Ctrl+Alt+F8**. Mining overlay
-settings retain six **Mining rig** entries linked to the first six bindings.
-The shared shortcuts toggle rigs while operating the Rhino and surface trackers
-otherwise; slots 7 and 8 are surface trackers only. Existing custom tracker
-bindings are preserved. A customized RC43 rig binding carries over when its
-matching tracker still uses the default; the old Alt+1–6 rig defaults are retired.
+RC44.5 brings the RC43 and RC44 changes together in one cumulative candidate:
+Rhino surface mining, shared tracker shortcuts, configurable rig cleanup,
+a complete chat-command reference, and fixes to survey overlays, exploration
+estimates, and Live Horizons tracking.
 
-Mining overlay settings now include **Clear rigs automatically when boarding
-your ship**, enabled by default and saved between sessions. Turn it off to keep
-rig markers after boarding. Sending `---` in game chat clears both surface
-bookmarks and mining rigs on the current body, regardless of this setting.
+## Surface mining and resource tracking
 
-Guides now has a dedicated **Chat Commands** chapter, grouped by activity.
-It lists command syntax, examples, prerequisites, bookmark/rig clearing behavior,
-Guardian survey and alignment commands, settlement tools, and desktop utilities.
-
-This candidate retains the RC43 features below: survey overlays while
-supercruising above a planet and reconciliation of
-estimated exploration rewards as system data is sold. It also corrects Live
-Horizons profile selection and reward estimates, adds Rhino surface mining
-guidance, and introduces the Monochrome Companion overlay preset. It retains the RC42
-Guardian survey workspace, map alignment, and live guidance improvements,
-along with EDSM account synchronization, EDDN production sharing, quieter
-upload reporting, and SDL3 controller shortcut support on Windows and Linux.
-
-## Rhino surface mining
-
-- Adds a theme-aware Surface mining overlay with a radar, saved rig circles,
-  ship guidance, six rig direction indicators, and a cargo capacity row.
+- Adds a theme-aware Surface mining overlay with a radar, six saved rig circles
+  and direction indicators, and an SRV cargo-capacity row.
 - Splits vehicle guidance into Ship and Rhino columns. On foot, the Rhino
-  chevron points back to its parked location; aboard, an X marks it untracked.
-- Uses Ctrl+Alt+F1 through Ctrl+Alt+F6 to save or clear rig locations for the current
-  Commander and body. Collection and deployment-distance cues account for
-  the Rhino cockpit and rig placement offsets.
+  chevron points back to the parked vehicle; aboard, an X marks it untracked.
+- Accounts for Rhino cockpit and deployment offsets when marking rigs, with
+  collection, deployment-distance, and near/far guidance.
+- Shows named ground-resource locations below the rigs in two columns, filling
+  left to right. Each location has its own name, chevron, and live distance;
+  longer lists scroll. These are manually saved surface bookmarks.
 - Keeps mining guidance available while operating or walking back to a parked
   Rhino, suppressing Surface Survey and its mini tracker during that activity.
-- By default, clears all saved rig locations when returning to your own
-  ship on foot or docking the Rhino; disable this in Mining overlay settings
-  to retain markers. Re-entering the Rhino keeps its markers.
-- Adds Mining under Activities with an overlay settings shortcut. The workspace
-  is reserved for future mining tools; its settings provide the overlay toggle
-  and editable visibility and rig shortcuts, shared with Input settings.
+- Adds Mining under Activities with the standard overlay settings shortcut.
+  The workspace remains reserved for future tools; guidance appears in the overlay.
 
-The in-app **Guides > Surface mining** chapter explains rig key chords,
-distance cues, and vehicle tracking. Also see
-[Surface mining setup and controls](docs/SURFACE_MINING.md).
+## Tracker shortcuts and clearing
 
-## Monochrome Companion overlays
+- Input settings now has **Tracker/Mining Rig (1)** through
+  **Tracker/Mining Rig (6)**, followed by regular **Tracker (7)** and
+  **Tracker (8)**. Defaults are **Ctrl+Alt+F1** through **Ctrl+Alt+F8**.
+- Slots 1–6 toggle rigs while aboard the Rhino and surface trackers outside
+  Rhino mining. Slots 7 and 8 remain regular surface trackers.
+- Mining overlay settings retains six **Mining rig** entries linked to the
+  first six Input bindings, so edits in either location stay synchronized.
+- Preserves custom tracker chords. A customized RC43 rig chord carries over
+  when the corresponding tracker still uses its default; an explicit tracker
+  customization takes precedence. The old Alt+1–6 rig defaults are retired.
+- Adds **Clear rigs automatically when boarding your ship**, enabled by default
+  and saved between sessions. Turn it off to retain rig markers after boarding
+  your own ship on foot or docking the Rhino.
+- Re-entering the Rhino, taking a taxi, or boarding another Commander's ship
+  preserves the rig markers. Automatic cleanup, when enabled, affects rigs only.
+- Sending **`---` in game chat** clears rigs and all surface bookmarks on the
+  current body, including resources, biology bookmarks, and numbered trackers.
+  It works even with automatic cleanup disabled. Scan history and other bodies'
+  bookmarks are preserved, and old chat commands are not reapplied on restart.
 
-- Adds a muted overlay preset to pair with the Monochrome dark application
-  theme, using champagne headings, soft gray text, and restrained status colors.
-- Keeps flight warnings unchanged and retains distinct pill, biology pip,
-  colonization commodity, and segmented jump-progress cues.
+## Guides and chat-command reference
 
-## Colonization site compatibility
+- Adds **Guides > Chat Commands**, organized by activity, with syntax, examples,
+  requirements, and the data each command changes.
+- Covers bookmark operators and organism abbreviations, mining cleanup,
+  first-footfall and Codex commands, ground targets, Guardian alignment and
+  surveys, settlement surveys and measurements, and application utilities.
+- Updates **Guides > Surface mining** with shared rig chords, vehicle and cargo
+  tracking, named resource bookmarks, and both cleanup options.
+- See [Surface mining setup and controls](docs/SURFACE_MINING.md) for the same
+  player-facing setup and workflow reference.
 
-- Recognizes demolished RavenColonial sites while keeping them out of the
+## Application layout and overlay presentation
+
+- Adds a sidebar toggle at the top-right of the navigation column. Collapse to
+  a narrow strip to expand the workspace, then restore navigation with the same
+  button, without resizing the window or losing the current selection.
+- Adds the **Monochrome Companion** overlay preset with champagne headings,
+  soft gray text, and muted status colors to pair with Monochrome dark.
+  Fixed flight warnings remain unchanged; pills, biology pips, commodity values,
+  and segmented jump-progress cues stay distinguishable.
+- Fixes the joined stream overlay remaining above other applications after
+  Elite loses focus. It returns as topmost when Elite regains focus, respecting
+  the existing keep-visible, editing, and live-interaction overrides.
+- Restores Canonn prior-scan biological predictions, Surface Survey, and the
+  mini tracker while supercruising above a planet. Normal ship flight retains
+  its landing-gear gate and other overlay display conditions.
+- Improves monochrome selected-row contrast and corrects Guardian card,
+  expander, overlay-position, and snap-to-center regressions. Development builds
+  retain F12 inspection support.
+
+## Exploration rewards and Live Horizons
+
+- Tracks newly estimated scan and mapping rewards by system, then removes
+  matched systems after `SellExplorationData` or `MultiSellExplorationData`.
+- Preserves older unattributed totals and makes replayed sales idempotent.
+  Exploration reset also clears the per-system ledger.
+- Keeps the ledger at the end of the Commander profile after settings saves.
+  Duplicate system-name normalization is protected against numeric overflow.
+- Separates Live/Legacy galaxy classification from expansion ownership so
+  Live Horizons keeps the correct Commander profile, journey history, and
+  exploration, system, and boxel reward estimates.
+- EDDN uses the latest session's expansion flags, preserving explicit false
+  values and omitting unknowns instead of carrying over stale flags.
+- Recognizes demolished RavenColonial sites while excluding them from the
   planned-project picker.
 
-## Supercruise survey overlays
+## Earlier improvements included
 
-- Restores Canonn prior-scan biological predictions, the surface survey radar,
-  and the mini tracker while supercruising above a planet.
-- Keeps the landing-gear gate for normal ship flight: gear up suppresses these
-  overlays, while deployed gear permits them when their other display conditions
-  are met.
+The candidate also retains the preceding Guardian, controller, and sharing work:
 
-## Unsold exploration estimates
-
-- Tracks newly estimated scan and surface-mapping rewards by star system, then
-  removes matched systems from the displayed estimate after Frontier emits
-  `SellExplorationData` or `MultiSellExplorationData`.
-- Keeps older unattributed totals intact, makes replayed sale events idempotent,
-  and clears the per-system ledger with the existing exploration reset.
-- Keeps per-system reward data at the end of the Commander profile after every
-  settings save, making the file easier to inspect without changing its values.
-
-## Live Horizons journal handling
-
-- Separates the Live or Legacy galaxy from expansion ownership so a Live
-  Horizons session keeps its Live Commander profile, journey history, and
-  exploration, system, and boxel reward estimates.
-- Reads EDDN expansion flags from the latest loaded session, preserves explicit
-  `false` values, and omits unknown values instead of carrying over flags from
-  a journal header or earlier session.
-
-## Guardian survey workspace and authoring
-
-- Reworks the Survey map workspace around a compact selected-map sidebar,
-  collapsible legend, survey-point list, orientation help, and clearer controls
-  for editing the current site separately from drafting shared map geometry.
-- Adds editable site body, distance-from-origin, arrival distance, surface
-  coordinates, and coordinate reset controls. After its type is chosen, a newly
-  discovered uncatalogued site is selected automatically and uses local
-  `GR L01` / `GS L01` naming.
-- Adds live previews for point geometry, image placement, scale, labels, and
-  coordinate corrections. Verified catalog export now starts in the existing
-  Guardian catalog location while unsaved draft changes remain explicit.
-
-## Guardian map alignment and live guidance
-
-- Stores a portable survey-level marker offset so a corrected site origin moves
-  the commander and every shared marker together without changing the shared
-  template format; exported surveys retain the correction for other users.
-- Synchronizes manual and nearest-POI targeting between the application and
-  overlay for the configured active site, restores automatic selection within
-  range, and keeps map-point edits visible until they are applied or cancelled.
-- Keeps the application map fixed while rotating only the commander glyph to
-  match heading, corrects its orientation, and adds the docked ship chevron to
-  the Guardian overlay. Firegroup-driven choices now retain a visible selected
-  state.
-
-## Inspection and presentation fixes
-
-- Fixes the joined stream overlay remaining above other applications after
-  Elite loses focus, while preserving the existing keep-visible and interaction
-  overrides. The overlay returns as topmost when Elite regains focus.
-- Adds named ground-resource trackers below the mining rigs in two columns,
-  with a chevron and live distance for each saved location. Manual surface
-  bookmarks use near/far styling and remain saved when ship boarding clears rigs.
-- Adds a sidebar toggle in the navigation column's top-right corner. Collapse
-  the sidebar to a narrow strip to expand the current workspace, then use the
-  same button to restore navigation without resizing the window.
-- Adds Avalonia developer-tool support for F12 inspection in development builds.
-- Improves selected-row text contrast in the monochrome theme and corrects
-  Guardian card, expander, overlay-position, and snap-to-center regressions.
-
-## Controller input and shortcut editing
-
-- Uses SDL3 gamepad events for standard controllers on Windows and Linux,
-  mapping buttons, D-pad directions, and triggers into the existing global
-  shortcut system. Joysticks and HOTAS devices retain their SDL polling
-  fallback.
-- Allows controller chords to be assigned directly from the existing shortcut
-  fields. D-pad updates are coalesced so diagonals remain assignable, while
-  disconnects clear partial input without triggering an action.
-- Makes shortcut editing transactional and easier to leave: clicking outside
-  accepts a completed binding, Escape restores the previous binding before a
-  second Escape releases focus, and outside clicks cancel incomplete input.
-  Clear instructions now appear above the input configuration controls.
-
-## Network upload reporting
-
-- Replaces per-event EDSM and EDDN success messages with one aggregate count
-  after each 15-minute activity window, keeping the logs useful during long
-  survey sessions without recording every accepted event.
-- Removes EDSM summaries for events intentionally excluded by its current
-  Journal API discard policy. Hard failures, rejections, retries, pauses, and
-  possible data-loss warnings remain immediate.
-
-## EDDN production sharing
-
-- Sends eligible opted-in Live journal and companion-file data through EDDN's
-  Live gateway using production schema references rather than `/test` schemas.
-- Normalizes both new and restored durable messages to remove any legacy
-  `/test` suffix before delivery. Existing consent, attribution, multicrew,
-  multi-window, retry, and duplicate-uploader protections remain unchanged.
-
-## EDSM journal compatibility
-
-- Fixes EDSM processing of the object-valued `Multicrew` statistics section in
-  Elite's `Statistics` journal event. It is no longer misread as the Boolean
-  active-crew flag, preventing an isolated cast error after EDSM is enabled.
-- Preserves normal multicrew suppression for Boolean session flags and explicit
-  crew join, role-change, and exit events.
-
-## EDSM account synchronization
-
-- Adds a dedicated EDSM opt-in card immediately below Inara under Settings >
-  Privacy & sharing, with the active Commander, masked personal API key, direct
-  settings-page link, save/enable action, and confirmed disable action. The
-  active Commander name is used automatically and must match the EDSM account.
-- Stores the EDSM API key only in the active local Commander profile.
-  Switching profiles loads separate credentials; clearing them cancels active
-  delivery and removes pending in-memory events.
-- Sends supported new Live journal events directly to EDSM's authenticated
-  Journal API in ordered, bounded batches with the required application, game,
-  build, and Commander metadata.
-- Maintains EDSM's sanctioned system, station, market, coordinate, and ship
-  context so journal events that omit those values can still be interpreted.
-
-## Privacy and delivery safety
-
-- Downloads and validates EDSM's current discarded-event policy before any
-  journal event can leave the application. Chat, screenshot paths,
-  `Status.json`, and currently unsupported companion-file events are excluded.
-- Suppresses startup history, Legacy, alpha/beta, diagnostic replay, multicrew,
-  and multi-window activity so only attributable future Live events are
-  eligible.
-- Uses a bounded memory-only queue, one in-flight request, bounded payloads and
-  responses, rate-limit-aware delayed retries, and a credential-failure pause
-  instead of a durable raw-journal outbox or immediate retry loop.
-- Keeps EDSM independent from EDDN and Inara. Each service retains its own
-  explicit opt-in, state, failure isolation, and duplicate-uploader warning.
+- **Guardian survey workspace:** compact selected-map sidebar, collapsible
+  legend, survey-point list, orientation help, and separate site editing and
+  shared-map drafting. Site metadata and coordinates are editable; newly typed
+  uncatalogued sites select automatically with local GR L01 / GS L01 names.
+- **Guardian authoring and alignment:** live geometry/image/label previews,
+  catalog export to the existing location, portable survey marker offsets,
+  synchronized manual/nearest targeting, preserved unapplied edits, corrected
+  commander orientation, docked-ship guidance, and visible firegroup selections.
+- **Controller input:** SDL3 gamepad events on Windows and Linux, joystick/HOTAS
+  polling fallback, direct chord capture, assignable D-pad diagonals, and safe
+  disconnect handling. Shortcut editing accepts completed bindings on focus
+  loss, restores the previous value with Escape, and supports clearing.
+- **EDDN:** approved opt-in events use the production ingest gateway and
+  production schema references, retaining attribution, multicrew, multi-window,
+  retry, consent, and duplicate-uploader protections.
+- **EDSM compatibility and account setup:** handles object-valued Multicrew
+  statistics correctly; provides a dedicated opt-in card below Inara with
+  per-Commander credentials, settings link, save/enable, and confirmed disable.
+- **EDSM delivery:** sends supported new Live events in ordered, bounded batches,
+  maintains system/station/market/ship context, and validates the current
+  discarded-event policy before upload. Chat, screenshot paths, Status.json,
+  unsupported companion events, startup history, Legacy, alpha/beta, diagnostic
+  replay, multicrew, and ambiguous multi-window activity remain excluded.
+  Delivery uses a bounded memory-only queue, rate-limit-aware retries, and a
+  credential-failure pause. EDSM, EDDN, and Inara retain independent opt-ins.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.44`
-- Tag: `xp-v2.1.3.0-rc.44`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.44-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.44-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.44-x86_64.AppImage`
+- Version: `2.1.3.0-rc.44.5`
+- Tag: `xp-v2.1.3.0-rc.44.5`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.44.5-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.44.5-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.44.5-x86_64.AppImage`
 
-The Windows and Linux packages are self-contained. AppImages must be updated
-manually; the application links directly to the selected XP release.
+Windows and Linux packages are self-contained. Linux packaging tools and the
+AppImage runtime use versioned, checksum-verified downloads. AppImages are updated
+manually through the selected XP release. Numeric Windows FileVersion remains
+`2.1.3.0`.
 
 ## Testing notice
 

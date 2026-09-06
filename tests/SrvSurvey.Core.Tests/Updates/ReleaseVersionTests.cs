@@ -18,6 +18,17 @@ public sealed class ReleaseVersionTests
     }
 
     [Theory]
+    [InlineData("2.1.3.0-rc.44", "2.1.3.0-rc.44.5")]
+    [InlineData("2.1.3.0-rc.44.5", "2.1.3.0-rc.44.10")]
+    [InlineData("2.1.3.0-rc.44.5", "2.1.3.0-rc.45")]
+    [InlineData("2.1.3.0-rc.44.5", "2.1.3.0")]
+    public void CandidateRevisionsSortNumericallyBeforeTheNextCandidate(string older, string newer)
+    {
+        Assert.True(ReleaseVersion.Parse(older) < ReleaseVersion.Parse(newer));
+        Assert.Equal(older, ReleaseVersion.Parse(older).ToString());
+    }
+
+    [Theory]
     [InlineData("2.1")]
     [InlineData("2.1.4.0-rc.01")]
     [InlineData("2.1.4.0-")]

@@ -1,6 +1,6 @@
 # SrvSurvey-XP Cross-Platform
 
-Current release candidate version: **2.1.3.0-rc.44**
+Current release candidate version: **2.1.3.0-rc.44.5**
 
 In-app **Guides > Chat Commands** provides an activity-by-activity reference for
 surface bookmarks, mining, exobiology, ground targets, Guardian surveys, settlement
