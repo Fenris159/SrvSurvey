@@ -399,6 +399,68 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
                     currentMetrics.PanelSize.Height + 120))!.Value.Y);
     }
 
+    [AvaloniaTheory]
+    [InlineData(13)]
+    [InlineData(1)]
+    public void MiningPanelPreservesPlacedTopLeftWhenReturningToGameAtTwoHundredPercent(int initialScaleIndex)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"),
+            $$"""{"PlotSurfaceMining":"right:20, middle:100 { s: {{initialScaleIndex}} }"}""");
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var hostBounds = new PixelRect(100, 200, 1600, 1200);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var miningModel = OverlayEditorPreviewFactories.CreateSurfaceMining();
+        using var mining = miningModel.SurfaceMining;
+        mining.InstallEditorPreview([]);
+        var runtimeWindow = new SurfaceMiningOverlayWindow(miningModel);
+        OverlayThemeResources.Apply(runtimeWindow, activeLayout, "PlotSurfaceMining", registry);
+        runtimeWindow.Show();
+        using var initialFrame = runtimeWindow.CaptureRenderedFrame();
+        runtimeWindow.Position = new PixelPoint(420, 310);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, hostBounds,
+                IsVisible: true, IsForeground: true)), store, activeLayout, registry, host);
+        viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
+            candidate.Category == OverlayLayoutCategory.Mining);
+        try
+        {
+            Assert.True(viewModel.Begin());
+            var preview = Assert.Single(host.PreviewWindows);
+            using var previewFrame = preview.CaptureRenderedFrame();
+            Assert.Equal(runtimeWindow.Position, preview.GetPanelScreenOrigin(preview.RenderScaling));
+            viewModel.OpenOverlaySettings("PlotSurfaceMining");
+            viewModel.SelectedOverlayScaleOrdinal = OverlayScaleCatalog.Options
+                .Where(option => option.AbsoluteScale is not null)
+                .OrderBy(option => option.AbsoluteScale)
+                .Select((option, index) => (option, index))
+                .Single(pair => pair.option.Index == 13).index;
+            using var scaledFrame = preview.CaptureRenderedFrame();
+            var metrics = preview.GetPanelMetrics(preview.RenderScaling);
+            var placedTopLeft = new PixelPoint(510, 430);
+            preview.Position = new PixelPoint(placedTopLeft.X - metrics.OriginOffset.X,
+                placedTopLeft.Y - metrics.OriginOffset.Y);
+            viewModel.Save();
+            using var savedFrame = runtimeWindow.CaptureRenderedFrame();
+            Assert.Equal(placedTopLeft, runtimeWindow.Position);
+            var runtimeSize = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
+            Assert.Equal(metrics.PanelSize.Width, runtimeSize.Width);
+            Assert.Equal(placedTopLeft, store.Load().GetPosition("PlotSurfaceMining", hostBounds, runtimeSize));
+
+            Assert.True(viewModel.Begin());
+            preview = Assert.Single(host.PreviewWindows);
+            Assert.Equal(placedTopLeft, preview.GetPanelScreenOrigin(preview.RenderScaling));
+            viewModel.Cancel();
+        }
+        finally
+        {
+            runtimeWindow.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void SavedCompactPanelReopensAtItsNewPosition()
     {
