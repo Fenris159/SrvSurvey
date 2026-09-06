@@ -68,14 +68,14 @@ internal static class MiningBarShape
         return samples.ToArray();
     }
 
-    // Correlate the binary mask in each channel and either polarity: gray, colored and inverted bars.
+    // Match bright chromatic pixels in the bar, not neutral rim brightness or dark gaps.
     public static double Score(IFssPixelSource source, double x, double y, double radius, MiningHudGeometry geometry,
         double tilt = 0, bool lowerOnly = false)
     {
-        Span<double> sum = stackalloc double[6];
-        Span<double> square = stackalloc double[6];
-        Span<double> filledSum = stackalloc double[6];
-        sum.Clear(); square.Clear(); filledSum.Clear();
+        var sum = 0d;
+        var square = 0d;
+        var filledSum = 0d;
+        var colored = 0;
         var filled = 0;
         var samples = lowerOnly ? LowerSamples : Samples;
         foreach (var sample in samples)
@@ -84,34 +84,31 @@ internal static class MiningBarShape
             var px = (int)Math.Round(x + offset.X);
             var py = (int)Math.Round(y + offset.Y);
             if ((uint)px >= source.Width || (uint)py >= source.Height) return 0;
-            var color = source.GetPixel(px, py);
-            for (var c = 0; c < 6; c++)
+            var value = ColoredBrightness(source.GetPixel(px, py));
+            sum += value;
+            square += value * value;
+            if (sample.Filled)
             {
-                double value = c switch
-                {
-                    0 => color.Red,
-                    1 => color.Green,
-                    2 => color.Blue,
-                    3 => color.Red - color.Green,
-                    4 => color.Green - color.Blue,
-                    _ => color.Blue - color.Red,
-                };
-                sum[c] += value;
-                square[c] += value * value;
-                if (sample.Filled) filledSum[c] += value;
+                filledSum += value;
+                if (value > 0) colored++;
+                filled++;
             }
-            if (sample.Filled) filled++;
         }
+        if (colored < filled * .6) return 0;
         var count = samples.Length;
         var maskVariance = filled - filled * filled / (double)count;
-        var score = 0d;
-        for (var c = 0; c < 6; c++)
-        {
-            var variance = square[c] - sum[c] * sum[c] / count;
-            if (variance < count * 25) continue;
-            var covariance = filledSum[c] - filled * sum[c] / count;
-            score = Math.Max(score, Math.Abs(covariance) / Math.Sqrt(maskVariance * variance));
-        }
-        return score;
+        var variance = square - sum * sum / count;
+        if (variance < count * 25) return 0;
+        var covariance = filledSum - filled * sum / count;
+        return Math.Max(0, covariance / Math.Sqrt(maskVariance * variance));
+    }
+
+    internal static double ColoredBrightness(FssRgbPixel color)
+    {
+        var maximum = Math.Max(color.Red, Math.Max(color.Green, color.Blue));
+        var minimum = Math.Min(color.Red, Math.Min(color.Green, color.Blue));
+        var chroma = maximum - minimum;
+        // Hue-independent: excludes black, white, gray and nearly neutral highlights.
+        return maximum >= 96 && chroma >= 24 && chroma >= maximum * .2 ? chroma : 0;
     }
 }

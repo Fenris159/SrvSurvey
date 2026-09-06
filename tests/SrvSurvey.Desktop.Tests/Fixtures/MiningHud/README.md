@@ -9,6 +9,9 @@ The figures inside the circles are irrelevant to bar detection.
 The detector's binary bar-shape mask is derived from frame 20. It retains geometry
 only, with no reference RGB values. Other frames are validation examples. Tests also
 recolor the captured HUD to exercise independence from the original green hue.
+Bright colored bars are positive examples; grayscale versions must never report
+a present bar. Pixel checks cover all six primary/secondary hues and reject
+neutral highlights, black and dark saturated colors.
 
 `reported.bgra.gz` is the maintainer's 506x260 screenshot supplied on 2026-09-06
 after testing the calibration controls. Only slot 1 has a segmented bar; slots

@@ -15,10 +15,10 @@ estimates, and Live Horizons tracking.
   Bar-gap controls align the sampling curve independently of circle size; the
   observer rejects circle-rim matches and displays calibration status directly.
   It now locates and excludes the visible circle rim independently of the saved
-  outline size. Unreadable circles and unconfirmed state changes show uncertainty
-  instead of a stale BAR reading; gray deployment bars remain supported.
-  It compares bar shape and contrast
-  without requiring a particular HUD color. This build reports detections only and
+  outline size. Unconfirmed state changes show uncertainty instead of a stale BAR
+  reading. Detection accepts bright colored bars in any hue and excludes gray,
+  white, black and dark features. A confident colored bar can be recognized even
+  when its circle rim is unreadable. This build reports detections only and
   never changes saved rig locations automatically.
 - Adds a theme-aware Surface mining overlay with a radar, six saved rig circles
   and direction indicators, and an SRV cargo-capacity row.

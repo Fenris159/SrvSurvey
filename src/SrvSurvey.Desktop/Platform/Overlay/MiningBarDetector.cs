@@ -10,9 +10,11 @@ public sealed record MiningBarAnalysis(MiningBarState[] Slots, double OffsetX, d
     public static MiningBarAnalysis Unknown() => new(new MiningBarState[6], 0, 0);
 }
 
-/// <summary>Recognizes the six ellipse outlines, then tests local contrast along their lower bars.</summary>
+/// <summary>Locates the six HUD slots, then matches bright colored bars outside their circle rims.</summary>
 public static class MiningBarDetector
 {
+    // Calibrated against captured bars after excluding neutral pixels from the score.
+    private const double PresentThreshold = .78;
     public static byte[][] CaptureReference(IFssPixelSource pixels, MiningDetectionSettings settings) =>
         MiningHudReference.Capture(pixels, settings.Normalize());
 
@@ -32,7 +34,7 @@ public static class MiningBarDetector
             var match = matches[slot];
             var radius = image.Radius * match.Scale;
             var best = ScoreBar(image, match.X, match.Y, radius, settings);
-            states[slot] = double.IsNaN(best) ? MiningBarState.Unknown : best >= .82 ? MiningBarState.Present
+            states[slot] = double.IsNaN(best) ? MiningBarState.Unknown : best >= PresentThreshold ? MiningBarState.Present
                 : best >= .7 ? MiningBarState.Unknown : MiningBarState.Absent;
             scores[slot] = best;
         }
@@ -45,7 +47,6 @@ public static class MiningBarDetector
     {
         var geometry = new MiningHudGeometry(settings);
         var rim = MiningCircleMask.Locate(image, x, y, radius, geometry);
-        if (rim.Confidence < 8) return double.NaN;
         // Mask the full rim thickness, not just its fitted centreline.
         var excludedRadius = rim.Radius + 1.5;
         var gap = radius * settings.BarGap;
@@ -57,13 +58,14 @@ public static class MiningBarDetector
                     {
                         var dy = gap + adjustment;
                         if (!MiningBarShape.IsOutsideRing(dx, dy, radius, scale, geometry, tilt)) continue;
-                        if (!MiningBarShape.IsOutsideRing(
+                        if (rim.Confidence >= 8 && !MiningBarShape.IsOutsideRing(
                             x + dx - rim.X, y + dy - rim.Y, excludedRadius, radius * scale / excludedRadius, geometry, tilt)) continue;
                         var lower = MiningBarShape.Score(image, x + dx, y + dy, radius * scale, geometry, tilt, lowerOnly: true);
                         if (lower > best && MiningBarShape.Score(image, x + dx, y + dy, radius * scale, geometry, tilt) >= .55)
                             best = lower;
                     }
-        return best;
+        // A clear colored bar is enough for presence; absence still needs a readable HUD circle.
+        return rim.Confidence < 8 && best < PresentThreshold ? double.NaN : best;
     }
 }
 /// <summary>Only emits transitions after a baseline, never treats lost visibility as a removed bar.</summary>

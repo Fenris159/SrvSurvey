@@ -42,6 +42,41 @@ public sealed class MiningBarDetectorTests
         Assert.True(double.IsNaN(MiningBarDetector.ScoreBar(source, 48, 48, 22, new())));
     }
 
+    [Theory]
+    [InlineData(255, 0, 0, true)]
+    [InlineData(0, 255, 0, true)]
+    [InlineData(0, 0, 255, true)]
+    [InlineData(255, 255, 0, true)]
+    [InlineData(0, 255, 255, true)]
+    [InlineData(255, 0, 255, true)]
+    [InlineData(255, 255, 255, false)]
+    [InlineData(140, 140, 140, false)]
+    [InlineData(255, 245, 240, false)]
+    [InlineData(0, 0, 0, false)]
+    [InlineData(40, 0, 0, false)]
+    public void OnlyBrightChromaticPixelsContributeToTheBar(byte red, byte green, byte blue, bool accepted)
+    {
+        Assert.Equal(accepted, MiningBarShape.ColoredBrightness(new(red, green, blue)) > 0);
+    }
+
+    [Fact]
+    public void BrightBarCanBeRecognizedWithoutANeutralCircle()
+    {
+        var source = Load(20);
+        var bytes = source.BgraPixels.ToArray();
+        for (var y = 0; y < source.Height; y++) for (var x = 0; x < source.Width; x++)
+            {
+                if (MiningBarShape.ColoredBrightness(source.GetPixel(x, y)) >= 80) continue;
+                var p = (y * source.Width + x) * 4;
+                bytes[p] = bytes[p + 1] = bytes[p + 2] = 0;
+            }
+        var colored = new CapturedPixelBuffer(source.Width, source.Height, bytes);
+        var settings = CalibratedSettings();
+        var rim = MiningCircleMask.Locate(colored, 178, 94, 22, new MiningHudGeometry(settings));
+        Assert.True(rim.Confidence < 8, $"Unexpected rim {rim}");
+        Assert.True(MiningBarDetector.ScoreBar(colored, 178, 94, 22, settings) >= .82);
+    }
+
     [Fact]
     public void SlotDisplayDoesNotPresentAContradictedStableBarAsCurrent()
     {
@@ -171,8 +206,8 @@ public sealed class MiningBarDetectorTests
     [InlineData(1)] // Swap blue and green.
     [InlineData(2)] // Muted colors.
     [InlineData(3)] // Inverted light/dark polarity.
-    [InlineData(4)] // Grayscale.
-    [InlineData(5)] // Grayscale with reduced bar contrast: preserve uncertainty.
+    [InlineData(4)] // Bright grayscale is not a deployment color.
+    [InlineData(5)] // Dim grayscale is not a deployment color.
     public void CalibrationAndBarRecognitionDoNotRequireGreen(int recolor)
     {
         static CapturedPixelBuffer Transform(CapturedPixelBuffer source, int mode)
@@ -196,11 +231,9 @@ public sealed class MiningBarDetectorTests
         var settings = CalibratedSettings();
         settings = settings with { LabelTemplates = MiningBarDetector.CaptureReference(Transform(Load(20), recolor), settings) };
         var result = MiningBarDetector.Analyze(Transform(Load(40), recolor), settings);
-        if (recolor == 5)
+        if (recolor >= 4)
         {
-            Assert.NotEqual(MiningBarState.Absent, result.Slots[0]);
-            Assert.NotEqual(MiningBarState.Absent, result.Slots[1]);
-            Assert.All(result.Slots.Skip(2), state => Assert.NotEqual(MiningBarState.Present, state));
+            Assert.All(result.Slots, state => Assert.NotEqual(MiningBarState.Present, state));
             return;
         }
         Assert.True(result.Slots[0] == MiningBarState.Present && result.Slots[1] == MiningBarState.Present,
