@@ -182,14 +182,30 @@ jobs:
 
       - name: Test with coverage (Avalonia / XP)
         if: steps.layout.outputs.kind == 'avalonia'
+        timeout-minutes: 10
         run: >-
           dotnet test SrvSurvey.slnx
           --configuration Release
           --no-build
           --no-restore
+          --logger trx
+          --blame-hang-timeout 2m
+          --blame-hang-dump-type mini
           --collect:"XPlat Code Coverage"
           --
           DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+
+      - name: Upload test diagnostics
+        if: always() && steps.layout.outputs.kind == 'avalonia'
+        uses: actions/upload-artifact@v7
+        with:
+          name: sonar-test-diagnostics
+          path: |
+            **/TestResults/**/*.trx
+            **/TestResults/**/*Sequence*.xml
+            **/TestResults/**/*.dmp
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Skip tests (WinForms / main has no test projects)
         if: steps.layout.outputs.kind == 'winforms'

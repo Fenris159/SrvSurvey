@@ -1,3 +1,4 @@
+using System.Windows.Input;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
@@ -24,8 +25,9 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
 
         viewModel.ApiKey = "  personal-key  ";
         Assert.True(viewModel.SaveCredentialsCommand.CanExecute(null));
-        viewModel.SaveCredentialsCommand.Execute(null);
-        await WaitForAsync(() => viewModel.HasStoredCredentials);
+        await ExecuteAndWaitForCredentialsChangedAsync(
+            viewModel,
+            viewModel.SaveCredentialsCommand);
 
         var profile = await new CommanderProfileStore(temporaryDirectory)
             .LoadAsync("F123", isOdyssey: true);
@@ -53,8 +55,9 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
         Assert.True(viewModel.IsClearCredentialsConfirmationVisible);
         Assert.Equal("personal-key", viewModel.StoredApiKey);
 
-        viewModel.ConfirmClearCredentialsCommand.Execute(null);
-        await WaitForAsync(() => !viewModel.HasStoredCredentials);
+        await ExecuteAndWaitForCredentialsChangedAsync(
+            viewModel,
+            viewModel.ConfirmClearCredentialsCommand);
 
         var profile = await new CommanderProfileStore(temporaryDirectory)
             .LoadAsync("F123", isOdyssey: true);
@@ -98,29 +101,37 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
             isOdyssey: true,
             savedApiKey: null);
         viewModel.ApiKey = "first-key";
-        viewModel.SaveCredentialsCommand.Execute(null);
-        await saveStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        try
+        {
+            viewModel.SaveCredentialsCommand.Execute(null);
+            await saveStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        viewModel.SetCommanderProfile(
-            "F456",
-            "Second Commander",
-            isOdyssey: true,
-            savedApiKey: "second-key");
-        var saveFinished = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
-        viewModel.SaveCredentialsCommand.CanExecuteChanged += (_, _) =>
-            saveFinished.TrySetResult();
-        releaseSave.TrySetResult();
-        await saveFinished.Task.WaitAsync(TimeSpan.FromSeconds(1));
+            viewModel.SetCommanderProfile(
+                "F456",
+                "Second Commander",
+                isOdyssey: true,
+                savedApiKey: "second-key");
+            var saveFinished = new TaskCompletionSource(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            viewModel.SaveCredentialsCommand.CanExecuteChanged += (_, _) =>
+                saveFinished.TrySetResult();
+            releaseSave.TrySetResult();
+            await saveFinished.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        Assert.Equal("F123", savedFrontierId);
-        Assert.Equal("First Commander", savedEdsmName);
-        Assert.Equal("first-key", savedApiKey);
-        Assert.Equal("Second Commander", viewModel.UploadCommanderName);
-        Assert.Equal("second-key", viewModel.ApiKey);
-        Assert.Contains("Second Commander", viewModel.CredentialStatus);
-        Assert.DoesNotContain("First Commander", viewModel.CredentialStatus);
-        Assert.Equal(0, changes);
+            Assert.Equal("F123", savedFrontierId);
+            Assert.Equal("First Commander", savedEdsmName);
+            Assert.Equal("first-key", savedApiKey);
+            Assert.Equal("Second Commander", viewModel.UploadCommanderName);
+            Assert.Equal("second-key", viewModel.ApiKey);
+            Assert.Contains("Second Commander", viewModel.CredentialStatus);
+            Assert.DoesNotContain("First Commander", viewModel.CredentialStatus);
+            Assert.Equal(0, changes);
+        }
+        finally
+        {
+            // Never leave the async-void command blocked if an assertion fails.
+            releaseSave.TrySetResult();
+        }
     }
 
     [Fact]
@@ -162,15 +173,26 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
             saveCredentialsAsync);
     }
 
-    private static async Task WaitForAsync(Func<bool> predicate)
+    private static async Task ExecuteAndWaitForCredentialsChangedAsync(
+        EdsmSettingsViewModel viewModel,
+        ICommand command)
     {
-        var timeout = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(5);
-        while (!predicate())
+        var changed = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnCredentialsChanged(object? sender, EventArgs args) =>
+            changed.TrySetResult();
+
+        // HasStoredCredentials changes before the notification and remaining UI state.
+        // Await the event being asserted, rather than polling that intermediate field.
+        viewModel.CredentialsChanged += OnCredentialsChanged;
+        try
         {
-            Assert.True(
-                DateTimeOffset.UtcNow < timeout,
-                "The asynchronous command did not complete.");
-            await Task.Delay(10);
+            command.Execute(null);
+            await changed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        finally
+        {
+            viewModel.CredentialsChanged -= OnCredentialsChanged;
         }
     }
 }
