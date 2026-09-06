@@ -25,21 +25,8 @@ internal static class MiningBarShape
     ];
     private static readonly (double X, double Y, bool Filled)[] Samples = CreateSamples(false);
     private static readonly (double X, double Y, bool Filled)[] LowerSamples = CreateSamples(true);
-    internal static bool IsOutsideRing(double dx, double dy, double radius, double scale, MiningHudGeometry geometry, double tilt)
-    {
-        // A bright circle rim can resemble the lower arc. Require most filled samples
-        // to sit beyond the calibrated ellipse, with a small allowance for alignment error.
-        var outside = 0;
-        var filled = 0;
-        foreach (var sample in Samples)
-        {
-            if (!sample.Filled) continue;
-            filled++;
-            var point = geometry.Transform(sample.X, sample.Y + sample.X * tilt, radius * scale);
-            if (geometry.RingDistance(point.X + dx, point.Y + dy, radius) > 1.05) outside++;
-        }
-        return outside >= filled * .8;
-    }
+    internal static (double X, double Y) Centroid { get; } =
+        (Samples.Where(p => p.Filled).Average(p => p.X), Samples.Where(p => p.Filled).Average(p => p.Y));
     internal static IReadOnlyList<(double X, double Y)> GuidePoints { get; } =
         Enumerable.Range(0, Mask[0].Length)
             .Where(x => Mask.Any(row => row[x] == '#'))

@@ -1,4 +1,6 @@
 using Avalonia.Threading;
+using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -11,6 +13,9 @@ public sealed class MiningDetectionCoordinator : IDisposable
     private readonly DispatcherTimer timer;
     private bool busy;
     private bool disposed;
+    private MiningBarAnalysis? previousAnalysis;
+    private MiningDetectionSettings? previousSettings;
+    private SystemSurfaceContext? previousContext;
 
     public MiningDetectionCoordinator(SurfaceMiningViewModel mining, IGameWindowTracker tracker,
         IGameScreenCapture? capture = null)
@@ -33,6 +38,9 @@ public sealed class MiningDetectionCoordinator : IDisposable
         if (busy || disposed) return;
         var model = mining.Detection;
         var game = tracker.GetSnapshot();
+        var context = mining.DetectionContext;
+        if (!mining.ShouldShow || context != previousContext)
+            previousAnalysis = null;
         if (!(model.Enabled || model.IsCalibrating)) return;
         if (model.IsCalibrating && !model.IsCalibrationTesting) return;
         if (!game.IsAvailable || !game.IsVisible || (!model.IsCalibrating && !game.IsForeground)
@@ -47,17 +55,7 @@ public sealed class MiningDetectionCoordinator : IDisposable
             return;
         }
         var settings = model.Settings;
-        var learnReference = model.ReferenceRequested;
-        if (learnReference && !game.IsForeground)
-        {
-            model.Pause("Return focus to Elite, stay stationary, and look forward to learn the HUD labels.");
-            return;
-        }
-        if (!learnReference && settings.LabelTemplates is null)
-        {
-            model.Pause("Open Mining in the overlay editor, align all six circles, then select Test and save calibration.");
-            return;
-        }
+        var previous = ReferenceEquals(settings, previousSettings) ? previousAnalysis : null;
         var bounds = settings.GetBounds(game.ClientBounds);
         busy = true;
         try
@@ -65,20 +63,20 @@ public sealed class MiningDetectionCoordinator : IDisposable
             var result = await Task.Run(() =>
             {
                 var pixels = capture.Capture(bounds);
-                return learnReference
-                    ? (Reference: MiningBarDetector.CaptureReference(pixels, settings), Analysis: MiningBarAnalysis.Unknown())
-                    : (Reference: (byte[][]?)null, Analysis: MiningBarDetector.Analyze(pixels, settings));
+                return MiningBarDetector.Analyze(pixels, settings, previous);
             });
-            if (!disposed && ReferenceEquals(settings, model.Settings)
+            if (!disposed && context == mining.DetectionContext && ReferenceEquals(settings, model.Settings)
                 && (model.Enabled || model.IsCalibrating)
                 && (!model.IsCalibrating || model.IsCalibrationTesting))
             {
                 var current = tracker.GetSnapshot();
                 if (current.IsAvailable && current.ClientBounds == game.ClientBounds && current.IsVisible
-                    && (current.IsForeground || model.IsCalibrating && !learnReference) && mining.CanDetectRigs)
+                    && (current.IsForeground || model.IsCalibrating) && mining.CanDetectRigs)
                 {
-                    if (result.Reference is not null) model.ApplyReference(result.Reference);
-                    else model.Apply(result.Analysis);
+                    previousAnalysis = result;
+                    previousSettings = settings;
+                    previousContext = context;
+                    model.Apply(result);
                 }
                 else model.Pause("Waiting for Elite's Rhino cockpit view.");
             }

@@ -14,12 +14,12 @@ estimates, and Live Horizons tracking.
   curved bar guides shared with detection, and visible movement-search bounds.
   Bar-gap controls align the sampling curve independently of circle size; the
   observer rejects circle-rim matches and displays calibration status directly.
-  It now locates and excludes the visible circle rim independently of the saved
-  outline size. Unconfirmed state changes show uncertainty instead of a stale BAR
-  reading. Detection accepts bright colored bars in any hue and excludes gray,
-  white, black and dark features. A confident colored bar can be recognized even
-  when its circle rim is unreadable. This build reports detections only and
-  never changes saved rig locations automatically.
+  Detection now groups bars of a selected HUD color, defaulting to bright green.
+  A color picker supports modified HUD palettes; gray, white and black are excluded.
+  The observer no longer learns label images or depends on the terrain behind them.
+  Rig 1 establishes the first anchor; relative spacing and tracked movement keep
+  later rigs numbered when earlier bars disappear. Ambiguous groups show uncertainty.
+  This build reports detections only and never changes saved rig locations automatically.
 - Adds a theme-aware Surface mining overlay with a radar, six saved rig circles
   and direction indicators, and an SRV cargo-capacity row.
 - Keeps the Surface mining panel's width and placed top-left position consistent

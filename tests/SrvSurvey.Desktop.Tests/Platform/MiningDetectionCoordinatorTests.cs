@@ -30,7 +30,6 @@ public sealed class MiningDetectionCoordinatorTests : IDisposable
         store.SaveDetection(new MiningDetectionSettings
         {
             Enabled = true,
-            LabelTemplates = Enumerable.Range(0, 6).Select(_ => new byte[224]).ToArray(),
         });
         using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root), store);
         var scan = new SystemScanState();
@@ -53,18 +52,17 @@ public sealed class MiningDetectionCoordinatorTests : IDisposable
             }, "mev_rhino");
         mining.Detection.IsCalibrating = calibrating;
         mining.Detection.IsCalibrationTesting = calibrating;
-        var learning = calibrating && loseFocusDuringCapture;
-        if (learning) mining.Detection.RequestReference();
+        if (calibrating) mining.Detection.StartCalibrationTest();
         var tracker = new Tracker { Snapshot = new((nint)1, 42, new(100, 200, 2000, 1000), true, foreground) };
         var capture = new FakeCapture(() =>
         {
             if (loseFocusDuringCapture) tracker.Snapshot = tracker.Snapshot with { IsForeground = false };
-        }, learning);
+        });
         using (var coordinator = new MiningDetectionCoordinator(mining, tracker, capture))
         {
             await coordinator.SynchronizeAsync();
             Assert.Equal(expectedCaptures, capture.Count);
-            if (expectedCaptures == 0 || loseFocusDuringCapture)
+            if (expectedCaptures == 0 || loseFocusDuringCapture && !calibrating)
                 Assert.StartsWith("Waiting for Elite", mining.Detection.StatusText);
             else Assert.StartsWith("HUD not located", mining.Detection.StatusText);
             Assert.All(mining.Rigs, rig => Assert.False(rig.IsSet));

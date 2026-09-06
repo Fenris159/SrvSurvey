@@ -8,6 +8,78 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 
 public sealed class MiningBarDetectorTests
 {
+    [Fact]
+    public void MovementAndReturningRigOneDoNotRenumberRemainingRigs()
+    {
+        var settings = CalibratedSettings();
+        MiningBarAnalysis? previous = null;
+        foreach (var (frame, count) in new[] { (20, 1), (40, 2), (60, 2), (100, 3) })
+        {
+            previous = MiningBarDetector.Analyze(Load(frame), settings, previous);
+            Assert.True(previous.HasAnchor);
+            Assert.All(previous.Slots.Take(count), state => Assert.Equal(MiningBarState.Present, state));
+            Assert.All(previous.Slots.Skip(count), state => Assert.NotEqual(MiningBarState.Present, state));
+        }
+        // Remove only the colored bar pixels belonging to rig 1; leave its gray rim in place.
+        var source = Load(100);
+        var bytes = source.BgraPixels.ToArray();
+        for (var y = 0; y < source.Height; y++) for (var x = 0; x < 222; x++)
+                if (MiningColorBarDetector.MatchesColor(source.GetPixel(x, y), new(0, 255, 0)))
+                {
+                    var p = (y * source.Width + x) * 4;
+                    bytes[p] = bytes[p + 1] = bytes[p + 2] = 20;
+                }
+        var afterReturn = MiningBarDetector.Analyze(new CapturedPixelBuffer(source.Width, source.Height, bytes), settings, previous);
+        Assert.NotEqual(MiningBarState.Present, afterReturn.Slots[0]);
+        Assert.Equal(MiningBarState.Present, afterReturn.Slots[1]);
+        Assert.Equal(MiningBarState.Present, afterReturn.Slots[2]);
+        Assert.All(afterReturn.Slots.Skip(3), state => Assert.NotEqual(MiningBarState.Present, state));
+        var returnedView = MiningBarDetector.Analyze(source, settings, afterReturn);
+        Assert.All(returnedView.Slots.Take(3), state => Assert.Equal(MiningBarState.Present, state));
+    }
+
+    [Fact]
+    public void GreenSelectionRejectsOtherBrightHuesAndNeutralPixels()
+    {
+        foreach (var color in new[] { new FssRgbPixel(255, 0, 0), new(0, 0, 255), new(255, 255, 255), new(120, 120, 120), new(0, 40, 0) })
+            Assert.False(MiningColorBarDetector.MatchesColor(color, new(0, 255, 0)));
+        Assert.True(MiningColorBarDetector.MatchesColor(new(29, 236, 22), new(0, 255, 0)));
+    }
+
+    [Fact]
+    public void ColorPickerHonorsCalibrationSaveAndCancel()
+    {
+        var model = new MiningDetectionViewModel(null);
+        model.BeginEdit();
+        model.BarColor = Avalonia.Media.Colors.Red;
+        model.EndEdit();
+        Assert.Equal(Avalonia.Media.Colors.Lime, model.BarColor);
+        model.BeginEdit();
+        model.BarColor = Avalonia.Media.Colors.Blue;
+        model.SaveEdit();
+        model.EndEdit();
+        Assert.Equal(Avalonia.Media.Colors.Blue, model.BarColor);
+    }
+
+    [Fact]
+    public void ColorGroupsRecognizeBothBarsAfterDriving()
+    {
+        var settings = new MiningDetectionSettings
+        {
+            CircleWidth = 46d / 400,
+            CircleAspectRatio = .65,
+            RotationDegrees = -6,
+            BarGap = 0,
+            MotionMargin = 56d / 400,
+            Markers = [new(123d/400,102d/220),new(189d/400,96d/220),new(250d/400,90d/220),
+                new(123d/400,148d/220),new(189d/400,139d/220),new(250d/400,131d/220)]
+        };
+        var result = MiningBarDetector.Analyze(Load("after-movement"), settings);
+        Assert.True(result.Slots[0] == MiningBarState.Present && result.Slots[1] == MiningBarState.Present,
+            $"{string.Join(',', result.Slots)}; scores {string.Join(',', result.BarScores)}");
+        Assert.All(result.Slots.Skip(2), state => Assert.NotEqual(MiningBarState.Present, state));
+    }
+
     [Theory]
     [InlineData(19, 0, false)]
     [InlineData(20, 0, false)]
@@ -28,18 +100,19 @@ public sealed class MiningBarDetectorTests
                 var p = (y * 96 + x) * 4;
                 pixels[p] = pixels[p + 1] = pixels[p + 2] = color; pixels[p + 3] = 255;
             }
-        var score = MiningBarDetector.ScoreBar(new CapturedPixelBuffer(96, 96, pixels), 48, 48, calibratedRadius,
-            settings);
-        var rim = MiningCircleMask.Locate(new CapturedPixelBuffer(96, 96, pixels), 48, 48, calibratedRadius,
-            geometry);
-        Assert.True(score < .82, $"Continuous rim scored {score}; rim {rim}");
+        var result = MiningBarDetector.Analyze(new CapturedPixelBuffer(96, 96, pixels), settings with
+        {
+            CircleWidth = calibratedRadius * 2 / 96,
+            Markers = Enumerable.Repeat(new MiningDetectionPoint(.5, .5), 6).ToArray()
+        });
+        Assert.All(result.Slots, state => Assert.NotEqual(MiningBarState.Present, state));
     }
 
     [Fact]
     public void MissingCircleIsUncertainRatherThanAnAbsentRig()
     {
         var source = new CapturedPixelBuffer(96, 96, new byte[96 * 96 * 4]);
-        Assert.True(double.IsNaN(MiningBarDetector.ScoreBar(source, 48, 48, 22, new())));
+        Assert.All(MiningBarDetector.Analyze(source, new()).Slots, state => Assert.Equal(MiningBarState.Unknown, state));
     }
 
     [Theory]
@@ -74,7 +147,7 @@ public sealed class MiningBarDetectorTests
         var settings = CalibratedSettings();
         var rim = MiningCircleMask.Locate(colored, 178, 94, 22, new MiningHudGeometry(settings));
         Assert.True(rim.Confidence < 8, $"Unexpected rim {rim}");
-        Assert.True(MiningBarDetector.ScoreBar(colored, 178, 94, 22, settings) >= .82);
+        Assert.Equal(MiningBarState.Present, MiningBarDetector.Analyze(colored, settings).Slots[0]);
     }
 
     [Fact]
@@ -112,7 +185,6 @@ public sealed class MiningBarDetectorTests
             Markers = [new(123d/400,102d/220),new(189d/400,96d/220),new(250d/400,90d/220),
                 new(123d/400,148d/220),new(189d/400,139d/220),new(250d/400,131d/220)]
         };
-        settings = settings with { LabelTemplates = MiningBarDetector.CaptureReference(source, settings) };
         var result = MiningBarDetector.Analyze(source, settings);
         Assert.True(result.Slots[0] != MiningBarState.Absent,
             $"{string.Join(',', result.Slots)}; scores {string.Join(',', result.BarScores)}");
@@ -134,7 +206,6 @@ public sealed class MiningBarDetectorTests
             Markers = [new(117d/500,120d/286),new(246d/500,108d/286),new(373d/500,96d/286),
                 new(117d/500,208d/286),new(246d/500,191d/286),new(373d/500,176d/286)]
         };
-        settings = settings with { LabelTemplates = MiningBarDetector.CaptureReference(source, settings) };
         var result = MiningBarDetector.Analyze(source, settings);
         Assert.True(result.Slots[0] == MiningBarState.Present,
             $"{string.Join(',', result.Slots)}; scores {string.Join(',', result.BarScores)}");
@@ -159,10 +230,10 @@ public sealed class MiningBarDetectorTests
             CircleWidth = 96d / 506,
             CircleAspectRatio = .65,
             RotationDegrees = rotation,
+            BarColor = recolor ? 0xFF0000u : 0x00FF00u,
             Markers = [new(143d/506,116d/260),new(274d/506,104d/260),new(399d/506,90d/260),
                 new(143d/506,206d/260),new(274d/506,191d/260),new(399d/506,174d/260)]
         };
-        settings = settings with { LabelTemplates = MiningBarDetector.CaptureReference(source, settings) };
         var result = MiningBarDetector.Analyze(source, settings);
         Assert.True(result.Slots[0] == MiningBarState.Present,
             $"{string.Join(',', result.Slots)}; scores {string.Join(',', result.BarScores)}");
@@ -198,7 +269,7 @@ public sealed class MiningBarDetectorTests
             Markers = [new(.445,.47), new(.595,.43), new(.74,.39),
                 new(.445,.67), new(.595,.64), new(.74,.60)],
         };
-        return settings with { LabelTemplates = MiningBarDetector.CaptureReference(Load(20), settings) };
+        return settings;
     }
 
     [Theory]
@@ -208,7 +279,7 @@ public sealed class MiningBarDetectorTests
     [InlineData(3)] // Inverted light/dark polarity.
     [InlineData(4)] // Bright grayscale is not a deployment color.
     [InlineData(5)] // Dim grayscale is not a deployment color.
-    public void CalibrationAndBarRecognitionDoNotRequireGreen(int recolor)
+    public void ColorPickerRecognizesTheSelectedBarHue(int recolor)
     {
         static CapturedPixelBuffer Transform(CapturedPixelBuffer source, int mode)
         {
@@ -229,7 +300,7 @@ public sealed class MiningBarDetectorTests
             return new(source.Width, source.Height, bytes);
         }
         var settings = CalibratedSettings();
-        settings = settings with { LabelTemplates = MiningBarDetector.CaptureReference(Transform(Load(20), recolor), settings) };
+        settings = settings with { BarColor = recolor switch { 0 => 0xFF0000u, 1 => 0x0000FFu, 2 => 0x50CF50u, 3 => 0xFF00FFu, _ => 0x00FF00u } };
         var result = MiningBarDetector.Analyze(Transform(Load(40), recolor), settings);
         if (recolor >= 4)
         {
@@ -268,7 +339,7 @@ public sealed class MiningBarDetectorTests
     [Theory]
     [InlineData(-16)]
     [InlineData(20)]
-    public void RotatedHudUsesTheCalibratedAngleForLabelsAndBars(double degrees)
+    public void RotatedHudUsesTheCalibratedAngleForBars(double degrees)
     {
         var source = Load(20);
         var angle = degrees * Math.PI / 180;
@@ -302,7 +373,6 @@ public sealed class MiningBarDetectorTests
                 ((p.X * 400 - 200) * c - (p.Y * 200 - 100) * s + 200) / 400,
                 ((p.X * 400 - 200) * s + (p.Y * 200 - 100) * c + 100) / 200)).ToArray()
         };
-        settings = settings with { LabelTemplates = MiningBarDetector.CaptureReference(image, settings) };
         var result = MiningBarDetector.Analyze(image, settings);
         Assert.Equal(MiningBarState.Present, result.Slots[0]);
         Assert.All(result.Slots.Skip(1), state => Assert.NotEqual(MiningBarState.Present, state));
@@ -323,27 +393,24 @@ public sealed class MiningBarDetectorTests
     }
 
     [Fact]
-    public void SearchAdjustmentRetainsLearnedLabelsButGeometryChangesRequireRelearning()
+    public void CalibrationTestingDoesNotNeedLearnedLabels()
     {
         var model = new MiningDetectionViewModel(null) { IsCalibrating = true };
         model.BeginEdit();
-        model.RequestReference();
-        var labels = CalibratedSettings().LabelTemplates!;
-        model.ApplyReference(labels);
+        model.StartCalibrationTest();
+        Assert.True(model.IsCalibrationTesting);
         model.UpdateCalibration(model.Settings with { MotionMargin = model.Settings.MotionMargin + .02 });
-        Assert.NotNull(model.Settings.LabelTemplates);
         Assert.True(model.IsCalibrationTesting);
         model.UpdateCalibration(model.Settings with { BarGap = .3 });
-        Assert.NotNull(model.Settings.LabelTemplates);
         Assert.True(model.IsCalibrationTesting);
         model.UpdateCalibration(model.Settings with { RotationDegrees = 12 });
-        Assert.Null(model.Settings.LabelTemplates);
         Assert.False(model.IsCalibrationTesting);
+        model.StartCalibrationTest();
+        Assert.True(model.IsCalibrationTesting);
     }
 
     [Theory]
-    [InlineData(80)] // Glare washes out label 6.
-    [InlineData(120)] // The first circle is beyond the calibrated movement allowance.
+    [InlineData(120)] // The complete group is beyond the calibrated movement allowance.
     [InlineData(140)] // Looking away from the HUD.
     public void UnreadableOrOutOfRangeHudIsUnknown(int frame)
     {
@@ -383,21 +450,20 @@ public sealed class MiningBarDetectorTests
     }
 
     [Fact]
-    public void CalibrationPersistencePreservesOtherMiningPreferencesAndRejectsMalformedReferences()
+    public void CalibrationPersistencePreservesColorAndOtherMiningPreferences()
     {
         var path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-mining-calibration-{Guid.NewGuid():N}.json");
         try
         {
             var store = new SurfaceMiningSettingsStore(path);
             store.SaveAutoClearRigsOnShipBoarding(false);
-            var expected = CalibratedSettings() with { Enabled = true, BarGap = .3 };
+            var expected = CalibratedSettings() with { Enabled = true, BarGap = .3, BarColor = 0xFF00FF };
             store.SaveDetection(expected);
             var restored = store.LoadDetection();
             Assert.True(restored.Enabled);
             Assert.True(restored.HasSameCalibration(expected));
             Assert.False(store.LoadAutoClearRigsOnShipBoarding());
-            store.SaveDetection(expected with { LabelTemplates = [new byte[3]] });
-            Assert.Null(store.LoadDetection().LabelTemplates);
+            Assert.Equal(0xFF00FFu, restored.BarColor);
         }
         finally { File.Delete(path); }
     }

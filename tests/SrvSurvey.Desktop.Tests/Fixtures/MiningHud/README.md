@@ -8,7 +8,7 @@ The figures inside the circles are irrelevant to bar detection.
 
 The detector's binary bar-shape mask is derived from frame 20. It retains geometry
 only, with no reference RGB values. Other frames are validation examples. Tests also
-recolor the captured HUD to exercise independence from the original green hue.
+recolor the captured HUD and select the corresponding picker color to validate alternate palettes.
 Bright colored bars are positive examples; grayscale versions must never report
 a present bar. Pixel checks cover all six primary/secondary hues and reject
 neutral highlights, black and dark saturated colors.
@@ -24,3 +24,10 @@ maintainer; only slot 1 has a bar. `live-observer.bgra.gz` is a small crop of th
 game frame captured during the subsequent live inspection, while the observer
 incorrectly displayed BAR for slot 2. Tests include modest calibration differences
 and isolated continuous rims to reproduce the false-positive classification.
+
+`after-movement.bgra.gz` is the 400x220 HUD crop captured after the user drove
+and deployed rig 2. Both bars 1 and 2 are visible, but the former label matcher
+returned all six slots unknown when reusing the earlier live-observer reference.
+The color-group regression uses the same geometry without learning any labels.
+Sequence tests use frames 20, 40, 60 and 100 to preserve identities across movement,
+then remove the first bar's colored pixels to verify that later rigs are not renumbered.

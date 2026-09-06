@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media;
 using SrvSurvey.Desktop.Configuration;
@@ -62,11 +63,16 @@ public sealed class MiningCalibrationWindow : Window
         test.IsCheckedChanged += (_, _) =>
         {
             canvas.ShowGuides = test.IsChecked != true;
-            if (test.IsChecked == true) model.RequestReference();
+            if (test.IsChecked == true) model.StartCalibrationTest();
             else model.StopCalibrationTest();
             canvas.InvalidateVisual();
         };
         tools.Children.Add(test);
+        var color = new ColorPicker { Width = 40, Height = 24, MinHeight = 0, IsAlphaEnabled = false, IsAlphaVisible = false };
+        color.Bind(ColorPicker.ColorProperty, new Binding(nameof(MiningDetectionViewModel.BarColor))
+        { Source = model, Mode = BindingMode.TwoWay });
+        ToolTip.SetTip(color, "Deployment bar color (bright green by default)");
+        tools.Children.Add(color);
         showSearch.IsCheckedChanged += (_, _) =>
         {
             canvas.ShowSearchArea = showSearch.IsChecked == true;

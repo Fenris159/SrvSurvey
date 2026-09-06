@@ -36,6 +36,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public MiningDetectionViewModel Detection { get; }
+    internal SystemSurfaceContext? DetectionContext => context;
     // NoFocus also includes free head-look. This only permits analysis; the image detector
     // must independently locate the HUD before reporting a present or absent bar.
     public bool CanDetectRigs => ShouldShow && isRhino && status?.InSrv == true

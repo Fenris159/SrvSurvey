@@ -585,7 +585,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
                 toolsFrame.Save(toolsStream, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
         }
-        detection.RequestReference();
+        detection.StartCalibrationTest();
         Assert.Contains(calibration.ToolsWindow.GetVisualDescendants().OfType<TextBlock>(),
             block => block.Text == detection.StatusText);
         Assert.All(host.PreviewWindows, preview => Assert.False(preview.IsVisible));

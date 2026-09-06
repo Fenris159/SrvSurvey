@@ -6,66 +6,20 @@ public enum MiningBarState { Unknown, Absent, Present }
 
 public sealed record MiningBarAnalysis(MiningBarState[] Slots, double OffsetX, double OffsetY)
 {
+    internal bool HasAnchor { get; init; }
     internal double[] BarScores { get; init; } = [];
     public static MiningBarAnalysis Unknown() => new(new MiningBarState[6], 0, 0);
 }
 
-/// <summary>Locates the six HUD slots, then matches bright colored bars outside their circle rims.</summary>
+/// <summary>Groups bars of the selected color and preserves their calibrated rig identities.</summary>
 public static class MiningBarDetector
 {
-    // Calibrated against captured bars after excluding neutral pixels from the score.
-    private const double PresentThreshold = .78;
-    public static byte[][] CaptureReference(IFssPixelSource pixels, MiningDetectionSettings settings) =>
-        MiningHudReference.Capture(pixels, settings.Normalize());
-
-    public static MiningBarAnalysis Analyze(IFssPixelSource pixels, MiningDetectionSettings settings)
+    public static MiningBarAnalysis Analyze(IFssPixelSource pixels, MiningDetectionSettings settings,
+        MiningBarAnalysis? previous = null)
     {
         ArgumentNullException.ThrowIfNull(pixels);
         ArgumentNullException.ThrowIfNull(settings);
-        settings = settings.Normalize();
-        if (settings.LabelTemplates is null) return MiningBarAnalysis.Unknown();
-        var image = new MiningHudReference.GrayImage(pixels, settings.CircleWidth);
-        var matches = MiningHudReference.Locate(image, settings);
-        if (matches is null) return MiningBarAnalysis.Unknown();
-        var states = new MiningBarState[6];
-        var scores = new double[6];
-        for (var slot = 0; slot < 6; slot++)
-        {
-            var match = matches[slot];
-            var radius = image.Radius * match.Scale;
-            var best = ScoreBar(image, match.X, match.Y, radius, settings);
-            states[slot] = double.IsNaN(best) ? MiningBarState.Unknown : best >= PresentThreshold ? MiningBarState.Present
-                : best >= .7 ? MiningBarState.Unknown : MiningBarState.Absent;
-            scores[slot] = best;
-        }
-        return new(states, matches[0].X - settings.Markers[0].X * image.Width,
-            matches[0].Y - settings.Markers[0].Y * image.Height)
-        { BarScores = scores };
-    }
-
-    internal static double ScoreBar(IFssPixelSource image, double x, double y, double radius, MiningDetectionSettings settings)
-    {
-        var geometry = new MiningHudGeometry(settings);
-        var rim = MiningCircleMask.Locate(image, x, y, radius, geometry);
-        // Mask the full rim thickness, not just its fitted centreline.
-        var excludedRadius = rim.Radius + 1.5;
-        var gap = radius * settings.BarGap;
-        var best = 0d;
-        for (var adjustment = -5; adjustment <= 5; adjustment++)
-            for (var dx = -2; dx <= 2; dx++)
-                foreach (var tilt in new[] { -.1, -.05, 0, .05, .1 })
-                    foreach (var scale in new[] { .85, .925, 1, 1.075 })
-                    {
-                        var dy = gap + adjustment;
-                        if (!MiningBarShape.IsOutsideRing(dx, dy, radius, scale, geometry, tilt)) continue;
-                        if (rim.Confidence >= 8 && !MiningBarShape.IsOutsideRing(
-                            x + dx - rim.X, y + dy - rim.Y, excludedRadius, radius * scale / excludedRadius, geometry, tilt)) continue;
-                        var lower = MiningBarShape.Score(image, x + dx, y + dy, radius * scale, geometry, tilt, lowerOnly: true);
-                        if (lower > best && MiningBarShape.Score(image, x + dx, y + dy, radius * scale, geometry, tilt) >= .55)
-                            best = lower;
-                    }
-        // A clear colored bar is enough for presence; absence still needs a readable HUD circle.
-        return rim.Confidence < 8 && best < PresentThreshold ? double.NaN : best;
+        return MiningColorBarDetector.Analyze(pixels, settings.Normalize(), previous);
     }
 }
 /// <summary>Only emits transitions after a baseline, never treats lost visibility as a removed bar.</summary>
