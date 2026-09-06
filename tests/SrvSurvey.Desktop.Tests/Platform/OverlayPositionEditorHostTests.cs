@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -548,6 +549,25 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.Equal(expected.Position, calibration.Position);
         Assert.Equal(expected.Width, (int)Math.Round(calibration.Width * calibration.RenderScaling));
         Assert.Equal(expected.Height, (int)Math.Round(calibration.Height * calibration.RenderScaling));
+        Assert.True(calibration.ToolsWindow.IsVisible);
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        Assert.True(calibration.ToolsWindow.Position.Y + calibration.ToolsWindow.Bounds.Height * calibration.ToolsWindow.RenderScaling < calibration.Position.Y,
+            $"Tools at {calibration.ToolsWindow.Position}, bounds {calibration.ToolsWindow.Bounds}; frame {calibration.Position}");
+        void Click(string content) => calibration.ToolsWindow.GetVisualDescendants().OfType<Button>()
+            .Single(b => Equals(b.Content, content)).RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        var original = detection.Settings;
+        Click("Size+");
+        Assert.Equal(original.CircleWidth * expected.Width + 2, detection.Settings.CircleWidth * expected.Width, 6);
+        Click("R+");
+        Assert.Equal(original.RotationDegrees + 2, detection.Settings.RotationDegrees);
+        Click("Height+");
+        Assert.Equal(original.CircleAspectRatio + .05, detection.Settings.CircleAspectRatio, 6);
+        Click("Search+");
+        Assert.Equal(original.MotionMargin * expected.Width + 8, detection.Settings.MotionMargin * expected.Width, 6);
+        Assert.True(calibration.ToolsWindow.GetVisualDescendants().OfType<CheckBox>()
+            .Single(b => Equals(b.Content, "Search bounds")).IsChecked);
+        Assert.Contains(calibration.ToolsWindow.GetVisualDescendants().OfType<TextBlock>(),
+            block => block.Text?.Contains("Rotation -6°", StringComparison.Ordinal) == true);
         using (var frame = calibration.CaptureRenderedFrame())
         {
             Assert.NotNull(frame);
@@ -557,6 +577,10 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
                 Directory.CreateDirectory(output);
                 using var stream = File.Create(Path.Combine(output, "mining-calibration.png"));
                 frame.Save(stream, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+                using var toolsFrame = calibration.ToolsWindow.CaptureRenderedFrame();
+                Assert.NotNull(toolsFrame);
+                using var toolsStream = File.Create(Path.Combine(output, "mining-calibration-controls.png"));
+                toolsFrame.Save(toolsStream, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
         }
         detection.RequestReference();
@@ -570,6 +594,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.False(vm.IsEditing);
         Assert.Null(host.MiningCalibration);
         Assert.False(calibration.IsVisible);
+        Assert.False(calibration.ToolsWindow.IsVisible);
         Assert.Equal(new MiningDetectionPoint(.25, .35), miningStore.LoadDetection().Markers[0]);
         Assert.Contains("calibration", vm.StatusMessage, StringComparison.OrdinalIgnoreCase);
 

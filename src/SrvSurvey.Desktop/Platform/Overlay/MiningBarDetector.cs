@@ -27,6 +27,7 @@ public static class MiningBarDetector
         if (matches is null) return MiningBarAnalysis.Unknown();
         var states = new MiningBarState[6];
         var scores = new double[6];
+        var geometry = new MiningHudGeometry(settings);
         for (var slot = 0; slot < 6; slot++)
         {
             var match = matches[slot];
@@ -37,8 +38,8 @@ public static class MiningBarDetector
                     foreach (var tilt in new[] { -.1, 0, .1 })
                         foreach (var scale in new[] { .85, .925, 1, 1.075 })
                         {
-                            var lower = MiningBarShape.Score(image, match.X + dx, match.Y + dy, radius * scale, tilt, lowerOnly: true);
-                            if (lower > best && MiningBarShape.Score(image, match.X + dx, match.Y + dy, radius * scale, tilt) >= .55)
+                            var lower = MiningBarShape.Score(image, match.X + dx, match.Y + dy, radius * scale, geometry, tilt, lowerOnly: true);
+                            if (lower > best && MiningBarShape.Score(image, match.X + dx, match.Y + dy, radius * scale, geometry, tilt) >= .55)
                                 best = lower;
                         }
             states[slot] = best >= .82 ? MiningBarState.Present

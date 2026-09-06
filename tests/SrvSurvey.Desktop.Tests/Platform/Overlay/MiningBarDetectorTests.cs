@@ -107,6 +107,79 @@ public sealed class MiningBarDetectorTests
     }
 
     [Theory]
+    [InlineData(-16)]
+    [InlineData(20)]
+    public void RotatedHudUsesTheCalibratedAngleForLabelsAndBars(double degrees)
+    {
+        var source = Load(20);
+        var angle = degrees * Math.PI / 180;
+        var c = Math.Cos(angle);
+        var s = Math.Sin(angle);
+        var bytes = new byte[source.Width * source.Height * 4];
+        for (var y = 0; y < source.Height; y++)
+            for (var x = 0; x < source.Width; x++)
+            {
+                var sx = (x - 200) * c + (y - 100) * s + 200;
+                var sy = -(x - 200) * s + (y - 100) * c + 100;
+                if (sx < 0 || sy < 0 || sx >= source.Width - 1 || sy >= source.Height - 1) continue;
+                var ix = (int)sx;
+                var iy = (int)sy;
+                var fx = sx - ix;
+                var fy = sy - iy;
+                for (var channel = 0; channel < 4; channel++)
+                {
+                    double Sample(int px, int py) => source.BgraPixels.Span[(py * source.Width + px) * 4 + channel];
+                    bytes[(y * source.Width + x) * 4 + channel] = (byte)Math.Round(
+                        Sample(ix, iy) * (1 - fx) * (1 - fy) + Sample(ix + 1, iy) * fx * (1 - fy)
+                        + Sample(ix, iy + 1) * (1 - fx) * fy + Sample(ix + 1, iy + 1) * fx * fy);
+                }
+            }
+        var image = new CapturedPixelBuffer(source.Width, source.Height, bytes);
+        var settings = CalibratedSettings();
+        settings = settings with
+        {
+            RotationDegrees = MiningDetectionSettings.ReferenceRotationDegrees + degrees,
+            Markers = settings.Markers.Select(p => new MiningDetectionPoint(
+                ((p.X * 400 - 200) * c - (p.Y * 200 - 100) * s + 200) / 400,
+                ((p.X * 400 - 200) * s + (p.Y * 200 - 100) * c + 100) / 200)).ToArray()
+        };
+        settings = settings with { LabelTemplates = MiningBarDetector.CaptureReference(image, settings) };
+        var result = MiningBarDetector.Analyze(image, settings);
+        Assert.Equal(MiningBarState.Present, result.Slots[0]);
+        Assert.All(result.Slots.Skip(1), state => Assert.NotEqual(MiningBarState.Present, state));
+    }
+
+    [Theory]
+    [InlineData(-30, .5)]
+    [InlineData(20, 1)]
+    public void GuidesUseTheRequestedAbsoluteAngleAndOvalHeight(double degrees, double height)
+    {
+        var geometry = new MiningHudGeometry(new() { RotationDegrees = degrees, CircleAspectRatio = height });
+        var major = geometry.RingPoint(0, 22);
+        var minor = geometry.RingPoint(Math.PI / 2, 22);
+        Assert.Equal(22, major.Length, 6);
+        Assert.Equal(22 * height, minor.Length, 6);
+        Assert.Equal(degrees, Math.Atan2(major.Y, major.X) * 180 / Math.PI, 6);
+        Assert.Equal(0, major.X * minor.X + major.Y * minor.Y, 6);
+    }
+
+    [Fact]
+    public void SearchAdjustmentRetainsLearnedLabelsButGeometryChangesRequireRelearning()
+    {
+        var model = new MiningDetectionViewModel(null) { IsCalibrating = true };
+        model.BeginEdit();
+        model.RequestReference();
+        var labels = CalibratedSettings().LabelTemplates!;
+        model.ApplyReference(labels);
+        model.UpdateCalibration(model.Settings with { MotionMargin = model.Settings.MotionMargin + .02 });
+        Assert.NotNull(model.Settings.LabelTemplates);
+        Assert.True(model.IsCalibrationTesting);
+        model.UpdateCalibration(model.Settings with { RotationDegrees = 12 });
+        Assert.Null(model.Settings.LabelTemplates);
+        Assert.False(model.IsCalibrationTesting);
+    }
+
+    [Theory]
     [InlineData(80)] // Glare washes out label 6.
     [InlineData(120)] // The first circle is beyond the calibrated movement allowance.
     [InlineData(140)] // Looking away from the HUD.
@@ -165,6 +238,23 @@ public sealed class MiningBarDetectorTests
             Assert.Null(store.LoadDetection().LabelTemplates);
         }
         finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void ResizingTheCaptureFramePreservesGuideSizeAndOffsets()
+    {
+        var settings = new MiningDetectionSettings();
+        var viewport = new PixelRect(0, 0, 1920, 1080);
+        var before = settings.GetBounds(viewport);
+        var after = new PixelRect(before.Position, new PixelSize(before.Width + 150, before.Height + 100));
+        var resized = settings.WithBounds(after, viewport);
+        Assert.Equal(settings.CircleWidth * before.Width, resized.CircleWidth * after.Width, 6);
+        Assert.Equal(settings.MotionMargin * before.Width, resized.MotionMargin * after.Width, 6);
+        for (var i = 0; i < 6; i++)
+        {
+            Assert.Equal(settings.Markers[i].X * before.Width, resized.Markers[i].X * after.Width, 6);
+            Assert.Equal(settings.Markers[i].Y * before.Height, resized.Markers[i].Y * after.Height, 6);
+        }
     }
 
     [Fact]

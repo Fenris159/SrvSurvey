@@ -25,6 +25,12 @@ internal static class MiningBarShape
     ];
     private static readonly (double X, double Y, bool Filled)[] Samples = CreateSamples(false);
     private static readonly (double X, double Y, bool Filled)[] LowerSamples = CreateSamples(true);
+    internal static IReadOnlyList<(double X, double Y)> GuidePoints { get; } =
+        Enumerable.Range(0, Mask[0].Length)
+            .Where(x => Mask.Any(row => row[x] == '#'))
+            .Select(x => ((x - 28) / 22d,
+                (Enumerable.Range(0, Mask.Length).Where(y => Mask[y][x] == '#').Average() + 6) / 22d))
+            .ToArray();
     private static (double X, double Y, bool Filled)[] CreateSamples(bool lowerOnly)
     {
         var samples = new List<(double, double, bool)>();
@@ -48,7 +54,8 @@ internal static class MiningBarShape
     }
 
     // Correlate the binary mask in each channel and either polarity: gray, colored and inverted bars.
-    public static double Score(IFssPixelSource source, double x, double y, double radius, double tilt = 0, bool lowerOnly = false)
+    public static double Score(IFssPixelSource source, double x, double y, double radius, MiningHudGeometry geometry,
+        double tilt = 0, bool lowerOnly = false)
     {
         Span<double> sum = stackalloc double[6];
         Span<double> square = stackalloc double[6];
@@ -58,8 +65,9 @@ internal static class MiningBarShape
         var samples = lowerOnly ? LowerSamples : Samples;
         foreach (var sample in samples)
         {
-            var px = (int)Math.Round(x + sample.X * radius);
-            var py = (int)Math.Round(y + (sample.Y + sample.X * tilt) * radius);
+            var offset = geometry.Transform(sample.X, sample.Y + sample.X * tilt, radius);
+            var px = (int)Math.Round(x + offset.X);
+            var py = (int)Math.Round(y + offset.Y);
             if ((uint)px >= source.Width || (uint)py >= source.Height) return 0;
             var color = source.GetPixel(px, py);
             for (var c = 0; c < 6; c++)

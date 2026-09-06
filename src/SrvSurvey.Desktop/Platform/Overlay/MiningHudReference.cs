@@ -14,6 +14,7 @@ internal static class MiningHudReference
     internal static byte[][] Capture(IFssPixelSource source, MiningDetectionSettings settings)
     {
         var image = new GrayImage(source, settings.CircleWidth);
+        var geometry = new MiningHudGeometry(settings);
         var result = new byte[6][];
         for (var slot = 0; slot < 6; slot++)
         {
@@ -22,8 +23,8 @@ internal static class MiningHudReference
             for (var y = 0; y < TemplateHeight; y++)
                 for (var x = 0; x < TemplateWidth; x++)
                 {
-                    var value = image.Sample(p.X * image.Width + OffsetX(x) * image.Radius,
-                        p.Y * image.Height + OffsetY(y) * image.Radius);
+                    var offset = geometry.Transform(OffsetX(x), OffsetY(y), image.Radius);
+                    var value = image.Sample(p.X * image.Width + offset.X, p.Y * image.Height + offset.Y);
                     if (value < 0) throw new InvalidOperationException("Keep all six circles and their labels inside the calibration frame.");
                     samples[y * TemplateWidth + x] = (byte)Math.Round(value);
                 }
@@ -37,11 +38,12 @@ internal static class MiningHudReference
     internal static Match[]? Locate(GrayImage image, MiningDetectionSettings settings)
     {
         if (settings.LabelTemplates is not { Length: 6 } templates) return null;
-        var margin = Math.Min(120, image.Width * settings.MotionMargin);
+        var margin = settings.GetMovementAllowance(image.Width);
+        var geometry = new MiningHudGeometry(settings);
         var matches = new List<Match>[6];
         for (var slot = 0; slot < 6; slot++)
         {
-            matches[slot] = FindMatches(image, templates[slot], settings.Markers[slot], margin);
+            matches[slot] = FindMatches(image, templates[slot], settings.Markers[slot], margin, geometry);
             if (matches[slot].Count == 0) return null;
         }
 
@@ -71,10 +73,11 @@ internal static class MiningHudReference
                     var nearby = matches[slot].Where(m => Math.Abs(m.X - x) <= 7 && Math.Abs(m.Y - y) <= 7
                         && Math.Abs(m.Scale - scale) <= .22).OrderByDescending(m => m.Score).FirstOrDefault();
                     if (nearby.Score < .7) break;
+                    var adjustment = geometry.Transform(28 / 22d, 24 / 22d, image.Radius * (scale - nearby.Scale));
                     group[slot] = nearby with
                     {
-                        X = nearby.X + (scale - nearby.Scale) * image.Radius * 28 / 22,
-                        Y = nearby.Y + (scale - nearby.Scale) * image.Radius * 24 / 22,
+                        X = nearby.X + adjustment.X,
+                        Y = nearby.Y + adjustment.Y,
                         Scale = scale,
                     };
                     score += nearby.Score;
@@ -86,7 +89,8 @@ internal static class MiningHudReference
         return best;
     }
 
-    private static List<Match> FindMatches(GrayImage image, byte[] template, MiningDetectionPoint marker, double margin)
+    private static List<Match> FindMatches(GrayImage image, byte[] template, MiningDetectionPoint marker, double margin,
+        MiningHudGeometry geometry)
     {
         var candidates = new List<Match>();
         var fullTemplates = new Dictionary<double, ((double X, double Y, double Value)[] Samples, double Variance)>();
@@ -95,8 +99,10 @@ internal static class MiningHudReference
             var samples = new List<(double X, double Y, double Value)>();
             for (var y = 0; y < TemplateHeight; y++)
                 for (var x = 0; x < TemplateWidth; x++)
-                    samples.Add((OffsetX(x) * image.Radius * scale, OffsetY(y) * image.Radius * scale,
-                        template[y * TemplateWidth + x]));
+                {
+                    var offset = geometry.Transform(OffsetX(x), OffsetY(y), image.Radius * scale);
+                    samples.Add((offset.X, offset.Y, template[y * TemplateWidth + x]));
+                }
             var mean = samples.Average(p => p.Value);
             var centered = samples.Select(p => (p.X, p.Y, Value: p.Value - mean)).ToArray();
             var variance = centered.Sum(p => p.Value * p.Value);
@@ -172,7 +178,7 @@ internal static class MiningHudReference
         public double Radius { get; }
         internal GrayImage(IFssPixelSource source, double circleWidth)
         {
-            Width = Math.Clamp((int)Math.Round(44 / circleWidth), 128, 800);
+            Width = MiningDetectionSettings.GetWorkingWidth(circleWidth);
             Height = Math.Max(1, (int)Math.Round(source.Height * Width / (double)source.Width));
             Radius = Width * circleWidth / 2;
             pixels = new double[Width * Height];

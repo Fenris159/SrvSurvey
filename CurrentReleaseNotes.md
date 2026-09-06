@@ -9,7 +9,10 @@ estimates, and Live Horizons tracking.
 
 - Adds an opt-in, experimental rig-bar observer and a resizable Mining calibration
   frame in the overlay position editor. Six draggable alignment markers, movement
-  allowance, and a live test help check detection. It compares bar shape and contrast
+  allowance, and a live test help check detection. Circle size, oval height and
+  rotation are independent of capture-frame size, with unobstructed numbered dots,
+  curved bar guides shared with detection, and visible movement-search bounds.
+  It compares bar shape and contrast
   without requiring a particular HUD color. This build reports detections only and
   never changes saved rig locations automatically.
 - Adds a theme-aware Surface mining overlay with a radar, six saved rig circles

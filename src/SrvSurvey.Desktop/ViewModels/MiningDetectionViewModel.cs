@@ -46,6 +46,12 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store) 
     {
         value = value.Normalize();
         if (value.HasSameCalibration(Settings)) return;
+        if ((value with { MotionMargin = Settings.MotionMargin }).HasSameCalibration(Settings))
+        {
+            draft = value;
+            Reset();
+            return;
+        }
         draft = value with { LabelTemplates = null };
         IsCalibrationTesting = false;
         ReferenceRequested = false;
