@@ -9,6 +9,71 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 public sealed class MiningBarDetectorTests
 {
     [Theory]
+    [InlineData(194)]
+    [InlineData(217)]
+    public void PartiallyVisibleIceBarIsNeverDeclaredEmpty(int visibleUntil)
+    {
+        var source = Load("ice-two-bars");
+        var settings = IceSettings();
+        var previous = MiningBarDetector.Analyze(source, settings);
+        var bytes = source.BgraPixels.ToArray();
+        for (var y = 0; y < source.Height; y++) for (var x = visibleUntil; x < source.Width; x++)
+            {
+                if (!MiningColorBarDetector.MatchesColor(source.GetPixel(x, y), new(0, 255, 0))) continue;
+                var p = (y * source.Width + x) * 4;
+                bytes[p] = bytes[p + 1] = bytes[p + 2] = 230;
+            }
+        var clock = new TestClock();
+        var confirmation = new MiningBarConfirmation(clock);
+        confirmation.Apply(previous);
+        for (var i = 0; i < 10; i++)
+        {
+            clock.Advance(.5);
+            previous = MiningBarDetector.Analyze(new CapturedPixelBuffer(source.Width, source.Height, bytes), settings, previous);
+            confirmation.Apply(previous);
+            Assert.NotEqual(MiningBarState.Absent, previous.Slots[1]);
+            Assert.NotEqual(MiningBarState.Absent, confirmation.States[1]);
+            Assert.All(previous.Slots.Skip(2), state => Assert.NotEqual(MiningBarState.Present, state));
+        }
+        var restored = MiningBarDetector.Analyze(source, settings, previous);
+        Assert.Equal(MiningBarState.Present, restored.Slots[1]);
+    }
+
+    [Fact]
+    public void AlternatingIceBarsCannotSlideTheGridIntoRigThree()
+    {
+        var source = Load("ice-two-bars");
+        var settings = IceSettings();
+        MiningBarAnalysis? previous = null;
+        foreach (var active in new[] { 3, 2, 1, 3 })
+        {
+            var bytes = source.BgraPixels.ToArray();
+            for (var y = 0; y < source.Height; y++) for (var x = 0; x < source.Width; x++)
+                {
+                    var bit = x < 150 ? 1 : 2;
+                    if ((active & bit) != 0 || !MiningColorBarDetector.MatchesColor(source.GetPixel(x, y), new(0, 255, 0))) continue;
+                    var p = (y * source.Width + x) * 4;
+                    bytes[p] = bytes[p + 1] = bytes[p + 2] = 230;
+                }
+            previous = MiningBarDetector.Analyze(new CapturedPixelBuffer(source.Width, source.Height, bytes), settings, previous);
+            Assert.True(previous.Slots[0] == ((active & 1) != 0 ? MiningBarState.Present : MiningBarState.Absent),
+                $"Active mask {active}: {string.Join(',', previous.Slots)} at {previous.OffsetX},{previous.OffsetY}");
+            Assert.Equal((active & 2) != 0 ? MiningBarState.Present : MiningBarState.Absent, previous.Slots[1]);
+            Assert.All(previous.Slots.Skip(2), state => Assert.NotEqual(MiningBarState.Present, state));
+        }
+    }
+
+    private static MiningDetectionSettings IceSettings() => new()
+    {
+        CircleWidth = 94d / 420,
+        RotationDegrees = -14,
+        CircleAspectRatio = .65,
+        MotionMargin = .35,
+        Markers = [new(84d/420,77d/210),new(217d/420,62d/210),new(341d/420,45d/210),
+            new(86d/420,165d/210),new(218d/420,149d/210),new(342d/420,131d/210)]
+    };
+
+    [Theory]
     [InlineData(0, 0)]
     [InlineData(-8, -6)]
     [InlineData(8, 6)]
@@ -148,7 +213,8 @@ public sealed class MiningBarDetectorTests
         {
             previous = MiningBarDetector.Analyze(Load(frame), settings, previous);
             Assert.True(previous.HasAnchor);
-            Assert.All(previous.Slots.Take(count), state => Assert.Equal(MiningBarState.Present, state));
+            Assert.True(previous.Slots.Take(count).All(state => state == MiningBarState.Present),
+                $"Frame {frame}: {string.Join(',', previous.Slots)} at {previous.OffsetX},{previous.OffsetY}");
             Assert.All(previous.Slots.Skip(count), state => Assert.NotEqual(MiningBarState.Present, state));
         }
         // Remove only the colored bar pixels belonging to rig 1; leave its gray rim in place.

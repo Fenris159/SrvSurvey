@@ -9,7 +9,7 @@ internal static class MiningCircleMask
 
     internal static (double X, double Y)? LocateGrid(IFssPixelSource image,
         (double X, double Y)[] centers, double radius, MiningHudGeometry geometry,
-        double offsetX, double offsetY, double allowance)
+        double offsetX, double offsetY, double allowance, int requiredCircles = 4)
     {
         var separation = centers.SelectMany((a, i) => centers.Skip(i + 1)
             .Select(b => Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2)))).Min();
@@ -25,7 +25,7 @@ internal static class MiningCircleMask
                 var x = offsetX + sx * 2;
                 var y = offsetY + sy * 2;
                 if (Math.Abs(x) > allowance || Math.Abs(y) > allowance) continue;
-                var top = 0; var bottom = 0; var total = 0d;
+                var top = 0; var bottom = 0; var columns = 0; var total = 0d;
                 for (var i = 0; i < centers.Length; i++)
                 {
                     var confidence = 0d;
@@ -34,9 +34,10 @@ internal static class MiningCircleMask
                             radius * (.9 + scale * .05), directions));
                     if (confidence < 8) continue;
                     if (i < 3) top++; else bottom++;
+                    columns |= 1 << (i % 3);
                     total += Math.Min(30, confidence);
                 }
-                if (top < 2 || bottom < 2) continue;
+                if (top < 2 || bottom < 2 || columns != 7 || top + bottom < requiredCircles) continue;
                 var count = top + bottom;
                 total -= .01 * (sx * sx + sy * sy);
                 if (count < bestCount || count == bestCount && total <= bestScore) continue;

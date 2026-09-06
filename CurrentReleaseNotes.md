@@ -27,6 +27,11 @@ estimates, and Live Horizons tracking.
   After the last colored bar disappears, detection reacquires the empty circle grid
   to avoid getting stuck at an old HUD position. Several matching circles in both
   rows are required; incomplete or ambiguous views remain unknown.
+  Fixes ice-planet cases where changing bar visibility could slide rig numbers into
+  another column. Circle alignment takes priority over old visible-bar identities;
+  larger or conflicting changes need independent layout evidence. Surviving green
+  bar fragments remain uncertain instead of being treated as empty, preserving
+  saved rig locations through incomplete detections.
   While stationary, enabled HUD tracking saves a rig location immediately when its bar is detected
   and clears only that rig after three continuous seconds of empty readings. Unknown
   readings or interrupted capture cancel pending removal; repeated detections preserve
