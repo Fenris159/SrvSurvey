@@ -17,6 +17,7 @@ public sealed class MiningCalibrationWindow : Window
     private readonly PixelRect viewport;
     private readonly CalibrationCanvas canvas;
     private readonly TextBlock status = new() { FontSize = 11 };
+    private readonly TextBlock detectionStatus = new() { FontSize = 11, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(3) };
     private readonly CheckBox test = new() { Content = "Test", FontSize = 10 };
     private readonly CheckBox showSearch = new() { Content = "Search bounds", FontSize = 10 };
     private readonly TextBlock values = new() { FontSize = 10, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(3) };
@@ -54,6 +55,8 @@ public sealed class MiningCalibrationWindow : Window
         AddButton(tools, "R+", "Rotate outlines and bar guides clockwise by 2 degrees", () => Rotate(2));
         AddButton(tools, "Height−", "Flatter HUD outlines", () => ResizeHeight(-.05));
         AddButton(tools, "Height+", "Rounder HUD outlines", () => ResizeHeight(.05));
+        AddButton(tools, "Gap−", "Move the bar guides closer to the circles", () => ResizeBarGap(-.05));
+        AddButton(tools, "Gap+", "Move the bar guides farther below the circles", () => ResizeBarGap(.05));
         lessMovement = AddButton(tools, "Search−", "Reduce movement search by 8 pixels", () => ResizeMargin(-8));
         moreMovement = AddButton(tools, "Search+", "Increase movement search by 8 pixels", () => ResizeMargin(8));
         test.IsCheckedChanged += (_, _) =>
@@ -77,6 +80,7 @@ public sealed class MiningCalibrationWindow : Window
         };
         toolbar.Children.Add(tools);
         toolbar.Children.Add(values);
+        toolbar.Children.Add(detectionStatus);
         ToolsWindow = new Window
         {
             Title = "Mining calibration controls",
@@ -134,6 +138,8 @@ public sealed class MiningCalibrationWindow : Window
     { RotationDegrees = model.Settings.RotationDegrees + delta });
     private void ResizeHeight(double delta) => model.UpdateCalibration(model.Settings with
     { CircleAspectRatio = model.Settings.CircleAspectRatio + delta });
+    private void ResizeBarGap(double delta) => model.UpdateCalibration(model.Settings with
+    { BarGap = model.Settings.BarGap + delta });
     private void ResizeMargin(double delta)
     {
         showSearch.IsChecked = true;
@@ -183,14 +189,16 @@ public sealed class MiningCalibrationWindow : Window
         test.IsChecked = model.IsCalibrationTesting;
         canvas.ShowGuides = !model.IsCalibrationTesting;
         status.Text = model.SlotsText;
+        detectionStatus.Text = model.StatusText;
         var settings = model.Settings;
         var frameWidth = settings.GetBounds(viewport).Width;
         values.Text = $"Size {settings.CircleWidth * frameWidth:F0} px · Height {settings.CircleAspectRatio:P0}"
-            + $" · Rotation {settings.RotationDegrees:0}° · Search ±{settings.GetMovementAllowance(frameWidth):F0} px";
+            + $" · Rotation {settings.RotationDegrees:0}° · Bar gap {settings.BarGap * settings.CircleWidth * frameWidth / 2:F1} px"
+            + $" · Search ±{settings.GetMovementAllowance(frameWidth):F0} px";
         lessMovement.IsEnabled = settings.MotionMargin > 0;
         moreMovement.IsEnabled = settings.MotionMargin < 120d / MiningDetectionSettings.GetWorkingWidth(settings.CircleWidth) - .000001;
         ToolTip.SetTip(canvas, $"Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize.\n"
-            + "Resize the frame to change the capture area. Size, Height and R change the HUD outlines. Search changes movement allowance.\n"
+            + "Resize the frame to change the capture area. Size, Height and R change the HUD outlines. Gap moves the bar guides; Search changes movement allowance.\n"
             + model.StatusText);
         canvas.InvalidateVisual();
     }
@@ -236,7 +244,7 @@ public sealed class MiningCalibrationWindow : Window
                     Typeface.Default, 11, Brushes.White);
                 context.DrawText(text, center + new Vector(6, -14));
                 DrawPolyline(context, new Pen(Brushes.Cyan, 1.5), MiningBarShape.GuidePoints
-                    .Select(p => center + geometry.Transform(p.X, p.Y, radius)).ToArray());
+                    .Select(p => center + geometry.Transform(p.X, p.Y, radius) + new Vector(0, radius * model.Settings.BarGap)).ToArray());
             }
         }
         private static void DrawPolyline(DrawingContext context, Pen pen, IReadOnlyList<Point> points)

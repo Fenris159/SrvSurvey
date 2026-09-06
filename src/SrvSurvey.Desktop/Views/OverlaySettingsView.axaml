@@ -24,7 +24,7 @@
                   Content="Clear rigs automatically when boarding your ship" />
         <TextBlock Classes="card-title" Text="Rig bar detection (experimental)" />
         <TextBlock Classes="muted" TextWrapping="Wrap"
-                   Text="Detection only: saved rig locations are never changed. Open Edit Overlay Positions and choose Mining. Move and resize the capture frame over all six HUD circles, then align the red dots with their centres. Size, Height and R adjust the circle outlines and curved bar guides; Search adjusts movement allowance with a pixel readout and optional bounds. While stationary, select Test and return focus to Elite to learn the labels. Use the editor's save or cancel button when finished. Detection uses bar shape and contrast, with no required HUD color." />
+                   Text="Detection only: saved rig locations are never changed. Open Edit Overlay Positions and choose Mining. Move and resize the capture frame over all six HUD circles, then align the red dots with their centres. Size, Height and R adjust the circle outlines and curved bar guides; Gap adjusts bar spacing independently; Search adjusts movement allowance with a pixel readout and optional bounds. While stationary, select Test and return focus to Elite to learn the labels. Use the editor's save or cancel button when finished. Detection uses bar shape and contrast, with no required HUD color." />
         <CheckBox IsChecked="{Binding Mining.Detection.Enabled, Mode=TwoWay}"
                   Content="Observe rig bars while operating the Rhino" />
         <TextBlock Text="{Binding Mining.Detection.SlotsText}" TextWrapping="Wrap" />

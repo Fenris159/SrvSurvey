@@ -47,4 +47,15 @@ internal readonly struct MiningHudGeometry
         return Transform(x * Math.Cos(reference) - y * Math.Sin(reference),
             x * Math.Sin(reference) + y * Math.Cos(reference), radius);
     }
+
+    internal double RingDistance(double x, double y, double radius)
+    {
+        var determinant = xx * yy - xy * yx;
+        var rx = (yy * x - xy * y) / determinant / radius;
+        var ry = (-yx * x + xx * y) / determinant / radius;
+        var reference = MiningDetectionSettings.ReferenceRotationDegrees * Math.PI / 180;
+        var horizontal = rx * Math.Cos(reference) + ry * Math.Sin(reference);
+        var vertical = -rx * Math.Sin(reference) + ry * Math.Cos(reference);
+        return Math.Sqrt(horizontal * horizontal + vertical * vertical / (.65 * .65));
+    }
 }

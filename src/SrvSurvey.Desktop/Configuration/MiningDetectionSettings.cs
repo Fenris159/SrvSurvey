@@ -10,6 +10,7 @@ public sealed record MiningDetectionSettings
     public bool HasSameCalibration(MiningDetectionSettings other) => X == other.X && Y == other.Y
         && Width == other.Width && Height == other.Height && CircleWidth == other.CircleWidth
         && RotationDegrees == other.RotationDegrees && CircleAspectRatio == other.CircleAspectRatio
+        && BarGap == other.BarGap
         && MotionMargin == other.MotionMargin && Markers.SequenceEqual(other.Markers)
         && (ReferenceEquals(LabelTemplates, other.LabelTemplates)
             || LabelTemplates is not null && other.LabelTemplates is not null
@@ -23,6 +24,7 @@ public sealed record MiningDetectionSettings
     public double CircleWidth { get; init; } = 0.12;
     public double RotationDegrees { get; init; } = ReferenceRotationDegrees;
     public double CircleAspectRatio { get; init; } = .65;
+    public double BarGap { get; init; } = .14;
     public double MotionMargin { get; init; } = 0.12;
     public byte[][]? LabelTemplates { get; init; }
     public MiningDetectionPoint[] Markers { get; init; } =
@@ -46,6 +48,7 @@ public sealed record MiningDetectionSettings
             CircleWidth = circleWidth,
             RotationDegrees = Safe(RotationDegrees, defaults.RotationDegrees, -60, 60),
             CircleAspectRatio = Safe(CircleAspectRatio, .65, .3, 1),
+            BarGap = Safe(BarGap, defaults.BarGap, 0, .6),
             MotionMargin = Safe(MotionMargin, defaults.MotionMargin, 0, 120d / GetWorkingWidth(circleWidth)),
             LabelTemplates = LabelTemplates is { Length: 6 } labels && labels.All(p => p is { Length: 224 })
                 ? labels : null,

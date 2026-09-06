@@ -562,6 +562,8 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.Equal(original.RotationDegrees + 2, detection.Settings.RotationDegrees);
         Click("Height+");
         Assert.Equal(original.CircleAspectRatio + .05, detection.Settings.CircleAspectRatio, 6);
+        Click("Gap+");
+        Assert.Equal(original.BarGap + .05, detection.Settings.BarGap, 6);
         Click("Search+");
         Assert.Equal(original.MotionMargin * expected.Width + 8, detection.Settings.MotionMargin * expected.Width, 6);
         Assert.True(calibration.ToolsWindow.GetVisualDescendants().OfType<CheckBox>()
@@ -584,6 +586,8 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             }
         }
         detection.RequestReference();
+        Assert.Contains(calibration.ToolsWindow.GetVisualDescendants().OfType<TextBlock>(),
+            block => block.Text == detection.StatusText);
         Assert.All(host.PreviewWindows, preview => Assert.False(preview.IsVisible));
         detection.StopCalibrationTest();
         Assert.All(host.PreviewWindows, preview => Assert.True(preview.IsVisible));

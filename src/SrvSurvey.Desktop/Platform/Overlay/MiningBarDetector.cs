@@ -32,12 +32,15 @@ public static class MiningBarDetector
         {
             var match = matches[slot];
             var radius = image.Radius * match.Scale;
+            var gap = radius * settings.BarGap;
             var best = 0d;
-            for (var dy = -6; dy <= 6; dy++)
+            for (var adjustment = -5; adjustment <= 5; adjustment++)
                 for (var dx = -2; dx <= 2; dx++)
-                    foreach (var tilt in new[] { -.1, 0, .1 })
+                    foreach (var tilt in new[] { -.1, -.05, 0, .05, .1 })
                         foreach (var scale in new[] { .85, .925, 1, 1.075 })
                         {
+                            var dy = gap + adjustment;
+                            if (!MiningBarShape.IsOutsideRing(dx, dy, radius, scale, geometry, tilt)) continue;
                             var lower = MiningBarShape.Score(image, match.X + dx, match.Y + dy, radius * scale, geometry, tilt, lowerOnly: true);
                             if (lower > best && MiningBarShape.Score(image, match.X + dx, match.Y + dy, radius * scale, geometry, tilt) >= .55)
                                 best = lower;

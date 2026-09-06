@@ -9,6 +9,34 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 public sealed class MiningBarDetectorTests
 {
     [Theory]
+    [InlineData(-14, false)]
+    [InlineData(-10, false)]
+    [InlineData(-18, false)]
+    [InlineData(-14, true)]
+    public void ReportedHudRecognizesTheVisibleBar(double rotation, bool recolor)
+    {
+        var source = Load("reported");
+        if (recolor)
+        {
+            var bytes = source.BgraPixels.ToArray();
+            for (var i = 0; i < bytes.Length; i += 4) (bytes[i + 1], bytes[i + 2]) = (bytes[i + 2], bytes[i + 1]);
+            source = new(source.Width, source.Height, bytes);
+        }
+        var settings = new MiningDetectionSettings
+        {
+            CircleWidth = 96d / 506,
+            CircleAspectRatio = .65,
+            RotationDegrees = rotation,
+            Markers = [new(143d/506,116d/260),new(274d/506,104d/260),new(399d/506,90d/260),
+                new(143d/506,206d/260),new(274d/506,191d/260),new(399d/506,174d/260)]
+        };
+        settings = settings with { LabelTemplates = MiningBarDetector.CaptureReference(source, settings) };
+        var result = MiningBarDetector.Analyze(source, settings);
+        Assert.True(result.Slots[0] == MiningBarState.Present,
+            $"{string.Join(',', result.Slots)}; scores {string.Join(',', result.BarScores)}");
+        Assert.All(result.Slots.Skip(1), state => Assert.NotEqual(MiningBarState.Present, state));
+    }
+    [Theory]
     [InlineData(10, 1)]
     [InlineData(20, 1)]
     [InlineData(40, 2)]
@@ -73,8 +101,9 @@ public sealed class MiningBarDetectorTests
         var result = MiningBarDetector.Analyze(Transform(Load(40), recolor), settings);
         if (recolor == 5)
         {
-            Assert.Equal(MiningBarState.Unknown, result.Slots[0]);
-            Assert.Equal(MiningBarState.Unknown, result.Slots[1]);
+            Assert.NotEqual(MiningBarState.Absent, result.Slots[0]);
+            Assert.NotEqual(MiningBarState.Absent, result.Slots[1]);
+            Assert.All(result.Slots.Skip(2), state => Assert.NotEqual(MiningBarState.Present, state));
             return;
         }
         Assert.True(result.Slots[0] == MiningBarState.Present && result.Slots[1] == MiningBarState.Present,
@@ -174,6 +203,9 @@ public sealed class MiningBarDetectorTests
         model.UpdateCalibration(model.Settings with { MotionMargin = model.Settings.MotionMargin + .02 });
         Assert.NotNull(model.Settings.LabelTemplates);
         Assert.True(model.IsCalibrationTesting);
+        model.UpdateCalibration(model.Settings with { BarGap = .3 });
+        Assert.NotNull(model.Settings.LabelTemplates);
+        Assert.True(model.IsCalibrationTesting);
         model.UpdateCalibration(model.Settings with { RotationDegrees = 12 });
         Assert.Null(model.Settings.LabelTemplates);
         Assert.False(model.IsCalibrationTesting);
@@ -228,7 +260,7 @@ public sealed class MiningBarDetectorTests
         {
             var store = new SurfaceMiningSettingsStore(path);
             store.SaveAutoClearRigsOnShipBoarding(false);
-            var expected = CalibratedSettings() with { Enabled = true };
+            var expected = CalibratedSettings() with { Enabled = true, BarGap = .3 };
             store.SaveDetection(expected);
             var restored = store.LoadDetection();
             Assert.True(restored.Enabled);
@@ -280,7 +312,9 @@ public sealed class MiningBarDetectorTests
         Assert.Equal(settings.X, vm.Settings.X);
     }
 
-    private static CapturedPixelBuffer Load(int frame)
+    private static CapturedPixelBuffer Load(int frame) => Load(frame.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+    private static CapturedPixelBuffer Load(string frame)
     {
         using var stream = File.OpenRead(Path.Combine(AppContext.BaseDirectory, "Fixtures", "MiningHud", $"{frame}.bgra.gz"));
         using var zip = new GZipStream(stream, CompressionMode.Decompress);

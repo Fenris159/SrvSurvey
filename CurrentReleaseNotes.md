@@ -12,6 +12,8 @@ estimates, and Live Horizons tracking.
   allowance, and a live test help check detection. Circle size, oval height and
   rotation are independent of capture-frame size, with unobstructed numbered dots,
   curved bar guides shared with detection, and visible movement-search bounds.
+  Bar-gap controls align the sampling curve independently of circle size; the
+  observer rejects circle-rim matches and displays calibration status directly.
   It compares bar shape and contrast
   without requiring a particular HUD color. This build reports detections only and
   never changes saved rig locations automatically.
