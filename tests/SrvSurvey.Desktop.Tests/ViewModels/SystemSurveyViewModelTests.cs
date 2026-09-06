@@ -861,6 +861,49 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(viewModel.ShouldShowBodyInfo);
     }
 
+    [Theory]
+    [InlineData(GuiFocus.Saa, false)]
+    [InlineData(GuiFocus.ExternalPanel, false)]
+    [InlineData(GuiFocus.ExternalPanel, true)]
+    public void BodyInformationBubbleFilterIsIndependentOfDisabledBiologyPanels(GuiFocus focus, bool atSurface)
+    {
+        var viewModel = CreateViewModel();
+        viewModel.AutoShowBodyInfo = true;
+        viewModel.AutoShowBioSystem = false;
+        viewModel.AutoShowBioStatus = false;
+        viewModel.AutoShowPriorScans = false;
+        viewModel.AutoShowSurfaceRadar = false;
+        viewModel.AutoShowMiniTrack = false;
+        viewModel.HideBodyInfoInBubble = true;
+        viewModel.BodyInfoBubbleSizeLy = 200;
+        viewModel.ShowBodyInfoAtSurface = false;
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[34.03125,11.21875,106.53125]}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""),
+            ],
+            new EliteStatus
+            {
+                GuiFocus = focus,
+                Flags = StatusFlags.InMainShip | (atSurface ? StatusFlags.HasLatLong : StatusFlags.Supercruise),
+                BodyName = "Test 1",
+                Destination = new StatusDestination { System = 42, Body = 1, Name = "Test 1" },
+            });
+
+        Assert.NotNull(viewModel.BodyInformation);
+        Assert.True(viewModel.IsWithinBodyInfoBubble);
+        Assert.False(viewModel.ShouldShowBodyInfo);
+
+        viewModel.HideBodyInfoInBubble = false;
+        Assert.True(viewModel.ShouldShowBodyInfo);
+        Assert.False(viewModel.AutoShowBioSystem);
+        Assert.False(viewModel.AutoShowBioStatus);
+        Assert.False(viewModel.AutoShowPriorScans);
+        Assert.False(viewModel.AutoShowSurfaceRadar);
+        Assert.False(viewModel.AutoShowMiniTrack);
+    }
+
     [Fact]
     public void DssCompletionShowsBodyInformationForCompletedBody()
     {
