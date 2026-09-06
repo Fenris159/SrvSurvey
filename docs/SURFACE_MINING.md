@@ -1,6 +1,6 @@
 # Surface mining
 
-Available in **SrvSurvey-XP 2.1.3.0-rc.44**. The Surface mining overlay provides
+Available in **SrvSurvey-XP 2.1.3.0-rc.44.5**. The Surface mining overlay provides
 Rhino rig locations, vehicle guidance, and cargo capacity during surface mining.
 The same workflow is covered inside the application under **Guides > Surface mining**.
 
@@ -36,9 +36,17 @@ Rig locations are saved separately from biology bookmarks for the current
 Commander and body. Distance and direction update as the player moves.
 The placement calculation accounts for the Rhino's cockpit and deployment offsets.
 
-Returning to your own ship on foot or docking the Rhino automatically clears
-all six saved rigs, matching the game's destruction of deployed rigs. Re-entering
-the Rhino on foot keeps the markers. Taxi and multicrew boarding do not clear them.
+By default, returning to your own ship on foot or docking the Rhino automatically
+clears all six saved rigs, matching the game's destruction of deployed rigs.
+Disable **Clear rigs automatically when boarding your ship** in Mining overlay
+settings to retain your saved markers instead. This preference persists between
+sessions. Re-entering the Rhino on foot keeps the markers. Taxi and multicrew
+boarding do not clear them.
+
+To clear everything on the current body manually, send `---` in game chat.
+This clears all six rigs, named resource and biology bookmarks, and regular
+trackers even when automatic rig clearing is disabled. It does not erase scan
+history or bookmarks on other bodies.
 
 | Cue | Meaning |
 | --- | --- |
@@ -70,7 +78,8 @@ radius. Long lists scroll using overlay interaction mode, preserving room for
 the radar and cargo row.
 
 These use the existing Commander/body surface bookmarks, separate from the six
-rig slots. Boarding your ship clears rigs but preserves resource locations.
+rig slots. Automatic ship-boarding cleanup, when enabled, clears rigs but
+preserves resource locations. The `---` chat command clears both.
 Biology bookmarks and numbered quick trackers do not appear in resource rows.
 
 ## Vehicles and cargo

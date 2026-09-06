@@ -5,12 +5,15 @@ using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
 {
     private readonly SystemSurfaceStore store;
+    private readonly SurfaceMiningSettingsStore? settingsStore;
+    private bool autoClearRigsOnShipBoarding;
     private readonly SemaphoreSlim updateLock = new(1, 1);
     private SystemSurfaceContext? context;
     private SystemSurfaceContext? lastMiningContext;
@@ -22,12 +25,39 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private IReadOnlyList<SurfaceRadarMarkerViewModel> navigation = [];
     private double cargoUsed;
 
-    public SurfaceMiningViewModel(SystemSurfaceStore store)
+    public SurfaceMiningViewModel(SystemSurfaceStore store, SurfaceMiningSettingsStore? settingsStore = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.settingsStore = settingsStore;
+        autoClearRigsOnShipBoarding = settingsStore?.LoadAutoClearRigsOnShipBoarding() ?? true;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public bool AutoClearRigsOnShipBoarding
+    {
+        get => autoClearRigsOnShipBoarding;
+        set
+        {
+            if (autoClearRigsOnShipBoarding == value)
+            {
+                return;
+            }
+
+            try
+            {
+                settingsStore?.SaveAutoClearRigsOnShipBoarding(value);
+                autoClearRigsOnShipBoarding = value;
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException
+                or InvalidOperationException)
+            {
+                StatusText = "Mining settings could not be saved: " + exception.Message;
+            }
+
+            Notify();
+        }
+    }
 
     public IReadOnlyList<SurfaceRadarMarkerViewModel> RadarMarkers { get; private set; } = [];
     public IReadOnlyList<MiningRigViewModel> Rigs { get; private set; } = EmptyRigs();
@@ -137,19 +167,33 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    public async Task<bool> ClearRigsOnShipBoardingAsync(
+    public Task<bool> ClearRigsOnShipBoardingAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         string? frontierId)
     {
-        if (!journalEvents.Any(IsOwnShipBoarding))
-        {
-            return false;
-        }
+        return AutoClearRigsOnShipBoarding && journalEvents.Any(IsOwnShipBoarding)
+            ? ClearRigsAsync(frontierId, shipBoarding: true)
+            : Task.FromResult(false);
+    }
 
+    public Task<bool> ClearRigsFromChatAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        string? frontierId)
+    {
+        return journalEvents.Any(entry => entry.EventName == "SendText"
+                && entry.Payload.TryGetProperty("Message", out var message)
+                && message.ValueKind == JsonValueKind.String
+                && message.GetString()?.Trim() == "---")
+            ? ClearRigsAsync(frontierId, shipBoarding: false)
+            : Task.FromResult(false);
+    }
+
+    private async Task<bool> ClearRigsAsync(string? frontierId, bool shipBoarding)
+    {
         await updateLock.WaitAsync().ConfigureAwait(true);
         try
         {
-            var miningContext = lastMiningContext ?? context;
+            var miningContext = shipBoarding ? lastMiningContext ?? context : context;
             if (miningContext is null || !string.Equals(miningContext.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
@@ -161,8 +205,14 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 surface = (await store.LoadBodyAsync(miningContext).ConfigureAwait(true)).Snapshot;
             }
 
-            lastMiningContext = null;
-            StatusText = "Rig locations cleared after returning to your ship.";
+            if (lastMiningContext == miningContext)
+            {
+                lastMiningContext = null;
+            }
+
+            StatusText = shipBoarding
+                ? "Rig locations cleared after returning to your ship."
+                : "Rig locations cleared by the --- chat command.";
             Recalculate();
             return true;
         }

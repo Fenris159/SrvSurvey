@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SrvSurvey.Desktop</RootNamespace>
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
-    <Version>2.1.3.0-rc.44</Version>
+    <Version>2.1.3.0-rc.44.5</Version>
     <FileVersion>2.1.3.0</FileVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -36,6 +36,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\chat-commands-guide.json"
+                      LogicalName="SrvSurvey.Desktop.Resources.chat-commands-guide.json" />
     <EmbeddedResource Include="Resources\baseline-localization.json"
                       LogicalName="SrvSurvey.Desktop.Resources.baseline-localization.json" />
     <EmbeddedResource Include="Resources\avalonia-localization.json"

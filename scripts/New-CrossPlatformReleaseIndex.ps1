@@ -4,7 +4,7 @@ param(
     [string] $PackageDirectory,
 
     [Parameter(Mandatory)]
-    [ValidatePattern('^\d+\.\d+\.\d+(\.\d+)?(-rc\.[1-9]\d*)?$')]
+    [ValidatePattern('^\d+\.\d+\.\d+(\.\d+)?(-rc\.[1-9]\d*(\.(0|[1-9]\d*))?)?$')]
     [string] $Version,
 
     [Parameter(Mandatory)]

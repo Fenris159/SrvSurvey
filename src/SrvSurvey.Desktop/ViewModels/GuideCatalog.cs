@@ -1,3 +1,4 @@
+using System.Text.Json;
 using SrvSurvey.Desktop.Presentation;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -11,6 +12,8 @@ public static class GuideCatalog
     private const string HumanSettlementMap = "Human settlement map";
     private const string HumanSettlementQuestMap = "Human settlement quest map";
     private const string HumanSettlementConflictZoneMap = "Human settlement conflict-zone map";
+
+    private static readonly Lazy<GuideSectionViewModel[]> ChatCommandSections = new(LoadChatCommandSections);
 
     public static IReadOnlyList<GuideCategoryViewModel> Create()
     {
@@ -240,7 +243,8 @@ public static class GuideCatalog
                             "Input settings lists Tracker/Mining Rig (1) through Tracker/Mining Rig (6), followed by regular Tracker (7) and Tracker (8) bindings. Defaults are Ctrl+Alt+F1 through Ctrl+Alt+F8. Outside Rhino mining these toggle surface trackers; slots 7 and 8 do not place rigs.",
                             "Edit the first six shared bindings in Settings > Input or in Mining's overlay settings, where they retain the Mining rig labels. Both locations edit the same bindings, including any replacement keyboard or controller chords.",
                             "Locations are saved for the current Commander and body separately from biology bookmarks. Placement accounts for the Rhino cockpit and deployment offsets and requires being aboard the Rhino.",
-                            "Returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
+                            "By default, returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Turn off Clear rigs automatically when boarding your ship in Mining overlay settings to keep your saved markers; this preference persists between sessions. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
+                            "Send --- in game chat to clear all rigs and surface bookmarks on the current body, including resource, biology, and regular tracker bookmarks. This works even when automatic rig clearing is disabled and does not erase scan history or bookmarks on other bodies.",
                         ]),
                     Section(
                         "Rig circles and distance cues",
@@ -839,8 +843,14 @@ public static class GuideCatalog
                         ]),
                 ]),
             Category(
-                "icons",
+                "chat-commands",
                 "14",
+                "Chat Commands",
+                "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
+                ChatCommandSections.Value),
+            Category(
+                "icons",
+                "15",
                 "Overlay icon glossary",
                 "A visual reference for route and body artwork, text symbols, biology reward PIPs, surface-radar markers, Guardian points, and human-settlement map icons.",
                 [
@@ -856,6 +866,15 @@ public static class GuideCatalog
                 ],
                 CreateIconGlossary()),
         ];
+    }
+
+    private static GuideSectionViewModel[] LoadChatCommandSections()
+    {
+        using var stream = typeof(GuideCatalog).Assembly.GetManifestResourceStream(
+            "SrvSurvey.Desktop.Resources.chat-commands-guide.json")
+            ?? throw new InvalidOperationException("The chat command guide resource is missing.");
+        return JsonSerializer.Deserialize<GuideSectionViewModel[]>(stream)
+            ?? throw new InvalidOperationException("The chat command guide resource is empty.");
     }
 
     private static IReadOnlyList<GuideIconViewModel> CreateIconGlossary()

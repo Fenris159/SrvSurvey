@@ -18,6 +18,10 @@
 
     <Border x:Name="MiningShortcutsCard" Classes="card raised">
       <StackPanel Spacing="12">
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Automatically clear saved rigs when you board your own ship or dock the Rhino. Send --- in game chat to clear all bookmarks and rigs on the current body at any time." />
+        <CheckBox IsChecked="{Binding Mining.AutoClearRigsOnShipBoarding, Mode=TwoWay}"
+                  Content="Clear rigs automatically when boarding your ship" />
         <TextBlock Classes="card-title" Text="Rig location shortcuts" />
         <TextBlock Classes="muted" TextWrapping="Wrap"
                    Text="In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears." />

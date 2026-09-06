@@ -24,9 +24,11 @@ changes are in `c9e82b8db20eebece016735b1b6e8f281229eca6`.
 - Rig bookmarks are stored under the application's `mining` data directory,
   using the existing Commander/system/body persistence format. They are
   independent of biological bookmarks and survive restart.
-  Returning to the own ship through Embark or DockSRV clears the mining body's
-  saved rigs before live body context can disappear. Rhino re-entry, taxi, and
-  multicrew boarding retain them; persisted bootstrap events are not reapplied.
+  By default, returning to the own ship through Embark or DockSRV clears the
+  mining body's saved rigs before live body context can disappear; Mining overlay
+  settings can disable this cleanup. Rhino re-entry, taxi, and multicrew boarding
+  retain them; persisted bootstrap events are not reapplied. The `---` SendText
+  command clears current-body rigs regardless of the automatic-cleanup preference.
 - Named ground resources reuse the existing surface-bookmark chat commands
   (`+name`, `-name`, `--name`) and Commander/body persistence. As in legacy
   `PlotTrackers`, every saved location has a bearing/distance and the near

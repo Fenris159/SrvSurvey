@@ -212,6 +212,71 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.Equal(expectedCleared ? 0 : 6, reopened.Rigs.Count(rig => rig.IsSet));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task BoardingClearPreferencePersistsAndControlsRigCleanup(bool enabled)
+    {
+        var store = new SystemSurfaceStore(root);
+        var settings = new SrvSurvey.Desktop.Configuration.SurfaceMiningSettingsStore(Path.Combine(root, "ui.json"));
+        using (var mining = new SurfaceMiningViewModel(store, settings))
+        {
+            Assert.True(mining.AutoClearRigsOnShipBoarding);
+            mining.AutoClearRigsOnShipBoarding = enabled;
+        }
+
+        using var reopened = new SurfaceMiningViewModel(store, settings);
+        Assert.Equal(enabled, reopened.AutoClearRigsOnShipBoarding);
+        await reopened.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        await reopened.ToggleRigAsync(1);
+        Assert.True(JournalEventEnvelope.TryParse("""{"event":"DockSRV"}""", out var boarding, out _));
+        Assert.Equal(enabled, await reopened.ClearRigsOnShipBoardingAsync([boarding!], Session.FrontierId));
+        using var reloaded = new SurfaceMiningViewModel(store, settings);
+        await reloaded.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        Assert.Equal(!enabled, reloaded.Rigs[0].IsSet);
+    }
+
+    [Theory]
+    [InlineData("""{"event":"SendText","Message":"---"}""", true)]
+    [InlineData("""{"event":"SendText","Message":"  ---  "}""", true)]
+    [InlineData("""{"event":"SendText","Message":"--helium"}""", false)]
+    [InlineData("""{"event":"SendText","Message":"----"}""", false)]
+    [InlineData("""{"event":"ReceiveText","Message":"---"}""", false)]
+    [InlineData("""{"event":"SendText","Message":123}""", false)]
+    public async Task ChatClearIsExplicitAndIndependentOfBoardingPreference(string json, bool expectedCleared)
+    {
+        var store = new SystemSurfaceStore(root);
+        using var mining = new SurfaceMiningViewModel(store) { AutoClearRigsOnShipBoarding = false };
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        for (var number = 1; number <= 6; number++)
+        {
+            await mining.ToggleRigAsync(number);
+        }
+
+        Assert.True(JournalEventEnvelope.TryParse(json, out var command, out _));
+        Assert.Equal(expectedCleared, await mining.ClearRigsFromChatAsync([command!], Session.FrontierId));
+        using var reopened = new SurfaceMiningViewModel(store);
+        await reopened.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        Assert.Equal(expectedCleared ? 0 : 6, reopened.Rigs.Count(rig => rig.IsSet));
+    }
+
+    [Fact]
+    public async Task ChatClearCannotUseAnotherCommanderOrPreviousBodyContext()
+    {
+        var store = new SystemSurfaceStore(root);
+        using var mining = new SurfaceMiningViewModel(store);
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        await mining.ToggleRigAsync(1);
+        Assert.True(JournalEventEnvelope.TryParse("""{"event":"SendText","Message":"---"}""", out var command, out _));
+        Assert.False(await mining.ClearRigsFromChatAsync([command!], "F456"));
+        Assert.True(mining.Rigs[0].IsSet);
+        await mining.ApplyUpdateAsync(null, Snapshot(), new EliteStatus(), null);
+        Assert.False(await mining.ClearRigsFromChatAsync([command!], Session.FrontierId));
+        using var reopened = new SurfaceMiningViewModel(store);
+        await reopened.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        Assert.True(reopened.Rigs[0].IsSet);
+    }
+
     [Fact]
     public async Task ShipBoardingCannotClearAnotherCommandersRigLocations()
     {

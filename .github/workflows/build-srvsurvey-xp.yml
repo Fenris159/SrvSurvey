@@ -15,7 +15,7 @@ on:
         type: string
         default: SrvSurvey-Avalonia
       release_channel:
-        description: Stable requires a base project Version; development requires -rc.N and creates a pre-release
+        description: Stable requires a base project Version; development requires -rc.N or -rc.N.N and creates a pre-release
         required: true
         type: choice
         options:
@@ -58,7 +58,7 @@ jobs:
           $project = [xml](Get-Content src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj)
           $projectVersionText = ([string]$project.Project.PropertyGroup.Version).Trim()
           $fileVersionText = ([string]$project.Project.PropertyGroup.FileVersion).Trim()
-          if ($projectVersionText -notmatch '^\d+\.\d+\.\d+(\.\d+)?(-rc\.[1-9]\d*)?$') {
+          if ($projectVersionText -notmatch '^\d+\.\d+\.\d+(\.\d+)?(-rc\.[1-9]\d*(\.(0|[1-9]\d*))?)?$') {
             throw "Project Version '$projectVersionText' is not a supported XP release version."
           }
 
@@ -77,13 +77,13 @@ jobs:
             throw "Release channel must be stable or development."
           }
 
-          $isPrerelease = $projectVersionText -match '-rc\.[1-9]\d*$'
+          $isPrerelease = $projectVersionText -match '-rc\.[1-9]\d*(\.(0|[1-9]\d*))?$'
           if ($isRelease -and $channel -eq "development" -and -not $isPrerelease) {
-            throw "Development releases require the project Version to end in -rc.N."
+            throw "Development releases require the project Version to end in -rc.N or -rc.N.N."
           }
 
           if ($isRelease -and $channel -eq "stable" -and $isPrerelease) {
-            throw "Stable releases require the project Version without an -rc.N suffix."
+            throw "Stable releases require the project Version without a release-candidate suffix."
           }
 
           $packageVersion = $projectVersionText
