@@ -9,6 +9,8 @@ estimates, and Live Horizons tracking.
 
 - Adds a theme-aware Surface mining overlay with a radar, six saved rig circles
   and direction indicators, and an SRV cargo-capacity row.
+- Keeps the live Surface mining panel the same size as its editor preview at
+  the same content and scale, including when resource rows appear or disappear.
 - Splits vehicle guidance into Ship and Rhino columns. On foot, the Rhino
   chevron points back to the parked vehicle; aboard, an X marks it untracked.
 - Accounts for Rhino cockpit and deployment offsets when marking rigs, with
