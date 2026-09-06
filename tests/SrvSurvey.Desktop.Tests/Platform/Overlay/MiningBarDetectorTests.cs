@@ -8,6 +8,64 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 
 public sealed class MiningBarDetectorTests
 {
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(-8, -6)]
+    [InlineData(8, 6)]
+    public void EmptyNightVisionHudReacquiresCirclesAfterTheLastBarIsRetrieved(double oldX, double oldY)
+    {
+        var settings = EmptyNightVisionSettings();
+        var previous = new MiningBarAnalysis([MiningBarState.Present, MiningBarState.Absent,
+            MiningBarState.Absent, MiningBarState.Absent, MiningBarState.Absent, MiningBarState.Absent], oldX, oldY)
+        { HasAnchor = true, AnchorSlots = 1 };
+        var result = MiningBarDetector.Analyze(Load("empty-night-vision"), settings, previous);
+        Assert.All(result.Slots, state => Assert.Equal(MiningBarState.Absent, state));
+        var clock = new TestClock();
+        var confirmation = new MiningBarConfirmation(clock);
+        confirmation.Apply(previous);
+        confirmation.Apply(result);
+        Assert.NotEqual(MiningBarState.Absent, confirmation.States[0]);
+        for (var i = 0; i < 12; i++)
+        {
+            clock.Advance(.4);
+            result = MiningBarDetector.Analyze(Load("empty-night-vision"), settings, result);
+            confirmation.Apply(result);
+        }
+        Assert.All(confirmation.States, state => Assert.Equal(MiningBarState.Absent, state));
+    }
+
+    [Fact]
+    public void OneVisibleEmptyCircleCannotDeclareTheWholeGridEmpty()
+    {
+        var source = Load("empty-night-vision");
+        var bytes = source.BgraPixels.ToArray();
+        for (var y = 0; y < source.Height; y++) for (var x = 0; x < source.Width; x++)
+            {
+                if (x < 150 && y < 120) continue;
+                var p = (y * source.Width + x) * 4;
+                bytes[p] = bytes[p + 1] = bytes[p + 2] = 0;
+            }
+        var result = MiningBarDetector.Analyze(new CapturedPixelBuffer(source.Width, source.Height, bytes), EmptyNightVisionSettings());
+        Assert.All(result.Slots, state => Assert.Equal(MiningBarState.Unknown, state));
+    }
+
+    [Fact]
+    public void EmptyGridCannotShiftItsIdentityByAnEntireRow()
+    {
+        var previous = new MiningBarAnalysis(new MiningBarState[6], 0, 40) { HasAnchor = true, AnchorSlots = 1 };
+        var result = MiningBarDetector.Analyze(Load("empty-night-vision"), EmptyNightVisionSettings(), previous);
+        Assert.All(result.Slots, state => Assert.Equal(MiningBarState.Unknown, state));
+    }
+
+    private static MiningDetectionSettings EmptyNightVisionSettings() => new()
+    {
+        CircleWidth = 94d / 420,
+        RotationDegrees = -14,
+        CircleAspectRatio = .65,
+        Markers = [new(87d/420,75d/230),new(220d/420,59d/230),new(344d/420,43d/230),
+            new(87d/420,162d/230),new(220d/420,148d/230),new(344d/420,130d/230)]
+    };
+
     [Fact]
     public void OutOfRangeRigOneCannotFallBackToAnotherRow()
     {

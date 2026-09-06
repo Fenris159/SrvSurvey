@@ -7,12 +7,54 @@ internal static class MiningCircleMask
 {
     internal readonly record struct Rim(double X, double Y, double Radius, double Confidence);
 
+    internal static (double X, double Y)? LocateGrid(IFssPixelSource image,
+        (double X, double Y)[] centers, double radius, MiningHudGeometry geometry,
+        double offsetX, double offsetY, double allowance)
+    {
+        var separation = centers.SelectMany((a, i) => centers.Skip(i + 1)
+            .Select(b => Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2)))).Min();
+        // Stay well inside the distance to the next rig: empty circles must not renumber rows.
+        var steps = (int)(Math.Min(radius * .7, separation * .35) / 2);
+        var directions = Directions(geometry);
+        (double X, double Y)? best = null;
+        var bestCount = 0;
+        var bestScore = 0d;
+        for (var sy = -steps; sy <= steps; sy++)
+            for (var sx = -steps; sx <= steps; sx++)
+            {
+                var x = offsetX + sx * 2;
+                var y = offsetY + sy * 2;
+                if (Math.Abs(x) > allowance || Math.Abs(y) > allowance) continue;
+                var top = 0; var bottom = 0; var total = 0d;
+                for (var i = 0; i < centers.Length; i++)
+                {
+                    var confidence = 0d;
+                    for (var scale = 0; scale <= 4; scale++)
+                        confidence = Math.Max(confidence, Score(image, centers[i].X + x, centers[i].Y + y,
+                            radius * (.9 + scale * .05), directions));
+                    if (confidence < 8) continue;
+                    if (i < 3) top++; else bottom++;
+                    total += Math.Min(30, confidence);
+                }
+                if (top < 2 || bottom < 2) continue;
+                var count = top + bottom;
+                total -= .01 * (sx * sx + sy * sy);
+                if (count < bestCount || count == bestCount && total <= bestScore) continue;
+                bestCount = count;
+                bestScore = total;
+                best = (x, y);
+            }
+        return best;
+    }
+
+    private static Vector[] Directions(MiningHudGeometry geometry) => Enumerable.Range(0, 19)
+        .Select(i => geometry.RingPoint(-Math.PI + i * Math.PI / 18, 1)).ToArray();
+
     internal static Rim Locate(IFssPixelSource image, double x, double y, double radius, MiningHudGeometry geometry)
     {
         var best = new Rim(x, y, radius, 0);
         // The lower arc is deliberately excluded: that is where deployment bars live.
-        var directions = Enumerable.Range(0, 19)
-            .Select(i => geometry.RingPoint(-Math.PI + i * Math.PI / 18, 1)).ToArray();
+        var directions = Directions(geometry);
         for (var dy = -2; dy <= 2; dy++)
             for (var dx = -2; dx <= 2; dx++)
                 for (var step = 0; step <= 16; step++)

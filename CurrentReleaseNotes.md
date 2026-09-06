@@ -24,6 +24,9 @@ estimates, and Live Horizons tracking.
   changes pause while surface coordinates or heading change, and resume after one
   second of stillness. HUD movement or reacquisition also requires one steady second.
   Pending removal timers restart after movement; saved locations remain unchanged.
+  After the last colored bar disappears, detection reacquires the empty circle grid
+  to avoid getting stuck at an old HUD position. Several matching circles in both
+  rows are required; incomplete or ambiguous views remain unknown.
   While stationary, enabled HUD tracking saves a rig location immediately when its bar is detected
   and clears only that rig after three continuous seconds of empty readings. Unknown
   readings or interrupted capture cancel pending removal; repeated detections preserve

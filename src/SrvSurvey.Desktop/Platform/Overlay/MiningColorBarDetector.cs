@@ -80,6 +80,18 @@ internal static class MiningColorBarDetector
                 AnchorSlots = previous?.AnchorSlots ?? 0
             };
         }
+        if (candidates.Count == 0)
+        {
+            // With the last bar gone, reacquire the empty grid rather than checking stale centers.
+            var grid = MiningCircleMask.LocateGrid(image, centers, radius, geometry, offsetX, offsetY, allowance);
+            if (grid is null)
+                return new(states, offsetX, offsetY)
+                {
+                    HasAnchor = previous?.HasAnchor == true,
+                    AnchorSlots = previous?.AnchorSlots ?? 0
+                };
+            (offsetX, offsetY) = grid.Value;
+        }
         for (var i = 0; i < 6; i++)
         {
             if (assignments.TryGetValue(i, out var candidate))
