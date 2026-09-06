@@ -265,11 +265,20 @@ public static class GuideCatalog
                         ]),
                     Section(
                         "Rig circles and distance cues",
-                        "The radar shows 70-meter rig circles at the legacy mining zoom. Chevrons turn with your heading and show distance to each saved location.",
+                        "The radar shows 78-meter-radius rig circles at the legacy mining zoom. Chevrons turn with your heading and show distance to each saved location.",
                         [],
                         [
                             "COLLECT uses cyan when within 5 meters of a saved rig. TOO CLOSE uses red inside the 78-meter deployment exclusion distance. TRACKED means outside that distance; NOT SET means the slot has no saved location.",
                             "Colors follow the selected theme, while the text labels keep their meaning. On foot, distances use your position without the Rhino cockpit offset.",
+                        ]),
+                    Section(
+                        "Rig range warning",
+                        "Aboard the Rhino, the Mining warning appears beyond 4 km from the farthest saved rig and clears when every rig is back within range.",
+                        [],
+                        [
+                            "TOO FAR FROM RIGS uses the high-risk flight warning colors and the reminder: Moving beyond 4.5Km will Destroy Rigs. Only saved rig bookmarks count; resource bookmarks do not.",
+                            "Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
+                            "The warning is hidden when you leave the Rhino. Flight warnings are also hidden on foot and in ground vehicles, with the Nomad retaining its flight warnings.",
                         ]),
                     Section(
                         "Ground resource bookmarks",

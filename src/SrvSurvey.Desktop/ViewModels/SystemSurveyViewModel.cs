@@ -1359,6 +1359,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             var body = ResolveNearbyLocalBody();
             if (!AutoShowFlightWarnings
                 || status is null
+                || status.OnFoot
+                || (status.InSrv && !EliteSrvTypes.IsNomad(activeSrvType))
                 || body?.IsLandable != true
                 || body.SurfaceGravity / 10d < HighGravityWarningLevel)
             {

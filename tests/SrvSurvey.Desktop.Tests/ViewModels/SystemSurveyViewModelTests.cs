@@ -319,6 +319,25 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.False(viewModel.ShouldShowSystemStatus);
     }
 
+    [Theory]
+    [InlineData("testbuggy", false)]
+    [InlineData("combat_multicrew_srv_01", false)]
+    [InlineData("mev_rhino", false)]
+    [InlineData("lander01", true)]
+    public void FlightWarningExcludesGroundVehiclesButRetainsNomad(string srvType, bool expected)
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+             Parse(BodyInformationScan)],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+                BodyName = "Test 1",
+            }, nextActiveSrvType: srvType);
+        Assert.Equal(expected, viewModel.ShouldShowFlightWarning);
+    }
+
     [Fact]
     public void FlightWarningMatchesLegacyGravityBodyAndModeRules()
     {

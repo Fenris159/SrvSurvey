@@ -10,6 +10,7 @@ public sealed class SurfaceMiningOverlayCoordinator : IDisposable
 
     private readonly SurfaceMiningViewModel surfaceMining;
     private readonly HostedOverlayWindow hostedWindow;
+    private readonly HostedOverlayWindow warningWindow;
     private SurfaceMiningOverlayViewModel? overlayViewModel;
     private bool isSuppressed;
     private bool disposed;
@@ -32,6 +33,13 @@ public sealed class SurfaceMiningOverlayCoordinator : IDisposable
                         windowSize),
                 preparation => overlayViewModel?.ApplyPreparation(
                     preparation)));
+        warningWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotMiningWarning",
+                capabilities => new MiningWarningOverlayWindow(GetOrCreateOverlayViewModel(capabilities)),
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopCenter(gameBounds, windowSize),
+                preparation => overlayViewModel?.ApplyPreparation(preparation)));
+        warningWindow.VisibilityChanged += OnHostedVisibilityChanged;
         hostedWindow.VisibilityChanged += OnHostedVisibilityChanged;
         surfaceMining.PropertyChanged += OnSurfaceMiningPropertyChanged;
         SynchronizeIntent();
@@ -40,6 +48,8 @@ public sealed class SurfaceMiningOverlayCoordinator : IDisposable
     public event EventHandler? VisibilityChanged;
 
     public bool IsVisible => hostedWindow.IsVisible;
+
+    public bool IsWarningVisible => warningWindow.IsVisible;
 
     public bool IsSuppressed => isSuppressed;
 
@@ -65,13 +75,16 @@ public sealed class SurfaceMiningOverlayCoordinator : IDisposable
         surfaceMining.PropertyChanged -= OnSurfaceMiningPropertyChanged;
         hostedWindow.VisibilityChanged -= OnHostedVisibilityChanged;
         hostedWindow.Dispose();
+        warningWindow.VisibilityChanged -= OnHostedVisibilityChanged;
+        warningWindow.Dispose();
     }
 
     private void OnSurfaceMiningPropertyChanged(
         object? sender,
         PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is null or nameof(SurfaceMiningViewModel.ShouldShow))
+        if (eventArgs.PropertyName is null or nameof(SurfaceMiningViewModel.ShouldShow)
+            or nameof(SurfaceMiningViewModel.ShouldShowRigWarning))
         {
             SynchronizeIntent();
         }
@@ -93,6 +106,7 @@ public sealed class SurfaceMiningOverlayCoordinator : IDisposable
         }
 
         hostedWindow.Reconcile(!isSuppressed && surfaceMining.ShouldShow);
+        warningWindow.Reconcile(!isSuppressed && surfaceMining.ShouldShowRigWarning);
     }
 
     private void OnHostedVisibilityChanged(object? sender, EventArgs eventArgs)

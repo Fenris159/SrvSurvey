@@ -31,7 +31,10 @@ public sealed class MainWindowViewModelTests
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "mining");
         Assert.True(viewModel.IsMiningSelected);
         Assert.True(viewModel.IsActivitiesNavigationExpanded);
-        var panel = Assert.Single(viewModel.OverlayPanelVisibility.ForCategory(OverlaySettingsCategory.Mining));
+        var panels = viewModel.OverlayPanelVisibility.ForCategory(OverlaySettingsCategory.Mining);
+        Assert.Equal(2, panels.Count);
+        Assert.Contains(panels, item => item.PlotterName == "PlotMiningWarning");
+        var panel = Assert.Single(panels, item => item.PlotterName == "PlotSurfaceMining");
         Assert.Equal("PlotSurfaceMining", panel.PlotterName);
         Assert.Same(viewModel.InputSettings.Bindings.Single(binding =>
             binding.Definition.OverlayPlotterName == "PlotSurfaceMining"), panel.Shortcut);

@@ -430,7 +430,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         try
         {
             Assert.True(viewModel.Begin());
-            var preview = Assert.Single(host.PreviewWindows);
+            var preview = Assert.Single(host.PreviewWindows, candidate => candidate.Definition.Name == "PlotSurfaceMining");
             using var previewFrame = preview.CaptureRenderedFrame();
             Assert.Equal(runtimeWindow.Position, preview.GetPanelScreenOrigin(preview.RenderScaling));
             viewModel.OpenOverlaySettings("PlotSurfaceMining");
@@ -452,7 +452,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             Assert.Equal(placedTopLeft, store.Load().GetPosition("PlotSurfaceMining", hostBounds, runtimeSize));
 
             Assert.True(viewModel.Begin());
-            preview = Assert.Single(host.PreviewWindows);
+            preview = Assert.Single(host.PreviewWindows, candidate => candidate.Definition.Name == "PlotSurfaceMining");
             Assert.Equal(placedTopLeft, preview.GetPanelScreenOrigin(preview.RenderScaling));
             viewModel.Cancel();
         }

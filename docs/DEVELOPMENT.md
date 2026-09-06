@@ -39,7 +39,7 @@ XWayland startup.
   production consumer and event-specific assertions.
 - Network coverage inventories all runtime surfaces and every `HttpClient`
   owner, including bounded streaming requirements.
-- Overlay coverage inventories 32 contracts, including 30 positionable panels, and requires
+- Overlay coverage inventories 33 contracts, including 31 positionable panels, and requires
   production markup plus assertion evidence.
 - Profile import remains backup-first, hash-verified, staged, and recoverable.
   Compatibility code and tests are part of the converted product, not a build

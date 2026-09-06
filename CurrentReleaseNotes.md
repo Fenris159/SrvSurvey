@@ -6,6 +6,16 @@ summarized below.
 
 ## New in RC45
 
+- Rig radar circles now have a 78-meter radius, matching restricted placement
+  spacing. Resource circles retain their 70-meter radius.
+- Adds a Mining rig range warning using the Flight Warning high-risk style.
+  Aboard the Rhino, it appears beyond 4 km from the farthest saved rig and clears
+  when all rigs return within range. It warns that moving beyond 4.5 km destroys
+  rigs, copies the saved Flight Warning placement initially, and has independent
+  Mining visibility, shortcut, and position controls.
+- Hides flight warnings on foot and in ground vehicles, while retaining them
+  aboard the Nomad and in normal ship/fighter flight.
+
 - Adds opt-in, experimental detection of the Rhino's six deployment bars on
   Windows. A movable Mining calibration frame in the overlay editor provides
   independent circle centres, diameter, oval height, rotation, bar gap, and

@@ -47,6 +47,10 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     internal bool IsDetectionPositionSteady => CanDetectRigs && detectionStillSince is { } since
         && detectionTime.GetElapsedTime(since, detectionTime.GetTimestamp()) >= TimeSpan.FromSeconds(1);
     internal const string DetectionMovementMessage = "Rhino moving — tracker changes paused until position and heading are steady for one second.";
+    public bool ShouldShowRigWarning => ShouldShow && isRhino && status?.InSrv == true
+        && status.OnFoot == false
+        && Rigs.Any(rig => rig.Marker is { DistanceMeters: > SurfaceMiningGeometry.RigWarningDistanceMeters });
+
     // NoFocus also includes free head-look. This only permits analysis; the image detector
     // must independently locate the HUD before reporting a present or absent bar.
     public bool CanDetectRigs => ShouldShow && isRhino && status?.InSrv == true
@@ -425,8 +429,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 DistanceMeters = marker.DistanceMeters,
                 BearingDegrees = marker.BearingDegrees,
                 RelativeBearingDegrees = marker.RelativeBearingDegrees,
-                RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
-                IsInsideRadius = marker.DistanceMeters < SurfaceMiningGeometry.RigRadiusMeters,
+                RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
+                IsInsideRadius = marker.DistanceMeters < SurfaceMiningGeometry.ResourceRadiusMeters,
             }).ToArray();
 
     private static bool SameMarkers(IReadOnlyList<SurfaceRadarMarkerViewModel> first,

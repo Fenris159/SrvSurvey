@@ -1,0 +1,28 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SrvSurvey.Desktop"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.MiningWarningOverlayWindow"
+        x:DataType="vm:SurfaceMiningOverlayViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="300"
+        d:DesignHeight="100"
+        MinWidth="300"
+        MinHeight="1"
+        SizeToContent="WidthAndHeight"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="SrvSurvey mining rig range warning overlay">
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:MiningWarningOverlayPresentation />
+  </Border>
+</Window>

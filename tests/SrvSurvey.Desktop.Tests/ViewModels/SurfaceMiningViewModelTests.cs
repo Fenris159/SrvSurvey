@@ -172,6 +172,55 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.False(mining.HasResources);
     }
 
+    [Theory]
+    [InlineData(3999, false)]
+    [InlineData(4001, true)]
+    [InlineData(4500, true)]
+    public async Task RigRangeWarningUsesFarthestRigAndClearsOnReturn(double distance, bool expected)
+    {
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        Assert.False(mining.ShouldShowRigWarning);
+        await mining.ToggleRigAsync(1);
+        // The saved rig is 7 m behind the cockpit; vehicle centre is 4 m behind.
+        var moved = Status() with { Latitude = (distance - 3) / 1_000_000 * 180 / Math.PI };
+        await mining.ApplyUpdateAsync(Session, Snapshot(), moved, "mev_rhino");
+        await mining.ToggleRigAsync(2);
+        Assert.InRange(mining.Rigs[0].Marker!.DistanceMeters, distance - .01, distance + .01);
+        Assert.True(mining.Rigs[1].CanCollect);
+        Assert.Equal(expected, mining.ShouldShowRigWarning);
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status() with { Latitude = moved.Latitude / 2 }, "mev_rhino");
+        Assert.False(mining.ShouldShowRigWarning);
+        await mining.ApplyUpdateAsync(Session, Snapshot(), moved, "mev_rhino");
+        await mining.ToggleRigAsync(1);
+        Assert.False(mining.ShouldShowRigWarning);
+    }
+
+    [Theory]
+    [InlineData("mev_rhino", true, false, true)]
+    [InlineData("testbuggy", true, false, false)]
+    [InlineData("combat_multicrew_srv_01", true, false, false)]
+    [InlineData("lander01", true, false, false)]
+    [InlineData("mev_rhino", false, true, false)]
+    [InlineData("mev_rhino", true, true, false)]
+    [InlineData("mev_rhino", false, false, false)]
+    public async Task RigRangeWarningIsExclusiveToAboardRhino(string srvType, bool inSrv, bool onFoot, bool expected)
+    {
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        await mining.ToggleRigAsync(1);
+        var moved = Status() with
+        {
+            Latitude = .3,
+            Flags = StatusFlags.HasLatLong | (inSrv ? StatusFlags.InSrv : StatusFlags.InMainShip),
+            Flags2 = onFoot ? StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet : 0,
+        };
+        await mining.ApplyUpdateAsync(Session, Snapshot(), moved, srvType);
+        Assert.Equal(expected, mining.ShouldShowRigWarning);
+        await mining.ApplyUpdateAsync(null, Snapshot(), moved, srvType);
+        Assert.False(mining.ShouldShowRigWarning);
+    }
+
     [Fact]
     public async Task RigShortcutPersistsOffsetLocationAndTogglesOnlyItsSlot()
     {
@@ -187,7 +236,7 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.True(rig.CanCollect);
         Assert.InRange(rig.Marker!.DistanceMeters, 2.99, 3.01);
         Assert.InRange(SurfaceNavigation.GetDistance(new(0, 0), rig.Marker.Location, 1_000_000), 6.99, 7.01);
-        Assert.Equal(70, rig.Marker.RadiusMeters);
+        Assert.Equal(78, rig.Marker.RadiusMeters);
         var rows = mining.Rigs;
         await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
         Assert.Same(rows, mining.Rigs);

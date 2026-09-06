@@ -56,7 +56,7 @@ history or bookmarks on other bodies.
 | NOT SET | No saved location for this rig slot. |
 
 Colors follow the overlay theme; text labels retain their meaning. The radar
-uses 70-meter rig circles and the legacy mining zoom as its default.
+uses 78-meter-radius rig circles and the legacy mining zoom as its default.
 
 ## Experimental automatic rig tracking (Windows)
 
@@ -93,6 +93,18 @@ changing lighting or HUD movement.
 Only calibration and the selected color are saved. Captures are processed in
 memory and discarded; audio is not captured. Resource deposits remain manually
 bookmarked, as described below.
+
+## Rig range warning
+
+Mining overlay settings includes **Mining rig range warning**, with its own
+show/hide toggle and optional shortcut. Its initial placement copies your saved
+Flight Warning placement; move it independently in the overlay editor afterward.
+
+While aboard the Rhino, moving more than **4 km from any tracked rig** displays
+**TOO FAR FROM RIGS**, with the reminder **Moving beyond 4.5Km will Destroy Rigs**.
+The warning uses the farthest saved rig, even when another rig is nearby. It
+clears when every tracked rig is back within 4 km or when you leave the Rhino.
+It depends on saved rig bookmarks; it does not detect untracked rigs in the game.
 
 ## Ground resources
 

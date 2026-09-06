@@ -121,7 +121,7 @@ internal static class OverlayEditorPreviewCatalog
             "PlotFloatie" => CreateNotificationPreview(),
             "PlotFootCombat" or "PlotMassacre" => CreateCombatPreview(),
             "PlotGalMap" => CreateGalaxyMapPreview(),
-            "PlotSurfaceMining" => OverlayEditorPreviewFactories.CreateSurfaceMining(),
+            "PlotSurfaceMining" or "PlotMiningWarning" => OverlayEditorPreviewFactories.CreateSurfaceMining(),
             "PlotGrounded" or "PlotMiniTrack" => CreateSurfaceSurveyPreview(),
             "PlotHumanSite" => CreateHumanSitePreview(),
             "PlotJumpInfo" => CreateJumpInfoPreview(),
