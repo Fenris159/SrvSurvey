@@ -138,7 +138,25 @@ jobs:
         run: dotnet build SrvSurvey.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
+        timeout-minutes: 10
+        run: >-
+          dotnet test SrvSurvey.slnx
+          --configuration Release --no-build --no-restore
+          --logger trx
+          --blame-hang-timeout 2m
+          --blame-hang-dump-type mini
+
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-diagnostics-${{ matrix.rid }}
+          path: |
+            **/TestResults/**/*.trx
+            **/TestResults/**/*Sequence*.xml
+            **/TestResults/**/*.dmp
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Publish self-contained desktop application
         shell: pwsh
