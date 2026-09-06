@@ -9,6 +9,103 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 public sealed class MiningBarDetectorTests
 {
     [Theory]
+    [InlineData(19, 0, false)]
+    [InlineData(20, 0, false)]
+    [InlineData(21, 0, false)]
+    [InlineData(20, -18, false)]
+    [InlineData(20, 24, true)]
+    [InlineData(20, 0, true)]
+    public void ContinuousGrayCircleCannotBeADeploymentBar(double calibratedRadius, double rotation, bool inverted)
+    {
+        var settings = new MiningDetectionSettings { RotationDegrees = rotation };
+        var geometry = new MiningHudGeometry(settings);
+        var pixels = new byte[96 * 96 * 4];
+        for (var y = 0; y < 96; y++) for (var x = 0; x < 96; x++)
+            {
+                var r = geometry.RingDistance(x - 48d, y - 48d, 1);
+                var color = (byte)(r >= 21 && r <= 24 ? 160 : 20);
+                if (inverted) color = (byte)(180 - color);
+                var p = (y * 96 + x) * 4;
+                pixels[p] = pixels[p + 1] = pixels[p + 2] = color; pixels[p + 3] = 255;
+            }
+        var score = MiningBarDetector.ScoreBar(new CapturedPixelBuffer(96, 96, pixels), 48, 48, calibratedRadius,
+            settings);
+        var rim = MiningCircleMask.Locate(new CapturedPixelBuffer(96, 96, pixels), 48, 48, calibratedRadius,
+            geometry);
+        Assert.True(score < .82, $"Continuous rim scored {score}; rim {rim}");
+    }
+
+    [Fact]
+    public void MissingCircleIsUncertainRatherThanAnAbsentRig()
+    {
+        var source = new CapturedPixelBuffer(96, 96, new byte[96 * 96 * 4]);
+        Assert.True(double.IsNaN(MiningBarDetector.ScoreBar(source, 48, 48, 22, new())));
+    }
+
+    [Fact]
+    public void SlotDisplayDoesNotPresentAContradictedStableBarAsCurrent()
+    {
+        var model = new MiningDetectionViewModel(null);
+        var present = new MiningBarAnalysis(Enumerable.Repeat(MiningBarState.Present, 6).ToArray(), 0, 0);
+        var absent = new MiningBarAnalysis(Enumerable.Repeat(MiningBarState.Absent, 6).ToArray(), 0, 0);
+        for (var i = 0; i < 3; i++) model.Apply(present);
+        Assert.Contains("1 BAR", model.SlotsText);
+        model.Apply(absent);
+        Assert.Contains("1 …", model.SlotsText);
+        Assert.DoesNotContain("BAR", model.SlotsText);
+        model.Apply(absent);
+        model.Apply(absent);
+        Assert.Contains("1 empty", model.SlotsText);
+        Assert.Contains("Bar disappeared", model.LastAppearance);
+    }
+    [Theory]
+    [InlineData(48.5, .75)]
+    [InlineData(44, .65)]
+    [InlineData(46, .65)]
+    [InlineData(48.5, .65)]
+    [InlineData(48.5, .7)]
+    public void LiveObserverFrameDoesNotMistakeTheSecondRimForABar(double diameter, double aspect)
+    {
+        var source = Load("live-observer");
+        var settings = new MiningDetectionSettings
+        {
+            CircleWidth = diameter / 400,
+            CircleAspectRatio = aspect,
+            RotationDegrees = -6,
+            BarGap = 0,
+            MotionMargin = 56d / 400,
+            Markers = [new(123d/400,102d/220),new(189d/400,96d/220),new(250d/400,90d/220),
+                new(123d/400,148d/220),new(189d/400,139d/220),new(250d/400,131d/220)]
+        };
+        settings = settings with { LabelTemplates = MiningBarDetector.CaptureReference(source, settings) };
+        var result = MiningBarDetector.Analyze(source, settings);
+        Assert.True(result.Slots[0] != MiningBarState.Absent,
+            $"{string.Join(',', result.Slots)}; scores {string.Join(',', result.BarScores)}");
+        Assert.True(result.Slots.Skip(1).All(state => state != MiningBarState.Present),
+            $"{string.Join(',', result.Slots)}; scores {string.Join(',', result.BarScores)}");
+    }
+    [Theory]
+    [InlineData(.65, -14, .14)]
+    [InlineData(.75, -6, 0)]
+    public void LatestDeploymentScreenshotRecognizesTheActiveSlot(double aspect, double rotation, double gap)
+    {
+        var source = Load("reported-live");
+        var settings = new MiningDetectionSettings
+        {
+            CircleWidth = 94d / 500,
+            RotationDegrees = rotation,
+            CircleAspectRatio = aspect,
+            BarGap = gap,
+            Markers = [new(117d/500,120d/286),new(246d/500,108d/286),new(373d/500,96d/286),
+                new(117d/500,208d/286),new(246d/500,191d/286),new(373d/500,176d/286)]
+        };
+        settings = settings with { LabelTemplates = MiningBarDetector.CaptureReference(source, settings) };
+        var result = MiningBarDetector.Analyze(source, settings);
+        Assert.True(result.Slots[0] == MiningBarState.Present,
+            $"{string.Join(',', result.Slots)}; scores {string.Join(',', result.BarScores)}");
+        Assert.All(result.Slots.Skip(1), state => Assert.NotEqual(MiningBarState.Present, state));
+    }
+    [Theory]
     [InlineData(-14, false)]
     [InlineData(-10, false)]
     [InlineData(-18, false)]

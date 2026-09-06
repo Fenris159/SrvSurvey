@@ -15,3 +15,9 @@ after testing the calibration controls. Only slot 1 has a segmented bar; slots
 2–6 contain empty circle rims. It reproduces missed active bars and false rim
 matches at the larger HUD size. The screenshot with calibration guides drawn over
 the HUD is intentionally not used as detector input.
+
+`reported-live.bgra.gz` is the next clean deployment screenshot supplied by the
+maintainer; only slot 1 has a bar. `live-observer.bgra.gz` is a small crop of the
+game frame captured during the subsequent live inspection, while the observer
+incorrectly displayed BAR for slot 2. Tests include modest calibration differences
+and isolated continuous rims to reproduce the false-positive classification.

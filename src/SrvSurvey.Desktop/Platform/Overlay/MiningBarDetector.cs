@@ -27,31 +27,43 @@ public static class MiningBarDetector
         if (matches is null) return MiningBarAnalysis.Unknown();
         var states = new MiningBarState[6];
         var scores = new double[6];
-        var geometry = new MiningHudGeometry(settings);
         for (var slot = 0; slot < 6; slot++)
         {
             var match = matches[slot];
             var radius = image.Radius * match.Scale;
-            var gap = radius * settings.BarGap;
-            var best = 0d;
-            for (var adjustment = -5; adjustment <= 5; adjustment++)
-                for (var dx = -2; dx <= 2; dx++)
-                    foreach (var tilt in new[] { -.1, -.05, 0, .05, .1 })
-                        foreach (var scale in new[] { .85, .925, 1, 1.075 })
-                        {
-                            var dy = gap + adjustment;
-                            if (!MiningBarShape.IsOutsideRing(dx, dy, radius, scale, geometry, tilt)) continue;
-                            var lower = MiningBarShape.Score(image, match.X + dx, match.Y + dy, radius * scale, geometry, tilt, lowerOnly: true);
-                            if (lower > best && MiningBarShape.Score(image, match.X + dx, match.Y + dy, radius * scale, geometry, tilt) >= .55)
-                                best = lower;
-                        }
-            states[slot] = best >= .82 ? MiningBarState.Present
+            var best = ScoreBar(image, match.X, match.Y, radius, settings);
+            states[slot] = double.IsNaN(best) ? MiningBarState.Unknown : best >= .82 ? MiningBarState.Present
                 : best >= .7 ? MiningBarState.Unknown : MiningBarState.Absent;
             scores[slot] = best;
         }
         return new(states, matches[0].X - settings.Markers[0].X * image.Width,
             matches[0].Y - settings.Markers[0].Y * image.Height)
         { BarScores = scores };
+    }
+
+    internal static double ScoreBar(IFssPixelSource image, double x, double y, double radius, MiningDetectionSettings settings)
+    {
+        var geometry = new MiningHudGeometry(settings);
+        var rim = MiningCircleMask.Locate(image, x, y, radius, geometry);
+        if (rim.Confidence < 8) return double.NaN;
+        // Mask the full rim thickness, not just its fitted centreline.
+        var excludedRadius = rim.Radius + 1.5;
+        var gap = radius * settings.BarGap;
+        var best = 0d;
+        for (var adjustment = -5; adjustment <= 5; adjustment++)
+            for (var dx = -2; dx <= 2; dx++)
+                foreach (var tilt in new[] { -.1, -.05, 0, .05, .1 })
+                    foreach (var scale in new[] { .85, .925, 1, 1.075 })
+                    {
+                        var dy = gap + adjustment;
+                        if (!MiningBarShape.IsOutsideRing(dx, dy, radius, scale, geometry, tilt)) continue;
+                        if (!MiningBarShape.IsOutsideRing(
+                            x + dx - rim.X, y + dy - rim.Y, excludedRadius, radius * scale / excludedRadius, geometry, tilt)) continue;
+                        var lower = MiningBarShape.Score(image, x + dx, y + dy, radius * scale, geometry, tilt, lowerOnly: true);
+                        if (lower > best && MiningBarShape.Score(image, x + dx, y + dy, radius * scale, geometry, tilt) >= .55)
+                            best = lower;
+                    }
+        return best;
     }
 }
 /// <summary>Only emits transitions after a baseline, never treats lost visibility as a removed bar.</summary>

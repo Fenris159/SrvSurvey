@@ -105,7 +105,7 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store) 
         Latest = analysis;
         var appeared = confirmation.Apply(analysis);
         SlotsText = string.Join("   ", analysis.Slots.Select((state, i) =>
-            $"{i + 1} {(state == MiningBarState.Unknown ? "?" : confirmation.States[i] switch
+            $"{i + 1} {(state == MiningBarState.Unknown ? "?" : state != confirmation.States[i] ? "…" : confirmation.States[i] switch
             { MiningBarState.Present => "BAR", MiningBarState.Absent => "empty", _ => "…" })}"));
         StatusText = analysis.Slots.All(s => s == MiningBarState.Unknown)
             ? "HUD not located — adjust alignment or return to the cockpit view."
