@@ -54,7 +54,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
     public string ShipSummary => editorShip?.Display ?? "Waiting for a Loadout event. Board your ship to identify its equipped modules.";
     public bool CanEdit => storageAvailable && editorShip is not null;
     public bool HasEquippedModules => editorShip?.Modules.Any(module => !FiregroupLoadout.IsExcluded(module)) == true;
-    public string ModuleStatus => HasEquippedModules ? "Only equipped hardpoints, utilities and internal limpet controllers are listed. Shield cell banks, shield boosters and point defence are excluded. Slots distinguish duplicate modules."
+    public string ModuleStatus => HasEquippedModules ? "Equipped hardpoints, utilities, Surface Scanner and internal limpet controllers are listed with the ship's built-in scanners. Shield cell banks, shield boosters, point defence, power distributors, module reinforcement and cargo racks are excluded. Slots distinguish duplicate modules."
         : "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.";
     public string LiveSummary => ActiveProfile is { } profile ? $"Active: {profile.Name} · {liveShip?.Display}" : "No saved configuration selected for the current ship.";
     public FiregroupProfile? ActiveProfile => liveShip is null ? null : document.Profiles.FirstOrDefault(p => p.Ship.Key == liveShip.Key

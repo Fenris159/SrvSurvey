@@ -4,7 +4,9 @@ namespace SrvSurvey.Core.Firegroups;
 
 public sealed record FiregroupModule(string Slot, string Symbol, string Name)
 {
-    public string Display => string.IsNullOrEmpty(Slot) ? Name : $"{Name} · {Slot}";
+    public string Display => string.IsNullOrEmpty(Slot) || Slot.StartsWith("$builtin:", StringComparison.Ordinal)
+        ? Name
+        : $"{Name} · {Slot}";
 }
 
 public sealed record FiregroupShip(string Key, string Type, long? Id, string Name, IReadOnlyList<FiregroupModule> Modules)
@@ -31,11 +33,20 @@ public sealed record FiregroupDocument
 public static class FiregroupLoadout
 {
     private static readonly Dictionary<string, string> Names = ReadNames();
+    private static readonly FiregroupModule[] BuiltInScanners =
+    [
+        new("$builtin:d-scanner", "builtin_d_scanner", "D-Scanner"),
+        new("$builtin:sc-suite", "builtin_sc_suite", "SC-Suite"),
+        new("$builtin:data-link-scanner", "builtin_data_link_scanner", "Data Link Scanner")
+    ];
 
     public static bool IsExcluded(FiregroupModule module) =>
         module.Symbol.Contains("shieldbooster", StringComparison.OrdinalIgnoreCase)
         || module.Symbol.Contains("pointdefence", StringComparison.OrdinalIgnoreCase)
-        || module.Symbol.Contains("shieldcellbank", StringComparison.OrdinalIgnoreCase);
+        || module.Symbol.Contains("shieldcellbank", StringComparison.OrdinalIgnoreCase)
+        || module.Symbol.Contains("powerdistributor", StringComparison.OrdinalIgnoreCase)
+        || module.Symbol.Contains("modulereinforcement", StringComparison.OrdinalIgnoreCase)
+        || module.Symbol.Contains("cargorack", StringComparison.OrdinalIgnoreCase);
 
     public static FiregroupShip? Parse(JsonElement root)
     {
@@ -49,10 +60,14 @@ public static class FiregroupLoadout
         {
             var symbol = Text(module, "Item").ToLowerInvariant();
             var slot = Text(module, "Slot");
-            if (slot.Length == 0 || !Names.TryGetValue(symbol, out var label)) continue;
+            var localizedName = Text(module, "Item_Localised");
+            var specializedKey = $"{symbol}|{localizedName.ToLowerInvariant()}";
+            if (slot.Length == 0 || (!Names.TryGetValue(specializedKey, out var label) && !Names.TryGetValue(symbol, out label))) continue;
             equipped.Add(new FiregroupModule(slot, symbol, label));
         }
-        return new(key, type.ToLowerInvariant(), id, name, equipped.DistinctBy(m => m.Slot).ToArray());
+        equipped = equipped.DistinctBy(module => module.Slot).ToList();
+        equipped.AddRange(BuiltInScanners);
+        return new(key, type.ToLowerInvariant(), id, name, equipped);
     }
 
     private static string Text(JsonElement element, string name) => element.ValueKind == JsonValueKind.Object

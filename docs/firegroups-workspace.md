@@ -12,7 +12,7 @@ The editor uses observable rows and saved collections. Drafts survive switching 
 
 ## Equipped module catalog
 
-The checked-in catalog is a filtered snapshot of [EDCD FDevIDs outfitting.csv](https://github.com/EDCD/FDevIDs/blob/master/outfitting.csv), retrieved 2026-09-07. It contains 309 hardpoint, utility and internal limpet-controller variants, excluding shield cell banks, shield boosters and point defence. The game’s equipped module symbols are matched case-insensitively. Only equipped matching modules are offered for new assignments; slots distinguish duplicate modules. No runtime network lookup or new package is required. Future unlisted module symbols require a catalog update.
+The checked-in catalog is a filtered snapshot of [EDCD FDevIDs outfitting.csv](https://github.com/EDCD/FDevIDs/blob/master/outfitting.csv), retrieved 2026-09-07. It contains hardpoint, utility, Surface Scanner, internal limpet-controller and supported mercgear entries. Shield cell banks, shield boosters, point defence, power distributors, module reinforcement packages and cargo racks are excluded. The game’s equipped module symbols are matched case-insensitively; when the journal supplies a recognized mercgear localized name, that distinct name is retained. D-Scanner, SC-Suite and Data Link Scanner are always offered as built-in ship actions. Only equipped matching modules are otherwise offered for new assignments, and slots distinguish duplicate modules. No runtime network lookup or new package is required. Future unlisted module symbols require a catalog update.
 
 ## Visibility and compatibility
 

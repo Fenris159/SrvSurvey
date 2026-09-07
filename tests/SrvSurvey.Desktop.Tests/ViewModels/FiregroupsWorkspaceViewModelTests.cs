@@ -11,16 +11,19 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     private readonly JournalSessionState journal = new();
 
     [Fact]
-    public void EquippedFilterIncludesDuplicateHardpointsUtilityAndLimpetsButNotPassiveDefencesOrCoreModules()
+    public void EquippedFilterIncludesDuplicateHardpointsUtilityLimpetsAndBuiltInScannersButNotPassiveDefencesOrCoreModules()
     {
         var vm = Create();
         var options = vm.Primary[0].Options;
-        Assert.Equal(4, options.Count);
+        Assert.Equal(7, options.Count);
         Assert.Equal(2, options.Count(m => m.Name.StartsWith("Pulse Laser")));
         Assert.Contains(options, m => m.Slot == "TinyHardpoint1");
         Assert.Contains(options, m => m.Name.Contains("Limpet Controller"));
+        Assert.Contains(options, m => m.Name == "D-Scanner");
+        Assert.Contains(options, m => m.Name == "SC-Suite");
+        Assert.Contains(options, m => m.Name == "Data Link Scanner");
         Assert.DoesNotContain(options, m => m.Symbol.Contains("shieldcellbank") || m.Slot == "PowerPlant");
-        Assert.Equal(4, options.Select(m => m.Display).Distinct().Count());
+        Assert.Equal(7, options.Select(m => m.Display).Distinct().Count());
     }
 
     [Fact]
@@ -123,7 +126,9 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
         Assert.Same(row, vm.Primary[0]);
         Assert.NotNull(row.SelectedModule);
         Assert.Contains("Not equipped", row.Warning);
-        Assert.Equal(row.SelectedModule, Assert.Single(row.Options));
+        Assert.Equal(4, row.Options.Count);
+        Assert.Contains(row.SelectedModule, row.Options);
+        Assert.Equal(3, row.Options.Count(module => module.Symbol.StartsWith("builtin_", StringComparison.Ordinal)));
     }
 
     [Fact]

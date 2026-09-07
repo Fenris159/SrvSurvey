@@ -307,5 +307,22 @@
   "hpt_cannon_gimbal_medium_burst": "Concord Cannon (2D Gimballed)",
   "hpt_miningtoolv2_fixed_large": "Mining Volley Repeater (3C Fixed)",
   "int_multidronecontrol_miningv2_size5_class5": "Mk II Mining Multi-Limpet Controller (5A)",
-  "hpt_mkiiplasmashockautocannon_fixed_large": "Mk II Plasma Shock Accelerator (3B Fixed)"
+  "hpt_mkiiplasmashockautocannon_fixed_large": "Mk II Plasma Shock Accelerator (3B Fixed)",
+  "int_detailedsurfacescanner_tiny": "Surface Scanner",
+  "hpt_railgun_fixed_medium|enduring feedback rail gun": "Enduring Feedback Rail Gun",
+  "hpt_mining_abrblstr_fixed_small|far-reaching abrasion blaster": "Far-Reaching Abrasion Blaster",
+  "hpt_causticmissile_fixed_medium|high-yield enzyme missile rack": "High-Yield Enzyme Missile Rack",
+  "hpt_slugshot_gimbal_large|double screaming fragment cannon": "Double Screaming Fragment Cannon",
+  "hpt_slugshot_gimbal_small|double screaming fragment cannon": "Double Screaming Fragment Cannon",
+  "hpt_mininglaser_fixed_small|long range mining laser": "Long Range Mining Laser",
+  "hpt_multicannon_fixed_medium|rapid phase multi-cannon": "Rapid Phase Multi-Cannon",
+  "hpt_basicmissilerack_fixed_medium|drag seeker missile rack": "Drag Seeker Missile Rack",
+  "hpt_basicmissilerack_fixed_medium|lightweight thermal seeker missile rack": "Lightweight Thermal Seeker Missile Rack",
+  "hpt_basicmissilerack_fixed_medium|lockdown seeker missile rack": "Lockdown Seeker Missile Rack",
+  "hpt_basicmissilerack_fixed_large|lockdown seeker missile rack": "Lockdown Seeker Missile Rack",
+  "int_detailedsurfacescanner_tiny|long range detailed surface scanner": "Long Range Detailed Surface Scanner",
+  "hpt_cannon_fixed_huge|force impact cannon": "Force Impact Cannon",
+  "hpt_pulselaserburst_gimbal_medium|regenerative burst laser": "Regenerative Burst Laser",
+  "hpt_beamlaser_fixed_huge|overloaded beam laser": "Overloaded Beam Laser",
+  "hpt_basicmissilerack_fixed_large|exposing missiles": "Exposing Missiles"
 }
