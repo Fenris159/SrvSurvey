@@ -8,7 +8,7 @@ All entries default to allowed. Filters use the current Status.json boarded flag
 
 The shared registry applies a distinct VehicleExcluded presentation reason, preserving domain intent and user visibility toggles. This affects separate/combined windows and the registry render sources used for stream/VR. Offline position previews do not use that runtime gate. A panel shared by multiple settings categories must be allowed by each. Global settings control the panels assigned to Global (Status & utilities); the Flight warning retains its existing Exploration settings ownership.
 
-Firegroups retains its stable PlotMiningFiregroups identity, shortcut and commander settings. Existing custom placements remain intact; new/default placement is right/bottom with an eight-pixel margin. Firegroup bindings follow Status.json's current group aboard a ship, fighter or SRV, independently of mining-session and supercruise notification preferences. Notifications retain their existing mining-only rules.
+Firegroups retains its stable PlotMiningFiregroups identity, shortcut and commander settings. Existing custom placements remain intact; new/default placement is right/bottom with an eight-pixel margin. Firegroup bindings follow Status.json's current group for the identified boarded ship's saved loadout configuration, independently of mining-session and supercruise notification preferences. Firegroups now has its own settings and exceptions window; see [the Firegroups workspace](firegroups-workspace.md). Notifications retain their existing mining-only rules.
 
 ## Catalog sources
 

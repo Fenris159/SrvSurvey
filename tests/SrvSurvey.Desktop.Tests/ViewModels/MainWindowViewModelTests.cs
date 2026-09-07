@@ -79,6 +79,7 @@ public sealed class MainWindowViewModelTests
             viewModel.NavigationItems.Select(item => item.Label));
         Assert.Equal(
             [
+                "firegroups",
                 "exploration",
                 "exobiology",
                 "travel",

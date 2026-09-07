@@ -57,6 +57,26 @@ public sealed class OverlayExceptionsTests
         Assert.Equal(OverlayVehicleCatalog.All.Count, OverlayVehicleCatalog.All.Select(v => v.Id).Distinct().Count());
     }
 
+    [Fact]
+    public void DedicatedFiregroupsExceptionsInheritOnceAndThenRemainIndependent()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
+        try
+        {
+            var store = new OverlayVehicleSettingsStore(path);
+            store.Save(OverlaySettingsCategory.Global, ["python"]);
+            _ = new OverlayExceptionsViewModel(store, new OverlayWindowRegistry());
+            store.Save(OverlaySettingsCategory.Global, ["anaconda"]);
+            var model = new OverlayExceptionsViewModel(store, new OverlayWindowRegistry());
+            Assert.True(model.ForCategory(OverlaySettingsCategory.Firegroups).Allows("python"));
+            Assert.False(model.ForCategory(OverlaySettingsCategory.Firegroups).Allows("anaconda"));
+            model.ForCategory(OverlaySettingsCategory.Firegroups).UncheckAllCommand.Execute(null);
+            Assert.Empty(store.Load(OverlaySettingsCategory.Firegroups)!);
+            Assert.Contains("anaconda", store.Load(OverlaySettingsCategory.Global)!);
+        }
+        finally { File.Delete(path); }
+    }
+
     [AvaloniaFact]
     public void CategoryExceptionsPersistAndHideLivePresentationsWithoutLosingIntentOrUserToggle()
     {

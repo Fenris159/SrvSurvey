@@ -43,8 +43,8 @@ public sealed class MiningWorkspacePresentationTests
             travel.SelectedIndex = 3; using var distanceFrame = window.CaptureRenderedFrame();
             Assert.Contains(((Control)window.Content).GetVisualDescendants().OfType<TextBlock>(), t => t.Text == model.MiningWorkspace.Status && t.IsEffectivelyVisible);
             window.Content = new Views.FiregroupsView { DataContext = model }; using var fireFrame = window.CaptureRenderedFrame();
-            Assert.Contains(((Control)window.Content).GetVisualDescendants().OfType<Button>(), b => Equals(b.Content, "Save firegroup"));
-            Assert.Contains(((Control)window.Content).GetVisualDescendants().OfType<TextBlock>(), t => t.Text == model.MiningWorkspace.Status && t.IsEffectivelyVisible);
+            Assert.Contains(((Control)window.Content).GetVisualDescendants().OfType<Button>(), b => Equals(b.Content, "Save"));
+            Assert.Contains(((Control)window.Content).GetVisualDescendants().OfType<TextBlock>(), t => t.Text == model.Firegroups.Status && t.IsEffectivelyVisible);
             window.Content = new Views.FleetCarrierWorkspaceView { DataContext = model }; using var fleetFrame = window.CaptureRenderedFrame();
             var fullCarrier = Assert.Single(((Control)window.Content).GetVisualDescendants().OfType<Views.FrontierCarrierTabView>());
             Assert.Same(model.FrontierProfile, fullCarrier.DataContext);

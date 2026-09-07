@@ -29,7 +29,7 @@ public sealed class OverlayThemeResourcesTests
             ["PlotFSSInfo"] = "SystemSurvey.AutoShowFssInfo",
             ["PlotGalMap"] = "GalaxyMap.AutoShow",
             ["PlotMiningNotifications"] = "MiningWorkspace.ShouldShowNotifications",
-            ["PlotMiningFiregroups"] = "MiningWorkspace.ShouldShowFiregroups",
+            ["PlotMiningFiregroups"] = "Firegroups.ShouldShow",
             ["PlotMiningWarning"] = "Mining.ShouldShowRigWarning",
             ["PlotSurfaceMining"] = "Mining.ShouldShow",
             ["PlotGrounded"] = "SystemSurvey.AutoShowSurfaceRadar",

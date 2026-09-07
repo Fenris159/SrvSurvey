@@ -17,7 +17,7 @@ This checklist maps the implemented workspace to the pinned reference. Validatio
 | Auto-switch mining tabs | Session preference | Connected |
 | Voice announcements and voice/rate/volume | Optional Windows SAPI worker and installed voice selector | Platform-limited; audible output not tested during development |
 | Announcement presets and core/non-core filters | Commander-scoped settings and named presets | Separate from excluded ship presets |
-| Firegroup configuration / overlay | Sidebar → Firegroups; Status & utilities overlay | No game inputs or ship presets |
+| Firegroup configuration / overlay | Sidebar → Firegroups; Status & utilities overlay | Named ship configurations; no game inputs |
 | Reports, notes, CSV, HTML, print/PDF | `MiningReport`, Mining → Reports | Encoding and totals tested |
 | Material graphs, yield timeline, history comparison | Observed-yield and cumulative-refining SVG charts; per-material session comparison | Timed observations, encoded labels, totals and summary-only imports tested |
 | Session screenshots | Report attachments | HTML embeds selected local images |
@@ -62,4 +62,4 @@ Spansh systems/traders, Ardent prices and the receive-only EDDN adapter were che
 
 Final full solution validation: **3,453 passed, 0 failed, 0 skipped** — Core 1,447; Desktop 1,993; ReplayController 13. The initial run identified two inventory updates and the review added functional regression coverage; the final run includes those corrections. Release builds compile with warnings treated as errors. Both independent review axes report no unresolved findings. The navigation follow-up and startup fixes are recorded in [the navigation review](mining-workspace-navigation-review.md); the Desktop suite was rerun after those changes, while the unchanged Core and ReplayController results remain from this task's full solution run.
 
-The existing Rhino/surface-mining overlay files have no diff against `e46fb9a3`. Mining notifications remain ship-only. Firegroups now follows boarded ship/fighter/SRV status independently; see [overlay vehicle exceptions](overlay-vehicle-exceptions.md).
+The existing Rhino/surface-mining overlay files have no diff against `e46fb9a3`. Mining notifications remain ship-only. Firegroups follows the identified boarded ship and its saved configuration independently; see [the Firegroups workspace](firegroups-workspace.md).

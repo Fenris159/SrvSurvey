@@ -14,8 +14,12 @@ public sealed class OverlayExceptionsViewModel
     public OverlayExceptionsViewModel(OverlayVehicleSettingsStore store, OverlayWindowRegistry? registry = null)
     {
         this.registry = registry ?? OverlayWindowRegistry.Shared;
+        string? migrationError = null;
+        try { store.MigrateFiregroupsCategory(); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { migrationError = ex.Message; }
         Categories = Enum.GetValues<OverlaySettingsCategory>()
             .Select(category => new OverlayExceptionCategoryViewModel(category, store, Apply)).ToArray();
+        if (migrationError is not null) ForCategory(OverlaySettingsCategory.Firegroups).Status = "Firegroups exceptions were inherited for this session but could not be saved: " + migrationError;
         Apply();
     }
 
@@ -45,7 +49,7 @@ public sealed class OverlayExceptionCategoryViewModel : WorkspaceObservable
     public string Title => $"{(Category == OverlaySettingsCategory.Global ? "Status & utilities" : OverlaySettingsCategoryCatalog.All.Single(c => c.Category == Category).DisplayName)} overlay exceptions";
     public IReadOnlyList<OverlayExceptionGroupViewModel> Groups { get; }
     public IEnumerable<OverlayExceptionEntryViewModel> Entries => Groups.SelectMany(g => g.Entries);
-    public string Status { get => status; private set => Set(ref status, value); }
+    public string Status { get => status; internal set => Set(ref status, value); }
     public ICommand CheckAllCommand { get; }
     public ICommand UncheckAllCommand { get; }
 

@@ -7,7 +7,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MiningWorkspaceViewModelTests
 {
     [Fact]
-    public void MiningNotificationsRemainShipOnlyWhileFiregroupsFollowBoardedStatusAndRecoveryIsPaused()
+    public void MiningNotificationsRemainShipOnlyAndRecoveryIsPaused()
     {
         var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
@@ -20,14 +20,11 @@ public sealed class MiningWorkspaceViewModelTests
             var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
             vm.Apply(new JournalMonitorUpdate(null, [entry!], ship, null, null, null, [], true), context, null, ship);
             vm.Settings.OverlaysOnlyDuringSession = false;
-            vm.SaveFiregroup();
-            Assert.True(vm.ShouldShowFiregroups);
             vm.Settings.HideInSupercruise = true;
             vm.Settings.OverlaysOnlyDuringSession = true;
             foreach (var status in new[] { new EliteStatus { Flags = StatusFlags.InSrv }, new EliteStatus { Flags = StatusFlags.InFighter }, new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.Supercruise }, new EliteStatus { Flags = StatusFlags.InMainShip, Flags2 = StatusFlags2.OnFoot }, new EliteStatus() })
             {
                 vm.Apply(new JournalMonitorUpdate(null, [], status, null, null, null, [], false), context, null, status);
-                Assert.Equal((status.InSrv || status.InFighter || status.InMainShip) && !status.OnFoot, vm.ShouldShowFiregroups);
                 Assert.False(vm.ShouldShowNotifications);
             }
             vm.StartCommand.Execute(null);

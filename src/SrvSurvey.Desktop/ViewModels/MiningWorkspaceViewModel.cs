@@ -29,8 +29,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private CargoSnapshot? cargo;
     private EliteStatus? eliteStatus;
     private int capacity, selectedTab;
-    private string notes = "", targetMaterial = "platinum", filter = "", thresholdText = "20", destination = "", distanceResult = "", primary = "Mining laser", secondary = "Collector limpet";
-    private int firegroup;
+    private string notes = "", targetMaterial = "platinum", filter = "", thresholdText = "20", destination = "", distanceResult = "";
     private double refineryTons;
     private string refineryMineral = "platinum";
     private MiningSession? selectedSession;
@@ -106,25 +105,13 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public string Origin { get => origin; set => Set(ref origin, value); }
     public string Destination { get => destination; set => Set(ref destination, value); }
     public string DistanceResult { get => distanceResult; private set => Set(ref distanceResult, value); }
-    public string Primary { get => primary; set => Set(ref primary, value); }
-    public string Secondary { get => secondary; set => Set(ref secondary, value); }
-    public int Firegroup { get => firegroup; set => Set(ref firegroup, value); }
     public MiningSession? SelectedSession { get => selectedSession; set { if (Set(ref selectedSession, value)) { Notes = value?.Notes ?? ""; Changed(nameof(RefinerySummary)); Changed(nameof(ReportScreenshots)); } } }
     public MiningRing? SelectedRing { get => selectedRing; set => Set(ref selectedRing, value); }
     public MiningMission? SelectedMission { get => selectedMission; set => Set(ref selectedMission, value); }
     public bool ShouldShowNotifications => CanShowShipOverlays && VisibleNotices.Count > 0;
-    public bool ShouldShowFiregroups => sessionAvailable && storageAvailable
-        && eliteStatus is { OnFoot: false }
-        && (eliteStatus.InMainShip || eliteStatus.InSrv || eliteStatus.InFighter)
-        && Settings.Firegroups.Count > 0;
     private bool CanShowShipOverlays => sessionAvailable && storageAvailable && eliteStatus is { InMainShip: true, OnFoot: false, InSrv: false }
         && (!Settings.HideInSupercruise || !eliteStatus.Flags.HasFlag(StatusFlags.Supercruise)) && (!Settings.OverlaysOnlyDuringSession || Current is not null);
     public IReadOnlyList<MiningNotice> VisibleNotices => Notices.Where(n => clock.GetUtcNow() - n.Time < TimeSpan.FromSeconds(Math.Clamp(Settings.NotificationSeconds, 3, 120))).Take(5).ToArray();
-    public MiningFiregroup? ActiveFiregroupDetails => Settings.Firegroups.FirstOrDefault(g => g.Group == eliteStatus?.FireGroup);
-    public int ActiveFiregroupNumber => eliteStatus?.FireGroup ?? 0;
-    public string ActiveFiregroup => Settings.Firegroups.FirstOrDefault(g => g.Group == eliteStatus?.FireGroup) is { } group
-        ? $"Group {(char)('A' + group.Group)} · Primary: {group.Primary} · Secondary: {group.Secondary}" : "No firegroup configured";
-
     public void Apply(JournalMonitorUpdate update, JournalSessionState context, CargoSnapshot? currentCargo, EliteStatus? currentStatus)
     {
         sessionAvailable = !update.IsAwaitingCommanderIdentity && !context.IsShutdown && !string.IsNullOrWhiteSpace(context.FrontierId);
@@ -244,14 +231,6 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         else session.RefineryEstimates[RefineryMineral.Trim()] = RefineryTons;
         Save(); Changed(nameof(RefinerySummary));
     }
-    public void RemoveFiregroup() { Settings.Firegroups.RemoveAll(g => g.Group == Firegroup); SaveSettings(); }
-    public void SaveFiregroup()
-    {
-        if (Firegroup is < 0 or > 7) return;
-        Settings.Firegroups.RemoveAll(g => g.Group == Firegroup);
-        Settings.Firegroups.Add(new MiningFiregroup(Firegroup, Primary.Trim(), Secondary.Trim()));
-        SaveSettings();
-    }
     public async Task CalculateDistanceAsync()
     {
         try
@@ -368,10 +347,10 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     {
         if (!dataChanged)
         {
-            foreach (var name in new[] { nameof(CommunityStatus), nameof(SessionSummary), nameof(ShouldShowNotifications), nameof(ShouldShowFiregroups), nameof(VisibleNotices), nameof(ActiveFiregroup) }) Changed(name);
+            foreach (var name in new[] { nameof(CommunityStatus), nameof(SessionSummary), nameof(ShouldShowNotifications), nameof(VisibleNotices) }) Changed(name);
             return;
         }
-        foreach (var name in new[] { nameof(ReportScreenshots), nameof(Current), nameof(Context), nameof(CurrentSystem), nameof(SessionSummary), nameof(CargoSummary), nameof(Cargo), nameof(Materials), nameof(EngineeringMaterials), nameof(Prospects), nameof(Missions), nameof(Notices), nameof(History), nameof(HistorySummary), nameof(MaximumHistoryRate), nameof(RefinerySummary), nameof(Rings), nameof(ThresholdSummary), nameof(ShouldShowNotifications), nameof(ShouldShowFiregroups), nameof(VisibleNotices), nameof(ActiveFiregroup) }) Changed(name);
+        foreach (var name in new[] { nameof(ReportScreenshots), nameof(Current), nameof(Context), nameof(CurrentSystem), nameof(SessionSummary), nameof(CargoSummary), nameof(Cargo), nameof(Materials), nameof(EngineeringMaterials), nameof(Prospects), nameof(Missions), nameof(Notices), nameof(History), nameof(HistorySummary), nameof(MaximumHistoryRate), nameof(RefinerySummary), nameof(Rings), nameof(ThresholdSummary), nameof(ShouldShowNotifications), nameof(VisibleNotices) }) Changed(name);
         foreach (var command in new[] { StartCommand, PauseCommand, StopCommand }) ((WorkspaceCommand)command).Refresh();
     }
     private static string Text(JsonElement json, string name) => json.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() ?? "" : "";

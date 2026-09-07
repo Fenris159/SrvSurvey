@@ -75,7 +75,8 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
         var expected = new Dictionary<OverlaySettingsCategory, string[]>
         {
             [OverlaySettingsCategory.Global] =
-                ["PlotFloatie", "PlotMiningFiregroups", "PlotMultiGameCommander", "PlotPulse"],
+                ["PlotFloatie", "PlotMultiGameCommander", "PlotPulse"],
+            [OverlaySettingsCategory.Firegroups] = ["PlotMiningFiregroups"],
             [OverlaySettingsCategory.Exploration] =
             [
                 "PlotBodyInfo",

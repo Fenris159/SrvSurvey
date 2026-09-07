@@ -543,6 +543,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             Bookmarks = new BookmarksViewModel(AppDataPaths.DataDirectory);
             MiningWorkspace = new MiningWorkspaceViewModel(AppDataPaths.DataDirectory, sharedSystemResolver, Bookmarks, externalNetworkClient);
             rollback.Add(MiningWorkspace.Dispose);
+            Firegroups = new FiregroupsWorkspaceViewModel(AppDataPaths.DataDirectory);
             var sharedExobiologyCatalog = legacyReferences.Exobiology;
             var defaultCodexImageCache = Path.Combine(
                 AppDataPaths.CacheDirectory,
@@ -880,7 +881,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             [
                 new("overview", "Overview", "Commander and current journal state"),
                 new("fleet-carrier", "Fleet Carrier", "Carrier operations and cargo"),
-                new("firegroups", "Firegroups", "Configure your firegroup reference"),
+                new("firegroups", "Firegroups", "Configure your firegroup reference", true),
                 new(
                     ExplorationNavigationKey,
                     "Exploration",
@@ -1138,6 +1139,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public SurfaceMiningViewModel Mining { get; }
 
     public MiningWorkspaceViewModel MiningWorkspace { get; }
+    public FiregroupsWorkspaceViewModel Firegroups { get; }
 
     public BookmarksViewModel Bookmarks { get; }
 
@@ -2568,6 +2570,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             journalState.ReconcileVehicleStatus(status);
         }
 
+        Firegroups.Apply(update, journalState, latestStatus);
         OverlayExceptions.UpdateBoardedVehicle(journalState, latestStatus);
         Colonization.UpdateMusicTrack(journalState.MusicTrack);
         StationInfo.UpdateMusicTrack(journalState.MusicTrack);

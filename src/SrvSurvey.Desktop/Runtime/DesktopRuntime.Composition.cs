@@ -357,7 +357,7 @@ internal sealed partial class DesktopRuntime
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
         surfaceMiningOverlayCoordinator = new SurfaceMiningOverlayCoordinator(viewModel.Mining, overlayPresentation);
-        miningActivityOverlayCoordinator = new MiningActivityOverlayCoordinator(viewModel.MiningWorkspace, overlayPresentation);
+        miningActivityOverlayCoordinator = new MiningActivityOverlayCoordinator(viewModel.MiningWorkspace, viewModel.Firegroups, overlayPresentation);
         miningDetectionCoordinator = new MiningDetectionCoordinator(viewModel.Mining, CreateRawGameWindowTracker());
         groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
             viewModel.GroundTarget,

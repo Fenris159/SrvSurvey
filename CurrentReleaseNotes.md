@@ -21,9 +21,18 @@ summarized below.
 
 ## New in RC45
 
+- Rebuilds Firegroups with named, ship-specific configurations; A–H arrow controls;
+  multiple equipped primary/secondary module selections; live tree previews and
+  expandable saved configurations. Save feedback is immediate and failures are
+  visible. Loadout supplies ship identity and hardpoints/utilities/internal limpet
+  controllers; shield cell banks are excluded. The overlay follows the boarded
+  ship's saved configuration and Status.json group number. Older assignments are
+  preserved for migration. Firegroups now has dedicated overlay settings with
+  visibility, shortcut and independent Overlay Exceptions.
+
 - Renames Mining firegroups to Firegroups in Status & utilities. Its title-free
   Group, Primary and Secondary column defaults to the bottom-right and works
-  aboard ships and vehicles independently of mining-session notification settings.
+  for the identified boarded ship independently of mining-session notification settings.
 - Adds Overlay Exceptions to every overlay settings page: category allow lists
   grouped by ship size and vehicle, with Check All / Uncheck All. Filters follow
   the currently boarded vessel or on-foot status and preserve editor previews.
