@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" x:Class="SrvSurvey.Desktop.Views.FiregroupsView" x:DataType="vm:MainWindowViewModel">
+  <Grid DataContext="{Binding MiningWorkspace}" x:DataType="vm:MiningWorkspaceViewModel">
+
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                  <StackPanel Spacing="14" Margin="24"><TextBlock Classes="page-title" Text="Firegroups"/>
+                    <TextBlock Text="Describe the controls you assigned in Elite. This configures a reference overlay and does not send input to the game. Enable the Firegroups panel through Mining Overlay Settings." TextWrapping="Wrap"/>
+                    <TextBlock Text="Group (0 = A, 1 = B, etc.)" TextWrapping="Wrap"/>
+                    <NumericUpDown Minimum="0" Maximum="7" Value="{Binding Firegroup}"/>
+                    <TextBlock Text="Primary fire" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding Primary}"/>
+                    <TextBlock Text="Secondary fire" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding Secondary}"/>
+                    <Button Content="Remove firegroup" Click="RemoveFiregroup_Click" Margin="0,0,8,8"/><Button Content="Save firegroup" Click="SaveFiregroup_Click" Margin="0,0,8,8"/>
+                    <ListBox ItemsSource="{Binding Settings.Firegroups}" MinHeight="60" MaxHeight="360">
+                      <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="mining:MiningFiregroup">
+                          <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="4,8">
+                            <StackPanel Grid.Column="0" Spacing="4">
+                              <TextBlock Text="Group" TextWrapping="Wrap" Classes="muted"/>
+                              <TextBlock Text="{Binding Group}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4">
+                              <TextBlock Text="Primary" TextWrapping="Wrap" Classes="muted"/>
+                              <TextBlock Text="{Binding Primary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="4">
+                              <TextBlock Text="Secondary" TextWrapping="Wrap" Classes="muted"/>
+                              <TextBlock Text="{Binding Secondary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                          </Grid>
+                        </DataTemplate>
+                      </ListBox.ItemTemplate>
+                    </ListBox>
+                  </StackPanel>
+                </ScrollViewer>
+              
+  </Grid>
+</UserControl>

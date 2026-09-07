@@ -11,9 +11,6 @@ public sealed partial class MiningView : UserControl
     public MiningView() => InitializeComponent();
 
     private MiningWorkspaceViewModel? Model => (DataContext as MainWindowViewModel)?.MiningWorkspace;
-    private async void Distance_Click(object? sender, RoutedEventArgs e) { if (Model is { } vm) await vm.CalculateDistanceAsync(); }
-    private void CurrentOrigin_Click(object? sender, RoutedEventArgs e) { if (Model is { } vm) vm.Origin = vm.CurrentSystem; }
-    private void Carrier_Click(object? sender, RoutedEventArgs e) { if (Model is { } vm && DataContext is MainWindowViewModel main) vm.Destination = main.FrontierProfile.Carrier?.System ?? ""; }
     private void DeleteReport_Click(object? sender, RoutedEventArgs e) => Model?.DeleteSelectedReport();
     private void UndoReport_Click(object? sender, RoutedEventArgs e) => Model?.UndoDeleteReport();
     private async void ImportReports_Click(object? sender, RoutedEventArgs e) => await WithFiles(async (vm, storage) =>
@@ -24,7 +21,6 @@ public sealed partial class MiningView : UserControl
         using var reader = new StreamReader(stream);
         vm.ImportReports(await reader.ReadToEndAsync());
     });
-    private void Home_Click(object? sender, RoutedEventArgs e) { if (Model is { } vm) vm.Destination = vm.Settings.HomeSystem; }
     private void Threshold_Click(object? sender, RoutedEventArgs e) => Model?.SetThreshold(false);
     private void RemoveThreshold_Click(object? sender, RoutedEventArgs e) => Model?.SetThreshold(true);
     private void AdjustQuality_Click(object? sender, RoutedEventArgs e) => Model?.AdjustQuality((sender as Control)?.Tag as string == "minus" ? -1 : 1);
@@ -32,10 +28,8 @@ public sealed partial class MiningView : UserControl
     private void SavePreset_Click(object? sender, RoutedEventArgs e) => Model?.SaveAnnouncementPreset();
     private void LoadPreset_Click(object? sender, RoutedEventArgs e) => Model?.LoadAnnouncementPreset();
     private async void LoadVoices_Click(object? sender, RoutedEventArgs e) { if (Model is { } vm) await vm.LoadVoicesAsync(); }
-    private void RemoveFiregroup_Click(object? sender, RoutedEventArgs e) => Model?.RemoveFiregroup();
     private void OpenScreenshot_Click(object? sender, RoutedEventArgs e) { if (Model is { } vm && (sender as Control)?.Tag is string path) vm.Status = MiningAttachmentActions.Open(path); }
     private void RemoveScreenshot_Click(object? sender, RoutedEventArgs e) { if ((sender as Control)?.Tag is string path) Model?.RemoveScreenshot(path); }
-    private void SaveFiregroup_Click(object? sender, RoutedEventArgs e) => Model?.SaveFiregroup();
 
     private async void ExportReport_Click(object? sender, RoutedEventArgs e) => await WithFiles(async (vm, storage) =>
     {

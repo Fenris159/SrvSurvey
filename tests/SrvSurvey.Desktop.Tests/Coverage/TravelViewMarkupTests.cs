@@ -13,7 +13,7 @@ public sealed class TravelViewMarkupTests
             .ToArray();
 
         Assert.Equal(
-            ["Route Manager", "Surface Navigation", "FC Routes"],
+            ["Route Manager", "Surface Navigation", "FC Routes", "Distance"],
             tabs.Select(tab => tab.Attribute("Header")?.Value ?? string.Empty)
                 .ToArray());
         Assert.All(

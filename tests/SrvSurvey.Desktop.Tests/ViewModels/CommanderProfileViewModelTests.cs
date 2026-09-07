@@ -859,6 +859,50 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task LinkedCarrierCargoUpdatesOnlyTheMatchingCommanderAndCallsign()
+    {
+        var snapshot = CreateSnapshot(DateTimeOffset.UtcNow);
+        using var profile = new CommanderProfileViewModel(new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt)));
+        await profile.OpenAsync();
+        var carrier = new SrvSurvey.Core.Colonization.ColonizationFleetCarrier { Name = snapshot.Carrier!.Callsign, Cargo = new() { ["platinum"] = 42 } };
+        profile.UpdateLinkedFleetCarriers("Someone else", [carrier]);
+        Assert.DoesNotContain(profile.CarrierCargo, c => c.Name == "platinum");
+        profile.UpdateLinkedFleetCarriers(snapshot.CommanderName, [carrier with { Name = "OTHER" }]);
+        Assert.DoesNotContain(profile.CarrierCargo, c => c.Name == "platinum");
+        profile.UpdateLinkedFleetCarriers(snapshot.CommanderName, [carrier]);
+        Assert.Equal("42", Assert.Single(profile.CarrierCargo).Quantity);
+        profile.UpdateLinkedFleetCarriers(snapshot.CommanderName, [carrier with { Cargo = new() { ["platinum"] = 47 } }]);
+        Assert.Equal("47", Assert.Single(profile.CarrierCargo).Quantity);
+        Assert.Contains("RavenColonial", profile.CarrierCargoSource);
+        Assert.Equal(snapshot.Carrier.CapacityFree, profile.Carrier!.CapacityFree);
+        profile.UpdateLinkedFleetCarriers(null, []);
+        Assert.DoesNotContain(profile.CarrierCargo, c => c.Name == "platinum");
+    }
+
+    [Fact]
+    public async Task StartupLoadsLinkedCarrierWithoutOpeningCommanderCardAndDoesNotRepeatRefresh()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-carrier-startup-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals"); Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(Path.Combine(journals, "Journal.2026-09-06T120000.01.log"),
+                """{"timestamp":"2026-09-06T12:00:00Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}""" + "\n");
+            var stale = CreateSnapshot(DateTimeOffset.UtcNow.AddHours(-1));
+            var refreshed = CreateSnapshot(DateTimeOffset.UtcNow);
+            var account = new StubAccountService(new FrontierAccountState(true, stale, stale.FetchedAt), refreshed);
+            var profile = new CommanderProfileViewModel(account);
+            using var main = MainWindowViewModelTestBuilder.Create(journals, builder => builder.WithAppDataPaths(new AppDataPaths(Path.Combine(root, "config"), Path.Combine(root, "profile"), Path.Combine(root, "cache"), [])).WithFrontierProfile(profile));
+            await main.RefreshAsync();
+            Assert.False(main.IsProfileSelected); Assert.NotNull(profile.Carrier);
+            Assert.Equal(refreshed.FetchedAt, profile.Snapshot!.FetchedAt);
+            await main.RefreshAsync();
+            Assert.Equal(1, account.RefreshCount);
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    [Fact]
     public async Task MainJournalRefreshSuppliesReputationWhenCarrierIsAbsent()
     {
         var root = Path.Combine(

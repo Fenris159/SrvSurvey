@@ -204,6 +204,8 @@
       </ContentControl>
       <views:OverviewView IsVisible="{Binding IsOverviewSelected}" />
       <views:ExplorationView IsVisible="{Binding IsExplorationSelected}" />
+      <views:FleetCarrierWorkspaceView IsVisible="{Binding IsFleetCarrierSelected}" />
+      <views:FiregroupsView IsVisible="{Binding IsFiregroupsSelected}" />
       <views:MiningView IsVisible="{Binding IsMiningSelected}" />
       <views:ExobiologyView IsVisible="{Binding IsExobiologySelected}" />
       <views:TravelView IsVisible="{Binding IsTravelSelected}" />

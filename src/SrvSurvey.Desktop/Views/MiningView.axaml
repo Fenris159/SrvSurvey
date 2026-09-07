@@ -1,13 +1,13 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:journal="using:SrvSurvey.Core.Journal" xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.MiningView" x:Name="MiningRoot" x:DataType="vm:MainWindowViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:journal="using:SrvSurvey.Core.Journal" xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:controls="using:SrvSurvey.Desktop.Controls" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.MiningView" x:Name="MiningRoot" x:DataType="vm:MainWindowViewModel">
   <Grid DataContext="{Binding MiningWorkspace}" x:DataType="vm:MiningWorkspaceViewModel" RowDefinitions="Auto,*,Auto" Margin="24">
     <StackPanel Spacing="6" Margin="0,0,0,16">
       <TextBlock Classes="eyebrow" Text="ACTIVITIES"/>
       <TextBlock Classes="page-title" Text="Mining"/>
       <TextBlock Classes="muted" Text="{Binding Context}"/>
     </StackPanel>
-    <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTab}">
-      <TabControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></TabControl.ItemsPanel>
-      <TabItem Header="Session">
+    <TabControl x:Name="MiningTabs" Grid.Row="1" SelectedIndex="{Binding SelectedTab}">
+      <TabControl.ItemsPanel><ItemsPanelTemplate><controls:AdaptiveTabHeaderPanel/></ItemsPanelTemplate></TabControl.ItemsPanel>
+      <TabItem><TabItem.Header><TextBlock Text="Session"/></TabItem.Header>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <StackPanel Spacing="14" Margin="4,20,4,16">
             <Border Classes="card raised">
@@ -185,7 +185,7 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem Header="Reports">
+      <TabItem><TabItem.Header><TextBlock Text="Reports"/></TabItem.Header>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <StackPanel Spacing="14" Margin="4,20,4,16">
             <TextBlock Text="{Binding HistorySummary}" TextWrapping="Wrap" Classes="card-title"/>
@@ -257,7 +257,7 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem Header="Missions">
+      <TabItem><TabItem.Header><TextBlock Text="Missions"/></TabItem.Header>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <StackPanel Spacing="14" Margin="4,20,4,16">
             <TextBlock Text="Mining missions" TextWrapping="Wrap" Classes="card-title"/>
@@ -307,7 +307,7 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem Header="Hotspots">
+      <TabItem><TabItem.Header><TextBlock Text="Hotspots"/></TabItem.Header>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <StackPanel Spacing="14" Margin="4,20,4,16">
             <views:MiningSearchView DataContext="{Binding Search}"/>
@@ -358,32 +358,12 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem Header="Fleet Carrier">
-        <views:FrontierCarrierTabView DataContext="{Binding #MiningRoot.DataContext.FrontierProfile}"/>
-      </TabItem>
-      <TabItem Header="Bookmarks">
+
+      <TabItem><TabItem.Header><TextBlock Text="Bookmarks"/></TabItem.Header>
         <views:BookmarksView DataContext="{Binding #MiningRoot.DataContext.Bookmarks}"/>
       </TabItem>
-      <TabItem Header="Distance">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-          <StackPanel Spacing="14" Margin="4,20,4,16">
-            <TextBlock Text="Distance between systems" TextWrapping="Wrap" Classes="card-title"/>
-            <TextBlock Text="Exact system names use the shared system resolver. A blank origin uses your current system." TextWrapping="Wrap" Classes="muted"/>
-            <TextBlock Text="Origin" TextWrapping="Wrap"/>
-            <TextBox Text="{Binding Origin}"/>
-            <Button Content="Use current origin" Click="CurrentOrigin_Click" Margin="0,0,8,8"/>
-            <TextBlock Text="Destination" TextWrapping="Wrap"/>
-            <TextBox Text="{Binding Destination}"/>
-            <WrapPanel>
-              <Button Content="Calculate distance" Click="Distance_Click" Margin="0,0,8,8"/>
-              <Button Content="Use home" Click="Home_Click" Margin="0,0,8,8"/>
-              <Button Content="Use Fleet Carrier" Click="Carrier_Click" Margin="0,0,8,8"/>
-            </WrapPanel>
-            <TextBlock Text="{Binding DistanceResult}" TextWrapping="Wrap"/>
-          </StackPanel>
-        </ScrollViewer>
-      </TabItem>
-      <TabItem Header="Reference">
+
+      <TabItem><TabItem.Header><TextBlock Text="Reference"/></TabItem.Header>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <StackPanel Spacing="14" Margin="4,20,4,16">
             <TextBlock Text="Ring mining reference" TextWrapping="Wrap" Classes="card-title"/>
@@ -416,7 +396,7 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem Header="Settings">
+      <TabItem><TabItem.Header><TextBlock Text="Settings"/></TabItem.Header>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <StackPanel Spacing="14" Margin="4,20,4,16">
             <TabControl>
@@ -429,8 +409,6 @@
                     <CheckBox Content="Receive live community market and Powerplay observations from EDDN" IsChecked="{Binding Settings.ReceiveCommunityData}"/>
                     <TextBlock Text="EDDN reception opens a separate receive-only connection. Commodity observations expire after 24 hours; coverage grows while enabled." TextWrapping="Wrap" Classes="muted"/>
                     <TextBlock Text="{Binding CommunityStatus}" TextWrapping="Wrap"/>
-                    <TextBlock Text="Home system" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding Settings.HomeSystem}"/>
                     <TextBlock Text="Save also remembers your search filters." TextWrapping="Wrap" Classes="muted"/>
                     <Button Content="Save mining settings" Command="{Binding SaveSettingsCommand}" Margin="0,0,8,8"/>
                   </StackPanel>
@@ -474,40 +452,7 @@
                   </StackPanel>
                 </ScrollViewer>
               </TabItem>
-              <TabItem Header="Firegroups">
-                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-                  <StackPanel Spacing="14" Margin="4,20,4,16">
-                    <TextBlock Text="Describe the controls you assigned in Elite. This configures a reference overlay and does not send input to the game. Enable the Firegroups panel through Mining Overlay Settings." TextWrapping="Wrap"/>
-                    <TextBlock Text="Group (0 = A, 1 = B, etc.)" TextWrapping="Wrap"/>
-                    <NumericUpDown Minimum="0" Maximum="7" Value="{Binding Firegroup}"/>
-                    <TextBlock Text="Primary fire" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding Primary}"/>
-                    <TextBlock Text="Secondary fire" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding Secondary}"/>
-                    <Button Content="Remove firegroup" Click="RemoveFiregroup_Click" Margin="0,0,8,8"/><Button Content="Save firegroup" Click="SaveFiregroup_Click" Margin="0,0,8,8"/>
-                    <ListBox ItemsSource="{Binding Settings.Firegroups}" MinHeight="60" MaxHeight="360">
-                      <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="mining:MiningFiregroup">
-                          <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="4,8">
-                            <StackPanel Grid.Column="0" Spacing="4">
-                              <TextBlock Text="Group" TextWrapping="Wrap" Classes="muted"/>
-                              <TextBlock Text="{Binding Group}" TextWrapping="Wrap"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Spacing="4">
-                              <TextBlock Text="Primary" TextWrapping="Wrap" Classes="muted"/>
-                              <TextBlock Text="{Binding Primary}" TextWrapping="Wrap"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="2" Spacing="4">
-                              <TextBlock Text="Secondary" TextWrapping="Wrap" Classes="muted"/>
-                              <TextBlock Text="{Binding Secondary}" TextWrapping="Wrap"/>
-                            </StackPanel>
-                          </Grid>
-                        </DataTemplate>
-                      </ListBox.ItemTemplate>
-                    </ListBox>
-                  </StackPanel>
-                </ScrollViewer>
-              </TabItem>
+
               <TabItem Header="Backup">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                   <StackPanel Spacing="14" Margin="4,20,4,16">

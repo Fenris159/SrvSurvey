@@ -17,7 +17,7 @@ This checklist maps the implemented workspace to the pinned reference. Validatio
 | Auto-switch mining tabs | Session preference | Connected |
 | Voice announcements and voice/rate/volume | Optional Windows SAPI worker and installed voice selector | Platform-limited; audible output not tested during development |
 | Announcement presets and core/non-core filters | Commander-scoped settings and named presets | Separate from excluded ship presets |
-| Firegroup configuration / overlay | Mining Settings → Firegroups; independent Mining overlay | No game inputs or ship presets |
+| Firegroup configuration / overlay | Sidebar → Firegroups; independent Mining overlay | No game inputs or ship presets |
 | Reports, notes, CSV, HTML, print/PDF | `MiningReport`, Mining → Reports | Encoding and totals tested |
 | Material graphs, yield timeline, history comparison | Observed-yield and cumulative-refining SVG charts; per-material session comparison | Timed observations, encoded labels, totals and summary-only imports tested |
 | Session screenshots | Report attachments | HTML embeds selected local images |
@@ -40,8 +40,8 @@ This checklist maps the implemented workspace to the pinned reference. Validatio
 | EDDN incoming market/power cache | Opt-in receive-only NetMQ worker, bounded persistent cache | Live receiver observed 797 commodity records; direction/unknown-coordinate/expiry tests pass |
 | System filters / material traders | Shared network Spansh search extension | Live queries returned systems and raw material trader stations |
 | Inara / EDSM / Spansh context links | Inara and EDSM system links, Spansh search, copy | Right-click actions use external-effect gate |
-| Fleet Carrier status/cargo/finances/services/history | Existing profile VM and carrier view | Same live profile; no duplicate monitor |
-| Distance / home / carrier shortcuts | Shared resolver; arbitrary pair, current/home/carrier shortcuts | Unknown origins report unavailability |
+| Fleet Carrier status/cargo/finances/services/history | Fleet Carrier workspace below Overview; existing profile VM and carrier view | Same live profile; no duplicate monitor |
+| Distance / home / carrier shortcuts | Travel → Distance; shared resolver and current/home/carrier shortcuts | Unknown origins report unavailability |
 | Ring / mineral / RES reference | Mining → Reference | Ring compositions and RES guidance |
 | Full backup / restore | Commander mining ZIP, shared bookmarks and screenshot assets | Portable attachments and recovery of edited bookmarks tested; previous files retained |
 | Theme-aware workspace and overlays | Raven resources, shared presentation | All application themes rendered; populated Monochrome dark and Blue light inspected |

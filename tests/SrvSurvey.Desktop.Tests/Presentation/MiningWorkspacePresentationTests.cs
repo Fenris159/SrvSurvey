@@ -16,6 +16,40 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 public sealed class MiningWorkspacePresentationTests
 {
     [AvaloniaFact]
+    public void MiningHeadersShrinkBeforeWrappingAndMovedToolsRemainAvailable()
+    {
+        using var model = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        var mining = new Views.MiningView { DataContext = model };
+        var window = new Window { Content = mining, Width = 1200, Height = 800 };
+        try
+        {
+            window.Show(); using var initial = window.CaptureRenderedFrame();
+            var tabs = mining.FindControl<TabControl>("MiningTabs")!;
+            var items = tabs.Items.OfType<TabItem>().ToArray();
+            Assert.Equal(["Session", "Reports", "Missions", "Hotspots", "Bookmarks", "Reference", "Settings"], items.Select(t => ((TextBlock)t.Header!).Text));
+            Assert.All(items, t => Assert.Equal(22, ((TextBlock)t.Header!).FontSize));
+            window.Width = 700; using var smaller = window.CaptureRenderedFrame();
+            Assert.All(items, t => Assert.InRange(((TextBlock)t.Header!).FontSize, 14, 21));
+            Assert.True(items.Max(t => t.Bounds.Y) - items.Min(t => t.Bounds.Y) < 2);
+            window.Width = 360; using var narrow = window.CaptureRenderedFrame();
+            Assert.All(items, t => Assert.Equal(14, ((TextBlock)t.Header!).FontSize));
+            Assert.True(items.Max(t => t.Bounds.Y) > items.Min(t => t.Bounds.Y));
+            window.Width = 1200; using var expanded = window.CaptureRenderedFrame();
+            Assert.All(items, t => Assert.Equal(22, ((TextBlock)t.Header!).FontSize));
+            window.Content = new Views.TravelView { DataContext = model }; using var travelFrame = window.CaptureRenderedFrame();
+            var travel = ((Views.TravelView)window.Content).FindControl<TabControl>("TravelModeTabs")!;
+            Assert.Equal("Distance", travel.Items.OfType<TabItem>().Last().Header);
+            window.Content = new Views.FiregroupsView { DataContext = model }; using var fireFrame = window.CaptureRenderedFrame();
+            Assert.Contains(((Control)window.Content).GetVisualDescendants().OfType<Button>(), b => Equals(b.Content, "Save firegroup"));
+            window.Content = new Views.FleetCarrierWorkspaceView { DataContext = model }; using var fleetFrame = window.CaptureRenderedFrame();
+            var fullCarrier = Assert.Single(((Control)window.Content).GetVisualDescendants().OfType<Views.FrontierCarrierTabView>());
+            Assert.Same(model.FrontierProfile, fullCarrier.DataContext);
+            Assert.Same(model.FleetCarrierWorkspace, fullCarrier.SupplementaryContent!.DataContext);
+        }
+        finally { window.Close(); }
+    }
+
+    [AvaloniaFact]
     public void WorkspaceTabsRenderAcrossApplicationThemesAndBookmarksUseSharedModel()
     {
         var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -57,7 +91,7 @@ public sealed class MiningWorkspacePresentationTests
             foreach (var theme in RavenThemeCatalog.All)
             {
                 themes.Select(theme.Key);
-                foreach (var tab in new[] { 0, 1, 2, 3, 5, 6, 7, 8 })
+                foreach (var tab in new[] { 0, 1, 2, 3, 4, 5, 6 })
                 {
                     model.MiningWorkspace.SelectedTab = tab;
                     using var frame = window.CaptureRenderedFrame();

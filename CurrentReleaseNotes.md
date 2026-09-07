@@ -21,6 +21,12 @@ summarized below.
 
 ## New in RC45
 
+- Moves Fleet Carrier and Firegroups directly below Overview, and Distance to
+  Travel after FC Routes. Mining headers shrink to a readable minimum before wrapping.
+- Loads linked Frontier information automatically on commander detection. The
+  full carrier workspace shares RavenColonial cargo updates and supports a
+  linked squadron carrier below the personal carrier profile.
+
 - Trims unused dependency language resources and native debug symbols from release
   packages, reducing the Windows download and extracted footprint.
 

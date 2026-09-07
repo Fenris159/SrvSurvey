@@ -30,6 +30,18 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private readonly AsyncCommand unlinkCommand;
     private CancellationTokenSource? connectionCancellation;
     private FrontierAccountSnapshot? snapshot;
+    private IReadOnlyList<SrvSurvey.Core.Colonization.ColonizationFleetCarrier> linkedFleetCarriers = [];
+    private string? linkedCarrierCommander;
+    private SrvSurvey.Core.Colonization.ColonizationFleetCarrier? LinkedCarrier =>
+        string.Equals(Snapshot?.CommanderName, linkedCarrierCommander, StringComparison.OrdinalIgnoreCase)
+            ? linkedFleetCarriers.FirstOrDefault(c => string.Equals(c.Name, Carrier?.Callsign, StringComparison.OrdinalIgnoreCase)) : null;
+    public string CarrierCargoSource => LinkedCarrier is null ? "Stored cargo from Frontier." : "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.";
+    public void UpdateLinkedFleetCarriers(string? commander, IReadOnlyList<SrvSurvey.Core.Colonization.ColonizationFleetCarrier> carriers)
+    {
+        if (ReferenceEquals(linkedFleetCarriers, carriers) && linkedCarrierCommander == commander) return;
+        linkedFleetCarriers = carriers; linkedCarrierCommander = commander; carrierCargoRows = null;
+        OnPropertyChanged(nameof(CarrierCargo)); OnPropertyChanged(nameof(CarrierCargoSource));
+    }
     private CargoSnapshot? detectedShipCargo;
     private ShipLockerSnapshot? detectedShipLocker;
     private CargoSnapshot? localShipCargo;
@@ -271,6 +283,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             RebuildCurrentShipModuleGroups();
             OnPropertyChanged();
             RaiseSnapshotProperties();
+            OnPropertyChanged(nameof(CarrierCargoSource));
         }
     }
 
@@ -727,7 +740,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .ToArray() ?? [];
 
     public IReadOnlyList<FrontierInventoryRowViewModel> CarrierCargo =>
-        carrierCargoRows ??= Carrier?.Cargo
+        carrierCargoRows ??= LinkedCarrier is { } live
+            ? live.Cargo.OrderBy(p => p.Key).Select(p => new FrontierInventoryRowViewModel("Commodity", p.Key, $"{p.Value:N0}", "")).ToArray()
+            : Carrier?.Cargo
             .Select(item => new FrontierInventoryRowViewModel(
                 item.Category,
                 item.Name,

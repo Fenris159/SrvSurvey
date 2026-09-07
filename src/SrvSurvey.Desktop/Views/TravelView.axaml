@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+             xmlns:views="using:SrvSurvey.Desktop.Views"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.Views.TravelView"
              x:DataType="vm:MainWindowViewModel"
@@ -743,6 +744,7 @@
                        Text="{Binding FleetCarrierRouteManager.StatusMessage}" />
           </StackPanel>
         </TabItem>
+        <TabItem Classes="theme-selector" Header="Distance"><views:DistanceView/></TabItem>
       </TabControl>
 
         <Border x:Name="TravelTabsSeparator"

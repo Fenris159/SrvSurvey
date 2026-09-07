@@ -534,6 +534,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 legacyProfileStore: new LegacyColonizationProfileStore(
                     AppDataPaths.DataDirectory));
             rollback.Add(Colonization.Dispose);
+            FleetCarrierWorkspace = new FleetCarrierWorkspaceViewModel(FrontierProfile, Colonization);
+            rollback.Add(FleetCarrierWorkspace.Dispose);
             var sharedSystemResolver = new SpanshStarSystemResolver(
                 externalNetworkClient);
             Bookmarks = new BookmarksViewModel(AppDataPaths.DataDirectory);
@@ -875,6 +877,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             NavigationItems =
             [
                 new("overview", "Overview", "Commander and current journal state"),
+                new("fleet-carrier", "Fleet Carrier", "Carrier operations and cargo"),
+                new("firegroups", "Firegroups", "Configure your firegroup reference"),
                 new(
                     ExplorationNavigationKey,
                     "Exploration",
@@ -927,7 +931,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             selectedNavigation = NavigationItems[0];
             selectedNavigation.IsSelected = true;
             OverviewNavigationItems = NavigationItems
-                .Where(item => item.Key == "overview")
+                .Where(item => item.Key is "overview" or "fleet-carrier" or "firegroups")
                 .ToArray();
             SurveyNavigationItems = NavigationItems
                 .Where(item => item.Key is ExplorationNavigationKey
@@ -1019,6 +1023,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public GuidesViewModel Guides { get; }
 
     public CommanderProfileViewModel FrontierProfile { get; }
+    public FleetCarrierWorkspaceViewModel FleetCarrierWorkspace { get; }
 
     public GlobalInputSettingsViewModel InputSettings { get; }
 
@@ -1359,6 +1364,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     public bool IsBookmarksSelected => SelectedNavigation?.Key == BookmarksNavigationKey && !IsProfileSelected;
 
+    public bool IsFleetCarrierSelected => SelectedNavigation?.Key == "fleet-carrier" && !IsProfileSelected;
+    public bool IsFiregroupsSelected => SelectedNavigation?.Key == "firegroups" && !IsProfileSelected;
+
     public bool IsMiningSelected => SelectedNavigation?.Key == MiningNavigationKey && !IsProfileSelected;
 
     public bool IsExobiologySelected =>
@@ -1554,6 +1562,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         OnPropertyChanged(nameof(IsOverviewSelected));
         OnPropertyChanged(nameof(IsExplorationSelected));
         OnPropertyChanged(nameof(IsMiningSelected));
+        OnPropertyChanged(nameof(IsFleetCarrierSelected));
+        OnPropertyChanged(nameof(IsFiregroupsSelected));
         OnPropertyChanged(nameof(IsBookmarksSelected));
         OnPropertyChanged(nameof(IsExobiologySelected));
         OnPropertyChanged(nameof(IsTravelSelected));
@@ -2589,7 +2599,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         await FrontierProfile.SetCommanderContextAsync(
             journalState.FrontierId,
             journalState.CommanderName,
-            refreshIfOpen: IsProfileSelected,
+            refreshIfOpen: true,
             CancellationToken.None);
     }
 
@@ -5472,6 +5482,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(CodexBingo.Dispose);
         TryDispose(StationInfo.Dispose);
         TryDispose(MiningWorkspace.Dispose);
+        TryDispose(FleetCarrierWorkspace.Dispose);
         TryDispose(Colonization.Dispose);
         TryDispose(GalaxyMap.Dispose);
         ScreenshotProcessing.PropertyChanged -= OnScreenshotProcessingChanged;

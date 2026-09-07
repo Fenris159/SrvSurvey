@@ -55,10 +55,12 @@ public sealed class MainWindowViewModelTests
         var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
-        Assert.Equal(15, viewModel.NavigationItems.Count);
+        Assert.Equal(17, viewModel.NavigationItems.Count);
         Assert.Equal(
             [
                 "Overview",
+                "Fleet Carrier",
+                "Firegroups",
                 "Exploration",
                 "Exobiology",
                 "Travel",
@@ -97,7 +99,7 @@ public sealed class MainWindowViewModelTests
             property => property.Name == "Glyph");
         Assert.True(viewModel.IsOverviewSelected);
         Assert.Equal(
-            ["Overview"],
+            ["Overview", "Fleet Carrier", "Firegroups"],
             viewModel.OverviewNavigationItems.Select(item => item.Label));
         Assert.Equal(
             ["Exploration", "Exobiology", "Boxel"],
