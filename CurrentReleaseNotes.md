@@ -21,6 +21,9 @@ summarized below.
 
 ## New in RC45
 
+- Trims unused dependency language resources and native debug symbols from release
+  packages, reducing the Windows download and extracted footprint.
+
 - Rig radar circles now have a 78-meter radius, matching restricted placement
   spacing. Resource circles retain their 70-meter radius.
 - Adds a Mining rig range warning using the Flight Warning high-risk style.
