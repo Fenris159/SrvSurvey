@@ -35,16 +35,21 @@ public sealed class MiningWorkspaceState
             processed.Remove(Data.ProcessedEvents[0]);
             Data.ProcessedEvents.RemoveAt(0);
         }
-        var json = entry.Payload;
-        if (!bootstrap && Data.Settings.AutoStart && Session.Current is null && entry.Timestamp is { } time
-            && entry.EventName == "LaunchDrone" && MiningJson.Text(json, "Type").Equals("Prospector", StringComparison.OrdinalIgnoreCase))
-            Session.Start(time, system, body, ship);
+        if (!bootstrap && Data.Settings.AutoStart) ActivateSessionForProspector(entry, system, body, ship);
         var changed = Session.Apply(entry);
         Missions.Apply(entry);
         ApplyRing(entry, system, position);
         if (changed && !bootstrap && !IsProspectProgress(entry)) AddNotice(entry);
         Synchronize();
         return true;
+    }
+
+    private void ActivateSessionForProspector(JournalEventEnvelope entry, string system, string body, string ship)
+    {
+        if (entry.Timestamp is not { } time || entry.EventName != "LaunchDrone"
+            || !MiningJson.Text(entry.Payload, "Type").Equals("Prospector", StringComparison.OrdinalIgnoreCase)) return;
+        if (Session.Current is null) Session.Start(time, system, body, ship);
+        else Session.Resume(time);
     }
 
     public void CacheRing(MiningRing ring)
