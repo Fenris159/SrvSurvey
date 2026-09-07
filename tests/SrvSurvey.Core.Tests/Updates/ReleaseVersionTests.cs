@@ -23,6 +23,7 @@ public sealed class ReleaseVersionTests
     [InlineData("2.1.3.0-rc.44.5", "2.1.3.0-rc.45")]
     [InlineData("2.1.3.0-rc.45", "2.1.3.0-rc.45.5")]
     [InlineData("2.1.3.0-rc.45.5", "2.1.3.0-rc.45.6")]
+    [InlineData("2.1.3.0-rc.45.6", "2.1.3.0-rc.45.7")]
     [InlineData("2.1.3.0-rc.44.5", "2.1.3.0")]
     public void CandidateRevisionsSortNumericallyBeforeTheNextCandidate(string older, string newer)
     {

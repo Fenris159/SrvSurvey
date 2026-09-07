@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.45.6
+# SrvSurvey-XP 2.1.3.0-rc.45.7
 
 - Replaces the Mining workspace placeholder with session accounting, prospecting
   yields, core and raw-material tracking, cargo, mining missions, historical
@@ -15,9 +15,16 @@
   import, offline HTML reports with print/PDF output, and ZIP backups containing
   shared bookmarks and screenshot attachments. Guides documents the new tools.
 
-RC45.6 fixes Mining notification and prospector-report regressions. It retains
-the RC45.5 Linux release and Firegroups fixes, the RC45 changes, and the combined
+RC45.7 restores automatic mining-session activation from live prospector
+launches. It retains the RC45.6 notification and prospector-report fixes, the
+RC45.5 Linux release and Firegroups fixes, the RC45 changes, and the combined
 RC43, RC44, and RC44.5 features summarized below.
+
+## New in RC45.7
+
+- Resumes a paused auto-start mining session when a live prospector limpet is
+  launched, using the same trigger that starts a missing session. Disabling
+  auto-start preserves the paused state, and journal bootstrap remains passive.
 
 ## New in RC45.6
 
@@ -29,8 +36,6 @@ RC43, RC44, and RC44.5 features summarized below.
   prospecting announcement.
 - Releases the persistent prospector report when the asteroid is depleted, the
   ship enters supercruise, or an FSD jump begins.
-- Resumes a paused auto-start mining session when a live prospector limpet is
-  launched, using the same trigger that starts a missing session.
 - Simplifies Firegroups overlay labels to the in-game module name. Slot IDs and
   class/mount suffixes are hidden, and duplicate assignments use a compact count.
 
@@ -245,11 +250,11 @@ The candidate also retains the preceding Guardian, controller, and sharing work:
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.45.6`
-- Tag: `xp-v2.1.3.0-rc.45.6`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.45.6-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.45.6-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.45.6-x86_64.AppImage`
+- Version: `2.1.3.0-rc.45.7`
+- Tag: `xp-v2.1.3.0-rc.45.7`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.45.7-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.45.7-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.45.7-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated
