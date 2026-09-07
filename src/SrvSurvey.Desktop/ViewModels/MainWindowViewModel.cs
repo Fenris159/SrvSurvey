@@ -2482,7 +2482,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         var commanderCodexResult = await ApplyCommanderCodexUpdateAsync(update);
         var codexDiscoveryChanged = commanderCodexResult.DiscoveryEventCount > 0;
 
-        Colonization.ApplyJournalEvents(update.JournalEvents);
+        Colonization.ApplyJournalEvents(update.JournalEvents, journalState.CommanderName);
         Colonization.UpdateSystemContext(
             journalState.SystemName,
             journalState.StarPosition,
@@ -2599,8 +2599,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         await FrontierProfile.SetCommanderContextAsync(
             journalState.FrontierId,
             journalState.CommanderName,
-            refreshIfOpen: true,
+            refreshIfOpen: false,
             CancellationToken.None);
+        FrontierProfile.LoadAutomatically();
     }
 
     private void ApplyShipLockerIfAllowed(

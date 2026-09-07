@@ -29,6 +29,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand unlinkCommand;
     private CancellationTokenSource? connectionCancellation;
+    private CancellationTokenSource? automaticLoadCancellation;
     private FrontierAccountSnapshot? snapshot;
     private IReadOnlyList<SrvSurvey.Core.Colonization.ColonizationFleetCarrier> linkedFleetCarriers = [];
     private string? linkedCarrierCommander;
@@ -1403,6 +1404,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
 
         Interlocked.Increment(ref commanderContextVersion);
+        automaticLoadCancellation?.Cancel();
+        automaticLoadCancellation?.Dispose();
+        automaticLoadCancellation = null;
         var previousConnection = connectionCancellation;
         connectionCancellation = null;
         if (previousConnection is not null)
@@ -1525,6 +1529,25 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         catch (Exception exception) when (IsExpected(exception))
         {
             StatusMessage = exception.Message;
+        }
+    }
+
+    public void LoadAutomatically()
+    {
+        ThrowIfDisposed();
+        if (activeFrontierId is null || initialized || IsBusy) return;
+        automaticLoadCancellation?.Dispose();
+        automaticLoadCancellation = new CancellationTokenSource();
+        _ = LoadAutomaticallyAsync(automaticLoadCancellation.Token);
+    }
+
+    private async Task LoadAutomaticallyAsync(CancellationToken cancellationToken)
+    {
+        try { await OpenAsync(cancellationToken); }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+        catch (Exception exception) when (IsExpected(exception) || exception is OperationCanceledException)
+        {
+            if (!disposed && !cancellationToken.IsCancellationRequested) StatusMessage = exception.Message;
         }
     }
 
@@ -3169,6 +3192,10 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
 
         disposed = true;
+        Interlocked.Increment(ref commanderContextVersion);
+        automaticLoadCancellation?.Cancel();
+        automaticLoadCancellation?.Dispose();
+        automaticLoadCancellation = null;
         connectionCancellation?.Cancel();
         connectionCancellation?.Dispose();
         connectionCancellation = null;

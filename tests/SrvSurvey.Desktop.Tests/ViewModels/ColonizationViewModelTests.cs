@@ -1284,6 +1284,24 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task StartupSquadronDetectionSurvivesCommanderActivationAfterJournalReplay()
+    {
+        var carrier = new ColonizationFleetCarrier { MarketId = 42, Name = "SQD-001", Cargo = new() { ["steel"] = 10 } };
+        var client = new StubRavenColonialClient { Workspace = new([], [], null, [carrier]) };
+        using var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.ApplyJournalEvents([Event("Docked", """
+            "MarketID":42,"SystemAddress":20,"StarSystem":"Test","StationName":"SQD-001","StationType":"FleetCarrier","StationServices":["squadronBank"]
+            """)], "Test Cmdr");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        Assert.Equal(42, viewModel.DetectedSquadronCarrierMarketId);
+
+        viewModel.ApplyJournalEvents([], "Other Cmdr");
+        await viewModel.SetCommanderAsync("Other Cmdr");
+        Assert.Null(viewModel.DetectedSquadronCarrierMarketId);
+    }
+
+    [Fact]
     public async Task AdjustsLinkedSquadronCarrierFromShipCargoDiffNotTransferJournal()
     {
         var carrier = new ColonizationFleetCarrier

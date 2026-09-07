@@ -880,6 +880,30 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task SlowFrontierRefreshDoesNotBlockLocalJournalStartup()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-carrier-startup-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals"); Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(Path.Combine(journals, "Journal.2026-09-06T120000.01.log"),
+                """{"timestamp":"2026-09-06T12:00:00Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}""" + "\n");
+            var stale = CreateSnapshot(DateTimeOffset.UtcNow.AddHours(-1));
+            var refreshed = CreateSnapshot(DateTimeOffset.UtcNow);
+            var account = new StubAccountService(new FrontierAccountState(true, stale, stale.FetchedAt), refreshed);
+            var pending = new TaskCompletionSource<FrontierAccountSnapshot>();
+            account.PendingRefresh = pending.Task;
+            var profile = new CommanderProfileViewModel(account);
+            using var main = MainWindowViewModelTestBuilder.Create(journals, builder => builder.WithAppDataPaths(new AppDataPaths(Path.Combine(root, "config"), Path.Combine(root, "profile"), Path.Combine(root, "cache"), [])).WithFrontierProfile(profile));
+            await main.RefreshAsync().WaitAsync(TimeSpan.FromSeconds(3));
+            Assert.Equal("F123", main.FrontierId);
+            Assert.True(profile.IsBusy); Assert.Equal(1, account.RefreshCount);
+            pending.SetResult(refreshed);
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    [Fact]
     public async Task StartupLoadsLinkedCarrierWithoutOpeningCommanderCardAndDoesNotRepeatRefresh()
     {
         var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-carrier-startup-{Guid.NewGuid():N}");
@@ -1130,6 +1154,7 @@ public sealed class CommanderProfileViewModelTests
         }
 
         public int RefreshCount { get; private set; }
+        public Task<FrontierAccountSnapshot>? PendingRefresh { get; set; }
 
         public event EventHandler? AuthorizationCallbackReceived;
 
@@ -1193,6 +1218,7 @@ public sealed class CommanderProfileViewModelTests
             CancellationToken cancellationToken = default)
         {
             RefreshCount++;
+            if (PendingRefresh is not null) return PendingRefresh.WaitAsync(cancellationToken);
             return Task.FromResult(refreshed ?? state.Snapshot
                 ?? throw new InvalidOperationException("No snapshot configured."));
         }

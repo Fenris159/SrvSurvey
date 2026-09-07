@@ -49,6 +49,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         StringComparer.OrdinalIgnoreCase);
     private IReadOnlyList<ColonizationFleetCarrier> fleetCarriers = [];
     private long? detectedSquadronCarrierMarketId;
+    private string? detectedSquadronCommander;
     public IReadOnlyList<ColonizationFleetCarrier> LinkedFleetCarriers => fleetCarriers;
     public long? DetectedSquadronCarrierMarketId => detectedSquadronCarrierMarketId;
     private ColonizationProject? localUntrackedProject;
@@ -591,7 +592,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         CancelDockingRefresh();
-        detectedSquadronCarrierMarketId = null;
+        if (!string.Equals(detectedSquadronCommander, normalized, StringComparison.OrdinalIgnoreCase))
+        {
+            detectedSquadronCarrierMarketId = null;
+        }
         CommanderName = normalized;
         ClearProjects();
         UpdateProjectEditorContext();
@@ -609,16 +613,26 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public void ApplyJournalEvents(
-        IReadOnlyList<JournalEventEnvelope> journalEvents)
+        IReadOnlyList<JournalEventEnvelope> journalEvents, string? journalCommanderName = null)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
+        var owner = journalCommanderName ?? CommanderName;
+        if (!string.Equals(detectedSquadronCommander, owner, StringComparison.OrdinalIgnoreCase))
+        {
+            detectedSquadronCarrierMarketId = null;
+            detectedSquadronCommander = owner;
+        }
         SystemEditor.ApplyJournalEvents(journalEvents);
         var before = constructionState.Version;
         foreach (var journalEvent in journalEvents)
         {
             constructionState.Apply(journalEvent);
-            if (constructionState.CurrentDock is { } carrierDock && ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(carrierDock))
+            if (journalEvent.EventName is "Docked" or "Location"
+                && constructionState.CurrentDock is { } carrierDock
+                && ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(carrierDock))
+            {
                 detectedSquadronCarrierMarketId = carrierDock.MarketId;
+            }
             fleetCarrierIdentityTracker.Apply(journalEvent);
             ApplyShipIdentity(journalEvent);
         }
