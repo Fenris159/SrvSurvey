@@ -10,7 +10,10 @@
   <StackPanel Margin="0,16,0,0" Spacing="24">
     <StackPanel Spacing="5">
       <TextBlock x:Name="OverlaySettingsEyebrow" Classes="eyebrow" Text="OVERLAYS" />
-      <TextBlock x:Name="OverlaySettingsTitle" Classes="page-title" Text="Game overlays" />
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <TextBlock x:Name="OverlaySettingsTitle" Classes="page-title" Text="Game overlays" TextWrapping="Wrap"/>
+        <Button Grid.Column="1" Content="Overlay Exceptions" Click="OverlayExceptions_Click" VerticalAlignment="Top"/>
+      </Grid>
       <TextBlock x:Name="OverlaySettingsDescription" Classes="muted"
                  TextWrapping="Wrap"
                  Text="Control passive Galaxy Map, route, survey, and status surfaces." />
@@ -19,8 +22,8 @@
     <Border x:Name="MiningActivityCard" Classes="card raised">
       <StackPanel Spacing="12">
         <TextBlock Classes="card-title" Text="Ship mining overlays" />
-        <TextBlock Classes="muted" Text="Mining notifications and firegroups appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay." TextWrapping="Wrap" />
-        <CheckBox Content="Hide ship mining overlays in supercruise" IsChecked="{Binding MiningWorkspace.Settings.HideInSupercruise}" />
+        <TextBlock Classes="muted" Text="Mining notifications appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay." TextWrapping="Wrap" />
+        <CheckBox Content="Hide mining notifications in supercruise" IsChecked="{Binding MiningWorkspace.Settings.HideInSupercruise}" />
         <CheckBox Content="Show only during a mining session" IsChecked="{Binding MiningWorkspace.Settings.OverlaysOnlyDuringSession}" />
         <TextBlock Text="Notification duration (seconds)" />
         <NumericUpDown Value="{Binding MiningWorkspace.Settings.NotificationSeconds}" Minimum="3" Maximum="120" />

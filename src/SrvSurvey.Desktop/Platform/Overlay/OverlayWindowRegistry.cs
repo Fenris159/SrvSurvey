@@ -13,6 +13,7 @@ public sealed class OverlayWindowRegistry
     private readonly List<WeakReference<Window>> windows = [];
     private readonly HashSet<string> userHiddenPlotters =
         new(StringComparer.Ordinal);
+    private HashSet<string> vehicleExcludedPlotters = new(StringComparer.Ordinal);
     private bool galaxyMapContextActive;
     private bool editorSuppressed;
     private bool manualSuppressed;
@@ -103,6 +104,15 @@ public sealed class OverlayWindowRegistry
             return;
         }
 
+        ReconcileAndNotify();
+    }
+
+    public void SetVehicleExcludedPlotters(IEnumerable<string> plotterNames)
+    {
+        VerifyAccessWhenWindowsAreRegistered();
+        var next = plotterNames.ToHashSet(StringComparer.Ordinal);
+        if (vehicleExcludedPlotters.SetEquals(next)) return;
+        vehicleExcludedPlotters = next;
         ReconcileAndNotify();
     }
 
@@ -296,7 +306,8 @@ public sealed class OverlayWindowRegistry
             PriorityObscured: OverlayPriorityRules.IsObscured(
                 definition.Id,
                 IsAnyPresented,
-                priorityFacts));
+                priorityFacts),
+            VehicleAllowed: !vehicleExcludedPlotters.Contains(definition.Name));
     }
 
     private bool IsAnyPresented(OverlayId id)

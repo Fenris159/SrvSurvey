@@ -102,7 +102,7 @@ public static class GlobalInputActionCatalog
         Define(GlobalInputAction.ResetVr, "resetVR", "Reset VR orientation", "Reset the captured VR headset orientation.", string.Empty),
         Define(GlobalInputAction.ToggleFirstFootfall, "toggleFF", "Toggle first footfall", "Toggle first-footfall state for the current body.", string.Empty),
         DefineOverlayToggle(GlobalInputAction.ToggleMiningNotificationsVisibility, "toggleMiningNotificationsVisibility", "Mining notifications", "PlotMiningNotifications"),
-        DefineOverlayToggle(GlobalInputAction.ToggleMiningFiregroupsVisibility, "toggleMiningFiregroupsVisibility", "Mining firegroups", "PlotMiningFiregroups"),
+        DefineOverlayToggle(GlobalInputAction.ToggleMiningFiregroupsVisibility, "toggleMiningFiregroupsVisibility", "Firegroups", "PlotMiningFiregroups"),
         DefineOverlayToggle(GlobalInputAction.ToggleMiningWarningVisibility, "toggleMiningWarningVisibility", "Mining rig range warning", "PlotMiningWarning"),
         DefineOverlayToggle(GlobalInputAction.ToggleSurfaceMiningVisibility, "toggleSurfaceMiningVisibility", "Surface mining", "PlotSurfaceMining"),
         Define(GlobalInputAction.Track1, "track1", "Tracker/Mining Rig (1)", "Set or clear tracker 1, or mining rig 1 while operating the Rhino.", "ALT CTRL F1"),

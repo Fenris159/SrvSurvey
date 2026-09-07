@@ -665,6 +665,19 @@ public static class GuideCatalog
                             "When overlays compete for the same context, SrvSurvey hides lower-priority panels first and restores them from their current settings and game state when the blocker ends.",
                         ]),
                     Section(
+                        "Overlay Exceptions",
+                        "Restrict each overlay category to selected ships or vehicles without changing its normal triggers.",
+                        [
+                            "Open the category’s overlay settings and select Overlay Exceptions at the top right.",
+                            "Use Check All or Uncheck All, then select the allowed entries under Small, Medium, Large and Vessel / Vehicle. Changes save immediately.",
+                            "The gate follows the vessel you are aboard: SRV, Scorpion, Rhino and Nomad have separate entries; Fighters covers all fighter variants. On foot is independent of your parked ship.",
+                        ],
+                        [
+                            "All entries start checked. Other / unknown controls unrecognized ship types and times when boarded status is unavailable.",
+                            "The button in global overlay settings controls Status & utilities. Panels shared by several settings categories must be allowed in each of those categories.",
+                            "These filters only hide overlays; enabling a vehicle does not bypass the panel’s normal game-state trigger, visibility switch or focus rules. Editor previews remain available.",
+                        ]),
+                    Section(
                         "Edit all overlay positions",
                         "The position editor can display realistic simulated overlays without Elite running.",
                         [
@@ -911,7 +924,7 @@ public static class GuideCatalog
                     Section("Carrier and distance workspaces", "Shared tools are available outside Mining.",
                         ["Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.", "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.", "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.", "Travel → Distance follows FC Routes. Calculate distances and save a home system there."], []),
                     Section("Announcements and firegroups", "Mining has independent ship notifications and a firegroup reference panel.",
-                        ["In Mining Overlay Settings, enable Mining notifications and Mining firegroups, assign shortcuts and adjust placement in the overlay editor.", "Settings → Announcements controls collected/refined/prospecting notices, mineral thresholds, core/non-core filters and named announcement presets. Optional speech uses locally installed Windows voices.", "Firegroups, directly below Fleet Carrier in the sidebar, records your primary and secondary bindings for groups A–H. The overlay follows the journal/status firegroup; it never sends controls to Elite.", "Save mining settings to persist search filters and preferences for this commander."],
+                        ["In Mining Overlay Settings, enable Mining notifications. Firegroups is in global overlay settings and the editor’s Status & utilities category. Assign shortcuts and adjust placement in the overlay editor.", "Settings → Announcements controls collected/refined/prospecting notices, mineral thresholds, core/non-core filters and named announcement presets. Optional speech uses locally installed Windows voices.", "Firegroups, directly below Fleet Carrier in the sidebar, records your primary and secondary bindings for groups A–H. The overlay follows the journal/status firegroup aboard a ship or vehicle; it never sends controls to Elite. Its compact Group, Primary and Secondary lines start at the bottom-right.", "Save mining settings to persist search filters and preferences for this commander."],
                         ["The new panels require the main ship and disappear on foot or in any SRV. Session-only visibility and hiding in supercruise are configurable in Mining Overlay Settings. Existing Rhino overlays remain independent."]),
                 ]),
         ];

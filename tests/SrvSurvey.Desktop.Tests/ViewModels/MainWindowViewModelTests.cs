@@ -32,7 +32,7 @@ public sealed class MainWindowViewModelTests
         Assert.True(viewModel.IsMiningSelected);
         Assert.True(viewModel.IsActivitiesNavigationExpanded);
         var panels = viewModel.OverlayPanelVisibility.ForCategory(OverlaySettingsCategory.Mining);
-        Assert.Equal(4, panels.Count);
+        Assert.Equal(3, panels.Count);
         Assert.Contains(panels, item => item.PlotterName == "PlotMiningWarning");
         var panel = Assert.Single(panels, item => item.PlotterName == "PlotSurfaceMining");
         Assert.Equal("PlotSurfaceMining", panel.PlotterName);

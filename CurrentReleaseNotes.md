@@ -21,6 +21,13 @@ summarized below.
 
 ## New in RC45
 
+- Renames Mining firegroups to Firegroups in Status & utilities. Its title-free
+  Group, Primary and Secondary column defaults to the bottom-right and works
+  aboard ships and vehicles independently of mining-session notification settings.
+- Adds Overlay Exceptions to every overlay settings page: category allow lists
+  grouped by ship size and vehicle, with Check All / Uncheck All. Filters follow
+  the currently boarded vessel or on-foot status and preserve editor previews.
+
 - Moves Fleet Carrier and Firegroups directly below Overview, and Distance to
   Travel after FC Routes. Mining headers shrink to a readable minimum before wrapping.
 - Loads linked Frontier information automatically on commander detection. The

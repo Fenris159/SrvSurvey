@@ -99,6 +99,13 @@ public sealed partial class OverlaySettingsView : UserControl
         }
     }
 
+    private async void OverlayExceptions_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (DataContext is not MainWindowViewModel viewModel || TopLevel.GetTopLevel(this) is not Window owner) return;
+        var window = new OverlayExceptionsWindow { DataContext = viewModel.OverlayExceptions.ForCategory(category) };
+        await window.ShowDialog(owner);
+    }
+
     private void BeginVrAdjustment_Click(
         object? sender,
         RoutedEventArgs eventArgs)

@@ -113,12 +113,17 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public MiningRing? SelectedRing { get => selectedRing; set => Set(ref selectedRing, value); }
     public MiningMission? SelectedMission { get => selectedMission; set => Set(ref selectedMission, value); }
     public bool ShouldShowNotifications => CanShowShipOverlays && VisibleNotices.Count > 0;
-    public bool ShouldShowFiregroups => CanShowShipOverlays && Settings.Firegroups.Count > 0;
+    public bool ShouldShowFiregroups => sessionAvailable && storageAvailable
+        && eliteStatus is { OnFoot: false }
+        && (eliteStatus.InMainShip || eliteStatus.InSrv || eliteStatus.InFighter)
+        && Settings.Firegroups.Count > 0;
     private bool CanShowShipOverlays => sessionAvailable && storageAvailable && eliteStatus is { InMainShip: true, OnFoot: false, InSrv: false }
         && (!Settings.HideInSupercruise || !eliteStatus.Flags.HasFlag(StatusFlags.Supercruise)) && (!Settings.OverlaysOnlyDuringSession || Current is not null);
     public IReadOnlyList<MiningNotice> VisibleNotices => Notices.Where(n => clock.GetUtcNow() - n.Time < TimeSpan.FromSeconds(Math.Clamp(Settings.NotificationSeconds, 3, 120))).Take(5).ToArray();
+    public MiningFiregroup? ActiveFiregroupDetails => Settings.Firegroups.FirstOrDefault(g => g.Group == eliteStatus?.FireGroup);
+    public int ActiveFiregroupNumber => eliteStatus?.FireGroup ?? 0;
     public string ActiveFiregroup => Settings.Firegroups.FirstOrDefault(g => g.Group == eliteStatus?.FireGroup) is { } group
-        ? $"Group {(char)('A' + group.Group)} · Primary: {group.Primary} · Secondary: {group.Secondary}" : "No mining firegroup configured";
+        ? $"Group {(char)('A' + group.Group)} · Primary: {group.Primary} · Secondary: {group.Secondary}" : "No firegroup configured";
 
     public void Apply(JournalMonitorUpdate update, JournalSessionState context, CargoSnapshot? currentCargo, EliteStatus? currentStatus)
     {

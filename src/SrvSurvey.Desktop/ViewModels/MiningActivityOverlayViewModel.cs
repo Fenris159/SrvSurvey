@@ -12,9 +12,13 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
         IsFiregroups = firegroups;
         if (workspace is not null) workspace.PropertyChanged += OnChanged;
     }
-    public string Title => IsFiregroups ? "MINING FIREGROUPS" : "MINING NOTIFICATIONS";
+    public string Title => IsFiregroups ? "FIREGROUPS" : "MINING NOTIFICATIONS";
     public bool IsFiregroups { get; }
     public bool IsNotifications => !IsFiregroups;
+    public double PanelWidth => IsFiregroups ? 220 : 360;
+    public string GroupLabel => $"Group {(char)('A' + (workspace?.ActiveFiregroupNumber ?? 0))}";
+    public string PrimaryLabel => "Primary: " + (workspace is null ? "Mining laser" : workspace.ActiveFiregroupDetails?.Primary ?? "Not configured");
+    public string SecondaryLabel => "Secondary: " + (workspace is null ? "Collector limpet" : workspace.ActiveFiregroupDetails?.Secondary ?? "Not configured");
     public string Firegroup => workspace?.ActiveFiregroup ?? "Group A · Primary: Mining laser · Secondary: Collector limpet";
     public IReadOnlyList<MiningNotice> Refined => Notices.Where(n => n.Kind == "Refined").ToArray();
     public IReadOnlyList<MiningNotice> Collected => Notices.Where(n => n.Kind == "Collected").ToArray();
@@ -28,6 +32,6 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
     private void OnChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is not (nameof(MiningWorkspaceViewModel.VisibleNotices) or nameof(MiningWorkspaceViewModel.ActiveFiregroup) or nameof(MiningWorkspaceViewModel.CargoSummary))) return;
-        foreach (var name in new[] { nameof(Firegroup), nameof(Refined), nameof(Collected), nameof(Prospecting), nameof(HasRefined), nameof(HasCollected), nameof(Cargo) }) Changed(name);
+        foreach (var name in new[] { nameof(Firegroup), nameof(GroupLabel), nameof(PrimaryLabel), nameof(SecondaryLabel), nameof(Refined), nameof(Collected), nameof(Prospecting), nameof(HasRefined), nameof(HasCollected), nameof(Cargo) }) Changed(name);
     }
 }

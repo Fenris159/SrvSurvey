@@ -15,7 +15,7 @@ public sealed class MiningActivityOverlayCoordinator : IDisposable
         notificationModel = new(workspace, false);
         firegroupModel = new(workspace, true);
         notifications = session.HostPassiveWindow(new PassiveOverlayWindowDefinition("PlotMiningNotifications", _ => new MiningActivityOverlayWindow(notificationModel), (bounds, size) => OverlayWindowPlacement.TopCenter(bounds, size)));
-        firegroups = session.HostPassiveWindow(new PassiveOverlayWindowDefinition("PlotMiningFiregroups", _ => new MiningActivityOverlayWindow(firegroupModel), (bounds, size) => OverlayWindowPlacement.TopCenter(bounds, size)));
+        firegroups = session.HostPassiveWindow(new PassiveOverlayWindowDefinition("PlotMiningFiregroups", _ => new MiningActivityOverlayWindow(firegroupModel), (bounds, size) => OverlayWindowPlacement.BottomRight(bounds, size)));
         workspace.PropertyChanged += OnChanged;
         Synchronize();
     }

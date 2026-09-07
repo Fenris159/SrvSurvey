@@ -7,7 +7,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MiningWorkspaceViewModelTests
 {
     [Fact]
-    public void ShipMiningPanelsNeverAppearInRhinoOrOnFootAndRecoveryIsPaused()
+    public void MiningNotificationsRemainShipOnlyWhileFiregroupsFollowBoardedStatusAndRecoveryIsPaused()
     {
         var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
@@ -25,7 +25,7 @@ public sealed class MiningWorkspaceViewModelTests
             foreach (var status in new[] { new EliteStatus { Flags = StatusFlags.InSrv }, new EliteStatus { Flags = StatusFlags.InMainShip, Flags2 = StatusFlags2.OnFoot }, new EliteStatus() })
             {
                 vm.Apply(new JournalMonitorUpdate(null, [], status, null, null, null, [], false), context, null, status);
-                Assert.False(vm.ShouldShowFiregroups);
+                Assert.Equal(status.InSrv && !status.OnFoot, vm.ShouldShowFiregroups);
                 Assert.False(vm.ShouldShowNotifications);
             }
             vm.StartCommand.Execute(null);

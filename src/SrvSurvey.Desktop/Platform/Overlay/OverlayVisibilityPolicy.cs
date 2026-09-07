@@ -13,6 +13,7 @@ internal enum OverlayVisibilityReasons
     UserDisabled = 1 << 6,
     GalaxyMapExcluded = 1 << 7,
     EditorSuppressed = 1 << 8,
+    VehicleExcluded = 1 << 9,
 }
 
 internal readonly record struct OverlayVisibilityFacts(
@@ -24,7 +25,8 @@ internal readonly record struct OverlayVisibilityFacts(
     bool ManualSuppressed,
     bool SuitSuppressed,
     bool SessionSuppressed,
-    bool PriorityObscured);
+    bool PriorityObscured,
+    bool VehicleAllowed = true);
 
 internal readonly record struct OverlayVisibilityDecision(
     bool Permitted,
@@ -48,7 +50,8 @@ internal static class OverlayVisibilityPolicy
         | OverlayVisibilityReasons.PriorityObscured
         | OverlayVisibilityReasons.UserDisabled
         | OverlayVisibilityReasons.GalaxyMapExcluded
-        | OverlayVisibilityReasons.EditorSuppressed;
+        | OverlayVisibilityReasons.EditorSuppressed
+        | OverlayVisibilityReasons.VehicleExcluded;
 
     internal static OverlayVisibilityDecision Evaluate(
         OverlayVisibilityFacts facts)
@@ -97,6 +100,11 @@ internal static class OverlayVisibilityPolicy
         if (facts.EditorSuppressed)
         {
             reasons |= OverlayVisibilityReasons.EditorSuppressed;
+        }
+
+        if (!facts.VehicleAllowed)
+        {
+            reasons |= OverlayVisibilityReasons.VehicleExcluded;
         }
 
         var shouldHost = (reasons & LifecycleReasons) == 0;

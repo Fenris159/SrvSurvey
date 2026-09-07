@@ -407,6 +407,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             OverlayPanelVisibility = new OverlayPanelVisibilityViewModel(
                 new OverlayPanelVisibilitySettingsStore(AppDataPaths.UiSettingsPath),
                 InputSettings);
+            OverlayExceptions = new OverlayExceptionsViewModel(
+                new OverlayVehicleSettingsStore(AppDataPaths.UiSettingsPath));
             var sharedGameWindowSwitcher = gameWindowSwitcher
                 ?? GameWindowSwitcher.CreateCurrent();
             gameWindowOwnership.Own(sharedGameWindowSwitcher);
@@ -1028,6 +1030,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public GlobalInputSettingsViewModel InputSettings { get; }
 
     public OverlayPanelVisibilityViewModel OverlayPanelVisibility { get; }
+
+    public OverlayExceptionsViewModel OverlayExceptions { get; }
 
     public DesktopBehaviorViewModel DesktopBehavior { get; }
 
@@ -2564,6 +2568,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             journalState.ReconcileVehicleStatus(status);
         }
 
+        OverlayExceptions.UpdateBoardedVehicle(journalState, latestStatus);
         Colonization.UpdateMusicTrack(journalState.MusicTrack);
         StationInfo.UpdateMusicTrack(journalState.MusicTrack);
         GroundTarget.UpdateMusicTrack(journalState.MusicTrack);
