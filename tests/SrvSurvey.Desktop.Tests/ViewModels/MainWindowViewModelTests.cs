@@ -1186,6 +1186,10 @@ public sealed class MainWindowViewModelTests
                 builder => builder
                     .WithAppDataPaths(paths));
 
+            // Startup migrations may add their own settings before import starts.
+            var settingsBeforeImport = await File.ReadAllTextAsync(paths.UiSettingsPath);
+            using (var settingsDocument = System.Text.Json.JsonDocument.Parse(settingsBeforeImport))
+                Assert.Equal("green-light", settingsDocument.RootElement.GetProperty("Theme").GetString());
             await viewModel.ImportLegacyProfileAsync();
 
             Assert.True(viewModel.HasCompletedLegacyImport);
@@ -1193,7 +1197,7 @@ public sealed class MainWindowViewModelTests
                 "legacy UI preferences could not be translated",
                 viewModel.ProfileStatusMessage);
             Assert.Equal(
-                currentSettings,
+                settingsBeforeImport,
                 await File.ReadAllTextAsync(paths.UiSettingsPath));
             Assert.Equal(
                 "{\"darkTheme\":true,",

@@ -21,3 +21,13 @@ Firegroups retains PlotMiningFiregroups, its shortcut identity and saved overlay
 ## Diagnosis and validation
 
 A headless test reproduced the old Save symptom: the handler updated the model, while its plain list failed to refresh the rendered rows. The replacement exercises observable saved rows through the view’s Save command, with visible success feedback and expandable tree contents. Additional tests cover equipped-module filtering, duplicate modules, A–H mapping, multi-module persistence, same-type ship switching, draft retention, missing-module warnings, loadout no-op identity, save failure, commander isolation and legacy migration. Headless Monochrome rendering was inspected. Live gameplay remains a local-build verification step.
+
+## Standards review
+
+Reviewed against starting commit `1816b3eb`. One durability concern was found: moving named configurations into their own store removed them from the existing Mining backup. The ZIP now carries validated Firegroups data, retains pre-restore recovery files and refreshes the live editor. Recheck found no remaining consequential issue.
+
+## Spec review
+
+One requirement defect was found: implicit default exceptions could inherit a later Global edit after restart. Migration now records completion even for the all-allowed default. A regression reproduced the failure before the fix; recheck found no remaining confirmed requirement defect.
+
+Review totals: one standards concern and one spec defect, both addressed; zero remaining findings per axis. Validation covers 1,448 Core, 2,020 Desktop and 13 ReplayController tests. An existing legacy-import assertion was updated to compare settings immediately before/after import, while still checking the user's theme, because startup now records the exceptions migration marker. Its focused rerun passed; all other tests passed in the full solution run. No live Elite gameplay validation was performed.
