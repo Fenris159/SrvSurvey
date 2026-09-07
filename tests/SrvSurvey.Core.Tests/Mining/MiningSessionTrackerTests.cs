@@ -34,6 +34,22 @@ public sealed class MiningSessionTrackerTests
         Assert.Equal(0, material.Average);
     }
 
+    [Fact]
+    public void DepletionUpdatesTheLatestProspectWithoutCountingAnotherAsteroid()
+    {
+        var tracker = new MiningSessionTracker();
+        var start = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        tracker.Start(start, "Sol", "Earth A Ring", "Python");
+
+        tracker.Apply(Parse("""{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:01:00Z","Materials":[{"Name":"Platinum","Proportion":35}],"Content":"High","Remaining":100}"""));
+        Assert.True(tracker.Apply(Parse("""{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:02:00Z","Materials":[{"Name":"Platinum","Proportion":35}],"Content":"High","Remaining":42.5}""")));
+
+        var prospect = Assert.Single(tracker.Current!.Prospects);
+        Assert.Equal(start.AddMinutes(1), prospect.Time);
+        Assert.Equal(42.5, prospect.Remaining);
+        Assert.Equal(1, tracker.Current.Asteroids);
+    }
+
     private static JournalEventEnvelope Parse(string json)
     {
         Assert.True(JournalEventEnvelope.TryParse(json, out var entry, out _));

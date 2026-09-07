@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.45.5
+# SrvSurvey-XP 2.1.3.0-rc.45.6
 
 - Replaces the Mining workspace placeholder with session accounting, prospecting
   yields, core and raw-material tracking, cargo, mining missions, historical
@@ -15,9 +15,18 @@
   import, offline HTML reports with print/PDF output, and ZIP backups containing
   shared bookmarks and screenshot attachments. Guides documents the new tools.
 
-RC45.5 fixes Linux release validation cleanup and expands the Firegroups module
-catalog. It retains the RC45 changes and the combined RC43, RC44, and RC44.5
-features summarized below.
+RC45.6 fixes Mining notification and prospector-report regressions. It retains
+the RC45.5 Linux release and Firegroups fixes, the RC45 changes, and the combined
+RC43, RC44, and RC44.5 features summarized below.
+
+## New in RC45.6
+
+- Keeps collected engineering-material notices visible alongside rapid refinery
+  completions instead of allowing refined notices to displace the collection.
+- Keeps the latest prospector report visible for the active mining session. Its
+  mineral summary and remaining asteroid percentage update in place when Elite
+  reports depletion, without counting the same asteroid twice or repeating the
+  prospecting announcement.
 
 ## New in RC45.5
 
@@ -230,11 +239,11 @@ The candidate also retains the preceding Guardian, controller, and sharing work:
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.45.5`
-- Tag: `xp-v2.1.3.0-rc.45.5`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.45.5-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.45.5-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.45.5-x86_64.AppImage`
+- Version: `2.1.3.0-rc.45.6`
+- Tag: `xp-v2.1.3.0-rc.45.6`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.45.6-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.45.6-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.45.6-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

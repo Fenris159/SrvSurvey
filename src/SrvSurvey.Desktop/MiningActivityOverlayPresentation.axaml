@@ -10,7 +10,7 @@
     <TextBlock Text="{Binding SecondaryLabel}" TextWrapping="Wrap"/>
    </StackPanel>
    <StackPanel IsVisible="{Binding IsNotifications}" Spacing="8">
-    <ItemsControl ItemsSource="{Binding Prospecting}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="mining:MiningNotice"><TextBlock Text="{Binding Text}" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+    <StackPanel IsVisible="{Binding HasProspectReport}" Spacing="3"><TextBlock Classes="overlay-header" Text="PROSPECTOR" /><TextBlock Text="{Binding ProspectReport}" TextWrapping="Wrap" /></StackPanel>
     <StackPanel IsVisible="{Binding HasRefined}" Spacing="3"><TextBlock Classes="overlay-header" Text="REFINED" /><ItemsControl ItemsSource="{Binding Refined}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="mining:MiningNotice"><TextBlock Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Text}" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel>
     <StackPanel IsVisible="{Binding HasCollected}" Spacing="3"><TextBlock Classes="overlay-header" Text="COLLECTED" /><ItemsControl ItemsSource="{Binding Collected}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="mining:MiningNotice"><TextBlock Text="{Binding Text}" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel>
     <TextBlock Classes="muted" Text="{Binding Cargo}" TextWrapping="Wrap" />

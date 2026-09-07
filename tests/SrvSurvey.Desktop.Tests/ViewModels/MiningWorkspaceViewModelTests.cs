@@ -60,6 +60,42 @@ public sealed class MiningWorkspaceViewModelTests
         }
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }
+
+    [Fact]
+    public void ProspectReportPersistsAndCollectedMaterialsAreNotDisplacedByRefining()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var clock = new Clock();
+        try
+        {
+            using var vm = new MiningWorkspaceViewModel(directory, new Resolver(), new BookmarksViewModel(directory), clock: clock);
+            var context = new JournalSessionState();
+            var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
+            void Feed(string json, bool bootstrap = false)
+            {
+                var entry = FiregroupsWorkspaceViewModelTests.Event(json);
+                context.Apply(entry);
+                vm.Apply(new(null, [entry], ship, null, null, null, [], bootstrap), context, null, ship);
+            }
+            Feed("""{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}""", true);
+            vm.StartCommand.Execute(null);
+            using var overlay = new MiningActivityOverlayViewModel(vm, false);
+            Feed("""{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:00:01Z","Materials":[{"Name":"Platinum","Proportion":35}],"Remaining":100}""");
+            Feed("""{"event":"MaterialCollected","timestamp":"2026-09-06T12:00:02Z","Category":"Raw","Name":"chromium","Count":3}""");
+            for (var second = 3; second <= 9; second++)
+                Feed($$"""{"event":"MiningRefined","timestamp":"2026-09-06T12:00:0{{second}}Z","Type":"platinum","Type_Localised":"Platinum"}""");
+
+            Assert.Contains(vm.VisibleNotices, notice => notice.Kind == "Collected" && notice.Text.Contains("chromium", StringComparison.OrdinalIgnoreCase));
+            clock.Now += TimeSpan.FromMinutes(2);
+            vm.Tick();
+            Assert.Empty(vm.VisibleNotices);
+            Assert.True(vm.ShouldShowNotifications);
+            Assert.Equal("Platinum 35.0% · Remaining 100%", vm.CurrentProspectText);
+            Assert.True(overlay.HasProspectReport);
+            Assert.Equal(vm.CurrentProspectText, overlay.ProspectReport);
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
     [Fact]
     public async Task MiningBackupRestoresNamedFiregroupsAndKeepsOldArchivesCompatible()
     {

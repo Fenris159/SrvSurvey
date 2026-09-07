@@ -122,12 +122,29 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public MiningSession? SelectedSession { get => selectedSession; set { if (Set(ref selectedSession, value)) { Notes = value?.Notes ?? ""; Changed(nameof(RefinerySummary)); Changed(nameof(ReportScreenshots)); } } }
     public MiningRing? SelectedRing { get => selectedRing; set => Set(ref selectedRing, value); }
     public MiningMission? SelectedMission { get => selectedMission; set => Set(ref selectedMission, value); }
-    public bool ShouldShowNotifications => CanShowShipOverlays && VisibleNotices.Count > 0;
+    public string CurrentProspectText => state.CurrentProspectText ?? "";
+    public bool HasCurrentProspect => CurrentProspectText.Length > 0;
+    public bool ShouldShowNotifications => CanShowShipOverlays && (HasCurrentProspect || VisibleNotices.Count > 0);
     private bool CanShowShipOverlays => sessionAvailable && storageAvailable && eliteStatus is { InMainShip: true, OnFoot: false, InSrv: false }
         && (!Settings.HideInSupercruise || !eliteStatus.Flags.HasFlag(StatusFlags.Supercruise)) && (!Settings.OverlaysOnlyDuringSession || Current is not null);
     private IReadOnlyList<MiningNotice>? cachedVisibleNotices;
     public IReadOnlyList<MiningNotice> VisibleNotices => cachedVisibleNotices ??= ReadVisibleNotices();
-    private MiningNotice[] ReadVisibleNotices() => Notices.Where(n => clock.GetUtcNow() - n.Time < TimeSpan.FromSeconds(Math.Clamp(Settings.NotificationSeconds, 3, 120))).Take(5).ToArray();
+    private MiningNotice[] ReadVisibleNotices()
+    {
+        var active = Notices.Where(n => clock.GetUtcNow() - n.Time < TimeSpan.FromSeconds(Math.Clamp(Settings.NotificationSeconds, 3, 120))).ToArray();
+        var selected = new List<MiningNotice>(5);
+        foreach (var notice in active)
+        {
+            if (selected.Count == 5) break;
+            if (!selected.Any(item => item.Kind == notice.Kind)) selected.Add(notice);
+        }
+        foreach (var notice in active)
+        {
+            if (selected.Count == 5) break;
+            if (!selected.Any(item => ReferenceEquals(item, notice))) selected.Add(notice);
+        }
+        return selected.OrderByDescending(item => item.Time).ToArray();
+    }
     public void Apply(JournalMonitorUpdate update, JournalSessionState context, CargoSnapshot? currentCargo, EliteStatus? currentStatus)
     {
         sessionAvailable = !update.IsAwaitingCommanderIdentity && !context.IsShutdown && !string.IsNullOrWhiteSpace(context.FrontierId);
@@ -385,11 +402,11 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         cachedVisibleNotices = null;
         if (!dataChanged)
         {
-            foreach (var name in new[] { nameof(CommunityStatus), nameof(SessionSummary), nameof(ShouldShowNotifications), nameof(VisibleNotices) }) Changed(name);
+            foreach (var name in new[] { nameof(CommunityStatus), nameof(SessionSummary), nameof(ShouldShowNotifications), nameof(VisibleNotices), nameof(CurrentProspectText), nameof(HasCurrentProspect) }) Changed(name);
             return;
         }
         cachedPresetNames = null; cachedEngineeringMaterials = null; cachedProspects = null; cachedMissions = null; cachedRings = null;
-        foreach (var name in new[] { nameof(ReportScreenshots), nameof(Current), nameof(Context), nameof(CurrentSystem), nameof(SessionSummary), nameof(CargoSummary), nameof(Cargo), nameof(Materials), nameof(EngineeringMaterials), nameof(Prospects), nameof(Missions), nameof(Notices), nameof(History), nameof(HistorySummary), nameof(MaximumHistoryRate), nameof(RefinerySummary), nameof(Rings), nameof(ThresholdSummary), nameof(ShouldShowNotifications), nameof(VisibleNotices) }) Changed(name);
+        foreach (var name in new[] { nameof(ReportScreenshots), nameof(Current), nameof(Context), nameof(CurrentSystem), nameof(SessionSummary), nameof(CargoSummary), nameof(Cargo), nameof(Materials), nameof(EngineeringMaterials), nameof(Prospects), nameof(Missions), nameof(Notices), nameof(History), nameof(HistorySummary), nameof(MaximumHistoryRate), nameof(RefinerySummary), nameof(Rings), nameof(ThresholdSummary), nameof(ShouldShowNotifications), nameof(VisibleNotices), nameof(CurrentProspectText), nameof(HasCurrentProspect) }) Changed(name);
         foreach (var command in new[] { StartCommand, PauseCommand, StopCommand }) ((WorkspaceCommand)command).Refresh();
     }
     private static string Text(JsonElement json, string name) => json.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() ?? "" : "";

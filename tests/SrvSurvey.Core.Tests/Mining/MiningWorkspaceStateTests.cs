@@ -32,6 +32,20 @@ public sealed class MiningWorkspaceStateTests
         Assert.Equal(5, state.Data.Missions.Single(m => m.Id == 7).Delivered);
         Assert.Equal(2, state.Data.Missions.Count);
     }
+
+    [Fact]
+    public void ProspectorProgressUpdatesThePersistentReportWithoutAddingAnotherNotice()
+    {
+        var state = new MiningWorkspaceState(new MiningCommanderData());
+        state.Session.Start(DateTimeOffset.Parse("2026-09-06T12:00:00Z"), "Sol", "Ring", "Python");
+
+        state.Apply(Parse("""{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:01:00Z","Materials":[{"Name":"Platinum","Proportion":35}],"Remaining":100}"""), false, "Sol", "Ring", "Python");
+        state.Data.Settings.Thresholds["Platinum"] = 90;
+        state.Apply(Parse("""{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:02:00Z","Materials":[{"Name":"Platinum","Proportion":35}],"Remaining":20}"""), false, "Sol", "Ring", "Python");
+
+        Assert.Equal("Platinum 35.0% · Remaining 20%", state.CurrentProspectText);
+        Assert.Single(state.Notices);
+    }
     private static JournalEventEnvelope Parse(string json)
     {
         Assert.True(JournalEventEnvelope.TryParse(json, out var result, out _));

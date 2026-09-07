@@ -6,6 +6,7 @@ namespace SrvSurvey.Core.Mining;
 public sealed record MiningMaterial(string Name, double Percentage);
 public sealed record MiningProspect(DateTimeOffset Time, IReadOnlyList<MiningMaterial> Materials, string Core, string Content)
 {
+    public double Remaining { get; init; } = 100;
     public string MineralSummary => string.Join(" · ", Materials.Select(m => $"{m.Name} {m.Percentage:0.0}%"));
 }
 public sealed record MiningCollection(DateTimeOffset Time, string Name, int Count, bool Engineering)
@@ -121,12 +122,26 @@ public sealed class MiningSessionTracker
                 else return false;
                 break;
             case "ProspectedAsteroid":
-                // A depleted asteroid can be re-targeted; it is not a fresh prospect.
-                if (data.TryGetProperty("Remaining", out var remaining) && remaining.TryGetDouble(out var value) && value < 100) return false;
                 var materials = MiningJson.Array(data, "Materials")
                     .Select(m => new MiningMaterial(MiningJson.Text(m, "Name"), MiningJson.Number(m, "Proportion")))
                     .Where(m => m.Name.Length > 0 && m.Percentage is >= 0 and <= 100).ToArray();
-                session.Prospects.Add(new MiningProspect(time, materials, MiningJson.Text(data, "MotherlodeMaterial"), MiningJson.Text(data, "Content")));
+                var remaining = data.TryGetProperty("Remaining", out var remainingValue)
+                    && remainingValue.TryGetDouble(out var parsedRemaining) && double.IsFinite(parsedRemaining)
+                    ? Math.Clamp(parsedRemaining, 0, 100)
+                    : 100;
+                var prospect = new MiningProspect(time, materials, MiningJson.Text(data, "MotherlodeMaterial"), MiningJson.Text(data, "Content"))
+                {
+                    Remaining = remaining,
+                };
+                // Re-targeting the asteroid reports its updated depletion. Keep the
+                // original prospect identity so progress does not inflate session totals.
+                if (remaining < 100 && session.Prospects.Count > 0)
+                {
+                    var original = session.Prospects[^1];
+                    session.Prospects[^1] = prospect with { Time = original.Time };
+                }
+                else
+                    session.Prospects.Add(prospect);
                 break;
             case "MiningRefined":
                 session.Collections.Add(new MiningCollection(time, MiningJson.Text(data, "Type"), 1, false));
