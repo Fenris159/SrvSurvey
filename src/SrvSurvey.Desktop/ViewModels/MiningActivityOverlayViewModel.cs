@@ -23,7 +23,21 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
     public string GroupLabel => $"Group {(char)('A' + (firegroupsWorkspace?.ActiveGroupNumber ?? 0))}";
     public string PrimaryLabel => "Primary: " + (firegroupsWorkspace is null ? "Mining laser" : FormatModules(firegroupsWorkspace.ActiveGroup?.Primary));
     public string SecondaryLabel => "Secondary: " + (firegroupsWorkspace is null ? "Collector limpet" : FormatModules(firegroupsWorkspace.ActiveGroup?.Secondary));
-    private static string FormatModules(IReadOnlyList<SrvSurvey.Core.Firegroups.FiregroupModule>? modules) => modules is { Count: > 0 } ? string.Join("\n", modules.Select(m => m.Display)) : "Not assigned";
+    private static string FormatModules(IReadOnlyList<SrvSurvey.Core.Firegroups.FiregroupModule>? modules)
+    {
+        if (modules is not { Count: > 0 }) return "Not assigned";
+        return string.Join("\n", modules.Select(OverlayName)
+            .GroupBy(name => name, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.Count() > 1 ? $"{group.Key} ×{group.Count()}" : group.Key));
+    }
+
+    private static string OverlayName(SrvSurvey.Core.Firegroups.FiregroupModule module)
+    {
+        var name = module.Name.Trim();
+        if (module.Symbol.Length == 0 || !name.EndsWith(')')) return name;
+        var technicalDetails = name.LastIndexOf(" (", StringComparison.Ordinal);
+        return technicalDetails > 0 ? name[..technicalDetails] : name;
+    }
     private void OnFiregroupsChanged(object? sender, PropertyChangedEventArgs e)
     {
         Changed(nameof(GroupLabel)); Changed(nameof(PrimaryLabel)); Changed(nameof(SecondaryLabel));
