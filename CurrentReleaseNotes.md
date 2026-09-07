@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.45
+# SrvSurvey-XP 2.1.3.0-rc.45.5
 
 - Replaces the Mining workspace placeholder with session accounting, prospecting
   yields, core and raw-material tracking, cargo, mining missions, historical
@@ -15,9 +15,19 @@
   import, offline HTML reports with print/PDF output, and ZIP backups containing
   shared bookmarks and screenshot attachments. Guides documents the new tools.
 
-RC45 adds experimental Rhino HUD rig tracking and corrects overlay sizing and
-next-jump error handling. It retains the combined RC43, RC44, and RC44.5 features
-summarized below.
+RC45.5 fixes Linux release validation cleanup and expands the Firegroups module
+catalog. It retains the RC45 changes and the combined RC43, RC44, and RC44.5
+features summarized below.
+
+## New in RC45.5
+
+- Prevents successful Linux AppImage runtime validation from failing when Xvfb
+  briefly retains a transient file during teardown. Cleanup leaves the working
+  directory, retries, and reports any remaining runner-only file as a warning.
+- Adds Surface Scanner, D-Scanner, SC-Suite and Data Link Scanner to Firegroups.
+  The checked-in FDevIDs snapshot now recognizes the supported mercgear weapons
+  and Long Range Detailed Surface Scanner while excluding power distributors,
+  module reinforcement packages and cargo racks.
 
 ## New in RC45
 
@@ -220,11 +230,11 @@ The candidate also retains the preceding Guardian, controller, and sharing work:
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.45`
-- Tag: `xp-v2.1.3.0-rc.45`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.45-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.45-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.45-x86_64.AppImage`
+- Version: `2.1.3.0-rc.45.5`
+- Tag: `xp-v2.1.3.0-rc.45.5`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.45.5-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.45.5-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.45.5-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

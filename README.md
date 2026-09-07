@@ -1,6 +1,6 @@
 # SrvSurvey-XP Cross-Platform
 
-Current release candidate version: **2.1.3.0-rc.45**
+Current release candidate version: **2.1.3.0-rc.45.5**
 
 In-app **Guides > Chat Commands** provides an activity-by-activity reference for
 surface bookmarks, mining, exobiology, ground targets, Guardian surveys, settlement
@@ -16,8 +16,12 @@ tests, packaging, and development tools. Existing SrvSurvey profiles remain
 supported through a verified, backup-first import; the imported source is never
 modified.
 
-## RC45 highlights
+## RC45.5 highlights
 
+- Adds Surface Scanner and the built-in D-Scanner, SC-Suite and Data Link Scanner
+  to Firegroups, plus supported mercgear modules from the current FDevIDs catalog.
+- Prevents a transient Xvfb cleanup race from failing an otherwise successful
+  Linux AppImage validation job.
 - Experimental [Rhino HUD rig tracking](docs/SURFACE_MINING.md): calibrate the six
   deployment bars, choose your HUD color, and automatically set or clear rig
   trackers with movement and uncertainty safeguards.
@@ -27,7 +31,7 @@ modified.
 - Retains the RC43/44 mining, shared tracker shortcuts, chat-command guide,
   Monochrome Companion theme, and exploration improvements.
 
-See the [complete RC45 release notes](CurrentReleaseNotes.md).
+See the [complete RC45.5 release notes](CurrentReleaseNotes.md).
 
 ## Install
 
