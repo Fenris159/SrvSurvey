@@ -45,7 +45,7 @@ public sealed class MiningCommunityCache
                 if (id <= 0 || system.Length == 0 || station.Length == 0) return;
                 foreach (var item in MiningJson.Array(message, "commodities"))
                 {
-                    var commodity = Normalize(MiningJson.Text(item, "name"));
+                    var commodity = MiningCommodityName.Normalize(MiningJson.Text(item, "name"));
                     if (commodity.Length == 0) continue;
                     var key = (id, commodity);
                     if (markets.TryGetValue(key, out var previous) && previous.Time >= time) continue;
@@ -61,7 +61,7 @@ public sealed class MiningCommunityCache
         {
             // Commodity messages do not certify station type or pad size. Keep these results out of such filtered searches.
             if (query.LargePads || query.ExcludeCarriers || query.StationType.Length > 0) return [];
-            return markets.Values.Where(m => m.Commodity == Normalize(query.Commodity) && m.Time >= now.AddDays(-Math.Min(1, query.MaximumAgeDays)))
+            return markets.Values.Where(m => m.Commodity == MiningCommodityName.Normalize(query.Commodity) && m.Time >= now.AddDays(-Math.Min(1, query.MaximumAgeDays)))
                 .Select(m => new MiningMarketResult(m.System, m.Station, "Unknown · EDDN", origin is { } p && systems.GetValueOrDefault(m.System)?.Position is { } target ? p.DistanceTo(target) : null,
                     null, query.Buying ? m.Buy : m.Sell, m.Demand, m.Stock, m.Time, m.Id))
                 .Where(m => m.Price > 0 && (query.Buying ? m.Supply : m.Demand) > 0 && (query.GalaxyWide || m.Distance is { } distance && distance <= query.Radius)).ToArray();
@@ -86,5 +86,4 @@ public sealed class MiningCommunityCache
         // Expiry is also checked on queries; periodic pruning avoids scanning the entire cache for every broadcast.
         if (now.Second == 0) foreach (var key in markets.Where(p => p.Value.Time < now.AddDays(-1)).Select(p => p.Key).ToArray()) markets.Remove(key);
     }
-    private static string Normalize(string value) => value.ToLowerInvariant().Replace(" ", "") switch { "voidopals" or "voidopal" => "opal", "lowtemperaturediamonds" => "lowtemperaturediamond", var name => name };
 }

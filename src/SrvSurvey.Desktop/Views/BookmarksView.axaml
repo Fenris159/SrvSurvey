@@ -82,7 +82,7 @@
             <Button Content="New" Command="{Binding NewCommand}" Margin="0,0,8,0"/>
             <Button Content="Save bookmark" Command="{Binding SaveCommand}" Margin="0,0,8,0"/>
             <Button Content="Import…" Click="Import_Click" Margin="0,0,8,0"/>
-            <Button Content="Export…" Click="Export_Click"/>
+            <Button Content="Export…" Click="Export_Click" Margin="0,0,8,0"/><Button Content="Attach screenshots…" Click="Attach_Click" Margin="0,0,8,0"/><Button Content="Undo delete" Click="Undo_Click"/>
           </WrapPanel>
         </StackPanel>
       </Border>

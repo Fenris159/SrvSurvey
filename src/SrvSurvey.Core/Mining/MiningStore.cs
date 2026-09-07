@@ -7,7 +7,7 @@ namespace SrvSurvey.Core.Mining;
 public sealed record MiningPreferences
 {
     public bool ReceiveCommunityData { get; set; }
-    public Dictionary<string, string> SearchOptions { get; set; } = new();
+    public MiningSearchPreferences SearchOptions { get; set; } = new();
     public bool AutoStart { get; set; } = true;
     public bool SpeakAnnouncements { get; set; }
     public string Voice { get; set; } = "";

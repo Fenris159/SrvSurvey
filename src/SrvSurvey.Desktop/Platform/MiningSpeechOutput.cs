@@ -33,7 +33,7 @@ public sealed class MiningSpeechOutput : IDisposable
         dynamic sapi = speaker;
         sapi.Volume = Math.Clamp(volume, 0, 100);
         sapi.Rate = Math.Clamp(rate, -10, 10);
-        if (voice.Length > 0)
+        if (!string.IsNullOrEmpty(voice))
         {
             dynamic voices = sapi.GetVoices();
             for (var index = 0; index < voices.Count; index++)

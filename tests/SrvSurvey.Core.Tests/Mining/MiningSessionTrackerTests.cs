@@ -25,6 +25,15 @@ public sealed class MiningSessionTrackerTests
         Assert.Equal(35, session.Prospects[0].Materials[0].Percentage);
     }
 
+    [Fact]
+    public void CoreOnlyMineralCountsOnceAndIsAlwaysAQualityHit()
+    {
+        var session = new MiningSession { Prospects = [new MiningProspect(DateTimeOffset.UtcNow, [new MiningMaterial("Osmium", 5)], "Monazite", "High")] };
+        var material = Assert.Single(session.Summarize(new Dictionary<string, double> { ["Monazite"] = 90 }), m => m.Name == "Monazite");
+        Assert.Equal(1, material.Finds); Assert.Equal(1, material.QualityHits);
+        Assert.Equal(0, material.Average);
+    }
+
     private static JournalEventEnvelope Parse(string json)
     {
         Assert.True(JournalEventEnvelope.TryParse(json, out var entry, out _));

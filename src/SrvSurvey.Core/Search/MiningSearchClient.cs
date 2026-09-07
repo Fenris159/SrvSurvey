@@ -54,12 +54,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
     public async Task<IReadOnlyList<MiningMarketResult>> FindMarketsAsync(MiningMarketQuery query, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query.Commodity);
-        var commodity = query.Commodity.ToLowerInvariant().Replace(" ", "") switch
-        {
-            "voidopals" or "voidopal" => "opal",
-            "lowtemperaturediamonds" => "lowtemperaturediamond",
-            var name => name,
-        };
+        var commodity = MiningCommodityName.Normalize(query.Commodity);
         var direction = query.Buying ? "exports" : "imports";
         var path = query.GalaxyWide ? $"commodity/name/{Uri.EscapeDataString(commodity)}/{direction}" : $"system/name/{Uri.EscapeDataString(query.ReferenceSystem)}/commodity/name/{Uri.EscapeDataString(commodity)}/nearby/{direction}";
         var uri = $"https://api.ardent-insight.com/v2/{path}?minVolume=1&maxDaysAgo={query.MaximumAgeDays}&maxDistance={query.Radius.ToString(System.Globalization.CultureInfo.InvariantCulture)}&fleetCarriers={!query.ExcludeCarriers}";

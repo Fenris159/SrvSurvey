@@ -7,7 +7,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksViewModel bookmarks, Action<MiningRing> cacheRing, Func<IReadOnlyList<MiningRing>> localRings, IStarSystemResolver resolver, MiningCommunityCache? community = null) : WorkspaceObservable, IDisposable
 {
     private CancellationTokenSource? pending;
-    private string reference = "", mineral = "Platinum", ringType = "All", commodity = "Platinum", status = "Choose a reference system to search.";
+    private string status = "Choose a reference system to search.";
+    private MiningSearchPreferences options = new();
     private IReadOnlyList<MiningRing> rings = [];
     private IReadOnlyList<MiningMarketResult> markets = [];
     private IReadOnlyList<MiningSystemResult> systems = [];
@@ -15,37 +16,35 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     private MiningMarketResult? selectedMarket;
     private MiningSystemResult? selectedSystem;
     private bool busy;
-    private string commodityCategory = "Mining";
     public IReadOnlyList<string> CommodityCategories => MiningReferenceData.Commodities.Keys.ToArray();
-    public string CommodityCategory { get => commodityCategory; set { if (Set(ref commodityCategory, value)) Changed(nameof(CommodityOptions)); } }
     public IReadOnlyList<string> CommodityOptions => MiningReferenceData.Commodities.GetValueOrDefault(CommodityCategory) ?? [];
-
-    public string Reference { get => reference; set => Set(ref reference, value); }
-    public string Mineral { get => mineral; set => Set(ref mineral, value); }
-    public string RingType { get => ringType; set => Set(ref ringType, value); }
-    public string Commodity { get => commodity; set => Set(ref commodity, value); }
-    public double Radius { get; set; } = 100;
-    public int MinimumHotspots { get; set; } = 1;
+    public string CommodityCategory { get => options.CommodityCategory; set { Set(ref options, options with { CommodityCategory = value ?? "Mining" }); Changed(nameof(CommodityOptions)); } }
+    public string Reference { get => options.Reference; set { Set(ref options, options with { Reference = value ?? "" }); } }
+    public string Mineral { get => options.Mineral; set { Set(ref options, options with { Mineral = value ?? "Platinum" }); } }
+    public string RingType { get => options.RingType; set { Set(ref options, options with { RingType = value ?? "All" }); } }
+    public string Commodity { get => options.Commodity; set { Set(ref options, options with { Commodity = value ?? "Platinum" }); } }
+    public double Radius { get => options.Radius; set { Set(ref options, options with { Radius = double.IsFinite(value) ? Math.Clamp(value, 1, 100000) : 100 }); } }
+    public int MinimumHotspots { get => options.MinimumHotspots; set { Set(ref options, options with { MinimumHotspots = Math.Clamp(value, 0, 100) }); } }
+    public string Source { get => options.Source; set { Set(ref options, options with { Source = value ?? "Both" }); } }
+    public bool OnlyOverlaps { get => options.OnlyOverlaps; set { Set(ref options, options with { OnlyOverlaps = value }); } }
+    public bool OnlyRes { get => options.OnlyRes; set { Set(ref options, options with { OnlyRes = value }); } }
+    public bool Buying { get => options.Buying; set { Set(ref options, options with { Buying = value }); } }
+    public bool GalaxyWide { get => options.GalaxyWide; set { Set(ref options, options with { GalaxyWide = value }); } }
+    public bool ExcludeCarriers { get => options.ExcludeCarriers; set { Set(ref options, options with { ExcludeCarriers = value }); } }
+    public bool LargePads { get => options.LargePads; set { Set(ref options, options with { LargePads = value }); } }
+    public int MaximumAgeDays { get => options.MaximumAgeDays; set { Set(ref options, options with { MaximumAgeDays = Math.Clamp(value, 0, 365) }); } }
+    public string StationType { get => options.StationType; set { Set(ref options, options with { StationType = value ?? "" }); } }
+    public string Security { get => options.Security; set { Set(ref options, options with { Security = value ?? "" }); } }
+    public string Allegiance { get => options.Allegiance; set { Set(ref options, options with { Allegiance = value ?? "" }); } }
+    public string Government { get => options.Government; set { Set(ref options, options with { Government = value ?? "" }); } }
+    public string Economy { get => options.Economy; set { Set(ref options, options with { Economy = value ?? "" }); } }
+    public string State { get => options.State; set { Set(ref options, options with { State = value ?? "" }); } }
+    public string Power { get => options.Power; set { Set(ref options, options with { Power = value ?? "" }); } }
+    public string PowerState { get => options.PowerState; set { Set(ref options, options with { PowerState = value ?? "" }); } }
+    public long MinimumPopulation { get => options.MinimumPopulation; set { Set(ref options, options with { MinimumPopulation = Math.Max(0, value) }); } }
+    public string TraderType { get => options.TraderType; set { Set(ref options, options with { TraderType = value ?? "Raw" }); } }
     public int Page { get; set; }
-    public string Source { get; set; } = "Both";
-    public bool OnlyOverlaps { get; set; }
-    public bool OnlyRes { get; set; }
     public static IReadOnlyList<string> Sources { get; } = ["Both", "Local", "Spansh"];
-    public bool Buying { get; set; }
-    public bool GalaxyWide { get; set; }
-    public bool ExcludeCarriers { get; set; }
-    public bool LargePads { get; set; }
-    public int MaximumAgeDays { get; set; } = 2;
-    public string StationType { get; set; } = "";
-    public string Security { get; set; } = "";
-    public string Allegiance { get; set; } = "";
-    public string Government { get; set; } = "";
-    public string Economy { get; set; } = "";
-    public string State { get; set; } = "";
-    public string Power { get; set; } = "";
-    public string PowerState { get; set; } = "";
-    public long MinimumPopulation { get; set; }
-    public string TraderType { get; set; } = "Raw";
     public static IReadOnlyList<string> RingTypes { get; } = ["All", "Icy", "Metallic", "Metal Rich", "Rocky"];
     public static IReadOnlyList<string> TraderTypes { get; } = ["Raw", "Manufactured", "Encoded"];
     public string Status { get => status; private set => Set(ref status, value); }
@@ -101,7 +100,7 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
         var annotated = candidates.Select(r =>
         {
             var bookmark = bookmarks.All.FirstOrDefault(b => b.System.Equals(r.System, StringComparison.OrdinalIgnoreCase) && b.Body.Equals(r.Body, StringComparison.OrdinalIgnoreCase));
-            return r with { Overlaps = bookmark?.Overlaps ?? r.Overlaps, ResourceExtractionSites = bookmark?.ResourceExtractionSites ?? r.ResourceExtractionSites, Power = community?.Power(r.System) is { } power ? $"{power.Power} · {power.State}" : r.Power };
+            return r with { Overlaps = !string.IsNullOrWhiteSpace(bookmark?.Overlaps) ? bookmark.Overlaps : r.Overlaps, ResourceExtractionSites = !string.IsNullOrWhiteSpace(bookmark?.ResourceExtractionSites) ? bookmark.ResourceExtractionSites : r.ResourceExtractionSites, Power = community?.Power(r.System) is { } power ? $"{power.Power} · {power.State}" : r.Power };
         }).Where(r => (!OnlyOverlaps || r.Overlaps.Length > 0) && (!OnlyRes || r.ResourceExtractionSites.Length > 0)).OrderBy(r => r.DistanceLy ?? double.MaxValue).Take(500).ToArray();
         token.ThrowIfCancellationRequested(); Rings = annotated;
         Status = $"{annotated.Length} matching rings · {Source} · online page {Page + 1}{(offline ? " · Spansh unavailable; local results only" : "")}.";
@@ -144,34 +143,36 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     }
     public void CacheSelectedRing() { if (SelectedRing is { } ring) { cacheRing(ring); Status = "Ring saved to your local discoveries."; } }
     public void UseSelectedSystem() { if (SelectedSystem is { } s) Reference = s.System; }
-    // Only editable scalar search options are persisted, never results, commands or outstanding tasks.
-    private static readonly string[] OptionNames = [nameof(CommodityCategory), nameof(Reference), nameof(Mineral), nameof(RingType), nameof(Commodity), nameof(Radius), nameof(MinimumHotspots), nameof(Source), nameof(OnlyOverlaps), nameof(OnlyRes), nameof(Buying), nameof(GalaxyWide), nameof(ExcludeCarriers), nameof(LargePads), nameof(MaximumAgeDays), nameof(StationType), nameof(Security), nameof(Allegiance), nameof(Government), nameof(Economy), nameof(State), nameof(Power), nameof(PowerState), nameof(MinimumPopulation), nameof(TraderType)];
-    public Dictionary<string, string> SaveOptions() => OptionNames.ToDictionary(name => name, name => Convert.ToString(GetType().GetProperty(name)!.GetValue(this), System.Globalization.CultureInfo.InvariantCulture) ?? "");
-    private static readonly IReadOnlyDictionary<string, string> DefaultOptions = new Dictionary<string, string>
-    {
-        [nameof(CommodityCategory)] = "Mining",
-        [nameof(Mineral)] = "Platinum",
-        [nameof(RingType)] = "All",
-        [nameof(Commodity)] = "Platinum",
-        [nameof(Radius)] = "100",
-        [nameof(MinimumHotspots)] = "1",
-        [nameof(Source)] = "Both",
-        [nameof(MaximumAgeDays)] = "2",
-        [nameof(TraderType)] = "Raw",
-    };
-    public void LoadOptions(IReadOnlyDictionary<string, string> values)
+    public MiningSearchPreferences SaveOptions() => options;
+    public void LoadOptions(MiningSearchPreferences values)
     {
         pending?.Cancel(); pending = null; IsBusy = false;
         Rings = []; Markets = []; Systems = []; SelectedRing = null; SelectedMarket = null; SelectedSystem = null;
-        foreach (var name in OptionNames)
-        {
-            var property = GetType().GetProperty(name)!;
-            var fallback = DefaultOptions.GetValueOrDefault(name) ?? (property.PropertyType == typeof(string) ? "" : property.PropertyType == typeof(bool) ? "False" : "0");
-            property.SetValue(this, Convert.ChangeType(fallback, property.PropertyType, System.Globalization.CultureInfo.InvariantCulture));
-            if (!values.TryGetValue(name, out var value)) value = fallback;
-            try { property.SetValue(this, Convert.ChangeType(value, property.PropertyType, System.Globalization.CultureInfo.InvariantCulture)); Changed(name); }
-            catch (Exception ex) when (ex is FormatException or OverflowException or ArgumentException) { /* Keep valid defaults for an obsolete preference. */ }
-        }
+        CommodityCategory = values.CommodityCategory;
+        Reference = values.Reference;
+        Mineral = values.Mineral;
+        RingType = values.RingType;
+        Commodity = values.Commodity;
+        Radius = values.Radius;
+        MinimumHotspots = values.MinimumHotspots;
+        Source = values.Source;
+        OnlyOverlaps = values.OnlyOverlaps;
+        OnlyRes = values.OnlyRes;
+        Buying = values.Buying;
+        GalaxyWide = values.GalaxyWide;
+        ExcludeCarriers = values.ExcludeCarriers;
+        LargePads = values.LargePads;
+        MaximumAgeDays = values.MaximumAgeDays;
+        StationType = values.StationType;
+        Security = values.Security;
+        Allegiance = values.Allegiance;
+        Government = values.Government;
+        Economy = values.Economy;
+        State = values.State;
+        Power = values.Power;
+        PowerState = values.PowerState;
+        MinimumPopulation = values.MinimumPopulation;
+        TraderType = values.TraderType;
         Page = 0;
     }
     public void Cancel() => pending?.Cancel();

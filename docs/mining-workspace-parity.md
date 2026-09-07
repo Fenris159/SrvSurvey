@@ -19,7 +19,7 @@ This checklist maps the implemented workspace to the pinned reference. Validatio
 | Announcement presets and core/non-core filters | Commander-scoped settings and named presets | Separate from excluded ship presets |
 | Firegroup configuration / overlay | Mining Settings → Firegroups; independent Mining overlay | No game inputs or ship presets |
 | Reports, notes, CSV, HTML, print/PDF | `MiningReport`, Mining → Reports | Encoding and totals tested |
-| Material graphs, yield timeline, history comparison | HTML breakdowns and comparison | Workspace yield and efficiency comparisons; report notes and export controls |
+| Material graphs, yield timeline, history comparison | Observed-yield and cumulative-refining SVG charts; per-material session comparison | Timed observations, encoded labels, totals and summary-only imports tested |
 | Session screenshots | Report attachments | HTML embeds selected local images |
 | Historical report import / batch management | EliteMining/SrvSurvey CSV import, all-session comparison, deletion/undo | Summary import retains fields without fabricating events |
 | Bookmark CRUD, notes, rating | Shared catalog, Navigation → Bookmarks | Persistence and merge import tested |
@@ -43,7 +43,7 @@ This checklist maps the implemented workspace to the pinned reference. Validatio
 | Fleet Carrier status/cargo/finances/services/history | Existing profile VM and carrier view | Same live profile; no duplicate monitor |
 | Distance / home / carrier shortcuts | Shared resolver; arbitrary pair, current/home/carrier shortcuts | Unknown origins report unavailability |
 | Ring / mineral / RES reference | Mining → Reference | Ring compositions and RES guidance |
-| Full backup / restore | Commander mining ZIP, shared bookmarks and screenshot assets | Portable attachment round-trip tested |
+| Full backup / restore | Commander mining ZIP, shared bookmarks and screenshot assets | Portable attachments and recovery of edited bookmarks tested; previous files retained |
 | Theme-aware workspace and overlays | Raven resources, shared presentation | All application themes rendered; populated Monochrome dark and Blue light inspected |
 | VoiceAttack, Discord, PNG cards, ship presets | Explicitly excluded | No implementations added |
 | Existing Rhino overlays | Protected; unchanged | New overlays require main-ship status |
@@ -54,10 +54,12 @@ Session accounting, mission allocation, and persistence live in Core. Desktop co
 
 ## Validation
 
-Individual red/green tests cover session accounting, mission delivery/cargo allocation, bookmark persistence/import, backup recovery, replay idempotence, report encoding, ring-level filtering, and ship-only overlay gating. Focused Core and Desktop checks pass. Final full solution testing and the two-axis skill review are recorded below when complete.
+Individual red/green tests cover session accounting, mission delivery/cargo allocation, bookmark persistence/import, backup recovery, replay idempotence, report encoding, ring-level filtering, and ship-only overlay gating. Focused Core and Desktop checks pass. The two-axis review and the corrections it produced are recorded in [the review report](mining-workspace-review.md).
 
 ## Runtime verification limits
 
-Spansh systems/traders, Ardent prices and the receive-only EDDN adapter were checked against live public endpoints. Workspace/theme and shared overlay rendering used headless Avalonia; journal transitions and persistence used fixtures. A complete in-game ship-mining session and audible Windows speech have not yet been exercised. Existing Rhino overlay source files were not modified.
+Spansh systems/traders, Ardent prices and the receive-only EDDN adapter were checked against live public endpoints. Workspace/theme and shared overlay rendering used headless Avalonia; journal transitions and persistence used fixtures. A complete in-game ship-mining session and audible Windows speech have not yet been exercised. The offline HTML fixture was generated and chart data was tested, but browser policy blocked opening its local file URL for visual inspection. Existing Rhino overlay source files were not modified.
 
-Full solution run: 3,439 passed and two inventory assertions required updates (HTTP owner list and two panels sharing one window class). Both inventory suites then passed in focused reruns. Final review and any resulting regression checks follow.
+Final full solution validation: **3,448 passed, 0 failed, 0 skipped** — Core 1,447; Desktop 1,988; ReplayController 13. The initial run identified two inventory updates and the review added functional regression coverage; the final run includes those corrections. Release builds compile with warnings treated as errors. Both independent review axes report no unresolved findings.
+
+The existing Rhino/surface-mining overlay files have no diff against `e46fb9a3`. The new notifications and Firegroups panels are independent ship-only panels.

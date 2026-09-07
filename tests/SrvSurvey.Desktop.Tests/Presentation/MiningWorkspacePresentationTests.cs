@@ -77,6 +77,15 @@ public sealed class MiningWorkspacePresentationTests
             var bookmarkView = Assert.Single(window.GetVisualDescendants().OfType<Views.BookmarksView>(), view => view.IsEffectivelyVisible);
             Assert.Same(model.Bookmarks, bookmarkView.DataContext);
             Assert.True(model.IsNavigationNavigationExpanded);
+            var buttons = bookmarkView.GetVisualDescendants().OfType<Button>().ToArray();
+            Assert.Contains(buttons, b => Equals(b.Content, "Attach screenshots…"));
+            var undo = Assert.Single(buttons, b => Equals(b.Content, "Undo delete"));
+            model.Bookmarks.Selected = model.Bookmarks.All.First();
+            var deletedId = model.Bookmarks.Selected.Id;
+            model.Bookmarks.DeleteCommand.Execute(null);
+            Assert.DoesNotContain(model.Bookmarks.All, b => b.Id == deletedId);
+            undo.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+            Assert.Contains(model.Bookmarks.All, b => b.Id == deletedId);
         }
         finally
         {

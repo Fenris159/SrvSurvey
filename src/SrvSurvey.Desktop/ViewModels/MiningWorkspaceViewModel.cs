@@ -290,15 +290,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         {
             var imported = await Task.Run(() => MiningJournalImporter.ReadAsync(paths, importingCommander));
             if (commander != importingCommander) { Status = "Commander changed; import was not applied."; return; }
-            foreach (var ring in imported.Rings)
-            {
-                var existing = state.Data.Rings.Find(r => r.System == ring.System && r.Body == ring.Body);
-                if (existing is not null && existing.Scanned >= ring.Scanned) continue;
-                if (existing is not null) state.Data.Rings.Remove(existing);
-                state.Data.Rings.Add(ring);
-            }
-            foreach (var mission in imported.Missions)
-                if (!state.Missions.Missions.Any(m => m.Id == mission.Id)) state.Missions.Missions.Add(mission);
+            state.Import(imported);
             Save(); Refresh(); Status = $"Imported {imported.Rings.Count} rings and {imported.Missions.Count} mission records. Existing newer observations retained.";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException) { Status = "Journal import failed: " + ex.Message; }
@@ -316,7 +308,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         var contents = await Task.Run(() => MiningBackup.Read(bytes, attachmentDirectory));
         if (commander != targetCommander) { Status = "Commander changed; backup was not applied."; return; }
         if (!Restore(store.Export(contents.Data))) return;
-        bookmarks.Import(contents.Bookmarks);
+        bookmarks.Restore(contents.Bookmarks);
         Status += " " + bookmarks.Status;
     }
     public string Backup() { state.Synchronize(); return store.Export(state.Data); }
@@ -352,8 +344,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private void SaveSettings() { Settings.SearchOptions = Search.SaveOptions(); community.SetEnabled(Settings.ReceiveCommunityData); Save(); Refresh(); }
     private void CacheRing(MiningRing ring)
     {
-        state.Data.Rings.RemoveAll(r => r.System == ring.System && r.Body == ring.Body);
-        state.Data.Rings.Add(ring);
+        state.CacheRing(ring);
         Save(); Refresh();
     }
     private void BookmarkRing()

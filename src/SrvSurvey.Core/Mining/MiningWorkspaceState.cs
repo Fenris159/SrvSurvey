@@ -46,6 +46,20 @@ public sealed class MiningWorkspaceState
         return true;
     }
 
+    public void CacheRing(MiningRing ring)
+    {
+        var existing = Data.Rings.Find(r => r.System.Equals(ring.System, StringComparison.OrdinalIgnoreCase) && r.Body.Equals(ring.Body, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null && existing.Scanned > ring.Scanned) return;
+        if (existing is not null) Data.Rings.Remove(existing);
+        Data.Rings.Add(ring);
+    }
+    public void Import(MiningCommanderData imported)
+    {
+        foreach (var ring in imported.Rings) CacheRing(ring);
+        foreach (var mission in imported.Missions)
+            if (!Missions.Missions.Any(m => m.Id == mission.Id)) Missions.Missions.Add(mission);
+        Synchronize();
+    }
     public void Synchronize()
     {
         Data.Current = Session.Current;

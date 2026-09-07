@@ -50,6 +50,12 @@ public sealed class BookmarkCatalog
     public void Delete(Guid id) => Persist(items.Where(b => b.Id != id).ToList());
     public string Export() => JsonSerializer.Serialize(items, JsonOptions);
     public static void ValidateImport(string json) => Parse(json);
+    public void Restore(string json)
+    {
+        var restored = Parse(json);
+        if (File.Exists(path)) File.Copy(path, path + ".before-restore", true);
+        Persist(restored);
+    }
     public void Import(string json)
     {
         var incoming = Parse(json);

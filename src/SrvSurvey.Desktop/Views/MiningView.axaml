@@ -511,7 +511,7 @@
               <TabItem Header="Backup">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                   <StackPanel Spacing="14" Margin="4,20,4,16">
-                    <TextBlock Text="Back up commander mining history, missions, settings, local discoveries, shared bookmarks and attached screenshots in one ZIP. Restore retains the previous mining data and merges bookmarks without replacing existing locations." TextWrapping="Wrap"/>
+                    <TextBlock Text="Back up commander mining history, missions, settings, local discoveries, shared bookmarks and attached screenshots in one ZIP. Restore replaces mining data and shared bookmarks with the backup contents, retaining the previous files for recovery." TextWrapping="Wrap"/>
                     <WrapPanel>
                       <Button Content="Export backup…" Click="Backup_Click" Margin="0,0,8,8"/>
                       <Button Content="Restore backup…" Click="Restore_Click" Margin="0,0,8,8"/>

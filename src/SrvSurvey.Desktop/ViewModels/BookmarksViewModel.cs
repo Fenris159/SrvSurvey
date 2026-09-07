@@ -80,6 +80,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
     public void AttachScreenshots(IEnumerable<string> paths) => Run(() => { if (Selected is { } bookmark) { var updated = bookmark with { Screenshots = bookmark.Screenshots.Concat(paths).Distinct(StringComparer.OrdinalIgnoreCase).ToList() }; catalog!.Save(updated); Selected = updated; Status = $"{updated.Screenshots.Count} screenshots attached."; } });
     public void AddMiningLocation(GalacticBookmark bookmark) => Run(() => { catalog!.Save(bookmark); Status = "Mining location bookmarked."; });
     public string Export() => catalog?.Export() ?? throw new InvalidOperationException(Status);
+    public void Restore(string json) => Run(() => { catalog!.Restore(json); Selected = null; Status = "Shared bookmarks restored; previous catalog retained in bookmarks.json.before-restore."; });
     public void Import(string json) => Run(() => { catalog!.Import(json); Status = "Bookmarks imported; existing locations retained."; });
     private void Run(Action action)
     {

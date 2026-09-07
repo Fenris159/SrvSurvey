@@ -20,6 +20,18 @@ public sealed class MiningWorkspaceStateTests
         restored.Apply(live, true, "Sol", "Ring", "Python");
         Assert.Equal(1, restored.Session.Current?.ProspectorLimpets);
     }
+    [Fact]
+    public void JournalImportKeepsNewerRingsAndExistingMissionProgress()
+    {
+        var time = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        var ring = new MiningRing { System = "Sol", Body = "Ring", Scanned = time, Hotspots = new() { ["Platinum"] = 2 } };
+        var mission = new MiningMission { Id = 7, Commodity = "platinum", Required = 10, Delivered = 5 };
+        var state = new MiningWorkspaceState(new() { Rings = [ring], Missions = [mission] });
+        state.Import(new() { Rings = [ring with { System = "sol", Scanned = time.AddDays(-1), Hotspots = new() }], Missions = [mission with { Delivered = 0 }, mission with { Id = 8 }] });
+        Assert.Same(ring, Assert.Single(state.Data.Rings));
+        Assert.Equal(5, state.Data.Missions.Single(m => m.Id == 7).Delivered);
+        Assert.Equal(2, state.Data.Missions.Count);
+    }
     private static JournalEventEnvelope Parse(string json)
     {
         Assert.True(JournalEventEnvelope.TryParse(json, out var result, out _));

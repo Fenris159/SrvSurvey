@@ -52,6 +52,7 @@ public static class MiningReport
             var maximum = Math.Max(1, sessions.Max(s => s.TonsPerHour));
             foreach (var session in sessions) Bar(text, session.System + " · " + session.Started.ToString("g"), session.TonsPerHour, maximum, "t/h");
         }
+        if (sessions.Count > 1) MiningReportCharts.AppendMaterialComparison(text, sessions);
         foreach (var s in sessions)
         {
             text.Append($"<section><h2>{H(s.System)} / {H(s.Ring)}</h2><p>{H(s.Ship)} · {H(s.Started.ToLocalTime().ToString("f"))}</p>");
@@ -69,6 +70,7 @@ public static class MiningReport
                 foreach (var item in s.RefineryEstimates) text.Append(CultureInfo.InvariantCulture, $"<li>{H(item.Key)}: {item.Value:0.##} t</li>");
                 text.Append("</ul><p>Not included in refined tonnage or efficiency.</p>");
             }
+            MiningReportCharts.AppendTimeline(text, s);
             text.Append("<h3>Refined minerals</h3>");
             foreach (var group in s.Collections.Where(c => !c.Engineering).GroupBy(c => c.Name, StringComparer.OrdinalIgnoreCase)) Bar(text, group.Key, group.Sum(c => c.Count), Math.Max(1, s.RefinedTons), "t");
             text.Append("<h3>Prospecting yields</h3><table><thead><tr><th>Mineral</th><th>Finds</th><th>Quality hits</th><th title='Mean proportion over asteroids containing the mineral'>Average %</th><th>Best %</th></tr></thead><tbody>");

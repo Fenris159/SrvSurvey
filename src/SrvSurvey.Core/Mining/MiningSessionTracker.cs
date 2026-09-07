@@ -53,12 +53,24 @@ public sealed record MiningSession
         ((PausedAt ?? Ended ?? now) - Started - PausedDuration).Ticks));
 
     public IReadOnlyList<MiningMaterialSummary> Summarize(IReadOnlyDictionary<string, double> thresholds) =>
-        Prospects.SelectMany(p => p.Materials).GroupBy(m => m.Name, StringComparer.OrdinalIgnoreCase)
+        Prospects.SelectMany(MaterialFinds).GroupBy(m => m.Name, StringComparer.OrdinalIgnoreCase)
             .Select(group => new MiningMaterialSummary(group.Key, group.Count(),
-                Math.Clamp(group.Count(m => m.Percentage >= thresholds.FirstOrDefault(p => p.Key.Equals(group.Key, StringComparison.OrdinalIgnoreCase)).Value) + QualityAdjustments.GetValueOrDefault(group.Key.ToLowerInvariant()), 0, group.Count()),
-                group.Average(m => m.Percentage), group.Max(m => m.Percentage),
+                Math.Clamp(group.Count(m => m.IsCore || m.Percentage >= thresholds.FirstOrDefault(p => p.Key.Equals(group.Key, StringComparison.OrdinalIgnoreCase)).Value)
+                    + QualityAdjustments.GetValueOrDefault(group.Key.ToLowerInvariant()), 0, group.Count()),
+                group.Where(m => m.Percentage.HasValue).Select(m => m.Percentage!.Value).DefaultIfEmpty(0).Average(),
+                group.Max(m => m.Percentage ?? 0),
                 Collections.Where(c => !c.Engineering && c.Name.Equals(group.Key, StringComparison.OrdinalIgnoreCase)).Sum(c => c.Count)))
             .OrderByDescending(item => item.Average).ToArray();
+
+    private static IEnumerable<MaterialFind> MaterialFinds(MiningProspect prospect)
+    {
+        foreach (var material in prospect.Materials)
+            yield return new(material.Name, material.Percentage, material.Name.Equals(prospect.Core, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrEmpty(prospect.Core) && !prospect.Materials.Any(m => m.Name.Equals(prospect.Core, StringComparison.OrdinalIgnoreCase)))
+            yield return new(prospect.Core, null, true);
+    }
+    private sealed record MaterialFind(string Name, double? Percentage, bool IsCore);
+
 }
 
 public sealed record MiningMaterialSummary(string Name, int Finds, int QualityHits, double Average, double Best, int Tons);

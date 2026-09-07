@@ -5,6 +5,23 @@ namespace SrvSurvey.Core.Tests.Navigation;
 public sealed class BookmarkCatalogTests
 {
     [Fact]
+    public void RestoreRecoversBackedUpEditsAndRetainsPreviousCatalogOnDisk()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            var catalog = new BookmarkCatalog(directory);
+            var bookmark = new GalacticBookmark { System = "Sol", Notes = "Original" };
+            catalog.Save(bookmark); var backup = catalog.Export();
+            catalog.Save(bookmark with { Notes = "Edited" });
+            catalog.Restore(backup);
+            Assert.Equal("Original", Assert.Single(catalog.Items).Notes);
+            Assert.Contains("Edited", File.ReadAllText(Path.Combine(directory, "bookmarks.json.before-restore")));
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
+
+    [Fact]
     public void ImportsReferenceBookmarksAndRejectsNonObjectsWithoutChangingCatalog()
     {
         var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
