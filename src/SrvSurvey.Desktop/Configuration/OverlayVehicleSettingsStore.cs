@@ -4,6 +4,8 @@ namespace SrvSurvey.Desktop.Configuration;
 
 public sealed class OverlayVehicleSettingsStore(string path)
 {
+    private const string SettingsKey = "OverlayVehicleAllowLists";
+
     private const string FiregroupsMigration = "FiregroupsOverlayExceptionsMigrated";
     private readonly UiSettingsDocumentStore document = new(path);
 
@@ -13,7 +15,7 @@ public sealed class OverlayVehicleSettingsStore(string path)
         if (IsFiregroupsMigrated(stored)) return;
         document.Update(root =>
         {
-            if (root["OverlayVehicleAllowLists"] is JsonObject lists
+            if (root[SettingsKey] is JsonObject lists
                 && lists[nameof(OverlaySettingsCategory.Firegroups)] is null
                 && lists[nameof(OverlaySettingsCategory.Global)] is JsonArray original)
                 lists[nameof(OverlaySettingsCategory.Firegroups)] = original.DeepClone();
@@ -24,7 +26,7 @@ public sealed class OverlayVehicleSettingsStore(string path)
     public IReadOnlySet<string>? Load(OverlaySettingsCategory category)
     {
         var root = document.Load();
-        var lists = root["OverlayVehicleAllowLists"] as JsonObject;
+        var lists = root[SettingsKey] as JsonObject;
         var values = lists?[category.ToString()] as JsonArray;
         if (values is null && category == OverlaySettingsCategory.Firegroups && !IsFiregroupsMigrated(root)) values = lists?[nameof(OverlaySettingsCategory.Global)] as JsonArray;
         return values?.OfType<JsonValue>()
@@ -40,10 +42,10 @@ public sealed class OverlayVehicleSettingsStore(string path)
         var values = new JsonArray(allowed.Select(id => (JsonNode?)JsonValue.Create(id)).ToArray());
         document.Update(root =>
         {
-            if (root["OverlayVehicleAllowLists"] is not JsonObject lists)
+            if (root[SettingsKey] is not JsonObject lists)
             {
                 lists = [];
-                root["OverlayVehicleAllowLists"] = lists;
+                root[SettingsKey] = lists;
             }
             lists[category.ToString()] = values;
         });

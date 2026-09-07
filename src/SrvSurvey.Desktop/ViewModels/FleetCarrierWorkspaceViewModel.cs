@@ -24,11 +24,11 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
     public ColonizationFleetCarrier? SelectedSquadronCarrier
     {
         get => SquadronCandidates.FirstOrDefault(c => c.MarketId == selectedMarketId);
-        set { if (value is null || selectedMarketId == value.MarketId) return; selectedMarketId = value.MarketId; RaiseSquadron(); }
+        set { if (value is null || selectedMarketId == value.MarketId) { return; } selectedMarketId = value.MarketId; RaiseSquadron(); }
     }
     public bool HasSquadronCarrier => SelectedSquadronCarrier is not null;
     public string SquadronCargoSummary => SelectedSquadronCarrier is { } c ? $"{c.Cargo.Values.Sum():N0} t of linked cargo · capacity unavailable from RavenColonial" : "Choose a linked squadron carrier, or dock there to identify it automatically.";
-    public IReadOnlyList<FrontierInventoryRowViewModel> SquadronCargo => SelectedSquadronCarrier?.Cargo.OrderBy(p => p.Key).Select(p => new FrontierInventoryRowViewModel("Commodity", p.Key, $"{p.Value:N0}", "")).ToArray() ?? [];
+    public IReadOnlyList<FrontierInventoryRowViewModel> SquadronCargo { get; private set; } = [];
     private void OnChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(ColonizationViewModel.LinkedFleetCarriers) or nameof(ColonizationViewModel.DetectedSquadronCarrierMarketId) or nameof(ColonizationViewModel.CommanderName)) Refresh();
@@ -49,6 +49,6 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
         profile.UpdateLinkedFleetCarriers(commander, colonization.LinkedFleetCarriers);
         Changed(nameof(SquadronCandidates)); RaiseSquadron();
     }
-    private void RaiseSquadron() { Changed(nameof(SelectedSquadronCarrier)); Changed(nameof(SquadronCargo)); Changed(nameof(HasSquadronCarrier)); Changed(nameof(SquadronCargoSummary)); }
+    private void RaiseSquadron() { SquadronCargo = SelectedSquadronCarrier?.Cargo.OrderBy(p => p.Key).Select(p => new FrontierInventoryRowViewModel("Commodity", p.Key, $"{p.Value:N0}", "")).ToArray() ?? []; Changed(nameof(SelectedSquadronCarrier)); Changed(nameof(SquadronCargo)); Changed(nameof(HasSquadronCarrier)); Changed(nameof(SquadronCargoSummary)); }
     public void Dispose() { colonization.PropertyChanged -= OnChanged; profile.PropertyChanged -= OnProfileChanged; }
 }

@@ -10,13 +10,17 @@ public sealed partial class MiningView : UserControl
 {
     public MiningView() => InitializeComponent();
 
+    private void SearchPane_Click(object? sender, RoutedEventArgs e) { SearchPane.IsVisible = true; LocalPane.IsVisible = false; }
+    private void LocalPane_Click(object? sender, RoutedEventArgs e) { SearchPane.IsVisible = false; LocalPane.IsVisible = true; }
+
     private MiningWorkspaceViewModel? Model => (DataContext as MainWindowViewModel)?.MiningWorkspace;
     private void DeleteReport_Click(object? sender, RoutedEventArgs e) => Model?.DeleteSelectedReport();
     private void UndoReport_Click(object? sender, RoutedEventArgs e) => Model?.UndoDeleteReport();
     private async void ImportReports_Click(object? sender, RoutedEventArgs e) => await WithFiles(async (vm, storage) =>
     {
         var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Import EliteMining or SrvSurvey session CSV", AllowMultiple = false });
-        if (files.FirstOrDefault() is not { } file) return;
+        if (files.Count == 0) return;
+        var file = files[0];
         await using var stream = await file.OpenReadAsync();
         using var reader = new StreamReader(stream);
         vm.ImportReports(await reader.ReadToEndAsync());
@@ -34,12 +38,13 @@ public sealed partial class MiningView : UserControl
     private async void ExportReport_Click(object? sender, RoutedEventArgs e) => await WithFiles(async (vm, storage) =>
     {
         var mode = (sender as Control)?.Tag as string;
-        IReadOnlyList<MiningSession> sessions = mode is "all" or "allcsv" ? vm.History : vm.SelectedSession is { } session ? [session] : [];
+        IReadOnlyList<MiningSession> sessions = vm.SelectedSession is { } session ? [session] : [];
+        if (mode is "all" or "allcsv") sessions = vm.History;
         if (sessions.Count == 0) { vm.Status = "Select a completed session first."; return; }
-        var extension = mode is "csv" or "allcsv" ? "csv" : mode == "txt" ? "txt" : "html";
+        var extension = mode switch { "csv" or "allcsv" => "csv", "txt" => "txt", _ => "html" };
         var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions { Title = "Export mining report", SuggestedFileName = "mining-report." + extension, DefaultExtension = extension });
         if (file is null) return;
-        var report = await Task.Run(() => extension == "csv" ? MiningReport.Csv(sessions) : extension == "txt" ? MiningReport.Text(sessions) : MiningReport.Html(sessions));
+        var report = await Task.Run(() => extension switch { "csv" => MiningReport.Csv(sessions), "txt" => MiningReport.Text(sessions), _ => MiningReport.Html(sessions) });
         await WriteAsync(file, report);
         vm.Status = "Report exported. Open the HTML report in a browser to print or save as PDF.";
     });
@@ -71,7 +76,8 @@ public sealed partial class MiningView : UserControl
     private async void Restore_Click(object? sender, RoutedEventArgs e) => await WithFiles(async (vm, storage) =>
     {
         var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Restore mining backup (ZIP or JSON; previous data retained)", AllowMultiple = false });
-        if (files.FirstOrDefault() is not { } file) return;
+        if (files.Count == 0) return;
+        var file = files[0];
         await using var stream = await file.OpenReadAsync();
         using var buffer = new MemoryStream();
         var chunk = new byte[81920];

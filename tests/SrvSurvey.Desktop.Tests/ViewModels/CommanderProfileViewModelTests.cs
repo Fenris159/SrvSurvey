@@ -9,6 +9,35 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class CommanderProfileViewModelTests
 {
     [Fact]
+    public async Task OlderCommanderActivationCannotClearNewerProfileAfterDeferredCancellation()
+    {
+        var latest = CreateSnapshot(DateTimeOffset.UtcNow) with { CommanderName = "Latest" };
+        var account = new StubAccountService(new FrontierAccountState(true, latest, latest.FetchedAt));
+        using var viewModel = new CommanderProfileViewModel(account);
+        using var release = new ManualResetEventSlim();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationTokenRegistration registration = default;
+        account.StateRequested = token =>
+        {
+            if (!token.CanBeCanceled) return;
+            registration = token.Register(() => { entered.TrySetResult(); release.Wait(TimeSpan.FromSeconds(10)); });
+        };
+        try
+        {
+            await viewModel.SetCommanderContextAsync("F1", "First", false);
+            viewModel.LoadAutomatically();
+            var older = viewModel.SetCommanderContextAsync("F2", "Second", false);
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await viewModel.SetCommanderContextAsync("F3", "Latest", true);
+            Assert.Same(latest, viewModel.Snapshot);
+            release.Set(); await older;
+            Assert.Same(latest, viewModel.Snapshot);
+            Assert.Equal("F3", account.ActiveFrontierId);
+        }
+        finally { release.Set(); registration.Dispose(); }
+    }
+
+    [Fact]
     public async Task UnlinkedStateShowsConnectionExperienceWithoutFetching()
     {
         var account = new StubAccountService(
@@ -1155,6 +1184,7 @@ public sealed class CommanderProfileViewModelTests
 
         public int RefreshCount { get; private set; }
         public Task<FrontierAccountSnapshot>? PendingRefresh { get; set; }
+        public Action<CancellationToken>? StateRequested { get; set; }
 
         public event EventHandler? AuthorizationCallbackReceived;
 
@@ -1195,6 +1225,7 @@ public sealed class CommanderProfileViewModelTests
         public Task<FrontierAccountState> GetStateAsync(
             CancellationToken cancellationToken = default)
         {
+            StateRequested?.Invoke(cancellationToken);
             return Task.FromResult(
                 ActiveFrontierId is not null
                 && commanderStates.TryGetValue(ActiveFrontierId, out var scoped)

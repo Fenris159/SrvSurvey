@@ -16,14 +16,14 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     private MiningMarketResult? selectedMarket;
     private MiningSystemResult? selectedSystem;
     private bool busy;
-    public IReadOnlyList<string> CommodityCategories => MiningReferenceData.Commodities.Keys.ToArray();
+    public static IReadOnlyList<string> CommodityCategories { get; } = MiningReferenceData.Commodities.Keys.ToArray();
     public IReadOnlyList<string> CommodityOptions => MiningReferenceData.Commodities.GetValueOrDefault(CommodityCategory) ?? [];
     public string CommodityCategory { get => options.CommodityCategory; set { Set(ref options, options with { CommodityCategory = value ?? "Mining" }); Changed(nameof(CommodityOptions)); } }
     public string Reference { get => options.Reference; set { Set(ref options, options with { Reference = value ?? "" }); } }
     public string Mineral { get => options.Mineral; set { Set(ref options, options with { Mineral = value ?? "Platinum" }); } }
     public string RingType { get => options.RingType; set { Set(ref options, options with { RingType = value ?? "All" }); } }
     public string Commodity { get => options.Commodity; set { Set(ref options, options with { Commodity = value ?? "Platinum" }); } }
-    public double Radius { get => options.Radius; set { Set(ref options, options with { Radius = double.IsFinite(value) ? Math.Clamp(value, 1, 100000) : 100 }); } }
+    public double Radius { get => options.Radius; set { Set(ref options, options with { Radius = double.IsFinite(value) ? Math.Clamp(value, 1, 500) : 100 }); } }
     public int MinimumHotspots { get => options.MinimumHotspots; set { Set(ref options, options with { MinimumHotspots = Math.Clamp(value, 0, 100) }); } }
     public string Source { get => options.Source; set { Set(ref options, options with { Source = value ?? "Both" }); } }
     public bool OnlyOverlaps { get => options.OnlyOverlaps; set { Set(ref options, options with { OnlyOverlaps = value }); } }
@@ -43,7 +43,31 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     public string PowerState { get => options.PowerState; set { Set(ref options, options with { PowerState = value ?? "" }); } }
     public long MinimumPopulation { get => options.MinimumPopulation; set { Set(ref options, options with { MinimumPopulation = Math.Max(0, value) }); } }
     public string TraderType { get => options.TraderType; set { Set(ref options, options with { TraderType = value ?? "Raw" }); } }
-    public int Page { get; set; }
+    private int destination;
+    private int page;
+    private bool systemOnly;
+    private string objective = "All systems";
+    private string pledgedPower = "";
+    private string planningTarget = "";
+    private string planningObjective = "";
+    private string miningOrigin = "";
+    public bool HasPlan => planningTarget.Length > 0;
+    public string PlanningContext => planningTarget.Length == 0 ? "" : $"{planningObjective} destination: {planningTarget} · Mining: {miningOrigin}";
+    public void ClearPlan() { planningTarget = planningObjective = miningOrigin = ""; Changed(nameof(PlanningContext)); Changed(nameof(HasPlan)); }
+    private IReadOnlyList<MiningMarketResult> traders = [];
+    private MiningMarketResult? selectedTrader;
+    public int Page { get => page; set => Set(ref page, Math.Max(0, value)); }
+    public int Destination { get => destination; set => Set(ref destination, value); }
+    public bool SystemOnly { get => systemOnly; set => Set(ref systemOnly, value); }
+    public string Objective { get => objective; set => Set(ref objective, value); }
+    public string PledgedPower { get => pledgedPower; set => Set(ref pledgedPower, value ?? ""); }
+    public static IReadOnlyList<string> Objectives { get; } = ["All systems", "Reinforce", "Undermine", "Acquire"];
+    public static IReadOnlyList<string> Powers { get; } = ["", "Aisling Duval", "Archon Delaine", "Arissa Lavigny-Duval", "Denton Patreus", "Edmund Mahon", "Felicia Winters", "Li Yong-Rui", "Nakato Kaine", "Pranav Antal", "Yuri Grom", "Jerome Archer", "Zemina Torval"];
+    public static IReadOnlyList<string> PowerStates { get; } = ["", "Exploited", "Fortified", "Stronghold", "Unoccupied", "Expansion", "Contested"];
+    public IReadOnlyList<MiningMarketResult> Traders { get => traders; private set => Set(ref traders, value); }
+    public MiningMarketResult? SelectedTrader { get => selectedTrader; set => Set(ref selectedTrader, value); }
+    public string TradeMode { get => Buying ? "Buy supplies" : "Sell mined cargo"; set { Buying = value == "Buy supplies"; Changed(nameof(TradeMode)); } }
+    public static IReadOnlyList<string> TradeModes { get; } = ["Sell mined cargo", "Buy supplies"];
     public static IReadOnlyList<string> Sources { get; } = ["Both", "Local", "Spansh"];
     public static IReadOnlyList<string> RingTypes { get; } = ["All", "Icy", "Metallic", "Metal Rich", "Rocky"];
     public static IReadOnlyList<string> TraderTypes { get; } = ["Raw", "Manufactured", "Encoded"];
@@ -61,78 +85,107 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
         var offline = false;
         if (Source != "Local")
         {
-            try { candidates.AddRange(await client.FindRingsAsync(new MiningRingQuery(Reference, Mineral.Trim(), RingType, Radius, MinimumHotspots, Page), token)); }
-            catch (HttpRequestException) when (Source == "Both") { offline = true; }
+            try { candidates.AddRange(await client.FindRingsAsync(new MiningRingQuery(Reference, Mineral.Trim(), RingType, Radius, MinimumHotspots, Page, SystemOnly), token)); }
+            catch (Exception ex) when (Source == "Both" && IsProviderFailure(ex)) { offline = true; }
         }
         if (Source != "Spansh")
         {
-            var localPosition = localRings().Concat(MiningReferenceData.Rings).FirstOrDefault(r => r.System.Equals(Reference, StringComparison.OrdinalIgnoreCase) && r.Position is not null)?.Position
-                ?? bookmarks.All.FirstOrDefault(b => b.System.Equals(Reference, StringComparison.OrdinalIgnoreCase) && b.Position is not null)?.Position;
-            if (localPosition is null)
-            {
-                try { localPosition = (await resolver.SearchAsync(Reference, token)).FirstOrDefault(s => s.Name.Equals(Reference, StringComparison.OrdinalIgnoreCase))?.Position; }
-                catch (HttpRequestException) { offline = true; }
-            }
+            var origin = await ResolveOriginAsync(token);
             foreach (var ring in MiningReferenceData.Rings.Concat(localRings()))
             {
-                var distance = ring.System.Equals(Reference, StringComparison.OrdinalIgnoreCase) ? 0 : ring.Position is { } location && localPosition is { } origin ? location.DistanceTo(origin) : (double?)null;
-                if (distance is null || distance > Radius) continue;
-                if (RingType != "All" && !ring.RingType.Replace(" ", "").Equals(RingType.Replace(" ", ""), StringComparison.OrdinalIgnoreCase)) continue;
-                if (Mineral.Length > 0 && !ring.Hotspots.Any(h => h.Key.Replace(" ", "").Equals(Mineral.Replace(" ", ""), StringComparison.OrdinalIgnoreCase) && h.Value >= MinimumHotspots)) continue;
-                var observed = candidates.Find(r => r.System == ring.System && r.Body == ring.Body);
-                if (observed is null) candidates.Add(ring with { DistanceLy = distance });
-                else
-                {
-                    var newer = observed.Scanned >= ring.Scanned ? observed : ring;
-                    var older = ReferenceEquals(newer, observed) ? ring : observed;
-                    candidates.Remove(observed);
-                    candidates.Add(newer with
-                    {
-                        DistanceLy = distance,
-                        Overlaps = newer.Overlaps.Length > 0 ? newer.Overlaps : older.Overlaps,
-                        ResourceExtractionSites = newer.ResourceExtractionSites.Length > 0 ? newer.ResourceExtractionSites : older.ResourceExtractionSites,
-                        Reserve = newer.Reserve.Length > 0 ? newer.Reserve : older.Reserve,
-                        Position = newer.Position ?? older.Position
-                    });
-                }
+                var distance = RingDistance(ring, origin);
+                if (distance is null || distance > Radius || !MatchesRing(ring)) continue;
+                MergeRing(candidates, ring, distance.Value);
             }
         }
-        var annotated = candidates.Select(r =>
-        {
-            var bookmark = bookmarks.All.FirstOrDefault(b => b.System.Equals(r.System, StringComparison.OrdinalIgnoreCase) && b.Body.Equals(r.Body, StringComparison.OrdinalIgnoreCase));
-            return r with { Overlaps = !string.IsNullOrWhiteSpace(bookmark?.Overlaps) ? bookmark.Overlaps : r.Overlaps, ResourceExtractionSites = !string.IsNullOrWhiteSpace(bookmark?.ResourceExtractionSites) ? bookmark.ResourceExtractionSites : r.ResourceExtractionSites, Power = community?.Power(r.System) is { } power ? $"{power.Power} · {power.State}" : r.Power };
-        }).Where(r => (!OnlyOverlaps || r.Overlaps.Length > 0) && (!OnlyRes || r.ResourceExtractionSites.Length > 0)).OrderBy(r => r.DistanceLy ?? double.MaxValue).Take(500).ToArray();
-        token.ThrowIfCancellationRequested(); Rings = annotated;
-        Status = $"{annotated.Length} matching rings · {Source} · online page {Page + 1}{(offline ? " · Spansh unavailable; local results only" : "")}.";
+        var annotated = candidates.Select(AnnotateRing)
+            .Where(r => (!OnlyOverlaps || r.Overlaps.Length > 0) && (!OnlyRes || r.ResourceExtractionSites.Length > 0))
+            .OrderBy(r => r.DistanceLy ?? double.MaxValue).Take(500).ToArray();
+        token.ThrowIfCancellationRequested();
+        Rings = annotated;
+        Status = $"{annotated.Length} matching rings · {Reference} · {Source} · online page {Page + 1}.";
+        if (offline) Status += " Provider unavailable; showing local results.";
     });
+    private async Task<GalacticCoordinate?> ResolveOriginAsync(CancellationToken token)
+    {
+        var origin = community?.Position(Reference)
+            ?? localRings().Concat(MiningReferenceData.Rings).FirstOrDefault(r => Same(r.System, Reference) && r.Position is not null)?.Position
+            ?? bookmarks.All.FirstOrDefault(b => Same(b.System, Reference) && b.Position is not null)?.Position;
+        if (origin is not null) return origin;
+        try { return (await resolver.SearchAsync(Reference, token)).FirstOrDefault(s => Same(s.Name, Reference))?.Position; }
+        catch (Exception ex) when (IsProviderFailure(ex)) { return null; } // Unknown coordinates must not be interpreted as zero distance.
+    }
+    private double? RingDistance(MiningRing ring, GalacticCoordinate? origin)
+    {
+        if (Same(ring.System, Reference)) return 0;
+        if (SystemOnly) return null;
+        return ring.Position is { } location && origin is { } point ? location.DistanceTo(point) : null;
+    }
+    private bool MatchesRing(MiningRing ring) =>
+        (RingType == "All" || Same(ring.RingType.Replace(" ", ""), RingType.Replace(" ", "")))
+        && (Mineral.Length == 0 || ring.Hotspots.Any(h => Same(h.Key.Replace(" ", ""), Mineral.Replace(" ", "")) && h.Value >= MinimumHotspots));
+    private static void MergeRing(List<MiningRing> candidates, MiningRing ring, double distance)
+    {
+        var observed = candidates.Find(r => Same(r.System, ring.System) && Same(r.Body, ring.Body));
+        if (observed is null) { candidates.Add(ring with { DistanceLy = distance }); return; }
+        var newer = observed.Scanned >= ring.Scanned ? observed : ring;
+        var older = ReferenceEquals(newer, observed) ? ring : observed;
+        candidates.Remove(observed);
+        candidates.Add(newer with
+        {
+            DistanceLy = distance,
+            Overlaps = Prefer(newer.Overlaps, older.Overlaps),
+            ResourceExtractionSites = Prefer(newer.ResourceExtractionSites, older.ResourceExtractionSites),
+            Reserve = Prefer(newer.Reserve, older.Reserve),
+            Position = newer.Position ?? older.Position
+        });
+    }
+    private MiningRing AnnotateRing(MiningRing ring)
+    {
+        var bookmark = bookmarks.All.FirstOrDefault(b => Same(b.System, ring.System) && Same(b.Body, ring.Body));
+        var power = community?.Power(ring.System);
+        return ring with
+        {
+            Overlaps = Prefer(bookmark?.Overlaps, ring.Overlaps),
+            ResourceExtractionSites = Prefer(bookmark?.ResourceExtractionSites, ring.ResourceExtractionSites),
+            Power = power is null ? ring.Power : $"{power.Power} · {power.State}"
+        };
+    }
+    private static string Prefer(string? value, string fallback) => string.IsNullOrWhiteSpace(value) ? fallback : value;
+    private static bool Same(string left, string right) => left.Equals(right, StringComparison.OrdinalIgnoreCase);
+    private static bool IsProviderFailure(Exception ex) => ex is HttpRequestException or System.Text.Json.JsonException or IOException or InvalidDataException;
     public Task SearchMarketsAsync() => Run(async token =>
     {
-        var query = new MiningMarketQuery(Reference, Commodity.Trim(), Buying, Radius, GalaxyWide, ExcludeCarriers, LargePads, MaximumAgeDays, StationType.Trim(), Page);
+        var query = new MiningMarketQuery(Reference, Commodity.Trim(), Buying, Radius, GalaxyWide, ExcludeCarriers, LargePads, MaximumAgeDays, StationType.Trim(), Page, SystemOnly);
         IReadOnlyList<MiningMarketResult> result;
-        var source = "Ardent";
+        var source = query.SystemOnly && !query.GalaxyWide ? "Spansh" : "Ardent";
         try { result = await client.FindMarketsAsync(query, token); }
-        catch (HttpRequestException) { source = "Spansh fallback"; result = await client.FindSpanshMarketsAsync(query, token); }
-        var origin = community?.Position(query.ReferenceSystem) ?? localRings().FirstOrDefault(r => r.System.Equals(query.ReferenceSystem, StringComparison.OrdinalIgnoreCase))?.Position;
-        if (community is not null && origin is null && !query.GalaxyWide)
-        {
-            try { origin = (await resolver.SearchAsync(query.ReferenceSystem, token)).FirstOrDefault(r => r.Name.Equals(query.ReferenceSystem, StringComparison.OrdinalIgnoreCase))?.Position; }
-            catch (HttpRequestException) { }
-        }
+        catch (Exception ex) when (source == "Ardent" && IsProviderFailure(ex)) { source = "Spansh fallback"; result = await client.FindSpanshMarketsAsync(query, token); }
+        var origin = community is not null && !query.GalaxyWide ? await ResolveOriginAsync(token) : null;
         var merged = result.Concat(community?.Markets(query, origin, DateTimeOffset.UtcNow) ?? []).GroupBy(r => (r.System, r.Station)).Select(g => g.OrderByDescending(r => r.Updated).First());
+        if (query.SystemOnly && !query.GalaxyWide) merged = merged.Where(r => Same(r.System, query.ReferenceSystem));
         result = query.Buying ? merged.OrderBy(r => r.Price).ToArray() : merged.OrderByDescending(r => r.Price).ToArray();
         token.ThrowIfCancellationRequested(); Markets = result;
         Status = $"{result.Count} markets · {source}. Prices and quantities are observations, not guarantees.";
     });
     public Task SearchSystemsAsync() => Run(async token =>
     {
-        var result = await client.FindSystemsAsync(new MiningSystemQuery(Reference, Radius, Security.Trim(), Allegiance.Trim(), Government.Trim(), State.Trim(), Economy.Trim(), Power.Trim(), PowerState.Trim(), MinimumPopulation), token);
+        if (Objective is "Reinforce" or "Undermine" && string.IsNullOrWhiteSpace(PledgedPower))
+            throw new ArgumentException("Choose your pledged Power before searching for this objective.");
+        var query = new MiningSystemQuery(Reference, Radius, Security.Trim(), Allegiance.Trim(), Government.Trim(), State.Trim(), Economy.Trim(), Power.Trim(), PowerState.Trim(), MinimumPopulation, Page);
+        IReadOnlyList<MiningSystemResult> online = [];
+        var source = "Spansh + local Powerplay observations";
+        if (PowerState is "Expansion" or "Contested") source = "Local Powerplay observations; this state is not indexed by Spansh";
+        else online = await client.FindSystemsAsync(query, token);
+        var local = community?.FindSystems(query, DateTimeOffset.UtcNow) ?? [];
+        var result = local.Concat(online).DistinctBy(s => s.System, StringComparer.OrdinalIgnoreCase).Where(MatchesObjective).OrderBy(s => s.Distance ?? double.MaxValue).ToArray();
         token.ThrowIfCancellationRequested(); Systems = result;
-        Status = $"{result.Count} nearby systems · Spansh. Blank fields mean the provider has no value.";
+        Status = $"{Systems.Count} matching systems · {source} · {Objective}. Unknown Powerplay data is not treated as eligible.";
     });
     public Task SearchTradersAsync() => Run(async token =>
     {
-        var result = await client.FindTradersAsync(Reference, TraderType, token);
-        token.ThrowIfCancellationRequested(); Markets = result;
+        var result = await client.FindTradersAsync(Reference, TraderType, token, Radius, Page);
+        token.ThrowIfCancellationRequested(); Traders = result;
         Status = $"{result.Count} {TraderType.ToLowerInvariant()} material traders · Spansh.";
     });
     public void Bookmark()
@@ -142,12 +195,39 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
         Status = bookmarks.Status;
     }
     public void CacheSelectedRing() { if (SelectedRing is { } ring) { cacheRing(ring); Status = "Ring saved to your local discoveries."; } }
-    public void UseSelectedSystem() { if (SelectedSystem is { } s) Reference = s.System; }
+    public void UseSelectedSystem()
+    {
+        if (SelectedSystem is not { } selected) return;
+        Reference = selected.System; SystemOnly = true; Page = 0; Destination = 0;
+        planningTarget = Objective == "All systems" ? "" : selected.System;
+        planningObjective = Objective; miningOrigin = selected.System; Changed(nameof(PlanningContext)); Changed(nameof(HasPlan));
+    }
+    public async Task FindSelectedSystemRingsAsync() { if (SelectedSystem is null) return; UseSelectedSystem(); await SearchRingsAsync(); }
+    public async Task FindSellingStationsAsync()
+    {
+        if (SelectedRing is not { } ring) return;
+        miningOrigin = ring.System;
+        var hasPlan = planningTarget.Length > 0 && planningObjective == Objective;
+        Reference = hasPlan && Objective == "Acquire" ? planningTarget : ring.System;
+        SystemOnly = hasPlan;
+        Changed(nameof(PlanningContext)); Changed(nameof(HasPlan));
+        if (Mineral.Length > 0) Commodity = Mineral;
+        Buying = false; Changed(nameof(TradeMode)); GalaxyWide = false; Page = 0; Destination = 1;
+        await SearchMarketsAsync();
+    }
+    private bool MatchesObjective(MiningSystemResult system) => Objective switch
+    {
+        "Reinforce" => !Same(system.PowerState, "Expansion") && system.Power.Length > 0 && Same(system.Power, PledgedPower),
+        "Undermine" => !Same(system.PowerState, "Expansion") && system.Power.Length > 0 && !Same(system.Power, PledgedPower),
+        "Acquire" => system.PowerState is "Unoccupied" or "Expansion",
+        _ => true
+    };
     public MiningSearchPreferences SaveOptions() => options;
     public void LoadOptions(MiningSearchPreferences values)
     {
         pending?.Cancel(); pending = null; IsBusy = false;
-        Rings = []; Markets = []; Systems = []; SelectedRing = null; SelectedMarket = null; SelectedSystem = null;
+        Rings = []; Markets = []; Systems = []; Traders = []; SelectedTrader = null; SystemOnly = false; Objective = "All systems"; PledgedPower = ""; SelectedRing = null; SelectedMarket = null; SelectedSystem = null;
+        ClearPlan();
         CommodityCategory = values.CommodityCategory;
         Reference = values.Reference;
         Mineral = values.Mineral;
@@ -179,12 +259,18 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     public void Dispose() { pending?.Cancel(); pending?.Dispose(); pending = null; }
     private async Task Run(Func<CancellationToken, Task> action)
     {
-        pending?.Cancel();
+        var previous = pending;
         using var current = new CancellationTokenSource(TimeSpan.FromSeconds(40));
         pending = current; IsBusy = true; Status = "Searching…";
-        try { await action(current.Token); }
+        var token = current.Token;
+        try
+        {
+            if (previous is not null) await previous.CancelAsync();
+            token.ThrowIfCancellationRequested();
+            await action(token);
+        }
         catch (OperationCanceledException) { if (pending == current) Status = "Search canceled or timed out."; }
-        catch (Exception ex) when (ex is HttpRequestException or System.Text.Json.JsonException or ArgumentException or InvalidOperationException)
+        catch (Exception ex) when (ex is HttpRequestException or System.Text.Json.JsonException or ArgumentException or InvalidOperationException or IOException or InvalidDataException)
         { if (pending == current) Status = "Search unavailable: " + ex.Message; }
         finally { if (pending == current) { pending = null; IsBusy = false; } }
     }

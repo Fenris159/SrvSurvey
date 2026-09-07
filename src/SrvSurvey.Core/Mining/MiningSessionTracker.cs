@@ -48,7 +48,7 @@ public sealed record MiningSession
     public int CoreHits => (Imported?.Cores ?? 0) + Prospects.Count(item => !string.IsNullOrEmpty(item.Core));
     public TimeSpan ActiveDuration => DurationAt(Ended ?? DateTimeOffset.UtcNow);
     public double TonsPerHour => ActiveDuration.TotalHours > 0 ? RefinedTons / ActiveDuration.TotalHours : 0;
-    public double TonsPerAsteroid => Asteroids > 0 ? (double)RefinedTons / Asteroids : 0;
+    public double TonsPerAsteroid => Asteroids > 0 ? RefinedTons / Asteroids : 0;
     public TimeSpan DurationAt(DateTimeOffset now) => TimeSpan.FromTicks(Math.Max(0,
         ((PausedAt ?? Ended ?? now) - Started - PausedDuration).Ticks));
 

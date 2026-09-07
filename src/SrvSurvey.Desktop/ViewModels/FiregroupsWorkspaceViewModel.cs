@@ -78,33 +78,12 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
         var previousCommander = commander;
         var nextCommander = journal.FrontierId;
         if (update.IsAwaitingCommanderIdentity || journal.IsShutdown) nextCommander = null;
-        if (commander != nextCommander)
-        {
-            StashDraft();
-            commander = nextCommander;
-            document = new(); storageAvailable = false; liveShip = null; editorShip = null; profileId = null;
-            if (commander is not null)
-            {
-                try { document = store.Load(commander); storageAvailable = true; }
-                catch (Exception ex) when (IsStorageError(ex)) { Status = "Firegroups could not be loaded: " + ex.Message; }
-            }
-            RefreshSaved();
-            ClearEditor();
-        }
+        if (commander != nextCommander) ChangeCommander(nextCommander);
         latestStatus = currentStatus;
         boarded = OverlayVehicleCatalog.Resolve(journal, currentStatus);
         if (commander is null || !storageAvailable) { NotifyLive(); return; }
 
-        var loadouts = new List<FiregroupShip>();
-        var eventCommander = previousCommander ?? commander;
-        foreach (var entry in update.JournalEvents)
-        {
-            if (entry.EventName is "LoadGame" or "Commander"
-                && entry.Payload.TryGetProperty("FID", out var fid) && fid.ValueKind == JsonValueKind.String)
-                eventCommander = fid.GetString();
-            if (entry.EventName == "Loadout" && eventCommander == commander && FiregroupLoadout.Parse(entry.Payload) is { } ship)
-                loadouts.Add(ship);
-        }
+        var loadouts = ReadLoadouts(update.JournalEvents, previousCommander);
         var changed = false;
         foreach (var ship in loadouts)
         {
@@ -127,6 +106,34 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
         }
         if (changed) Persist(document, "Equipped loadout updated.");
         NotifyLive();
+    }
+
+    private void ChangeCommander(string? nextCommander)
+    {
+        StashDraft();
+        commander = nextCommander;
+        document = new(); storageAvailable = false; liveShip = null; editorShip = null; profileId = null;
+        if (commander is not null)
+        {
+            try { document = store.Load(commander); storageAvailable = true; }
+            catch (Exception ex) when (IsStorageError(ex)) { Status = "Firegroups could not be loaded: " + ex.Message; }
+        }
+        RefreshSaved();
+        ClearEditor();
+    }
+    private List<FiregroupShip> ReadLoadouts(IReadOnlyList<JournalEventEnvelope> entries, string? previousCommander)
+    {
+        var loadouts = new List<FiregroupShip>();
+        var eventCommander = previousCommander ?? commander;
+        foreach (var entry in entries)
+        {
+            if (entry.EventName is "LoadGame" or "Commander"
+                && entry.Payload.TryGetProperty("FID", out var fid) && fid.ValueKind == JsonValueKind.String)
+                eventCommander = fid.GetString();
+            if (entry.EventName == "Loadout" && eventCommander == commander && FiregroupLoadout.Parse(entry.Payload) is { } ship)
+                loadouts.Add(ship);
+        }
+        return loadouts;
     }
 
     public string Backup(string expectedCommander)
@@ -326,8 +333,16 @@ public sealed class FiregroupSelectionRow : WorkspaceObservable
     public IReadOnlyList<FiregroupModule> Options { get; private set; } = [];
     public FiregroupModule? SelectedModule { get => selected; set { if (Set(ref selected, value)) { Changed(nameof(Warning)); Changed(nameof(HasWarning)); changed(); } } }
     public bool HasWarning => Warning.Length > 0;
-    public string Warning => selected is not null && FiregroupLoadout.IsExcluded(selected) ? $"{selected.Name} is excluded from Firegroups; choose a replacement or remove this row."
-        : selected is not null && !equipped.Any(m => m.Slot == selected.Slot && m.Symbol == selected.Symbol) ? "Not equipped in the latest loadout; choose a replacement or remove this row." : "";
+    public string Warning
+    {
+        get
+        {
+            if (selected is null) return "";
+            if (FiregroupLoadout.IsExcluded(selected)) return $"{selected.Name} is excluded from Firegroups; choose a replacement or remove this row.";
+            return equipped.Any(m => m.Slot == selected.Slot && m.Symbol == selected.Symbol)
+                ? "" : "Not equipped in the latest loadout; choose a replacement or remove this row.";
+        }
+    }
     private IReadOnlyList<FiregroupModule> equipped = [];
     public ICommand? RemoveCommand { get; set; }
     public void UpdateOptions(IReadOnlyList<FiregroupModule> modules)
@@ -352,5 +367,5 @@ public sealed record FiregroupSavedRow(FiregroupProfile Profile, ICommand EditCo
     public string Name => Profile.Name;
     public string ShipName => Profile.Ship.Display;
     public string DeleteLabel => $"Delete {Name}";
-    public IReadOnlyList<FiregroupTreeNode> Preview => Profile.Groups.Select(FiregroupTreeNode.From).ToArray();
+    public IReadOnlyList<FiregroupTreeNode> Preview { get; } = Profile.Groups.Select(FiregroupTreeNode.From).ToArray();
 }

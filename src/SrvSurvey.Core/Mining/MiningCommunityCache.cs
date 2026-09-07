@@ -24,35 +24,37 @@ public sealed class MiningCommunityCache
         var root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("message", out var message) || message.ValueKind != JsonValueKind.Object) return;
         var schema = MiningJson.Text(root, "$schemaRef");
-        if (!DateTimeOffset.TryParse(MiningJson.Text(message, "timestamp"), out var time) || time > now.AddMinutes(5) || time < now.AddDays(-1)) return;
+        if (!DateTimeOffset.TryParse(MiningJson.Text(message, "timestamp"), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal, out var time) || time > now.AddMinutes(5) || time < now.AddDays(-1)) return;
         lock (gate)
         {
-            if (schema == "https://eddn.edcd.io/schemas/journal/1")
-            {
-                var name = MiningJson.Text(message, "StarSystem");
-                if (name.Length == 0 || MiningJson.Text(message, "event") is not ("FSDJump" or "Location" or "CarrierJump")) return;
-                var coordinates = MiningJson.Array(message, "StarPos").ToArray();
-                GalacticCoordinate? position = coordinates.Length == 3 && coordinates.All(c => c.ValueKind == JsonValueKind.Number && c.TryGetDouble(out var n) && double.IsFinite(n))
-                    ? new(coordinates[0].GetDouble(), coordinates[1].GetDouble(), coordinates[2].GetDouble()) : null;
-                if (!systems.TryGetValue(name, out var old) || old.Power.Time < time)
-                    systems[name] = new(name, position ?? old?.Position, new(MiningJson.Text(message, "ControllingPower"), MiningJson.Text(message, "PowerplayState"), time));
-            }
-            else if (schema == "https://eddn.edcd.io/schemas/commodity/3")
-            {
-                var id = (long)MiningJson.Number(message, "marketId");
-                var system = MiningJson.Text(message, "systemName");
-                var station = MiningJson.Text(message, "stationName");
-                if (id <= 0 || system.Length == 0 || station.Length == 0) return;
-                foreach (var item in MiningJson.Array(message, "commodities"))
-                {
-                    var commodity = MiningCommodityName.Normalize(MiningJson.Text(item, "name"));
-                    if (commodity.Length == 0) continue;
-                    var key = (id, commodity);
-                    if (markets.TryGetValue(key, out var previous) && previous.Time >= time) continue;
-                    markets[key] = new(system, station, id, commodity, (long)MiningJson.Number(item, "buyPrice"), (long)MiningJson.Number(item, "sellPrice"), (long)MiningJson.Number(item, "demand"), (long)MiningJson.Number(item, "stock"), time);
-                }
-            }
+            if (schema == "https://eddn.edcd.io/schemas/journal/1") ApplySystem(message, time);
+            else if (schema == "https://eddn.edcd.io/schemas/commodity/3") ApplyMarket(message, time);
             Prune(now);
+        }
+    }
+    private void ApplySystem(JsonElement message, DateTimeOffset time)
+    {
+        var name = MiningJson.Text(message, "StarSystem");
+        if (name.Length == 0 || MiningJson.Text(message, "event") is not ("FSDJump" or "Location" or "CarrierJump")) return;
+        var coordinates = MiningJson.Array(message, "StarPos").ToArray();
+        GalacticCoordinate? position = coordinates.Length == 3 && coordinates.All(c => c.ValueKind == JsonValueKind.Number && c.TryGetDouble(out var n) && double.IsFinite(n))
+            ? new(coordinates[0].GetDouble(), coordinates[1].GetDouble(), coordinates[2].GetDouble()) : null;
+        if (!systems.TryGetValue(name, out var old) || old.Power.Time < time)
+            systems[name] = new(name, position ?? old?.Position, new(MiningJson.Text(message, "ControllingPower"), MiningJson.Text(message, "PowerplayState"), time));
+    }
+    private void ApplyMarket(JsonElement message, DateTimeOffset time)
+    {
+        var id = (long)MiningJson.Number(message, "marketId");
+        var system = MiningJson.Text(message, "systemName");
+        var station = MiningJson.Text(message, "stationName");
+        if (id <= 0 || system.Length == 0 || station.Length == 0) return;
+        foreach (var item in MiningJson.Array(message, "commodities"))
+        {
+            var commodity = MiningCommodityName.Normalize(MiningJson.Text(item, "name"));
+            if (commodity.Length == 0) continue;
+            var key = (id, commodity);
+            if (markets.TryGetValue(key, out var previous) && previous.Time >= time) continue;
+            markets[key] = new(system, station, id, commodity, (long)MiningJson.Number(item, "buyPrice"), (long)MiningJson.Number(item, "sellPrice"), (long)MiningJson.Number(item, "demand"), (long)MiningJson.Number(item, "stock"), time);
         }
     }
     public IReadOnlyList<MiningMarketResult> Markets(MiningMarketQuery query, GalacticCoordinate? origin, DateTimeOffset now)
@@ -66,6 +68,25 @@ public sealed class MiningCommunityCache
                     null, query.Buying ? m.Buy : m.Sell, m.Demand, m.Stock, m.Time, m.Id))
                 .Where(m => m.Price > 0 && (query.Buying ? m.Supply : m.Demand) > 0 && (query.GalaxyWide || m.Distance is { } distance && distance <= query.Radius)).ToArray();
         }
+    }
+    public IReadOnlyList<MiningSystemResult> FindSystems(MiningSystemQuery query, DateTimeOffset now)
+    {
+        // Journal broadcasts do not certify these other indexed fields.
+        if (query.Security.Length > 0 || query.Allegiance.Length > 0 || query.Government.Length > 0 || query.State.Length > 0 || query.Economy.Length > 0 || query.MinimumPopulation > 0) return [];
+        lock (gate)
+        {
+            var origin = systems.GetValueOrDefault(query.ReferenceSystem)?.Position;
+            return systems.Values.Where(s => s.Power.Time >= now.AddDays(-1) && s.Power.Time <= now.AddMinutes(5))
+                .Where(s => (query.Power.Length == 0 || s.Power.Power.Equals(query.Power, StringComparison.OrdinalIgnoreCase))
+                    && (query.PowerState.Length == 0 || s.Power.State.Equals(query.PowerState, StringComparison.OrdinalIgnoreCase)))
+                .Select(s => new MiningSystemResult(s.Name, SystemDistance(s, query.ReferenceSystem, origin), "", "", "", "", "", s.Power.Power, s.Power.State, 0))
+                .Where(s => s.Distance is { } distance && distance <= query.Radius).ToArray();
+        }
+    }
+    private static double? SystemDistance(MiningCommunitySystem system, string reference, GalacticCoordinate? origin)
+    {
+        if (system.Name.Equals(reference, StringComparison.OrdinalIgnoreCase)) return 0;
+        return origin is { } from && system.Position is { } to ? from.DistanceTo(to) : null;
     }
     public string Export() { lock (gate) return JsonSerializer.Serialize(new MiningCommunitySnapshot(systems.Values.ToArray(), markets.Values.ToArray())); }
     public void Restore(string json, DateTimeOffset now)

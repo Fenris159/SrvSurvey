@@ -15,7 +15,7 @@ public sealed class MiningWorkspaceViewModelTests
             var bookmarks = new BookmarksViewModel(directory);
             var vm = new MiningWorkspaceViewModel(directory, new Resolver(), bookmarks);
             var context = new JournalSessionState();
-            JournalEventEnvelope.TryParse("""{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}""", out var entry, out _);
+            Assert.True(JournalEventEnvelope.TryParse("""{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}""", out var entry, out _));
             context.Apply(entry!);
             var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
             vm.Apply(new JournalMonitorUpdate(null, [entry!], ship, null, null, null, [], true), context, null, ship);
@@ -44,9 +44,9 @@ public sealed class MiningWorkspaceViewModelTests
         {
             using var vm = new MiningWorkspaceViewModel(directory, new Resolver(), new BookmarksViewModel(directory), clock: clock);
             var context = new JournalSessionState();
-            JournalEventEnvelope.TryParse("""{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}""", out var load, out _);
+            Assert.True(JournalEventEnvelope.TryParse("""{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}""", out var load, out _));
             context.Apply(load!);
-            JournalEventEnvelope.TryParse("""{"event":"Loadout","CargoCapacity":10,"Ship":"python"}""", out var capacity, out _);
+            Assert.True(JournalEventEnvelope.TryParse("""{"event":"Loadout","CargoCapacity":10,"Ship":"python"}""", out var capacity, out _));
             var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
             vm.Apply(new JournalMonitorUpdate(null, [load!, capacity!], ship, null, null, null, [], true), context, new CargoSnapshot(clock.GetUtcNow(), "Cargo", "Ship", 10, [new CargoItem("platinum", null, 10, 0)]), ship);
             vm.StartCommand.Execute(null);
@@ -97,6 +97,79 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.Single(targetFiregroups.SavedProfiles);
             Assert.False(targetFiregroups.Restore("OtherCommander", firegroups.Backup("F1")));
             Assert.Single(targetFiregroups.SavedProfiles);
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
+
+    [Fact]
+    public async Task MiningTripCanBeConfiguredRecordedBookmarkedAndReviewedWithoutLosingHistory()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var clock = new Clock();
+        try
+        {
+            var bookmarks = new BookmarksViewModel(directory);
+            using var vm = new MiningWorkspaceViewModel(directory, new Resolver(), bookmarks, clock: clock);
+            var context = new JournalSessionState();
+            var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
+            void Feed(string json, bool bootstrap = false)
+            {
+                var entry = FiregroupsWorkspaceViewModelTests.Event(json);
+                context.Apply(entry);
+                vm.Apply(new(null, [entry], ship, null, null, null, [], bootstrap), context, null, ship);
+            }
+            Feed("""{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}""", true);
+            Feed("""{"timestamp":"2026-09-06T12:00:00Z","event":"Location","StarSystem":"Wille","StarPos":[1,2,3],"Body":"Wille A Ring"}""", true);
+            vm.TargetMaterial = "Platinum"; vm.ThresholdText = "25"; vm.SetThreshold(false);
+            vm.PresetName = "High yield"; vm.SaveAnnouncementPreset();
+            vm.SetThreshold(true); Assert.Empty(vm.Settings.Thresholds);
+            vm.LoadAnnouncementPreset(); Assert.Equal(25, vm.Settings.Thresholds["platinum"]);
+            Assert.Contains("High yield", vm.PresetNames);
+            vm.ThresholdText = "101"; vm.SetThreshold(false); Assert.Contains("0 to 100", vm.Status);
+            vm.StartCommand.Execute(null);
+            Feed("""{"timestamp":"2026-09-06T12:00:01Z","event":"ProspectedAsteroid","Materials":[{"Name":"Platinum","Proportion":42}],"Content":"High"}""");
+            Feed("""{"timestamp":"2026-09-06T12:00:02Z","event":"MiningRefined","Type":"platinum"}""");
+            Feed("""{"timestamp":"2026-09-06T12:00:03Z","event":"MaterialCollected","Category":"Raw","Name":"iron","Count":3}""");
+            Assert.Equal(1, vm.Current!.RefinedTons);
+            Assert.Single(vm.Prospects); Assert.Single(vm.EngineeringMaterials); Assert.Equal(3, vm.Notices.Count);
+            vm.AdjustQuality(-1); Assert.Equal(-1, vm.Current.QualityAdjustments["platinum"]);
+            vm.AddAsteroidCommand.Execute(null); Assert.Equal(2, vm.Current.Asteroids);
+            vm.RemoveAsteroidCommand.Execute(null); Assert.Equal(1, vm.Current.Asteroids);
+            vm.RefineryMineral = "Platinum"; vm.RefineryTons = 2; vm.SaveRefineryEstimate();
+            Assert.Contains("2 t", vm.RefinerySummary); Assert.Equal(1, vm.Current.RefinedTons);
+            vm.RefineryTons = 0; vm.SaveRefineryEstimate(); Assert.Empty(vm.Current.RefineryEstimates);
+            vm.PauseCommand.Execute(null); Assert.NotNull(vm.Current.PausedAt);
+            vm.PauseCommand.Execute(null); Assert.Null(vm.Current.PausedAt);
+            clock.Now += TimeSpan.FromMinutes(10); vm.StopCommand.Execute(null);
+            Assert.Null(vm.Current); var report = Assert.Single(vm.History);
+            vm.SelectedSession = report; vm.Notes = "Keep the ring context"; vm.SaveNotesCommand.Execute(null);
+            Assert.Equal(vm.Notes, report.Notes);
+            vm.DeleteSelectedReport(); Assert.Empty(vm.History);
+            vm.UndoDeleteReport(); Assert.Same(report, Assert.Single(vm.History));
+            var exported = SrvSurvey.Core.Mining.MiningReport.Csv(vm.History);
+            vm.ImportReports(exported); Assert.Single(vm.History);
+            Assert.Contains("Imported 0", vm.Status);
+            var journalPath = Path.Combine(directory, "import.log");
+            await File.WriteAllLinesAsync(journalPath, [
+                "not a journal event",
+                """{"event":"LoadGame","FID":"OTHER","Ship":"python"}""",
+                """{"event":"Scan","BodyName":"Ignore me","Rings":[{"Name":"Wrong A Ring"}]}""",
+                """{"event":"LoadGame","FID":"F1","Ship":"python"}""",
+                """{"event":"Location","StarSystem":"Wille","StarPos":[1,2,3]}""",
+                """{"timestamp":"2026-09-06T12:10:00Z","event":"Scan","BodyName":"Wille","ReserveLevel":"Pristine","DistanceFromArrivalLS":400,"Rings":[{"Name":"Wille A Ring","RingClass":"eRingClass_Metallic"}]}""",
+                """{"timestamp":"2026-09-06T12:10:01Z","event":"SAASignalsFound","BodyName":"Wille A Ring","Signals":[{"Type_Localised":"Platinum","Count":2}]}"""
+            ]);
+            await vm.ImportJournalsAsync([journalPath]);
+            var ring = Assert.Single(vm.Rings);
+            Assert.Equal("Wille A Ring", ring.Body); Assert.Equal(2, ring.Hotspots["Platinum"]);
+            vm.SelectedRing = ring; vm.BookmarkRingCommand.Execute(null);
+            Assert.Equal(ring.Body, Assert.Single(bookmarks.All).Body);
+            vm.Filter = "no match"; Assert.Empty(vm.Rings);
+            vm.Filter = "Platinum"; Assert.Single(vm.Rings);
+            await vm.ImportJournalsAsync([journalPath]); Assert.Single(vm.Rings);
+            vm.Destination = "Unknown"; await vm.CalculateDistanceAsync(); Assert.Equal("System not found.", vm.DistanceResult);
+            var backup = vm.Backup(); Assert.True(vm.Restore(backup));
+            Assert.Single(vm.History); Assert.Single(vm.Rings);
         }
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }

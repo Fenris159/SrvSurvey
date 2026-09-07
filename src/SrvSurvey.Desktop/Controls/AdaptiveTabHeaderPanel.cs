@@ -9,10 +9,10 @@ public sealed class AdaptiveTabHeaderPanel : WrapPanel
     public const double PreferredFontSize = 22;
     public const double MinimumFontSize = 14;
 
-    protected override Size MeasureOverride(Size availableSize)
+    protected override Size MeasureOverride(Size constraint)
     {
         var tabs = Children.OfType<TabItem>().Where(t => t.Header is TextBlock).ToArray();
-        if (tabs.Length == 0) return base.MeasureOverride(availableSize);
+        if (tabs.Length == 0) return base.MeasureOverride(constraint);
         var headers = tabs.Select(t => (TextBlock)t.Header!).ToArray();
         var chrome = new double[tabs.Length];
         for (var i = 0; i < tabs.Length; i++)
@@ -32,9 +32,9 @@ public sealed class AdaptiveTabHeaderPanel : WrapPanel
                 probe.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
                 width += probe.DesiredSize.Width + chrome[i];
             }
-            if (width <= availableSize.Width) break;
+            if (width <= constraint.Width) break;
         }
         foreach (var header in headers) header.FontSize = size;
-        return base.MeasureOverride(availableSize);
+        return base.MeasureOverride(constraint);
     }
 }

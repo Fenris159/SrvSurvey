@@ -76,7 +76,7 @@
               <TextBox Text="{Binding LastMined}"/>
             </StackPanel>
           </Grid>
-          <ItemsControl ItemsSource="{Binding Selected.Screenshots}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="x:String"><Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8"><TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis"/><Button Grid.Column="1" Content="Open screenshot" Tag="{Binding}" Click="OpenScreenshot_Click"/><Button Grid.Column="2" Content="Remove" Tag="{Binding}" Click="RemoveScreenshot_Click"/></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl><TextBlock Text="Notes"/>
+          <ItemsControl ItemsSource="{Binding SelectedScreenshots}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="x:String"><Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8"><TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis"/><Button Grid.Column="1" Content="Open screenshot" Tag="{Binding}" Click="OpenScreenshot_Click"/><Button Grid.Column="2" Content="Remove" Tag="{Binding}" Click="RemoveScreenshot_Click"/></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl><TextBlock Text="Notes"/>
           <TextBox Text="{Binding Notes}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70"/>
           <WrapPanel>
             <Button Content="New" Command="{Binding NewCommand}" Margin="0,0,8,0"/>

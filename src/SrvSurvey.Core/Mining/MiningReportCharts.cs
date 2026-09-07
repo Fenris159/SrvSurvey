@@ -24,7 +24,7 @@ internal static class MiningReportCharts
         foreach (var mineral in collections.GroupBy(c => c.Name, StringComparer.OrdinalIgnoreCase))
         {
             var total = 0d;
-            var points = mineral.Select(c => new Point((c.Time - session.Started).TotalMinutes, total += c.Count)).Prepend(new Point(0, 0)).ToArray();
+            var points = mineral.Select(c => { total += c.Count; return new Point((c.Time - session.Started).TotalMinutes, total); }).Prepend(new Point(0, 0)).ToArray();
             Chart(html, mineral.Key + " — refined", points, "t", true);
         }
     }

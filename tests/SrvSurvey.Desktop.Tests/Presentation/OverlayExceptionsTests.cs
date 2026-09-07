@@ -13,6 +13,7 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayExceptionsTests
 {
+    private static readonly string[] ExpectedGroups = ["Small", "Medium", "Large", "Vessel / Vehicle"];
     [Theory]
     [InlineData("testbuggy")]
     [InlineData("combat_multicrew_srv_01")]
@@ -146,7 +147,7 @@ public sealed class OverlayExceptionsTests
         try
         {
             dialog.Show(); using var dialogFrame = dialog.CaptureRenderedFrame();
-            Assert.Equal(new[] { "Small", "Medium", "Large", "Vessel / Vehicle" }, model.ForCategory(OverlaySettingsCategory.Mining).Groups.Select(g => g.Name));
+            Assert.Equal(ExpectedGroups, model.ForCategory(OverlaySettingsCategory.Mining).Groups.Select(g => g.Name));
             Assert.Equal(OverlayVehicleCatalog.All.Count, dialog.GetVisualDescendants().OfType<CheckBox>().Count());
             window.Show(); using var frame = window.CaptureRenderedFrame();
             var labels = presentation.GetVisualDescendants().OfType<TextBlock>().Where(t => t.IsEffectivelyVisible).ToArray();

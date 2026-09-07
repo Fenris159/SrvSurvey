@@ -112,17 +112,22 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store, 
     {
         Latest = analysis;
         confirmation.Apply(analysis);
-        SlotsText = string.Join("   ", analysis.Slots.Select((state, i) =>
-            $"{i + 1} {(state == MiningBarState.Unknown ? "?" : state != confirmation.States[i] ? "…" : confirmation.States[i] switch
-            { MiningBarState.Present => "BAR", MiningBarState.Absent => "empty", _ => "…" })}"));
-        StatusText = confirmation.IsSettling
-            ? "HUD moving or reacquiring — tracker changes paused until steady for one second."
-            : analysis.Slots.All(s => s == MiningBarState.Unknown)
-            ? "HUD not located — adjust alignment or return to the cockpit view."
-            : IsCalibrating ? "Calibration preview — saved trackers are unchanged."
-            : "Rig bars set trackers immediately; three seconds empty clears them.";
+        SlotsText = string.Join("   ", analysis.Slots.Select((state, i) => $"{i + 1} {SlotLabel(state, confirmation.States[i])}"));
+        StatusText = DetectionStatus(analysis);
         Notify();
         return confirmation.States.ToArray();
+    }
+    private static string SlotLabel(MiningBarState observed, MiningBarState confirmed)
+    {
+        if (observed == MiningBarState.Unknown) return "?";
+        if (observed != confirmed) return "…";
+        return confirmed switch { MiningBarState.Present => "BAR", MiningBarState.Absent => "empty", _ => "…" };
+    }
+    private string DetectionStatus(MiningBarAnalysis analysis)
+    {
+        if (confirmation.IsSettling) return "HUD moving or reacquiring — tracker changes paused until steady for one second.";
+        if (analysis.Slots.All(s => s == MiningBarState.Unknown)) return "HUD not located — adjust alignment or return to the cockpit view.";
+        return IsCalibrating ? "Calibration preview — saved trackers are unchanged." : "Rig bars set trackers immediately; three seconds empty clears them.";
     }
     private void Reset() => Pause(Enabled || IsCalibrating
         ? "Waiting for a clear view of the six HUD circles." : "Rig bar detection is off.");

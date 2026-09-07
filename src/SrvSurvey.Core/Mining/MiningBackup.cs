@@ -18,33 +18,37 @@ public static class MiningBackup
         using var buffer = new MemoryStream();
         using (var archive = new ZipArchive(buffer, ZipArchiveMode.Create, true))
         {
-            var imageNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var screenshots in Sessions(copy).Select(s => s.Screenshots).Concat(locations.Select(b => b.Screenshots)))
-            {
-                for (var index = 0; index < screenshots.Count; index++)
-                {
-                    var path = screenshots[index];
-                    if (!File.Exists(path)) continue;
-                    var extension = Path.GetExtension(path).ToLowerInvariant();
-                    if (extension is not (".png" or ".jpg" or ".jpeg" or ".webp") || new FileInfo(path).Length > 20 * 1024 * 1024) continue;
-                    if (!imageNames.TryGetValue(path, out var name))
-                    {
-                        name = "images/" + Guid.NewGuid().ToString("N") + extension;
-                        var entry = archive.CreateEntry(name, CompressionLevel.Fastest);
-                        using var output = entry.Open();
-                        using var input = File.OpenRead(path);
-                        input.CopyTo(output);
-                        imageNames[path] = name;
-                    }
-                    screenshots[index] = name;
-                }
-            }
+            AddScreenshots(archive, Sessions(copy).Select(s => s.Screenshots).Concat(locations.Select(b => b.Screenshots)));
             Write(archive, "mining.json", JsonSerializer.Serialize(copy));
             Write(archive, "bookmarks.json", JsonSerializer.Serialize(locations));
             if (firegroups is not null) Write(archive, "firegroups.json", firegroups);
         }
         if (buffer.Length > MaximumBytes) throw new IOException("Mining backup exceeds 256 MB. Export fewer screenshot attachments.");
         return buffer.ToArray();
+    }
+    private static void AddScreenshots(ZipArchive archive, IEnumerable<List<string>> screenshotsByRecord)
+    {
+        var imageNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var screenshots in screenshotsByRecord)
+        {
+            for (var index = 0; index < screenshots.Count; index++)
+            {
+                var path = screenshots[index];
+                if (!File.Exists(path)) continue;
+                var extension = Path.GetExtension(path).ToLowerInvariant();
+                if (extension is not (".png" or ".jpg" or ".jpeg" or ".webp") || new FileInfo(path).Length > 20 * 1024 * 1024) continue;
+                if (!imageNames.TryGetValue(path, out var name))
+                {
+                    name = "images/" + Guid.NewGuid().ToString("N") + extension;
+                    var entry = archive.CreateEntry(name, CompressionLevel.Fastest);
+                    using var output = entry.Open();
+                    using var input = File.OpenRead(path);
+                    input.CopyTo(output);
+                    imageNames[path] = name;
+                }
+                screenshots[index] = name;
+            }
+        }
     }
     public static MiningBackupContents Read(byte[] bytes, string attachmentDirectory)
     {

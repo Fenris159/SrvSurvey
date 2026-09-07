@@ -71,7 +71,7 @@ public sealed class MiningStore(string directory)
         var path = GetPath(commander);
         return File.Exists(path) ? Parse(File.ReadAllText(path)) : new();
     }
-    public string Export(MiningCommanderData state) => JsonSerializer.Serialize(state, Options);
+    public static string Export(MiningCommanderData state) => JsonSerializer.Serialize(state, Options);
     public void Save(string commander, MiningCommanderData state)
     {
         var path = GetPath(commander);
@@ -109,11 +109,15 @@ public sealed class MiningStore(string directory)
         if (state.History.Any(InvalidSession) || (state.Current is { } current && InvalidSession(current))
             || state.Rings.Any(r => r is null || r.Hotspots is null || r.System is null || r.Body is null)
             || state.Missions.Any(m => m is null || m.Commodity is null)) throw new JsonException("Invalid records in mining backup.");
-        if (state.Settings.AnnouncementPresets.Values.Any(p => p is null || p.Thresholds is null || p.Thresholds.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 100))
-            || state.Settings.Thresholds.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 100)
-            || state.Settings.Firegroups.Any(g => g is null || g.Group is < 0 or > 7 || g.Primary is null || g.Secondary is null))
-            throw new JsonException("Invalid mining settings in backup.");
+        ValidateSettings(state.Settings);
         return state;
+    }
+    private static void ValidateSettings(MiningPreferences settings)
+    {
+        if (settings.AnnouncementPresets.Values.Any(p => p is null || p.Thresholds is null || p.Thresholds.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 100))
+            || settings.Thresholds.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 100)
+            || settings.Firegroups.Any(g => g is null || g.Group is < 0 or > 7 || g.Primary is null || g.Secondary is null))
+            throw new JsonException("Invalid mining settings in backup.");
     }
     private static bool InvalidSession(MiningSession s) => s is null || s.System is null || s.Ring is null || s.Notes is null
         || s.Thresholds is null || s.QualityAdjustments is null || s.Prospects is null || s.Collections is null || s.Screenshots is null || s.RefineryEstimates is null

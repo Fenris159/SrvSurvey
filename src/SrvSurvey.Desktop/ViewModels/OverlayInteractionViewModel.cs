@@ -523,7 +523,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             var saveMiningCalibration = MiningDetection?.HasCalibrationChanges == true;
             if (changes.Count == 0 && !saveDefaultOpacity)
             {
-                MiningDetection?.SaveEdit();
+                // The no-change guard above leaves this path only for a pending calibration.
+                MiningDetection!.SaveEdit();
                 EndSession(closeHost: true, restoreRuntimeWindows: true);
                 StatusMessage = "Saved mining HUD calibration.";
                 return;

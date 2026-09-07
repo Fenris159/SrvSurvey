@@ -9,7 +9,7 @@ internal static class MiningCircleMask
 
     internal static (double X, double Y)? LocateGrid(IFssPixelSource image,
         (double X, double Y)[] centers, double radius, MiningHudGeometry geometry,
-        double offsetX, double offsetY, double allowance, int requiredCircles = 4)
+        (double X, double Y) offset, double allowance, int requiredCircles = 4)
     {
         var separation = centers.SelectMany((a, i) => centers.Skip(i + 1)
             .Select(b => Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2)))).Min();
@@ -22,31 +22,42 @@ internal static class MiningCircleMask
         for (var sy = -steps; sy <= steps; sy++)
             for (var sx = -steps; sx <= steps; sx++)
             {
-                var x = offsetX + sx * 2;
-                var y = offsetY + sy * 2;
+                var x = offset.X + sx * 2;
+                var y = offset.Y + sy * 2;
                 if (Math.Abs(x) > allowance || Math.Abs(y) > allowance) continue;
-                var top = 0; var bottom = 0; var columns = 0; var total = 0d;
-                for (var i = 0; i < centers.Length; i++)
-                {
-                    var confidence = 0d;
-                    for (var scale = 0; scale <= 4; scale++)
-                        confidence = Math.Max(confidence, Score(image, centers[i].X + x, centers[i].Y + y,
-                            radius * (.9 + scale * .05), directions));
-                    if (confidence < 8) continue;
-                    if (i < 3) top++; else bottom++;
-                    columns |= 1 << (i % 3);
-                    total += Math.Min(30, confidence);
-                }
+                var (top, bottom, columns, total) = ScoreGrid(image, centers, radius, directions, x, y);
                 if (top < 2 || bottom < 2 || columns != 7 || top + bottom < requiredCircles) continue;
                 var count = top + bottom;
                 total -= .01 * (sx * sx + sy * sy);
-                if (count < bestCount || count == bestCount && total <= bestScore) continue;
+                if (!IsBetterMatch(count, total, bestCount, bestScore)) continue;
                 bestCount = count;
                 bestScore = total;
                 best = (x, y);
             }
         return best;
     }
+
+    private static (int Top, int Bottom, int Columns, double Total) ScoreGrid(IFssPixelSource image,
+        (double X, double Y)[] centers, double radius, Vector[] directions, double x, double y)
+    {
+        var top = 0; var bottom = 0; var columns = 0; var total = 0d;
+        for (var i = 0; i < centers.Length; i++)
+        {
+            var confidence = 0d;
+            for (var scale = 0; scale <= 4; scale++)
+                confidence = Math.Max(confidence, Score(image, centers[i].X + x, centers[i].Y + y,
+                    radius * (.9 + scale * .05), directions));
+            if (confidence < 8) continue;
+            if (i < 3) top++; else bottom++;
+            columns |= 1 << (i % 3);
+            total += Math.Min(30, confidence);
+        }
+        return (top, bottom, columns, total);
+    }
+
+    // More corroborating circles wins; confidence only breaks equal-count ties.
+    internal static bool IsBetterMatch(int count, double score, int bestCount, double bestScore) =>
+        count > bestCount || (count == bestCount && score > bestScore);
 
     private static Vector[] Directions(MiningHudGeometry geometry) => Enumerable.Range(0, 19)
         .Select(i => geometry.RingPoint(-Math.PI + i * Math.PI / 18, 1)).ToArray();

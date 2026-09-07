@@ -50,7 +50,10 @@ public sealed class BookmarksViewModel : WorkspaceObservable
     public ICommand DeleteCommand { get; }
     public IReadOnlyList<GalacticBookmark> All => catalog?.Items ?? [];
     public IReadOnlyList<GalacticBookmark> Items => catalog?.Filter(CategoryFilter, Query) ?? [];
-    public IReadOnlyList<string> Categories => new[] { "All" }.Concat(catalog?.Categories ?? ["Mining"]).ToArray();
+    private IReadOnlyList<string>? categories;
+    public IReadOnlyList<string> Categories => categories ??= ReadCategories();
+    private string[] ReadCategories() => (catalog?.Categories ?? ["Mining"]).Prepend("All").ToArray();
+    public IReadOnlyList<string> SelectedScreenshots => selected?.Screenshots ?? [];
     public string CategoryFilter { get => categoryFilter; set { if (Set(ref categoryFilter, value)) Changed(nameof(Items)); } }
     public string Query { get => query; set { if (Set(ref query, value)) Changed(nameof(Items)); } }
     public string System { get => system; set => Set(ref system, value); }
@@ -70,7 +73,9 @@ public sealed class BookmarksViewModel : WorkspaceObservable
         get => selected;
         set
         {
-            if (!Set(ref selected, value) || value is null) return;
+            if (!Set(ref selected, value)) return;
+            Changed(nameof(SelectedScreenshots));
+            if (value is null) return;
             System = value.System; Body = value.Body; Category = value.Category; Notes = value.Notes;
             Minerals = value.Minerals; Rating = value.Rating; LastMined = value.LastMined; Hotspot = value.Hotspot; AverageYield = value.AverageYield; Overlaps = value.Overlaps; ResourceExtractionSites = value.ResourceExtractionSites;
         }
@@ -85,7 +90,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
     private void Run(Action action)
     {
         if (catalog is null) return;
-        try { action(); Changed(nameof(Items)); Changed(nameof(Categories)); }
+        try { action(); categories = null; Changed(nameof(Items)); Changed(nameof(Categories)); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException) { Status = ex.Message; }
     }
 }

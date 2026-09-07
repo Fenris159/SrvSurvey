@@ -67,7 +67,9 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public MiningSearchViewModel Search { get; }
     public IReadOnlyList<string> Voices { get => voices; private set => Set(ref voices, value); }
     public string PresetName { get => presetName; set => Set(ref presetName, value); }
-    public IReadOnlyList<string> PresetNames => Settings.AnnouncementPresets.Keys.Order().ToArray();
+    private IReadOnlyList<string>? cachedPresetNames;
+    public IReadOnlyList<string> PresetNames => cachedPresetNames ??= ReadPresetNames();
+    private IReadOnlyList<string> ReadPresetNames() => Settings.AnnouncementPresets.Keys.Order().ToArray();
     public ICommand StartCommand { get; }
     public ICommand PauseCommand { get; }
     public ICommand StopCommand { get; }
@@ -85,23 +87,33 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public MiningSession? Current => state.Session.Current;
     public string CurrentSystem => system;
     public string Context => string.Join(" · ", new[] { system, body, ship }.Where(s => s.Length > 0));
-    public string SessionSummary => Current is not { } session ? "No active session" : $"{(session.PausedAt is null ? "Active" : "Paused")} · {session.ActiveDuration:hh\\:mm\\:ss} · {session.RefinedTons:N0} t · {session.TonsPerHour:0.0} t/h · {session.Asteroids} asteroids · {session.CoreHits} cores";
-    public string CargoSummary => cargo is null ? "Cargo unavailable" : $"Cargo: {cargo.Count:N0} / {(capacity > 0 ? capacity.ToString("N0") : "unknown")} t · Limpets: {cargo.GetCount("drones")}";
+    public string SessionSummary => Current is not { } session ? "No active session" : $"{SessionStateLabel(session)} · {session.ActiveDuration:hh\\:mm\\:ss} · {session.RefinedTons:N0} t · {session.TonsPerHour:0.0} t/h · {session.Asteroids} asteroids · {session.CoreHits} cores";
+    private static string SessionStateLabel(MiningSession session) => session.PausedAt is null ? "Active" : "Paused";
+    private string CapacityLabel => capacity > 0 ? capacity.ToString("N0") : "unknown";
+    public string CargoSummary => cargo is null ? "Cargo unavailable" : $"Cargo: {cargo.Count:N0} / {CapacityLabel} t · Limpets: {cargo.GetCount("drones")}";
     public IReadOnlyList<CargoItem> Cargo => cargo?.Inventory ?? [];
     public IReadOnlyList<MiningMaterialSummary> Materials => Current?.Summarize(Settings.Thresholds) ?? [];
-    public IReadOnlyList<MiningCollection> EngineeringMaterials => Current?.Collections.Where(c => c.Engineering).ToArray() ?? [];
-    public IReadOnlyList<MiningProspect> Prospects => Current?.Prospects.AsEnumerable().Reverse().ToArray() ?? [];
-    public IReadOnlyList<MiningMission> Missions => state.Missions.Missions.Select(m => m with { }).ToArray();
+    private IReadOnlyList<MiningCollection>? cachedEngineeringMaterials;
+    public IReadOnlyList<MiningCollection> EngineeringMaterials => cachedEngineeringMaterials ??= ReadEngineeringMaterials();
+    private IReadOnlyList<MiningCollection> ReadEngineeringMaterials() => Current?.Collections.Where(c => c.Engineering).ToArray() ?? [];
+    private IReadOnlyList<MiningProspect>? cachedProspects;
+    public IReadOnlyList<MiningProspect> Prospects => cachedProspects ??= ReadProspects();
+    private IReadOnlyList<MiningProspect> ReadProspects() => Current?.Prospects.AsEnumerable().Reverse().ToArray() ?? [];
+    private IReadOnlyList<MiningMission>? cachedMissions;
+    public IReadOnlyList<MiningMission> Missions => cachedMissions ??= ReadMissions();
+    private IReadOnlyList<MiningMission> ReadMissions() => state.Missions.Missions.Select(m => m with { }).ToArray();
     public IReadOnlyList<MiningNotice> Notices => state.Notices;
     public IReadOnlyList<string> ReportScreenshots => SelectedSession?.Screenshots.ToArray() ?? [];
     public IReadOnlyList<MiningSession> History => state.Data.History;
-    public IReadOnlyList<MiningRing> Rings => state.Data.Rings.Where(r => $"{r.System} {r.Body} {r.RingType} {r.Minerals}".Contains(Filter, StringComparison.OrdinalIgnoreCase)).OrderBy(r => r.Position is { } p && position is { } current ? p.DistanceTo(current) : double.MaxValue).ToArray();
+    private IReadOnlyList<MiningRing>? cachedRings;
+    public IReadOnlyList<MiningRing> Rings => cachedRings ??= ReadRings();
+    private IReadOnlyList<MiningRing> ReadRings() => state.Data.Rings.Where(r => $"{r.System} {r.Body} {r.RingType} {r.Minerals}".Contains(Filter, StringComparison.OrdinalIgnoreCase)).OrderBy(r => r.Position is { } p && position is { } current ? p.DistanceTo(current) : double.MaxValue).ToArray();
     public string HistorySummary => $"{History.Count} sessions · {History.Sum(s => s.RefinedTons):N0} t refined · {History.Sum(s => s.ActiveDuration.TotalHours):0.0} active hours";
     public string ThresholdSummary => Settings.Thresholds.Count == 0 ? "All minerals are announced." : string.Join(" · ", Settings.Thresholds.Select(p => $"{p.Key} ≥ {p.Value:0.0}%"));
     public string Status { get => status; set => Set(ref status, value); }
     public int SelectedTab { get => selectedTab; set => Set(ref selectedTab, value); }
     public string Notes { get => notes; set => Set(ref notes, value); }
-    public string Filter { get => filter; set { if (Set(ref filter, value)) Changed(nameof(Rings)); } }
+    public string Filter { get => filter; set { if (Set(ref filter, value)) { cachedRings = null; Changed(nameof(Rings)); } } }
     public string TargetMaterial { get => targetMaterial; set => Set(ref targetMaterial, value); }
     public string ThresholdText { get => thresholdText; set => Set(ref thresholdText, value); }
     public string Origin { get => origin; set => Set(ref origin, value); }
@@ -113,7 +125,9 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public bool ShouldShowNotifications => CanShowShipOverlays && VisibleNotices.Count > 0;
     private bool CanShowShipOverlays => sessionAvailable && storageAvailable && eliteStatus is { InMainShip: true, OnFoot: false, InSrv: false }
         && (!Settings.HideInSupercruise || !eliteStatus.Flags.HasFlag(StatusFlags.Supercruise)) && (!Settings.OverlaysOnlyDuringSession || Current is not null);
-    public IReadOnlyList<MiningNotice> VisibleNotices => Notices.Where(n => clock.GetUtcNow() - n.Time < TimeSpan.FromSeconds(Math.Clamp(Settings.NotificationSeconds, 3, 120))).Take(5).ToArray();
+    private IReadOnlyList<MiningNotice>? cachedVisibleNotices;
+    public IReadOnlyList<MiningNotice> VisibleNotices => cachedVisibleNotices ??= ReadVisibleNotices();
+    private IReadOnlyList<MiningNotice> ReadVisibleNotices() => Notices.Where(n => clock.GetUtcNow() - n.Time < TimeSpan.FromSeconds(Math.Clamp(Settings.NotificationSeconds, 3, 120))).Take(5).ToArray();
     public void Apply(JournalMonitorUpdate update, JournalSessionState context, CargoSnapshot? currentCargo, EliteStatus? currentStatus)
     {
         sessionAvailable = !update.IsAwaitingCommanderIdentity && !context.IsShutdown && !string.IsNullOrWhiteSpace(context.FrontierId);
@@ -125,34 +139,47 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         cargo = currentCargo;
         var dirty = false;
         var previousNotice = state.Notices.FirstOrDefault();
-        // Read location transitions in journal order: the outer projection already represents the end of the batch.
+        // Preserve journal order: the outer projection represents the end of this batch.
         foreach (var entry in update.JournalEvents)
         {
-            var json = entry.Payload;
-            if (entry.EventName is "Location" or "FSDJump" or "CarrierJump")
-            {
-                system = Text(json, "StarSystem");
-                body = Text(json, "Body");
-                if (json.TryGetProperty("StarPos", out var starPos) && starPos.ValueKind == JsonValueKind.Array && starPos.GetArrayLength() == 3)
-                    position = new GalacticCoordinate(starPos[0].GetDouble(), starPos[1].GetDouble(), starPos[2].GetDouble());
-            }
-            if (entry.EventName is "SupercruiseExit" or "ApproachBody") body = Text(json, "Body");
-            if (entry.EventName == "Loadout")
-            {
-                ship = Text(json, "Ship");
-                if (json.TryGetProperty("CargoCapacity", out var c) && c.TryGetInt32(out var count)) capacity = count;
-            }
-            if (entry.EventName is "FSDJump" or "Location" or "CarrierJump")
-            {
-                var broadcast = new Dictionary<string, object> { ["$schemaRef"] = "https://eddn.edcd.io/schemas/journal/1", ["message"] = entry.Payload };
-                community.Cache.Apply(JsonSerializer.Serialize(broadcast), clock.GetUtcNow());
-            }
+            ApplyContext(entry);
             dirty |= state.Apply(entry, update.IsBootstrapRead, system, body, ship, position);
         }
         system = context.SystemName ?? system; body = context.BodyName ?? body; ship = context.ShipType ?? ship; position = context.StarPosition ?? position;
         if (Search.Reference.Length == 0) Search.Reference = system;
         state.Missions.UpdateCargo(Cargo);
         if (dirty) Save();
+        ApplyAutomation(update, previousNotice);
+        if (dirty || cargoChanged) Refresh();
+        Tick();
+    }
+
+    private void ApplyContext(JournalEventEnvelope entry)
+    {
+        var json = entry.Payload;
+        if (entry.EventName is "Location" or "FSDJump" or "CarrierJump")
+        {
+            system = Text(json, "StarSystem");
+            body = Text(json, "Body");
+            if (json.TryGetProperty("StarPos", out var starPos) && starPos.ValueKind == JsonValueKind.Array && starPos.GetArrayLength() == 3)
+                position = new GalacticCoordinate(starPos[0].GetDouble(), starPos[1].GetDouble(), starPos[2].GetDouble());
+        }
+        if (entry.EventName is "SupercruiseExit" or "ApproachBody") body = Text(json, "Body");
+        if (entry.EventName == "Loadout")
+        {
+            ship = Text(json, "Ship");
+            if (json.TryGetProperty("CargoCapacity", out var c) && c.TryGetInt32(out var count)) capacity = count;
+        }
+        if (entry.EventName is "FSDJump" or "Location" or "CarrierJump")
+        {
+            var broadcast = new Dictionary<string, object> { ["$schemaRef"] = "https://eddn.edcd.io/schemas/journal/1", ["message"] = entry.Payload };
+            community.Cache.Apply(JsonSerializer.Serialize(broadcast), clock.GetUtcNow());
+        }
+        if (entry.EventName is "Powerplay" or "PowerplayJoin") Search.PledgedPower = Text(entry.Payload, "Power");
+        if (entry.EventName == "PowerplayLeave") Search.PledgedPower = "";
+    }
+    private void ApplyAutomation(JournalMonitorUpdate update, MiningNotice? previousNotice)
+    {
         if (Settings.SpeakAnnouncements && !update.IsBootstrapRead && Runtime.DesktopExternalEffectPolicy.IsAllowed)
             foreach (var notice in state.Notices.TakeWhile(n => !ReferenceEquals(n, previousNotice)).Reverse()) speech.Speak(notice.Text, Settings.Voice, Settings.SpeechVolume, Settings.SpeechRate);
         if (Settings.AutoSearch && !update.IsBootstrapRead && clock.GetUtcNow() - lastAutoSearch > TimeSpan.FromSeconds(10)
@@ -161,8 +188,6 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             lastAutoSearch = clock.GetUtcNow(); Search.Reference = system; _ = Search.SearchRingsAsync();
         }
         if (Settings.AutoSwitchTabs && update.JournalEvents.Any(e => e.EventName == "LaunchDrone" && Text(e.Payload, "Type").Equals("Prospector", StringComparison.OrdinalIgnoreCase)) && !update.IsBootstrapRead) SelectedTab = 0;
-        if (dirty || cargoChanged) Refresh();
-        Tick();
     }
 
     public void Tick()
@@ -188,7 +213,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     public async Task LoadVoicesAsync()
     {
-        if (!speech.IsSupported) { Status = "Local mining speech currently uses Windows voices."; return; }
+        if (!Platform.MiningSpeechOutput.IsSupported) { Status = "Local mining speech currently uses Windows voices."; return; }
         try { Voices = await speech.GetVoicesAsync(); Status = Voices.Count > 0 ? "Local voices loaded." : "No local voices are available."; }
         catch (Exception ex) when (ex is TimeoutException or System.Runtime.InteropServices.COMException or Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) { Status = "Speech unavailable: " + ex.Message; }
     }
@@ -196,7 +221,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     {
         if (string.IsNullOrWhiteSpace(PresetName)) return;
         Settings.AnnouncementPresets[PresetName.Trim()] = new MiningAnnouncementPreset(new Dictionary<string, double>(Settings.Thresholds), Settings.AnnounceCores, Settings.AnnounceNonCores);
-        Save(); Changed(nameof(PresetNames));
+        Save(); cachedPresetNames = null; Changed(nameof(PresetNames));
     }
     public void LoadAnnouncementPreset()
     {
@@ -243,7 +268,9 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             var current = from.Length == 0 || from.Equals(system, StringComparison.OrdinalIgnoreCase) ? position
                 : (await resolver.SearchAsync(from, timeout.Token)).FirstOrDefault(s => s.Name.Equals(from, StringComparison.OrdinalIgnoreCase))?.Position;
             var result = (await resolver.SearchAsync(query, timeout.Token)).FirstOrDefault(s => s.Name.Equals(query, StringComparison.OrdinalIgnoreCase));
-            DistanceResult = result is null ? "System not found." : current is { } coordinates ? $"{coordinates.DistanceTo(result.Position):N2} ly · {result.Position} · {result.Position.DistanceTo(new GalacticCoordinate(0, 0, 0)):N2} ly from Sol" : "Origin coordinates unavailable.";
+            if (result is null) DistanceResult = "System not found.";
+            else if (current is { } coordinates) DistanceResult = $"{coordinates.DistanceTo(result.Position):N2} ly · {result.Position} · {result.Position.DistanceTo(new GalacticCoordinate(0, 0, 0)):N2} ly from Sol";
+            else DistanceResult = "Origin coordinates unavailable.";
         }
         catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException or JsonException or ArgumentException) { DistanceResult = "System lookup unavailable: " + ex.Message; }
     }
@@ -252,8 +279,8 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         if (!storageAvailable) { Status = "Connect a commander before importing reports."; return; }
         var incoming = MiningReportImport.ReadCsv(csv);
         var added = 0;
-        foreach (var session in incoming)
-            if (!History.Any(s => s.Id == session.Id || s.Started == session.Started && s.System == session.System && s.Ring == session.Ring)) { state.Data.History.Add(session); added++; }
+        foreach (var session in incoming.Where(session => !History.Any(s => s.Id == session.Id || s.Started == session.Started && s.System == session.System && s.Ring == session.Ring)))
+        { state.Data.History.Add(session); added++; }
         Save(); Refresh(); Status = $"Imported {added} reports; existing sessions retained.";
     }
     public void RemoveScreenshot(string path) { if (SelectedSession is { } session) { session.Screenshots.Remove(path); Save(); Changed(nameof(ReportScreenshots)); } }
@@ -296,12 +323,12 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         if (commander != targetCommander) { Status = "Commander changed; backup was not applied."; return; }
         if (contents.Firegroups is not null && firegroups is not null && !firegroups.Restore(targetCommander, contents.Firegroups))
         { Status = firegroups.Status; return; }
-        if (!Restore(store.Export(contents.Data))) return;
+        if (!Restore(MiningStore.Export(contents.Data))) return;
         bookmarks.Restore(contents.Bookmarks);
         Status += " " + bookmarks.Status;
         if (contents.Firegroups is not null && firegroups is not null) Status += " " + firegroups.Status;
     }
-    public string Backup() { state.Synchronize(); return store.Export(state.Data); }
+    public string Backup() { state.Synchronize(); return MiningStore.Export(state.Data); }
     public bool Restore(string json)
     {
         if (!storageAvailable || commander is null) return false;
@@ -328,8 +355,8 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         state.Session.Pause(lastActivity);
     }
     private void Start() { state.Session.Start(clock.GetUtcNow(), system, body, ship); Save(); Refresh(); }
-    private void Stop() { state.Stop(clock.GetUtcNow()); Save(); SelectedSession = History.FirstOrDefault(); if (Settings.AutoSwitchTabs) SelectedTab = 3; Refresh(); }
-    private void TogglePause() { if (Current?.PausedAt is null) state.Session.Pause(clock.GetUtcNow()); else state.Session.Resume(clock.GetUtcNow()); Save(); Refresh(); }
+    private void Stop() { state.Stop(clock.GetUtcNow()); Save(); SelectedSession = History.Count > 0 ? History[0] : null; if (Settings.AutoSwitchTabs) { SelectedTab = 3; } Refresh(); }
+    private void TogglePause() { if (Current?.PausedAt is null) { state.Session.Pause(clock.GetUtcNow()); } else { state.Session.Resume(clock.GetUtcNow()); } Save(); Refresh(); }
     private void AdjustAsteroids(int delta) { if (Current is { } session && session.Asteroids + delta >= 0) { session.AsteroidAdjustment += delta; Save(); Refresh(); } }
     private void SaveSettings() { Settings.SearchOptions = Search.SaveOptions(); community.SetEnabled(Settings.ReceiveCommunityData); Save(); Refresh(); }
     private void CacheRing(MiningRing ring)
@@ -351,11 +378,13 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     }
     private void Refresh(bool dataChanged = true)
     {
+        cachedVisibleNotices = null;
         if (!dataChanged)
         {
             foreach (var name in new[] { nameof(CommunityStatus), nameof(SessionSummary), nameof(ShouldShowNotifications), nameof(VisibleNotices) }) Changed(name);
             return;
         }
+        cachedPresetNames = null; cachedEngineeringMaterials = null; cachedProspects = null; cachedMissions = null; cachedRings = null;
         foreach (var name in new[] { nameof(ReportScreenshots), nameof(Current), nameof(Context), nameof(CurrentSystem), nameof(SessionSummary), nameof(CargoSummary), nameof(Cargo), nameof(Materials), nameof(EngineeringMaterials), nameof(Prospects), nameof(Missions), nameof(Notices), nameof(History), nameof(HistorySummary), nameof(MaximumHistoryRate), nameof(RefinerySummary), nameof(Rings), nameof(ThresholdSummary), nameof(ShouldShowNotifications), nameof(VisibleNotices) }) Changed(name);
         foreach (var command in new[] { StartCommand, PauseCommand, StopCommand }) ((WorkspaceCommand)command).Refresh();
     }

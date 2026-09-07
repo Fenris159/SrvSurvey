@@ -2,11 +2,12 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 internal static class MiningBarShape
 {
+    private const string EmptyRow = "...........................................................";
     // Binary shape from the recorded HUD: only geometry is retained, never reference RGB values.
     private static readonly string[] Mask =
     [
-        "...........................................................",
-        "...........................................................",
+        EmptyRow,
+        EmptyRow,
         "..............................................####.........",
         "..............................................####.........",
         "...........................................###.##..........",
@@ -18,10 +19,10 @@ internal static class MiningBarShape
         ".............########################......................",
         "................##.##############..........................",
         ".......................##..................................",
-        "...........................................................",
-        "...........................................................",
-        "...........................................................",
-        "...........................................................",
+        EmptyRow,
+        EmptyRow,
+        EmptyRow,
+        EmptyRow,
     ];
     private static readonly (double X, double Y, bool Filled)[] Samples = CreateSamples(false);
     private static readonly (double X, double Y, bool Filled)[] LowerSamples = CreateSamples(true);
@@ -39,13 +40,8 @@ internal static class MiningBarShape
         for (var y = 0; y < Mask.Length; y += 2)
             for (var x = 0; x < Mask[y].Length; x += 2)
             {
-                var nearBar = false;
-                for (var ny = Math.Max(0, y - 3); ny <= Math.Min(Mask.Length - 1, y + 3); ny++)
-                    for (var nx = Math.Max(0, x - 3); nx <= Math.Min(Mask[y].Length - 1, x + 3); nx++)
-                        nearBar |= Mask[ny][nx] == '#';
-                var belowBar = false;
-                for (var ny = 0; ny < y; ny++) belowBar |= Mask[ny][x] == '#';
-                if (lowerOnly && Mask[y][x] != '#' && !belowBar) continue;
+                var nearBar = IsNearBar(x, y);
+                if (lowerOnly && Mask[y][x] != '#' && !IsBelowBar(x, y)) continue;
                 var rx = (x - 28) / 22d;
                 var ry = (y + 6) / 22d;
                 // The inner ring and its changing white progress arc are not bar background.
@@ -53,6 +49,20 @@ internal static class MiningBarShape
                 if (nearBar) samples.Add(((x - 28) / 22d, (y + 6) / 22d, Mask[y][x] == '#'));
             }
         return samples.ToArray();
+    }
+
+    private static bool IsNearBar(int x, int y)
+    {
+        for (var ny = Math.Max(0, y - 3); ny <= Math.Min(Mask.Length - 1, y + 3); ny++)
+            for (var nx = Math.Max(0, x - 3); nx <= Math.Min(Mask[y].Length - 1, x + 3); nx++)
+                if (Mask[ny][nx] == '#') return true;
+        return false;
+    }
+    private static bool IsBelowBar(int x, int y)
+    {
+        for (var ny = 0; ny < y; ny++)
+            if (Mask[ny][x] == '#') return true;
+        return false;
     }
 
     // Match bright chromatic pixels in the bar, not neutral rim brightness or dark gaps.

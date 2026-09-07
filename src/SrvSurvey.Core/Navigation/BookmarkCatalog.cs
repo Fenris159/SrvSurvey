@@ -35,7 +35,9 @@ public sealed class BookmarkCatalog
         items = File.Exists(path) ? Parse(File.ReadAllText(path)) : [];
     }
     public IReadOnlyList<GalacticBookmark> Items => items;
-    public IReadOnlyList<string> Categories => items.Select(b => b.Category).Append("Mining").Distinct(StringComparer.OrdinalIgnoreCase).Order().ToArray();
+    private IReadOnlyList<string>? categories;
+    public IReadOnlyList<string> Categories => categories ??= ReadCategories();
+    private string[] ReadCategories() => items.Select(b => b.Category).Append("Mining").Distinct(StringComparer.OrdinalIgnoreCase).Order().ToArray();
     public IReadOnlyList<GalacticBookmark> Filter(string? category, string? query) => items
         .Where(b => (string.IsNullOrEmpty(category) || category == "All" || b.Category.Equals(category, StringComparison.OrdinalIgnoreCase))
             && (string.IsNullOrWhiteSpace(query) || $"{b.System} {b.Body} {b.Notes} {b.Minerals}".Contains(query, StringComparison.OrdinalIgnoreCase)))
@@ -60,11 +62,9 @@ public sealed class BookmarkCatalog
     {
         var incoming = Parse(json);
         var next = items.ToList();
-        foreach (var bookmark in incoming)
-        {
-            if (!next.Any(b => b.Id == bookmark.Id || (b.System.Equals(bookmark.System, StringComparison.OrdinalIgnoreCase)
-                && b.Body.Equals(bookmark.Body, StringComparison.OrdinalIgnoreCase) && b.Category.Equals(bookmark.Category, StringComparison.OrdinalIgnoreCase)))) next.Add(bookmark);
-        }
+        foreach (var bookmark in incoming.Where(bookmark => !next.Any(b => b.Id == bookmark.Id || (b.System.Equals(bookmark.System, StringComparison.OrdinalIgnoreCase)
+                && b.Body.Equals(bookmark.Body, StringComparison.OrdinalIgnoreCase) && b.Category.Equals(bookmark.Category, StringComparison.OrdinalIgnoreCase)))))
+            next.Add(bookmark);
         Persist(next);
     }
 
@@ -77,6 +77,7 @@ public sealed class BookmarkCatalog
             File.WriteAllText(temporary, JsonSerializer.Serialize(next, JsonOptions));
             File.Move(temporary, path, true);
             items = next;
+            categories = null;
         }
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
@@ -91,27 +92,31 @@ public sealed class BookmarkCatalog
             if (row.ValueKind != JsonValueKind.Object) throw new JsonException("Expected a bookmark object.");
             if (row.TryGetProperty("system", out _))
             {
-                string Text(string key) => row.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() ?? "" : "";
-                var rating = row.TryGetProperty("rating", out var r) && int.TryParse(r.ToString(), out var n) ? n : 0;
-                parsed.Add(new GalacticBookmark
-                {
-                    System = Text("system"),
-                    Body = Text("body"),
-                    Category = "Mining",
-                    Minerals = Text("materials"),
-                    Notes = Text("notes"),
-                    Rating = Math.Clamp(rating, 0, 5),
-                    Hotspot = Text("hotspot"),
-                    AverageYield = Text("avg_yield"),
-                    LastMined = Text("last_mined"),
-                    Overlaps = $"{Text("target_material")} {Text("overlap_type")}".Trim(),
-                    ResourceExtractionSites = $"{Text("res_material")} {Text("res_site")}".Trim()
-                });
+                parsed.Add(ReadLegacyBookmark(row));
             }
             else parsed.Add(row.Deserialize<GalacticBookmark>() ?? throw new JsonException("Empty bookmark."));
         }
         foreach (var bookmark in parsed) Validate(bookmark);
         return parsed;
+    }
+    private static GalacticBookmark ReadLegacyBookmark(JsonElement row)
+    {
+        string Text(string key) => row.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() ?? "" : "";
+        var rating = row.TryGetProperty("rating", out var r) && int.TryParse(r.ToString(), out var n) ? n : 0;
+        return new GalacticBookmark
+        {
+            System = Text("system"),
+            Body = Text("body"),
+            Category = "Mining",
+            Minerals = Text("materials"),
+            Notes = Text("notes"),
+            Rating = Math.Clamp(rating, 0, 5),
+            Hotspot = Text("hotspot"),
+            AverageYield = Text("avg_yield"),
+            LastMined = Text("last_mined"),
+            Overlaps = $"{Text("target_material")} {Text("overlap_type")}".Trim(),
+            ResourceExtractionSites = $"{Text("res_material")} {Text("res_site")}".Trim()
+        };
     }
     private static void Validate(GalacticBookmark bookmark)
     {

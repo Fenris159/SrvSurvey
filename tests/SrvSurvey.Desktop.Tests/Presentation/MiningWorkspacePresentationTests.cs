@@ -16,6 +16,59 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 public sealed class MiningWorkspacePresentationTests
 {
     [AvaloniaFact]
+    public async Task SearchResultsHaveOneBoundedViewportAndFitNarrowWorkspace()
+    {
+        using var http = new HttpClient(new SearchRowsHandler());
+        using var model = MainWindowViewModelTestBuilder.Create(null, builder => builder.WithExternalNetworkClient(http));
+        var view = new Views.MiningView { DataContext = model };
+        var window = new Window { Content = view, Width = 660, Height = 920 };
+        try
+        {
+            model.MiningWorkspace.SelectedTab = 3;
+            model.MiningWorkspace.Search.Reference = "Wille";
+            model.MiningWorkspace.Search.Source = "Spansh";
+            await model.MiningWorkspace.Search.SearchRingsAsync();
+            await model.MiningWorkspace.Search.SearchMarketsAsync();
+            await model.MiningWorkspace.Search.SearchTradersAsync();
+            await model.MiningWorkspace.Search.SearchSystemsAsync();
+            window.Show();
+            foreach (var destination in Enumerable.Range(0, 4))
+            {
+                model.MiningWorkspace.Search.Destination = destination;
+                using var frame = window.CaptureRenderedFrame();
+                var search = view.FindControl<Views.MiningSearchView>("SearchPane")!;
+                Assert.DoesNotContain(search.GetVisualAncestors(), a => a is ScrollViewer);
+                var results = Assert.Single(search.GetVisualDescendants().OfType<ListBox>(), l => l.IsEffectivelyVisible);
+                Assert.NotEmpty(results.Items);
+                Assert.InRange(results.Bounds.Height, 80, window.Height);
+                Assert.DoesNotContain(results.GetVisualAncestors(), a => a is ScrollViewer);
+                var scroll = Assert.Single(results.GetVisualDescendants().OfType<ScrollViewer>());
+                Assert.True(scroll.Extent.Width <= scroll.Viewport.Width + 1);
+                var output = Environment.GetEnvironmentVariable("SRVSURVEY_MINING_RENDER_OUTPUT");
+                if (output is not null) { Directory.CreateDirectory(output); using var stream = File.Create(Path.Combine(output, $"mining-search-{destination}.png")); frame!.Save(stream, PngBitmapEncoderOptions.Default); }
+            }
+        }
+        finally { window.Close(); }
+    }
+
+    private sealed class SearchRowsHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            const string system = "Synuefe NL-N C23-4";
+            var rows = Enumerable.Range(1, 24).Select(i => request.RequestUri!.AbsolutePath switch
+            {
+                "/api/bodies/search" => (object)new { system_name = system, distance = i * 1.2, rings = new[] { new { name = $"{system} {i} A Ring", type = "Metallic", signals = new[] { new { name = "Platinum", count = 2 } } } } },
+                "/api/stations/search" => new { system_name = system, name = $"Long station name for material exchange {i}", type = "Coriolis Starport", distance = i * 1.2, distance_to_arrival = 123456, has_large_pad = true },
+                "/api/systems/search" => new { name = $"{system} {i}", distance = i * 1.2, controlling_power = "Arissa Lavigny-Duval", power_state = "Fortified", security = "High", primary_economy = "Industrial" },
+                _ => new { systemName = system, stationName = $"Long commodity market station name {i}", stationType = "Coriolis Starport", sellPrice = 250000, demand = 500000, updatedAt = DateTimeOffset.UtcNow, maxLandingPadSize = 3, distance = i * 1.2 }
+            }).ToArray();
+            var payload = request.RequestUri!.Host.Contains("spansh", StringComparison.Ordinal) ? System.Text.Json.JsonSerializer.Serialize(new { results = rows }) : System.Text.Json.JsonSerializer.Serialize(rows);
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(payload) });
+        }
+    }
+
+    [AvaloniaFact]
     public void MiningHeadersShrinkBeforeWrappingAndMovedToolsRemainAvailable()
     {
         using var model = MainWindowViewModelTestBuilder.Create(null, _ => { });
@@ -26,7 +79,7 @@ public sealed class MiningWorkspacePresentationTests
             window.Show(); using var initial = window.CaptureRenderedFrame();
             var tabs = mining.FindControl<TabControl>("MiningTabs")!;
             var items = tabs.Items.OfType<TabItem>().ToArray();
-            Assert.Equal(["Session", "Reports", "Missions", "Hotspots", "Bookmarks", "Reference", "Settings"], items.Select(t => ((TextBlock)t.Header!).Text));
+            Assert.Equal(["Session", "Reports", "Missions", "Find", "Bookmarks", "Reference", "Settings"], items.Select(t => ((TextBlock)t.Header!).Text));
             Assert.All(items, t => Assert.Equal(22, ((TextBlock)t.Header!).FontSize));
             window.Width = 700; using var smaller = window.CaptureRenderedFrame();
             Assert.All(items, t => Assert.InRange(((TextBlock)t.Header!).FontSize, 14, 21));
@@ -65,7 +118,7 @@ public sealed class MiningWorkspacePresentationTests
         {
             model.SelectedNavigation = model.NavigationItems.Single(n => n.Key == "mining");
             var journal = new JournalSessionState();
-            JournalEventEnvelope.TryParse("""{"event":"LoadGame","FID":"MiningPreview","Commander":"Preview","Ship":"python"}""", out var load, out _);
+            Assert.True(JournalEventEnvelope.TryParse("""{"event":"LoadGame","FID":"MiningPreview","Commander":"Preview","Ship":"python"}""", out var load, out _));
             journal.Apply(load!);
             var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
             model.MiningWorkspace.Apply(new JournalMonitorUpdate(null, [load!], ship, null, null, null, [], true), journal,
@@ -89,7 +142,7 @@ public sealed class MiningWorkspacePresentationTests
                 Missions = [new MiningMission { Id = 1, Commodity = "platinum", Required = 50, OnBoard = 30, Destination = "Sol / Abraham Lincoln" }],
                 Rings = [new MiningRing { System = "Delkar", Body = "Delkar 7 A Ring", RingType = "Metallic", Reserve = "Pristine", Hotspots = new() { ["Platinum"] = 2 } }]
             };
-            model.MiningWorkspace.Restore(new MiningStore(directory).Export(data));
+            model.MiningWorkspace.Restore(MiningStore.Export(data));
             model.Bookmarks.AddMiningLocation(new GalacticBookmark { System = "Delkar", Body = "Delkar 7 A Ring", Minerals = "Platinum", ResourceExtractionSites = "High", Rating = 4 });
             window.Show();
             foreach (var theme in RavenThemeCatalog.All)
@@ -118,7 +171,7 @@ public sealed class MiningWorkspacePresentationTests
             var buttons = bookmarkView.GetVisualDescendants().OfType<Button>().ToArray();
             Assert.Contains(buttons, b => Equals(b.Content, "Attach screenshots…"));
             var undo = Assert.Single(buttons, b => Equals(b.Content, "Undo delete"));
-            model.Bookmarks.Selected = model.Bookmarks.All.First();
+            model.Bookmarks.Selected = model.Bookmarks.All[0];
             var deletedId = model.Bookmarks.Selected.Id;
             model.Bookmarks.DeleteCommand.Execute(null);
             Assert.DoesNotContain(model.Bookmarks.All, b => b.Id == deletedId);

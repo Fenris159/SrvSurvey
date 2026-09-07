@@ -28,7 +28,8 @@ public sealed partial class BookmarksView : UserControl
         try
         {
             var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Import bookmarks", AllowMultiple = false, FileTypeFilter = [FilePickerFileTypes.Json] });
-            if (files.FirstOrDefault() is not { } file) return;
+            if (files.Count == 0) return;
+            var file = files[0];
             await using var stream = await file.OpenReadAsync();
             using var reader = new StreamReader(stream);
             vm.Import(await reader.ReadToEndAsync());

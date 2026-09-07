@@ -131,6 +131,21 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
+    private static void ApplyScaleOverrides(Dictionary<string, LegacyOverlayPlacement> positions, IReadOnlyDictionary<string, int> scaleOverrides)
+    {
+        foreach (var entry in scaleOverrides)
+        {
+            if (positions.TryGetValue(entry.Key, out var placement))
+            {
+                positions[entry.Key] = placement with
+                {
+                    ScaleIndex = entry.Value,
+                };
+            }
+        }
+
+    }
+
     private LegacyOverlayLayout LoadCore()
     {
         var positions = new Dictionary<string, LegacyOverlayPlacement>(
@@ -170,16 +185,7 @@ public sealed class LegacyOverlayLayoutStore
 
         var defaultOpacity = LoadDefaultOpacity(errors);
         var scaleOverrides = LoadScaleOverrides(errors);
-        foreach (var entry in scaleOverrides)
-        {
-            if (positions.TryGetValue(entry.Key, out var placement))
-            {
-                positions[entry.Key] = placement with
-                {
-                    ScaleIndex = entry.Value,
-                };
-            }
-        }
+        ApplyScaleOverrides(positions, scaleOverrides);
 
         // New mining warnings start at the player's flight-warning placement.
         // Once saved independently, never overwrite their position or scale.

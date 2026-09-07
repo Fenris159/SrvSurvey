@@ -15,7 +15,7 @@ internal readonly struct MiningHudGeometry
     {
         // The recorded mask already has this perspective tilt. Undo its basis before
         // applying the requested oval height and absolute rotation, preserving old calibrations.
-        if (settings.RotationDegrees == MiningDetectionSettings.ReferenceRotationDegrees && settings.CircleAspectRatio == .65)
+        if (settings.RotationDegrees.Equals(MiningDetectionSettings.ReferenceRotationDegrees) && settings.CircleAspectRatio.Equals(.65))
         {
             xx = yy = 1;
             xy = yx = 0;

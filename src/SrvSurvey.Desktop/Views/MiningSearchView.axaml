@@ -1,44 +1,51 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:search="using:SrvSurvey.Core.Search" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.MiningSearchView" x:DataType="vm:MiningSearchViewModel">
-  <StackPanel Spacing="12">
-    <Grid ColumnDefinitions="*,120,Auto" ColumnSpacing="12">
-      <StackPanel Spacing="4">
-        <TextBlock Text="Reference system"/>
-        <TextBox Text="{Binding Reference}"/>
-      </StackPanel>
-      <StackPanel Grid.Column="1" Spacing="4">
-        <TextBlock Text="Radius (ly)"/>
-        <NumericUpDown Minimum="1" Maximum="500" Value="{Binding Radius}"/>
-      </StackPanel>
+  <UserControl.Styles>
+    <Style Selector="ListBoxItem">
+      <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    </Style>
+  </UserControl.Styles>
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+    <StackPanel Spacing="4" Margin="0,0,0,8">
+      <TextBlock Text="Plan a mining trip" Classes="card-title"/>
+      <TextBlock Text="{Binding PlanningContext}" TextWrapping="Wrap" Classes="muted"/>
+    </StackPanel>
+    <Grid Grid.Row="1" ColumnDefinitions="*,120,Auto" ColumnSpacing="12" Margin="0,0,0,8">
+      <StackPanel Spacing="4"><TextBlock Text="Reference system"/><TextBox Text="{Binding Reference}"/></StackPanel>
+      <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Radius (ly)"/><NumericUpDown Minimum="1" Maximum="500" Value="{Binding Radius}"/></StackPanel>
       <Button Grid.Column="2" Content="Use current" Click="Current_Click" VerticalAlignment="Bottom"/>
     </Grid>
-    <TabControl>
-      <TabItem Header="Hotspots">
-        <StackPanel Spacing="12" Margin="0,16">
-          <Grid ColumnDefinitions="*,180,100,100" ColumnSpacing="12">
-            <StackPanel Spacing="4">
-              <TextBlock Text="Mineral (blank = any ring)"/>
-              <TextBox Text="{Binding Mineral}"/>
+    <TabControl x:Name="SearchDestinations" Grid.Row="2" SelectedIndex="{Binding Destination}">
+      <TabItem Header="Rings">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="0,12,0,0">
+          <ScrollViewer MaxHeight="250" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="8">
+              <WrapPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                  <TextBlock Text="Mineral (blank = any)" TextWrapping="Wrap"/>
+                  <TextBox Text="{Binding Mineral}"/>
+                </StackPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                  <TextBlock Text="Ring type" TextWrapping="Wrap"/>
+                  <ComboBox ItemsSource="{Binding RingTypes}" SelectedItem="{Binding RingType}" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                  <TextBlock Text="Source" TextWrapping="Wrap"/>
+                  <ComboBox ItemsSource="{Binding Sources}" SelectedItem="{Binding Source}" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+              </WrapPanel>
+              <Expander Header="Hotspot and annotation filters">
+                <WrapPanel>
+                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                    <TextBlock Text="Minimum hotspots" TextWrapping="Wrap"/>
+                    <NumericUpDown Minimum="1" Maximum="20" Value="{Binding MinimumHotspots}"/>
+                  </StackPanel>
+                  <CheckBox Content="Overlaps only" IsChecked="{Binding OnlyOverlaps}" Margin="0,0,16,4"/>
+                  <CheckBox Content="RES sites only" IsChecked="{Binding OnlyRes}" Margin="0,0,16,4"/>
+                </WrapPanel>
+              </Expander>
             </StackPanel>
-            <StackPanel Grid.Column="1" Spacing="4">
-              <TextBlock Text="Ring type"/>
-              <ComboBox ItemsSource="{Binding RingTypes}" SelectedItem="{Binding RingType}" HorizontalAlignment="Stretch"/>
-            </StackPanel>
-            <StackPanel Grid.Column="2" Spacing="4">
-              <TextBlock Text="Min. hotspots"/>
-              <NumericUpDown Minimum="1" Maximum="20" Value="{Binding MinimumHotspots}"/>
-            </StackPanel>
-            <StackPanel Grid.Column="3" Spacing="4">
-              <TextBlock Text="Page (0 first)"/>
-              <NumericUpDown Minimum="0" Maximum="99" Value="{Binding Page}"/>
-            </StackPanel>
-          </Grid>
-          <WrapPanel>
-            <ComboBox ItemsSource="{Binding Sources}" SelectedItem="{Binding Source}" Width="140" Margin="0,0,12,0"/>
-            <CheckBox Content="Overlaps only" IsChecked="{Binding OnlyOverlaps}" Margin="0,0,12,0"/>
-            <CheckBox Content="RES sites only" IsChecked="{Binding OnlyRes}"/>
-          </WrapPanel>
-          <Button Content="Search rings" Click="SearchRings_Click" HorizontalAlignment="Left"/>
-          <ListBox ItemsSource="{Binding Rings}" SelectedItem="{Binding SelectedRing}" MinHeight="180" MaxHeight="430">
+          </ScrollViewer>
+          <ListBox x:Name="RingResults" Grid.Row="1" ItemsSource="{Binding Rings}" SelectedItem="{Binding SelectedRing}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,10,0,10">
             <ListBox.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="Bookmark ring" Click="Bookmark_Click"/>
@@ -51,70 +58,78 @@
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="mining:MiningRing">
-                <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="12" Margin="4,6">
-                  <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="System"/>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" Margin="8,8">
+                  <StackPanel Spacing="4">
                     <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding Power}" Classes="muted" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="1" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="Ring"/>
                     <TextBlock Text="{Binding Body}" TextWrapping="Wrap"/>
                   </StackPanel>
-                  <StackPanel Grid.Column="2" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="ly"/>
-                    <TextBlock Text="{Binding DistanceLy}" TextWrapping="Wrap"/>
+                  <StackPanel Grid.Column="1" Spacing="4" MaxWidth="180">
+                    <TextBlock Text="{Binding DistanceLy , StringFormat='{}{0:N1} ly'}" TextWrapping="Wrap"/>
                   </StackPanel>
-                  <StackPanel Grid.Column="3" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="Type"/>
-                    <TextBlock Text="{Binding RingType}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="4" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="Reserve"/>
-                    <TextBlock Text="{Binding Reserve}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="5" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="Hotspots"/>
+                  <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,8,0,0">
                     <TextBlock Text="{Binding Minerals}" TextWrapping="Wrap"/>
-                    <TextBlock Classes="muted" Text="{Binding Overlaps}"/>
-                    <TextBlock Classes="muted" Text="{Binding ResourceExtractionSites}"/>
+                    <WrapPanel>
+                      <TextBlock Text="{Binding RingType}" TextWrapping="Wrap"/>
+                      <TextBlock Text=" · " TextWrapping="Wrap"/>
+                      <TextBlock Text="{Binding Reserve}" TextWrapping="Wrap"/>
+                    </WrapPanel>
+                    <TextBlock Text="{Binding Power}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Overlaps}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding ResourceExtractionSites}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding ArrivalLs , StringFormat='Arrival: {0:N0} ls'}" TextWrapping="Wrap"/>
                   </StackPanel>
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-          <WrapPanel>
-            <Button Content="Bookmark ring" Click="Bookmark_Click" Margin="0,0,8,0"/>
-            <Button Content="Save ring locally" Click="Cache_Click"/>
+          <WrapPanel Grid.Row="2">
+            <Button Content="Search rings" Click="SearchRings_Click" Margin="0,0,8,4"/>
+            <Button Content="Bookmark ring" Click="Bookmark_Click" Margin="0,0,8,4"/>
+            <Button Content="Save locally" Click="Cache_Click" Margin="0,0,8,4"/>
+            <Button Content="Selling stations →" Click="SellingStations_Click" Margin="0,0,8,4"/>
           </WrapPanel>
-        </StackPanel>
+        </Grid>
       </TabItem>
-      <TabItem Header="Commodity market">
-        <StackPanel Spacing="12" Margin="0,16">
-          <TextBlock Text="Commodity (mining minerals and other trade goods)"/>
-          <Grid ColumnDefinitions="180,*" ColumnSpacing="12">
-            <ComboBox ItemsSource="{Binding CommodityCategories}" SelectedItem="{Binding CommodityCategory}" HorizontalAlignment="Stretch"/>
-            <ComboBox Grid.Column="1" ItemsSource="{Binding CommodityOptions}" SelectedItem="{Binding Commodity}" HorizontalAlignment="Stretch"/>
-          </Grid>
-          <TextBox Text="{Binding Commodity}" PlaceholderText="Or enter any commodity name"/>
-          <WrapPanel>
-            <CheckBox Content="Buy commodity" IsChecked="{Binding Buying}" Margin="0,0,20,0"/>
-            <CheckBox Content="Galaxy-wide" IsChecked="{Binding GalaxyWide}" Margin="0,0,20,0"/>
-            <CheckBox Content="Exclude carriers" IsChecked="{Binding ExcludeCarriers}" Margin="0,0,20,0"/>
-            <CheckBox Content="Large pads" IsChecked="{Binding LargePads}"/>
-          </WrapPanel>
-          <Grid ColumnDefinitions="*,180" ColumnSpacing="12">
-            <StackPanel Spacing="4">
-              <TextBlock Text="Station type contains (optional)"/>
-              <TextBox Text="{Binding StationType}"/>
+      <TabItem Header="Markets">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="0,12,0,0">
+          <ScrollViewer MaxHeight="250" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="8">
+              <WrapPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                  <TextBlock Text="Trade objective" TextWrapping="Wrap"/>
+                  <ComboBox ItemsSource="{Binding TradeModes}" SelectedItem="{Binding TradeMode}" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                  <TextBlock Text="Category" TextWrapping="Wrap"/>
+                  <ComboBox ItemsSource="{Binding CommodityCategories}" SelectedItem="{Binding CommodityCategory}" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                  <TextBlock Text="Commodity" TextWrapping="Wrap"/>
+                  <ComboBox ItemsSource="{Binding CommodityOptions}" SelectedItem="{Binding Commodity}" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+              </WrapPanel>
+              <Expander Header="Commodity name, station and freshness filters">
+                <WrapPanel>
+                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                    <TextBlock Text="Any commodity name" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding Commodity}"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                    <TextBlock Text="Station type contains" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding StationType}"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                    <TextBlock Text="Maximum age (days)" TextWrapping="Wrap"/>
+                    <NumericUpDown Minimum="1" Maximum="30" Value="{Binding MaximumAgeDays}"/>
+                  </StackPanel>
+                  <CheckBox Content="Galaxy-wide" IsChecked="{Binding GalaxyWide}" Margin="0,0,16,4"/>
+                  <CheckBox Content="Exclude carriers" IsChecked="{Binding ExcludeCarriers}" Margin="0,0,16,4"/>
+                  <CheckBox Content="Large pads" IsChecked="{Binding LargePads}" Margin="0,0,16,4"/>
+                </WrapPanel>
+              </Expander>
             </StackPanel>
-            <StackPanel Grid.Column="1" Spacing="4">
-              <TextBlock Text="Maximum price age (days)"/>
-              <NumericUpDown Minimum="1" Maximum="30" Value="{Binding MaximumAgeDays}"/>
-            </StackPanel>
-          </Grid>
-          <Button Content="Find prices" Click="SearchMarkets_Click" HorizontalAlignment="Left"/>
-          <ListBox ItemsSource="{Binding Markets}" SelectedItem="{Binding SelectedMarket}" MinHeight="180" MaxHeight="430">
+          </ScrollViewer>
+          <ListBox x:Name="MarketResults" Grid.Row="1" ItemsSource="{Binding Markets}" SelectedItem="{Binding SelectedMarket}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,10,0,10">
             <ListBox.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="Open system in Inara" Click="OpenSystem_Click" Tag="market"/>
@@ -125,82 +140,135 @@
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="search:MiningMarketResult">
-                <Grid ColumnDefinitions="*,*,*,*,*,*,*" ColumnSpacing="12" Margin="4,6">
-                  <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="System"/>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" Margin="8,8">
+                  <StackPanel Spacing="4">
                     <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="1" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="Station"/>
                     <TextBlock Text="{Binding Station}" TextWrapping="Wrap"/>
                   </StackPanel>
-                  <StackPanel Grid.Column="2" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="ly"/>
-                    <TextBlock Text="{Binding Distance}" TextWrapping="Wrap"/>
+                  <StackPanel Grid.Column="1" Spacing="4" MaxWidth="180">
+                    <TextBlock Text="{Binding Price , StringFormat='{}{0:N0} CR/t'}" TextWrapping="Wrap"/>
                   </StackPanel>
-                  <StackPanel Grid.Column="3" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="Price"/>
-                    <TextBlock Text="{Binding Price}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="4" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="Demand"/>
-                    <TextBlock Text="{Binding Demand}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="5" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="Stock"/>
-                    <TextBlock Text="{Binding Supply}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="6" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="Updated"/>
-                    <TextBlock Text="{Binding Updated}" TextWrapping="Wrap"/>
+                  <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,8,0,0">
+                    <TextBlock Text="{Binding Type}" TextWrapping="Wrap"/>
+                      <TextBlock Text="{Binding PadDescription}" TextWrapping="Wrap"/>
+                    <WrapPanel>
+                      <TextBlock Text="{Binding Distance , StringFormat='{}{0:N1} ly'}" TextWrapping="Wrap"/>
+                      <TextBlock Text=" · " TextWrapping="Wrap"/>
+                      <TextBlock Text="{Binding ArrivalLs , StringFormat='Arrival: {0:N0} ls'}" TextWrapping="Wrap"/>
+                      <TextBlock Text=" · " TextWrapping="Wrap"/>
+                      <TextBlock Text="{Binding Demand , StringFormat='Demand: {0:N0} t'}" TextWrapping="Wrap"/>
+                      <TextBlock Text=" · " TextWrapping="Wrap"/>
+                      <TextBlock Text="{Binding Supply , StringFormat='Stock: {0:N0} t'}" TextWrapping="Wrap"/>
+                    </WrapPanel>
+                    <TextBlock Text="{Binding Updated , StringFormat='Observed: {0:g}'}" TextWrapping="Wrap"/>
                   </StackPanel>
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-          <Grid ColumnDefinitions="180,Auto" ColumnSpacing="12">
-            <ComboBox ItemsSource="{Binding TraderTypes}" SelectedItem="{Binding TraderType}" HorizontalAlignment="Stretch"/>
-            <Button Grid.Column="1" Content="Find material traders" Click="SearchTraders_Click"/>
-          </Grid>
-        </StackPanel>
-      </TabItem>
-      <TabItem Header="Systems">
-        <StackPanel Spacing="12" Margin="0,16">
-          <TextBlock Text="Leave filters blank for any value. Power-state availability depends on the provider index." TextWrapping="Wrap"/>
-          <WrapPanel>
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,12">
-              <TextBlock Text="Security"/>
-              <TextBox Text="{Binding Security}"/>
-            </StackPanel>
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,12">
-              <TextBlock Text="Allegiance"/>
-              <TextBox Text="{Binding Allegiance}"/>
-            </StackPanel>
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,12">
-              <TextBlock Text="Government"/>
-              <TextBox Text="{Binding Government}"/>
-            </StackPanel>
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,12">
-              <TextBlock Text="Economy"/>
-              <TextBox Text="{Binding Economy}"/>
-            </StackPanel>
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,12">
-              <TextBlock Text="Faction state"/>
-              <TextBox Text="{Binding State}"/>
-            </StackPanel>
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,12">
-              <TextBlock Text="Controlling power"/>
-              <TextBox Text="{Binding Power}"/>
-            </StackPanel>
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,12">
-              <TextBlock Text="Power state"/>
-              <TextBox Text="{Binding PowerState}"/>
-            </StackPanel>
+          <WrapPanel Grid.Row="2">
+            <Button Content="Find prices" Click="SearchMarkets_Click" Margin="0,0,8,4"/>
           </WrapPanel>
-          <TextBlock Text="Minimum population"/>
-          <NumericUpDown Minimum="0" Maximum="1000000000000" Value="{Binding MinimumPopulation}"/>
-          <Button Content="Find systems" Click="SearchSystems_Click" HorizontalAlignment="Left"/>
-          <ListBox ItemsSource="{Binding Systems}" SelectedItem="{Binding SelectedSystem}" MinHeight="180" MaxHeight="430">
+        </Grid>
+      </TabItem>
+      <TabItem Header="Traders">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="0,12,0,0">
+          <ScrollViewer MaxHeight="250" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="8">
+              <TextBlock Text="Exchange engineering materials at a trader. These are separate from the commodity market." TextWrapping="Wrap" Classes="muted"/>
+              <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                <TextBlock Text="Material type" TextWrapping="Wrap"/>
+                <ComboBox ItemsSource="{Binding TraderTypes}" SelectedItem="{Binding TraderType}" HorizontalAlignment="Stretch"/>
+              </StackPanel>
+            </StackPanel>
+          </ScrollViewer>
+          <ListBox x:Name="TraderResults" Grid.Row="1" ItemsSource="{Binding Traders}" SelectedItem="{Binding SelectedTrader}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,10,0,10">
+            <ListBox.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="Open system in Inara" Click="OpenSystem_Click" Tag="trader"/>
+                <MenuItem Header="Open system in EDSM" Click="OpenSystem_Click" Tag="trader:edsm"/>
+                <MenuItem Header="Open Spansh search" Click="OpenSystem_Click" Tag="trader:spansh"/>
+                <MenuItem Header="Copy system" behaviors:ClipboardCopyBehavior.Text="{Binding SelectedTrader.System}"/>
+              </ContextMenu>
+            </ListBox.ContextMenu>
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="search:MiningMarketResult">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" Margin="8,8">
+                  <StackPanel Spacing="4">
+                    <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Station}" TextWrapping="Wrap"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="4" MaxWidth="180">
+                    <TextBlock Text="{Binding Distance , StringFormat='{}{0:N1} ly'}" TextWrapping="Wrap"/>
+                  </StackPanel>
+                  <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,8,0,0">
+                    <TextBlock Text="{Binding Type}" TextWrapping="Wrap"/>
+                      <TextBlock Text="{Binding PadDescription}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding ArrivalLs , StringFormat='Arrival: {0:N0} ls'}" TextWrapping="Wrap"/>
+                  </StackPanel>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <WrapPanel Grid.Row="2">
+            <Button Content="Find material traders" Click="SearchTraders_Click" Margin="0,0,8,4"/>
+          </WrapPanel>
+        </Grid>
+      </TabItem>
+      <TabItem Header="Powerplay">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="0,12,0,0">
+          <ScrollViewer MaxHeight="250" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="8">
+              <WrapPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                  <TextBlock Text="Objective" TextWrapping="Wrap"/>
+                  <ComboBox ItemsSource="{Binding Objectives}" SelectedItem="{Binding Objective}" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                  <TextBlock Text="Your pledged Power" TextWrapping="Wrap"/>
+                  <ComboBox ItemsSource="{Binding Powers}" SelectedItem="{Binding PledgedPower}" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+              </WrapPanel>
+              <TextBlock Text="Choose an objective and Power, find a system, then find its rings. Use selling stations from a ring to complete the plan. Acquisition candidates still need support-range checks in the game; prices are not merit estimates." TextWrapping="Wrap" Classes="muted"/>
+              <Expander Header="System filters">
+                <WrapPanel>
+                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                    <TextBlock Text="Security" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding Security}"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                    <TextBlock Text="Allegiance" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding Allegiance}"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                    <TextBlock Text="Government" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding Government}"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                    <TextBlock Text="Economy" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding Economy}"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                    <TextBlock Text="Faction state" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding State}"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                    <TextBlock Text="Controlling Power" TextWrapping="Wrap"/>
+                    <ComboBox ItemsSource="{Binding Powers}" SelectedItem="{Binding Power}" HorizontalAlignment="Stretch"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                    <TextBlock Text="Power state" TextWrapping="Wrap"/>
+                    <ComboBox ItemsSource="{Binding PowerStates}" SelectedItem="{Binding PowerState}" HorizontalAlignment="Stretch"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                    <TextBlock Text="Minimum population" TextWrapping="Wrap"/>
+                    <NumericUpDown Minimum="0" Maximum="1000000000000" Value="{Binding MinimumPopulation}"/>
+                  </StackPanel>
+                </WrapPanel>
+              </Expander>
+            </StackPanel>
+          </ScrollViewer>
+          <ListBox x:Name="SystemResults" Grid.Row="1" ItemsSource="{Binding Systems}" SelectedItem="{Binding SelectedSystem}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,10,0,10">
             <ListBox.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="Use for hotspot search" Click="UseSystem_Click"/>
@@ -210,41 +278,50 @@
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="search:MiningSystemResult">
-                <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="12" Margin="4,6">
-                  <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="System"/>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" Margin="8,8">
+                  <StackPanel Spacing="4">
                     <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
                   </StackPanel>
-                  <StackPanel Grid.Column="1" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="ly"/>
-                    <TextBlock Text="{Binding Distance}" TextWrapping="Wrap"/>
+                  <StackPanel Grid.Column="1" Spacing="4" MaxWidth="180">
+                    <TextBlock Text="{Binding Distance , StringFormat='{}{0:N1} ly'}" TextWrapping="Wrap"/>
                   </StackPanel>
-                  <StackPanel Grid.Column="2" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="Security"/>
-                    <TextBlock Text="{Binding Security}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="3" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="Economy"/>
-                    <TextBlock Text="{Binding Economy}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="4" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="Power"/>
-                    <TextBlock Text="{Binding Power}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="5" Spacing="4">
-                    <TextBlock Classes="muted" FontSize="11" Text="State"/>
-                    <TextBlock Text="{Binding PowerState}" TextWrapping="Wrap"/>
+                  <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,8,0,0">
+                    <WrapPanel>
+                      <TextBlock Text="{Binding Power}" TextWrapping="Wrap"/>
+                      <TextBlock Text=" · " TextWrapping="Wrap"/>
+                      <TextBlock Text="{Binding PowerState}" TextWrapping="Wrap"/>
+                    </WrapPanel>
+                    <WrapPanel>
+                      <TextBlock Text="{Binding Security}" TextWrapping="Wrap"/>
+                      <TextBlock Text=" · " TextWrapping="Wrap"/>
+                      <TextBlock Text="{Binding Economy}" TextWrapping="Wrap"/>
+                      <TextBlock Text=" · " TextWrapping="Wrap"/>
+                      <TextBlock Text="{Binding Government}" TextWrapping="Wrap"/>
+                    </WrapPanel>
+                    <TextBlock Text="{Binding Allegiance}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding State}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Population , StringFormat='Population: {0:N0}'}" TextWrapping="Wrap"/>
                   </StackPanel>
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-        </StackPanel>
+          <WrapPanel Grid.Row="2">
+            <Button Content="Find systems" Click="SearchSystems_Click" Margin="0,0,8,4"/>
+            <Button Content="Find rings in selected system →" Click="UseSystem_Click" Margin="0,0,8,4"/>
+          </WrapPanel>
+        </Grid>
       </TabItem>
     </TabControl>
-    <WrapPanel>
-      <Button Content="Cancel search" Click="Cancel_Click" IsVisible="{Binding IsBusy}" Margin="0,0,12,0"/>
-      <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap" MaxWidth="900"/>
-    </WrapPanel>
-  </StackPanel>
+    <Grid Grid.Row="3" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
+      <WrapPanel Grid.ColumnSpan="2" Margin="0,0,0,6">
+        <Button Content="Clear Powerplay plan" IsVisible="{Binding HasPlan}" Click="ClearPlan_Click" Margin="0,0,8,0"/>
+        <CheckBox Content="Only this system (rings / markets)" IsChecked="{Binding SystemOnly}" Margin="0,0,12,0"/>
+        <TextBlock Text="Provider page (0 first)" VerticalAlignment="Center" Margin="0,0,8,0"/>
+        <NumericUpDown Minimum="0" Maximum="99" Value="{Binding Page}" Width="110"/>
+      </WrapPanel>
+      <Button Grid.Row="1" Content="Cancel search" Click="Cancel_Click" IsVisible="{Binding IsBusy}"/>
+      <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Status}" Classes="muted" TextWrapping="Wrap"/>
+    </Grid>
+  </Grid>
 </UserControl>

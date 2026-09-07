@@ -46,7 +46,7 @@ This checklist maps the implemented workspace to the pinned reference. Validatio
 | Full backup / restore | Commander mining ZIP, shared bookmarks and screenshot assets | Portable attachments and recovery of edited bookmarks tested; previous files retained |
 | Theme-aware workspace and overlays | Raven resources, shared presentation | All application themes rendered; populated Monochrome dark and Blue light inspected |
 | VoiceAttack, Discord, PNG cards, ship presets | Explicitly excluded | No implementations added |
-| Existing Rhino overlays | Protected; unchanged | New overlays require main-ship status |
+| Existing Rhino overlays | Detection helpers refactored in the September 7 quality follow-up; thresholds retained | Recorded detector and overlay regression tests pass |
 
 ## Module boundaries
 
@@ -57,6 +57,8 @@ Session accounting, mission allocation, and persistence live in Core. Desktop co
 Individual red/green tests cover session accounting, mission delivery/cargo allocation, bookmark persistence/import, backup recovery, replay idempotence, report encoding, ring-level filtering, and ship-only overlay gating. Focused Core and Desktop checks pass. The two-axis review and the corrections it produced are recorded in [the review report](mining-workspace-review.md).
 
 ## Runtime verification limits
+
+The following records describe the initial implementation checkpoint. Current crash, search, Powerplay, and scrolling changes and their validation are recorded in [the September 7 UX review](mining-workspace-ux-review.md). That follow-up also refactors existing Rhino detection helpers without changing their thresholds or bar-state policy.
 
 Spansh systems/traders, Ardent prices and the receive-only EDDN adapter were checked against live public endpoints. Workspace/theme and shared overlay rendering used headless Avalonia; journal transitions and persistence used fixtures. A complete in-game ship-mining session and audible Windows speech have not yet been exercised. The offline HTML fixture was generated and chart data was tested, but browser policy blocked opening its local file URL for visual inspection. Existing Rhino overlay source files were not modified.
 

@@ -222,7 +222,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
         return vm;
     }
     private static void SaveOne(FiregroupsWorkspaceViewModel vm, string name)
-    { vm.Primary[0].SelectedModule = vm.Primary[0].Options.First(); vm.ConfigurationName = name; vm.SaveCommand.Execute(null); Assert.StartsWith("Saved", vm.Status); }
+    { vm.Primary[0].SelectedModule = vm.Primary[0].Options[0]; vm.ConfigurationName = name; vm.SaveCommand.Execute(null); Assert.StartsWith("Saved", vm.Status); }
     private void Feed(FiregroupsWorkspaceViewModel vm, IReadOnlyList<JournalEventEnvelope> events, int group = 0, StatusFlags flags = StatusFlags.InMainShip)
     {
         foreach (var entry in events) journal.Apply(entry);

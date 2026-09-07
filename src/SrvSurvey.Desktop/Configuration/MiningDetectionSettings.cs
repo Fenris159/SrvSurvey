@@ -7,12 +7,13 @@ public sealed record MiningDetectionPoint(double X, double Y);
 public sealed record MiningDetectionSettings
 {
     public const double ReferenceRotationDegrees = -8;
-    public bool HasSameCalibration(MiningDetectionSettings other) => X == other.X && Y == other.Y
-        && BarColor == other.BarColor
-        && Width == other.Width && Height == other.Height && CircleWidth == other.CircleWidth
-        && RotationDegrees == other.RotationDegrees && CircleAspectRatio == other.CircleAspectRatio
-        && BarGap == other.BarGap
-        && MotionMargin == other.MotionMargin && Markers.SequenceEqual(other.Markers);
+    // Calibration identity is exact: even a small explicit user adjustment invalidates the old pixel analysis.
+    public bool HasSameCalibration(MiningDetectionSettings other) => X.Equals(other.X) && Y.Equals(other.Y)
+        && BarColor.Equals(other.BarColor)
+        && Width.Equals(other.Width) && Height.Equals(other.Height) && CircleWidth.Equals(other.CircleWidth)
+        && RotationDegrees.Equals(other.RotationDegrees) && CircleAspectRatio.Equals(other.CircleAspectRatio)
+        && BarGap.Equals(other.BarGap)
+        && MotionMargin.Equals(other.MotionMargin) && Markers.SequenceEqual(other.Markers);
     public bool Enabled { get; init; }
     public uint BarColor { get; init; } = 0x00FF00;
     public double X { get; init; } = 0.15;

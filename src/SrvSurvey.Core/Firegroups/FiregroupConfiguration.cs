@@ -58,7 +58,7 @@ public static class FiregroupLoadout
     private static string Text(JsonElement element, string name) => element.ValueKind == JsonValueKind.Object
         && element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() ?? "" : "";
 
-    private static IReadOnlyDictionary<string, string> ReadNames()
+    private static Dictionary<string, string> ReadNames()
     {
         using var stream = typeof(FiregroupLoadout).Assembly.GetManifestResourceStream("SrvSurvey.Core.Resources.firegroup-modules.json")!;
         return JsonSerializer.Deserialize<Dictionary<string, string>>(stream)!;

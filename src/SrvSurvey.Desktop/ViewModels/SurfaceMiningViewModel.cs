@@ -48,7 +48,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         && detectionTime.GetElapsedTime(since, detectionTime.GetTimestamp()) >= TimeSpan.FromSeconds(1);
     internal const string DetectionMovementMessage = "Rhino moving — tracker changes paused until position and heading are steady for one second.";
     public bool ShouldShowRigWarning => ShouldShow && isRhino && status?.InSrv == true
-        && status.OnFoot == false
+        && !status.OnFoot
         && Rigs.Any(rig => rig.Marker is { DistanceMeters: > SurfaceMiningGeometry.RigWarningDistanceMeters });
 
     // NoFocus also includes free head-look. This only permits analysis; the image detector
@@ -225,23 +225,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 || states[i] == MiningBarState.Absent && Rigs[i].IsSet)) return;
             // Refresh before mutations, including retries after a partially successful write.
             surface = (await store.LoadBodyAsync(context).ConfigureAwait(true)).Snapshot;
-            var changed = false;
             var location = SurfaceMiningGeometry.DeployedRig(cockpit, status!.NormalizedHeading, context.RadiusMeters);
-            for (var i = 0; i < 6; i++)
-            {
-                var name = $"#{i + 1}";
-                var exists = surface?.Bookmarks.TryGetValue(name, out var locations) == true && locations.Count > 0;
-                if (states[i] == MiningBarState.Present && !exists)
-                {
-                    await store.AddBookmarkAsync(context, name, location).ConfigureAwait(true);
-                    changed = true;
-                }
-                else if (states[i] == MiningBarState.Absent && exists)
-                {
-                    await store.RemoveBookmarkGroupAsync(context, name).ConfigureAwait(true);
-                    changed = true;
-                }
-            }
+            var changed = await UpdateDetectedBookmarksAsync(states, location, context).ConfigureAwait(true);
             if (changed)
             {
                 surface = (await store.LoadBodyAsync(context).ConfigureAwait(true)).Snapshot;
@@ -256,6 +241,27 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             Notify();
         }
         finally { updateLock.Release(); }
+    }
+
+    private async Task<bool> UpdateDetectedBookmarksAsync(IReadOnlyList<MiningBarState> states, SurfaceCoordinate location, SystemSurfaceContext miningContext)
+    {
+        var changed = false;
+        for (var i = 0; i < 6; i++)
+        {
+            var name = $"#{i + 1}";
+            var exists = surface?.Bookmarks.TryGetValue(name, out var locations) == true && locations.Count > 0;
+            if (states[i] == MiningBarState.Present && !exists)
+            {
+                await store.AddBookmarkAsync(miningContext, name, location).ConfigureAwait(true);
+                changed = true;
+            }
+            else if (states[i] == MiningBarState.Absent && exists)
+            {
+                await store.RemoveBookmarkGroupAsync(miningContext, name).ConfigureAwait(true);
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     public Task<bool> ClearRigsOnShipBoardingAsync(

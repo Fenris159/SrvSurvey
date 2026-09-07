@@ -53,37 +53,42 @@ public static class MiningReport
             foreach (var session in sessions) Bar(text, session.System + " · " + session.Started.ToString("g"), session.TonsPerHour, maximum, "t/h");
         }
         if (sessions.Count > 1) MiningReportCharts.AppendMaterialComparison(text, sessions);
-        foreach (var s in sessions)
-        {
-            text.Append($"<section><h2>{H(s.System)} / {H(s.Ring)}</h2><p>{H(s.Ship)} · {H(s.Started.ToLocalTime().ToString("f"))}</p>");
-            text.Append(CultureInfo.InvariantCulture, $"<p class='metric'>{s.RefinedTons} t · {s.TonsPerHour:0.0} t/h · {s.ActiveDuration:hh\\:mm\\:ss}</p><p>{s.Asteroids} asteroids · {s.CoreHits} cores · {s.TonsPerAsteroid:0.00} t/asteroid · {s.ProspectorLimpets} prospectors · {s.CollectorLimpets} collectors</p>");
-            if (s.Notes.Length > 0) text.Append($"<pre>{H(s.Notes)}</pre>");
-            if (s.Imported is { } imported)
-            {
-                text.Append("<details><summary>Imported report details</summary><p>Historical summary; per-event observations were not included in this CSV.</p><table>");
-                foreach (var field in imported.Fields) text.Append($"<tr><th>{H(field.Key)}</th><td>{H(field.Value)}</td></tr>");
-                text.Append("</table></details>");
-            }
-            if (s.RefineryEstimates.Count > 0)
-            {
-                text.Append("<h3>Pending refinery contents (manual estimates)</h3><ul>");
-                foreach (var item in s.RefineryEstimates) text.Append(CultureInfo.InvariantCulture, $"<li>{H(item.Key)}: {item.Value:0.##} t</li>");
-                text.Append("</ul><p>Not included in refined tonnage or efficiency.</p>");
-            }
-            MiningReportCharts.AppendTimeline(text, s);
-            text.Append("<h3>Refined minerals</h3>");
-            foreach (var group in s.Collections.Where(c => !c.Engineering).GroupBy(c => c.Name, StringComparer.OrdinalIgnoreCase)) Bar(text, group.Key, group.Sum(c => c.Count), Math.Max(1, s.RefinedTons), "t");
-            text.Append("<h3>Prospecting yields</h3><table><thead><tr><th>Mineral</th><th>Finds</th><th>Quality hits</th><th title='Mean proportion over asteroids containing the mineral'>Average %</th><th>Best %</th></tr></thead><tbody>");
-            foreach (var material in s.Summarize(s.Thresholds)) text.Append(CultureInfo.InvariantCulture, $"<tr><td>{H(material.Name)}</td><td>{material.Finds}</td><td>{material.QualityHits}</td><td>{material.Average:0.0}</td><td>{material.Best:0.0}</td></tr>");
-            text.Append("</tbody></table><details><summary>Prospecting timeline</summary><table><tr><th>Time</th><th>Minerals</th><th>Core</th></tr>");
-            foreach (var prospect in s.Prospects) text.Append($"<tr><td>{H(prospect.Time.ToLocalTime().ToString("T"))}</td><td>{H(string.Join(", ", prospect.Materials.Select(m => $"{m.Name} {m.Percentage:0.0}%")))}</td><td>{H(prospect.Core)}</td></tr>");
-            text.Append("</table></details><h3>Engineering materials collected</h3><ul>");
-            foreach (var group in s.Collections.Where(c => c.Engineering).GroupBy(c => c.Name)) text.Append($"<li>{H(group.Key)} ×{group.Sum(c => c.Count)}</li>");
-            text.Append("</ul>");
-            foreach (var screenshot in s.Screenshots) AppendScreenshot(text, screenshot);
-            text.Append("</section>");
-        }
+        foreach (var session in sessions) AppendSession(text, session);
         return text.Append("<footer><small>Journal observations describe events recorded during the session. Refining is measured separately from cargo transfers and purchases.</small></footer></body></html>").ToString();
+    }
+    private static void AppendSession(StringBuilder text, MiningSession s)
+    {
+        text.Append($"<section><h2>{H(s.System)} / {H(s.Ring)}</h2><p>{H(s.Ship)} · {H(s.Started.ToLocalTime().ToString("f"))}</p>");
+        text.Append(CultureInfo.InvariantCulture, $"<p class='metric'>{s.RefinedTons} t · {s.TonsPerHour:0.0} t/h · {s.ActiveDuration:hh\\:mm\\:ss}</p><p>{s.Asteroids} asteroids · {s.CoreHits} cores · {s.TonsPerAsteroid:0.00} t/asteroid · {s.ProspectorLimpets} prospectors · {s.CollectorLimpets} collectors</p>");
+        if (s.Notes.Length > 0) text.Append($"<pre>{H(s.Notes)}</pre>");
+        if (s.Imported is { } imported)
+        {
+            text.Append("<details><summary>Imported report details</summary><p>Historical summary; per-event observations were not included in this CSV.</p><table>");
+            foreach (var field in imported.Fields) text.Append($"<tr><th>{H(field.Key)}</th><td>{H(field.Value)}</td></tr>");
+            text.Append("</table></details>");
+        }
+        if (s.RefineryEstimates.Count > 0)
+        {
+            text.Append("<h3>Pending refinery contents (manual estimates)</h3><ul>");
+            foreach (var item in s.RefineryEstimates) text.Append(CultureInfo.InvariantCulture, $"<li>{H(item.Key)}: {item.Value:0.##} t</li>");
+            text.Append("</ul><p>Not included in refined tonnage or efficiency.</p>");
+        }
+        AppendObservations(text, s);
+        text.Append("</section>");
+    }
+    private static void AppendObservations(StringBuilder text, MiningSession s)
+    {
+        MiningReportCharts.AppendTimeline(text, s);
+        text.Append("<h3>Refined minerals</h3>");
+        foreach (var group in s.Collections.Where(c => !c.Engineering).GroupBy(c => c.Name, StringComparer.OrdinalIgnoreCase)) Bar(text, group.Key, group.Sum(c => c.Count), Math.Max(1, s.RefinedTons), "t");
+        text.Append("<h3>Prospecting yields</h3><table><thead><tr><th>Mineral</th><th>Finds</th><th>Quality hits</th><th title='Mean proportion over asteroids containing the mineral'>Average %</th><th>Best %</th></tr></thead><tbody>");
+        foreach (var material in s.Summarize(s.Thresholds)) text.Append(CultureInfo.InvariantCulture, $"<tr><td>{H(material.Name)}</td><td>{material.Finds}</td><td>{material.QualityHits}</td><td>{material.Average:0.0}</td><td>{material.Best:0.0}</td></tr>");
+        text.Append("</tbody></table><details><summary>Prospecting timeline</summary><table><tr><th>Time</th><th>Minerals</th><th>Core</th></tr>");
+        foreach (var prospect in s.Prospects) text.Append($"<tr><td>{H(prospect.Time.ToLocalTime().ToString("T"))}</td><td>{H(string.Join(", ", prospect.Materials.Select(m => $"{m.Name} {m.Percentage:0.0}%")))}</td><td>{H(prospect.Core)}</td></tr>");
+        text.Append("</table></details><h3>Engineering materials collected</h3><ul>");
+        foreach (var group in s.Collections.Where(c => c.Engineering).GroupBy(c => c.Name)) text.Append($"<li>{H(group.Key)} ×{group.Sum(c => c.Count)}</li>");
+        text.Append("</ul>");
+        foreach (var screenshot in s.Screenshots) AppendScreenshot(text, screenshot);
     }
     private static void Bar(StringBuilder text, string label, double value, double maximum, string unit) =>
         text.Append(CultureInfo.InvariantCulture, $"<div class='bar'><label>{H(label)}</label><progress max='{maximum:0.00}' value='{value:0.00}'></progress><span>{value:0.0} {unit}</span></div>");

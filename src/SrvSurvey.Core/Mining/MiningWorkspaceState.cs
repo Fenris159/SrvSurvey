@@ -56,8 +56,8 @@ public sealed class MiningWorkspaceState
     public void Import(MiningCommanderData imported)
     {
         foreach (var ring in imported.Rings) CacheRing(ring);
-        foreach (var mission in imported.Missions)
-            if (!Missions.Missions.Any(m => m.Id == mission.Id)) Missions.Missions.Add(mission);
+        foreach (var mission in imported.Missions.Where(mission => !Missions.Missions.Any(m => m.Id == mission.Id)))
+            Missions.Missions.Add(mission);
         Synchronize();
     }
     public void Synchronize()
@@ -87,7 +87,7 @@ public sealed class MiningWorkspaceState
             _ => null,
         };
         if (text is null) return;
-        var kind = entry.EventName == "MiningRefined" ? "Refined" : entry.EventName == "MaterialCollected" ? "Collected" : "Prospected";
+        var kind = entry.EventName switch { "MiningRefined" => "Refined", "MaterialCollected" => "Collected", _ => "Prospected" };
         Notices.Insert(0, new MiningNotice(entry.Timestamp ?? DateTimeOffset.UtcNow, kind, text));
         if (Notices.Count > 100) Notices.RemoveAt(Notices.Count - 1);
     }

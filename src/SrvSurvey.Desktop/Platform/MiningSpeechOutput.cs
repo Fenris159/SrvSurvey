@@ -11,7 +11,7 @@ public sealed class MiningSpeechOutput : IDisposable
     private readonly Lock sync = new();
     private Thread? worker;
     private volatile bool disposed;
-    public bool IsSupported => OperatingSystem.IsWindows();
+    public static bool IsSupported => OperatingSystem.IsWindows();
     public Task<IReadOnlyList<string>> GetVoicesAsync()
     {
         var result = new TaskCompletionSource<IReadOnlyList<string>>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -73,7 +73,18 @@ public sealed class MiningSpeechOutput : IDisposable
             }
         }
         catch (Exception ex) when (ex is COMException or System.Reflection.TargetInvocationException) { /* Voice enumeration reports unavailability through its bounded timeout. */ }
-        finally { if (speaker is not null && Marshal.IsComObject(speaker)) Marshal.FinalReleaseComObject(speaker); }
+        finally
+        {
+            try { if (speaker is not null && Marshal.IsComObject(speaker)) Marshal.FinalReleaseComObject(speaker); }
+            finally
+            {
+                lock (sync)
+                {
+                    disposed = true;
+                    queue.Dispose();
+                }
+            }
+        }
     }
     public void Dispose()
     {
@@ -82,6 +93,7 @@ public sealed class MiningSpeechOutput : IDisposable
             if (disposed) return;
             disposed = true;
             queue.CompleteAdding();
+            if (worker is null) queue.Dispose();
         }
     }
 }

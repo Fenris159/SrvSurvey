@@ -44,24 +44,7 @@ public sealed class MiningDetectionCoordinator : IDisposable
             previousAnalysis = null;
             model.Pause("Waiting for Elite's Rhino cockpit view.");
         }
-        if (!(model.Enabled || model.IsCalibrating)) return;
-        if (model.IsCalibrating && !model.IsCalibrationTesting) return;
-        if (!game.IsAvailable || !game.IsVisible || (!model.IsCalibrating && !game.IsForeground)
-            || !mining.CanDetectRigs)
-        {
-            model.Pause("Waiting for Elite's Rhino cockpit view.");
-            return;
-        }
-        if (!capture.IsAvailable)
-        {
-            model.Pause(capture.UnavailableReason ?? "Screen capture unavailable.");
-            return;
-        }
-        if (!model.IsCalibrating && !mining.IsDetectionPositionSteady)
-        {
-            model.Pause(SurfaceMiningViewModel.DetectionMovementMessage);
-            return;
-        }
+        if (!CanCapture(model, game)) return;
         var settings = model.Settings;
         var previous = ReferenceEquals(settings, previousSettings) ? previousAnalysis : null;
         var bounds = settings.GetBounds(game.ClientBounds);
@@ -73,29 +56,7 @@ public sealed class MiningDetectionCoordinator : IDisposable
                 var pixels = capture.Capture(bounds);
                 return MiningBarDetector.Analyze(pixels, settings, previous);
             });
-            if (!disposed && context == mining.DetectionContext && ReferenceEquals(settings, model.Settings)
-                && (model.Enabled || model.IsCalibrating)
-                && (!model.IsCalibrating || model.IsCalibrationTesting))
-            {
-                var current = tracker.GetSnapshot();
-                if (current.IsAvailable && current.ClientBounds == game.ClientBounds && current.IsVisible
-                    && (current.IsForeground || model.IsCalibrating) && mining.CanDetectRigs)
-                {
-                    // Status can change while pixels are being captured on the worker thread.
-                    if (!model.IsCalibrating && !mining.IsDetectionPositionSteady)
-                    {
-                        model.Pause(SurfaceMiningViewModel.DetectionMovementMessage);
-                        return;
-                    }
-                    previousAnalysis = result;
-                    previousSettings = settings;
-                    previousContext = context;
-                    var confirmed = model.Apply(result);
-                    if (context is not null && current.IsForeground && model.Enabled && !model.IsCalibrating)
-                        await mining.ApplyDetectedRigsAsync(confirmed, context, settings);
-                }
-                else model.Pause("Waiting for Elite's Rhino cockpit view.");
-            }
+            await ApplyResultAsync(result, model, settings, context, game);
         }
         catch (Exception e) when (e is InvalidOperationException or ArgumentException
             or System.ComponentModel.Win32Exception or NotSupportedException)
@@ -107,6 +68,59 @@ public sealed class MiningDetectionCoordinator : IDisposable
             busy = false;
             if (disposed) capture.Dispose();
         }
+    }
+
+    private async Task ApplyResultAsync(MiningBarAnalysis result, MiningDetectionViewModel model,
+        MiningDetectionSettings settings, SystemSurfaceContext? context, GameWindowSnapshot game)
+    {
+        if (!disposed && context == mining.DetectionContext && ReferenceEquals(settings, model.Settings)
+            && (model.Enabled || model.IsCalibrating)
+            && (!model.IsCalibrating || model.IsCalibrationTesting))
+        {
+            var current = tracker.GetSnapshot();
+            if (current.IsAvailable && current.ClientBounds == game.ClientBounds && current.IsVisible
+                && (current.IsForeground || model.IsCalibrating) && mining.CanDetectRigs)
+            {
+                // Status can change while pixels are being captured on the worker thread.
+                if (!model.IsCalibrating && !mining.IsDetectionPositionSteady)
+                {
+                    model.Pause(SurfaceMiningViewModel.DetectionMovementMessage);
+                    return;
+                }
+                previousAnalysis = result;
+                previousSettings = settings;
+                previousContext = context;
+                var confirmed = model.Apply(result);
+                if (CanApplyTrackers(context, current, model))
+                    await mining.ApplyDetectedRigsAsync(confirmed, context!, settings);
+            }
+            else model.Pause("Waiting for Elite's Rhino cockpit view.");
+        }
+    }
+    private static bool CanApplyTrackers(SystemSurfaceContext? context, GameWindowSnapshot current, MiningDetectionViewModel model) =>
+        context is not null && current.IsForeground && model.Enabled && !model.IsCalibrating;
+
+    private bool CanCapture(MiningDetectionViewModel model, GameWindowSnapshot game)
+    {
+        if (!(model.Enabled || model.IsCalibrating)) return false;
+        if (model.IsCalibrating && !model.IsCalibrationTesting) return false;
+        if (!game.IsAvailable || !game.IsVisible || (!model.IsCalibrating && !game.IsForeground)
+            || !mining.CanDetectRigs)
+        {
+            model.Pause("Waiting for Elite's Rhino cockpit view.");
+            return false;
+        }
+        if (!capture.IsAvailable)
+        {
+            model.Pause(capture.UnavailableReason ?? "Screen capture unavailable.");
+            return false;
+        }
+        if (!model.IsCalibrating && !mining.IsDetectionPositionSteady)
+        {
+            model.Pause(SurfaceMiningViewModel.DetectionMovementMessage);
+            return false;
+        }
+        return true;
     }
 
     public void Dispose()

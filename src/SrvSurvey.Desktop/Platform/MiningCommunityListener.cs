@@ -29,7 +29,7 @@ public sealed class MiningCommunityListener : IDisposable
     {
         if (disposed) return;
         enabled = value && DesktopExternalEffectPolicy.IsAllowed;
-        if (enabled) worker ??= Task.Run(Receive);
+        if (enabled) worker ??= Task.Run(Receive, CancellationToken.None);
         else status = "EDDN reception is off.";
     }
     private void Receive()
@@ -41,26 +41,7 @@ public sealed class MiningCommunityListener : IDisposable
                 if (!enabled) { stop.Token.WaitHandle.WaitOne(250); continue; }
                 try
                 {
-                    using var socket = new SubscriberSocket();
-                    socket.Options.Linger = TimeSpan.Zero;
-                    socket.Options.ReceiveHighWatermark = 100;
-                    socket.Options.MaxMsgSize = 2 * 1024 * 1024;
-                    socket.Connect("tcp://eddn.edcd.io:9500");
-                    socket.SubscribeToAnyTopic();
-                    var lastSave = DateTimeOffset.UtcNow;
-                    status = "Listening for community observations…";
-                    while (enabled && !stop.IsCancellationRequested)
-                    {
-                        if (!socket.TryReceiveFrameBytes(TimeSpan.FromMilliseconds(250), out var bytes)) continue;
-                        try
-                        {
-                            Cache.Apply(Decode(bytes), DateTimeOffset.UtcNow);
-                            status = $"EDDN · {Cache.Count:N0} cached commodity observations";
-                        }
-                        catch (Exception ex) when (ex is InvalidDataException or JsonException or ArgumentException or InvalidOperationException or OverflowException) { /* Ignore malformed broadcasts; never interrupt live mining. */ }
-                        if (DateTimeOffset.UtcNow - lastSave > TimeSpan.FromMinutes(1)) { Save(); lastSave = DateTimeOffset.UtcNow; }
-                    }
-                    Save();
+                    ReceiveConnected();
                 }
                 catch (Exception ex) when (ex is NetMQException or IOException or UnauthorizedAccessException)
                 {
@@ -70,6 +51,29 @@ public sealed class MiningCommunityListener : IDisposable
             }
         }
         finally { enabled = false; }
+    }
+    private void ReceiveConnected()
+    {
+        using var socket = new SubscriberSocket();
+        socket.Options.Linger = TimeSpan.Zero;
+        socket.Options.ReceiveHighWatermark = 100;
+        socket.Options.MaxMsgSize = 2 * 1024 * 1024;
+        socket.Connect("tcp://eddn.edcd.io:9500");
+        socket.SubscribeToAnyTopic();
+        var lastSave = DateTimeOffset.UtcNow;
+        status = "Listening for community observations…";
+        while (enabled && !stop.IsCancellationRequested)
+        {
+            if (!socket.TryReceiveFrameBytes(TimeSpan.FromMilliseconds(250), out var bytes)) continue;
+            try
+            {
+                Cache.Apply(Decode(bytes), DateTimeOffset.UtcNow);
+                status = $"EDDN · {Cache.Count:N0} cached commodity observations";
+            }
+            catch (Exception ex) when (ex is InvalidDataException or JsonException or ArgumentException or InvalidOperationException or OverflowException) { /* Ignore malformed broadcasts; never interrupt live mining. */ }
+            if (DateTimeOffset.UtcNow - lastSave > TimeSpan.FromMinutes(1)) { Save(); lastSave = DateTimeOffset.UtcNow; }
+        }
+        Save();
     }
     private void Save()
     {

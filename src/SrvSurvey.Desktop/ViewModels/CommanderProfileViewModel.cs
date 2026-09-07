@@ -1403,17 +1403,23 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return;
         }
 
-        Interlocked.Increment(ref commanderContextVersion);
-        automaticLoadCancellation?.Cancel();
-        automaticLoadCancellation?.Dispose();
+        var activationVersion = Interlocked.Increment(ref commanderContextVersion);
+        var automaticLoad = automaticLoadCancellation;
         automaticLoadCancellation = null;
         var previousConnection = connectionCancellation;
         connectionCancellation = null;
+        if (automaticLoad is not null)
+        {
+            await automaticLoad.CancelAsync();
+            automaticLoad.Dispose();
+        }
         if (previousConnection is not null)
         {
             await previousConnection.CancelAsync();
             previousConnection.Dispose();
         }
+        // A newer commander can win while cancellation callbacks are completing.
+        if (disposed || activationVersion != Interlocked.Read(ref commanderContextVersion)) return;
         IsBusy = false;
         IsConnecting = false;
         Snapshot = null;
@@ -1544,7 +1550,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private async Task LoadAutomaticallyAsync(CancellationToken cancellationToken)
     {
         try { await OpenAsync(cancellationToken); }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { /* Commander change or shutdown canceled the automatic lookup. */ }
         catch (Exception exception) when (IsExpected(exception) || exception is OperationCanceledException)
         {
             if (!disposed && !cancellationToken.IsCancellationRequested) StatusMessage = exception.Message;

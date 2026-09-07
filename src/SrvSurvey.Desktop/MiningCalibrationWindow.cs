@@ -253,9 +253,9 @@ public sealed class MiningCalibrationWindow : Window
                     .Select(p => center + geometry.Transform(p.X, p.Y, radius) + new Vector(0, radius * model.Settings.BarGap)).ToArray());
             }
         }
-        private static void DrawPolyline(DrawingContext context, Pen pen, IReadOnlyList<Point> points)
+        private static void DrawPolyline(DrawingContext context, Pen pen, Point[] points)
         {
-            for (var i = 1; i < points.Count; i++) context.DrawLine(pen, points[i - 1], points[i]);
+            for (var i = 1; i < points.Length; i++) context.DrawLine(pen, points[i - 1], points[i]);
         }
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
