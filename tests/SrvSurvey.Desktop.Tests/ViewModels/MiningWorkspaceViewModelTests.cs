@@ -96,6 +96,39 @@ public sealed class MiningWorkspaceViewModelTests
         }
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }
+
+    [Fact]
+    public void LiveProspectorResumesPausedSessionBeforeShowingItsReport()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            using var vm = new MiningWorkspaceViewModel(directory, new Resolver(), new BookmarksViewModel(directory), clock: new Clock());
+            var context = new JournalSessionState();
+            var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
+            void Feed(string json, bool bootstrap = false)
+            {
+                var entry = FiregroupsWorkspaceViewModelTests.Event(json);
+                context.Apply(entry);
+                vm.Apply(new(null, [entry], ship, null, null, null, [], bootstrap), context, null, ship);
+            }
+
+            Feed("""{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}""", true);
+            vm.StartCommand.Execute(null);
+            vm.PauseCommand.Execute(null);
+
+            Feed("""{"event":"LaunchDrone","timestamp":"2026-09-06T12:02:00Z","Type":"Prospector"}""");
+
+            Assert.Null(vm.Current!.PausedAt);
+            Assert.Equal(1, vm.Current.ProspectorLimpets);
+
+            Feed("""{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:02:01Z","Materials":[{"Name":"Platinum","Proportion":35}],"Remaining":100}""");
+            Assert.True(vm.ShouldShowNotifications);
+            Assert.Equal("Platinum 35.0% · Remaining 100%", vm.CurrentProspectText);
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
+
     [Fact]
     public async Task MiningBackupRestoresNamedFiregroupsAndKeepsOldArchivesCompatible()
     {
