@@ -29,6 +29,8 @@ RC43, RC44, and RC44.5 features summarized below.
   prospecting announcement.
 - Releases the persistent prospector report when the asteroid is depleted, the
   ship enters supercruise, or an FSD jump begins.
+- Resumes a paused auto-start mining session when a live prospector limpet is
+  launched, using the same trigger that starts a missing session.
 - Simplifies Firegroups overlay labels to the in-game module name. Slot IDs and
   class/mount suffixes are hidden, and duplicate assignments use a compact count.
 

@@ -20,6 +20,35 @@ public sealed class MiningWorkspaceStateTests
         restored.Apply(live, true, "Sol", "Ring", "Python");
         Assert.Equal(1, restored.Session.Current?.ProspectorLimpets);
     }
+
+    [Fact]
+    public void LiveProspectorResumesPausedSessionWhenAutoStartIsEnabled()
+    {
+        var state = new MiningWorkspaceState(new MiningCommanderData());
+        var started = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        state.Session.Start(started, "Sol", "Ring", "Python");
+        state.Session.Pause(started.AddMinutes(1));
+
+        state.Apply(Parse("""{"event":"LaunchDrone","timestamp":"2026-09-06T12:02:00Z","Type":"Prospector"}"""), false, "Sol", "Ring", "Python");
+
+        Assert.Null(state.Session.Current!.PausedAt);
+        Assert.Equal(1, state.Session.Current.ProspectorLimpets);
+    }
+
+    [Fact]
+    public void LiveProspectorDoesNotResumePausedSessionWhenAutoStartIsDisabled()
+    {
+        var state = new MiningWorkspaceState(new MiningCommanderData());
+        state.Data.Settings.AutoStart = false;
+        var started = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        state.Session.Start(started, "Sol", "Ring", "Python");
+        state.Session.Pause(started.AddMinutes(1));
+
+        state.Apply(Parse("""{"event":"LaunchDrone","timestamp":"2026-09-06T12:02:00Z","Type":"Prospector"}"""), false, "Sol", "Ring", "Python");
+
+        Assert.NotNull(state.Session.Current!.PausedAt);
+        Assert.Equal(0, state.Session.Current.ProspectorLimpets);
+    }
     [Fact]
     public void JournalImportKeepsNewerRingsAndExistingMissionProgress()
     {
