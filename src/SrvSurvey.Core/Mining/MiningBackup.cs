@@ -1,16 +1,18 @@
 using System.IO.Compression;
 using System.Text.Json;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Firegroups;
 
 namespace SrvSurvey.Core.Mining;
 
-public sealed record MiningBackupContents(MiningCommanderData Data, string Bookmarks);
+public sealed record MiningBackupContents(MiningCommanderData Data, string Bookmarks, string? Firegroups = null);
 
 public static class MiningBackup
 {
     private const int MaximumBytes = 256 * 1024 * 1024;
-    public static byte[] Create(MiningCommanderData data, string bookmarks)
+    public static byte[] Create(MiningCommanderData data, string bookmarks, string? firegroups = null)
     {
+        if (firegroups is not null) _ = FiregroupStore.Parse(firegroups);
         var locations = BookmarkCatalog.Parse(bookmarks);
         var copy = MiningStore.Parse(JsonSerializer.Serialize(data));
         using var buffer = new MemoryStream();
@@ -39,6 +41,7 @@ public static class MiningBackup
             }
             Write(archive, "mining.json", JsonSerializer.Serialize(copy));
             Write(archive, "bookmarks.json", JsonSerializer.Serialize(locations));
+            if (firegroups is not null) Write(archive, "firegroups.json", firegroups);
         }
         if (buffer.Length > MaximumBytes) throw new IOException("Mining backup exceeds 256 MB. Export fewer screenshot attachments.");
         return buffer.ToArray();
@@ -49,6 +52,8 @@ public static class MiningBackup
         using var buffer = new MemoryStream(bytes, false);
         using var archive = new ZipArchive(buffer, ZipArchiveMode.Read);
         if (archive.Entries.Sum(e => e.Length) > MaximumBytes) throw new IOException("Expanded mining backup exceeds 256 MB.");
+        var firegroups = archive.GetEntry("firegroups.json") is null ? null : ReadText(archive, "firegroups.json");
+        if (firegroups is not null) _ = FiregroupStore.Parse(firegroups);
         var data = MiningStore.Parse(ReadText(archive, "mining.json"));
         var bookmarks = ReadText(archive, "bookmarks.json");
         var locations = BookmarkCatalog.Parse(bookmarks);
@@ -71,7 +76,7 @@ public static class MiningBackup
                 screenshots[index] = path;
             }
         }
-        return new(data, JsonSerializer.Serialize(locations));
+        return new(data, JsonSerializer.Serialize(locations), firegroups);
     }
     private static IEnumerable<MiningSession> Sessions(MiningCommanderData data) => data.Current is { } current ? data.History.Append(current) : data.History;
     private static void Write(ZipArchive archive, string name, string text)

@@ -60,6 +60,47 @@ public sealed class MiningWorkspaceViewModelTests
         }
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }
+    [Fact]
+    public async Task MiningBackupRestoresNamedFiregroupsAndKeepsOldArchivesCompatible()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var restoredDirectory = Path.Combine(directory, "restored");
+        try
+        {
+            var context = new JournalSessionState();
+            var events = new[] { FiregroupsWorkspaceViewModelTests.Event("""{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python","ShipID":1}"""), FiregroupsWorkspaceViewModelTests.Loadout(1, "Survey Python") };
+            foreach (var entry in events) context.Apply(entry);
+            var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
+            var update = new JournalMonitorUpdate(null, events, ship, null, null, null, [], true);
+            var firegroups = new FiregroupsWorkspaceViewModel(directory);
+            firegroups.Apply(update, context, ship);
+            firegroups.Primary[0].SelectedModule = firegroups.Primary[0].Options[0];
+            firegroups.ConfigurationName = "Backup configuration";
+            firegroups.SaveCommand.Execute(null);
+            using var source = new MiningWorkspaceViewModel(directory, new Resolver(), new BookmarksViewModel(directory), firegroups: firegroups);
+            source.Apply(update, context, null, ship);
+            var bytes = await source.BackupPackageAsync();
+            var targetFiregroups = new FiregroupsWorkspaceViewModel(restoredDirectory);
+            targetFiregroups.Apply(update, context, ship);
+            using var target = new MiningWorkspaceViewModel(restoredDirectory, new Resolver(), new BookmarksViewModel(restoredDirectory), firegroups: targetFiregroups);
+            target.Apply(update, context, null, ship);
+            await target.RestorePackageAsync(bytes);
+            Assert.Equal("Backup configuration", Assert.Single(targetFiregroups.SavedProfiles).Name);
+            Assert.Equal("Survey Python", targetFiregroups.ActiveProfile!.Ship.Name);
+            Assert.NotNull(targetFiregroups.Primary[0].SelectedModule);
+            Assert.Single(Directory.GetFiles(Path.Combine(restoredDirectory, "firegroups"), "*.before-restore"));
+            var reloaded = new FiregroupsWorkspaceViewModel(restoredDirectory);
+            reloaded.Apply(update, context, ship);
+            Assert.Equal("Backup configuration", reloaded.ActiveProfile!.Name);
+            var oldArchive = SrvSurvey.Core.Mining.MiningBackup.Create(new(), "[]");
+            await target.RestorePackageAsync(oldArchive);
+            Assert.Single(targetFiregroups.SavedProfiles);
+            Assert.False(targetFiregroups.Restore("OtherCommander", firegroups.Backup("F1")));
+            Assert.Single(targetFiregroups.SavedProfiles);
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
+
     private sealed class Clock : TimeProvider
     {
         public DateTimeOffset Now { get; set; } = DateTimeOffset.Parse("2026-09-06T12:00:00Z");

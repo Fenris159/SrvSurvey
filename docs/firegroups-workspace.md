@@ -8,7 +8,7 @@ The Firegroups workspace has a dedicated overlay settings window containing the 
 
 Configurations are commander-scoped in the `firegroups` data folder. Journal ship type and ShipID identify a ship; ShipName is retained for display. Loadouts are cached so saved setups remain editable after restart. Named configurations for the same ship have a persisted active selection. Ship renames preserve identity, and two ships of the same type can use different configurations.
 
-The editor uses observable rows and saved collections. Drafts survive switching configurations or ships within the application session. Group arrows retain entered assignments. Save validates name, content and repeated assignments, writes atomically, and publishes the saved row only after success. Errors remain visible below the workspace. Old flat Mining firegroups are imported once for the first identified ship; old Mining files remain intact. Imported or unequipped assignments are retained and marked for replacement, never silently remapped. Ship loadouts and named profiles are stored separately from mining reports; include the `firegroups` folder in application-data backups.
+The editor uses observable rows and saved collections. Drafts survive switching configurations or ships within the application session. Group arrows retain entered assignments. Save validates name, content and repeated assignments, writes atomically, and publishes the saved row only after success. Errors remain visible below the workspace. Old flat Mining firegroups are imported once for the first identified ship; old Mining files remain intact. Imported or unequipped assignments are retained and marked for replacement, never silently remapped. Ship loadouts and named profiles are stored in the `firegroups` folder and included in the existing Mining backup ZIP. Restore validates the Firegroups document before applying it, retains the previous file for recovery, and immediately refreshes the workspace and overlay. Older ZIPs without Firegroups remain supported and leave current named configurations intact.
 
 ## Equipped module catalog
 
@@ -16,7 +16,7 @@ The checked-in catalog is a filtered snapshot of [EDCD FDevIDs outfitting.csv](h
 
 ## Visibility and compatibility
 
-Firegroups retains PlotMiningFiregroups, its shortcut identity and saved overlay placement. It now has its own settings category. Previous Global vehicle exceptions are copied once into that category, then saved independently. The overlay uses the saved profile and the reported active group rather than unsaved editor content. It does not send inputs to Elite. A vessel without an identified Loadout/profile has no active Firegroups overlay. Existing mining notifications keep their own visibility rules.
+Firegroups retains PlotMiningFiregroups, its shortcut identity and saved overlay placement. It now has its own settings category. Previous Global vehicle exceptions are copied once into that category, then saved independently. Migration is recorded even when Global uses its implicit all-allowed default, so later Global edits cannot change Firegroups on restart. The overlay uses the saved profile and the reported active group rather than unsaved editor content. It does not send inputs to Elite. A vessel without an identified Loadout/profile has no active Firegroups overlay. Existing mining notifications keep their own visibility rules.
 
 ## Diagnosis and validation
 

@@ -128,6 +128,31 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
         NotifyLive();
     }
 
+    public string Backup(string expectedCommander)
+    {
+        if (commander != expectedCommander || !storageAvailable)
+            throw new IOException("Connect the same commander before backing up Firegroups.");
+        return FiregroupStore.Export(document);
+    }
+
+    public bool Restore(string expectedCommander, string json)
+    {
+        if (commander != expectedCommander || !storageAvailable)
+        { Status = "Commander changed; Firegroups backup was not applied."; return false; }
+        try
+        {
+            document = store.Restore(expectedCommander, json);
+            drafts.Clear();
+            editorShip = null; profileId = null;
+            OpenEditor(liveShip, ActiveProfile);
+            RefreshSaved(); NotifyLive();
+            Status = "Firegroups restored. Previous configurations retained in the before-restore file.";
+            return true;
+        }
+        catch (Exception ex) when (IsStorageError(ex))
+        { Status = "Firegroups restore failed: " + ex.Message; return false; }
+    }
+
     private void ImportLegacy()
     {
         if (document.LegacyImported || liveShip is null || commander is null) return;

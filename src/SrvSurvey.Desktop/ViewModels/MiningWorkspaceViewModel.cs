@@ -11,6 +11,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 {
     private readonly MiningStore store;
+    private readonly FiregroupsWorkspaceViewModel? firegroups;
     private readonly TimeProvider clock;
     private DateTimeOffset lastRecoverySave;
     private readonly Platform.MiningCommunityListener community;
@@ -41,9 +42,10 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private bool fullNotified;
     private DateTimeOffset lastAutoSearch;
 
-    public MiningWorkspaceViewModel(string directory, IStarSystemResolver resolver, BookmarksViewModel bookmarks, HttpClient? networkClient = null, TimeProvider? clock = null)
+    public MiningWorkspaceViewModel(string directory, IStarSystemResolver resolver, BookmarksViewModel bookmarks, HttpClient? networkClient = null, TimeProvider? clock = null, FiregroupsWorkspaceViewModel? firegroups = null)
     {
         this.clock = clock ?? TimeProvider.System;
+        this.firegroups = firegroups;
         store = new MiningStore(directory);
         community = new Platform.MiningCommunityListener(directory);
         attachmentDirectory = Path.Combine(directory, "mining", "attachments");
@@ -283,7 +285,8 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     {
         var snapshot = MiningStore.Parse(Backup());
         var bookmarkJson = bookmarks.Export();
-        return Task.Run(() => MiningBackup.Create(snapshot, bookmarkJson));
+        var firegroupJson = commander is not null ? firegroups?.Backup(commander) : null;
+        return Task.Run(() => MiningBackup.Create(snapshot, bookmarkJson, firegroupJson));
     }
     public async Task RestorePackageAsync(byte[] bytes)
     {
@@ -291,9 +294,12 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         if (targetCommander is null || !storageAvailable) { Status = "Connect a commander before restoring."; return; }
         var contents = await Task.Run(() => MiningBackup.Read(bytes, attachmentDirectory));
         if (commander != targetCommander) { Status = "Commander changed; backup was not applied."; return; }
+        if (contents.Firegroups is not null && firegroups is not null && !firegroups.Restore(targetCommander, contents.Firegroups))
+        { Status = firegroups.Status; return; }
         if (!Restore(store.Export(contents.Data))) return;
         bookmarks.Restore(contents.Bookmarks);
         Status += " " + bookmarks.Status;
+        if (contents.Firegroups is not null && firegroups is not null) Status += " " + firegroups.Status;
     }
     public string Backup() { state.Synchronize(); return store.Export(state.Data); }
     public bool Restore(string json)

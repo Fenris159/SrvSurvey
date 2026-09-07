@@ -7,6 +7,22 @@ namespace SrvSurvey.Core.Tests.Mining;
 public sealed class MiningBackupTests
 {
     [Fact]
+    public void InvalidFiregroupsInArchiveAreRejectedBeforeRestoringAttachments()
+    {
+        using var buffer = new MemoryStream(MiningBackup.Create(new(), "[]"));
+        using var expanded = new MemoryStream();
+        buffer.CopyTo(expanded);
+        using (var zip = new System.IO.Compression.ZipArchive(expanded, System.IO.Compression.ZipArchiveMode.Update, true))
+        {
+            using var writer = new StreamWriter(zip.CreateEntry("firegroups.json").Open());
+            writer.Write("{\"Profiles\":[null]}");
+        }
+        var target = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Assert.Throws<JsonException>(() => MiningBackup.Read(expanded.ToArray(), target));
+        Assert.False(Directory.Exists(target));
+    }
+
+    [Fact]
     public void ArchiveCarriesBookmarksAndScreenshotsWithoutDependingOnOriginalPath()
     {
         var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

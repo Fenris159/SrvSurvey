@@ -541,9 +541,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             var sharedSystemResolver = new SpanshStarSystemResolver(
                 externalNetworkClient);
             Bookmarks = new BookmarksViewModel(AppDataPaths.DataDirectory);
-            MiningWorkspace = new MiningWorkspaceViewModel(AppDataPaths.DataDirectory, sharedSystemResolver, Bookmarks, externalNetworkClient);
-            rollback.Add(MiningWorkspace.Dispose);
             Firegroups = new FiregroupsWorkspaceViewModel(AppDataPaths.DataDirectory);
+            MiningWorkspace = new MiningWorkspaceViewModel(AppDataPaths.DataDirectory, sharedSystemResolver, Bookmarks, externalNetworkClient, firegroups: Firegroups);
+            rollback.Add(MiningWorkspace.Dispose);
             var sharedExobiologyCatalog = legacyReferences.Exobiology;
             var defaultCodexImageCache = Path.Combine(
                 AppDataPaths.CacheDirectory,

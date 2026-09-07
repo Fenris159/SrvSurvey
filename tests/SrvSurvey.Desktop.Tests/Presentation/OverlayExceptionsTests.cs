@@ -77,6 +77,23 @@ public sealed class OverlayExceptionsTests
         finally { File.Delete(path); }
     }
 
+    [Fact]
+    public void DefaultFiregroupsExceptionsDoNotInheritLaterGlobalChangesAfterRestart()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
+        try
+        {
+            var store = new OverlayVehicleSettingsStore(path);
+            _ = new OverlayExceptionsViewModel(store, new OverlayWindowRegistry());
+            store.Save(OverlaySettingsCategory.Global, []);
+            var restarted = new OverlayExceptionsViewModel(store, new OverlayWindowRegistry());
+            Assert.All(restarted.ForCategory(OverlaySettingsCategory.Firegroups).Entries, entry => Assert.True(entry.IsAllowed));
+            Assert.Null(store.Load(OverlaySettingsCategory.Firegroups));
+            Assert.Empty(store.Load(OverlaySettingsCategory.Global)!);
+        }
+        finally { File.Delete(path); }
+    }
+
     [AvaloniaFact]
     public void CategoryExceptionsPersistAndHideLivePresentationsWithoutLosingIntentOrUserToggle()
     {

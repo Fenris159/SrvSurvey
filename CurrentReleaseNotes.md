@@ -28,7 +28,8 @@ summarized below.
   controllers; shield cell banks are excluded. The overlay follows the boarded
   ship's saved configuration and Status.json group number. Older assignments are
   preserved for migration. Firegroups now has dedicated overlay settings with
-  visibility, shortcut and independent Overlay Exceptions.
+  visibility, shortcut and independent Overlay Exceptions. Mining backups also
+  preserve named Firegroups configurations and cached loadouts.
 
 - Renames Mining firegroups to Firegroups in Status & utilities. Its title-free
   Group, Primary and Secondary column defaults to the bottom-right and works

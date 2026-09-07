@@ -11,10 +11,30 @@ public sealed class FiregroupStore(string directory)
     {
         var path = GetPath(commander);
         if (!File.Exists(path)) return new();
-        var document = JsonSerializer.Deserialize<FiregroupDocument>(File.ReadAllText(path), Options)
+        return Parse(File.ReadAllText(path));
+    }
+
+    public static FiregroupDocument Parse(string json)
+    {
+        var document = JsonSerializer.Deserialize<FiregroupDocument>(json, Options)
             ?? throw new JsonException("Empty Firegroups document.");
         Validate(document);
         return document;
+    }
+
+    public static string Export(FiregroupDocument document)
+    {
+        Validate(document);
+        return JsonSerializer.Serialize(document, Options);
+    }
+
+    public FiregroupDocument Restore(string commander, string json)
+    {
+        var restored = Parse(json);
+        var path = GetPath(commander);
+        if (File.Exists(path)) File.Copy(path, path + ".before-restore", true);
+        Save(commander, restored);
+        return restored;
     }
 
     public void Save(string commander, FiregroupDocument document)
