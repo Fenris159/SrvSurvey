@@ -70,8 +70,11 @@ public static class OverlayVehicleCatalog
     {
         if (journal.IsShutdown || status is null) return "unknown";
         if (status.OnFoot) return "on-foot";
-        if (status.InSrv) return Normalize(journal.ActiveSrvType);
         if (status.InFighter) return "fighters";
+        // The journal can retain our own ship while we ride in another vessel.
+        if (status.InTaxi || (status.Flags2 & (StatusFlags2.InMulticrew
+            | StatusFlags2.TelepresenceMulticrew | StatusFlags2.PhysicalMulticrew)) != 0) return "unknown";
+        if (status.InSrv) return Normalize(journal.ActiveSrvType);
         if (status.InMainShip) return Normalize(journal.ShipType);
         return "unknown";
     }

@@ -673,7 +673,7 @@ public static class GuideCatalog
                             "The gate follows the vessel you are aboard: SRV, Scorpion, Rhino and Nomad have separate entries; Fighters covers all fighter variants. On foot is independent of your parked ship.",
                         ],
                         [
-                            "All entries start checked. Other / unknown controls unrecognized ship types and times when boarded status is unavailable.",
+                            "All entries start checked. Other / unknown controls unrecognized ship types, unavailable boarded status and taxi/multicrew rides where the current vessel is not identified.",
                             "The button in global overlay settings controls Status & utilities. Panels shared by several settings categories must be allowed in each of those categories.",
                             "These filters only hide overlays; enabling a vehicle does not bypass the panel’s normal game-state trigger, visibility switch or focus rules. Editor previews remain available.",
                         ]),

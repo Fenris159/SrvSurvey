@@ -32,6 +32,19 @@ public sealed class OverlayExceptionsTests
     }
 
     [Theory]
+    [InlineData(StatusFlags2.InTaxi)]
+    [InlineData(StatusFlags2.InMulticrew)]
+    [InlineData(StatusFlags2.TelepresenceMulticrew)]
+    [InlineData(StatusFlags2.PhysicalMulticrew)]
+    public void PassengerContextsDoNotInheritTheOwnedShipFilter(StatusFlags2 passenger)
+    {
+        var journal = Journal("python");
+        var status = new EliteStatus { Flags = StatusFlags.InMainShip, Flags2 = passenger };
+        Assert.Equal("unknown", OverlayVehicleCatalog.Resolve(journal, status));
+        Assert.Equal("fighters", OverlayVehicleCatalog.Resolve(journal, status with { Flags = StatusFlags.InFighter }));
+    }
+
+    [Theory]
     [InlineData("MediumTransport01", "Medium")]
     [InlineData("SmallCombat01_NX", "Small")]
     [InlineData("Explorer_NX", "Large")]
