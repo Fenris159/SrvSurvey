@@ -39,6 +39,7 @@ public sealed record MiningSession
     public Dictionary<string, double> RefineryEstimates { get; init; } = new();
     public List<string> Screenshots { get; init; } = [];
     public List<MiningProspect> Prospects { get; init; } = [];
+    public MiningProspect? ActiveProspect { get; set; }
     public List<MiningCollection> Collections { get; init; } = [];
     public int ProspectorLimpets { get; set; }
     public int CollectorLimpets { get; set; }
@@ -119,6 +120,8 @@ public sealed class MiningSessionTracker
             "ProspectedAsteroid" => ApplyProspect(session, time, data),
             "MiningRefined" => ApplyCollection(session, new MiningCollection(time, MiningJson.Text(data, "Type"), 1, false)),
             "MaterialCollected" => ApplyMaterial(session, time, data),
+            "SupercruiseEntry" or "FSDJump" => ReleaseProspect(session),
+            "StartJump" when MiningJson.Text(data, "JumpType").Equals("Hyperspace", StringComparison.OrdinalIgnoreCase) => ReleaseProspect(session),
             _ => false,
         };
     }
@@ -150,10 +153,19 @@ public sealed class MiningSessionTracker
         if (remaining < 100 && session.Prospects.Count > 0)
         {
             var original = session.Prospects[^1];
-            session.Prospects[^1] = prospect with { Time = original.Time };
+            prospect = prospect with { Time = original.Time };
+            session.Prospects[^1] = prospect;
         }
         else
             session.Prospects.Add(prospect);
+        session.ActiveProspect = remaining > 0 ? prospect : null;
+        return true;
+    }
+
+    private static bool ReleaseProspect(MiningSession session)
+    {
+        if (session.ActiveProspect is null) return false;
+        session.ActiveProspect = null;
         return true;
     }
 

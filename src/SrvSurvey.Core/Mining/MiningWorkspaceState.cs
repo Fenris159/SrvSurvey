@@ -107,7 +107,7 @@ public sealed class MiningWorkspaceState
 
     private string? FormatCurrentProspect()
     {
-        var prospect = Session.Current?.Prospects.LastOrDefault();
+        var prospect = Session.Current?.ActiveProspect;
         if (prospect is null) return null;
         var parts = prospect.Materials.Select(material => $"{material.Name} {material.Percentage:0.0}%").ToList();
         if (!string.IsNullOrEmpty(prospect.Core)) parts.Add($"Core: {prospect.Core}");
@@ -158,5 +158,5 @@ public sealed class MiningWorkspaceState
         Data.Rings.Add(ring);
         return ring;
     }
-    private static readonly HashSet<string> RelevantEvents = ["LaunchDrone", "ProspectedAsteroid", "MiningRefined", "MaterialCollected", "MissionAccepted", "MissionCompleted", "MissionAbandoned", "MissionFailed", "CargoDepot", "Scan", "SAASignalsFound"];
+    private static readonly HashSet<string> RelevantEvents = ["LaunchDrone", "ProspectedAsteroid", "MiningRefined", "MaterialCollected", "MissionAccepted", "MissionCompleted", "MissionAbandoned", "MissionFailed", "CargoDepot", "Scan", "SAASignalsFound", "StartJump", "SupercruiseEntry", "FSDJump"];
 }

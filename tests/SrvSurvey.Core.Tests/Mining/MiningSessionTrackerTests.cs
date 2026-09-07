@@ -47,7 +47,38 @@ public sealed class MiningSessionTrackerTests
         var prospect = Assert.Single(tracker.Current!.Prospects);
         Assert.Equal(start.AddMinutes(1), prospect.Time);
         Assert.Equal(42.5, prospect.Remaining);
+        Assert.Equal(prospect, tracker.Current.ActiveProspect);
         Assert.Equal(1, tracker.Current.Asteroids);
+    }
+
+    [Fact]
+    public void DepletionAndTravelReleaseTheCurrentProspectWithoutRemovingSessionHistory()
+    {
+        var tracker = new MiningSessionTracker();
+        var start = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        tracker.Start(start, "Sol", "Earth A Ring", "Python");
+
+        tracker.Apply(Parse("""{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:01:00Z","Materials":[{"Name":"Platinum","Proportion":35}],"Remaining":100}"""));
+        Assert.NotNull(tracker.Current!.ActiveProspect);
+        Assert.True(tracker.Apply(Parse("""{"event":"SupercruiseEntry","timestamp":"2026-09-06T12:02:00Z"}""")));
+        Assert.Null(tracker.Current.ActiveProspect);
+        Assert.Single(tracker.Current.Prospects);
+
+        tracker.Apply(Parse("""{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:03:00Z","Materials":[{"Name":"Painite","Proportion":28}],"Remaining":100}"""));
+        Assert.True(tracker.Apply(Parse("""{"event":"FSDJump","timestamp":"2026-09-06T12:04:00Z","StarSystem":"Achenar"}""")));
+        Assert.Null(tracker.Current.ActiveProspect);
+        Assert.Equal(2, tracker.Current.Prospects.Count);
+
+        tracker.Apply(Parse("""{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:05:00Z","Materials":[{"Name":"Osmium","Proportion":20}],"Remaining":100}"""));
+        Assert.True(tracker.Apply(Parse("""{"event":"StartJump","timestamp":"2026-09-06T12:06:00Z","JumpType":"Hyperspace"}""")));
+        Assert.Null(tracker.Current.ActiveProspect);
+        Assert.Equal(3, tracker.Current.Prospects.Count);
+
+        tracker.Apply(Parse("""{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:07:00Z","Materials":[{"Name":"Rhodplumsite","Proportion":18}],"Remaining":100}"""));
+        Assert.True(tracker.Apply(Parse("""{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:08:00Z","Materials":[{"Name":"Rhodplumsite","Proportion":18}],"Remaining":0}""")));
+        Assert.Null(tracker.Current.ActiveProspect);
+        Assert.Equal(4, tracker.Current.Prospects.Count);
+        Assert.Equal(0, tracker.Current.Prospects[^1].Remaining);
     }
 
     private static JournalEventEnvelope Parse(string json)

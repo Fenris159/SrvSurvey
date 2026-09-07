@@ -27,6 +27,8 @@ RC43, RC44, and RC44.5 features summarized below.
   mineral summary and remaining asteroid percentage update in place when Elite
   reports depletion, without counting the same asteroid twice or repeating the
   prospecting announcement.
+- Releases the persistent prospector report when the asteroid is depleted, the
+  ship enters supercruise, or an FSD jump begins.
 - Simplifies Firegroups overlay labels to the in-game module name. Slot IDs and
   class/mount suffixes are hidden, and duplicate assignments use a compact count.
 

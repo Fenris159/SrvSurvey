@@ -45,6 +45,10 @@ public sealed class MiningWorkspaceStateTests
 
         Assert.Equal("Platinum 35.0% · Remaining 20%", state.CurrentProspectText);
         Assert.Single(state.Notices);
+
+        state.Apply(Parse("""{"event":"SupercruiseEntry","timestamp":"2026-09-06T12:03:00Z"}"""), false, "Sol", "Ring", "Python");
+        Assert.Null(state.CurrentProspectText);
+        Assert.Single(state.Session.Current!.Prospects);
     }
     private static JournalEventEnvelope Parse(string json)
     {
