@@ -1,23 +1,23 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:search="using:SrvSurvey.Core.Search" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.MiningSearchView" x:DataType="vm:MiningSearchViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:search="using:SrvSurvey.Core.Search" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" xmlns:converters="using:Avalonia.Data.Converters" x:Class="SrvSurvey.Desktop.Views.MiningSearchView" x:DataType="vm:MiningSearchViewModel">
   <UserControl.Styles>
     <Style Selector="ListBoxItem">
       <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
     </Style>
   </UserControl.Styles>
-  <Grid RowDefinitions="Auto,Auto,*,Auto">
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto">
     <StackPanel Spacing="4" Margin="0,0,0,8">
       <TextBlock Text="Plan a mining trip" Classes="card-title"/>
-      <TextBlock Text="{Binding PlanningContext}" TextWrapping="Wrap" Classes="muted"/>
+      <TextBlock Text="{Binding PlanningContext}" IsVisible="{Binding HasPlan}" TextWrapping="Wrap" Classes="muted"/>
     </StackPanel>
     <Grid Grid.Row="1" ColumnDefinitions="*,120,Auto" ColumnSpacing="12" Margin="0,0,0,8">
       <StackPanel Spacing="4"><TextBlock Text="Reference system"/><TextBox Text="{Binding Reference}"/></StackPanel>
       <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Radius (ly)"/><NumericUpDown Minimum="1" Maximum="500" Value="{Binding Radius}"/></StackPanel>
       <Button Grid.Column="2" Content="Use current" Click="Current_Click" VerticalAlignment="Bottom"/>
     </Grid>
-    <TabControl x:Name="SearchDestinations" Grid.Row="2" SelectedIndex="{Binding Destination}">
+    <TabControl x:Name="SearchDestinations" Grid.Row="3" SelectedIndex="{Binding Destination}">
       <TabItem Header="Rings">
-        <Grid RowDefinitions="Auto,*,Auto" Margin="0,12,0,0">
-          <ScrollViewer MaxHeight="250" HorizontalScrollBarVisibility="Disabled">
+        <Grid RowDefinitions="Auto,Auto,Auto" Margin="0,12,0,0">
+          <Border>
             <StackPanel Spacing="8">
               <WrapPanel>
                 <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
@@ -44,8 +44,8 @@
                 </WrapPanel>
               </Expander>
             </StackPanel>
-          </ScrollViewer>
-          <ListBox x:Name="RingResults" Grid.Row="1" ItemsSource="{Binding Rings}" SelectedItem="{Binding SelectedRing}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,10,0,10">
+          </Border>
+          <ListBox x:Name="RingResults" Grid.Row="2" ItemsSource="{Binding Rings}" SelectedItem="{Binding SelectedRing}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,10,0,10">
             <ListBox.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="Bookmark ring" Click="Bookmark_Click"/>
@@ -70,19 +70,19 @@
                     <TextBlock Text="{Binding Minerals}" TextWrapping="Wrap"/>
                     <WrapPanel>
                       <TextBlock Text="{Binding RingType}" TextWrapping="Wrap"/>
-                      <TextBlock Text=" · " TextWrapping="Wrap"/>
+                      <TextBlock Text=" · " IsVisible="{Binding Reserve, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap"/>
                       <TextBlock Text="{Binding Reserve}" TextWrapping="Wrap"/>
                     </WrapPanel>
-                    <TextBlock Text="{Binding Power}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding Overlaps}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding ResourceExtractionSites}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding ArrivalLs , StringFormat='Arrival: {0:N0} ls'}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Power}" IsVisible="{Binding Power, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Overlaps}" IsVisible="{Binding Overlaps, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding ResourceExtractionSites}" IsVisible="{Binding ResourceExtractionSites, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding ArrivalLs , StringFormat='Arrival: {0:N0} ls'}" IsVisible="{Binding ArrivalLs, Converter={x:Static converters:ObjectConverters.IsNotNull}}" TextWrapping="Wrap"/>
                   </StackPanel>
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-          <WrapPanel Grid.Row="2">
+          <WrapPanel Grid.Row="1" Margin="0,8,0,0">
             <Button Content="Search rings" Click="SearchRings_Click" Margin="0,0,8,4"/>
             <Button Content="Bookmark ring" Click="Bookmark_Click" Margin="0,0,8,4"/>
             <Button Content="Save locally" Click="Cache_Click" Margin="0,0,8,4"/>
@@ -91,8 +91,8 @@
         </Grid>
       </TabItem>
       <TabItem Header="Markets">
-        <Grid RowDefinitions="Auto,*,Auto" Margin="0,12,0,0">
-          <ScrollViewer MaxHeight="250" HorizontalScrollBarVisibility="Disabled">
+        <Grid RowDefinitions="Auto,Auto,Auto" Margin="0,12,0,0">
+          <Border>
             <StackPanel Spacing="8">
               <WrapPanel>
                 <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
@@ -128,8 +128,8 @@
                 </WrapPanel>
               </Expander>
             </StackPanel>
-          </ScrollViewer>
-          <ListBox x:Name="MarketResults" Grid.Row="1" ItemsSource="{Binding Markets}" SelectedItem="{Binding SelectedMarket}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,10,0,10">
+          </Border>
+          <ListBox x:Name="MarketResults" Grid.Row="2" ItemsSource="{Binding Markets}" SelectedItem="{Binding SelectedMarket}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,10,0,10">
             <ListBox.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="Open system in Inara" Click="OpenSystem_Click" Tag="market"/>
@@ -166,14 +166,14 @@
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-          <WrapPanel Grid.Row="2">
+          <WrapPanel Grid.Row="1" Margin="0,8,0,0">
             <Button Content="Find prices" Click="SearchMarkets_Click" Margin="0,0,8,4"/>
           </WrapPanel>
         </Grid>
       </TabItem>
       <TabItem Header="Traders">
-        <Grid RowDefinitions="Auto,*,Auto" Margin="0,12,0,0">
-          <ScrollViewer MaxHeight="250" HorizontalScrollBarVisibility="Disabled">
+        <Grid RowDefinitions="Auto,Auto,Auto" Margin="0,12,0,0">
+          <Border>
             <StackPanel Spacing="8">
               <TextBlock Text="Exchange engineering materials at a trader. These are separate from the commodity market." TextWrapping="Wrap" Classes="muted"/>
               <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
@@ -181,8 +181,8 @@
                 <ComboBox ItemsSource="{Binding TraderTypes}" SelectedItem="{Binding TraderType}" HorizontalAlignment="Stretch"/>
               </StackPanel>
             </StackPanel>
-          </ScrollViewer>
-          <ListBox x:Name="TraderResults" Grid.Row="1" ItemsSource="{Binding Traders}" SelectedItem="{Binding SelectedTrader}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,10,0,10">
+          </Border>
+          <ListBox x:Name="TraderResults" Grid.Row="2" ItemsSource="{Binding Traders}" SelectedItem="{Binding SelectedTrader}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,10,0,10">
             <ListBox.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="Open system in Inara" Click="OpenSystem_Click" Tag="trader"/>
@@ -210,14 +210,14 @@
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-          <WrapPanel Grid.Row="2">
+          <WrapPanel Grid.Row="1" Margin="0,8,0,0">
             <Button Content="Find material traders" Click="SearchTraders_Click" Margin="0,0,8,4"/>
           </WrapPanel>
         </Grid>
       </TabItem>
       <TabItem Header="Powerplay">
-        <Grid RowDefinitions="Auto,*,Auto" Margin="0,12,0,0">
-          <ScrollViewer MaxHeight="250" HorizontalScrollBarVisibility="Disabled">
+        <Grid RowDefinitions="Auto,Auto,Auto" Margin="0,12,0,0">
+          <Border>
             <StackPanel Spacing="8">
               <WrapPanel>
                 <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
@@ -267,8 +267,8 @@
                 </WrapPanel>
               </Expander>
             </StackPanel>
-          </ScrollViewer>
-          <ListBox x:Name="SystemResults" Grid.Row="1" ItemsSource="{Binding Systems}" SelectedItem="{Binding SelectedSystem}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,10,0,10">
+          </Border>
+          <ListBox x:Name="SystemResults" Grid.Row="2" ItemsSource="{Binding Systems}" SelectedItem="{Binding SelectedSystem}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,10,0,10">
             <ListBox.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="Use for hotspot search" Click="UseSystem_Click"/>
@@ -287,7 +287,7 @@
                   </StackPanel>
                   <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,8,0,0">
                     <WrapPanel>
-                      <TextBlock Text="{Binding Power}" TextWrapping="Wrap"/>
+                      <TextBlock Text="{Binding Power}" IsVisible="{Binding Power, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap"/>
                       <TextBlock Text=" · " TextWrapping="Wrap"/>
                       <TextBlock Text="{Binding PowerState}" TextWrapping="Wrap"/>
                     </WrapPanel>
@@ -306,14 +306,14 @@
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-          <WrapPanel Grid.Row="2">
+          <WrapPanel Grid.Row="1" Margin="0,8,0,0">
             <Button Content="Find systems" Click="SearchSystems_Click" Margin="0,0,8,4"/>
             <Button Content="Find rings in selected system →" Click="UseSystem_Click" Margin="0,0,8,4"/>
           </WrapPanel>
         </Grid>
       </TabItem>
     </TabControl>
-    <Grid Grid.Row="3" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
+    <Grid Grid.Row="2" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
       <WrapPanel Grid.ColumnSpan="2" Margin="0,0,0,6">
         <Button Content="Clear Powerplay plan" IsVisible="{Binding HasPlan}" Click="ClearPlan_Click" Margin="0,0,8,0"/>
         <CheckBox Content="Only this system (rings / markets)" IsChecked="{Binding SystemOnly}" Margin="0,0,12,0"/>

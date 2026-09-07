@@ -342,7 +342,9 @@
             <Button Content="Search destinations" Click="SearchPane_Click" Margin="0,0,8,8"/>
             <Button Content="Local discoveries / import journals" Click="LocalPane_Click" Margin="0,0,8,8"/>
           </WrapPanel>
-          <views:MiningSearchView x:Name="SearchPane" Grid.Row="1" DataContext="{Binding Search}"/>
+          <ScrollViewer x:Name="SearchPage" Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+            <views:MiningSearchView x:Name="SearchPane" DataContext="{Binding Search}" Margin="0,0,12,16"/>
+          </ScrollViewer>
           <Border x:Name="LocalPane" Grid.Row="1" IsVisible="False">
             <Grid RowDefinitions="Auto,*,Auto">
               <StackPanel Spacing="8">

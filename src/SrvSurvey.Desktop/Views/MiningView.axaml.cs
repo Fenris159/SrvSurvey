@@ -10,8 +10,8 @@ public sealed partial class MiningView : UserControl
 {
     public MiningView() => InitializeComponent();
 
-    private void SearchPane_Click(object? sender, RoutedEventArgs e) { SearchPane.IsVisible = true; LocalPane.IsVisible = false; }
-    private void LocalPane_Click(object? sender, RoutedEventArgs e) { SearchPane.IsVisible = false; LocalPane.IsVisible = true; }
+    private void SearchPane_Click(object? sender, RoutedEventArgs e) { SearchPage.IsVisible = true; LocalPane.IsVisible = false; }
+    private void LocalPane_Click(object? sender, RoutedEventArgs e) { SearchPage.IsVisible = false; LocalPane.IsVisible = true; }
 
     private MiningWorkspaceViewModel? Model => (DataContext as MainWindowViewModel)?.MiningWorkspace;
     private void DeleteReport_Click(object? sender, RoutedEventArgs e) => Model?.DeleteSelectedReport();

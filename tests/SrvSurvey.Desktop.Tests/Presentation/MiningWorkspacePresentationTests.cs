@@ -16,12 +16,12 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 public sealed class MiningWorkspacePresentationTests
 {
     [AvaloniaFact]
-    public async Task SearchResultsHaveOneBoundedViewportAndFitNarrowWorkspace()
+    public async Task SearchContentExpandsAndWheelScrollsTheWorkspace()
     {
         using var http = new HttpClient(new SearchRowsHandler());
         using var model = MainWindowViewModelTestBuilder.Create(null, builder => builder.WithExternalNetworkClient(http));
         var view = new Views.MiningView { DataContext = model };
-        var window = new Window { Content = view, Width = 660, Height = 920 };
+        var window = new Window { Content = view, Width = 660, Height = 640 };
         try
         {
             model.MiningWorkspace.SelectedTab = 3;
@@ -37,15 +37,33 @@ public sealed class MiningWorkspacePresentationTests
                 model.MiningWorkspace.Search.Destination = destination;
                 using var frame = window.CaptureRenderedFrame();
                 var search = view.FindControl<Views.MiningSearchView>("SearchPane")!;
-                Assert.DoesNotContain(search.GetVisualAncestors(), a => a is ScrollViewer);
+                var page = Assert.Single(search.GetVisualAncestors().OfType<ScrollViewer>());
                 var results = Assert.Single(search.GetVisualDescendants().OfType<ListBox>(), l => l.IsEffectivelyVisible);
                 Assert.NotEmpty(results.Items);
-                Assert.InRange(results.Bounds.Height, 80, window.Height);
-                Assert.DoesNotContain(results.GetVisualAncestors(), a => a is ScrollViewer);
-                var scroll = Assert.Single(results.GetVisualDescendants().OfType<ScrollViewer>());
-                Assert.True(scroll.Extent.Width <= scroll.Viewport.Width + 1);
+                Assert.Same(page, Assert.Single(results.GetVisualAncestors().OfType<ScrollViewer>()));
+                var inner = Assert.Single(results.GetVisualDescendants().OfType<ScrollViewer>());
+                Assert.True(inner.Extent.Height <= inner.Viewport.Height + 1);
+                Assert.True(inner.Extent.Width <= inner.Viewport.Width + 1);
+                Assert.True(results.Bounds.Height > window.Height);
+                var collapsedHeight = search.Bounds.Height;
+                var filters = search.GetVisualDescendants().OfType<Expander>().FirstOrDefault(e => e.IsEffectivelyVisible);
+                if (filters is not null)
+                {
+                    filters.IsExpanded = true;
+                    using var expanded = window.CaptureRenderedFrame();
+                    Assert.True(search.Bounds.Height > collapsedHeight);
+                    Assert.True(inner.Extent.Height <= inner.Viewport.Height + 1);
+                }
+                var top = results.TranslatePoint(default, page)!.Value.Y;
+                page.Offset = new Vector(0, page.Offset.Y + top);
+                using var positioned = window.CaptureRenderedFrame();
+                var wheelPoint = results.TranslatePoint(new Point(30, 30), window)!.Value;
+                var oldOffset = page.Offset.Y;
+                window.MouseWheel(wheelPoint, new Vector(0, -1));
+                using var wheeled = window.CaptureRenderedFrame();
+                Assert.True(page.Offset.Y > oldOffset, $"{destination}: wheel over results must scroll the workspace");
                 var output = Environment.GetEnvironmentVariable("SRVSURVEY_MINING_RENDER_OUTPUT");
-                if (output is not null) { Directory.CreateDirectory(output); using var stream = File.Create(Path.Combine(output, $"mining-search-{destination}.png")); frame!.Save(stream, PngBitmapEncoderOptions.Default); }
+                if (output is not null) { Directory.CreateDirectory(output); using var stream = File.Create(Path.Combine(output, $"mining-search-{destination}.png")); wheeled!.Save(stream, PngBitmapEncoderOptions.Default); }
             }
         }
         finally { window.Close(); }
