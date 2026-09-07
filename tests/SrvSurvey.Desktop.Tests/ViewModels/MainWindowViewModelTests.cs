@@ -32,7 +32,7 @@ public sealed class MainWindowViewModelTests
         Assert.True(viewModel.IsMiningSelected);
         Assert.True(viewModel.IsActivitiesNavigationExpanded);
         var panels = viewModel.OverlayPanelVisibility.ForCategory(OverlaySettingsCategory.Mining);
-        Assert.Equal(2, panels.Count);
+        Assert.Equal(4, panels.Count);
         Assert.Contains(panels, item => item.PlotterName == "PlotMiningWarning");
         var panel = Assert.Single(panels, item => item.PlotterName == "PlotSurfaceMining");
         Assert.Equal("PlotSurfaceMining", panel.PlotterName);
@@ -55,7 +55,7 @@ public sealed class MainWindowViewModelTests
         var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
-        Assert.Equal(14, viewModel.NavigationItems.Count);
+        Assert.Equal(15, viewModel.NavigationItems.Count);
         Assert.Equal(
             [
                 "Overview",
@@ -64,6 +64,7 @@ public sealed class MainWindowViewModelTests
                 "Travel",
                 "Boxel",
                 "Search",
+                "Bookmarks",
                 "Mining",
                 "Guardian",
                 "Quests",
@@ -102,7 +103,7 @@ public sealed class MainWindowViewModelTests
             ["Exploration", "Exobiology", "Boxel"],
             viewModel.SurveyNavigationItems.Select(item => item.Label));
         Assert.Equal(
-            ["Travel", "Search"],
+            ["Travel", "Search", "Bookmarks"],
             viewModel.NavigationWorkspaceItems.Select(item => item.Label));
         Assert.Equal(
             ["Mining", "Guardian", "Quests", "Colonization"],

@@ -38,6 +38,7 @@ internal sealed partial class DesktopRuntime
         fleetCarrierRouteOverlayCoordinator;
     private FleetCarrierJumpCountdownCoordinator?
         fleetCarrierJumpCountdownCoordinator;
+    private MiningActivityOverlayCoordinator? miningActivityOverlayCoordinator;
     private SurfaceMiningOverlayCoordinator? surfaceMiningOverlayCoordinator;
     private MiningDetectionCoordinator? miningDetectionCoordinator;
     private GroundTargetOverlayCoordinator? groundTargetOverlayCoordinator;
@@ -356,6 +357,7 @@ internal sealed partial class DesktopRuntime
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
         surfaceMiningOverlayCoordinator = new SurfaceMiningOverlayCoordinator(viewModel.Mining, overlayPresentation);
+        miningActivityOverlayCoordinator = new MiningActivityOverlayCoordinator(viewModel.MiningWorkspace, overlayPresentation);
         miningDetectionCoordinator = new MiningDetectionCoordinator(viewModel.Mining, CreateRawGameWindowTracker());
         groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
             viewModel.GroundTarget,
@@ -880,6 +882,7 @@ internal sealed partial class DesktopRuntime
         DisposeResource(ref jumpInfoOverlayCoordinator);
         DisposeResource(ref routeBioOverlayCoordinator);
         DisposeResource(ref fleetCarrierRouteOverlayCoordinator);
+        DisposeResource(ref miningActivityOverlayCoordinator);
         DisposeResource(ref surfaceMiningOverlayCoordinator);
         DisposeResource(ref miningDetectionCoordinator);
         DisposeResource(ref groundTargetOverlayCoordinator);
@@ -1374,6 +1377,7 @@ internal sealed partial class DesktopRuntime
         routeBioOverlayCoordinator?.SetSuppressed(suppress);
         fleetCarrierRouteOverlayCoordinator?.SetSuppressed(suppress);
         systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
+        miningActivityOverlayCoordinator?.SetSuppressed(suppress);
         surfaceMiningOverlayCoordinator?.SetSuppressed(suppress);
         groundTargetOverlayCoordinator?.SetSuppressed(suppress);
         combatOverlayCoordinator?.SetSuppressed(suppress);

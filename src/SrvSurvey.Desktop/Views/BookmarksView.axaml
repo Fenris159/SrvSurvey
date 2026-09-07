@@ -1,0 +1,92 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:nav="using:SrvSurvey.Core.Navigation" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.BookmarksView" x:DataType="vm:BookmarksViewModel">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="24" Spacing="16">
+      <TextBlock Classes="eyebrow" Text="NAVIGATION"/>
+      <TextBlock Classes="page-title" Text="Bookmarks"/>
+      <TextBlock Classes="muted" Text="Keep mining rings, home systems and other destinations together. Create a category by typing its name when saving." TextWrapping="Wrap"/>
+      <Grid ColumnDefinitions="180,*" ColumnSpacing="12">
+        <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding CategoryFilter}" HorizontalAlignment="Stretch"/>
+        <TextBox Grid.Column="1" Text="{Binding Query}" PlaceholderText="Filter systems, rings, minerals or notes"/>
+      </Grid>
+      <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" MinHeight="180" MaxHeight="360">
+        <ListBox.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="New bookmark" Command="{Binding NewCommand}"/>
+            <MenuItem Header="Delete selected bookmark" Command="{Binding DeleteCommand}"/>
+            <MenuItem Header="Copy selected system" behaviors:ClipboardCopyBehavior.Text="{Binding Selected.System}"/>
+          </ContextMenu>
+        </ListBox.ContextMenu>
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="nav:GalacticBookmark">
+            <Grid ColumnDefinitions="2*,2*,*,2*" ColumnSpacing="14" Margin="4,8">
+              <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
+              <TextBlock Grid.Column="1" Text="{Binding Body}" TextWrapping="Wrap"/>
+              <TextBlock Grid.Column="2" Text="{Binding Category}"/>
+              <TextBlock Grid.Column="3" Classes="muted" Text="{Binding Minerals}" TextWrapping="Wrap"/>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="card-title" Text="Bookmark details"/>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="System"/>
+              <TextBox Text="{Binding System}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="4">
+              <TextBlock Text="Body / ring (optional)"/>
+              <TextBox Text="{Binding Body}"/>
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Category"/>
+              <TextBox Text="{Binding Category}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="4">
+              <TextBlock Text="Rating (0–5)"/>
+              <NumericUpDown Minimum="0" Maximum="5" Value="{Binding Rating}" FormatString="0"/>
+            </StackPanel>
+          </Grid>
+          <TextBlock Text="Minerals"/>
+          <TextBox Text="{Binding Minerals}"/>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Hotspot overlaps"/>
+              <TextBox Text="{Binding Overlaps}" PlaceholderText="e.g. Platinum ×2"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="4">
+              <TextBlock Text="Resource Extraction Sites"/>
+              <TextBox Text="{Binding ResourceExtractionSites}" PlaceholderText="e.g. Hazardous"/>
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Hotspot name"/>
+              <TextBox Text="{Binding Hotspot}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="4">
+              <TextBlock Text="Average yield"/>
+              <TextBox Text="{Binding AverageYield}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="4">
+              <TextBlock Text="Last mined (YYYY-MM-DD)"/>
+              <TextBox Text="{Binding LastMined}"/>
+            </StackPanel>
+          </Grid>
+          <ItemsControl ItemsSource="{Binding Selected.Screenshots}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="x:String"><Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8"><TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis"/><Button Grid.Column="1" Content="Open screenshot" Tag="{Binding}" Click="OpenScreenshot_Click"/><Button Grid.Column="2" Content="Remove" Tag="{Binding}" Click="RemoveScreenshot_Click"/></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl><TextBlock Text="Notes"/>
+          <TextBox Text="{Binding Notes}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70"/>
+          <WrapPanel>
+            <Button Content="New" Command="{Binding NewCommand}" Margin="0,0,8,0"/>
+            <Button Content="Save bookmark" Command="{Binding SaveCommand}" Margin="0,0,8,0"/>
+            <Button Content="Import…" Click="Import_Click" Margin="0,0,8,0"/>
+            <Button Content="Export…" Click="Export_Click"/>
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+      <TextBlock Classes="muted" Text="{Binding Status}" TextWrapping="Wrap"/>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining"
+ x:Class="SrvSurvey.Desktop.MiningActivityOverlayPresentation" x:DataType="vm:MiningActivityOverlayViewModel" Width="360">
+ <Border Classes="overlay-panel" Padding="10" Background="{DynamicResource RavenWindowBrush}" CornerRadius="6">
+  <StackPanel Spacing="8">
+   <TextBlock Classes="overlay-header" Text="{Binding Title}" />
+   <TextBlock Text="{Binding Firegroup}" TextWrapping="Wrap" IsVisible="{Binding IsFiregroups}" />
+   <StackPanel IsVisible="{Binding IsNotifications}" Spacing="8">
+    <ItemsControl ItemsSource="{Binding Prospecting}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="mining:MiningNotice"><TextBlock Text="{Binding Text}" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+    <StackPanel IsVisible="{Binding HasRefined}" Spacing="3"><TextBlock Classes="overlay-header" Text="REFINED" /><ItemsControl ItemsSource="{Binding Refined}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="mining:MiningNotice"><TextBlock Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Text}" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel>
+    <StackPanel IsVisible="{Binding HasCollected}" Spacing="3"><TextBlock Classes="overlay-header" Text="COLLECTED" /><ItemsControl ItemsSource="{Binding Collected}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="mining:MiningNotice"><TextBlock Text="{Binding Text}" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel>
+    <TextBlock Classes="muted" Text="{Binding Cargo}" TextWrapping="Wrap" />
+   </StackPanel>
+  </StackPanel>
+ </Border>
+</UserControl>

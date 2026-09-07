@@ -209,6 +209,7 @@
       <views:TravelView IsVisible="{Binding IsTravelSelected}" />
       <views:BoxelView IsVisible="{Binding IsBoxelSelected}" />
       <views:SearchView IsVisible="{Binding IsSearchSelected}" />
+      <Border IsVisible="{Binding IsBookmarksSelected}"><views:BookmarksView DataContext="{Binding Bookmarks}" /></Border>
       <views:GuardianView IsVisible="{Binding IsGuardianSelected}" />
       <views:QuestView IsVisible="{Binding IsQuestsSelected}" />
       <views:ColonizationView IsVisible="{Binding IsColonizationSelected}" />

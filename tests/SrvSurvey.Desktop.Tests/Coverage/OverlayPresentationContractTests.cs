@@ -76,6 +76,8 @@ public sealed class OverlayPresentationContractTests
             "BiologicalSignals", "GeologicalSignals", "Volcanism", "AtmosphereComposition", "Materials", "Rings",
             "BodyInformationOverlayPresentation",
         ]),
+        Contract("PlotMiningNotifications", ["src/SrvSurvey.Desktop/MiningActivityOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"], ["Refined", "RavenWindowBrush"]),
+        Contract("PlotMiningFiregroups", ["src/SrvSurvey.Desktop/MiningActivityOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"], ["Firegroup", "RavenWindowBrush"]),
         Contract("PlotMiningWarning", ["src/SrvSurvey.Desktop/MiningWarningOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningWarningOverlayPresentation.axaml"], [
             "WARNING", "TOO FAR FROM RIGS", "Moving beyond 4.5Km will Destroy Rigs", "#FF4500", "#4CFF4500",
         ]),
@@ -189,7 +191,7 @@ public sealed class OverlayPresentationContractTests
     public void EveryOverlayHasItsInformationGroupsInProductionMarkup()
     {
         var root = FindRepositoryRoot();
-        Assert.Equal(25, Contracts.Length);
+        Assert.Equal(27, Contracts.Length);
         foreach (var contract in Contracts)
         {
             var production = string.Join(

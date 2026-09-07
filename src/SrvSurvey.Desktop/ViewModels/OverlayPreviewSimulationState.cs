@@ -88,6 +88,8 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Water purifiers", "420 need | 120 FC | 16 ship", 48),
                 Row("CMM composites", "300 need | 80 FC | 12 ship", 61),
                 Row("Emergency power cells", "200 need | 30 FC | 12 ship", 35)),
+            "PlotMiningNotifications" => Content("MINING", "Platinum 34.8%", "Refined Platinum ×1", Row("Collected", "Iron ×3")),
+            "PlotMiningFiregroups" => Content("MINING FIREGROUPS", "Group A", "Primary: Mining laser", Row("Secondary", "Collector limpet")),
             "PlotMiningWarning" => Content(
                 "WARNING", "TOO FAR FROM RIGS", "Moving beyond 4.5Km will Destroy Rigs",
                 Row("Warning", "TOO FAR FROM RIGS", glyph: "!", glyphTone: OverlayPreviewGlyphTone.Danger)),

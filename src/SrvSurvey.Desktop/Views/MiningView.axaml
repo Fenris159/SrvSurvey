@@ -1,9 +1,529 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="SrvSurvey.Desktop.Views.MiningView">
-  <StackPanel Margin="32" Spacing="12">
-    <TextBlock Classes="eyebrow" Text="MINING" />
-    <TextBlock Classes="page-title" Text="Surface mining" />
-    <TextBlock Classes="muted" Text="Workspace in progress." />
-  </StackPanel>
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:journal="using:SrvSurvey.Core.Journal" xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.MiningView" x:Name="MiningRoot" x:DataType="vm:MainWindowViewModel">
+  <Grid DataContext="{Binding MiningWorkspace}" x:DataType="vm:MiningWorkspaceViewModel" RowDefinitions="Auto,*,Auto" Margin="24">
+    <StackPanel Spacing="6" Margin="0,0,0,16">
+      <TextBlock Classes="eyebrow" Text="ACTIVITIES"/>
+      <TextBlock Classes="page-title" Text="Mining"/>
+      <TextBlock Classes="muted" Text="{Binding Context}"/>
+    </StackPanel>
+    <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTab}">
+      <TabControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></TabControl.ItemsPanel>
+      <TabItem Header="Session">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="14" Margin="4,20,4,16">
+            <Border Classes="card raised">
+              <StackPanel Spacing="12">
+                <TextBlock Text="{Binding SessionSummary}" TextWrapping="Wrap" Classes="card-title"/>
+                <WrapPanel>
+                  <Button Content="Start session" Command="{Binding StartCommand}" Margin="0,0,8,8"/>
+                  <Button Content="Pause / resume" Command="{Binding PauseCommand}" Margin="0,0,8,8"/>
+                  <Button Content="End session" Command="{Binding StopCommand}" Margin="0,0,8,8"/>
+                </WrapPanel>
+              </StackPanel>
+            </Border>
+            <TextBlock Text="{Binding CargoSummary}" TextWrapping="Wrap" Classes="card-title"/>
+            <ListBox ItemsSource="{Binding Cargo}" MinHeight="60" MaxHeight="360">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="journal:CargoItem">
+                  <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="4,8">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                      <TextBlock Text="Cargo" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4">
+                      <TextBlock Text="Tons" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Count}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <Expander Header="Refinery contents (manual)">
+              <StackPanel Spacing="8">
+                <TextBlock Text="The journal does not report refinery bins. Pending tons are manual estimates, separate from refined cargo and efficiency. Set zero to remove an estimate." TextWrapping="Wrap"/>
+                <TextBlock Text="Mineral" TextWrapping="Wrap"/>
+                <TextBox Text="{Binding RefineryMineral}"/>
+                <NumericUpDown Minimum="0" Maximum="16" Increment="0.1" Value="{Binding RefineryTons}"/>
+                <Button Content="Save refinery estimate" Click="Refinery_Click" Margin="0,0,8,8"/>
+                <TextBlock Text="{Binding RefinerySummary}" TextWrapping="Wrap"/>
+              </StackPanel>
+            </Expander>
+            <TextBlock Text="Prospecting yields" TextWrapping="Wrap" Classes="card-title"/>
+            <ListBox ItemsSource="{Binding Materials}" MinHeight="60" MaxHeight="360">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="mining:MiningMaterialSummary">
+                  <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="12" Margin="4,8">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                      <TextBlock Text="Mineral" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4">
+                      <TextBlock Text="Finds" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Finds}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                      <TextBlock Text="Quality hits" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding QualityHits}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Spacing="4">
+                      <TextBlock Text="Average" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Average, StringFormat={}{0:0.0}%}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="4" Spacing="4">
+                      <TextBlock Text="Best" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Best, StringFormat={}{0:0.0}%}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="5" Spacing="4">
+                      <TextBlock Text="Tons" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Tons}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <Expander Header="Compare mineral yields">
+              <StackPanel Spacing="8">
+                <ItemsControl ItemsSource="{Binding Materials}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="mining:MiningMaterialSummary">
+                      <Grid ColumnDefinitions="2*,3*,Auto" ColumnSpacing="12" Margin="0,8">
+                        <TextBlock Text="{Binding Name}"/>
+                        <ProgressBar Grid.Column="1" Maximum="100" Value="{Binding Average}"/>
+                        <TextBlock Grid.Column="2" Text="{Binding Average, StringFormat={}{0:0.0}%}"/>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Expander>
+            <Expander Header="Manual count corrections">
+              <StackPanel Spacing="8">
+                <TextBlock Text="Correct totals without changing the original journal observations. Quality adjustments apply to the mineral entered below." TextWrapping="Wrap"/>
+                <WrapPanel>
+                  <Button Content="+1 asteroid" Command="{Binding AddAsteroidCommand}" Margin="0,0,8,8"/>
+                  <Button Content="-1 asteroid" Command="{Binding RemoveAsteroidCommand}" Margin="0,0,8,8"/>
+                </WrapPanel>
+                <TextBlock Text="Mineral" TextWrapping="Wrap"/>
+                <TextBox Text="{Binding TargetMaterial}"/>
+                <WrapPanel>
+                  <Button Content="-1 quality hit" Click="AdjustQuality_Click" Tag="minus" Margin="0,0,8,8"/>
+                  <Button Content="+1 quality hit" Click="AdjustQuality_Click" Margin="0,0,8,8"/>
+                </WrapPanel>
+              </StackPanel>
+            </Expander>
+            <Expander Header="Prospecting timeline">
+              <StackPanel Spacing="8">
+                <ListBox ItemsSource="{Binding Prospects}" MinHeight="60" MaxHeight="360">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="mining:MiningProspect">
+                      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="4,8">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                          <TextBlock Text="Time" TextWrapping="Wrap" Classes="muted"/>
+                          <TextBlock Text="{Binding Time}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                          <TextBlock Text="Minerals" TextWrapping="Wrap" Classes="muted"/>
+                          <TextBlock Text="{Binding MineralSummary}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="4">
+                          <TextBlock Text="Core" TextWrapping="Wrap" Classes="muted"/>
+                          <TextBlock Text="{Binding Core}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </StackPanel>
+            </Expander>
+            <Expander Header="Engineering materials collected">
+              <StackPanel Spacing="8">
+                <ListBox ItemsSource="{Binding EngineeringMaterials}" MinHeight="60" MaxHeight="360">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="mining:MiningCollection">
+                      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="4,8">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                          <TextBlock Text="Material" TextWrapping="Wrap" Classes="muted"/>
+                          <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                          <TextBlock Text="Grade" TextWrapping="Wrap" Classes="muted"/>
+                          <TextBlock Text="{Binding Grade}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="4">
+                          <TextBlock Text="Count" TextWrapping="Wrap" Classes="muted"/>
+                          <TextBlock Text="{Binding Count}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </StackPanel>
+            </Expander>
+            <Expander Header="Recent notifications">
+              <StackPanel Spacing="8">
+                <ListBox ItemsSource="{Binding Notices}" MinHeight="60" MaxHeight="360">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="mining:MiningNotice">
+                      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="4,8">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                          <TextBlock Text="Time" TextWrapping="Wrap" Classes="muted"/>
+                          <TextBlock Text="{Binding Time}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                          <TextBlock Text="Kind" TextWrapping="Wrap" Classes="muted"/>
+                          <TextBlock Text="{Binding Kind}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="4">
+                          <TextBlock Text="Notification" TextWrapping="Wrap" Classes="muted"/>
+                          <TextBlock Text="{Binding Text}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </StackPanel>
+            </Expander>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Reports">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="14" Margin="4,20,4,16">
+            <TextBlock Text="{Binding HistorySummary}" TextWrapping="Wrap" Classes="card-title"/>
+            <TextBlock Text="Select a completed session for notes, screenshots and exports. HTML reports work offline and can be printed or saved as PDF. Imported CSV summaries retain their original fields." TextWrapping="Wrap" Classes="muted"/>
+            <WrapPanel>
+              <Button Content="Import report CSV…" Click="ImportReports_Click" Margin="0,0,8,8"/>
+              <Button Content="Delete selected" Click="DeleteReport_Click" Margin="0,0,8,8"/>
+              <Button Content="Undo delete" Click="UndoReport_Click" Margin="0,0,8,8"/>
+            </WrapPanel>
+            <ListBox ItemsSource="{Binding History}" SelectedItem="{Binding SelectedSession}" MinHeight="60" MaxHeight="360">
+              <ListBox.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="Export HTML report…" Click="ExportReport_Click" Tag="html"/>
+                  <MenuItem Header="Export CSV…" Click="ExportReport_Click" Tag="csv"/>
+                  <MenuItem Header="Attach screenshots…" Click="AttachScreenshots_Click"/>
+                </ContextMenu>
+              </ListBox.ContextMenu>
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="mining:MiningSession">
+                  <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="12" Margin="4,8">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                      <TextBlock Text="Started" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Started}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4">
+                      <TextBlock Text="System" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                      <TextBlock Text="Ring" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Ring}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Spacing="4">
+                      <TextBlock Text="Tons" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding RefinedTons}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="4" Spacing="4">
+                      <TextBlock Text="t/h" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding TonsPerHour, StringFormat={}{0:0.0}}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <Expander Header="Compare session efficiency">
+              <StackPanel Spacing="8">
+                <ItemsControl ItemsSource="{Binding History}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="mining:MiningSession">
+                      <Grid ColumnDefinitions="2*,3*,Auto" ColumnSpacing="12" Margin="0,8">
+                        <TextBlock Text="{Binding System}"/>
+                        <ProgressBar Grid.Column="1" Maximum="{Binding $parent[UserControl].DataContext.MiningWorkspace.MaximumHistoryRate}" Value="{Binding TonsPerHour}"/>
+                        <TextBlock Grid.Column="2" Text="{Binding TonsPerHour, StringFormat={}{0:0.0} t/h}"/>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Expander>
+            <ItemsControl ItemsSource="{Binding ReportScreenshots}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="x:String"><Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8"><TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis"/><Button Grid.Column="1" Content="Open screenshot" Tag="{Binding}" Click="OpenScreenshot_Click"/><Button Grid.Column="2" Content="Remove" Tag="{Binding}" Click="RemoveScreenshot_Click"/></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl><TextBlock Text="Session notes" TextWrapping="Wrap"/>
+            <TextBox Text="{Binding Notes}" AcceptsReturn="True" MinHeight="70" TextWrapping="Wrap"/>
+            <Button Content="Save notes" Command="{Binding SaveNotesCommand}" Margin="0,0,8,8"/>
+            <WrapPanel>
+              <Button Content="Export selected HTML…" Click="ExportReport_Click" Tag="html" Margin="0,0,8,8"/>
+              <Button Content="Export selected CSV…" Click="ExportReport_Click" Tag="csv" Margin="0,0,8,8"/>
+              <Button Content="Export all CSV…" Click="ExportReport_Click" Tag="allcsv" Margin="0,0,8,8"/><Button Content="Export text…" Click="ExportReport_Click" Tag="txt" Margin="0,0,8,8"/><Button Content="Compare / export all…" Click="ExportReport_Click" Tag="all" Margin="0,0,8,8"/>
+              <Button Content="Attach screenshots…" Click="AttachScreenshots_Click" Margin="0,0,8,8"/>
+            </WrapPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Missions">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="14" Margin="4,20,4,16">
+            <TextBlock Text="Mining missions" TextWrapping="Wrap" Classes="card-title"/>
+            <TextBlock Text="Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events." TextWrapping="Wrap" Classes="muted"/>
+            <ListBox ItemsSource="{Binding Missions}" SelectedItem="{Binding SelectedMission}" MinHeight="60" MaxHeight="360">
+              <ListBox.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="Find hotspots for this commodity" Command="{Binding MissionHotspotsCommand}"/>
+                </ContextMenu>
+              </ListBox.ContextMenu>
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="mining:MiningMission">
+                  <Grid ColumnDefinitions="*,*,*,*,*,*,*" ColumnSpacing="12" Margin="4,8">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                      <TextBlock Text="Commodity" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Commodity}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4">
+                      <TextBlock Text="Required" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Required}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                      <TextBlock Text="Delivered" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Delivered}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Spacing="4">
+                      <TextBlock Text="On board" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding OnBoard}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="4" Spacing="4">
+                      <TextBlock Text="Needed" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Remaining}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="5" Spacing="4">
+                      <TextBlock Text="Destination" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Destination}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="6" Spacing="4">
+                      <TextBlock Text="Status" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Status}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <Button Content="Find hotspots" Command="{Binding MissionHotspotsCommand}" Margin="0,0,8,8"/>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Hotspots">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="14" Margin="4,20,4,16">
+            <views:MiningSearchView DataContext="{Binding Search}"/>
+            <Separator/>
+            <TextBlock Text="Local ring discoveries" TextWrapping="Wrap" Classes="card-title"/>
+            <Button Content="Import earlier journals…" Click="ImportJournals_Click" Margin="0,0,8,8"/>
+            <TextBlock Text="Scans add local rings and hotspots. Shared Mining bookmarks add your overlap, RES and rating notes." TextWrapping="Wrap" Classes="muted"/>
+            <TextBlock Text="Filter local discoveries" TextWrapping="Wrap"/>
+            <TextBox Text="{Binding Filter}"/>
+            <ListBox ItemsSource="{Binding Rings}" SelectedItem="{Binding SelectedRing}" MinHeight="60" MaxHeight="360">
+              <ListBox.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="Bookmark ring" Command="{Binding BookmarkRingCommand}"/>
+                </ContextMenu>
+              </ListBox.ContextMenu>
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="mining:MiningRing">
+                  <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="12" Margin="4,8">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                      <TextBlock Text="System" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4">
+                      <TextBlock Text="Ring" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Body}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                      <TextBlock Text="Type" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding RingType}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Spacing="4">
+                      <TextBlock Text="Reserve" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Reserve}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="4" Spacing="4">
+                      <TextBlock Text="Hotspots" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding Minerals}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="5" Spacing="4">
+                      <TextBlock Text="Arrival ls" TextWrapping="Wrap" Classes="muted"/>
+                      <TextBlock Text="{Binding ArrivalLs}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <Button Content="Bookmark selected ring" Command="{Binding BookmarkRingCommand}" Margin="0,0,8,8"/>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Fleet Carrier">
+        <views:FrontierCarrierTabView DataContext="{Binding #MiningRoot.DataContext.FrontierProfile}"/>
+      </TabItem>
+      <TabItem Header="Bookmarks">
+        <views:BookmarksView DataContext="{Binding #MiningRoot.DataContext.Bookmarks}"/>
+      </TabItem>
+      <TabItem Header="Distance">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="14" Margin="4,20,4,16">
+            <TextBlock Text="Distance between systems" TextWrapping="Wrap" Classes="card-title"/>
+            <TextBlock Text="Exact system names use the shared system resolver. A blank origin uses your current system." TextWrapping="Wrap" Classes="muted"/>
+            <TextBlock Text="Origin" TextWrapping="Wrap"/>
+            <TextBox Text="{Binding Origin}"/>
+            <Button Content="Use current origin" Click="CurrentOrigin_Click" Margin="0,0,8,8"/>
+            <TextBlock Text="Destination" TextWrapping="Wrap"/>
+            <TextBox Text="{Binding Destination}"/>
+            <WrapPanel>
+              <Button Content="Calculate distance" Click="Distance_Click" Margin="0,0,8,8"/>
+              <Button Content="Use home" Click="Home_Click" Margin="0,0,8,8"/>
+              <Button Content="Use Fleet Carrier" Click="Carrier_Click" Margin="0,0,8,8"/>
+            </WrapPanel>
+            <TextBlock Text="{Binding DistanceResult}" TextWrapping="Wrap"/>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Reference">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="14" Margin="4,20,4,16">
+            <TextBlock Text="Ring mining reference" TextWrapping="Wrap" Classes="card-title"/>
+            <TextBlock Text="Mineral availability follows ring composition. Prices vary; check current market observations before selling." TextWrapping="Wrap" Classes="muted"/>
+            <Expander Header="Icy rings">
+              <StackPanel Spacing="8">
+                <TextBlock Text="Laser: Low Temperature Diamonds, Bromellite, Hydrogen Peroxide, Liquid Oxygen, Lithium Hydroxide, Methane Clathrate, Methanol Monohydrate Crystals, Tritium, Water. Core: Alexandrite, Grandidierite, Low Temperature Diamonds, Void Opals, Bromellite." TextWrapping="Wrap"/>
+              </StackPanel>
+            </Expander>
+            <Expander Header="Metallic rings">
+              <StackPanel Spacing="8">
+                <TextBlock Text="Laser: Osmium, Painite, Platinum, Bertrandite, Gold, Indite, Palladium, Praseodymium, Samarium, Silver. Core: Monazite, Rhodplumsite, Serendibite, Painite, Platinum." TextWrapping="Wrap"/>
+              </StackPanel>
+            </Expander>
+            <Expander Header="Metal-rich rings">
+              <StackPanel Spacing="8">
+                <TextBlock Text="Laser: Osmium, Bertrandite, Coltan, Gallite, Gold, Indite, Lepidolite, Praseodymium, Samarium, Silver, Uraninite. Core: Alexandrite, Benitoite, Monazite, Rhodplumsite, Serendibite, Painite, Platinum." TextWrapping="Wrap"/>
+              </StackPanel>
+            </Expander>
+            <Expander Header="Rocky rings">
+              <StackPanel Spacing="8">
+                <TextBlock Text="Laser: Bertrandite, Bauxite, Coltan, Gallite, Indite, Lepidolite, Rutile. Core: Alexandrite, Benitoite, Monazite, Musgravite, Serendibite." TextWrapping="Wrap"/>
+              </StackPanel>
+            </Expander>
+            <Expander Header="Resource Extraction Sites (RES)">
+              <StackPanel Spacing="8">
+                <TextBlock Text="Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap." TextWrapping="Wrap"/>
+              </StackPanel>
+            </Expander>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Settings">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="14" Margin="4,20,4,16">
+            <TabControl>
+              <TabItem Header="Session">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                  <StackPanel Spacing="14" Margin="4,20,4,16">
+                    <CheckBox Content="Start a session when a prospector limpet launches" IsChecked="{Binding Settings.AutoStart}"/>
+                    <CheckBox Content="Switch to Session on prospecting and Hotspots on completion" IsChecked="{Binding Settings.AutoSwitchTabs}"/>
+                    <CheckBox Content="Refresh hotspot search after jumps and scans" IsChecked="{Binding Settings.AutoSearch}"/>
+                    <CheckBox Content="Receive live community market and Powerplay observations from EDDN" IsChecked="{Binding Settings.ReceiveCommunityData}"/>
+                    <TextBlock Text="EDDN reception opens a separate receive-only connection. Commodity observations expire after 24 hours; coverage grows while enabled." TextWrapping="Wrap" Classes="muted"/>
+                    <TextBlock Text="{Binding CommunityStatus}" TextWrapping="Wrap"/>
+                    <TextBlock Text="Home system" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding Settings.HomeSystem}"/>
+                    <TextBlock Text="Save also remembers your search filters." TextWrapping="Wrap" Classes="muted"/>
+                    <Button Content="Save mining settings" Command="{Binding SaveSettingsCommand}" Margin="0,0,8,8"/>
+                  </StackPanel>
+                </ScrollViewer>
+              </TabItem>
+              <TabItem Header="Announcements">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                  <StackPanel Spacing="14" Margin="4,20,4,16">
+                    <CheckBox Content="Core asteroid announcements" IsChecked="{Binding Settings.AnnounceCores}"/>
+                    <CheckBox Content="Non-core asteroid announcements" IsChecked="{Binding Settings.AnnounceNonCores}"/>
+                    <CheckBox Content="Prospecting results" IsChecked="{Binding Settings.NotifyProspecting}"/>
+                    <CheckBox Content="Refined commodities" IsChecked="{Binding Settings.NotifyRefined}"/>
+                    <CheckBox Content="Collected engineering materials" IsChecked="{Binding Settings.NotifyMaterials}"/>
+                    <CheckBox Content="Cargo full reminder after one minute idle" IsChecked="{Binding Settings.NotifyCargoFull}"/>
+                    <TextBlock Text="Set mineral thresholds for prospecting announcements. Remove all filters to announce all minerals." TextWrapping="Wrap"/>
+                    <TextBlock Text="Mineral" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding TargetMaterial}"/>
+                    <TextBlock Text="Minimum percentage" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding ThresholdText}"/>
+                    <WrapPanel>
+                      <Button Content="Set filter" Click="Threshold_Click" Margin="0,0,8,8"/>
+                      <Button Content="Remove filter" Click="RemoveThreshold_Click" Margin="0,0,8,8"/>
+                    </WrapPanel>
+                    <TextBlock Text="{Binding ThresholdSummary}" TextWrapping="Wrap"/>
+                    <TextBlock Text="Announcement presets" TextWrapping="Wrap"/>
+                    <ComboBox ItemsSource="{Binding PresetNames}" SelectedItem="{Binding PresetName}" HorizontalAlignment="Stretch"/>
+                    <TextBlock Text="Preset name" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding PresetName}"/>
+                    <WrapPanel>
+                      <Button Content="Save preset" Click="SavePreset_Click" Margin="0,0,8,8"/>
+                      <Button Content="Load preset" Click="LoadPreset_Click" Margin="0,0,8,8"/>
+                    </WrapPanel>
+                    <CheckBox Content="Speak announcements using local Windows voices" IsChecked="{Binding Settings.SpeakAnnouncements}"/>
+                    <Button Content="Load installed voices" Click="LoadVoices_Click" Margin="0,0,8,8"/>
+                    <ComboBox ItemsSource="{Binding Voices}" SelectedItem="{Binding Settings.Voice}" HorizontalAlignment="Stretch"/>
+                    <TextBlock Text="Speech volume" TextWrapping="Wrap"/>
+                    <Slider Minimum="0" Maximum="100" Value="{Binding Settings.SpeechVolume}"/>
+                    <TextBlock Text="Speech rate" TextWrapping="Wrap"/>
+                    <Slider Minimum="-10" Maximum="10" Value="{Binding Settings.SpeechRate}"/>
+                    <Button Content="Save announcements" Command="{Binding SaveSettingsCommand}" Margin="0,0,8,8"/>
+                  </StackPanel>
+                </ScrollViewer>
+              </TabItem>
+              <TabItem Header="Firegroups">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                  <StackPanel Spacing="14" Margin="4,20,4,16">
+                    <TextBlock Text="Describe the controls you assigned in Elite. This configures a reference overlay and does not send input to the game. Enable the Firegroups panel through Mining Overlay Settings." TextWrapping="Wrap"/>
+                    <TextBlock Text="Group (0 = A, 1 = B, etc.)" TextWrapping="Wrap"/>
+                    <NumericUpDown Minimum="0" Maximum="7" Value="{Binding Firegroup}"/>
+                    <TextBlock Text="Primary fire" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding Primary}"/>
+                    <TextBlock Text="Secondary fire" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding Secondary}"/>
+                    <Button Content="Remove firegroup" Click="RemoveFiregroup_Click" Margin="0,0,8,8"/><Button Content="Save firegroup" Click="SaveFiregroup_Click" Margin="0,0,8,8"/>
+                    <ListBox ItemsSource="{Binding Settings.Firegroups}" MinHeight="60" MaxHeight="360">
+                      <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="mining:MiningFiregroup">
+                          <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="4,8">
+                            <StackPanel Grid.Column="0" Spacing="4">
+                              <TextBlock Text="Group" TextWrapping="Wrap" Classes="muted"/>
+                              <TextBlock Text="{Binding Group}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4">
+                              <TextBlock Text="Primary" TextWrapping="Wrap" Classes="muted"/>
+                              <TextBlock Text="{Binding Primary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="4">
+                              <TextBlock Text="Secondary" TextWrapping="Wrap" Classes="muted"/>
+                              <TextBlock Text="{Binding Secondary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                          </Grid>
+                        </DataTemplate>
+                      </ListBox.ItemTemplate>
+                    </ListBox>
+                  </StackPanel>
+                </ScrollViewer>
+              </TabItem>
+              <TabItem Header="Backup">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                  <StackPanel Spacing="14" Margin="4,20,4,16">
+                    <TextBlock Text="Back up commander mining history, missions, settings, local discoveries, shared bookmarks and attached screenshots in one ZIP. Restore retains the previous mining data and merges bookmarks without replacing existing locations." TextWrapping="Wrap"/>
+                    <WrapPanel>
+                      <Button Content="Export backup…" Click="Backup_Click" Margin="0,0,8,8"/>
+                      <Button Content="Restore backup…" Click="Restore_Click" Margin="0,0,8,8"/>
+                    </WrapPanel>
+                  </StackPanel>
+                </ScrollViewer>
+              </TabItem>
+            </TabControl>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+    </TabControl>
+    <TextBlock Grid.Row="2" Classes="muted" Text="{Binding Status}" TextWrapping="Wrap" Margin="0,12,0,0"/>
+  </Grid>
 </UserControl>

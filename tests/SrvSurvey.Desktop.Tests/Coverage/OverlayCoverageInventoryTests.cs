@@ -19,6 +19,8 @@ public sealed partial class OverlayCoverageInventoryTests
             ["PlotFSS"] = "LastFssBodyOverlayWindow.axaml",
             ["PlotFSSInfo"] = "FssInfoOverlayWindow.axaml",
             ["PlotGalMap"] = "GalaxyMapOverlayWindow.axaml",
+            ["PlotMiningNotifications"] = "MiningActivityOverlayWindow.axaml",
+            ["PlotMiningFiregroups"] = "MiningActivityOverlayWindow.axaml",
             ["PlotMiningWarning"] = "MiningWarningOverlayWindow.axaml",
             ["PlotSurfaceMining"] = "SurfaceMiningOverlayWindow.axaml",
             ["PlotGrounded"] = "SurfaceSurveyOverlayWindow.axaml",
@@ -134,6 +136,8 @@ public sealed partial class OverlayCoverageInventoryTests
         Map("PlotMassacre", ["src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/CombatViewModelTests.cs",
         ]),
+        Map("PlotMiningNotifications", ["src/SrvSurvey.Desktop/MiningActivityOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"], ["tests/SrvSurvey.Desktop.Tests/ViewModels/MiningWorkspaceViewModelTests.cs"]),
+        Map("PlotMiningFiregroups", ["src/SrvSurvey.Desktop/MiningActivityOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"], ["tests/SrvSurvey.Desktop.Tests/ViewModels/MiningWorkspaceViewModelTests.cs"]),
         Map("PlotMiningWarning", ["src/SrvSurvey.Desktop/MiningWarningOverlayWindow.axaml",
             "src/SrvSurvey.Desktop/MiningWarningOverlayPresentation.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/SurfaceMiningViewModelTests.cs",
@@ -185,7 +189,7 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void InventoryContainsEverySupportedOverlayExactlyOnce()
     {
-        Assert.Equal(33, Mappings.Length);
+        Assert.Equal(35, Mappings.Length);
         Assert.Equal(
             Mappings.Length,
             Mappings.Select(mapping => mapping.ContractName).Distinct().Count());
@@ -324,7 +328,7 @@ public sealed partial class OverlayCoverageInventoryTests
             .ToArray();
 
         Assert.Equal(
-            PreviewProductionWindows.Values.Order(StringComparer.Ordinal),
+            PreviewProductionWindows.Values.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal),
             runtimePanels);
     }
 

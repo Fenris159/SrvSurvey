@@ -2,6 +2,7 @@ namespace SrvSurvey.Core.Search;
 
 public readonly record struct GalacticCoordinate
 {
+    [System.Text.Json.Serialization.JsonConstructor]
     public GalacticCoordinate(double x, double y, double z)
     {
         if (!double.IsFinite(x)

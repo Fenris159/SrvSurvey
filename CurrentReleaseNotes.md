@@ -1,5 +1,20 @@
 # SrvSurvey-XP 2.1.3.0-rc.45
 
+- Replaces the Mining workspace placeholder with session accounting, prospecting
+  yields, core and raw-material tracking, cargo, mining missions, historical
+  reports, screenshots, manual refinery estimates and mining settings.
+- Adds shared Navigation → Bookmarks with categories, filters, mining annotations
+  and import/export. Mining uses the same catalog.
+- Adds local/reference/Spansh hotspot searches, commodity-market and system/trader
+  searches, existing Fleet Carrier data and distance shortcuts. Optional
+  receive-only EDDN observations supplement prices and Powerplay information.
+- Adds separate ship-only Mining notifications and Firegroups overlays, with
+  shared editor/live presentations, Mining overlay controls and input toggles.
+  Existing Rhino overlays are unchanged by this workspace expansion.
+- Adds announcement filters/presets and optional Windows speech, CSV history
+  import, offline HTML reports with print/PDF output, and ZIP backups containing
+  shared bookmarks and screenshot attachments. Guides documents the new tools.
+
 RC45 adds experimental Rhino HUD rig tracking and corrects overlay sizing and
 next-jump error handling. It retains the combined RC43, RC44, and RC44.5 features
 summarized below.

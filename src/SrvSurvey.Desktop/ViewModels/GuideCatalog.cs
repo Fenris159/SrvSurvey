@@ -43,7 +43,7 @@ public static class GuideCatalog
                         [],
                         [
                             "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
-                            "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel and Search; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
+                            "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
                             "Diagnostics, Settings, Theme, and Guides remain in the utility area. The small overlay-settings button beside supported activities opens only that activity's overlay controls.",
                             "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
                             "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
@@ -221,7 +221,7 @@ public static class GuideCatalog
                 [
                     Section(
                         "Enable Surface mining",
-                        "The Mining workspace is reserved for future tools. Current mining guidance appears in the Surface mining overlay.",
+                        "The Mining workspace contains session, search, mission and reporting tools. Rhino guidance continues to use its independent Surface mining overlay.",
                         [
                             "Expand Activities and select Mining. Use the overlay-settings button beside Mining to enable Surface mining and assign a show/hide shortcut if desired.",
                             "Operate a Rhino on a planetary surface with journal and status tracking active. The overlay appears when the normal overlay display conditions are met.",
@@ -891,6 +891,27 @@ public static class GuideCatalog
                         ]),
                 ],
                 CreateIconGlossary()),
+            Category(
+                "mining-workspace",
+                "16",
+                "Mining workspace",
+                "Plan mining trips, track sessions and missions, and keep shared locations and reports.",
+                [
+                    Section("Sessions and cargo", "Activities → Mining combines ship mining tools with the existing cargo and journal feed.",
+                        ["Start manually or enable automatic start when a prospector limpet launches. Pause and resume exclude breaks from efficiency. End a session to add it to Reports.", "A recovered session opens paused. Check the system and ring, then resume when ready.", "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations."],
+                        ["Cargo transfers and purchases do not count as mining production. Mission cargo is allocated once across active mining missions.", "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.", "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute."]),
+                    Section("Hotspots, markets and systems", "Search from a named reference system or your current position.",
+                        ["Hotspots combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.", "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander's rings and missions without starting sessions.", "Commodity market supports buy/sell, nearby or galaxy-wide results, commodity categories, large pads, station types, carrier exclusion and maximum price age. Systems includes faction, economy, security, Powerplay and material-trader searches."],
+                        ["Unknown coordinates are not treated as nearby. Bundled observations are historical; multiple hotspots alone do not establish an overlap. Local searches show at most 500 rings.", "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.", "Fleet Carrier reuses the existing Frontier profile. Distance supports two systems, current position, home and your carrier's system."]),
+                    Section("Shared bookmarks", "Navigation → Bookmarks and Mining → Bookmarks use the same catalog.",
+                        ["Enter a system, optional body/ring and category; saving a new category makes it available to the category filter.", "Store minerals, ratings, hotspot names, average yields, last-mined dates, overlap/RES notes and screenshots. Right-click to copy or delete; Undo restores the last deletion during this run.", "Import shared bookmark JSON or EliteMining bookmark lists. Imports retain existing locations rather than silently replacing them."], []),
+                    Section("Reports and backups", "Reports preserve the observations behind mining statistics.",
+                        ["Select a completed session to edit notes or attach screenshots. Export HTML for graphs, material breakdowns and the prospecting timeline; open it in a browser to print or save as PDF.", "Compare all sessions, export CSV, or import EliteMining/SrvSurvey summary CSVs. Imported summaries keep their original fields without pretending that per-asteroid journal data was supplied.", "Settings → Backup exports a ZIP with commander mining data, shared bookmarks and local screenshot attachments. Restore keeps the previous mining state as a recovery file and merges bookmarks."],
+                        ["Screenshots larger than 20 MB or unsupported formats are omitted from packaged images. Keep originals when using standalone bookmark JSON."]),
+                    Section("Announcements and firegroups", "Mining has independent ship notifications and a firegroup reference panel.",
+                        ["In Mining Overlay Settings, enable Mining notifications and Mining firegroups, assign shortcuts and adjust placement in the overlay editor.", "Settings → Announcements controls collected/refined/prospecting notices, mineral thresholds, core/non-core filters and named announcement presets. Optional speech uses locally installed Windows voices.", "Settings → Firegroups records your primary and secondary bindings for groups A–H. The overlay follows the journal/status firegroup; it never sends controls to Elite.", "Save mining settings to persist search filters and preferences for this commander."],
+                        ["The new panels require the main ship and disappear on foot or in any SRV. Session-only visibility and hiding in supercruise are configurable in Mining Overlay Settings. Existing Rhino overlays remain independent."]),
+                ]),
         ];
     }
 

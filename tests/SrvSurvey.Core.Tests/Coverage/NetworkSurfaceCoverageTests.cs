@@ -20,6 +20,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Routes/SpanshRouteClient.cs",
         "src/SrvSurvey.Core/Search/ArdentSystemNameSuggestionClient.cs",
         "src/SrvSurvey.Core/Search/EdsmSystemNameSuggestionClient.cs",
+        "src/SrvSurvey.Core/Search/MiningSearchClient.cs",
         "src/SrvSurvey.Core/Search/NearestSystemsClient.cs",
         "src/SrvSurvey.Core/Search/SpanshBoxelClient.cs",
         "src/SrvSurvey.Core/Search/SpanshStarSystemResolver.cs",
@@ -33,6 +34,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs",
         "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs",
         "src/SrvSurvey.Desktop/Runtime/DiagnosticReplayContext.cs",
+        "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs",
         "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs",
         "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModelFactory.cs",
     ];
@@ -42,6 +44,7 @@ public sealed class NetworkSurfaceCoverageTests
             .Where(path => !path.EndsWith(
                     "MainWindowViewModel.cs",
                     StringComparison.Ordinal)
+                && !path.EndsWith("MiningWorkspaceViewModel.cs", StringComparison.Ordinal)
                 && !path.EndsWith(
                     "EddnPublisher.cs",
                     StringComparison.Ordinal)

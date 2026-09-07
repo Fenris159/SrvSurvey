@@ -19,6 +19,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="12.1.0" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.0" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.0" />
+    <PackageReference Include="NetMQ" Version="4.0.4.3" />
     <PackageReference Include="OVRSharp" Version="1.2.0" />
     <PackageReference Include="SDL3-CS" Version="3.4.12.3" />
     <PackageReference Include="SDL3-CS.Linux" Version="3.4.12.1" />

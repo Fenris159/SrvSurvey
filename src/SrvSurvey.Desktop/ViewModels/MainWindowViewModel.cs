@@ -51,6 +51,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private const string TravelNavigationKey = "travel";
     private const string BoxelNavigationKey = "boxel";
     private const string SearchNavigationKey = "search";
+    private const string BookmarksNavigationKey = "bookmarks";
     private const string GuardianNavigationKey = "guardian";
     private const string QuestsNavigationKey = "quests";
     private const string ColonisationNavigationKey = "colonisation";
@@ -535,6 +536,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             rollback.Add(Colonization.Dispose);
             var sharedSystemResolver = new SpanshStarSystemResolver(
                 externalNetworkClient);
+            Bookmarks = new BookmarksViewModel(AppDataPaths.DataDirectory);
+            MiningWorkspace = new MiningWorkspaceViewModel(AppDataPaths.DataDirectory, sharedSystemResolver, Bookmarks, externalNetworkClient);
+            rollback.Add(MiningWorkspace.Dispose);
             var sharedExobiologyCatalog = legacyReferences.Exobiology;
             var defaultCodexImageCache = Path.Combine(
                 AppDataPaths.CacheDirectory,
@@ -895,7 +899,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     SearchNavigationKey,
                     "Search",
                     "Spherical limits and nearby biology"),
-                new(MiningNavigationKey, "Mining", "Surface mining workspace", true),
+                new(BookmarksNavigationKey, "Bookmarks", "Categorized systems and mining locations"),
+                new(MiningNavigationKey, "Mining", "Mining sessions, locations, missions and reports", true),
                 new(
                     GuardianNavigationKey,
                     "Guardian",
@@ -931,7 +936,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 .ToArray();
             NavigationWorkspaceItems = NavigationItems
                 .Where(item => item.Key is TravelNavigationKey
-                    or SearchNavigationKey)
+                    or SearchNavigationKey
+                    or BookmarksNavigationKey)
                 .ToArray();
             ActivityNavigationItems = NavigationItems
                 .Where(item => item.Key is MiningNavigationKey or GuardianNavigationKey
@@ -1121,6 +1127,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public SurfaceSurveyViewModel SurfaceSurvey { get; }
 
     public SurfaceMiningViewModel Mining { get; }
+
+    public MiningWorkspaceViewModel MiningWorkspace { get; }
+
+    public BookmarksViewModel Bookmarks { get; }
 
     public Task<bool> ToggleTrackerOrMiningRigAsync(
         int number,
@@ -1347,6 +1357,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         SelectedNavigation?.Key == ExplorationNavigationKey
         && !IsProfileSelected;
 
+    public bool IsBookmarksSelected => SelectedNavigation?.Key == BookmarksNavigationKey && !IsProfileSelected;
+
     public bool IsMiningSelected => SelectedNavigation?.Key == MiningNavigationKey && !IsProfileSelected;
 
     public bool IsExobiologySelected =>
@@ -1510,7 +1522,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 or ExobiologyNavigationKey
                 or BoxelNavigationKey => SurveyNavigationGroup,
             TravelNavigationKey
-                or SearchNavigationKey => NavigationNavigationGroup,
+                or SearchNavigationKey or BookmarksNavigationKey => NavigationNavigationGroup,
             MiningNavigationKey or GuardianNavigationKey
                 or QuestsNavigationKey
                 or ColonisationNavigationKey =>
@@ -1542,6 +1554,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         OnPropertyChanged(nameof(IsOverviewSelected));
         OnPropertyChanged(nameof(IsExplorationSelected));
         OnPropertyChanged(nameof(IsMiningSelected));
+        OnPropertyChanged(nameof(IsBookmarksSelected));
         OnPropertyChanged(nameof(IsExobiologySelected));
         OnPropertyChanged(nameof(IsTravelSelected));
         OnPropertyChanged(nameof(IsBoxelSelected));
@@ -2414,6 +2427,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     {
         if (!update.HasChanges && !isManualRefresh)
         {
+            MiningWorkspace.Tick();
             await ApplyIdleHousekeepingAsync(update);
             return;
         }
@@ -2447,6 +2461,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
         var allowSharedCargo = !IsSharedCargoSuppressed;
         var cargoChanged = ApplyCargoInventoryUpdate(update, allowSharedCargo);
+        MiningWorkspace.Apply(update, journalState, latestCargo, latestStatus);
         ApplyShipLockerIfAllowed(update, allowSharedCargo);
         ApplyLocalInventoryAndDesktopBehaviors(update, allowSharedCargo);
         await ApplyStatusAndGroundTargetAsync(update);
@@ -5456,6 +5471,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(SurfaceSurvey.Dispose);
         TryDispose(CodexBingo.Dispose);
         TryDispose(StationInfo.Dispose);
+        TryDispose(MiningWorkspace.Dispose);
         TryDispose(Colonization.Dispose);
         TryDispose(GalaxyMap.Dispose);
         ScreenshotProcessing.PropertyChanged -= OnScreenshotProcessingChanged;
