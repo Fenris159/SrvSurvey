@@ -11,7 +11,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     private readonly JournalSessionState journal = new();
 
     [Fact]
-    public void EquippedFilterIncludesDuplicateHardpointsUtilityAndLimpetsButNotShieldCellBanksOrCoreModules()
+    public void EquippedFilterIncludesDuplicateHardpointsUtilityAndLimpetsButNotPassiveDefencesOrCoreModules()
     {
         var vm = Create();
         var options = vm.Primary[0].Options;
@@ -174,6 +174,47 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
         Assert.Single(reloaded.SavedProfiles); Assert.Single(legacy.Load("F1").Settings.Firegroups);
     }
 
+    [Theory]
+    [InlineData("Hpt_ShieldBooster_Size0_Class5")]
+    [InlineData("Hpt_PlasmaPointDefence_Turret_Tiny")]
+    public void CachedPassiveDefencesAreExcludedWithoutDiscardingSavedAssignments(string symbol)
+    {
+        var original = Create(); SaveOne(original, "Existing setup");
+        var store = new FiregroupStore(directory);
+        var saved = store.Load("F1");
+        var excluded = new FiregroupModule("TinyHardpoint2", symbol, "Previously assigned defence");
+        saved.Ships[0] = saved.Ships[0] with { Modules = saved.Ships[0].Modules.Append(excluded).ToArray() };
+        saved.Profiles[0] = saved.Profiles[0] with { Groups = [new(0, [excluded], [])] };
+        store.Save("F1", saved);
+        var reloaded = new FiregroupsWorkspaceViewModel(directory); Feed(reloaded, []);
+        Assert.DoesNotContain(reloaded.Primary[0].Options, module => module.Symbol == symbol);
+        Assert.DoesNotContain(reloaded.Secondary[0].Options, module => module.Symbol == symbol);
+        Assert.Contains("excluded", reloaded.Primary[0].Warning);
+        Assert.Equal(symbol, reloaded.ActiveProfile!.Groups[0].Primary[0].Symbol);
+    }
+
+    [Fact]
+    public void RowDeletionPreservesAnotherEditorsDraftAndRejectsStaleRows()
+    {
+        var vm = Create(); SaveOne(vm, "First");
+        var first = Assert.Single(vm.SavedProfiles);
+        vm.NewCommand.Execute(null); SaveOne(vm, "Second");
+        vm.ConfigurationName = "Unsaved second edit";
+        var row = vm.Primary[0];
+        first.DeleteCommand.Execute(null);
+        Assert.Equal("Second", Assert.Single(vm.SavedProfiles).Name);
+        Assert.Equal("Unsaved second edit", vm.ConfigurationName);
+        Assert.Same(row, vm.Primary[0]);
+        Assert.Equal("Second", vm.ActiveProfile!.Name);
+        var stale = Assert.Single(vm.SavedProfiles);
+        Feed(vm, [Event("""{"event":"LoadGame","FID":"F2","Commander":"Other","Ship":"python","ShipID":1}"""), Loadout(1, "Other ship")]);
+        SaveOne(vm, "Other commander");
+        stale.DeleteCommand.Execute(null);
+        Assert.Equal("Other commander", Assert.Single(vm.SavedProfiles).Name);
+        var reloaded = new FiregroupsWorkspaceViewModel(directory); Feed(reloaded, []);
+        Assert.Equal("Other commander", Assert.Single(reloaded.SavedProfiles).Name);
+    }
+
     private FiregroupsWorkspaceViewModel Create()
     {
         var vm = new FiregroupsWorkspaceViewModel(directory);
@@ -197,7 +238,13 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
          {"Slot":"TinyHardpoint1","Item":"Hpt_HeatSinkLauncher_Turret_Tiny"},
          {"Slot":"Slot01_Size3","Item":"Int_DroneControl_Collection_Size3_Class1"},
          {"Slot":"Slot02_Size3","Item":"Int_ShieldCellBank_Size3_Class1"},
-         {"Slot":"PowerPlant","Item":"Int_PowerPlant_Size4_Class5"}]
+         {"Slot":"PowerPlant","Item":"Int_PowerPlant_Size4_Class5"},
+         {"Slot":"TinyHardpoint2","Item":"Hpt_ShieldBooster_Size0_Class1"},
+         {"Slot":"TinyHardpoint3","Item":"Hpt_ShieldBooster_Size0_Class2"},
+         {"Slot":"TinyHardpoint4","Item":"Hpt_ShieldBooster_Size0_Class3"},
+         {"Slot":"TinyHardpoint5","Item":"Hpt_ShieldBooster_Size0_Class4"},
+         {"Slot":"TinyHardpoint6","Item":"Hpt_ShieldBooster_Size0_Class5"},
+         {"Slot":"TinyHardpoint7","Item":"Hpt_PlasmaPointDefence_Turret_Tiny"}]
         """;
     internal static JournalEventEnvelope Event(string json)
     { Assert.True(JournalEventEnvelope.TryParse(json, out var entry, out _)); return entry!; }

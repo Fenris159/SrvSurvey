@@ -1,0 +1,13 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SrvSurvey.Desktop.DeleteFiregroupDialog" Title="Delete firegroup configuration"
+        Width="460" SizeToContent="Height" CanResize="False" ShowInTaskbar="False" WindowStartupLocation="CenterOwner">
+ <StackPanel Margin="24" Spacing="16">
+  <TextBlock Classes="page-title" FontSize="24" Text="Are you sure?"/>
+  <TextBlock x:Name="ConfigurationText" TextWrapping="Wrap"/>
+  <TextBlock Text="This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite." TextWrapping="Wrap"/>
+  <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+   <Button x:Name="NoButton" Content="No" Click="No_Click" IsCancel="True"/>
+   <Button Content="Yes" Click="Yes_Click"/>
+  </StackPanel>
+ </StackPanel>
+</Window>

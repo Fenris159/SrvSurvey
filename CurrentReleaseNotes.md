@@ -25,7 +25,8 @@ summarized below.
   multiple equipped primary/secondary module selections; live tree previews and
   expandable saved configurations. Save feedback is immediate and failures are
   visible. Loadout supplies ship identity and hardpoints/utilities/internal limpet
-  controllers; shield cell banks are excluded. The overlay follows the boarded
+  controllers; shield cell banks, shield boosters and point defence are excluded.
+  Saved rows offer direct trash deletion with a Yes/No confirmation. The overlay follows the boarded
   ship's saved configuration and Status.json group number. Older assignments are
   preserved for migration. Firegroups now has dedicated overlay settings with
   visibility, shortcut and independent Overlay Exceptions. Mining backups also

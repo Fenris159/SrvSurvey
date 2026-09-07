@@ -46,14 +46,15 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
     public ObservableCollection<FiregroupSelectionRow> Secondary { get; } = [];
     public ObservableCollection<FiregroupTreeNode> GroupPreview { get; } = [];
     public ObservableCollection<FiregroupSavedRow> SavedProfiles { get; } = [];
+    public FiregroupSavedRow? SelectedSavedProfile => SavedProfiles.FirstOrDefault(row => row.Profile.Id == profileId);
     public IReadOnlyList<string> GroupLetters { get; } = ["A", "B", "C", "D", "E", "F", "G", "H"];
     public string GroupLetter { get => GroupLetters[groupNumber]; set { var number = GroupLetters.ToList().IndexOf(value); if (number >= 0 && number != groupNumber) ChangeGroup(number); } }
     public string ConfigurationName { get => configurationName; set => Set(ref configurationName, value); }
     public string Status { get => status; private set => Set(ref status, value); }
     public string ShipSummary => editorShip?.Display ?? "Waiting for a Loadout event. Board your ship to identify its equipped modules.";
     public bool CanEdit => storageAvailable && editorShip is not null;
-    public bool HasEquippedModules => editorShip?.Modules.Count > 0;
-    public string ModuleStatus => HasEquippedModules ? "Only equipped hardpoints, utilities and internal limpet controllers are listed. Shield cell banks are excluded. Slots distinguish duplicate modules."
+    public bool HasEquippedModules => editorShip?.Modules.Any(module => !FiregroupLoadout.IsExcluded(module)) == true;
+    public string ModuleStatus => HasEquippedModules ? "Only equipped hardpoints, utilities and internal limpet controllers are listed. Shield cell banks, shield boosters and point defence are excluded. Slots distinguish duplicate modules."
         : "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.";
     public string LiveSummary => ActiveProfile is { } profile ? $"Active: {profile.Name} · {liveShip?.Display}" : "No saved configuration selected for the current ship.";
     public FiregroupProfile? ActiveProfile => liveShip is null ? null : document.Profiles.FirstOrDefault(p => p.Ship.Key == liveShip.Key
@@ -278,10 +279,19 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
     private void Remove()
     {
         if (profileId is null) { Status = "Select a saved configuration to remove."; return; }
-        var candidate = document with { Profiles = document.Profiles.Where(p => p.Id != profileId).ToList(), ActiveProfiles = new(document.ActiveProfiles) };
-        foreach (var key in candidate.ActiveProfiles.Where(p => p.Value == profileId).Select(p => p.Key).ToArray()) candidate.ActiveProfiles.Remove(key);
-        if (!Persist(candidate, $"Removed {ConfigurationName}.")) return;
-        drafts.Remove(DraftKey); document = candidate; profileId = null; ClearEditor(); RefreshSaved(); NotifyLive();
+        if (SelectedSavedProfile is { } row) Remove(row.Profile);
+    }
+    private void Remove(FiregroupProfile target)
+    {
+        // Confirmation can span a commander switch or a restore. Never act on a stale row.
+        if (!document.Profiles.Any(profile => ReferenceEquals(profile, target))) return;
+        var candidate = document with { Profiles = document.Profiles.Where(p => p.Id != target.Id).ToList(), ActiveProfiles = new(document.ActiveProfiles) };
+        foreach (var key in candidate.ActiveProfiles.Where(p => p.Value == target.Id).Select(p => p.Key).ToArray()) candidate.ActiveProfiles.Remove(key);
+        if (!Persist(candidate, $"Removed {target.Name}.")) return;
+        drafts.Remove($"{commander}|{target.Id}");
+        document = candidate;
+        if (profileId == target.Id) { profileId = null; ClearEditor(); }
+        RefreshSaved(); NotifyLive();
     }
     private void Select(FiregroupProfile profile)
     {
@@ -300,7 +310,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
     private void RefreshSaved()
     {
         SavedProfiles.Clear();
-        foreach (var profile in document.Profiles.OrderBy(p => p.Ship.Display).ThenBy(p => p.Name)) SavedProfiles.Add(new(profile, new WorkspaceCommand(() => Select(profile))));
+        foreach (var profile in document.Profiles.OrderBy(p => p.Ship.Display).ThenBy(p => p.Name)) SavedProfiles.Add(new(profile, new WorkspaceCommand(() => Select(profile)), new WorkspaceCommand(() => Remove(profile))));
     }
     private void NotifyEditor() { Changed(nameof(ShipSummary)); Changed(nameof(CanEdit)); Changed(nameof(HasEquippedModules)); Changed(nameof(ModuleStatus)); Changed(nameof(GroupLetter)); }
     private void NotifyLive() { Changed(nameof(ActiveProfile)); Changed(nameof(ActiveGroup)); Changed(nameof(ActiveGroupNumber)); Changed(nameof(ShouldShow)); Changed(nameof(LiveSummary)); }
@@ -316,14 +326,16 @@ public sealed class FiregroupSelectionRow : WorkspaceObservable
     public IReadOnlyList<FiregroupModule> Options { get; private set; } = [];
     public FiregroupModule? SelectedModule { get => selected; set { if (Set(ref selected, value)) { Changed(nameof(Warning)); Changed(nameof(HasWarning)); changed(); } } }
     public bool HasWarning => Warning.Length > 0;
-    public string Warning => selected is not null && !equipped.Any(m => m.Slot == selected.Slot && m.Symbol == selected.Symbol) ? "Not equipped in the latest loadout; choose a replacement or remove this row." : "";
+    public string Warning => selected is not null && FiregroupLoadout.IsExcluded(selected) ? $"{selected.Name} is excluded from Firegroups; choose a replacement or remove this row."
+        : selected is not null && !equipped.Any(m => m.Slot == selected.Slot && m.Symbol == selected.Symbol) ? "Not equipped in the latest loadout; choose a replacement or remove this row." : "";
     private IReadOnlyList<FiregroupModule> equipped = [];
     public ICommand? RemoveCommand { get; set; }
     public void UpdateOptions(IReadOnlyList<FiregroupModule> modules)
     {
-        equipped = modules;
+        equipped = modules.Where(module => !FiregroupLoadout.IsExcluded(module)).ToArray();
         var selection = selected;
-        Options = selection is not null && !modules.Contains(selection) ? modules.Append(selection).ToArray() : modules;
+        Options = selection is not null && !FiregroupLoadout.IsExcluded(selection) && !equipped.Contains(selection)
+            ? equipped.Append(selection).ToArray() : equipped;
         Changed(nameof(Options));
         selected = selection; Changed(nameof(SelectedModule)); Changed(nameof(Warning)); Changed(nameof(HasWarning));
     }
@@ -335,9 +347,10 @@ public sealed record FiregroupTreeNode(string Label, IReadOnlyList<FiregroupTree
         [new("Primary", group.Primary.Select(m => new FiregroupTreeNode(m.Display, [])).ToArray()),
          new("Secondary", group.Secondary.Select(m => new FiregroupTreeNode(m.Display, [])).ToArray())]);
 }
-public sealed record FiregroupSavedRow(FiregroupProfile Profile, ICommand EditCommand)
+public sealed record FiregroupSavedRow(FiregroupProfile Profile, ICommand EditCommand, ICommand DeleteCommand)
 {
     public string Name => Profile.Name;
     public string ShipName => Profile.Ship.Display;
+    public string DeleteLabel => $"Delete {Name}";
     public IReadOnlyList<FiregroupTreeNode> Preview => Profile.Groups.Select(FiregroupTreeNode.From).ToArray();
 }

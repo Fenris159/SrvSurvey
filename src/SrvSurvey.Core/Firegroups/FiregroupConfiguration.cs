@@ -32,6 +32,11 @@ public static class FiregroupLoadout
 {
     private static readonly IReadOnlyDictionary<string, string> Names = ReadNames();
 
+    public static bool IsExcluded(FiregroupModule module) =>
+        module.Symbol.Contains("shieldbooster", StringComparison.OrdinalIgnoreCase)
+        || module.Symbol.Contains("pointdefence", StringComparison.OrdinalIgnoreCase)
+        || module.Symbol.Contains("shieldcellbank", StringComparison.OrdinalIgnoreCase);
+
     public static FiregroupShip? Parse(JsonElement root)
     {
         var type = Text(root, "Ship");
