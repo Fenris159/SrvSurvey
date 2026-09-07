@@ -3,7 +3,7 @@
 
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                   <StackPanel Spacing="14" Margin="24"><TextBlock Classes="page-title" Text="Firegroups"/>
-                    <TextBlock Text="Describe the controls you assigned in Elite. This configures a reference overlay and does not send input to the game. Enable the Firegroups panel through Mining Overlay Settings." TextWrapping="Wrap"/>
+                    <TextBlock Text="Describe the controls you assigned in Elite. This configures a reference overlay and does not send input to the game. Enable the Firegroups panel in Settings → Game overlays. Its position is under Status &amp; utilities in the overlay editor." TextWrapping="Wrap"/>
                     <TextBlock Text="Group (0 = A, 1 = B, etc.)" TextWrapping="Wrap"/>
                     <NumericUpDown Minimum="0" Maximum="7" Value="{Binding Firegroup}"/>
                     <TextBlock Text="Primary fire" TextWrapping="Wrap"/>

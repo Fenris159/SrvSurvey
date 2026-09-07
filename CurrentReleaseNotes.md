@@ -8,8 +8,8 @@
 - Adds local/reference/Spansh hotspot searches, commodity-market and system/trader
   searches, existing Fleet Carrier data and distance shortcuts. Optional
   receive-only EDDN observations supplement prices and Powerplay information.
-- Adds separate ship-only Mining notifications and Firegroups overlays, with
-  shared editor/live presentations, Mining overlay controls and input toggles.
+- Adds ship-only Mining notifications and a Firegroups reference overlay, with
+  shared editor/live presentations, overlay controls and input toggles.
   Existing Rhino overlays are unchanged by this workspace expansion.
 - Adds announcement filters/presets and optional Windows speech, CSV history
   import, offline HTML reports with print/PDF output, and ZIP backups containing

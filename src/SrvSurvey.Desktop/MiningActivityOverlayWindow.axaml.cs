@@ -10,5 +10,6 @@ public sealed partial class MiningActivityOverlayWindow : Window
     {
         InitializeComponent();
         DataContext = viewModel;
+        Title = viewModel.IsFiregroups ? "SrvSurvey Firegroups overlay" : "SrvSurvey mining notifications overlay";
     }
 }

@@ -16,4 +16,14 @@ Catalog verified 2026-09-07: 48 ship types plus Nomad, Scarab SRV, Scorpion, Rhi
 
 ## Validation
 
-Focused tests cover boarded vehicle versus mothership selection, on-foot/fighter precedence, recent ship symbols, persistence, all/none selection, category isolation, registry visibility restoration and compact vertical presentation. Headless dialog and overlay rendering supplement source checks; live gameplay remains a user validation step.
+The complete Desktop suite passed: **2,003 passed, 0 failed, 0 skipped**. Focused tests cover boarded vehicle versus mothership selection, on-foot/fighter precedence, recent ship symbols, persistence, all/none selection, category isolation, registry visibility restoration and compact vertical presentation. Headless dialog and overlay rendering supplement source checks; live gameplay remains a user validation step.
+
+## Standards review
+
+No confirmed documented-standard breach or consequential structural smell. Review found outdated Firegroups activation instructions in the workspace and Guides; both now describe global settings and the independent boarded-vessel eligibility. Registry lifecycle and user visibility gates remain separate.
+
+## Spec review
+
+The reviewer found the same outdated activation and vehicle guidance. It is corrected. No concrete defect was found in boarded resolution, category persistence, bulk selection, shared registry gating or compact presentation. Both reviewers inspected source only; gameplay was not validated.
+
+Standards: 0 unresolved findings (1 guidance finding addressed). Spec: 0 unresolved findings (1 guidance finding addressed). No remaining worst issue in either axis.
