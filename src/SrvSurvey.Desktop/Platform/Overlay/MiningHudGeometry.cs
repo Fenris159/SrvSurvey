@@ -11,6 +11,7 @@ internal readonly struct MiningHudGeometry
     private readonly double yx;
     private readonly double yy;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "S1244", Justification = "Only the exact recorded calibration can use the identity transform; any explicit user adjustment must use the calculated transform.")]
     internal MiningHudGeometry(MiningDetectionSettings settings)
     {
         // The recorded mask already has this perspective tilt. Undo its basis before

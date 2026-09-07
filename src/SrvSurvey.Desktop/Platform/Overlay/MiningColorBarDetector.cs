@@ -6,7 +6,7 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 internal static class MiningColorBarDetector
 {
     internal static MiningBarAnalysis Analyze(IFssPixelSource source, MiningDetectionSettings settings, MiningBarAnalysis? previous = null) =>
-        new Frame(source, settings, previous).Analyze();
+        new Frame(source, settings, previous).RunAnalysis();
 
     private sealed class Frame
     {
@@ -39,7 +39,7 @@ internal static class MiningColorBarDetector
             centers = settings.Markers.Select(p => (X: p.X * image.Width, Y: p.Y * image.Height)).ToArray();
             allowance = settings.GetMovementAllowance(image.Width) + 4;
         }
-        internal MiningBarAnalysis Analyze()
+        internal MiningBarAnalysis RunAnalysis()
         {
             FindCandidates();
             // Position comes from the HUD layout, not which bar happened to survive the last frame.
@@ -105,12 +105,14 @@ internal static class MiningColorBarDetector
                     var distance = Math.Pow(dx - offsetX, 2) + Math.Pow(dy - offsetY, 2);
                     var matches = MatchSlots(dx, dy);
                     if (matches.Count != candidates.Count || !VerifyMovement(matches, dx, dy, distance)) continue;
-                    if (matches.Count < bestCount || matches.Count == bestCount && distance >= bestDistance) continue;
+                    if (!IsBetterAssignment(matches.Count, distance, bestCount, bestDistance)) continue;
                     bestCount = matches.Count; bestDistance = distance;
                     assignments = matches;
                 }
             }
         }
+        private static bool IsBetterAssignment(int count, double distance, int bestCount, double bestDistance) =>
+            count > bestCount || count == bestCount && distance < bestDistance;
         private Dictionary<int, int> MatchSlots(double dx, double dy)
         {
             var matches = new Dictionary<int, int>();
@@ -168,75 +170,74 @@ internal static class MiningColorBarDetector
                 states[i] = rim.Confidence >= 8 ? MiningBarState.Absent : MiningBarState.Unknown;
             }
         }
-    }
-
-    private static bool HasBarFragment(List<Group> fragments, double x, double y, double radius,
-        MiningHudGeometry geometry, double gap, bool previouslyTracked)
-    {
-        var curve = MiningBarShape.GuidePoints.Select(point => geometry.Transform(point.X, point.Y, radius))
-            .Select(point => (X: x + point.X, Y: y + point.Y + radius * gap)).ToArray();
-        foreach (var points in fragments.Select(group => group.Points))
+        private static bool HasBarFragment(List<Group> fragments, double x, double y, double radius,
+            MiningHudGeometry geometry, double gap, bool previouslyTracked)
         {
-            var matching = points.Count(pixel => curve.Any(point =>
-                Math.Pow(pixel.X - point.X, 2) + Math.Pow(pixel.Y - point.Y, 2) <= 16));
-            var required = previouslyTracked ? 6 : 12;
-            var fraction = previouslyTracked ? .5 : .6;
-            if (matching >= required && matching >= points.Count * fraction) return true;
+            var curve = MiningBarShape.GuidePoints.Select(point => geometry.Transform(point.X, point.Y, radius))
+                .Select(point => (X: x + point.X, Y: y + point.Y + radius * gap)).ToArray();
+            foreach (var points in fragments.Select(group => group.Points))
+            {
+                var matching = points.Count(pixel => curve.Any(point =>
+                    Math.Pow(pixel.X - point.X, 2) + Math.Pow(pixel.Y - point.Y, 2) <= 16));
+                var required = previouslyTracked ? 6 : 12;
+                var fraction = previouslyTracked ? .5 : .6;
+                if (matching >= required && matching >= points.Count * fraction) return true;
+            }
+            return false;
         }
-        return false;
-    }
-    private static double ScoreGroup(IFssPixelSource source, double x, double y, double radius,
-        MiningHudGeometry geometry, double gap)
-    {
-        var best = 0d;
-        foreach (var (dx, dy, scale, tilt) in ShapeVariations())
+        private static double ScoreGroup(IFssPixelSource source, double x, double y, double radius,
+            MiningHudGeometry geometry, double gap)
         {
-            var score = MiningBarShape.Score(source, x + dx, y + dy + radius * gap,
-                radius * scale, geometry, tilt, lowerOnly: true);
-            if (score > best && MiningBarShape.Score(source, x + dx, y + dy + radius * gap,
-                radius * scale, geometry, tilt) >= .55) best = score;
+            var best = 0d;
+            foreach (var (dx, dy, scale, tilt) in ShapeVariations())
+            {
+                var score = MiningBarShape.Score(source, x + dx, y + dy + radius * gap,
+                    radius * scale, geometry, tilt, lowerOnly: true);
+                if (score > best && MiningBarShape.Score(source, x + dx, y + dy + radius * gap,
+                    radius * scale, geometry, tilt) >= .55) best = score;
+            }
+            return best;
         }
-        return best;
-    }
 
-    private static IEnumerable<(int X, int Y, double Scale, double Tilt)> ShapeVariations() =>
-        from dy in Enumerable.Range(-4, 9)
-        from dx in Enumerable.Range(-3, 7)
-        from scale in Scales
-        from tilt in Tilts
-        select (dx, dy, scale, tilt);
-    private static readonly double[] Scales = [.9, 1, 1.1];
-    private static readonly double[] Tilts = [-.1, 0, .1];
+        private static IEnumerable<(int X, int Y, double Scale, double Tilt)> ShapeVariations() =>
+            from dy in Enumerable.Range(-4, 9)
+            from dx in Enumerable.Range(-3, 7)
+            from scale in Scales
+            from tilt in Tilts
+            select (dx, dy, scale, tilt);
+        private static readonly double[] Scales = [.9, 1, 1.1];
+        private static readonly double[] Tilts = [-.1, 0, .1];
 
-    private sealed record Group(List<(int X, int Y)> Points, int MinX, int MinY, int MaxX, int MaxY);
+        private sealed record Group(List<(int X, int Y)> Points, int MinX, int MinY, int MaxX, int MaxY);
 
-    private static IEnumerable<Group> FindGroups(ColorMask mask)
-    {
-        var visited = new bool[mask.Width * mask.Height];
-        for (var y = 0; y < mask.Height; y++)
-            for (var x = 0; x < mask.Width; x++)
-                if (!visited[y * mask.Width + x] && mask.Matches(x, y)) yield return FloodGroup(mask, visited, x, y);
-    }
-    private static Group FloodGroup(ColorMask mask, bool[] visited, int x, int y)
-    {
-        var points = new List<(int X, int Y)> { (x, y) };
-        visited[y * mask.Width + x] = true;
-        var minX = x; var maxX = x; var minY = y; var maxY = y;
-        for (var index = 0; index < points.Count; index++)
+        private static IEnumerable<Group> FindGroups(ColorMask mask)
         {
-            var point = points[index];
-            // Bridge small segment gaps, retaining the larger gaps between rigs.
-            for (var ny = Math.Max(0, point.Y - 3); ny <= Math.Min(mask.Height - 1, point.Y + 3); ny++)
-                for (var nx = Math.Max(0, point.X - 3); nx <= Math.Min(mask.Width - 1, point.X + 3); nx++)
-                {
-                    if (visited[ny * mask.Width + nx] || !mask.Matches(nx, ny)) continue;
-                    visited[ny * mask.Width + nx] = true;
-                    points.Add((nx, ny));
-                    minX = Math.Min(minX, nx); maxX = Math.Max(maxX, nx);
-                    minY = Math.Min(minY, ny); maxY = Math.Max(maxY, ny);
-                }
+            var visited = new bool[mask.Width * mask.Height];
+            for (var y = 0; y < mask.Height; y++)
+                for (var x = 0; x < mask.Width; x++)
+                    if (!visited[y * mask.Width + x] && mask.Matches(x, y)) yield return FloodGroup(mask, visited, x, y);
         }
-        return new(points, minX, minY, maxX, maxY);
+        private static Group FloodGroup(ColorMask mask, bool[] visited, int x, int y)
+        {
+            var points = new List<(int X, int Y)> { (x, y) };
+            visited[y * mask.Width + x] = true;
+            var minX = x; var maxX = x; var minY = y; var maxY = y;
+            for (var index = 0; index < points.Count; index++)
+            {
+                var point = points[index];
+                // Bridge small segment gaps, retaining the larger gaps between rigs.
+                for (var ny = Math.Max(0, point.Y - 3); ny <= Math.Min(mask.Height - 1, point.Y + 3); ny++)
+                    for (var nx = Math.Max(0, point.X - 3); nx <= Math.Min(mask.Width - 1, point.X + 3); nx++)
+                    {
+                        if (visited[ny * mask.Width + nx] || !mask.Matches(nx, ny)) continue;
+                        visited[ny * mask.Width + nx] = true;
+                        points.Add((nx, ny));
+                        minX = Math.Min(minX, nx); maxX = Math.Max(maxX, nx);
+                        minY = Math.Min(minY, ny); maxY = Math.Max(maxY, ny);
+                    }
+            }
+            return new(points, minX, minY, maxX, maxY);
+        }
     }
 
     private sealed class ColorMask : IFssPixelSource

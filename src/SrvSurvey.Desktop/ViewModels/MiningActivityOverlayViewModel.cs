@@ -42,7 +42,11 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
     public string Cargo => workspace?.CargoSummary ?? "Cargo: 72 / 128 t · Limpets: 34";
     private IReadOnlyList<MiningNotice> Notices => workspace?.VisibleNotices ?? PreviewNotices;
     private static readonly MiningNotice[] PreviewNotices = [new(default, "Prospected", "Platinum 34.8% · Painite 12.4%"), new(default, "Refined", "Platinum ×1"), new(default, "Collected", "Iron ×3")];
-    public void Dispose() { if (workspace is not null) { workspace.PropertyChanged -= OnChanged; } if (firegroupsWorkspace is not null) { firegroupsWorkspace.PropertyChanged -= OnFiregroupsChanged; } }
+    public void Dispose()
+    {
+        if (workspace is not null) { workspace.PropertyChanged -= OnChanged; }
+        if (firegroupsWorkspace is not null) { firegroupsWorkspace.PropertyChanged -= OnFiregroupsChanged; }
+    }
     private void OnChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is not (nameof(MiningWorkspaceViewModel.VisibleNotices) or nameof(MiningWorkspaceViewModel.CargoSummary))) return;

@@ -5,6 +5,8 @@ namespace SrvSurvey.Core.Tests.Mining;
 
 public sealed class MiningSearchClientTests
 {
+    private static readonly string[] BuyingStationOrder = ["Good", "Better"];
+    private static readonly string[] SellingStationOrder = ["Better", "Good"];
     [Fact]
     public async Task HotspotResultsKeepCoordinatesUnknownAndFilterAtRingLevel()
     {
@@ -84,7 +86,7 @@ public sealed class MiningSearchClientTests
         var client = new MiningSearchClient(http);
         var query = new MiningMarketQuery("Sol", "Platinum", buying, ExcludeCarriers: true, LargePads: true, StationType: "Coriolis");
         var results = spansh ? await client.FindSpanshMarketsAsync(query) : await client.FindMarketsAsync(query);
-        Assert.Equal(buying ? new[] { "Good", "Better" } : new[] { "Better", "Good" }, results.Select(r => r.Station));
+        Assert.Equal(buying ? BuyingStationOrder : SellingStationOrder, results.Select(r => r.Station));
         Assert.All(results, r => { Assert.True(r.LargePad); Assert.Equal(42, r.MarketId); Assert.Null(r.Distance); Assert.Null(r.ArrivalLs); });
     }
     [Fact]

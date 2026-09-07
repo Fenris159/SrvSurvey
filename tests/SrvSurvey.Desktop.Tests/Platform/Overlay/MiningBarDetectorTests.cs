@@ -17,12 +17,15 @@ public sealed class MiningBarDetectorTests
         var settings = IceSettings();
         var previous = MiningBarDetector.Analyze(source, settings);
         var bytes = source.BgraPixels.ToArray();
-        for (var y = 0; y < source.Height; y++) for (var x = visibleUntil; x < source.Width; x++)
+        for (var y = 0; y < source.Height; y++)
+        {
+            for (var x = visibleUntil; x < source.Width; x++)
             {
                 if (!MiningColorBarDetector.MatchesColor(source.GetPixel(x, y), new(0, 255, 0))) continue;
                 var p = (y * source.Width + x) * 4;
                 bytes[p] = bytes[p + 1] = bytes[p + 2] = 230;
             }
+        }
         var clock = new TestClock();
         var confirmation = new MiningBarConfirmation(clock);
         confirmation.Apply(previous);
@@ -48,13 +51,16 @@ public sealed class MiningBarDetectorTests
         foreach (var active in new[] { 3, 2, 1, 3 })
         {
             var bytes = source.BgraPixels.ToArray();
-            for (var y = 0; y < source.Height; y++) for (var x = 0; x < source.Width; x++)
+            for (var y = 0; y < source.Height; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
                 {
                     var bit = x < 150 ? 1 : 2;
                     if ((active & bit) != 0 || !MiningColorBarDetector.MatchesColor(source.GetPixel(x, y), new(0, 255, 0))) continue;
                     var p = (y * source.Width + x) * 4;
                     bytes[p] = bytes[p + 1] = bytes[p + 2] = 230;
                 }
+            }
             previous = MiningBarDetector.Analyze(new CapturedPixelBuffer(source.Width, source.Height, bytes), settings, previous);
             Assert.True(previous.Slots[0] == ((active & 1) != 0 ? MiningBarState.Present : MiningBarState.Absent),
                 $"Active mask {active}: {string.Join(',', previous.Slots)} at {previous.OffsetX},{previous.OffsetY}");
@@ -104,12 +110,15 @@ public sealed class MiningBarDetectorTests
     {
         var source = Load("empty-night-vision");
         var bytes = source.BgraPixels.ToArray();
-        for (var y = 0; y < source.Height; y++) for (var x = 0; x < source.Width; x++)
+        for (var y = 0; y < source.Height; y++)
+        {
+            for (var x = 0; x < source.Width; x++)
             {
                 if (x < 150 && y < 120) continue;
                 var p = (y * source.Width + x) * 4;
                 bytes[p] = bytes[p + 1] = bytes[p + 2] = 0;
             }
+        }
         var result = MiningBarDetector.Analyze(new CapturedPixelBuffer(source.Width, source.Height, bytes), EmptyNightVisionSettings());
         Assert.All(result.Slots, state => Assert.Equal(MiningBarState.Unknown, state));
     }
@@ -220,12 +229,17 @@ public sealed class MiningBarDetectorTests
         // Remove only the colored bar pixels belonging to rig 1; leave its gray rim in place.
         var source = Load(100);
         var bytes = source.BgraPixels.ToArray();
-        for (var y = 0; y < source.Height; y++) for (var x = 0; x < 222; x++)
+        for (var y = 0; y < source.Height; y++)
+        {
+            for (var x = 0; x < 222; x++)
+            {
                 if (MiningColorBarDetector.MatchesColor(source.GetPixel(x, y), new(0, 255, 0)))
                 {
                     var p = (y * source.Width + x) * 4;
                     bytes[p] = bytes[p + 1] = bytes[p + 2] = 20;
                 }
+            }
+        }
         var afterReturn = MiningBarDetector.Analyze(new CapturedPixelBuffer(source.Width, source.Height, bytes), settings, previous);
         Assert.NotEqual(MiningBarState.Present, afterReturn.Slots[0]);
         Assert.Equal(MiningBarState.Present, afterReturn.Slots[1]);
@@ -289,7 +303,9 @@ public sealed class MiningBarDetectorTests
         var settings = new MiningDetectionSettings { RotationDegrees = rotation };
         var geometry = new MiningHudGeometry(settings);
         var pixels = new byte[96 * 96 * 4];
-        for (var y = 0; y < 96; y++) for (var x = 0; x < 96; x++)
+        for (var y = 0; y < 96; y++)
+        {
+            for (var x = 0; x < 96; x++)
             {
                 var r = geometry.RingDistance(x - 48d, y - 48d, 1);
                 var color = (byte)(r >= 21 && r <= 24 ? 160 : 20);
@@ -297,6 +313,7 @@ public sealed class MiningBarDetectorTests
                 var p = (y * 96 + x) * 4;
                 pixels[p] = pixels[p + 1] = pixels[p + 2] = color; pixels[p + 3] = 255;
             }
+        }
         var result = MiningBarDetector.Analyze(new CapturedPixelBuffer(96, 96, pixels), settings with
         {
             CircleWidth = calibratedRadius * 2 / 96,
@@ -334,12 +351,15 @@ public sealed class MiningBarDetectorTests
     {
         var source = Load(20);
         var bytes = source.BgraPixels.ToArray();
-        for (var y = 0; y < source.Height; y++) for (var x = 0; x < source.Width; x++)
+        for (var y = 0; y < source.Height; y++)
+        {
+            for (var x = 0; x < source.Width; x++)
             {
                 if (MiningBarShape.ColoredBrightness(source.GetPixel(x, y)) >= 80) continue;
                 var p = (y * source.Width + x) * 4;
                 bytes[p] = bytes[p + 1] = bytes[p + 2] = 0;
             }
+        }
         var colored = new CapturedPixelBuffer(source.Width, source.Height, bytes);
         var settings = CalibratedSettings();
         var rim = MiningCircleMask.Locate(colored, 178, 94, 22, new MiningHudGeometry(settings));

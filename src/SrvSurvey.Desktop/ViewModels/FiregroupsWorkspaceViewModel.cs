@@ -84,13 +84,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
         if (commander is null || !storageAvailable) { NotifyLive(); return; }
 
         var loadouts = ReadLoadouts(update.JournalEvents, previousCommander);
-        var changed = false;
-        foreach (var ship in loadouts)
-        {
-            var old = document.Ships.FirstOrDefault(s => s.Key == ship.Key);
-            if (old is not null && old.Name == ship.Name && old.Modules.SequenceEqual(ship.Modules)) continue;
-            document.Ships.RemoveAll(s => s.Key == ship.Key); document.Ships.Add(ship); changed = true;
-        }
+        var changed = UpdateLoadouts(loadouts);
         var nextShip = document.Ships.LastOrDefault(s => s.Type.Equals(journal.ShipType, StringComparison.OrdinalIgnoreCase)
             && (journal.ShipId is null || s.Id == journal.ShipId));
         if (liveShip?.Key != nextShip?.Key)
@@ -106,6 +100,18 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
         }
         if (changed) Persist(document, "Equipped loadout updated.");
         NotifyLive();
+    }
+
+    private bool UpdateLoadouts(List<FiregroupShip> loadouts)
+    {
+        var changed = false;
+        foreach (var ship in loadouts)
+        {
+            var old = document.Ships.FirstOrDefault(s => s.Key == ship.Key);
+            if (old is not null && old.Name == ship.Name && old.Modules.SequenceEqual(ship.Modules)) continue;
+            document.Ships.RemoveAll(s => s.Key == ship.Key); document.Ships.Add(ship); changed = true;
+        }
+        return changed;
     }
 
     private void ChangeCommander(string? nextCommander)

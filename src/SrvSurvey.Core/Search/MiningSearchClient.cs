@@ -18,6 +18,7 @@ public sealed record MiningSystemResult(string System, double? Distance, string 
 /// <summary>Mining searches extend the shared Spansh pathway and use the application's network/privacy client.</summary>
 public sealed class MiningSearchClient(HttpClient? httpClient = null)
 {
+    private const string SystemNameField = "system_name";
     private const string DistanceField = "distance";
     private const int MaximumResponseBytes = 8 * 1024 * 1024;
     private static readonly HttpClient SharedClient = new() { Timeout = TimeSpan.FromSeconds(35) };
@@ -25,7 +26,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
     public async Task<IReadOnlyList<MiningRing>> FindRingsAsync(MiningRingQuery query, CancellationToken cancellationToken = default)
     {
         var filters = DistanceFilter(query.Radius);
-        if (query.SystemOnly) filters["system_name"] = new { value = new[] { query.ReferenceSystem } };
+        if (query.SystemOnly) filters[SystemNameField] = new { value = new[] { query.ReferenceSystem } };
         if (query.Mineral.Length > 0) filters["ring_signals"] = new[] { new { comparison = "<=>", count = new[] { query.MinimumHotspots, 9999 }, name = new[] { query.Mineral } } };
         if (query.RingType.Length > 0 && query.RingType != "All") filters["rings"] = new[] { new { type = new[] { query.RingType } } };
         using var response = await SearchAsync("bodies", query.ReferenceSystem, filters, query.Page, cancellationToken);
@@ -35,13 +36,13 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
             foreach (var ring in MiningJson.Array(body, "rings"))
             {
                 var type = MiningJson.Text(ring, "type");
-                if (query.RingType.Length > 0 && query.RingType != "All" && !type.Equals(query.RingType, StringComparison.OrdinalIgnoreCase)) continue;
+                if (!MatchesRingType(query.RingType, type)) continue;
                 var signals = MiningJson.Array(ring, "signals").Where(s => MiningJson.Text(s, "name").Length > 0)
                     .GroupBy(s => MiningJson.Text(s, "name")).ToDictionary(g => g.Key, g => (int)g.Max(s => MiningJson.Number(s, "count")));
                 if (query.Mineral.Length > 0 && !signals.Any(p => p.Key.Equals(query.Mineral, StringComparison.OrdinalIgnoreCase) && p.Value >= query.MinimumHotspots)) continue;
                 output.Add(new MiningRing
                 {
-                    System = MiningJson.Text(body, "system_name"),
+                    System = MiningJson.Text(body, SystemNameField),
                     Body = MiningJson.Text(ring, "name"),
                     RingType = type,
                     Reserve = MiningJson.Text(body, "reserve_level"),
@@ -56,6 +57,9 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         }
         return output;
     }
+
+    private static bool MatchesRingType(string requested, string actual) =>
+        requested.Length == 0 || requested == "All" || actual.Equals(requested, StringComparison.OrdinalIgnoreCase);
 
     public async Task<IReadOnlyList<MiningMarketResult>> FindMarketsAsync(MiningMarketQuery query, CancellationToken cancellationToken = default)
     {
@@ -88,7 +92,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
     public async Task<IReadOnlyList<MiningMarketResult>> FindSpanshMarketsAsync(MiningMarketQuery query, CancellationToken cancellationToken = default)
     {
         var filters = query.GalaxyWide ? new Dictionary<string, object>() : DistanceFilter(query.Radius);
-        if (query.SystemOnly && !query.GalaxyWide) filters["system_name"] = new { value = new[] { query.ReferenceSystem } };
+        if (query.SystemOnly && !query.GalaxyWide) filters[SystemNameField] = new { value = new[] { query.ReferenceSystem } };
         filters[query.Buying ? "selling_commodities" : "buying_commodities"] = new { value = new[] { query.Commodity } };
         using var response = await SearchAsync("stations", query.ReferenceSystem, filters, query.Page, cancellationToken, "market_updated_at");
         return SortMarkets(Results(response).SelectMany(station => ReadSpanshMarkets(station, query)), query.Buying);
@@ -106,7 +110,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
             var supply = (long)(Number(item, "supply") ?? Number(item, "stock") ?? 0);
             var demand = (long)MiningJson.Number(item, "demand");
             if (!HasTradeVolume(price, demand, supply, query.Buying)) continue;
-            yield return new(MiningJson.Text(station, "system_name"), MiningJson.Text(station, "name"), type,
+            yield return new(MiningJson.Text(station, SystemNameField), MiningJson.Text(station, "name"), type,
                 Number(station, DistanceField), Number(station, "distance_to_arrival"), price, demand, supply, updated, (long)MiningJson.Number(station, "market_id"), largePad);
         }
     }
@@ -136,12 +140,12 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         using var response = await SearchAsync("systems", query.ReferenceSystem, filters, query.Page, cancellationToken);
         return Results(response).Select(s => new MiningSystemResult(MiningJson.Text(s, "name"), Number(s, DistanceField), MiningJson.Text(s, "security"), MiningJson.Text(s, "allegiance"), MiningJson.Text(s, "government"), MiningJson.Text(s, "primary_economy"), MiningJson.Text(s, "controlling_minor_faction_state"), MiningJson.Text(s, "controlling_power"), MiningJson.Text(s, "power_state"), (long)MiningJson.Number(s, "population"))).ToArray();
     }
-    public async Task<IReadOnlyList<MiningMarketResult>> FindTradersAsync(string reference, string trader, CancellationToken cancellationToken = default, double radius = 100, int page = 0)
+    public async Task<IReadOnlyList<MiningMarketResult>> FindTradersAsync(string reference, string trader, double radius = 100, int page = 0, CancellationToken cancellationToken = default)
     {
         var filters = DistanceFilter(radius);
         filters["material_trader"] = new { value = trader };
         using var response = await SearchAsync("stations", reference, filters, page, cancellationToken);
-        return Results(response).Select(s => new MiningMarketResult(MiningJson.Text(s, "system_name"), MiningJson.Text(s, "name"), MiningJson.Text(s, "type"), Number(s, DistanceField), Number(s, "distance_to_arrival"), 0, 0, 0, null, (long)MiningJson.Number(s, "market_id"), HasLargePad(s))).ToArray();
+        return Results(response).Select(s => new MiningMarketResult(MiningJson.Text(s, SystemNameField), MiningJson.Text(s, "name"), MiningJson.Text(s, "type"), Number(s, DistanceField), Number(s, "distance_to_arrival"), 0, 0, 0, null, (long)MiningJson.Number(s, "market_id"), HasLargePad(s))).ToArray();
     }
     private async Task<JsonDocument> SearchAsync(string entity, string reference, Dictionary<string, object> filters, int page, CancellationToken cancellationToken, string sort = DistanceField)
     {

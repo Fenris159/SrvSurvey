@@ -69,7 +69,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public string PresetName { get => presetName; set => Set(ref presetName, value); }
     private IReadOnlyList<string>? cachedPresetNames;
     public IReadOnlyList<string> PresetNames => cachedPresetNames ??= ReadPresetNames();
-    private IReadOnlyList<string> ReadPresetNames() => Settings.AnnouncementPresets.Keys.Order().ToArray();
+    private string[] ReadPresetNames() => Settings.AnnouncementPresets.Keys.Order().ToArray();
     public ICommand StartCommand { get; }
     public ICommand PauseCommand { get; }
     public ICommand StopCommand { get; }
@@ -95,19 +95,19 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public IReadOnlyList<MiningMaterialSummary> Materials => Current?.Summarize(Settings.Thresholds) ?? [];
     private IReadOnlyList<MiningCollection>? cachedEngineeringMaterials;
     public IReadOnlyList<MiningCollection> EngineeringMaterials => cachedEngineeringMaterials ??= ReadEngineeringMaterials();
-    private IReadOnlyList<MiningCollection> ReadEngineeringMaterials() => Current?.Collections.Where(c => c.Engineering).ToArray() ?? [];
+    private MiningCollection[] ReadEngineeringMaterials() => Current?.Collections.Where(c => c.Engineering).ToArray() ?? [];
     private IReadOnlyList<MiningProspect>? cachedProspects;
     public IReadOnlyList<MiningProspect> Prospects => cachedProspects ??= ReadProspects();
-    private IReadOnlyList<MiningProspect> ReadProspects() => Current?.Prospects.AsEnumerable().Reverse().ToArray() ?? [];
+    private MiningProspect[] ReadProspects() => Current?.Prospects.AsEnumerable().Reverse().ToArray() ?? [];
     private IReadOnlyList<MiningMission>? cachedMissions;
     public IReadOnlyList<MiningMission> Missions => cachedMissions ??= ReadMissions();
-    private IReadOnlyList<MiningMission> ReadMissions() => state.Missions.Missions.Select(m => m with { }).ToArray();
+    private MiningMission[] ReadMissions() => state.Missions.Missions.Select(m => m with { }).ToArray();
     public IReadOnlyList<MiningNotice> Notices => state.Notices;
     public IReadOnlyList<string> ReportScreenshots => SelectedSession?.Screenshots.ToArray() ?? [];
     public IReadOnlyList<MiningSession> History => state.Data.History;
     private IReadOnlyList<MiningRing>? cachedRings;
     public IReadOnlyList<MiningRing> Rings => cachedRings ??= ReadRings();
-    private IReadOnlyList<MiningRing> ReadRings() => state.Data.Rings.Where(r => $"{r.System} {r.Body} {r.RingType} {r.Minerals}".Contains(Filter, StringComparison.OrdinalIgnoreCase)).OrderBy(r => r.Position is { } p && position is { } current ? p.DistanceTo(current) : double.MaxValue).ToArray();
+    private MiningRing[] ReadRings() => state.Data.Rings.Where(r => $"{r.System} {r.Body} {r.RingType} {r.Minerals}".Contains(Filter, StringComparison.OrdinalIgnoreCase)).OrderBy(r => r.Position is { } p && position is { } current ? p.DistanceTo(current) : double.MaxValue).ToArray();
     public string HistorySummary => $"{History.Count} sessions · {History.Sum(s => s.RefinedTons):N0} t refined · {History.Sum(s => s.ActiveDuration.TotalHours):0.0} active hours";
     public string ThresholdSummary => Settings.Thresholds.Count == 0 ? "All minerals are announced." : string.Join(" · ", Settings.Thresholds.Select(p => $"{p.Key} ≥ {p.Value:0.0}%"));
     public string Status { get => status; set => Set(ref status, value); }
@@ -127,7 +127,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         && (!Settings.HideInSupercruise || !eliteStatus.Flags.HasFlag(StatusFlags.Supercruise)) && (!Settings.OverlaysOnlyDuringSession || Current is not null);
     private IReadOnlyList<MiningNotice>? cachedVisibleNotices;
     public IReadOnlyList<MiningNotice> VisibleNotices => cachedVisibleNotices ??= ReadVisibleNotices();
-    private IReadOnlyList<MiningNotice> ReadVisibleNotices() => Notices.Where(n => clock.GetUtcNow() - n.Time < TimeSpan.FromSeconds(Math.Clamp(Settings.NotificationSeconds, 3, 120))).Take(5).ToArray();
+    private MiningNotice[] ReadVisibleNotices() => Notices.Where(n => clock.GetUtcNow() - n.Time < TimeSpan.FromSeconds(Math.Clamp(Settings.NotificationSeconds, 3, 120))).Take(5).ToArray();
     public void Apply(JournalMonitorUpdate update, JournalSessionState context, CargoSnapshot? currentCargo, EliteStatus? currentStatus)
     {
         sessionAvailable = !update.IsAwaitingCommanderIdentity && !context.IsShutdown && !string.IsNullOrWhiteSpace(context.FrontierId);
@@ -161,8 +161,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         {
             system = Text(json, "StarSystem");
             body = Text(json, "Body");
-            if (json.TryGetProperty("StarPos", out var starPos) && starPos.ValueKind == JsonValueKind.Array && starPos.GetArrayLength() == 3)
-                position = new GalacticCoordinate(starPos[0].GetDouble(), starPos[1].GetDouble(), starPos[2].GetDouble());
+            UpdatePosition(json);
         }
         if (entry.EventName is "SupercruiseExit" or "ApproachBody") body = Text(json, "Body");
         if (entry.EventName == "Loadout")
@@ -177,6 +176,11 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
         if (entry.EventName is "Powerplay" or "PowerplayJoin") Search.PledgedPower = Text(entry.Payload, "Power");
         if (entry.EventName == "PowerplayLeave") Search.PledgedPower = "";
+    }
+    private void UpdatePosition(JsonElement json)
+    {
+        if (json.TryGetProperty("StarPos", out var starPos) && starPos.ValueKind == JsonValueKind.Array && starPos.GetArrayLength() == 3)
+            position = new GalacticCoordinate(starPos[0].GetDouble(), starPos[1].GetDouble(), starPos[2].GetDouble());
     }
     private void ApplyAutomation(JournalMonitorUpdate update, MiningNotice? previousNotice)
     {

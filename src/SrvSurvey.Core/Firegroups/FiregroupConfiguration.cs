@@ -30,7 +30,7 @@ public sealed record FiregroupDocument
 
 public static class FiregroupLoadout
 {
-    private static readonly IReadOnlyDictionary<string, string> Names = ReadNames();
+    private static readonly Dictionary<string, string> Names = ReadNames();
 
     public static bool IsExcluded(FiregroupModule module) =>
         module.Symbol.Contains("shieldbooster", StringComparison.OrdinalIgnoreCase)

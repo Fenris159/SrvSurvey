@@ -6,6 +6,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksViewModel bookmarks, Action<MiningRing> cacheRing, Func<IReadOnlyList<MiningRing>> localRings, IStarSystemResolver resolver, MiningCommunityCache? community = null) : WorkspaceObservable, IDisposable
 {
+    private const string AllSystems = "All systems";
+    private const string ExpansionState = "Expansion";
     private CancellationTokenSource? pending;
     private string status = "Choose a reference system to search.";
     private MiningSearchPreferences options = new();
@@ -46,7 +48,7 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     private int destination;
     private int page;
     private bool systemOnly;
-    private string objective = "All systems";
+    private string objective = AllSystems;
     private string pledgedPower = "";
     private string planningTarget = "";
     private string planningObjective = "";
@@ -61,9 +63,9 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     public bool SystemOnly { get => systemOnly; set => Set(ref systemOnly, value); }
     public string Objective { get => objective; set => Set(ref objective, value); }
     public string PledgedPower { get => pledgedPower; set => Set(ref pledgedPower, value ?? ""); }
-    public static IReadOnlyList<string> Objectives { get; } = ["All systems", "Reinforce", "Undermine", "Acquire"];
+    public static IReadOnlyList<string> Objectives { get; } = [AllSystems, "Reinforce", "Undermine", "Acquire"];
     public static IReadOnlyList<string> Powers { get; } = ["", "Aisling Duval", "Archon Delaine", "Arissa Lavigny-Duval", "Denton Patreus", "Edmund Mahon", "Felicia Winters", "Li Yong-Rui", "Nakato Kaine", "Pranav Antal", "Yuri Grom", "Jerome Archer", "Zemina Torval"];
-    public static IReadOnlyList<string> PowerStates { get; } = ["", "Exploited", "Fortified", "Stronghold", "Unoccupied", "Expansion", "Contested"];
+    public static IReadOnlyList<string> PowerStates { get; } = ["", "Exploited", "Fortified", "Stronghold", "Unoccupied", ExpansionState, "Contested"];
     public IReadOnlyList<MiningMarketResult> Traders { get => traders; private set => Set(ref traders, value); }
     public MiningMarketResult? SelectedTrader { get => selectedTrader; set => Set(ref selectedTrader, value); }
     public string TradeMode { get => Buying ? "Buy supplies" : "Sell mined cargo"; set { Buying = value == "Buy supplies"; Changed(nameof(TradeMode)); } }
@@ -88,16 +90,7 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
             try { candidates.AddRange(await client.FindRingsAsync(new MiningRingQuery(Reference, Mineral.Trim(), RingType, Radius, MinimumHotspots, Page, SystemOnly), token)); }
             catch (Exception ex) when (Source == "Both" && IsProviderFailure(ex)) { offline = true; }
         }
-        if (Source != "Spansh")
-        {
-            var origin = await ResolveOriginAsync(token);
-            foreach (var ring in MiningReferenceData.Rings.Concat(localRings()))
-            {
-                var distance = RingDistance(ring, origin);
-                if (distance is null || distance > Radius || !MatchesRing(ring)) continue;
-                MergeRing(candidates, ring, distance.Value);
-            }
-        }
+        if (Source != "Spansh") await AddLocalRingsAsync(candidates, token);
         var annotated = candidates.Select(AnnotateRing)
             .Where(r => (!OnlyOverlaps || r.Overlaps.Length > 0) && (!OnlyRes || r.ResourceExtractionSites.Length > 0))
             .OrderBy(r => r.DistanceLy ?? double.MaxValue).Take(500).ToArray();
@@ -106,6 +99,16 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
         Status = $"{annotated.Length} matching rings · {Reference} · {Source} · online page {Page + 1}.";
         if (offline) Status += " Provider unavailable; showing local results.";
     });
+    private async Task AddLocalRingsAsync(List<MiningRing> candidates, CancellationToken token)
+    {
+        var origin = await ResolveOriginAsync(token);
+        foreach (var ring in MiningReferenceData.Rings.Concat(localRings()))
+        {
+            var distance = RingDistance(ring, origin);
+            if (distance is null || distance > Radius || !MatchesRing(ring)) continue;
+            MergeRing(candidates, ring, distance.Value);
+        }
+    }
     private async Task<GalacticCoordinate?> ResolveOriginAsync(CancellationToken token)
     {
         var origin = community?.Position(Reference)
@@ -175,7 +178,7 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
         var query = new MiningSystemQuery(Reference, Radius, Security.Trim(), Allegiance.Trim(), Government.Trim(), State.Trim(), Economy.Trim(), Power.Trim(), PowerState.Trim(), MinimumPopulation, Page);
         IReadOnlyList<MiningSystemResult> online = [];
         var source = "Spansh + local Powerplay observations";
-        if (PowerState is "Expansion" or "Contested") source = "Local Powerplay observations; this state is not indexed by Spansh";
+        if (PowerState is ExpansionState or "Contested") source = "Local Powerplay observations; this state is not indexed by Spansh";
         else online = await client.FindSystemsAsync(query, token);
         var local = community?.FindSystems(query, DateTimeOffset.UtcNow) ?? [];
         var result = local.Concat(online).DistinctBy(s => s.System, StringComparer.OrdinalIgnoreCase).Where(MatchesObjective).OrderBy(s => s.Distance ?? double.MaxValue).ToArray();
@@ -184,7 +187,7 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     });
     public Task SearchTradersAsync() => Run(async token =>
     {
-        var result = await client.FindTradersAsync(Reference, TraderType, token, Radius, Page);
+        var result = await client.FindTradersAsync(Reference, TraderType, Radius, Page, token);
         token.ThrowIfCancellationRequested(); Traders = result;
         Status = $"{result.Count} {TraderType.ToLowerInvariant()} material traders · Spansh.";
     });
@@ -199,10 +202,14 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     {
         if (SelectedSystem is not { } selected) return;
         Reference = selected.System; SystemOnly = true; Page = 0; Destination = 0;
-        planningTarget = Objective == "All systems" ? "" : selected.System;
+        planningTarget = Objective == AllSystems ? "" : selected.System;
         planningObjective = Objective; miningOrigin = selected.System; Changed(nameof(PlanningContext)); Changed(nameof(HasPlan));
     }
-    public async Task FindSelectedSystemRingsAsync() { if (SelectedSystem is null) return; UseSelectedSystem(); await SearchRingsAsync(); }
+    public async Task FindSelectedSystemRingsAsync()
+    {
+        if (SelectedSystem is null) return;
+        UseSelectedSystem(); await SearchRingsAsync();
+    }
     public async Task FindSellingStationsAsync()
     {
         if (SelectedRing is not { } ring) return;
@@ -217,16 +224,16 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     }
     private bool MatchesObjective(MiningSystemResult system) => Objective switch
     {
-        "Reinforce" => !Same(system.PowerState, "Expansion") && system.Power.Length > 0 && Same(system.Power, PledgedPower),
-        "Undermine" => !Same(system.PowerState, "Expansion") && system.Power.Length > 0 && !Same(system.Power, PledgedPower),
-        "Acquire" => system.PowerState is "Unoccupied" or "Expansion",
+        "Reinforce" => !Same(system.PowerState, ExpansionState) && system.Power.Length > 0 && Same(system.Power, PledgedPower),
+        "Undermine" => !Same(system.PowerState, ExpansionState) && system.Power.Length > 0 && !Same(system.Power, PledgedPower),
+        "Acquire" => system.PowerState is "Unoccupied" or ExpansionState,
         _ => true
     };
     public MiningSearchPreferences SaveOptions() => options;
     public void LoadOptions(MiningSearchPreferences values)
     {
         pending?.Cancel(); pending = null; IsBusy = false;
-        Rings = []; Markets = []; Systems = []; Traders = []; SelectedTrader = null; SystemOnly = false; Objective = "All systems"; PledgedPower = ""; SelectedRing = null; SelectedMarket = null; SelectedSystem = null;
+        Rings = []; Markets = []; Systems = []; Traders = []; SelectedTrader = null; SystemOnly = false; Objective = AllSystems; PledgedPower = ""; SelectedRing = null; SelectedMarket = null; SelectedSystem = null;
         ClearPlan();
         CommodityCategory = values.CommodityCategory;
         Reference = values.Reference;

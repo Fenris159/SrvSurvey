@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using SrvSurvey.Core.Network;
 using Avalonia.Interactivity;
 using SrvSurvey.Desktop.Runtime;
 using SrvSurvey.Desktop.ViewModels;
@@ -7,9 +8,9 @@ namespace SrvSurvey.Desktop.Views;
 
 public sealed partial class MiningSearchView : UserControl
 {
-    private const string EdsmSystemUrl = "https://www.edsm.net/en/search/systems/index/name/";
-    private const string SpanshSearchUrl = "https://spansh.co.uk/bodies/search/";
-    private const string InaraSystemUrl = "https://inara.cz/elite/starsystem/?search=";
+    private static readonly string EdsmSystemUrl = new UriBuilder(Uri.UriSchemeHttps, "www.edsm.net") { Path = UriPath.CombineWithTrailingSeparator("en", "search", "systems", "index", "name") }.Uri.AbsoluteUri;
+    private static readonly string SpanshSearchUrl = new UriBuilder(Uri.UriSchemeHttps, "spansh.co.uk") { Path = UriPath.CombineWithTrailingSeparator("bodies", "search") }.Uri.AbsoluteUri;
+    private static readonly string InaraSystemUrl = new UriBuilder(Uri.UriSchemeHttps, "inara.cz") { Path = UriPath.CombineWithTrailingSeparator("elite", "starsystem"), Query = "search=" }.Uri.AbsoluteUri;
     public MiningSearchView() => InitializeComponent();
     private MiningSearchViewModel? Model => DataContext as MiningSearchViewModel;
     private async void SearchRings_Click(object? sender, RoutedEventArgs e) { if (Model is { } vm) await vm.SearchRingsAsync(); }

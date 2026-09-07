@@ -8,6 +8,7 @@ public sealed record MiningDetectionSettings
 {
     public const double ReferenceRotationDegrees = -8;
     // Calibration identity is exact: even a small explicit user adjustment invalidates the old pixel analysis.
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "S1244", Justification = "Stored calibration identity must invalidate cached pixel analysis for every explicit adjustment, even one representable step; this is not a numerical tolerance test.")]
     public bool HasSameCalibration(MiningDetectionSettings other) => X.Equals(other.X) && Y.Equals(other.Y)
         && BarColor.Equals(other.BarColor)
         && Width.Equals(other.Width) && Height.Equals(other.Height) && CircleWidth.Equals(other.CircleWidth)

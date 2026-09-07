@@ -73,29 +73,27 @@ public sealed class MiningDetectionCoordinator : IDisposable
     private async Task ApplyResultAsync(MiningBarAnalysis result, MiningDetectionViewModel model,
         MiningDetectionSettings settings, SystemSurfaceContext? context, GameWindowSnapshot game)
     {
-        if (!disposed && context == mining.DetectionContext && ReferenceEquals(settings, model.Settings)
-            && (model.Enabled || model.IsCalibrating)
-            && (!model.IsCalibrating || model.IsCalibrationTesting))
+        if (disposed || context != mining.DetectionContext || !ReferenceEquals(settings, model.Settings)
+            || !(model.Enabled || model.IsCalibrating) || model.IsCalibrating && !model.IsCalibrationTesting) return;
+        var current = tracker.GetSnapshot();
+        if (!current.IsAvailable || current.ClientBounds != game.ClientBounds || !current.IsVisible
+            || !(current.IsForeground || model.IsCalibrating) || !mining.CanDetectRigs)
         {
-            var current = tracker.GetSnapshot();
-            if (current.IsAvailable && current.ClientBounds == game.ClientBounds && current.IsVisible
-                && (current.IsForeground || model.IsCalibrating) && mining.CanDetectRigs)
-            {
-                // Status can change while pixels are being captured on the worker thread.
-                if (!model.IsCalibrating && !mining.IsDetectionPositionSteady)
-                {
-                    model.Pause(SurfaceMiningViewModel.DetectionMovementMessage);
-                    return;
-                }
-                previousAnalysis = result;
-                previousSettings = settings;
-                previousContext = context;
-                var confirmed = model.Apply(result);
-                if (CanApplyTrackers(context, current, model))
-                    await mining.ApplyDetectedRigsAsync(confirmed, context!, settings);
-            }
-            else model.Pause("Waiting for Elite's Rhino cockpit view.");
+            model.Pause("Waiting for Elite's Rhino cockpit view.");
+            return;
         }
+        // Status can change while pixels are being captured on the worker thread.
+        if (!model.IsCalibrating && !mining.IsDetectionPositionSteady)
+        {
+            model.Pause(SurfaceMiningViewModel.DetectionMovementMessage);
+            return;
+        }
+        previousAnalysis = result;
+        previousSettings = settings;
+        previousContext = context;
+        var confirmed = model.Apply(result);
+        if (CanApplyTrackers(context, current, model))
+            await mining.ApplyDetectedRigsAsync(confirmed, context!, settings);
     }
     private static bool CanApplyTrackers(SystemSurfaceContext? context, GameWindowSnapshot current, MiningDetectionViewModel model) =>
         context is not null && current.IsForeground && model.Enabled && !model.IsCalibrating;
