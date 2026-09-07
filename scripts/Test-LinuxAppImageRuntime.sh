@@ -21,7 +21,19 @@ done
 
 work_root=$(mktemp -d "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/srvsurvey-appimage-runtime.XXXXXXXX")
 cleanup() {
-    rm -rf -- "$work_root"
+    # Xvfb can finish writing its transient files just after the smoke process
+    # exits. Leave the working directory and retry so that this best-effort
+    # teardown cannot turn a successful runtime validation into a failed job.
+    cd "${RUNNER_TEMP:-${TMPDIR:-/tmp}}" 2>/dev/null || cd /
+    local attempt
+    for attempt in 1 2 3 4 5; do
+        if rm -rf -- "$work_root" 2>/dev/null; then
+            return 0
+        fi
+        sleep 0.2
+    done
+    echo "Warning: unable to completely remove temporary AppImage validation files: '$work_root'." >&2
+    return 0
 }
 trap cleanup EXIT
 
