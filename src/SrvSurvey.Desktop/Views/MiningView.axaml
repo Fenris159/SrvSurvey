@@ -28,18 +28,14 @@
               </StackPanel>
             </Border>
             <TextBlock Text="{Binding CargoSummary}" TextWrapping="Wrap" Classes="card-title"/>
-            <ListBox ItemsSource="{Binding Cargo}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <Grid x:Name="CargoHeader" Classes="table-header" ColumnDefinitions="4*,*" ColumnSpacing="12">
+              <TextBlock Text="CARGO"/><TextBlock Grid.Column="1" Text="TONS"/>
+            </Grid>
+            <ListBox x:Name="CargoRows" Classes="table-rows" ItemsSource="{Binding Cargo}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="journal:CargoItem">
-                  <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="4,8">
-                    <StackPanel Grid.Column="0" Spacing="4">
-                      <TextBlock Text="Cargo" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="4">
-                      <TextBlock Text="Tons" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Count}" TextWrapping="Wrap"/>
-                    </StackPanel>
+                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="4*,*" ColumnSpacing="12">
+                    <TextBlock Text="{Binding Name}"/><TextBlock Grid.Column="1" Text="{Binding Count}"/>
                   </Grid>
                 </DataTemplate>
               </ListBox.ItemTemplate>
@@ -55,34 +51,17 @@
               </StackPanel>
             </Expander>
             <TextBlock Text="Prospecting yields" TextWrapping="Wrap" Classes="card-title"/>
-            <ListBox ItemsSource="{Binding Materials}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <Grid x:Name="MaterialsHeader" Classes="table-header" ColumnDefinitions="2*,*,*,*,*,*" ColumnSpacing="12">
+              <TextBlock Text="MINERAL"/><TextBlock Grid.Column="1" Text="FINDS"/><TextBlock Grid.Column="2" Text="QUALITY HITS"/>
+              <TextBlock Grid.Column="3" Text="AVERAGE"/><TextBlock Grid.Column="4" Text="BEST"/><TextBlock Grid.Column="5" Text="TONS"/>
+            </Grid>
+            <ListBox x:Name="MaterialsRows" Classes="table-rows" ItemsSource="{Binding Materials}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="mining:MiningMaterialSummary">
-                  <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="12" Margin="4,8">
-                    <StackPanel Grid.Column="0" Spacing="4">
-                      <TextBlock Text="Mineral" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="4">
-                      <TextBlock Text="Finds" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Finds}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="2" Spacing="4">
-                      <TextBlock Text="Quality hits" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding QualityHits}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="3" Spacing="4">
-                      <TextBlock Text="Average" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Average, StringFormat={}{0:0.0}%}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="4" Spacing="4">
-                      <TextBlock Text="Best" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Best, StringFormat={}{0:0.0}%}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="5" Spacing="4">
-                      <TextBlock Text="Tons" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Tons}" TextWrapping="Wrap"/>
-                    </StackPanel>
+                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="2*,*,*,*,*,*" ColumnSpacing="12">
+                    <TextBlock Text="{Binding Name}"/><TextBlock Grid.Column="1" Text="{Binding Finds}"/><TextBlock Grid.Column="2" Text="{Binding QualityHits}"/>
+                    <TextBlock Grid.Column="3" Text="{Binding Average, StringFormat={}{0:0.0}%}"/><TextBlock Grid.Column="4" Text="{Binding Best, StringFormat={}{0:0.0}%}"/>
+                    <TextBlock Grid.Column="5" Text="{Binding Tons}"/>
                   </Grid>
                 </DataTemplate>
               </ListBox.ItemTemplate>
@@ -119,22 +98,15 @@
             </Expander>
             <Expander Header="Prospecting timeline">
               <StackPanel Spacing="8">
-                <ListBox ItemsSource="{Binding Prospects}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <Grid x:Name="ProspectsHeader" Classes="table-header" ColumnDefinitions="1.2*,4*,2*" ColumnSpacing="12">
+                  <TextBlock Text="TIME"/><TextBlock Grid.Column="1" Text="MINERALS"/><TextBlock Grid.Column="2" Text="CORE"/>
+                </Grid>
+                <ListBox x:Name="ProspectRows" Classes="table-rows" ItemsSource="{Binding Prospects}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                   <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="mining:MiningProspect">
-                      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="4,8">
-                        <StackPanel Grid.Column="0" Spacing="4">
-                          <TextBlock Text="Time" TextWrapping="Wrap" Classes="muted"/>
-                          <TextBlock Text="{Binding Time}" TextWrapping="Wrap"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="4">
-                          <TextBlock Text="Minerals" TextWrapping="Wrap" Classes="muted"/>
-                          <TextBlock Text="{Binding MineralSummary}" TextWrapping="Wrap"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2" Spacing="4">
-                          <TextBlock Text="Core" TextWrapping="Wrap" Classes="muted"/>
-                          <TextBlock Text="{Binding Core}" TextWrapping="Wrap"/>
-                        </StackPanel>
+                      <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="1.2*,4*,2*" ColumnSpacing="12">
+                        <TextBlock Text="{Binding Time}"/><TextBlock Grid.Column="1" Text="{Binding MineralSummary}" ToolTip.Tip="{Binding MineralSummary}"/>
+                        <TextBlock Grid.Column="2" Text="{Binding Core}" ToolTip.Tip="{Binding Core}"/>
                       </Grid>
                     </DataTemplate>
                   </ListBox.ItemTemplate>
@@ -143,22 +115,14 @@
             </Expander>
             <Expander Header="Engineering materials collected">
               <StackPanel Spacing="8">
-                <ListBox ItemsSource="{Binding EngineeringMaterials}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <Grid x:Name="EngineeringMaterialsHeader" Classes="table-header" ColumnDefinitions="4*,*,*" ColumnSpacing="12">
+                  <TextBlock Text="MATERIAL"/><TextBlock Grid.Column="1" Text="GRADE"/><TextBlock Grid.Column="2" Text="COUNT"/>
+                </Grid>
+                <ListBox x:Name="EngineeringMaterialRows" Classes="table-rows" ItemsSource="{Binding EngineeringMaterials}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                   <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="mining:MiningCollection">
-                      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="4,8">
-                        <StackPanel Grid.Column="0" Spacing="4">
-                          <TextBlock Text="Material" TextWrapping="Wrap" Classes="muted"/>
-                          <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="4">
-                          <TextBlock Text="Grade" TextWrapping="Wrap" Classes="muted"/>
-                          <TextBlock Text="{Binding Grade}" TextWrapping="Wrap"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2" Spacing="4">
-                          <TextBlock Text="Count" TextWrapping="Wrap" Classes="muted"/>
-                          <TextBlock Text="{Binding Count}" TextWrapping="Wrap"/>
-                        </StackPanel>
+                      <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="4*,*,*" ColumnSpacing="12">
+                        <TextBlock Text="{Binding Name}"/><TextBlock Grid.Column="1" Text="{Binding Grade}"/><TextBlock Grid.Column="2" Text="{Binding Count}"/>
                       </Grid>
                     </DataTemplate>
                   </ListBox.ItemTemplate>
@@ -167,22 +131,14 @@
             </Expander>
             <Expander Header="Recent notifications">
               <StackPanel Spacing="8">
-                <ListBox ItemsSource="{Binding Notices}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <Grid x:Name="NoticesHeader" Classes="table-header" ColumnDefinitions="1.2*,1.2*,4*" ColumnSpacing="12">
+                  <TextBlock Text="TIME"/><TextBlock Grid.Column="1" Text="KIND"/><TextBlock Grid.Column="2" Text="NOTIFICATION"/>
+                </Grid>
+                <ListBox x:Name="NoticeRows" Classes="table-rows" ItemsSource="{Binding Notices}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                   <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="mining:MiningNotice">
-                      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="4,8">
-                        <StackPanel Grid.Column="0" Spacing="4">
-                          <TextBlock Text="Time" TextWrapping="Wrap" Classes="muted"/>
-                          <TextBlock Text="{Binding Time}" TextWrapping="Wrap"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="4">
-                          <TextBlock Text="Kind" TextWrapping="Wrap" Classes="muted"/>
-                          <TextBlock Text="{Binding Kind}" TextWrapping="Wrap"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2" Spacing="4">
-                          <TextBlock Text="Notification" TextWrapping="Wrap" Classes="muted"/>
-                          <TextBlock Text="{Binding Text}" TextWrapping="Wrap"/>
-                        </StackPanel>
+                      <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="1.2*,1.2*,4*" ColumnSpacing="12">
+                        <TextBlock Text="{Binding Time}"/><TextBlock Grid.Column="1" Text="{Binding Kind}"/><TextBlock Grid.Column="2" Text="{Binding Text}" ToolTip.Tip="{Binding Text}"/>
                       </Grid>
                     </DataTemplate>
                   </ListBox.ItemTemplate>
@@ -205,7 +161,11 @@
               <Button Content="Delete selected" Click="DeleteReport_Click" Margin="0,0,8,8"/>
               <Button Content="Undo delete" Click="UndoReport_Click" Margin="0,0,8,8"/>
             </WrapPanel>
-            <ListBox ItemsSource="{Binding History}" SelectedItem="{Binding SelectedSession}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <Grid x:Name="HistoryHeader" Classes="table-header" ColumnDefinitions="1.4*,1.5*,2.5*,*,*" ColumnSpacing="12">
+              <TextBlock Text="STARTED"/><TextBlock Grid.Column="1" Text="SYSTEM"/><TextBlock Grid.Column="2" Text="RING"/>
+              <TextBlock Grid.Column="3" Text="TONS"/><TextBlock Grid.Column="4" Text="TONS / HOUR"/>
+            </Grid>
+            <ListBox x:Name="HistoryRows" Classes="table-rows" ItemsSource="{Binding History}" SelectedItem="{Binding SelectedSession}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
               <ListBox.ContextMenu>
                 <ContextMenu>
                   <MenuItem Header="Export HTML report…" Click="ExportReport_Click" Tag="html"/>
@@ -215,27 +175,10 @@
               </ListBox.ContextMenu>
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="mining:MiningSession">
-                  <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="12" Margin="4,8">
-                    <StackPanel Grid.Column="0" Spacing="4">
-                      <TextBlock Text="Started" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Started}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="4">
-                      <TextBlock Text="System" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="2" Spacing="4">
-                      <TextBlock Text="Ring" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Ring}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="3" Spacing="4">
-                      <TextBlock Text="Tons" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding RefinedTons}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="4" Spacing="4">
-                      <TextBlock Text="t/h" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding TonsPerHour, StringFormat={}{0:0.0}}" TextWrapping="Wrap"/>
-                    </StackPanel>
+                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="1.4*,1.5*,2.5*,*,*" ColumnSpacing="12">
+                    <TextBlock Text="{Binding Started}"/><TextBlock Grid.Column="1" Text="{Binding System}" ToolTip.Tip="{Binding System}"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Ring}" ToolTip.Tip="{Binding Ring}"/><TextBlock Grid.Column="3" Text="{Binding RefinedTons}"/>
+                    <TextBlock Grid.Column="4" Text="{Binding TonsPerHour, StringFormat={}{0:0.0}}"/>
                   </Grid>
                 </DataTemplate>
               </ListBox.ItemTemplate>
@@ -288,7 +231,11 @@
           <StackPanel Spacing="14" Margin="4,20,4,16">
             <TextBlock Text="Mining missions" TextWrapping="Wrap" Classes="card-title"/>
             <TextBlock Text="Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events." TextWrapping="Wrap" Classes="muted"/>
-            <ListBox ItemsSource="{Binding Missions}" SelectedItem="{Binding SelectedMission}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <Grid x:Name="MissionsHeader" Classes="table-header" ColumnDefinitions="2*,*,*,*,*,2.5*,1.2*" ColumnSpacing="12">
+              <TextBlock Text="COMMODITY"/><TextBlock Grid.Column="1" Text="REQUIRED"/><TextBlock Grid.Column="2" Text="DELIVERED"/><TextBlock Grid.Column="3" Text="ON BOARD"/>
+              <TextBlock Grid.Column="4" Text="NEEDED"/><TextBlock Grid.Column="5" Text="DESTINATION"/><TextBlock Grid.Column="6" Text="STATUS"/>
+            </Grid>
+            <ListBox x:Name="MissionRows" Classes="table-rows" ItemsSource="{Binding Missions}" SelectedItem="{Binding SelectedMission}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
               <ListBox.ContextMenu>
                 <ContextMenu>
                   <MenuItem Header="Find hotspots for this commodity" Command="{Binding MissionHotspotsCommand}"/>
@@ -296,35 +243,10 @@
               </ListBox.ContextMenu>
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="mining:MiningMission">
-                  <Grid ColumnDefinitions="*,*,*,*,*,*,*" ColumnSpacing="12" Margin="4,8">
-                    <StackPanel Grid.Column="0" Spacing="4">
-                      <TextBlock Text="Commodity" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Commodity}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="4">
-                      <TextBlock Text="Required" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Required}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="2" Spacing="4">
-                      <TextBlock Text="Delivered" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Delivered}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="3" Spacing="4">
-                      <TextBlock Text="On board" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding OnBoard}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="4" Spacing="4">
-                      <TextBlock Text="Needed" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Remaining}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="5" Spacing="4">
-                      <TextBlock Text="Destination" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Destination}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="6" Spacing="4">
-                      <TextBlock Text="Status" TextWrapping="Wrap" Classes="muted"/>
-                      <TextBlock Text="{Binding Status}" TextWrapping="Wrap"/>
-                    </StackPanel>
+                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="2*,*,*,*,*,2.5*,1.2*" ColumnSpacing="12">
+                    <TextBlock Text="{Binding Commodity}"/><TextBlock Grid.Column="1" Text="{Binding Required}"/><TextBlock Grid.Column="2" Text="{Binding Delivered}"/>
+                    <TextBlock Grid.Column="3" Text="{Binding OnBoard}"/><TextBlock Grid.Column="4" Text="{Binding Remaining}"/>
+                    <TextBlock Grid.Column="5" Text="{Binding Destination}" ToolTip.Tip="{Binding Destination}"/><TextBlock Grid.Column="6" Text="{Binding Status}"/>
                   </Grid>
                 </DataTemplate>
               </ListBox.ItemTemplate>
@@ -346,7 +268,7 @@
             <views:MiningSearchView x:Name="SearchPane" DataContext="{Binding Search}" Margin="0,0,12,16"/>
           </ScrollViewer>
           <Border x:Name="LocalPane" Grid.Row="1" IsVisible="False">
-            <Grid RowDefinitions="Auto,*,Auto">
+            <Grid RowDefinitions="Auto,Auto,*,Auto">
               <StackPanel Spacing="8">
                 <TextBlock Text="Local ring discoveries" TextWrapping="Wrap" Classes="card-title"/>
                 <Button Content="Import earlier journals…" Click="ImportJournals_Click" Margin="0,0,8,8"/>
@@ -354,7 +276,11 @@
                 <TextBlock Text="Filter local discoveries" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding Filter}"/>
               </StackPanel>
-              <ListBox Grid.Row="1" ItemsSource="{Binding Rings}" SelectedItem="{Binding SelectedRing}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+              <Grid x:Name="LocalRingsHeader" Grid.Row="1" Classes="table-header" ColumnDefinitions="1.4*,2*,*,*,1.5*,.8*" ColumnSpacing="12">
+                <TextBlock Text="SYSTEM"/><TextBlock Grid.Column="1" Text="RING"/><TextBlock Grid.Column="2" Text="TYPE"/><TextBlock Grid.Column="3" Text="RESERVE"/>
+                <TextBlock Grid.Column="4" Text="HOTSPOTS"/><TextBlock Grid.Column="5" Text="ARRIVAL"/>
+              </Grid>
+              <ListBox x:Name="LocalRingRows" Grid.Row="2" Classes="table-rows" ItemsSource="{Binding Rings}" SelectedItem="{Binding SelectedRing}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <ListBox.ContextMenu>
                   <ContextMenu>
                     <MenuItem Header="Bookmark ring" Command="{Binding BookmarkRingCommand}"/>
@@ -362,36 +288,15 @@
                 </ListBox.ContextMenu>
                 <ListBox.ItemTemplate>
                   <DataTemplate x:DataType="mining:MiningRing">
-                    <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="12" Margin="4,8">
-                      <StackPanel Grid.Column="0" Spacing="4">
-                        <TextBlock Text="System" TextWrapping="Wrap" Classes="muted"/>
-                        <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
-                      </StackPanel>
-                      <StackPanel Grid.Column="1" Spacing="4">
-                        <TextBlock Text="Ring" TextWrapping="Wrap" Classes="muted"/>
-                        <TextBlock Text="{Binding Body}" TextWrapping="Wrap"/>
-                      </StackPanel>
-                      <StackPanel Grid.Column="2" Spacing="4">
-                        <TextBlock Text="Type" TextWrapping="Wrap" Classes="muted"/>
-                        <TextBlock Text="{Binding RingType}" TextWrapping="Wrap"/>
-                      </StackPanel>
-                      <StackPanel Grid.Column="3" Spacing="4">
-                        <TextBlock Text="Reserve" TextWrapping="Wrap" Classes="muted"/>
-                        <TextBlock Text="{Binding Reserve}" TextWrapping="Wrap"/>
-                      </StackPanel>
-                      <StackPanel Grid.Column="4" Spacing="4">
-                        <TextBlock Text="Hotspots" TextWrapping="Wrap" Classes="muted"/>
-                        <TextBlock Text="{Binding Minerals}" TextWrapping="Wrap"/>
-                      </StackPanel>
-                      <StackPanel Grid.Column="5" Spacing="4">
-                        <TextBlock Text="Arrival ls" TextWrapping="Wrap" Classes="muted"/>
-                        <TextBlock Text="{Binding ArrivalLs}" TextWrapping="Wrap"/>
-                      </StackPanel>
+                    <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="1.4*,2*,*,*,1.5*,.8*" ColumnSpacing="12">
+                      <TextBlock Text="{Binding System}" ToolTip.Tip="{Binding System}"/><TextBlock Grid.Column="1" Text="{Binding Body}" ToolTip.Tip="{Binding Body}"/>
+                      <TextBlock Grid.Column="2" Text="{Binding RingType}"/><TextBlock Grid.Column="3" Text="{Binding Reserve}"/>
+                      <TextBlock Grid.Column="4" Text="{Binding Minerals}" ToolTip.Tip="{Binding Minerals}"/><TextBlock Grid.Column="5" Text="{Binding ArrivalLs, StringFormat='{}{0:N0} ls'}"/>
                     </Grid>
                   </DataTemplate>
                 </ListBox.ItemTemplate>
               </ListBox>
-              <Button Grid.Row="2" Content="Bookmark selected ring" Command="{Binding BookmarkRingCommand}" Margin="0,0,8,8"/>
+              <Button Grid.Row="3" Content="Bookmark selected ring" Command="{Binding BookmarkRingCommand}" Margin="0,8,8,8"/>
             </Grid>
           </Border>
         </Grid>

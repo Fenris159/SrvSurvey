@@ -25,10 +25,12 @@ summarized below.
   exceeds the download limit. Searches show inline failures and remain retryable;
   trader requests respect the selected radius and use smaller station pages.
 - Reorganizes Mining → Find into Rings, Markets, Traders and Powerplay. Explicit
-  sell/buy objectives, compact location cards, pad and freshness details, and
+  sell/buy objectives, pad and freshness details, and
   one workspace scrollbar replace the crowded nested tables. Expanded filters
-  and results grow with the page instead of being clipped into subframes. Local journal
-  discoveries and import remain available in their own pane.
+  and results grow with the page instead of being clipped into subframes. Search
+  results and Mining data lists now use compact single-line rows beneath fixed,
+  labeled column headers, with the same presentation shared by Bookmarks. Local
+  journal discoveries and import remain available in their own pane.
 - Adds a Powerplay planning path from objective and pledged Power to a system,
   its rings and selling stations. Journal Powerplay events supply the pledge;
   unknown ownership is excluded from objective matches. Results are planning

@@ -37,9 +37,28 @@ public sealed class MiningWorkspacePresentationTests
                 model.MiningWorkspace.Search.Destination = destination;
                 using var frame = window.CaptureRenderedFrame();
                 var search = view.FindControl<Views.MiningSearchView>("SearchPane")!;
+                var prefix = new[] { "Ring", "Market", "Trader", "System" }[destination];
+                var expectedHeaders = new[]
+                {
+                    new[] { "SYSTEM", "RING", "MINERALS", "TYPE", "RESERVE", "POWER", "OVERLAPS", "RES", "DISTANCE", "ARRIVAL" },
+                    new[] { "SYSTEM", "STATION", "TYPE", "PAD", "DISTANCE", "ARRIVAL", "PRICE", "DEMAND", "STOCK", "OBSERVED" },
+                    new[] { "SYSTEM", "STATION", "TYPE", "PAD", "DISTANCE", "ARRIVAL" },
+                    new[] { "SYSTEM", "POWER", "POWER STATE", "SECURITY", "ECONOMY", "GOVERNMENT", "ALLEGIANCE", "FACTION STATE", "POPULATION", "DISTANCE" },
+                }[destination];
+                var header = search.FindControl<Grid>($"{prefix}ResultsHeader");
+                Assert.NotNull(header);
+                Assert.Equal(expectedHeaders, header.Children.OfType<TextBlock>().Select(text => text.Text));
                 var page = Assert.Single(search.GetVisualAncestors().OfType<ScrollViewer>());
                 var results = Assert.Single(search.GetVisualDescendants().OfType<ListBox>(), l => l.IsEffectivelyVisible);
                 Assert.NotEmpty(results.Items);
+                Assert.DoesNotContain(header.GetVisualAncestors(), ancestor => ReferenceEquals(ancestor, results));
+                var rows = results.GetVisualDescendants().OfType<Grid>().Where(grid => grid.Classes.Contains("table-row")).ToArray();
+                Assert.NotEmpty(rows);
+                Assert.All(rows, row =>
+                {
+                    Assert.Single(row.RowDefinitions);
+                    Assert.InRange(row.Bounds.Height, 20, 48);
+                });
                 Assert.Same(page, Assert.Single(results.GetVisualAncestors().OfType<ScrollViewer>()));
                 var inner = Assert.Single(results.GetVisualDescendants().OfType<ScrollViewer>());
                 Assert.True(inner.Extent.Height <= inner.Viewport.Height + 1);
@@ -63,7 +82,11 @@ public sealed class MiningWorkspacePresentationTests
                 using var wheeled = window.CaptureRenderedFrame();
                 Assert.True(page.Offset.Y > oldOffset, $"{destination}: wheel over results must scroll the workspace");
                 var output = Environment.GetEnvironmentVariable("SRVSURVEY_MINING_RENDER_OUTPUT");
-                if (output is not null) { Directory.CreateDirectory(output); using var stream = File.Create(Path.Combine(output, $"mining-search-{destination}.png")); wheeled!.Save(stream, PngBitmapEncoderOptions.Default); }
+                if (output is not null)
+                {
+                    Directory.CreateDirectory(output);
+                    using (var stream = File.Create(Path.Combine(output, $"mining-search-{destination}.png"))) wheeled!.Save(stream, PngBitmapEncoderOptions.Default);
+                }
             }
         }
         finally { window.Close(); }
@@ -163,6 +186,29 @@ public sealed class MiningWorkspacePresentationTests
             model.MiningWorkspace.Restore(MiningStore.Export(data));
             model.Bookmarks.AddMiningLocation(new GalacticBookmark { System = "Delkar", Body = "Delkar 7 A Ring", Minerals = "Platinum", ResourceExtractionSites = "High", Rating = 4 });
             window.Show();
+            using (var initialMiningFrame = window.CaptureRenderedFrame())
+            {
+                var miningView = Assert.Single(window.GetVisualDescendants().OfType<Views.MiningView>(), view => view.IsEffectivelyVisible);
+                AssertMiningTable(miningView, "CargoHeader", "CargoRows", ["CARGO", "TONS"]);
+                AssertMiningTable(miningView, "MaterialsHeader", "MaterialsRows", ["MINERAL", "FINDS", "QUALITY HITS", "AVERAGE", "BEST", "TONS"]);
+                AssertTableHeader(miningView, "ProspectsHeader", ["TIME", "MINERALS", "CORE"]);
+                AssertTableHeader(miningView, "EngineeringMaterialsHeader", ["MATERIAL", "GRADE", "COUNT"]);
+                AssertTableHeader(miningView, "NoticesHeader", ["TIME", "KIND", "NOTIFICATION"]);
+
+                model.MiningWorkspace.SelectedTab = 1;
+                using var reportsFrame = window.CaptureRenderedFrame();
+                AssertMiningTable(miningView, "HistoryHeader", "HistoryRows", ["STARTED", "SYSTEM", "RING", "TONS", "TONS / HOUR"]);
+
+                model.MiningWorkspace.SelectedTab = 2;
+                using var missionsFrame = window.CaptureRenderedFrame();
+                AssertMiningTable(miningView, "MissionsHeader", "MissionRows", ["COMMODITY", "REQUIRED", "DELIVERED", "ON BOARD", "NEEDED", "DESTINATION", "STATUS"]);
+
+                model.MiningWorkspace.SelectedTab = 3;
+                miningView.FindControl<ScrollViewer>("SearchPage")!.IsVisible = false;
+                miningView.FindControl<Border>("LocalPane")!.IsVisible = true;
+                using var localFrame = window.CaptureRenderedFrame();
+                AssertMiningTable(miningView, "LocalRingsHeader", "LocalRingRows", ["SYSTEM", "RING", "TYPE", "RESERVE", "HOTSPOTS", "ARRIVAL"]);
+            }
             foreach (var theme in RavenThemeCatalog.All)
             {
                 themes.Select(theme.Key);
@@ -185,6 +231,8 @@ public sealed class MiningWorkspacePresentationTests
             using var bookmarksFrame = window.CaptureRenderedFrame();
             var bookmarkView = Assert.Single(window.GetVisualDescendants().OfType<Views.BookmarksView>(), view => view.IsEffectivelyVisible);
             Assert.Same(model.Bookmarks, bookmarkView.DataContext);
+            AssertTableHeader(bookmarkView, "BookmarksHeader", ["SYSTEM", "BODY / RING", "CATEGORY", "MINERALS"]);
+            AssertSingleLineRows(bookmarkView.FindControl<ListBox>("BookmarkRows"));
             Assert.True(model.IsNavigationNavigationExpanded);
             var buttons = bookmarkView.GetVisualDescendants().OfType<Button>().ToArray();
             Assert.Contains(buttons, b => Equals(b.Content, "Attach screenshots…"));
@@ -201,5 +249,35 @@ public sealed class MiningWorkspacePresentationTests
             window.Close(); themes.Select(original);
             if (Directory.Exists(directory)) Directory.Delete(directory, true);
         }
+    }
+
+    private static void AssertMiningTable(Views.MiningView view, string headerName, string rowsName, string[] expectedHeaders)
+    {
+        AssertTableHeader(view, headerName, expectedHeaders);
+        var header = view.FindControl<Grid>(headerName)!;
+        var rows = view.FindControl<ListBox>(rowsName);
+        Assert.DoesNotContain(header.GetVisualAncestors(), ancestor => ReferenceEquals(ancestor, rows));
+        AssertSingleLineRows(rows);
+    }
+
+    private static void AssertTableHeader(Control view, string headerName, string[] expectedHeaders)
+    {
+        var header = view.FindControl<Grid>(headerName);
+        Assert.NotNull(header);
+        Assert.Contains("table-header", header.Classes);
+        Assert.Equal(expectedHeaders, header.Children.OfType<TextBlock>().Select(text => text.Text));
+    }
+
+    private static void AssertSingleLineRows(ListBox? rows)
+    {
+        Assert.NotNull(rows);
+        Assert.Contains("table-rows", rows.Classes);
+        var rowGrids = rows.GetVisualDescendants().OfType<Grid>().Where(grid => grid.Classes.Contains("table-row")).ToArray();
+        Assert.NotEmpty(rowGrids);
+        Assert.All(rowGrids, row =>
+        {
+            Assert.Single(row.RowDefinitions);
+            Assert.InRange(row.Bounds.Height, 20, 48);
+        });
     }
 }

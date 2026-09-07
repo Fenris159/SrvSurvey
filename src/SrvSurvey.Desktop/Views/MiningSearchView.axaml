@@ -16,7 +16,7 @@
     </Grid>
     <TabControl x:Name="SearchDestinations" Grid.Row="3" SelectedIndex="{Binding Destination}">
       <TabItem Header="Rings">
-        <Grid RowDefinitions="Auto,Auto,Auto" Margin="0,12,0,0">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,12,0,0">
           <Border>
             <StackPanel Spacing="8">
               <WrapPanel>
@@ -45,7 +45,12 @@
               </Expander>
             </StackPanel>
           </Border>
-          <ListBox x:Name="RingResults" Grid.Row="2" ItemsSource="{Binding Rings}" SelectedItem="{Binding SelectedRing}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,10,0,10">
+          <Grid x:Name="RingResultsHeader" Grid.Row="2" Classes="table-header" ColumnDefinitions="1.3*,1.8*,1.3*,*,*,*,*,*,.7*,.7*" ColumnSpacing="12">
+            <TextBlock Text="SYSTEM"/><TextBlock Grid.Column="1" Text="RING"/><TextBlock Grid.Column="2" Text="MINERALS"/>
+            <TextBlock Grid.Column="3" Text="TYPE"/><TextBlock Grid.Column="4" Text="RESERVE"/><TextBlock Grid.Column="5" Text="POWER"/>
+            <TextBlock Grid.Column="6" Text="OVERLAPS"/><TextBlock Grid.Column="7" Text="RES"/><TextBlock Grid.Column="8" Text="DISTANCE"/><TextBlock Grid.Column="9" Text="ARRIVAL"/>
+          </Grid>
+          <ListBox x:Name="RingResults" Grid.Row="3" Classes="table-rows" ItemsSource="{Binding Rings}" SelectedItem="{Binding SelectedRing}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,0,0,10">
             <ListBox.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="Bookmark ring" Click="Bookmark_Click"/>
@@ -58,26 +63,17 @@
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="mining:MiningRing">
-                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" Margin="8,8">
-                  <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding Body}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="1" Spacing="4" MaxWidth="180">
-                    <TextBlock Text="{Binding DistanceLy , StringFormat='{}{0:N1} ly'}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,8,0,0">
-                    <TextBlock Text="{Binding Minerals}" TextWrapping="Wrap"/>
-                    <WrapPanel>
-                      <TextBlock Text="{Binding RingType}" TextWrapping="Wrap"/>
-                      <TextBlock Text=" · " IsVisible="{Binding Reserve, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap"/>
-                      <TextBlock Text="{Binding Reserve}" TextWrapping="Wrap"/>
-                    </WrapPanel>
-                    <TextBlock Text="{Binding Power}" IsVisible="{Binding Power, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding Overlaps}" IsVisible="{Binding Overlaps, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding ResourceExtractionSites}" IsVisible="{Binding ResourceExtractionSites, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding ArrivalLs , StringFormat='Arrival: {0:N0} ls'}" IsVisible="{Binding ArrivalLs, Converter={x:Static converters:ObjectConverters.IsNotNull}}" TextWrapping="Wrap"/>
-                  </StackPanel>
+                <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="1.3*,1.8*,1.3*,*,*,*,*,*,.7*,.7*" ColumnSpacing="12">
+                  <TextBlock Text="{Binding System}" ToolTip.Tip="{Binding System}"/>
+                  <TextBlock Grid.Column="1" Text="{Binding Body}" ToolTip.Tip="{Binding Body}"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Minerals}" ToolTip.Tip="{Binding Minerals}"/>
+                  <TextBlock Grid.Column="3" Text="{Binding RingType}"/>
+                  <TextBlock Grid.Column="4" Text="{Binding Reserve}"/>
+                  <TextBlock Grid.Column="5" Text="{Binding Power}" ToolTip.Tip="{Binding Power}"/>
+                  <TextBlock Grid.Column="6" Text="{Binding Overlaps}" ToolTip.Tip="{Binding Overlaps}"/>
+                  <TextBlock Grid.Column="7" Text="{Binding ResourceExtractionSites}" ToolTip.Tip="{Binding ResourceExtractionSites}"/>
+                  <TextBlock Grid.Column="8" Text="{Binding DistanceLy, StringFormat='{}{0:N1} ly'}"/>
+                  <TextBlock Grid.Column="9" Text="{Binding ArrivalLs, StringFormat='{}{0:N0} ls'}"/>
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
@@ -91,7 +87,7 @@
         </Grid>
       </TabItem>
       <TabItem Header="Markets">
-        <Grid RowDefinitions="Auto,Auto,Auto" Margin="0,12,0,0">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,12,0,0">
           <Border>
             <StackPanel Spacing="8">
               <WrapPanel>
@@ -129,7 +125,12 @@
               </Expander>
             </StackPanel>
           </Border>
-          <ListBox x:Name="MarketResults" Grid.Row="2" ItemsSource="{Binding Markets}" SelectedItem="{Binding SelectedMarket}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,10,0,10">
+          <Grid x:Name="MarketResultsHeader" Grid.Row="2" Classes="table-header" ColumnDefinitions="1.2*,1.5*,1.1*,.8*,.7*,.7*,.9*,.8*,.8*,1.2*" ColumnSpacing="12">
+            <TextBlock Text="SYSTEM"/><TextBlock Grid.Column="1" Text="STATION"/><TextBlock Grid.Column="2" Text="TYPE"/><TextBlock Grid.Column="3" Text="PAD"/>
+            <TextBlock Grid.Column="4" Text="DISTANCE"/><TextBlock Grid.Column="5" Text="ARRIVAL"/><TextBlock Grid.Column="6" Text="PRICE"/><TextBlock Grid.Column="7" Text="DEMAND"/>
+            <TextBlock Grid.Column="8" Text="STOCK"/><TextBlock Grid.Column="9" Text="OBSERVED"/>
+          </Grid>
+          <ListBox x:Name="MarketResults" Grid.Row="3" Classes="table-rows" ItemsSource="{Binding Markets}" SelectedItem="{Binding SelectedMarket}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,0,0,10">
             <ListBox.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="Open system in Inara" Click="OpenSystem_Click" Tag="market"/>
@@ -140,28 +141,12 @@
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="search:MiningMarketResult">
-                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" Margin="8,8">
-                  <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding Station}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="1" Spacing="4" MaxWidth="180">
-                    <TextBlock Text="{Binding Price , StringFormat='{}{0:N0} CR/t'}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,8,0,0">
-                    <TextBlock Text="{Binding Type}" TextWrapping="Wrap"/>
-                      <TextBlock Text="{Binding PadDescription}" TextWrapping="Wrap"/>
-                    <WrapPanel>
-                      <TextBlock Text="{Binding Distance , StringFormat='{}{0:N1} ly'}" TextWrapping="Wrap"/>
-                      <TextBlock Text=" · " TextWrapping="Wrap"/>
-                      <TextBlock Text="{Binding ArrivalLs , StringFormat='Arrival: {0:N0} ls'}" TextWrapping="Wrap"/>
-                      <TextBlock Text=" · " TextWrapping="Wrap"/>
-                      <TextBlock Text="{Binding Demand , StringFormat='Demand: {0:N0} t'}" TextWrapping="Wrap"/>
-                      <TextBlock Text=" · " TextWrapping="Wrap"/>
-                      <TextBlock Text="{Binding Supply , StringFormat='Stock: {0:N0} t'}" TextWrapping="Wrap"/>
-                    </WrapPanel>
-                    <TextBlock Text="{Binding Updated , StringFormat='Observed: {0:g}'}" TextWrapping="Wrap"/>
-                  </StackPanel>
+                <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="1.2*,1.5*,1.1*,.8*,.7*,.7*,.9*,.8*,.8*,1.2*" ColumnSpacing="12">
+                  <TextBlock Text="{Binding System}" ToolTip.Tip="{Binding System}"/><TextBlock Grid.Column="1" Text="{Binding Station}" ToolTip.Tip="{Binding Station}"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Type}"/><TextBlock Grid.Column="3" Text="{Binding PadDescription}"/>
+                  <TextBlock Grid.Column="4" Text="{Binding Distance, StringFormat='{}{0:N1} ly'}"/><TextBlock Grid.Column="5" Text="{Binding ArrivalLs, StringFormat='{}{0:N0} ls'}"/>
+                  <TextBlock Grid.Column="6" Text="{Binding Price, StringFormat='{}{0:N0} CR/t'}"/><TextBlock Grid.Column="7" Text="{Binding Demand, StringFormat='{}{0:N0} t'}"/>
+                  <TextBlock Grid.Column="8" Text="{Binding Supply, StringFormat='{}{0:N0} t'}"/><TextBlock Grid.Column="9" Text="{Binding Updated, StringFormat='{}{0:g}'}"/>
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
@@ -172,7 +157,7 @@
         </Grid>
       </TabItem>
       <TabItem Header="Traders">
-        <Grid RowDefinitions="Auto,Auto,Auto" Margin="0,12,0,0">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,12,0,0">
           <Border>
             <StackPanel Spacing="8">
               <TextBlock Text="Exchange engineering materials at a trader. These are separate from the commodity market." TextWrapping="Wrap" Classes="muted"/>
@@ -182,7 +167,11 @@
               </StackPanel>
             </StackPanel>
           </Border>
-          <ListBox x:Name="TraderResults" Grid.Row="2" ItemsSource="{Binding Traders}" SelectedItem="{Binding SelectedTrader}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,10,0,10">
+          <Grid x:Name="TraderResultsHeader" Grid.Row="2" Classes="table-header" ColumnDefinitions="1.2*,1.5*,1.1*,.8*,.7*,.7*" ColumnSpacing="12">
+            <TextBlock Text="SYSTEM"/><TextBlock Grid.Column="1" Text="STATION"/><TextBlock Grid.Column="2" Text="TYPE"/><TextBlock Grid.Column="3" Text="PAD"/>
+            <TextBlock Grid.Column="4" Text="DISTANCE"/><TextBlock Grid.Column="5" Text="ARRIVAL"/>
+          </Grid>
+          <ListBox x:Name="TraderResults" Grid.Row="3" Classes="table-rows" ItemsSource="{Binding Traders}" SelectedItem="{Binding SelectedTrader}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,0,0,10">
             <ListBox.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="Open system in Inara" Click="OpenSystem_Click" Tag="trader"/>
@@ -193,19 +182,10 @@
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="search:MiningMarketResult">
-                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" Margin="8,8">
-                  <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding Station}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="1" Spacing="4" MaxWidth="180">
-                    <TextBlock Text="{Binding Distance , StringFormat='{}{0:N1} ly'}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,8,0,0">
-                    <TextBlock Text="{Binding Type}" TextWrapping="Wrap"/>
-                      <TextBlock Text="{Binding PadDescription}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding ArrivalLs , StringFormat='Arrival: {0:N0} ls'}" TextWrapping="Wrap"/>
-                  </StackPanel>
+                <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="1.2*,1.5*,1.1*,.8*,.7*,.7*" ColumnSpacing="12">
+                  <TextBlock Text="{Binding System}" ToolTip.Tip="{Binding System}"/><TextBlock Grid.Column="1" Text="{Binding Station}" ToolTip.Tip="{Binding Station}"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Type}"/><TextBlock Grid.Column="3" Text="{Binding PadDescription}"/>
+                  <TextBlock Grid.Column="4" Text="{Binding Distance, StringFormat='{}{0:N1} ly'}"/><TextBlock Grid.Column="5" Text="{Binding ArrivalLs, StringFormat='{}{0:N0} ls'}"/>
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
@@ -216,7 +196,7 @@
         </Grid>
       </TabItem>
       <TabItem Header="Powerplay">
-        <Grid RowDefinitions="Auto,Auto,Auto" Margin="0,12,0,0">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,12,0,0">
           <Border>
             <StackPanel Spacing="8">
               <WrapPanel>
@@ -268,7 +248,12 @@
               </Expander>
             </StackPanel>
           </Border>
-          <ListBox x:Name="SystemResults" Grid.Row="2" ItemsSource="{Binding Systems}" SelectedItem="{Binding SelectedSystem}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,10,0,10">
+          <Grid x:Name="SystemResultsHeader" Grid.Row="2" Classes="table-header" ColumnDefinitions="1.3*,1.2*,*,*,*,*,*,*,1.1*,.7*" ColumnSpacing="12">
+            <TextBlock Text="SYSTEM"/><TextBlock Grid.Column="1" Text="POWER"/><TextBlock Grid.Column="2" Text="POWER STATE"/><TextBlock Grid.Column="3" Text="SECURITY"/>
+            <TextBlock Grid.Column="4" Text="ECONOMY"/><TextBlock Grid.Column="5" Text="GOVERNMENT"/><TextBlock Grid.Column="6" Text="ALLEGIANCE"/>
+            <TextBlock Grid.Column="7" Text="FACTION STATE"/><TextBlock Grid.Column="8" Text="POPULATION"/><TextBlock Grid.Column="9" Text="DISTANCE"/>
+          </Grid>
+          <ListBox x:Name="SystemResults" Grid.Row="3" Classes="table-rows" ItemsSource="{Binding Systems}" SelectedItem="{Binding SelectedSystem}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,0,0,10">
             <ListBox.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="Use for hotspot search" Click="UseSystem_Click"/>
@@ -278,30 +263,12 @@
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="search:MiningSystemResult">
-                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" Margin="8,8">
-                  <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="1" Spacing="4" MaxWidth="180">
-                    <TextBlock Text="{Binding Distance , StringFormat='{}{0:N1} ly'}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,8,0,0">
-                    <WrapPanel>
-                      <TextBlock Text="{Binding Power}" IsVisible="{Binding Power, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap"/>
-                      <TextBlock Text=" · " TextWrapping="Wrap"/>
-                      <TextBlock Text="{Binding PowerState}" TextWrapping="Wrap"/>
-                    </WrapPanel>
-                    <WrapPanel>
-                      <TextBlock Text="{Binding Security}" TextWrapping="Wrap"/>
-                      <TextBlock Text=" · " TextWrapping="Wrap"/>
-                      <TextBlock Text="{Binding Economy}" TextWrapping="Wrap"/>
-                      <TextBlock Text=" · " TextWrapping="Wrap"/>
-                      <TextBlock Text="{Binding Government}" TextWrapping="Wrap"/>
-                    </WrapPanel>
-                    <TextBlock Text="{Binding Allegiance}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding State}" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding Population , StringFormat='Population: {0:N0}'}" TextWrapping="Wrap"/>
-                  </StackPanel>
+                <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="1.3*,1.2*,*,*,*,*,*,*,1.1*,.7*" ColumnSpacing="12">
+                  <TextBlock Text="{Binding System}" ToolTip.Tip="{Binding System}"/><TextBlock Grid.Column="1" Text="{Binding Power}"/>
+                  <TextBlock Grid.Column="2" Text="{Binding PowerState}"/><TextBlock Grid.Column="3" Text="{Binding Security}"/>
+                  <TextBlock Grid.Column="4" Text="{Binding Economy}"/><TextBlock Grid.Column="5" Text="{Binding Government}"/>
+                  <TextBlock Grid.Column="6" Text="{Binding Allegiance}"/><TextBlock Grid.Column="7" Text="{Binding State}"/>
+                  <TextBlock Grid.Column="8" Text="{Binding Population, StringFormat='{}{0:N0}'}"/><TextBlock Grid.Column="9" Text="{Binding Distance, StringFormat='{}{0:N1} ly'}"/>
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
