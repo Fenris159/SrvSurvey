@@ -6,6 +6,7 @@ namespace SrvSurvey.Core.Mining;
 public sealed record MiningMaterial(string Name, double Percentage);
 public sealed record MiningProspect(DateTimeOffset Time, IReadOnlyList<MiningMaterial> Materials, string Core, string Content)
 {
+    public double Remaining { get; init; } = 100;
     public string MineralSummary => string.Join(" · ", Materials.Select(m => $"{m.Name} {m.Percentage:0.0}%"));
 }
 public sealed record MiningCollection(DateTimeOffset Time, string Name, int Count, bool Engineering)
@@ -38,6 +39,7 @@ public sealed record MiningSession
     public Dictionary<string, double> RefineryEstimates { get; init; } = new();
     public List<string> Screenshots { get; init; } = [];
     public List<MiningProspect> Prospects { get; init; } = [];
+    public MiningProspect? ActiveProspect { get; set; }
     public List<MiningCollection> Collections { get; init; } = [];
     public int ProspectorLimpets { get; set; }
     public int CollectorLimpets { get; set; }
@@ -112,32 +114,70 @@ public sealed class MiningSessionTracker
     {
         if (Current is not { PausedAt: null } session || entry.Timestamp is not { } time || time < session.Started) return false;
         var data = entry.Payload;
-        switch (entry.EventName)
+        return entry.EventName switch
         {
-            case "LaunchDrone":
-                var type = MiningJson.Text(data, "Type");
-                if (type.Equals("Prospector", StringComparison.OrdinalIgnoreCase)) session.ProspectorLimpets++;
-                else if (type.Equals("Collection", StringComparison.OrdinalIgnoreCase)) session.CollectorLimpets++;
-                else return false;
-                break;
-            case "ProspectedAsteroid":
-                // A depleted asteroid can be re-targeted; it is not a fresh prospect.
-                if (data.TryGetProperty("Remaining", out var remaining) && remaining.TryGetDouble(out var value) && value < 100) return false;
-                var materials = MiningJson.Array(data, "Materials")
-                    .Select(m => new MiningMaterial(MiningJson.Text(m, "Name"), MiningJson.Number(m, "Proportion")))
-                    .Where(m => m.Name.Length > 0 && m.Percentage is >= 0 and <= 100).ToArray();
-                session.Prospects.Add(new MiningProspect(time, materials, MiningJson.Text(data, "MotherlodeMaterial"), MiningJson.Text(data, "Content")));
-                break;
-            case "MiningRefined":
-                session.Collections.Add(new MiningCollection(time, MiningJson.Text(data, "Type"), 1, false));
-                break;
-            case "MaterialCollected":
-                if (!MiningJson.Text(data, "Category").Equals("Raw", StringComparison.OrdinalIgnoreCase)) return false;
-                session.Collections.Add(new MiningCollection(time, MiningJson.Text(data, "Name"), (int)MiningJson.Number(data, "Count"), true));
-                break;
-            default:
-                return false;
+            "LaunchDrone" => ApplyDrone(session, data),
+            "ProspectedAsteroid" => ApplyProspect(session, time, data),
+            "MiningRefined" => ApplyCollection(session, new MiningCollection(time, MiningJson.Text(data, "Type"), 1, false)),
+            "MaterialCollected" => ApplyMaterial(session, time, data),
+            "SupercruiseEntry" or "FSDJump" => ReleaseProspect(session),
+            "StartJump" when MiningJson.Text(data, "JumpType").Equals("Hyperspace", StringComparison.OrdinalIgnoreCase) => ReleaseProspect(session),
+            _ => false,
+        };
+    }
+
+    private static bool ApplyDrone(MiningSession session, JsonElement data)
+    {
+        var type = MiningJson.Text(data, "Type");
+        if (type.Equals("Prospector", StringComparison.OrdinalIgnoreCase)) session.ProspectorLimpets++;
+        else if (type.Equals("Collection", StringComparison.OrdinalIgnoreCase)) session.CollectorLimpets++;
+        else return false;
+        return true;
+    }
+
+    private static bool ApplyProspect(MiningSession session, DateTimeOffset time, JsonElement data)
+    {
+        var materials = MiningJson.Array(data, "Materials")
+            .Select(material => new MiningMaterial(MiningJson.Text(material, "Name"), MiningJson.Number(material, "Proportion")))
+            .Where(material => material.Name.Length > 0 && material.Percentage is >= 0 and <= 100).ToArray();
+        var remaining = data.TryGetProperty("Remaining", out var remainingValue)
+            && remainingValue.TryGetDouble(out var parsedRemaining) && double.IsFinite(parsedRemaining)
+            ? Math.Clamp(parsedRemaining, 0, 100)
+            : 100;
+        var prospect = new MiningProspect(time, materials, MiningJson.Text(data, "MotherlodeMaterial"), MiningJson.Text(data, "Content"))
+        {
+            Remaining = remaining,
+        };
+        // Re-targeting the asteroid reports its updated depletion. Keep the
+        // original prospect identity so progress does not inflate session totals.
+        if (remaining < 100 && session.Prospects.Count > 0)
+        {
+            var original = session.Prospects[^1];
+            prospect = prospect with { Time = original.Time };
+            session.Prospects[^1] = prospect;
         }
+        else
+            session.Prospects.Add(prospect);
+        session.ActiveProspect = remaining > 0 ? prospect : null;
+        return true;
+    }
+
+    private static bool ReleaseProspect(MiningSession session)
+    {
+        if (session.ActiveProspect is null) return false;
+        session.ActiveProspect = null;
+        return true;
+    }
+
+    private static bool ApplyMaterial(MiningSession session, DateTimeOffset time, JsonElement data)
+    {
+        if (!MiningJson.Text(data, "Category").Equals("Raw", StringComparison.OrdinalIgnoreCase)) return false;
+        return ApplyCollection(session, new MiningCollection(time, MiningJson.Text(data, "Name"), (int)MiningJson.Number(data, "Count"), true));
+    }
+
+    private static bool ApplyCollection(MiningSession session, MiningCollection collection)
+    {
+        session.Collections.Add(collection);
         return true;
     }
 }

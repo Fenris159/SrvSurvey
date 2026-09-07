@@ -123,7 +123,12 @@ public sealed class MiningStore(string directory)
         || s.Thresholds is null || s.QualityAdjustments is null || s.Prospects is null || s.Collections is null || s.Screenshots is null || s.RefineryEstimates is null
         || (s.Imported is { } imported && (imported.Fields is null || !double.IsFinite(imported.Tons) || imported.Tons < 0))
         || s.Screenshots.Any(string.IsNullOrWhiteSpace)
-        || s.Prospects.Any(p => p is null || p.Materials is null || p.Materials.Any(m => m is null || m.Name is null || !double.IsFinite(m.Percentage) || m.Percentage is < 0 or > 100))
+        || s.Prospects.Any(InvalidProspect)
+        || (s.ActiveProspect is { } activeProspect && InvalidProspect(activeProspect))
         || s.Collections.Any(c => c is null || c.Name is null || c.Count < 0)
         || s.RefineryEstimates.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 16);
+
+    private static bool InvalidProspect(MiningProspect prospect) =>
+        prospect is null || prospect.Materials is null || !double.IsFinite(prospect.Remaining) || prospect.Remaining is < 0 or > 100
+        || prospect.Materials.Any(m => m is null || m.Name is null || !double.IsFinite(m.Percentage) || m.Percentage is < 0 or > 100);
 }

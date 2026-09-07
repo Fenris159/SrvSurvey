@@ -21,6 +21,7 @@ public sealed class MiningWorkspaceState
     public MiningSessionTracker Session { get; } = new();
     public MiningMissionTracker Missions { get; } = new();
     public List<MiningNotice> Notices { get; } = [];
+    public string? CurrentProspectText => Data.Settings.NotifyProspecting ? FormatCurrentProspect() : null;
 
     public bool Apply(JournalEventEnvelope entry, bool bootstrap, string system, string body, string ship, GalacticCoordinate? position = null)
     {
@@ -41,7 +42,7 @@ public sealed class MiningWorkspaceState
         var changed = Session.Apply(entry);
         Missions.Apply(entry);
         ApplyRing(entry, system, position);
-        if (changed && !bootstrap) AddNotice(entry);
+        if (changed && !bootstrap && !IsProspectProgress(entry)) AddNotice(entry);
         Synchronize();
         return true;
     }
@@ -100,8 +101,25 @@ public sealed class MiningWorkspaceState
             || Data.Settings.Thresholds.TryGetValue(m.Name.ToLowerInvariant(), out var threshold) && m.Percentage >= threshold).ToArray();
         if (selected.Length == 0 && string.IsNullOrEmpty(last.Core)) return null;
         return string.Join(" · ", selected.Select(m => $"{m.Name} {m.Percentage:0.0}%"))
-            + (string.IsNullOrEmpty(last.Core) ? "" : $" · Core: {last.Core}");
+            + (string.IsNullOrEmpty(last.Core) ? "" : $" · Core: {last.Core}")
+            + (last.Remaining <= 0 ? " · Remaining depleted" : $" · Remaining {last.Remaining:0.#}%");
     }
+
+    private string? FormatCurrentProspect()
+    {
+        var prospect = Session.Current?.ActiveProspect;
+        if (prospect is null) return null;
+        var parts = prospect.Materials.Select(material => $"{material.Name} {material.Percentage:0.0}%").ToList();
+        if (!string.IsNullOrEmpty(prospect.Core)) parts.Add($"Core: {prospect.Core}");
+        parts.Add(prospect.Remaining <= 0 ? "Remaining depleted" : $"Remaining {prospect.Remaining:0.#}%");
+        return string.Join(" · ", parts);
+    }
+
+    private static bool IsProspectProgress(JournalEventEnvelope entry) =>
+        entry.EventName == "ProspectedAsteroid"
+        && entry.Payload.TryGetProperty("Remaining", out var remaining)
+        && remaining.TryGetDouble(out var value)
+        && value < 100;
 
     private void ApplyRing(JournalEventEnvelope entry, string system, GalacticCoordinate? position)
     {
@@ -140,5 +158,5 @@ public sealed class MiningWorkspaceState
         Data.Rings.Add(ring);
         return ring;
     }
-    private static readonly HashSet<string> RelevantEvents = ["LaunchDrone", "ProspectedAsteroid", "MiningRefined", "MaterialCollected", "MissionAccepted", "MissionCompleted", "MissionAbandoned", "MissionFailed", "CargoDepot", "Scan", "SAASignalsFound"];
+    private static readonly HashSet<string> RelevantEvents = ["LaunchDrone", "ProspectedAsteroid", "MiningRefined", "MaterialCollected", "MissionAccepted", "MissionCompleted", "MissionAbandoned", "MissionFailed", "CargoDepot", "Scan", "SAASignalsFound", "StartJump", "SupercruiseEntry", "FSDJump"];
 }

@@ -51,8 +51,9 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
         Assert.Contains("Heat Sink", overlay.PrimaryLabel);
         Feed(reloaded, [], 0);
         Assert.Equal("Group A", overlay.GroupLabel);
-        Assert.Contains("MediumHardpoint1", overlay.PrimaryLabel);
-        Assert.Contains("MediumHardpoint2", overlay.PrimaryLabel);
+        Assert.Contains("Pulse Laser ×2", overlay.PrimaryLabel);
+        Assert.DoesNotContain("MediumHardpoint", overlay.PrimaryLabel);
+        Assert.DoesNotContain("(2E Fixed)", overlay.PrimaryLabel);
         Assert.Contains("Collector Limpet", overlay.SecondaryLabel);
     }
 
