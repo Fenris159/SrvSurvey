@@ -38,8 +38,8 @@ public sealed class FiregroupLoadoutTests
         var ship = Parse(new LoadoutModule("MediumHardpoint1", symbol, localizedName));
         var shipWithoutLocalizedName = Parse(new LoadoutModule("MediumHardpoint1", symbol));
 
-        Assert.Contains(ship.Modules, module => module.Symbol == symbol.ToLowerInvariant() && module.Name == localizedName);
-        Assert.Contains(shipWithoutLocalizedName.Modules, module => module.Symbol == symbol.ToLowerInvariant());
+        Assert.Contains(ship.Modules, module => module.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase) && module.Name == localizedName);
+        Assert.Contains(shipWithoutLocalizedName.Modules, module => module.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]
@@ -56,7 +56,7 @@ public sealed class FiregroupLoadoutTests
     {
         var ship = Parse(new LoadoutModule("Slot01_Size5", symbol, localizedName));
 
-        Assert.DoesNotContain(ship.Modules, module => module.Symbol == symbol.ToLowerInvariant());
+        Assert.DoesNotContain(ship.Modules, module => module.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase));
     }
 
     private static FiregroupShip Parse(params LoadoutModule[] modules)
