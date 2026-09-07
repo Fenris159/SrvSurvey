@@ -14,6 +14,83 @@ public sealed class JumpInfoViewModelTests : IDisposable
         "SrvSurvey-JumpInfoViewModel-" + Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public async Task LookupWarningsShowOnlyDistinctProviderNames()
+    {
+        var client = new FakeSummaryClient(CreateSummary())
+        {
+            Warnings = [
+                "EDSM bodies data is unavailable: Response status code does not indicate success: 502 (Bad Gateway).",
+                "EDSM traffic data is unavailable: The request timed out after 30 seconds.",
+                "Spansh system dump data is unavailable: Invalid JSON response.",
+            ],
+        };
+        var messages = new List<string>();
+        using var viewModel = CreateViewModel(client, log: messages.Add);
+        viewModel.ApplyUpdate(new JumpInfoApplyUpdateRequest(
+            "Sol", 1, new GalacticCoordinate(0, 0, 0), CreateNavRoute(),
+            [FsdTarget("Beta", 3, "N")],
+            new EliteStatus { Flags = StatusFlags.InMainShip }, null));
+        await viewModel.PendingSummaryLoad;
+
+        Assert.Equal("EDSM and Spansh data unavailable.", viewModel.DataStatus);
+        Assert.True(viewModel.HasTraffic);
+        Assert.Equal(client.Warnings.Select(warning =>
+            "Next-jump lookup for Beta (3): " + warning), messages);
+
+        client.Warnings = [];
+        viewModel.ApplyUpdate(new JumpInfoApplyUpdateRequest(
+            "Sol", 1, new GalacticCoordinate(0, 0, 0), CreateNavRoute(),
+            [FsdTarget("Alpha", 2, "K")],
+            new EliteStatus { Flags = StatusFlags.InMainShip }, null));
+        await viewModel.PendingSummaryLoad;
+        Assert.False(viewModel.HasDataStatus);
+        Assert.Equal(3, messages.Count);
+    }
+
+    [Theory]
+    [InlineData("EDSM bodies", "EDSM data unavailable.")]
+    [InlineData("EDSM traffic", "EDSM data unavailable.")]
+    [InlineData("Spansh system dump", "Spansh data unavailable.")]
+    [InlineData("Unexpected provider", "System data unavailable.")]
+    public async Task SingleLookupWarningNeverExposesExceptionInOverlay(string provider, string expected)
+    {
+        using var viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary())
+        {
+            Warnings = [$"{provider} data is unavailable: detailed network failure"],
+        });
+        viewModel.ApplyUpdate(new JumpInfoApplyUpdateRequest(
+            "Sol", 1, null, null, [FsdTarget("Beta", 3, "N")],
+            new EliteStatus { Flags = StatusFlags.InMainShip }, null));
+        await viewModel.PendingSummaryLoad;
+        Assert.Equal(expected, viewModel.DataStatus);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LookupExceptionIsLoggedButOverlayShowsShortNotice(bool timeout)
+    {
+        Exception failure = timeout
+            ? new TaskCanceledException("Detailed timeout message")
+            : new HttpRequestException("Detailed HTTP failure", null, System.Net.HttpStatusCode.BadGateway);
+        var messages = new List<string>();
+        using var viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary())
+        {
+            Failure = failure,
+        }, log: messages.Add);
+        viewModel.ApplyUpdate(new JumpInfoApplyUpdateRequest(
+            "Sol", 1, null, null, [FsdTarget("Beta", 3, "N")],
+            new EliteStatus { Flags = StatusFlags.InMainShip }, null));
+        await viewModel.PendingSummaryLoad;
+        Assert.Equal("System data unavailable.", viewModel.DataStatus);
+        Assert.False(viewModel.IsLoading);
+        var message = Assert.Single(messages);
+        Assert.Contains("Beta (3)", message);
+        Assert.Contains(failure.GetType().Name, message);
+        Assert.Contains(failure.Message, message);
+    }
+
+    [Fact]
     public async Task ChargingJumpBuildsRouteAndLoadsAllMetadata()
     {
         var client = new FakeSummaryClient(CreateSummary());
@@ -908,13 +985,15 @@ public sealed class JumpInfoViewModelTests : IDisposable
 
     private JumpInfoViewModel CreateViewModel(
         ISystemSummaryClient client,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        Action<string>? log = null)
     {
         return new JumpInfoViewModel(
             client,
             new JumpInfoSettingsStore(
                 Path.Combine(temporaryDirectory, "ui-settings.json")),
-            timeProvider: timeProvider);
+            timeProvider: timeProvider,
+            log: log);
     }
 
     private static NavRouteSnapshot CreateNavRoute()
@@ -1001,6 +1080,8 @@ public sealed class JumpInfoViewModelTests : IDisposable
     private sealed class FakeSummaryClient(SystemSummary summary)
         : ISystemSummaryClient
     {
+        public IReadOnlyList<string> Warnings { get; set; } = [];
+        public Exception? Failure { get; init; }
         public List<(string Name, long Address)> Requests { get; } = [];
 
         public Task<SystemSummaryLoadResult> GetAsync(
@@ -1009,7 +1090,11 @@ public sealed class JumpInfoViewModelTests : IDisposable
             CancellationToken cancellationToken = default)
         {
             Requests.Add((systemName, systemAddress));
-            return Task.FromResult(new SystemSummaryLoadResult(summary, []));
+            if (Failure is not null)
+            {
+                return Task.FromException<SystemSummaryLoadResult>(Failure);
+            }
+            return Task.FromResult(new SystemSummaryLoadResult(summary, Warnings));
         }
     }
 

@@ -76,6 +76,7 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
         {
             [OverlaySettingsCategory.Global] =
                 ["PlotFloatie", "PlotMultiGameCommander", "PlotPulse"],
+            [OverlaySettingsCategory.Firegroups] = ["PlotMiningFiregroups"],
             [OverlaySettingsCategory.Exploration] =
             [
                 "PlotBodyInfo",

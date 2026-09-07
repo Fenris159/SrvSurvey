@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:vm="using:SrvSurvey.Desktop.ViewModels" x:Class="SrvSurvey.Desktop.OverlayExceptionsWindow"
+ x:DataType="vm:OverlayExceptionCategoryViewModel" Title="{Binding Title}"
+ Width="680" Height="740" MinWidth="440" MinHeight="400" WindowStartupLocation="CenterOwner" Icon="/Assets/logo.ico">
+ <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="16">
+  <StackPanel Spacing="12">
+   <TextBlock Classes="card-title" Text="{Binding Title}" TextWrapping="Wrap"/>
+   <TextBlock Classes="muted" Text="Allow this category's overlays for the ship or vehicle you are currently aboard. Checked entries permit the normal overlay rules; unchecked entries hide them. On foot is separate from your parked ship. Editor previews are unaffected." TextWrapping="Wrap"/>
+   <StackPanel Orientation="Horizontal" Spacing="12">
+    <Button Classes="link" Content="Check All" Command="{Binding CheckAllCommand}"/>
+    <TextBlock Text="/" VerticalAlignment="Center"/>
+    <Button Classes="link" Content="Uncheck All" Command="{Binding UncheckAllCommand}"/>
+   </StackPanel>
+  </StackPanel>
+  <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+   <ItemsControl ItemsSource="{Binding Groups}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:OverlayExceptionGroupViewModel">
+    <StackPanel Spacing="8" Margin="0,0,0,20">
+     <TextBlock Classes="card-title" Text="{Binding Name}"/>
+     <ItemsControl ItemsSource="{Binding Entries}">
+      <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:OverlayExceptionEntryViewModel">
+       <CheckBox Content="{Binding Name}" IsChecked="{Binding IsAllowed, Mode=TwoWay}" Width="270" Margin="0,2,8,2"/>
+      </DataTemplate></ItemsControl.ItemTemplate>
+     </ItemsControl>
+    </StackPanel>
+   </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+  </ScrollViewer>
+  <TextBlock Grid.Row="2" Text="{Binding Status}" TextWrapping="Wrap" Foreground="{DynamicResource RavenWarningBrush}"/>
+ </Grid>
+</Window>

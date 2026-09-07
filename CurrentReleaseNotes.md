@@ -1,9 +1,107 @@
-# SrvSurvey-XP 2.1.3.0-rc.44.5
+# SrvSurvey-XP 2.1.3.0-rc.45
 
-RC44.5 brings the RC43 and RC44 changes together in one cumulative candidate:
-Rhino surface mining, shared tracker shortcuts, configurable rig cleanup,
-a complete chat-command reference, and fixes to survey overlays, exploration
-estimates, and Live Horizons tracking.
+- Replaces the Mining workspace placeholder with session accounting, prospecting
+  yields, core and raw-material tracking, cargo, mining missions, historical
+  reports, screenshots, manual refinery estimates and mining settings.
+- Adds shared Navigation → Bookmarks with categories, filters, mining annotations
+  and import/export. Mining uses the same catalog.
+- Adds local/reference/Spansh hotspot searches, commodity-market and system/trader
+  searches, existing Fleet Carrier data and distance shortcuts. Optional
+  receive-only EDDN observations supplement prices and Powerplay information.
+- Adds ship-only Mining notifications and a Firegroups reference overlay, with
+  shared editor/live presentations, overlay controls and input toggles.
+  Existing Rhino overlays are unchanged by this workspace expansion.
+- Adds announcement filters/presets and optional Windows speech, CSV history
+  import, offline HTML reports with print/PDF output, and ZIP backups containing
+  shared bookmarks and screenshot attachments. Guides documents the new tools.
+
+RC45 adds experimental Rhino HUD rig tracking and corrects overlay sizing and
+next-jump error handling. It retains the combined RC43, RC44, and RC44.5 features
+summarized below.
+
+## New in RC45
+
+- Fixes a commodity-market/material-trader search crash when a provider response
+  exceeds the download limit. Searches show inline failures and remain retryable;
+  trader requests respect the selected radius and use smaller station pages.
+- Reorganizes Mining → Find into Rings, Markets, Traders and Powerplay. Explicit
+  sell/buy objectives, pad and freshness details, and
+  one workspace scrollbar replace the crowded nested tables. Expanded filters
+  and results grow with the page instead of being clipped into subframes. Search
+  results and Mining data lists now use compact single-line rows beneath fixed,
+  labeled column headers, with the same presentation shared by Bookmarks. Local
+  journal discoveries and import remain available in their own pane.
+- Adds a Powerplay planning path from objective and pledged Power to a system,
+  its rings and selling stations. Journal Powerplay events supply the pledge;
+  unknown ownership is excluded from objective matches. Results are planning
+  observations, not guaranteed merit rewards or acquisition eligibility.
+- Improves mining search, persistence and shutdown reliability, and simplifies
+  HUD detection internals while retaining its existing thresholds and safeguards.
+
+- Rebuilds Firegroups with named, ship-specific configurations; A–H arrow controls;
+  multiple equipped primary/secondary module selections; live tree previews and
+  expandable saved configurations. Save feedback is immediate and failures are
+  visible. Loadout supplies ship identity and hardpoints/utilities/internal limpet
+  controllers; shield cell banks, shield boosters and point defence are excluded.
+  Saved rows offer direct trash deletion with a Yes/No confirmation. The overlay follows the boarded
+  ship's saved configuration and Status.json group number. Older assignments are
+  preserved for migration. Firegroups now has dedicated overlay settings with
+  visibility, shortcut and independent Overlay Exceptions. Mining backups also
+  preserve named Firegroups configurations and cached loadouts.
+
+- Renames Mining firegroups to Firegroups in Status & utilities. Its title-free
+  Group, Primary and Secondary column defaults to the bottom-right and works
+  for the identified boarded ship independently of mining-session notification settings.
+- Adds Overlay Exceptions to every overlay settings page: category allow lists
+  grouped by ship size and vehicle, with Check All / Uncheck All. Filters follow
+  the currently boarded vessel or on-foot status and preserve editor previews.
+
+- Moves Fleet Carrier and Firegroups directly below Overview, and Distance to
+  Travel after FC Routes. Mining headers shrink to a readable minimum before wrapping.
+- Loads linked Frontier information automatically on commander detection. The
+  full carrier workspace shares RavenColonial cargo updates and supports a
+  linked squadron carrier below the personal carrier profile.
+
+- Trims unused dependency language resources and native debug symbols from release
+  packages, reducing the Windows download and extracted footprint.
+
+- Rig radar circles now have a 78-meter radius, matching restricted placement
+  spacing. Resource circles retain their 70-meter radius.
+- Adds a Mining rig range warning using the Flight Warning high-risk style.
+  Aboard the Rhino, it appears beyond 4 km from the farthest saved rig and clears
+  when all rigs return within range. It warns that moving beyond 4.5 km destroys
+  rigs, copies the saved Flight Warning placement initially, and has independent
+  Mining visibility, shortcut, and position controls.
+- Hides flight warnings on foot and in ground vehicles, while retaining them
+  aboard the Nomad and in normal ship/fighter flight.
+
+- Adds opt-in, experimental detection of the Rhino's six deployment bars on
+  Windows. A movable Mining calibration frame in the overlay editor provides
+  independent circle centres, diameter, oval height, rotation, bar gap, and
+  movement-search controls. The color picker supports modified HUD palettes;
+  bright green is the default, and gray, white, and black do not count as bars.
+- Automatically saves a missing rig tracker when its bar is detected, preserving
+  the original location on repeated readings. Three continuous seconds of empty
+  readings remove only that rig. Uncertain readings leave trackers unchanged and
+  restart the removal delay. Calibration Test previews detection without changing
+  trackers; normal detection requires the active game, aboard the Rhino and
+  looking forward with no cockpit panel open.
+- Pauses automatic tracker changes while surface coordinates or heading change,
+  resuming after one second of stillness. HUD movement or reacquisition also
+  requires a steady second. Rig 1 establishes the initial anchor; relative bar
+  spacing and circle alignment protect slot identity. Incomplete bars, ambiguous
+  layouts, night-vision backgrounds, and bright ice are handled conservatively.
+  Reacquiring the empty circle grid allows the last retrieved rig to clear.
+  This feature remains experimental and requires calibration for the player's HUD.
+- Keeps the Surface mining panel's width and placed top-left position consistent
+  between the editor and game, regardless of body-name length or empty trackers.
+  Resource rows can still expand or contract it vertically. Rig detection status
+  sits directly below the rig cards; cargo capacity sits above its progress bar.
+- Next-jump lookup failures show a short provider notice and log the full error
+  with the destination name and address. The panel retains its preview width at
+  the selected scale instead of expanding to fit long error messages.
+- Updates the in-app Surface mining guide and setup documentation for calibration,
+  automatic tracker changes, movement safeguards, and uncertain readings.
 
 ## Surface mining and resource tracking
 
@@ -122,11 +220,11 @@ The candidate also retains the preceding Guardian, controller, and sharing work:
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.44.5`
-- Tag: `xp-v2.1.3.0-rc.44.5`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.44.5-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.44.5-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.44.5-x86_64.AppImage`
+- Version: `2.1.3.0-rc.45`
+- Tag: `xp-v2.1.3.0-rc.45`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.45-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.45-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.45-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

@@ -29,7 +29,20 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand unlinkCommand;
     private CancellationTokenSource? connectionCancellation;
+    private CancellationTokenSource? automaticLoadCancellation;
     private FrontierAccountSnapshot? snapshot;
+    private IReadOnlyList<SrvSurvey.Core.Colonization.ColonizationFleetCarrier> linkedFleetCarriers = [];
+    private string? linkedCarrierCommander;
+    private SrvSurvey.Core.Colonization.ColonizationFleetCarrier? LinkedCarrier =>
+        string.Equals(Snapshot?.CommanderName, linkedCarrierCommander, StringComparison.OrdinalIgnoreCase)
+            ? linkedFleetCarriers.FirstOrDefault(c => string.Equals(c.Name, Carrier?.Callsign, StringComparison.OrdinalIgnoreCase)) : null;
+    public string CarrierCargoSource => LinkedCarrier is null ? "Stored cargo from Frontier." : "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.";
+    public void UpdateLinkedFleetCarriers(string? commander, IReadOnlyList<SrvSurvey.Core.Colonization.ColonizationFleetCarrier> carriers)
+    {
+        if (ReferenceEquals(linkedFleetCarriers, carriers) && linkedCarrierCommander == commander) return;
+        linkedFleetCarriers = carriers; linkedCarrierCommander = commander; carrierCargoRows = null;
+        OnPropertyChanged(nameof(CarrierCargo)); OnPropertyChanged(nameof(CarrierCargoSource));
+    }
     private CargoSnapshot? detectedShipCargo;
     private ShipLockerSnapshot? detectedShipLocker;
     private CargoSnapshot? localShipCargo;
@@ -271,6 +284,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             RebuildCurrentShipModuleGroups();
             OnPropertyChanged();
             RaiseSnapshotProperties();
+            OnPropertyChanged(nameof(CarrierCargoSource));
         }
     }
 
@@ -727,7 +741,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .ToArray() ?? [];
 
     public IReadOnlyList<FrontierInventoryRowViewModel> CarrierCargo =>
-        carrierCargoRows ??= Carrier?.Cargo
+        carrierCargoRows ??= LinkedCarrier is { } live
+            ? live.Cargo.OrderBy(p => p.Key).Select(p => new FrontierInventoryRowViewModel("Commodity", p.Key, $"{p.Value:N0}", "")).ToArray()
+            : Carrier?.Cargo
             .Select(item => new FrontierInventoryRowViewModel(
                 item.Category,
                 item.Name,
@@ -1387,14 +1403,23 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return;
         }
 
-        Interlocked.Increment(ref commanderContextVersion);
+        var activationVersion = Interlocked.Increment(ref commanderContextVersion);
+        var automaticLoad = automaticLoadCancellation;
+        automaticLoadCancellation = null;
         var previousConnection = connectionCancellation;
         connectionCancellation = null;
+        if (automaticLoad is not null)
+        {
+            await automaticLoad.CancelAsync();
+            automaticLoad.Dispose();
+        }
         if (previousConnection is not null)
         {
             await previousConnection.CancelAsync();
             previousConnection.Dispose();
         }
+        // A newer commander can win while cancellation callbacks are completing.
+        if (disposed || activationVersion != Interlocked.Read(ref commanderContextVersion)) return;
         IsBusy = false;
         IsConnecting = false;
         Snapshot = null;
@@ -1510,6 +1535,25 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         catch (Exception exception) when (IsExpected(exception))
         {
             StatusMessage = exception.Message;
+        }
+    }
+
+    public void LoadAutomatically()
+    {
+        ThrowIfDisposed();
+        if (activeFrontierId is null || initialized || IsBusy) return;
+        automaticLoadCancellation?.Dispose();
+        automaticLoadCancellation = new CancellationTokenSource();
+        _ = LoadAutomaticallyAsync(automaticLoadCancellation.Token);
+    }
+
+    private async Task LoadAutomaticallyAsync(CancellationToken cancellationToken)
+    {
+        try { await OpenAsync(cancellationToken); }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { /* Commander change or shutdown canceled the automatic lookup. */ }
+        catch (Exception exception) when (IsExpected(exception) || exception is OperationCanceledException)
+        {
+            if (!disposed && !cancellationToken.IsCancellationRequested) StatusMessage = exception.Message;
         }
     }
 
@@ -3154,6 +3198,10 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
 
         disposed = true;
+        Interlocked.Increment(ref commanderContextVersion);
+        automaticLoadCancellation?.Cancel();
+        automaticLoadCancellation?.Dispose();
+        automaticLoadCancellation = null;
         connectionCancellation?.Cancel();
         connectionCancellation?.Dispose();
         connectionCancellation = null;

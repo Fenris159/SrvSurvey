@@ -43,7 +43,7 @@ public static class GuideCatalog
                         [],
                         [
                             "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
-                            "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel and Search; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
+                            "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
                             "Diagnostics, Settings, Theme, and Guides remain in the utility area. The small overlay-settings button beside supported activities opens only that activity's overlay controls.",
                             "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
                             "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
@@ -221,7 +221,7 @@ public static class GuideCatalog
                 [
                     Section(
                         "Enable Surface mining",
-                        "The Mining workspace is reserved for future tools. Current mining guidance appears in the Surface mining overlay.",
+                        "The Mining workspace contains session, search, mission and reporting tools. Rhino guidance continues to use its independent Surface mining overlay.",
                         [
                             "Expand Activities and select Mining. Use the overlay-settings button beside Mining to enable Surface mining and assign a show/hide shortcut if desired.",
                             "Operate a Rhino on a planetary surface with journal and status tracking active. The overlay appears when the normal overlay display conditions are met.",
@@ -229,6 +229,23 @@ public static class GuideCatalog
                         [
                             "Surface Survey and its mini tracker remain hidden while operating the Rhino or returning to its parked location on foot, even if the Mining panel is toggled off.",
                             "Use the overlay position editor to move or resize the panel. Its colors follow the selected overlay theme, including Monochrome Companion.",
+                        ]),
+                    Section(
+                        "Experimental rig bar detection",
+                        "Track the six rigs automatically from their HUD bars. Detection adds a missing tracker immediately and clears its location only after three continuous seconds of empty readings.",
+                        [
+                            "Open Mining overlay settings and enable Automatically track rigs from the Rhino HUD. Deployment bar color defaults to the bright green game HUD; use the color picker if your HUD mod changes it. Open Edit Overlay Positions and choose Mining to show the calibration frame.",
+                            "Drag the frame over the six HUD circles. Resize it from the lower-right corner, leaving room for cockpit movement; resizing changes the capture area without stretching or moving the guides inside it. Drag each numbered red dot onto its matching circle centre. Keep all six circles and their complete bars inside the frame; the small numbers are not read.",
+                            "Use Size−/Size+ for circle diameter, Height−/Height+ for oval proportions, and R−/R+ for outline rotation. Gap−/Gap+ move the cyan bar curves closer to or farther below the circles without changing the outlines. Align them with the middle of the deployed rig's segmented bar. The curves show the expected bar shape; detection groups matching colored segments and ignores neutral circle outlines. Each circle centre can be positioned independently to match the sloping cockpit HUD.",
+                            "Search−/Search+ adjust the movement search allowance in pixels. The readout and optional Search bounds outline show its extent; this does not move or rotate the guides. Keep the search area inside the capture frame. After changing size, height, rotation or alignment, select Test again. No label learning is required.",
+                            "While stationary and looking forward, select Test to hide the guides and previews. Start with rig 1 as the first deployed bar to establish the anchor, then deploy the other rigs. Their calibrated spacing and relative movement preserve their numbers when an earlier bar disappears. Check the six slot readings before driving. A question mark means uncertain, not detected; the controls display the reason when capture is blocked. An ellipsis means a change is awaiting confirmation. BAR means confirmed present; empty means confirmed absent. BAR immediately saves a missing tracker at the Rhino deployment position. Repeated BAR readings keep that original position. An ellipsis during empty readings means the three-second removal delay is running; empty confirms that the specific tracker can be cleared. A question mark, a returning bar or interrupted capture restarts the delay.",
+                            "Calibration Test is a preview and never changes saved trackers. Use the editor's save button and close the editor before automatic tracking takes effect, or cancel to discard calibration changes. Start automatic tracking before deploying rigs so each position is recorded at deployment. During normal play the frame is invisible; detection results appear in Mining settings and directly below the overlay's rig trackers.",
+                        ],
+                        [
+                            "Detection runs only aboard the Rhino with no cockpit panel open. Automatic tracker changes freeze while surface coordinates or heading change and resume after one second of stillness. HUD movement or reacquisition also waits for one steady second; all pending removal timers restart. Stop before deploying so the saved location corresponds to deployment. Free head look does not change the game's panel status, so the six-circle layout must also be visible. Looking away produces unknown readings rather than empty rig slots. After the final bar disappears, detection uses the visible circle grid to update alignment; it needs matching circles in both rows before declaring slots empty. Keep the whole six-circle group inside the capture frame. Circle outlines are used only for alignment, never as deployment bars. A partial bar can show a question mark when its full shape is unreadable; those surviving colored segments prevent an empty reading from clearing its saved location. The detector does not shift the grid just to preserve whichever rig numbers were visible in the previous frame.",
+                            "Detection groups bright segments matching the selected bar color, allowing for shading and small hue differences. Gray, white, black and dark pixels do not count as a deployment bar. Gaps separate rig groups; calibrated positions and the established anchor determine their numbers. Unreadable or ambiguous groups remain uncertain instead of being renumbered. Low brightness, changed HUD geometry, head look, or obscuring windows can prevent recognition.",
+                            "The top row maps left to right to rigs 1, 2, and 3; the bottom row maps to rigs 4, 5, and 6. A bar adds its tracker immediately; clearing requires three continuous seconds of empty readings. Missing frames and uncertain readings do not clear your trackers. Symbols and counters inside circles do not determine deployment.",
+                            "Calibration follows the game viewport when resolution changes. Check alignment after changing aspect ratio, field of view or HUD layout; update the selected color after changing HUD colors. Only calibration and the selected color are saved; screen captures are processed in memory and discarded. Audio is not captured.",
                         ]),
                     Section(
                         "Rig tracking with key chords",
@@ -248,11 +265,20 @@ public static class GuideCatalog
                         ]),
                     Section(
                         "Rig circles and distance cues",
-                        "The radar shows 70-meter rig circles at the legacy mining zoom. Chevrons turn with your heading and show distance to each saved location.",
+                        "The radar shows 78-meter-radius rig circles at the legacy mining zoom. Chevrons turn with your heading and show distance to each saved location.",
                         [],
                         [
                             "COLLECT uses cyan when within 5 meters of a saved rig. TOO CLOSE uses red inside the 78-meter deployment exclusion distance. TRACKED means outside that distance; NOT SET means the slot has no saved location.",
                             "Colors follow the selected theme, while the text labels keep their meaning. On foot, distances use your position without the Rhino cockpit offset.",
+                        ]),
+                    Section(
+                        "Rig range warning",
+                        "Aboard the Rhino, the Mining warning appears beyond 4 km from the farthest saved rig and clears when every rig is back within range.",
+                        [],
+                        [
+                            "TOO FAR FROM RIGS uses the high-risk flight warning colors and the reminder: Moving beyond 4.5Km will Destroy Rigs. Only saved rig bookmarks count; resource bookmarks do not.",
+                            "Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
+                            "The warning is hidden when you leave the Rhino. Flight warnings are also hidden on foot and in ground vehicles, with the Nomad retaining its flight warnings.",
                         ]),
                     Section(
                         "Ground resource bookmarks",
@@ -639,6 +665,19 @@ public static class GuideCatalog
                             "When overlays compete for the same context, SrvSurvey hides lower-priority panels first and restores them from their current settings and game state when the blocker ends.",
                         ]),
                     Section(
+                        "Overlay Exceptions",
+                        "Restrict each overlay category to selected ships or vehicles without changing its normal triggers.",
+                        [
+                            "Open the category’s overlay settings and select Overlay Exceptions at the top right.",
+                            "Use Check All or Uncheck All, then select the allowed entries under Small, Medium, Large and Vessel / Vehicle. Changes save immediately.",
+                            "The gate follows the vessel you are aboard: SRV, Scorpion, Rhino and Nomad have separate entries; Fighters covers all fighter variants. On foot is independent of your parked ship.",
+                        ],
+                        [
+                            "All entries start checked. Other / unknown controls unrecognized ship types, unavailable boarded status and taxi/multicrew rides where the current vessel is not identified.",
+                            "Firegroups has a dedicated overlay settings window with its own exceptions. The button in global overlay settings controls the other Status & utilities panels. Panels shared by several settings categories must be allowed in each of those categories.",
+                            "These filters only hide overlays; enabling a vehicle does not bypass the panel’s normal game-state trigger, visibility switch or focus rules. Editor previews remain available.",
+                        ]),
+                    Section(
                         "Edit all overlay positions",
                         "The position editor can display realistic simulated overlays without Elite running.",
                         [
@@ -865,6 +904,35 @@ public static class GuideCatalog
                         ]),
                 ],
                 CreateIconGlossary()),
+            Category(
+                "mining-workspace",
+                "16",
+                "Mining workspace",
+                "Plan mining trips, track sessions and missions, and keep shared locations and reports.",
+                [
+                    Section("Sessions and cargo", "Activities → Mining combines ship mining tools with the existing cargo and journal feed.",
+                        ["Start manually or enable automatic start when a prospector limpet launches. Pause and resume exclude breaks from efficiency. End a session to add it to Reports.", "A recovered session opens paused. Check the system and ring, then resume when ready.", "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations."],
+                        ["Cargo transfers and purchases do not count as mining production. Mission cargo is allocated once across active mining missions.", "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.", "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute."]),
+                    Section("Find rings, markets and traders", "Mining → Find keeps each search and its results in a dedicated viewport.",
+                        ["Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.", "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander's rings and missions without starting sessions.", "Markets → Sell mined cargo finds stations buying your commodity, highest observed prices first. Buy supplies finds stations selling it, cheapest first. Choose a category or enter a commodity name; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.", "Use Local discoveries / import journals to review your own scans and import earlier journals. Search destinations returns to online/local combined searching. Provider page starts at 0; station searches use 20 results per page."],
+                        ["Unknown coordinates are not treated as nearby. Bundled observations are historical; multiple hotspots alone do not establish an overlap. Local searches show at most 500 rings.", "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.", "Fleet Carrier reuses the existing Frontier profile. Distance supports two systems, current position, home and your carrier's system."]),
+                    Section("Plan mining for Powerplay", "Find → Powerplay connects the system, ring and market decisions.",
+                        ["Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
+                         "Select a system and choose Find rings in selected system. This switches to Rings and searches that exact system. Adjust mineral and ring type as needed. For acquisition, uncheck Only this system to compare surrounding rings; the chosen acquisition destination is retained separately. Select a ring and choose Selling stations to open Markets → Sell mined cargo. The plan context shows the mining origin and Powerplay destination.",
+                         "Only this system constrains rings and nearby markets to the reference system. Reinforce/Undermine plans keep mining and selling in the same system; acquisition plans retain the selected selling destination even when the ring is elsewhere. Ordinary ring-to-market searches compare nearby destinations. Clear Powerplay plan ends that destination link. Galaxy-wide prices deliberately ignore that location restriction."],
+                        ["These are planning filters, not a merit calculator. Check current Powerplay assignments, system eligibility and acquisition support range in the game before mining or selling. Commodity prices and Powerplay observations may be stale; no reward is guaranteed. Unknown Power ownership is never counted as an enemy or an acquisition target.",
+                         "Spansh searches show one provider page. Expansion and Contested use local journal/EDDN observations because Spansh does not index those states; an empty result can mean the local cache has not seen them. Broaden the radius or change page if filters return no matches. A failed or oversized response appears as a search message; retry or narrow the search."]),
+                    Section("Shared bookmarks", "Navigation → Bookmarks and Mining → Bookmarks use the same catalog.",
+                        ["Enter a system, optional body/ring and category; saving a new category makes it available to the category filter.", "Store minerals, ratings, hotspot names, average yields, last-mined dates, overlap/RES notes and screenshots. Right-click to copy or delete; Undo restores the last deletion during this run.", "Import shared bookmark JSON or EliteMining bookmark lists. Imports retain existing locations rather than silently replacing them."], []),
+                    Section("Reports and backups", "Reports preserve the observations behind mining statistics.",
+                        ["Select a completed session to edit notes or attach screenshots. Export HTML for graphs, material breakdowns and the prospecting timeline; open it in a browser to print or save as PDF.", "Compare all sessions, export CSV, or import EliteMining/SrvSurvey summary CSVs. Imported summaries keep their original fields without pretending that per-asteroid journal data was supplied.", "Settings → Backup exports a ZIP with commander mining data, named Firegroups configurations and cached loadouts, shared bookmarks and local screenshot attachments. Restore applies the backed-up contents and keeps previous files for recovery. Older ZIPs without Firegroups leave current named configurations intact."],
+                        ["Screenshots larger than 20 MB or unsupported formats are omitted from packaged images. Keep originals when using standalone bookmark JSON."]),
+                    Section("Carrier and distance workspaces", "Shared tools are available outside Mining.",
+                        ["Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.", "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.", "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.", "Travel → Distance follows FC Routes. Calculate distances and save a home system there."], []),
+                    Section("Announcements and firegroups", "Mining has independent ship notifications and a firegroup reference panel.",
+                        ["In Mining Overlay Settings, enable Mining notifications. Firegroups has its own overlay settings window, opened with the settings icon beside Firegroups in the sidebar; placement remains in the editor’s Status & utilities category. Assign shortcuts and adjust placement in the overlay editor.", "Settings → Announcements controls collected/refined/prospecting notices, mineral thresholds, core/non-core filters and named announcement presets. Optional speech uses locally installed Windows voices.", "Firegroups, directly below Fleet Carrier in the sidebar, reads equipped modules from Loadout. Choose A–H with the arrows, add primary and secondary dropdowns with the circled plus buttons, then Add group. The tree previews all assignments. Enter a configuration name and Save; click a saved name to edit, or expand it to inspect the groups. Save and Remove sit beside the name. Each saved row also has a trash button for direct deletion; confirm Yes to delete, or No to keep it.", "Save mining settings to persist search filters and preferences for this commander."],
+                        ["Mining notifications require the main ship and disappear on foot or in any SRV. Their session-only visibility and supercruise preferences are in Mining Overlay Settings. Firegroups selects the saved configuration for the identified boarded ship and maps Status.json values 0–7 to A–H. It requires that vessel’s Loadout and a saved configuration, and hides on foot or aboard an unidentified vessel. Its dedicated settings window contains visibility, shortcut and Overlay Exceptions. Existing Rhino overlays remain independent."]),
+                ]),
         ];
     }
 

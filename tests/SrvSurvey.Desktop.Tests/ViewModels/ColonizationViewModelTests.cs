@@ -1284,6 +1284,24 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task StartupSquadronDetectionSurvivesCommanderActivationAfterJournalReplay()
+    {
+        var carrier = new ColonizationFleetCarrier { MarketId = 42, Name = "SQD-001", Cargo = new() { ["steel"] = 10 } };
+        var client = new StubRavenColonialClient { Workspace = new([], [], null, [carrier]) };
+        using var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.ApplyJournalEvents([Event("Docked", """
+            "MarketID":42,"SystemAddress":20,"StarSystem":"Test","StationName":"SQD-001","StationType":"FleetCarrier","StationServices":["squadronBank"]
+            """)], "Test Cmdr");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        Assert.Equal(42, viewModel.DetectedSquadronCarrierMarketId);
+
+        viewModel.ApplyJournalEvents([], "Other Cmdr");
+        await viewModel.SetCommanderAsync("Other Cmdr");
+        Assert.Null(viewModel.DetectedSquadronCarrierMarketId);
+    }
+
+    [Fact]
     public async Task AdjustsLinkedSquadronCarrierFromShipCargoDiffNotTransferJournal()
     {
         var carrier = new ColonizationFleetCarrier
@@ -1306,6 +1324,8 @@ public sealed class ColonizationViewModelTests : IDisposable
             FleetCarrierResponse = carrier,
         };
         var viewModel = Create(client);
+        using var main = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        using var fleetWorkspace = new FleetCarrierWorkspaceViewModel(main.FrontierProfile, viewModel);
         viewModel.IsEnabled = true;
         viewModel.SetCommanderProfile(
             "F123",
@@ -1336,6 +1356,8 @@ public sealed class ColonizationViewModelTests : IDisposable
             50,
             [new CargoItem("steel", "Steel", 50, 0)]));
 
+        Assert.Equal(42, fleetWorkspace.SelectedSquadronCarrier?.MarketId);
+        Assert.Equal("75", fleetWorkspace.SquadronCargo.Single(c => c.Name == "steel").Quantity);
         // Freeze before-state, then apply transfer mutation (as MainWindow does).
         viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
         Assert.True(cargo.HasPreservedSnapshot);
@@ -1370,6 +1392,11 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Equal(-3, adjustment.Changes["water"]);
         Assert.Contains("squadron", viewModel.StatusMessage, StringComparison.OrdinalIgnoreCase);
         Assert.False(cargo.HasPreservedSnapshot);
+        Assert.Equal("85", fleetWorkspace.SquadronCargo.Single(c => c.Name == "steel").Quantity);
+        Assert.Equal("7", fleetWorkspace.SquadronCargo.Single(c => c.Name == "water").Quantity);
+        viewModel.IsEnabled = false;
+        await viewModel.SetCommanderAsync("Another commander");
+        Assert.Null(fleetWorkspace.SelectedSquadronCarrier); Assert.Empty(fleetWorkspace.SquadronCargo);
     }
 
     [Fact]

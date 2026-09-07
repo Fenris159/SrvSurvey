@@ -31,7 +31,10 @@ public sealed class MainWindowViewModelTests
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "mining");
         Assert.True(viewModel.IsMiningSelected);
         Assert.True(viewModel.IsActivitiesNavigationExpanded);
-        var panel = Assert.Single(viewModel.OverlayPanelVisibility.ForCategory(OverlaySettingsCategory.Mining));
+        var panels = viewModel.OverlayPanelVisibility.ForCategory(OverlaySettingsCategory.Mining);
+        Assert.Equal(3, panels.Count);
+        Assert.Contains(panels, item => item.PlotterName == "PlotMiningWarning");
+        var panel = Assert.Single(panels, item => item.PlotterName == "PlotSurfaceMining");
         Assert.Equal("PlotSurfaceMining", panel.PlotterName);
         Assert.Same(viewModel.InputSettings.Bindings.Single(binding =>
             binding.Definition.OverlayPlotterName == "PlotSurfaceMining"), panel.Shortcut);
@@ -52,15 +55,18 @@ public sealed class MainWindowViewModelTests
         var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
-        Assert.Equal(14, viewModel.NavigationItems.Count);
+        Assert.Equal(17, viewModel.NavigationItems.Count);
         Assert.Equal(
             [
                 "Overview",
+                "Fleet Carrier",
+                "Firegroups",
                 "Exploration",
                 "Exobiology",
                 "Travel",
                 "Boxel",
                 "Search",
+                "Bookmarks",
                 "Mining",
                 "Guardian",
                 "Quests",
@@ -73,6 +79,7 @@ public sealed class MainWindowViewModelTests
             viewModel.NavigationItems.Select(item => item.Label));
         Assert.Equal(
             [
+                "firegroups",
                 "exploration",
                 "exobiology",
                 "travel",
@@ -93,13 +100,13 @@ public sealed class MainWindowViewModelTests
             property => property.Name == "Glyph");
         Assert.True(viewModel.IsOverviewSelected);
         Assert.Equal(
-            ["Overview"],
+            ["Overview", "Fleet Carrier", "Firegroups"],
             viewModel.OverviewNavigationItems.Select(item => item.Label));
         Assert.Equal(
             ["Exploration", "Exobiology", "Boxel"],
             viewModel.SurveyNavigationItems.Select(item => item.Label));
         Assert.Equal(
-            ["Travel", "Search"],
+            ["Travel", "Search", "Bookmarks"],
             viewModel.NavigationWorkspaceItems.Select(item => item.Label));
         Assert.Equal(
             ["Mining", "Guardian", "Quests", "Colonization"],
@@ -1179,6 +1186,10 @@ public sealed class MainWindowViewModelTests
                 builder => builder
                     .WithAppDataPaths(paths));
 
+            // Startup migrations may add their own settings before import starts.
+            var settingsBeforeImport = await File.ReadAllTextAsync(paths.UiSettingsPath);
+            using (var settingsDocument = System.Text.Json.JsonDocument.Parse(settingsBeforeImport))
+                Assert.Equal("green-light", settingsDocument.RootElement.GetProperty("Theme").GetString());
             await viewModel.ImportLegacyProfileAsync();
 
             Assert.True(viewModel.HasCompletedLegacyImport);
@@ -1186,7 +1197,7 @@ public sealed class MainWindowViewModelTests
                 "legacy UI preferences could not be translated",
                 viewModel.ProfileStatusMessage);
             Assert.Equal(
-                currentSettings,
+                settingsBeforeImport,
                 await File.ReadAllTextAsync(paths.UiSettingsPath));
             Assert.Equal(
                 "{\"darkTheme\":true,",

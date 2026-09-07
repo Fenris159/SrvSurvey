@@ -10,9 +10,9 @@ public sealed class GuidesViewModelTests
     {
         var categories = GuideCatalog.Create();
 
-        Assert.Equal(15, categories.Count);
+        Assert.Equal(16, categories.Count);
         Assert.Equal(
-            Enumerable.Range(1, 15)
+            Enumerable.Range(1, 16)
                 .Select(number => number.ToString("00"))
                 .ToArray(),
             categories.Select(category => category.Number).ToArray());

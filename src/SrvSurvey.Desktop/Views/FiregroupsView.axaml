@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:fg="using:SrvSurvey.Core.Firegroups"
+ x:Class="SrvSurvey.Desktop.Views.FiregroupsView" x:DataType="vm:MainWindowViewModel">
+ <UserControl.Resources>
+  <TreeDataTemplate x:Key="GroupTree" x:DataType="vm:FiregroupTreeNode" ItemsSource="{Binding Children}">
+   <TextBlock Text="{Binding Label}" TextWrapping="Wrap"/>
+  </TreeDataTemplate>
+  <DataTemplate x:Key="ModuleRow" x:DataType="vm:FiregroupSelectionRow">
+   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,4">
+    <StackPanel Spacing="4">
+     <ComboBox ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedModule, Mode=TwoWay}" HorizontalAlignment="Stretch" PlaceholderText="Select an equipped module">
+      <ComboBox.ItemTemplate><DataTemplate x:DataType="fg:FiregroupModule"><TextBlock Text="{Binding Display}" TextWrapping="Wrap"/></DataTemplate></ComboBox.ItemTemplate>
+     </ComboBox>
+     <TextBlock Text="{Binding Warning}" IsVisible="{Binding HasWarning}" Classes="muted" TextWrapping="Wrap"/>
+    </StackPanel>
+    <Button Grid.Column="1" Content="−" Width="32" Height="32" CornerRadius="16" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Command="{Binding RemoveCommand}" ToolTip.Tip="Remove module assignment" VerticalAlignment="Top"/>
+   </Grid>
+  </DataTemplate>
+ </UserControl.Resources>
+ <UserControl.Styles><Style Selector="TreeViewItem"><Setter Property="IsExpanded" Value="True"/></Style></UserControl.Styles>
+ <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="12">
+  <TextBlock Classes="page-title" Text="Firegroups"/>
+  <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+   <StackPanel DataContext="{Binding Firegroups}" x:DataType="vm:FiregroupsWorkspaceViewModel" Spacing="16">
+    <TextBlock Text="Build a named reference configuration from your ship's equipped modules. This does not set controls in Elite. The settings icon beside Firegroups in the sidebar opens its dedicated overlay window with enable/disable, hotkey and Overlay Exceptions. The panel follows your ship and active A–H group." TextWrapping="Wrap"/>
+    <TextBlock Classes="card-title" Text="{Binding ShipSummary}" TextWrapping="Wrap"/>
+    <TextBlock Classes="muted" Text="{Binding LiveSummary}" TextWrapping="Wrap"/>
+    <Button Content="New configuration for current ship" Command="{Binding NewCommand}" HorizontalAlignment="Left"/>
+    <Border Classes="card" IsEnabled="{Binding CanEdit}">
+     <StackPanel Spacing="12">
+      <TextBlock Text="Choose a group and add its primary and secondary assignments. Add group stages it and advances to the next unused letter. Switching letters retains your draft; Save stores the whole named configuration." TextWrapping="Wrap"/>
+      <StackPanel Orientation="Horizontal" Spacing="8">
+       <TextBlock Text="Group" VerticalAlignment="Center"/>
+       <Button Content="‹" Command="{Binding PreviousGroupCommand}" ToolTip.Tip="Previous group"/>
+       <ComboBox ItemsSource="{Binding GroupLetters}" SelectedItem="{Binding GroupLetter, Mode=TwoWay}" Width="90"/>
+       <Button Content="›" Command="{Binding NextGroupCommand}" ToolTip.Tip="Next group"/>
+      </StackPanel>
+      <TextBlock Classes="muted" Text="{Binding ModuleStatus}" TextWrapping="Wrap"/>
+      <Grid ColumnDefinitions="*,Auto"><TextBlock Text="Primary" Classes="card-title" VerticalAlignment="Center"/><Button Grid.Column="1" Content="+" Width="32" Height="32" CornerRadius="16" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Command="{Binding AddPrimaryCommand}" ToolTip.Tip="Add primary module"/></Grid>
+      <ItemsControl ItemsSource="{Binding Primary}" ItemTemplate="{StaticResource ModuleRow}"/>
+      <Grid ColumnDefinitions="*,Auto"><TextBlock Text="Secondary" Classes="card-title" VerticalAlignment="Center"/><Button Grid.Column="1" Content="+" Width="32" Height="32" CornerRadius="16" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Command="{Binding AddSecondaryCommand}" ToolTip.Tip="Add secondary module"/></Grid>
+      <ItemsControl ItemsSource="{Binding Secondary}" ItemTemplate="{StaticResource ModuleRow}"/>
+      <StackPanel Orientation="Horizontal" Spacing="8"><Button Content="Add group" Command="{Binding AddGroupCommand}"/><Button Content="Remove group" Command="{Binding RemoveGroupCommand}"/></StackPanel>
+     </StackPanel>
+    </Border>
+    <TextBlock Classes="card-title" Text="Configuration preview"/>
+    <TreeView ItemsSource="{Binding GroupPreview}" ItemTemplate="{StaticResource GroupTree}"/>
+    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+     <TextBox PlaceholderText="Enter firegroup name" Text="{Binding ConfigurationName, Mode=TwoWay}"/>
+     <Button Grid.Column="1" Content="Save" Command="{Binding SaveCommand}"/>
+     <Button Grid.Column="2" Content="Remove" Click="DeleteConfiguration_Click"/>
+    </Grid>
+    <TextBlock Classes="card-title" Text="Saved configurations"/>
+    <TextBlock Classes="muted" Text="Click a name to edit and select it for that ship. Expand a row to inspect its groups, or use its trash button and confirm Yes to delete it. The selected configuration switches automatically when you board its ship." TextWrapping="Wrap"/>
+    <ItemsControl ItemsSource="{Binding SavedProfiles}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:FiregroupSavedRow">
+     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,4">
+     <Expander HorizontalAlignment="Stretch">
+      <Expander.Header><StackPanel><Button Classes="link" Content="{Binding Name}" Command="{Binding EditCommand}" HorizontalAlignment="Left"/><TextBlock Classes="muted" Text="{Binding ShipName}"/></StackPanel></Expander.Header>
+      <TreeView ItemsSource="{Binding Preview}" ItemTemplate="{StaticResource GroupTree}"/>
+     </Expander>
+     <Button Grid.Column="1" Click="DeleteConfiguration_Click" ToolTip.Tip="{Binding DeleteLabel}" AutomationProperties.Name="{Binding DeleteLabel}"
+             Width="36" Height="36" Padding="8" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+      <Path Data="M 3,5 L 17,5 M 7,5 L 7,3 L 13,3 L 13,5 M 5,5 L 6,18 L 14,18 L 15,5 M 8,8 L 8.5,15 M 12,8 L 11.5,15"
+            Stroke="{DynamicResource RavenTextBrush}" StrokeThickness="1.5" Width="18" Height="18" Stretch="Uniform"/>
+     </Button>
+     </Grid>
+    </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+   </StackPanel>
+  </ScrollViewer>
+  <TextBlock Grid.Row="2" Text="{Binding Firegroups.Status}" TextWrapping="Wrap"/>
+ </Grid>
+</UserControl>

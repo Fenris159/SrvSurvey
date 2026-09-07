@@ -52,6 +52,8 @@ public static class OverlaySettingsCategoryCatalog
             "Colonization",
             "COLONIZATION",
             "Configure the colonization commodity shopping overlay."),
+        new(OverlaySettingsCategory.Firegroups, "firegroups", "Firegroups", "FIREGROUPS",
+            "Configure the Firegroups overlay, visibility shortcut and boarded-vessel exceptions."),
     ];
 
     public static bool TryGet(
@@ -77,6 +79,7 @@ public enum OverlaySettingsCategory
     Quests,
     Colonization,
     Mining,
+    Firegroups,
 }
 
 public sealed record OverlaySettingsCategoryDefinition(

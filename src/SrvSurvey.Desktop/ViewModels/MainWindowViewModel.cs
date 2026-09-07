@@ -51,6 +51,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private const string TravelNavigationKey = "travel";
     private const string BoxelNavigationKey = "boxel";
     private const string SearchNavigationKey = "search";
+    private const string BookmarksNavigationKey = "bookmarks";
     private const string GuardianNavigationKey = "guardian";
     private const string QuestsNavigationKey = "quests";
     private const string ColonisationNavigationKey = "colonisation";
@@ -406,6 +407,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             OverlayPanelVisibility = new OverlayPanelVisibilityViewModel(
                 new OverlayPanelVisibilitySettingsStore(AppDataPaths.UiSettingsPath),
                 InputSettings);
+            OverlayExceptions = new OverlayExceptionsViewModel(
+                new OverlayVehicleSettingsStore(AppDataPaths.UiSettingsPath));
             var sharedGameWindowSwitcher = gameWindowSwitcher
                 ?? GameWindowSwitcher.CreateCurrent();
             gameWindowOwnership.Own(sharedGameWindowSwitcher);
@@ -533,8 +536,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 legacyProfileStore: new LegacyColonizationProfileStore(
                     AppDataPaths.DataDirectory));
             rollback.Add(Colonization.Dispose);
+            FleetCarrierWorkspace = new FleetCarrierWorkspaceViewModel(FrontierProfile, Colonization);
+            rollback.Add(FleetCarrierWorkspace.Dispose);
             var sharedSystemResolver = new SpanshStarSystemResolver(
                 externalNetworkClient);
+            Bookmarks = new BookmarksViewModel(AppDataPaths.DataDirectory);
+            Firegroups = new FiregroupsWorkspaceViewModel(AppDataPaths.DataDirectory);
+            MiningWorkspace = new MiningWorkspaceViewModel(AppDataPaths.DataDirectory, sharedSystemResolver, Bookmarks, externalNetworkClient, firegroups: Firegroups);
+            rollback.Add(MiningWorkspace.Dispose);
             var sharedExobiologyCatalog = legacyReferences.Exobiology;
             var defaultCodexImageCache = Path.Combine(
                 AppDataPaths.CacheDirectory,
@@ -647,7 +656,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             JumpInfo = new JumpInfoViewModel(
                 sharedSystemSummaryClient,
                 sharedJumpInfoSettingsStore,
-                legacyReferences.GuardianSites);
+                legacyReferences.GuardianSites,
+                log: message => resolvedApplicationLogService?.Append(message));
             rollback.Add(JumpInfo.Dispose);
             GalaxyMap = new GalaxyMapOverlayViewModel(
                 sharedSystemSummaryClient,
@@ -712,6 +722,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 Path.Combine(AppDataPaths.DataDirectory, "mining")),
                 new SurfaceMiningSettingsStore(AppDataPaths.UiSettingsPath));
             rollback.Add(Mining.Dispose);
+            OverlayInteraction.MiningDetection = Mining.Detection;
             BiologyPredictions = new BiologyPredictionsViewModel(
                 SystemSurvey,
                 new BiologyPredictionsSettingsStore(
@@ -869,6 +880,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             NavigationItems =
             [
                 new("overview", "Overview", "Commander and current journal state"),
+                new("fleet-carrier", "Fleet Carrier", "Carrier operations and cargo"),
+                new("firegroups", "Firegroups", "Configure your firegroup reference", true),
                 new(
                     ExplorationNavigationKey,
                     "Exploration",
@@ -893,7 +906,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     SearchNavigationKey,
                     "Search",
                     "Spherical limits and nearby biology"),
-                new(MiningNavigationKey, "Mining", "Surface mining workspace", true),
+                new(BookmarksNavigationKey, "Bookmarks", "Categorized systems and mining locations"),
+                new(MiningNavigationKey, "Mining", "Mining sessions, locations, missions and reports", true),
                 new(
                     GuardianNavigationKey,
                     "Guardian",
@@ -920,7 +934,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             selectedNavigation = NavigationItems[0];
             selectedNavigation.IsSelected = true;
             OverviewNavigationItems = NavigationItems
-                .Where(item => item.Key == "overview")
+                .Where(item => item.Key is "overview" or "fleet-carrier" or "firegroups")
                 .ToArray();
             SurveyNavigationItems = NavigationItems
                 .Where(item => item.Key is ExplorationNavigationKey
@@ -929,7 +943,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 .ToArray();
             NavigationWorkspaceItems = NavigationItems
                 .Where(item => item.Key is TravelNavigationKey
-                    or SearchNavigationKey)
+                    or SearchNavigationKey
+                    or BookmarksNavigationKey)
                 .ToArray();
             ActivityNavigationItems = NavigationItems
                 .Where(item => item.Key is MiningNavigationKey or GuardianNavigationKey
@@ -1011,10 +1026,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public GuidesViewModel Guides { get; }
 
     public CommanderProfileViewModel FrontierProfile { get; }
+    public FleetCarrierWorkspaceViewModel FleetCarrierWorkspace { get; }
 
     public GlobalInputSettingsViewModel InputSettings { get; }
 
     public OverlayPanelVisibilityViewModel OverlayPanelVisibility { get; }
+
+    public OverlayExceptionsViewModel OverlayExceptions { get; }
 
     public DesktopBehaviorViewModel DesktopBehavior { get; }
 
@@ -1119,6 +1137,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public SurfaceSurveyViewModel SurfaceSurvey { get; }
 
     public SurfaceMiningViewModel Mining { get; }
+
+    public MiningWorkspaceViewModel MiningWorkspace { get; }
+    public FiregroupsWorkspaceViewModel Firegroups { get; }
+
+    public BookmarksViewModel Bookmarks { get; }
 
     public Task<bool> ToggleTrackerOrMiningRigAsync(
         int number,
@@ -1345,6 +1368,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         SelectedNavigation?.Key == ExplorationNavigationKey
         && !IsProfileSelected;
 
+    public bool IsBookmarksSelected => SelectedNavigation?.Key == BookmarksNavigationKey && !IsProfileSelected;
+
+    public bool IsFleetCarrierSelected => SelectedNavigation?.Key == "fleet-carrier" && !IsProfileSelected;
+    public bool IsFiregroupsSelected => SelectedNavigation?.Key == "firegroups" && !IsProfileSelected;
+
     public bool IsMiningSelected => SelectedNavigation?.Key == MiningNavigationKey && !IsProfileSelected;
 
     public bool IsExobiologySelected =>
@@ -1508,7 +1536,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 or ExobiologyNavigationKey
                 or BoxelNavigationKey => SurveyNavigationGroup,
             TravelNavigationKey
-                or SearchNavigationKey => NavigationNavigationGroup,
+                or SearchNavigationKey or BookmarksNavigationKey => NavigationNavigationGroup,
             MiningNavigationKey or GuardianNavigationKey
                 or QuestsNavigationKey
                 or ColonisationNavigationKey =>
@@ -1540,6 +1568,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         OnPropertyChanged(nameof(IsOverviewSelected));
         OnPropertyChanged(nameof(IsExplorationSelected));
         OnPropertyChanged(nameof(IsMiningSelected));
+        OnPropertyChanged(nameof(IsFleetCarrierSelected));
+        OnPropertyChanged(nameof(IsFiregroupsSelected));
+        OnPropertyChanged(nameof(IsBookmarksSelected));
         OnPropertyChanged(nameof(IsExobiologySelected));
         OnPropertyChanged(nameof(IsTravelSelected));
         OnPropertyChanged(nameof(IsBoxelSelected));
@@ -2412,6 +2443,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     {
         if (!update.HasChanges && !isManualRefresh)
         {
+            MiningWorkspace.Tick();
             await ApplyIdleHousekeepingAsync(update);
             return;
         }
@@ -2445,6 +2477,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
         var allowSharedCargo = !IsSharedCargoSuppressed;
         var cargoChanged = ApplyCargoInventoryUpdate(update, allowSharedCargo);
+        MiningWorkspace.Apply(update, journalState, latestCargo, latestStatus);
         ApplyShipLockerIfAllowed(update, allowSharedCargo);
         ApplyLocalInventoryAndDesktopBehaviors(update, allowSharedCargo);
         await ApplyStatusAndGroundTargetAsync(update);
@@ -2455,7 +2488,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         var commanderCodexResult = await ApplyCommanderCodexUpdateAsync(update);
         var codexDiscoveryChanged = commanderCodexResult.DiscoveryEventCount > 0;
 
-        Colonization.ApplyJournalEvents(update.JournalEvents);
+        Colonization.ApplyJournalEvents(update.JournalEvents, journalState.CommanderName);
         Colonization.UpdateSystemContext(
             journalState.SystemName,
             journalState.StarPosition,
@@ -2537,6 +2570,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             journalState.ReconcileVehicleStatus(status);
         }
 
+        Firegroups.Apply(update, journalState, latestStatus);
+        OverlayExceptions.UpdateBoardedVehicle(journalState, latestStatus);
         Colonization.UpdateMusicTrack(journalState.MusicTrack);
         StationInfo.UpdateMusicTrack(journalState.MusicTrack);
         GroundTarget.UpdateMusicTrack(journalState.MusicTrack);
@@ -2572,8 +2607,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         await FrontierProfile.SetCommanderContextAsync(
             journalState.FrontierId,
             journalState.CommanderName,
-            refreshIfOpen: IsProfileSelected,
+            refreshIfOpen: false,
             CancellationToken.None);
+        FrontierProfile.LoadAutomatically();
     }
 
     private void ApplyShipLockerIfAllowed(
@@ -5454,6 +5490,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(SurfaceSurvey.Dispose);
         TryDispose(CodexBingo.Dispose);
         TryDispose(StationInfo.Dispose);
+        TryDispose(MiningWorkspace.Dispose);
+        TryDispose(FleetCarrierWorkspace.Dispose);
         TryDispose(Colonization.Dispose);
         TryDispose(GalaxyMap.Dispose);
         ScreenshotProcessing.PropertyChanged -= OnScreenshotProcessingChanged;

@@ -48,6 +48,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private HashSet<string> hiddenProjectIds = new(
         StringComparer.OrdinalIgnoreCase);
     private IReadOnlyList<ColonizationFleetCarrier> fleetCarriers = [];
+    private long? detectedSquadronCarrierMarketId;
+    private string? detectedSquadronCommander;
+    public IReadOnlyList<ColonizationFleetCarrier> LinkedFleetCarriers => fleetCarriers;
+    public long? DetectedSquadronCarrierMarketId => detectedSquadronCarrierMarketId;
     private ColonizationProject? localUntrackedProject;
     private CargoSnapshot? shipCargo;
     private MarketSnapshot? currentMarket;
@@ -588,6 +592,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         CancelDockingRefresh();
+        if (!string.Equals(detectedSquadronCommander, normalized, StringComparison.OrdinalIgnoreCase))
+        {
+            detectedSquadronCarrierMarketId = null;
+        }
         CommanderName = normalized;
         ClearProjects();
         UpdateProjectEditorContext();
@@ -605,14 +613,26 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public void ApplyJournalEvents(
-        IReadOnlyList<JournalEventEnvelope> journalEvents)
+        IReadOnlyList<JournalEventEnvelope> journalEvents, string? journalCommanderName = null)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
+        var owner = journalCommanderName ?? CommanderName;
+        if (!string.Equals(detectedSquadronCommander, owner, StringComparison.OrdinalIgnoreCase))
+        {
+            detectedSquadronCarrierMarketId = null;
+            detectedSquadronCommander = owner;
+        }
         SystemEditor.ApplyJournalEvents(journalEvents);
         var before = constructionState.Version;
         foreach (var journalEvent in journalEvents)
         {
             constructionState.Apply(journalEvent);
+            if (journalEvent.EventName is "Docked" or "Location"
+                && constructionState.CurrentDock is { } carrierDock
+                && ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(carrierDock))
+            {
+                detectedSquadronCarrierMarketId = carrierDock.MarketId;
+            }
             fleetCarrierIdentityTracker.Apply(journalEvent);
             ApplyShipIdentity(journalEvent);
         }
@@ -2256,6 +2276,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private void UpdateCommodityPlan()
     {
+        OnPropertyChanged(nameof(LinkedFleetCarriers));
+        OnPropertyChanged(nameof(DetectedSquadronCarrierMarketId));
         var construction = constructionState.CreateSnapshot();
         var dock = construction.CurrentDock;
         var hasMarketSinceDocking = currentMarket is not null

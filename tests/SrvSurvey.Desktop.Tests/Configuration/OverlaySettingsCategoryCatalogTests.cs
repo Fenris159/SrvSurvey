@@ -19,10 +19,11 @@ public sealed class OverlaySettingsCategoryCatalogTests
                 OverlaySettingsCategory.Guardian,
                 OverlaySettingsCategory.Quests,
                 OverlaySettingsCategory.Colonization,
+                OverlaySettingsCategory.Firegroups,
             ],
             categories.Select(category => category.Category).ToArray());
         Assert.Equal(
-            ["exploration", "exobiology", "travel", "boxel", "mining", "guardian", "quests", "colonisation"],
+            ["exploration", "exobiology", "travel", "boxel", "mining", "guardian", "quests", "colonisation", "firegroups"],
             categories.Select(category => category.NavigationKey).ToArray());
         Assert.All(categories, definition =>
         {

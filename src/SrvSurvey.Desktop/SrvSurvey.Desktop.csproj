@@ -7,10 +7,12 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SrvSurvey.Desktop</RootNamespace>
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
-    <Version>2.1.3.0-rc.44.5</Version>
+    <Version>2.1.3.0-rc.45</Version>
     <FileVersion>2.1.3.0</FileVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Dependency diagnostics use their neutral English resources until translations are shipped. -->
+    <SatelliteResourceLanguages Condition="'$(SatelliteResourceLanguages)' == ''">en</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +21,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="12.1.0" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.0" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.0" />
+    <PackageReference Include="NetMQ" Version="4.0.4.3" />
     <PackageReference Include="OVRSharp" Version="1.2.0" />
     <PackageReference Include="SDL3-CS" Version="3.4.12.3" />
     <PackageReference Include="SDL3-CS.Linux" Version="3.4.12.1" />
@@ -81,5 +84,16 @@
     <Content Include="Assets\Fonts\**\OFL.txt"
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <!-- Native packages mark their PDBs as runtime assets, so DebugSymbols=false does not exclude them.
+       Keep symbols in development outputs, but omit them from player release packages. -->
+  <Target Name="ExcludeReleasePackageSymbols"
+          AfterTargets="ComputeFilesToPublish"
+          Condition="'$(Configuration)' == 'Release'">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="'%(ResolvedFileToPublish.Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
 
 </Project>

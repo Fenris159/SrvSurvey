@@ -10,6 +10,25 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         $"SrvSurvey-legacy-layout-tests-{Guid.NewGuid():N}");
 
     [Fact]
+    public void MiningWarningInitiallyCopiesFlightPlacementButKeepsIndependentSavedChanges()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"),
+            """{"PlotFlightWarning":"center:9, top:176, 0.7 { s: 13 }"}""");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var layout = store.Load();
+        var original = layout.Placements["PlotFlightWarning"];
+        Assert.Equal(original, layout.Placements["PlotMiningWarning"]);
+        var custom = original with { HorizontalOffset = 75, VerticalOffset = 200 };
+        store.Save(new Dictionary<string, LegacyOverlayPlacement> { ["PlotMiningWarning"] = custom });
+        store.Save(new Dictionary<string, LegacyOverlayPlacement>
+        {
+            ["PlotFlightWarning"] = original with { HorizontalOffset = 99 },
+        });
+        Assert.Equal(custom, store.Load().Placements["PlotMiningWarning"]);
+    }
+
+    [Fact]
     public void LegacyAnchorsOffsetsOpacityCommentsAndVrSuffixArePreserved()
     {
         Directory.CreateDirectory(temporaryDirectory);

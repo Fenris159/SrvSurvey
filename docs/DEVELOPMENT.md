@@ -1,6 +1,6 @@
 # Development and Validation
 
-Last updated: 2026-09-05
+Last updated: 2026-09-06
 
 ## Branch purpose
 
@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.44.5**. Its development tag
-is `xp-v2.1.3.0-rc.44.5`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.44.5`. The assembly `FileVersion`
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.45**. Its development tag
+is `xp-v2.1.3.0-rc.45`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.45`. The assembly `FileVersion`
 remains numeric at `2.1.3.0` for Windows compatibility.
 
 ## Build contract
@@ -39,7 +39,7 @@ XWayland startup.
   production consumer and event-specific assertions.
 - Network coverage inventories all runtime surfaces and every `HttpClient`
   owner, including bounded streaming requirements.
-- Overlay coverage inventories 32 contracts, including 30 positionable panels, and requires
+- Overlay coverage inventories 33 contracts, including 31 positionable panels, and requires
   production markup plus assertion evidence.
 - Profile import remains backup-first, hash-verified, staged, and recoverable.
   Compatibility code and tests are part of the converted product, not a build

@@ -39,6 +39,7 @@ public sealed partial class OverlaySettingsView : UserControl
     private void ApplyCategory(OverlaySettingsCategory category)
     {
         var isGlobal = category == OverlaySettingsCategory.Global;
+        MiningActivityCard.IsVisible = category is OverlaySettingsCategory.Mining or OverlaySettingsCategory.Global;
         MiningShortcutsCard.IsVisible = category == OverlaySettingsCategory.Mining;
         PassiveNotificationCard.IsVisible = isGlobal;
         GlobalOverlayBehaviorCard.IsVisible = isGlobal;
@@ -96,6 +97,13 @@ public sealed partial class OverlaySettingsView : UserControl
             SystemSurveyCardDescription.Text =
                 "Configure biological surveys, prior scans, surface radar, and reward presentation.";
         }
+    }
+
+    private async void OverlayExceptions_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (DataContext is not MainWindowViewModel viewModel || TopLevel.GetTopLevel(this) is not Window owner) return;
+        var window = new OverlayExceptionsWindow { DataContext = viewModel.OverlayExceptions.ForCategory(category) };
+        await window.ShowDialog(owner);
     }
 
     private void BeginVrAdjustment_Click(

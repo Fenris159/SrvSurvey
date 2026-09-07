@@ -1,6 +1,6 @@
 # SrvSurvey-XP Cross-Platform
 
-Current release candidate version: **2.1.3.0-rc.44.5**
+Current release candidate version: **2.1.3.0-rc.45**
 
 In-app **Guides > Chat Commands** provides an activity-by-activity reference for
 surface bookmarks, mining, exobiology, ground targets, Guardian surveys, settlement
@@ -16,16 +16,18 @@ tests, packaging, and development tools. Existing SrvSurvey profiles remain
 supported through a verified, backup-first import; the imported source is never
 modified.
 
-## RC43 highlights
+## RC45 highlights
 
-- [Rhino surface mining](docs/SURFACE_MINING.md): six saved rig locations,
-  Ship/Rhino guidance, cargo capacity, and shared keyboard/controller bindings.
-- Monochrome Companion overlay colors to pair with the dark Monochrome
-  application theme.
-- Corrected survey visibility, exploration sale estimates, and Live Horizons
-  handling, with the RC42 Guardian improvements retained.
+- Experimental [Rhino HUD rig tracking](docs/SURFACE_MINING.md): calibrate the six
+  deployment bars, choose your HUD color, and automatically set or clear rig
+  trackers with movement and uncertainty safeguards.
+- Surface mining width and placement match the overlay editor across live states.
+- Next-jump lookup failures use compact notices, retain detailed logs, and no
+  longer stretch the panel.
+- Retains the RC43/44 mining, shared tracker shortcuts, chat-command guide,
+  Monochrome Companion theme, and exploration improvements.
 
-See the [complete RC43 release notes](CurrentReleaseNotes.md).
+See the [complete RC45 release notes](CurrentReleaseNotes.md).
 
 ## Install
 

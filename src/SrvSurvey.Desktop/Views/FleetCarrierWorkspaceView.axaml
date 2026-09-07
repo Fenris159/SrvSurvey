@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:views="using:SrvSurvey.Desktop.Views" x:Class="SrvSurvey.Desktop.Views.FleetCarrierWorkspaceView" x:Name="FleetRoot" xmlns:colonization="using:SrvSurvey.Core.Colonization" x:DataType="vm:MainWindowViewModel">
+  <Grid RowDefinitions="Auto,*" Margin="24">
+    <TextBlock Classes="page-title" Text="Fleet Carrier" Margin="0,0,0,16"/>
+    <views:FrontierCarrierTabView Grid.Row="1" DataContext="{Binding FrontierProfile}">
+      <views:FrontierCarrierTabView.SupplementaryContent>
+        <Border Classes="card" DataContext="{Binding #FleetRoot.DataContext.FleetCarrierWorkspace}" x:DataType="vm:FleetCarrierWorkspaceViewModel">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="card-title" Text="Squadron carrier"/>
+            <TextBlock Classes="muted" Text="Uses carriers linked in RavenColonial. Cargo updates follow the existing colonization sync settings." TextWrapping="Wrap"/>
+            <ComboBox ItemsSource="{Binding SquadronCandidates}" SelectedItem="{Binding SelectedSquadronCarrier}" HorizontalAlignment="Stretch" PlaceholderText="Select your linked squadron carrier">
+              <ComboBox.ItemTemplate><DataTemplate x:DataType="colonization:ColonizationFleetCarrier"><TextBlock><Run Text="{Binding DisplayName}"/><Run Text=" · "/><Run Text="{Binding Name}"/></TextBlock></DataTemplate></ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Text="{Binding SquadronCargoSummary}" TextWrapping="Wrap"/>
+            <ItemsControl ItemsSource="{Binding SquadronCargo}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:FrontierInventoryRowViewModel">
+              <Border Classes="dashboard-row"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Name}"/><TextBlock Grid.Column="1" Text="{Binding Quantity}"/></Grid></Border>
+            </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+          </StackPanel>
+        </Border>
+      </views:FrontierCarrierTabView.SupplementaryContent>
+    </views:FrontierCarrierTabView>
+  </Grid>
+</UserControl>

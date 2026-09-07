@@ -3,12 +3,90 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class HostedOverlayWindowTests
 {
+    [AvaloniaFact]
+    public async Task MiningWarningHostFollowsRangeFocusAndVehicleChanges()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-mining-warning-{Guid.NewGuid():N}");
+        try
+        {
+            using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
+            var scan = new SystemScanState();
+            foreach (var json in new[]
+            {
+                """{"event":"Location","StarSystem":"Test","SystemAddress":42}""",
+                """{"event":"Scan","StarSystem":"Test","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Radius":1000000,"PlanetClass":"Rocky body"}""",
+            })
+            {
+                Assert.True(JournalEventEnvelope.TryParse(json, out var envelope, out _));
+                scan.Apply(envelope!);
+            }
+            var commander = new SurfaceSurveySessionContext("F123", "Test", "Test", 42, null);
+            var status = new EliteStatus
+            {
+                Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+                BodyName = "Test 1",
+                PlanetRadius = 1_000_000
+            };
+            await mining.ApplyUpdateAsync(commander, scan.CreateSnapshot(), status, "mev_rhino");
+            await mining.ToggleRigAsync(1);
+            var trackers = new List<RecordingGameWindowTracker>();
+            var timers = new List<ManualHostedOverlayTimer>();
+            var platform = new RecordingOverlayPlatform();
+            var registry = new OverlayWindowRegistry();
+            using var session = OverlayPresentationSession.CreateForAdapters(
+                new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Mining warning test"),
+                new OverlayPresentationSessionDependencies(
+                    () => platform,
+                    () => { var tracker = new RecordingGameWindowTracker(AvailableGameWindow); trackers.Add(tracker); return tracker; },
+                    _ => { var timer = new ManualHostedOverlayTimer(); timers.Add(timer); return timer; },
+                    LegacyOverlayLayout.Empty, WindowRegistry: registry));
+            using var coordinator = new SurfaceMiningOverlayCoordinator(mining, session);
+            Assert.False(coordinator.IsWarningVisible);
+            var far = status with { Latitude = .3 };
+            await mining.ApplyUpdateAsync(commander, scan.CreateSnapshot(), far, "mev_rhino");
+            Assert.True(coordinator.IsWarningVisible);
+            var warning = Assert.Single(platform.PreparedWindows.OfType<MiningWarningOverlayWindow>());
+            Assert.True(warning.Topmost);
+            Assert.True(registry.TryGetPlotterName(warning, out var name));
+            Assert.Equal("PlotMiningWarning", name);
+            foreach (var tracker in trackers) tracker.Snapshot = AvailableGameWindow with { IsForeground = false };
+            foreach (var timer in timers) timer.Pulse();
+            Assert.False(coordinator.IsWarningVisible);
+            foreach (var tracker in trackers) tracker.Snapshot = AvailableGameWindow;
+            foreach (var timer in timers) timer.Pulse();
+            Assert.True(coordinator.IsWarningVisible);
+            coordinator.SetSuppressed(true);
+            Assert.False(coordinator.IsWarningVisible);
+            coordinator.SetSuppressed(false);
+            Assert.True(coordinator.IsWarningVisible);
+            await mining.ApplyUpdateAsync(commander, scan.CreateSnapshot(), status, "mev_rhino");
+            Assert.False(coordinator.IsWarningVisible);
+            await mining.ApplyUpdateAsync(commander, scan.CreateSnapshot(), far, "mev_rhino");
+            Assert.True(coordinator.IsWarningVisible);
+            await mining.ApplyUpdateAsync(commander, scan.CreateSnapshot(), far with
+            {
+                Flags = StatusFlags.HasLatLong,
+                Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
+            }, "mev_rhino", parkedSrvType: "mev_rhino");
+            Assert.False(coordinator.IsWarningVisible);
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
     [AvaloniaFact]
     public void DispatcherTimerSupportsItsHostedLifecycle()
     {

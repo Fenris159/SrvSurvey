@@ -19,6 +19,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private readonly JumpInfoSettingsStore settingsStore;
     private readonly GuardianSiteCatalog guardianSites;
     private readonly TimeProvider timeProvider;
+    private readonly Action<string>? log;
     private CancellationTokenSource? summaryCancellation;
     private string? currentSystemName;
     private long? currentSystemAddress;
@@ -58,7 +59,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         ISystemSummaryClient summaryClient,
         JumpInfoSettingsStore settingsStore,
         GuardianSiteCatalog? guardianSites = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        Action<string>? log = null)
     {
         this.summaryClient = summaryClient
             ?? throw new ArgumentNullException(nameof(summaryClient));
@@ -67,6 +69,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         this.guardianSites = guardianSites
             ?? GuardianSiteCatalog.LoadEmbedded();
         this.timeProvider = timeProvider ?? TimeProvider.System;
+        this.log = log;
         var preferences = settingsStore.Load();
         autoShow = preferences.AutoShow;
         minimal = preferences.Minimal;
@@ -616,9 +619,12 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                 RaisePlanProperties();
             }
 
-            DataStatus = result.Warnings.Count == 0
-                ? string.Empty
-                : string.Join(" ", result.Warnings);
+            foreach (var warning in result.Warnings)
+            {
+                LogLookupFailure(target, warning);
+            }
+
+            DataStatus = FormatLookupWarnings(result.Warnings);
             RefreshSummaryProperties();
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -631,9 +637,11 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                 or InvalidDataException
                 or JsonException)
         {
-            if (!cancellationToken.IsCancellationRequested)
+            if (!cancellationToken.IsCancellationRequested
+                && SameTarget(routePlan?.Target, target))
             {
-                DataStatus = "System data is unavailable: " + exception.Message;
+                LogLookupFailure(target, exception.ToString());
+                DataStatus = "System data unavailable.";
             }
         }
         finally
@@ -643,6 +651,27 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                 IsLoading = false;
             }
         }
+    }
+
+    private void LogLookupFailure(JumpTarget target, string detail) =>
+        log?.Invoke($"Next-jump lookup for {target.Name} ({target.SystemAddress}): {detail}");
+
+    private static string FormatLookupWarnings(IReadOnlyList<string> warnings)
+    {
+        if (warnings.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var providers = warnings.Select(warning => warning switch
+        {
+            _ when warning.StartsWith("EDSM ", StringComparison.Ordinal) => "EDSM",
+            _ when warning.StartsWith("Spansh ", StringComparison.Ordinal) => "Spansh",
+            _ => "System",
+        }).Distinct(StringComparer.Ordinal).ToArray();
+        return providers.Contains("System", StringComparer.Ordinal)
+            ? "System data unavailable."
+            : string.Join(" and ", providers) + " data unavailable.";
     }
 
     private void RefreshSummaryProperties()

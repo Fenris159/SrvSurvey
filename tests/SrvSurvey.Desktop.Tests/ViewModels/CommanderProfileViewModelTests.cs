@@ -9,6 +9,35 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class CommanderProfileViewModelTests
 {
     [Fact]
+    public async Task OlderCommanderActivationCannotClearNewerProfileAfterDeferredCancellation()
+    {
+        var latest = CreateSnapshot(DateTimeOffset.UtcNow) with { CommanderName = "Latest" };
+        var account = new StubAccountService(new FrontierAccountState(true, latest, latest.FetchedAt));
+        using var viewModel = new CommanderProfileViewModel(account);
+        using var release = new ManualResetEventSlim();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationTokenRegistration registration = default;
+        account.StateRequested = token =>
+        {
+            if (!token.CanBeCanceled) return;
+            registration = token.Register(() => { entered.TrySetResult(); release.Wait(TimeSpan.FromSeconds(10)); });
+        };
+        try
+        {
+            await viewModel.SetCommanderContextAsync("F1", "First", false);
+            viewModel.LoadAutomatically();
+            var older = viewModel.SetCommanderContextAsync("F2", "Second", false);
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await viewModel.SetCommanderContextAsync("F3", "Latest", true);
+            Assert.Same(latest, viewModel.Snapshot);
+            release.Set(); await older;
+            Assert.Same(latest, viewModel.Snapshot);
+            Assert.Equal("F3", account.ActiveFrontierId);
+        }
+        finally { release.Set(); registration.Dispose(); }
+    }
+
+    [Fact]
     public async Task UnlinkedStateShowsConnectionExperienceWithoutFetching()
     {
         var account = new StubAccountService(
@@ -859,6 +888,74 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task LinkedCarrierCargoUpdatesOnlyTheMatchingCommanderAndCallsign()
+    {
+        var snapshot = CreateSnapshot(DateTimeOffset.UtcNow);
+        using var profile = new CommanderProfileViewModel(new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt)));
+        await profile.OpenAsync();
+        var carrier = new SrvSurvey.Core.Colonization.ColonizationFleetCarrier { Name = snapshot.Carrier!.Callsign, Cargo = new() { ["platinum"] = 42 } };
+        profile.UpdateLinkedFleetCarriers("Someone else", [carrier]);
+        Assert.DoesNotContain(profile.CarrierCargo, c => c.Name == "platinum");
+        profile.UpdateLinkedFleetCarriers(snapshot.CommanderName, [carrier with { Name = "OTHER" }]);
+        Assert.DoesNotContain(profile.CarrierCargo, c => c.Name == "platinum");
+        profile.UpdateLinkedFleetCarriers(snapshot.CommanderName, [carrier]);
+        Assert.Equal("42", Assert.Single(profile.CarrierCargo).Quantity);
+        profile.UpdateLinkedFleetCarriers(snapshot.CommanderName, [carrier with { Cargo = new() { ["platinum"] = 47 } }]);
+        Assert.Equal("47", Assert.Single(profile.CarrierCargo).Quantity);
+        Assert.Contains("RavenColonial", profile.CarrierCargoSource);
+        Assert.Equal(snapshot.Carrier.CapacityFree, profile.Carrier!.CapacityFree);
+        profile.UpdateLinkedFleetCarriers(null, []);
+        Assert.DoesNotContain(profile.CarrierCargo, c => c.Name == "platinum");
+    }
+
+    [Fact]
+    public async Task SlowFrontierRefreshDoesNotBlockLocalJournalStartup()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-carrier-startup-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals"); Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(Path.Combine(journals, "Journal.2026-09-06T120000.01.log"),
+                """{"timestamp":"2026-09-06T12:00:00Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}""" + "\n");
+            var stale = CreateSnapshot(DateTimeOffset.UtcNow.AddHours(-1));
+            var refreshed = CreateSnapshot(DateTimeOffset.UtcNow);
+            var account = new StubAccountService(new FrontierAccountState(true, stale, stale.FetchedAt), refreshed);
+            var pending = new TaskCompletionSource<FrontierAccountSnapshot>();
+            account.PendingRefresh = pending.Task;
+            var profile = new CommanderProfileViewModel(account);
+            using var main = MainWindowViewModelTestBuilder.Create(journals, builder => builder.WithAppDataPaths(new AppDataPaths(Path.Combine(root, "config"), Path.Combine(root, "profile"), Path.Combine(root, "cache"), [])).WithFrontierProfile(profile));
+            await main.RefreshAsync().WaitAsync(TimeSpan.FromSeconds(3));
+            Assert.Equal("F123", main.FrontierId);
+            Assert.True(profile.IsBusy); Assert.Equal(1, account.RefreshCount);
+            pending.SetResult(refreshed);
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    [Fact]
+    public async Task StartupLoadsLinkedCarrierWithoutOpeningCommanderCardAndDoesNotRepeatRefresh()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-carrier-startup-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals"); Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(Path.Combine(journals, "Journal.2026-09-06T120000.01.log"),
+                """{"timestamp":"2026-09-06T12:00:00Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}""" + "\n");
+            var stale = CreateSnapshot(DateTimeOffset.UtcNow.AddHours(-1));
+            var refreshed = CreateSnapshot(DateTimeOffset.UtcNow);
+            var account = new StubAccountService(new FrontierAccountState(true, stale, stale.FetchedAt), refreshed);
+            var profile = new CommanderProfileViewModel(account);
+            using var main = MainWindowViewModelTestBuilder.Create(journals, builder => builder.WithAppDataPaths(new AppDataPaths(Path.Combine(root, "config"), Path.Combine(root, "profile"), Path.Combine(root, "cache"), [])).WithFrontierProfile(profile));
+            await main.RefreshAsync();
+            Assert.False(main.IsProfileSelected); Assert.NotNull(profile.Carrier);
+            Assert.Equal(refreshed.FetchedAt, profile.Snapshot!.FetchedAt);
+            await main.RefreshAsync();
+            Assert.Equal(1, account.RefreshCount);
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    [Fact]
     public async Task MainJournalRefreshSuppliesReputationWhenCarrierIsAbsent()
     {
         var root = Path.Combine(
@@ -1086,6 +1183,8 @@ public sealed class CommanderProfileViewModelTests
         }
 
         public int RefreshCount { get; private set; }
+        public Task<FrontierAccountSnapshot>? PendingRefresh { get; set; }
+        public Action<CancellationToken>? StateRequested { get; set; }
 
         public event EventHandler? AuthorizationCallbackReceived;
 
@@ -1126,6 +1225,7 @@ public sealed class CommanderProfileViewModelTests
         public Task<FrontierAccountState> GetStateAsync(
             CancellationToken cancellationToken = default)
         {
+            StateRequested?.Invoke(cancellationToken);
             return Task.FromResult(
                 ActiveFrontierId is not null
                 && commanderStates.TryGetValue(ActiveFrontierId, out var scoped)
@@ -1149,6 +1249,7 @@ public sealed class CommanderProfileViewModelTests
             CancellationToken cancellationToken = default)
         {
             RefreshCount++;
+            if (PendingRefresh is not null) return PendingRefresh.WaitAsync(cancellationToken);
             return Task.FromResult(refreshed ?? state.Snapshot
                 ?? throw new InvalidOperationException("No snapshot configured."));
         }

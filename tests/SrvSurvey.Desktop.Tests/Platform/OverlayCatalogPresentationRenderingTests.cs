@@ -4,6 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media.Imaging;
+using Avalonia.Media;
+using Avalonia.VisualTree;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -16,6 +18,43 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class OverlayCatalogPresentationRenderingTests
 {
     [AvaloniaFact]
+    public void MiningRangeWarningMatchesHighRiskFlightWarningStyle()
+    {
+        var flight = new FlightWarningOverlayWindow(
+            (SystemSurveyOverlayViewModel)OverlayEditorPreviewCatalog.Create("PlotFlightWarning", 2));
+        var mining = new MiningWarningOverlayWindow();
+        try
+        {
+            var model = Assert.IsType<SurfaceMiningOverlayViewModel>(mining.DataContext);
+            Assert.All(model.SurfaceMining.Rigs.Where(rig => rig.IsSet), rig =>
+                Assert.Equal(78, rig.Marker!.RadiusMeters));
+            flight.Show();
+            mining.Show();
+            var flightTexts = flight.GetVisualDescendants().OfType<TextBlock>().ToArray();
+            var miningTexts = mining.GetVisualDescendants().OfType<TextBlock>().ToArray();
+            var flightTitle = Assert.Single(flightTexts, text => text.Text == "FLIGHT WARNING");
+            var miningTitle = Assert.Single(miningTexts, text => text.Text == "WARNING");
+            Assert.Equal(((ISolidColorBrush)flightTitle.Foreground!).Color,
+                ((ISolidColorBrush)miningTitle.Foreground!).Color);
+            Assert.Equal(flightTitle.FontSize, miningTitle.FontSize);
+            Assert.Equal(flightTitle.FontWeight, miningTitle.FontWeight);
+            var flightIcon = Assert.Single(flightTexts, text => text.Text == "!");
+            var miningIcon = Assert.Single(miningTexts, text => text.Text == "!");
+            Assert.Equal(flightIcon.FontSize, miningIcon.FontSize);
+            Assert.Contains(miningTexts, text => text.Text == "TOO FAR FROM RIGS");
+            Assert.Contains(miningTexts, text => text.Text == "Moving beyond 4.5Km will Destroy Rigs");
+            Assert.Contains(mining.GetVisualDescendants().OfType<Border>(), border =>
+                border.Width == 24 && border.Height == 24 && border.CornerRadius.TopLeft == 12
+                && border.Background is ISolidColorBrush brush && brush.Color == Color.Parse("#FF4500"));
+        }
+        finally
+        {
+            flight.Close();
+            mining.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void MonochromeCompanionRendersMiningAndStatusPanels()
     {
         var app = Assert.IsType<Application>(Application.Current, exactMatch: false);
@@ -25,7 +64,7 @@ public sealed class OverlayCatalogPresentationRenderingTests
         service.ApplyOverlayTheme(new LegacyOverlayTheme(preset.Colors, true, null));
         try
         {
-            foreach (var name in new[] { "PlotSurfaceMining", "PlotBioSystem", "PlotJumpInfo", "PlotBuildCommodities", "PlotFlightWarning" })
+            foreach (var name in new[] { "PlotSurfaceMining", "PlotMiningWarning", "PlotBioSystem", "PlotJumpInfo", "PlotBuildCommodities", "PlotFlightWarning" })
             {
                 var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired(name));
                 try
