@@ -58,6 +58,21 @@
     ]
   },
   {
+    "Title": "Mine Map — locations and deposits",
+    "Summary": "Create a saved surface mining-location map from its known 2.47 km border, then mark mineral or metal deposits from the center or your live position.",
+    "Steps": [
+      ".mining <heading> <location number> <amount>/<density> — While standing on the yellow border and facing the location marker at its center, save the center and location details. Example: .mining 120 4 high/low.",
+      ".mine <heading> <material> <distance km> — From the saved center, add a deposit at the supplied true heading and distance. Example: .mine 15 ruby 1.24.",
+      ".mine <material> here — Add a deposit at your current surface position. Example: .mine ruby here.",
+      ".mine delete here — Remove the closest deposit marker within 0.5 km of your current position."
+    ],
+    "Details": [
+      "The .mining command uses the current body's exact journal radius and your latitude/longitude to project the center 2.47 km along the heading. The first rating is Mineral Amount and the second is Density; each must be high or low.",
+      "A surface map JSON stores Commander, system, body, body type, arrival distance, signal number, ratings, center coordinates, and deposit markers. Commands require the current body and live surface coordinates.",
+      "Recognized commands report their result through the status notification overlay. Open Activities > Mine Map to search saved locations, filter by contained material or body type, and review the fixed-upright survey map."
+    ]
+  },
+  {
     "Title": "Exobiology — first footfall and Codex",
     "Summary": "These commands update your local first-footfall records or open information about the latest biology discovery.",
     "Steps": [

@@ -72,6 +72,12 @@ public static class OverlayVehicleCatalog
         new(UnknownKey, "Other / unknown", VehicleGroup),
     ];
 
+    public static IReadOnlyList<OverlayVehicleDefinition> ForCategory(
+        OverlaySettingsCategory category) => category == OverlaySettingsCategory.MineMap
+        ? All.Where(vehicle => vehicle.Group is MediumGroup or LargeGroup
+            || vehicle.Id is "mev_rhino" or "on-foot").ToArray()
+        : All;
+
     public static string Resolve(JournalSessionState journal, EliteStatus? status)
     {
         if (journal.IsShutdown || status is null) return UnknownKey;

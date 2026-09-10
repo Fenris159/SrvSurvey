@@ -30,6 +30,19 @@
         <Button Content="Save mining overlay settings" Command="{Binding MiningWorkspace.SaveSettingsCommand}" HorizontalAlignment="Left" />
       </StackPanel>
     </Border>
+    <Border x:Name="MineMapOverlayCard" Classes="card raised">
+      <StackPanel Spacing="12">
+        <TextBlock Classes="card-title" Text="Surface mining overview map" />
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="The map follows the active saved mining location and shows its fixed 2.47 km border, mapped deposits, and your live surface position. Use the panel control below to assign its visibility hotkey." />
+        <CheckBox IsChecked="{Binding MineMap.OnlyShowWhileOnGround, Mode=TwoWay}"
+                  Content="Only show while on the ground" />
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Overlay Exceptions for Mine Map are limited to medium and large ships, Rhino, and on foot. Uncheck every ship there to keep the map out of airborne gameplay." />
+        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                   Text="{Binding MineMap.StatusText}" TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
     <Border x:Name="MiningShortcutsCard" Classes="card raised">
       <StackPanel Spacing="12">
         <TextBlock Classes="muted" TextWrapping="Wrap"

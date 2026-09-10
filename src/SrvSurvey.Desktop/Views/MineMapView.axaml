@@ -1,0 +1,179 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             x:Class="SrvSurvey.Desktop.Views.MineMapView"
+             x:DataType="vm:MainWindowViewModel">
+  <UserControl.Styles>
+    <Style Selector="Expander.mine-map-legend /template/ ToggleButton /template/ Border#ToggleButtonBackground">
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="BoxShadow" Value="none" />
+      <Setter Property="Margin" Value="0,0,0,10" />
+    </Style>
+    <Style Selector="Expander.mine-map-legend /template/ Border#ExpanderContent">
+      <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="BoxShadow" Value="none" />
+      <Setter Property="Padding" Value="12" />
+    </Style>
+  </UserControl.Styles>
+  <Grid DataContext="{Binding MineMap}" x:DataType="vm:MineMapViewModel" RowDefinitions="Auto,*,Auto" Margin="32">
+    <StackPanel Spacing="5">
+      <TextBlock Classes="eyebrow" Text="ACTIVITIES" />
+      <TextBlock Classes="page-title" Text="Mine Map" />
+      <TextBlock Classes="muted" TextWrapping="Wrap"
+                 Text="Survey surface mining locations, save their centers, and map mineral deposits from Elite chat commands." />
+    </StackPanel>
+
+    <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTab, Mode=TwoWay}" Margin="0,14,0,0">
+      <TabItem Header="Surface Maps">
+        <StackPanel Margin="0,16,0,0" Spacing="18">
+          <Border Classes="card raised">
+            <Grid ColumnDefinitions="8,*,Auto" ColumnSpacing="18">
+              <Border Background="{DynamicResource RavenAccentBrush}" CornerRadius="4" />
+              <StackPanel Grid.Column="1" Spacing="5">
+                <TextBlock Classes="eyebrow" Text="LIVE MAP" />
+                <TextBlock Classes="card-title" Text="{Binding LiveMapTitle}" />
+                <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding LiveMapDescription}" />
+                <TextBlock Classes="monospace" FontSize="11" Text="{Binding LiveMapLocation}" />
+              </StackPanel>
+              <Border Grid.Column="2" Classes="badge" VerticalAlignment="Top">
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}" FontWeight="SemiBold" Text="{Binding MarkerCountText}" />
+              </Border>
+            </Grid>
+          </Border>
+
+          <Border Classes="card raised">
+            <Grid ColumnDefinitions="2*,*,*" ColumnSpacing="18">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="muted" Text="SEARCH" />
+                <TextBox Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="System, body, signal, rating, or address" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="6">
+                <TextBlock Classes="muted" Text="CONTAINS" />
+                <ComboBox ItemsSource="{Binding ContainsOptions}" SelectedItem="{Binding SelectedContains, Mode=TwoWay}" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Classes="muted" Text="BODY TYPE" />
+                <ComboBox ItemsSource="{Binding BodyTypeOptions}" SelectedItem="{Binding SelectedBodyType, Mode=TwoWay}" />
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <Border Classes="card" Padding="0">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+              <Grid MinWidth="1180" RowDefinitions="Auto,*">
+                <Grid Margin="14,10" ColumnDefinitions="180,150,140,125,85,85,90,90,120,70" ColumnSpacing="10">
+                  <TextBlock Classes="table-heading" Text="SYSTEM" />
+                  <TextBlock Grid.Column="1" Classes="table-heading" Text="BODY" />
+                  <TextBlock Grid.Column="2" Classes="table-heading" Text="SIGNAL" />
+                  <TextBlock Grid.Column="3" Classes="table-heading" Text="BODY TYPE" />
+                  <TextBlock Grid.Column="4" Classes="table-heading" Text="DISTANCE" />
+                  <TextBlock Grid.Column="5" Classes="table-heading" Text="ARRIVAL" />
+                  <TextBlock Grid.Column="6" Classes="table-heading" Text="AMOUNT" />
+                  <TextBlock Grid.Column="7" Classes="table-heading" Text="DENSITY" />
+                  <TextBlock Grid.Column="8" Classes="table-heading" Text="UPDATED" />
+                  <TextBlock Grid.Column="9" Classes="table-heading" Text="ACTIONS" />
+                </Grid>
+                <ScrollViewer Grid.Row="1" Height="390" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                  <ItemsControl ItemsSource="{Binding FilteredSurveys}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:MineMapSurveyRowViewModel">
+                        <Border Classes="table-row" Padding="14,10">
+                          <Grid ColumnDefinitions="180,150,140,125,85,85,90,90,120,70" ColumnSpacing="10">
+                            <TextBlock Text="{Binding SystemName}" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Column="1" Text="{Binding BodyName}" TextTrimming="CharacterEllipsis" />
+                            <Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left"
+                                    Tag="{Binding}" Click="OpenMap_Click" Content="{Binding Name}" />
+                            <TextBlock Grid.Column="3" Text="{Binding BodyType}" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Column="4" Text="{Binding DistanceText}" />
+                            <TextBlock Grid.Column="5" Text="{Binding ArrivalText}" />
+                            <TextBlock Grid.Column="6" Text="{Binding MineralAmount}" />
+                            <TextBlock Grid.Column="7" Text="{Binding Density}" />
+                            <TextBlock Grid.Column="8" Text="{Binding UpdatedText}" />
+                            <Button Grid.Column="9" Classes="icon" Tag="{Binding}" Click="RequestDelete_Click"
+                                    ToolTip.Tip="Delete surface map">
+                              <TextBlock Text="🗑" />
+                            </Button>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </Grid>
+            </ScrollViewer>
+          </Border>
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Survey map">
+        <Grid Margin="0,16,0,0" ColumnDefinitions="*,300" ColumnSpacing="20">
+          <Border Classes="card" MinHeight="560">
+            <controls:MineMapControl Survey="{Binding ActiveSurvey}"
+                                     PlayerLocation="{Binding PlayerLocation}"
+                                     PlayerHeading="{Binding PlayerHeading}"
+                                     ViewRadiusMeters="{Binding ViewRadiusMeters}"
+                                     VisibleMaterials="{Binding VisibleMaterials}"
+                                     GridBrush="{DynamicResource RavenBorderBrush}"
+                                     AccentBrush="{DynamicResource RavenAccentBrush}"
+                                     TextBrush="{DynamicResource RavenForegroundBrush}"
+                                     ZoneBrush="{DynamicResource RavenWarningBrush}" />
+          </Border>
+          <StackPanel Grid.Column="1" Spacing="14">
+            <Border Classes="card raised">
+              <StackPanel Spacing="10">
+                <TextBlock Classes="card-title" Text="Zoom" />
+                <TextBlock Classes="monospace" Text="{Binding ZoomText}" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button Classes="secondary" Command="{Binding ZoomInCommand}" Content="+" />
+                  <Button Classes="secondary" Command="{Binding ZoomOutCommand}" Content="−" />
+                  <Button Classes="secondary" Command="{Binding ResetZoomCommand}" Content="Reset" />
+                </StackPanel>
+              </StackPanel>
+            </Border>
+            <Expander Classes="mine-map-legend" Header="Map Legend" IsExpanded="True">
+              <StackPanel Spacing="8">
+                <TextBlock Text="◎ Mining location border (2.47 km radius)" TextWrapping="Wrap" />
+                <TextBlock Text="◉ Survey center" />
+                <TextBlock Text="▲ Live player position" />
+                <TextBlock Text="● Saved mineral or metal deposit" TextWrapping="Wrap" />
+              </StackPanel>
+            </Expander>
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="card-title" Text="Marker visibility" />
+                <ItemsControl ItemsSource="{Binding MarkerFilters}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MineMapMarkerFilterViewModel">
+                      <CheckBox IsChecked="{Binding IsVisible, Mode=TwoWay}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <TextBlock Foreground="{Binding ColorHex}" Text="●" />
+                          <TextBlock Text="{Binding Name}" />
+                        </StackPanel>
+                      </CheckBox>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </Grid>
+      </TabItem>
+    </TabControl>
+
+    <StackPanel Grid.Row="2" Spacing="8">
+      <Border Classes="card raised" IsVisible="{Binding HasPendingDelete}">
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+          <TextBlock VerticalAlignment="Center" Text="{Binding DeletePrompt}" TextWrapping="Wrap" />
+          <Button Grid.Column="1" Classes="danger" Command="{Binding ConfirmDeleteCommand}" Content="Yes, delete" />
+          <Button Grid.Column="2" Classes="secondary" Command="{Binding CancelDeleteCommand}" Content="No" />
+        </Grid>
+      </Border>
+      <TextBlock Foreground="{DynamicResource RavenWarningBrush}" Text="{Binding StatusText}" TextWrapping="Wrap" />
+    </StackPanel>
+  </Grid>
+</UserControl>

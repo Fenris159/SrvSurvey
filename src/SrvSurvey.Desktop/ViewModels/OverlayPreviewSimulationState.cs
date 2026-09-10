@@ -145,6 +145,13 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Rig 2", "65 m | TOO CLOSE"),
                 Row("Rig 3", "170 m | TRACKED"),
                 Row("Cargo", "36 of 72", 50)),
+            "PlotMineMap" => Content(
+                "Mining Location Signal 4",
+                "Wille 2 C · Rocky Ice body",
+                "3 MAPPED DEPOSITS | 5.0 KM RADIUS",
+                Row("ruby", "015 degrees | 1.24 km", glyph: "●", glyphTone: OverlayPreviewGlyphTone.Danger),
+                Row("gold", "090 degrees | 2.10 km", glyph: "●", glyphTone: OverlayPreviewGlyphTone.Gold),
+                Row("thorveitite", "225 degrees | 3.40 km", glyph: "●", glyphTone: OverlayPreviewGlyphTone.Information)),
             "PlotGrounded" => Content(
                 state.CurrentBody,
                 "Surface survey - heading 074 degrees",

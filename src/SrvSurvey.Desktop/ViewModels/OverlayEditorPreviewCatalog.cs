@@ -124,6 +124,7 @@ internal static class OverlayEditorPreviewCatalog
             "PlotMiningNotifications" => new MiningActivityOverlayViewModel(null, false),
             "PlotMiningFiregroups" => new MiningActivityOverlayViewModel(null, true),
             "PlotSurfaceMining" or "PlotMiningWarning" => OverlayEditorPreviewFactories.CreateSurfaceMining(),
+            "PlotMineMap" => CreateMineMapPreview(),
             "PlotGrounded" or "PlotMiniTrack" => CreateSurfaceSurveyPreview(),
             "PlotHumanSite" => CreateHumanSitePreview(),
             "PlotJumpInfo" => CreateJumpInfoPreview(),
@@ -139,6 +140,11 @@ internal static class OverlayEditorPreviewCatalog
             _ => throw new InvalidOperationException(
                 $"No editor preview data context is defined for {plotterName}."),
         };
+
+    private static MineMapViewModel CreateMineMapPreview()
+    {
+        return MineMapViewModel.CreateEditorPreview();
+    }
 
     private static SystemSurveyOverlayViewModel CreateSystemSurveyPreview(
         string plotterName,

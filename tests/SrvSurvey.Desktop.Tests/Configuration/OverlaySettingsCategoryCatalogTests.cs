@@ -16,6 +16,7 @@ public sealed class OverlaySettingsCategoryCatalogTests
                 OverlaySettingsCategory.Travel,
                 OverlaySettingsCategory.Boxel,
                 OverlaySettingsCategory.Mining,
+                OverlaySettingsCategory.MineMap,
                 OverlaySettingsCategory.Guardian,
                 OverlaySettingsCategory.Quests,
                 OverlaySettingsCategory.Colonization,
@@ -23,7 +24,7 @@ public sealed class OverlaySettingsCategoryCatalogTests
             ],
             categories.Select(category => category.Category).ToArray());
         Assert.Equal(
-            ["exploration", "exobiology", "travel", "boxel", "mining", "guardian", "quests", "colonisation", "firegroups"],
+            ["exploration", "exobiology", "travel", "boxel", "mining", "mine-map", "guardian", "quests", "colonisation", "firegroups"],
             categories.Select(category => category.NavigationKey).ToArray());
         Assert.All(categories, definition =>
         {

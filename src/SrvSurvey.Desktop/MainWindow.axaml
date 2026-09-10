@@ -207,6 +207,7 @@
       <views:FleetCarrierWorkspaceView IsVisible="{Binding IsFleetCarrierSelected}" />
       <views:FiregroupsView IsVisible="{Binding IsFiregroupsSelected}" />
       <views:MiningView IsVisible="{Binding IsMiningSelected}" />
+      <views:MineMapView IsVisible="{Binding IsMineMapSelected}" />
       <views:ExobiologyView IsVisible="{Binding IsExobiologySelected}" />
       <views:TravelView IsVisible="{Binding IsTravelSelected}" />
       <views:BoxelView IsVisible="{Binding IsBoxelSelected}" />
