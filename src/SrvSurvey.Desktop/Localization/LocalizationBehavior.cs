@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 
@@ -55,6 +56,9 @@ public static class LocalizationBehavior
     private static void EnableTranslation(AvaloniaObject target)
     {
         var state = States.GetValue(target, _ => new TranslationState());
+        WatchObjectProperty(target, ToolTip.TipProperty, state);
+        WatchStringProperty(target, AutomationProperties.NameProperty, state);
+
         if (target is TextBlock textBlock)
         {
             WatchStringProperty(textBlock, TextBlock.TextProperty, state);
@@ -68,6 +72,11 @@ public static class LocalizationBehavior
         if (target is ContentControl contentControl)
         {
             WatchObjectProperty(contentControl, ContentControl.ContentProperty, state);
+        }
+
+        if (target is MenuItem menuItem)
+        {
+            WatchObjectProperty(menuItem, MenuItem.HeaderProperty, state);
         }
 
         if (target is TextBox textBox)

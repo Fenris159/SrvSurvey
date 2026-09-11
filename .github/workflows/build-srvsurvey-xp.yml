@@ -134,6 +134,10 @@ jobs:
       - name: Verify C# formatting
         run: dotnet csharpier check .
 
+      - name: Verify localization catalogs
+        shell: pwsh
+        run: ./tools/Generate-AvaloniaLocalization.ps1 -Verify
+
       - name: Build
         run: dotnet build SrvSurvey.slnx --configuration Release --no-restore
 

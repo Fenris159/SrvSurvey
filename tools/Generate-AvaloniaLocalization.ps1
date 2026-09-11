@@ -9,7 +9,10 @@ param(
 $ErrorActionPreference = "Stop"
 $script:TechnicalTokenPattern = [regex]::new(
     '(?i)(?:\b(?:Alt|Ctrl|Shift)(?:\s*\+\s*[A-Z0-9]+)+' +
-    '|\b[A-Za-z0-9_-]+\.(?:json|zip|txt|csv|png|jpe?g|gif|exe|dll|axaml|xml)\b' +
+    '|(?<!\w)\.[A-Za-z][A-Za-z0-9_-]*' +
+    '|(?<!\w)\+[A-Za-z][A-Za-z0-9_-]*' +
+    '|(?<!-)---(?!-)' +
+    '|\b[A-Za-z0-9_{}-]+\.(?:json|zip|txt|csv|png|jpe?g|gif|exe|dll|axaml|xml|lock|log|tmp|bak|db|toml|md|html?|svg)\b' +
     '|\b(?:SrvSurvey|Spansh|EDSM|Canonn|Bioforge|Inara|Raven Colonial|Frontier|Elite Dangerous|Discord|VoxStellar|EDMC|EDDN|HMAC-SHA256|GPL-3\.0)\b)',
     [Text.RegularExpressions.RegexOptions]::CultureInvariant)
 
@@ -177,6 +180,7 @@ function Build-LanguageTranslations {
     foreach ($source in $Sources) {
         if (-not $RegenerateAll -and $Language -ne "ps" -and
             $Prior.ContainsKey($source.Text) -and
+            -not [string]::IsNullOrWhiteSpace([string]$Prior[$source.Text]) -and
             (Test-ProtectedTokens `
                 $source.Text `
                 ([string]$Prior[$source.Text]))) {
@@ -243,6 +247,10 @@ function Assert-LanguageTranslationsValid {
 
     foreach ($source in $Sources) {
         $translation = [string]$Translations[$source.Text]
+        if ([string]::IsNullOrWhiteSpace($translation)) {
+            throw "$Language contains a blank translation for: $($source.Text)"
+        }
+
         if (-not (Test-Placeholders $source.Text $translation)) {
             throw "$Language did not preserve placeholders for: $($source.Text)"
         }
@@ -340,18 +348,12 @@ function Invoke-TranslationRequest {
         [hashtable]$Destination
     )
 
-    $separator = "`n[[[SRV_SPLIT]]]`n"
-    $requestText = ($Batch | ForEach-Object {
-        Protect-TranslationText $_
-    }) -join $separator
-    $uri = "https://translate.googleapis.com/translate_a/single" +
-        "?client=gtx&sl=en&tl=$TargetLanguage&dt=t&q=" +
-        [uri]::EscapeDataString($requestText)
-    $response = Invoke-RestMethod -Uri $uri -Method Get -TimeoutSec 45
-    $responseText = ($response[0] | ForEach-Object { $_[0] }) -join ""
-    $parts = [regex]::Split(
-        $responseText,
-        '\s*\[\[\[SRV_SPLIT\]\]\]\s*')
+    $query = ($Batch | ForEach-Object {
+        "&q=" + [uri]::EscapeDataString((Protect-TranslationText $_))
+    }) -join ""
+    $uri = "https://clients5.google.com/translate_a/t" +
+        "?client=dict-chrome-ex&sl=en&tl=$TargetLanguage$query"
+    $parts = @(Invoke-TranslationRequestWithRetry -Uri $uri)
     if ($parts.Count -ne $Batch.Count) {
         throw "Translator returned $($parts.Count) rows for a $($Batch.Count)-row batch."
     }
@@ -359,11 +361,10 @@ function Invoke-TranslationRequest {
     for ($index = 0; $index -lt $Batch.Count; $index++) {
         $source = $Batch[$index]
         $value = Restore-TranslationText $parts[$index].Trim() $source
-        $sourcePlaceholders = [regex]::Matches($source, '\{\d+\}').Value
-        $translatedPlaceholders = [regex]::Matches($value, '\{\d+\}').Value
-        if ((($sourcePlaceholders | Sort-Object) -join '|') -cne
-            (($translatedPlaceholders | Sort-Object) -join '|')) {
-            throw "Translator did not preserve placeholders for: $source"
+        if (-not (Test-Placeholders $source $value) -or
+            -not (Test-ProtectedTokens $source $value)) {
+            Write-Warning "Retrying one translation whose protected tokens changed: $source"
+            $value = Invoke-ValidatedSingleTranslation $source $TargetLanguage
         }
 
         $Destination[$source] = $value
@@ -372,17 +373,63 @@ function Invoke-TranslationRequest {
     Start-Sleep -Milliseconds 120
 }
 
+function Invoke-ValidatedSingleTranslation(
+    [string]$Source,
+    [string]$TargetLanguage
+) {
+    $singleUri = "https://clients5.google.com/translate_a/t" +
+        "?client=dict-chrome-ex&sl=en&tl=$TargetLanguage&q=" +
+        [uri]::EscapeDataString((Protect-TranslationText $Source))
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        $single = @(Invoke-TranslationRequestWithRetry -Uri $singleUri)
+        if ($single.Count -ne 1) {
+            throw "Translator returned $($single.Count) rows for a single-string retry."
+        }
+
+        $value = Restore-TranslationText $single[0].Trim() $Source
+        if ((Test-Placeholders $Source $value) -and
+            (Test-ProtectedTokens $Source $value)) {
+            return $value
+        }
+
+        if ($attempt -lt 3) {
+            Start-Sleep -Milliseconds (250 * $attempt)
+        }
+    }
+
+    throw "Translator did not preserve protected tokens for: $Source"
+}
+
+function Invoke-TranslationRequestWithRetry([string]$Uri) {
+    $maximumAttempts = 4
+    for ($attempt = 1; $attempt -le $maximumAttempts; $attempt++) {
+        try {
+            $response = Invoke-RestMethod -Uri $Uri -Method Get -TimeoutSec 45
+            return @($response | ForEach-Object { [string]$_ })
+        }
+        catch {
+            if ($attempt -eq $maximumAttempts) {
+                throw
+            }
+
+            $delaySeconds = [Math]::Pow(2, $attempt)
+            Write-Warning "Translation request failed; retrying in $delaySeconds seconds."
+            Start-Sleep -Seconds $delaySeconds
+        }
+    }
+}
+
 function Protect-TranslationText([string]$Value) {
     $protected = [regex]::Replace(
         $Value,
         '\{(\d+)\}',
-        '[[[SRV_ARG_$1]]]')
+        'ZXQSRVARG$1QXZ')
     $tokenMatches = $script:TechnicalTokenPattern.Matches($protected)
     for ($index = $tokenMatches.Count - 1; $index -ge 0; $index--) {
         $tokenMatch = $tokenMatches[$index]
         $protected = $protected.Remove($tokenMatch.Index, $tokenMatch.Length).Insert(
             $tokenMatch.Index,
-            "[[[SRV_TECH_$index]]]")
+            "(ZXQSRVTECH${index}QXZ)")
     }
 
     return $protected
@@ -391,16 +438,18 @@ function Protect-TranslationText([string]$Value) {
 function Restore-TranslationText([string]$Value, [string]$Source) {
     $restored = [regex]::Replace(
         $Value,
-        '\[\[\[SRV_ARG_(\d+)\]\]\]',
+        'ZXQSRVARG(\d+)QXZ',
         '{$1}')
     $tokens = $script:TechnicalTokenPattern.Matches($Source)
     for ($index = 0; $index -lt $tokens.Count; $index++) {
-        $restored = $restored.Replace(
-            "[[[SRV_TECH_$index]]]",
-            $tokens[$index].Value)
+        $token = $tokens[$index].Value
+        $restored = [regex]::Replace(
+            $restored,
+            "[（(]ZXQSRVTECH${index}QXZ[）)]",
+            [Text.RegularExpressions.MatchEvaluator] { param($match) $token })
     }
 
-    if ($restored.Contains('[[[SRV_TECH_')) {
+    if ($restored.Contains('ZXQSRVTECH')) {
         throw "Translator returned an unknown protected token for: $Source"
     }
 

@@ -6,19 +6,25 @@ namespace SrvSurvey.Desktop.Tests.Localization;
 public sealed class LocalizationCatalogTests : IDisposable
 {
     [Fact]
+    public void LanguageSelectorContainsEverySupportedLanguage()
+    {
+        Assert.Equal(
+            ["en", "de", "es", "fr", "pt-BR", "ru", "zh-Hans", "ps"],
+            LocalizationCatalog.Languages.Select(language => language.Code)
+        );
+    }
+
+    [Fact]
     public void LegacyGermanCatalogIsEmbeddedWithoutEncodingLoss()
     {
         LocalizationCatalog.Initialize("de");
 
         Assert.Equal("de", LocalizationCatalog.CurrentLanguage);
         Assert.Equal(1_090, LocalizationCatalog.LegacyTranslationCount);
-        Assert.Equal(5_665, LocalizationCatalog.ApplicationTranslationCount);
-        Assert.Equal(5_665, LocalizationCatalog.SourceCount);
+        Assert.Equal(7_766, LocalizationCatalog.ApplicationTranslationCount);
+        Assert.Equal(7_766, LocalizationCatalog.SourceCount);
         Assert.Equal("Himmelskörper", LocalizationCatalog.Translate("Bodies"));
-        Assert.Equal(
-            "Plattformübergreifender Erkundungsbegleiter",
-            LocalizationCatalog.Translate("Cross-platform exploration companion")
-        );
+        Assert.Equal("Neues Lesezeichen", LocalizationCatalog.Translate("New bookmark"));
     }
 
     [Fact]

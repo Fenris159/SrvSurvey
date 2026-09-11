@@ -140,10 +140,16 @@ namespace SrvSurvey.LocalizationTool
         private static readonly Regex Whitespace = new(@"\s+", RegexOptions.Compiled, RegexTimeout);
         private static readonly Regex HexColor = new(@"^#[0-9A-Fa-f]{3,8}$", RegexOptions.Compiled, RegexTimeout);
         private static readonly Regex FileOrUri = new(
-            @"^(?:https?://|avares://|[A-Za-z]:\\|[/\\]|.*\.(?:json|png|jpe?g|gif|zip|tar|gz|dll|exe|cs|axaml|xaml|resx|xml|lua|csv|dat))$",
+            @"^(?:[A-Za-z][A-Za-z0-9+.-]*://.*|[A-Za-z]:\\.*|[/\\].*|.*\.(?:json|png|jpe?g|gif|zip|tar|gz|dll|exe|cs|axaml|xaml|resx|xml|lua|csv|dat|lock|log|tmp|bak|db|toml|md|html?|svg)(?:[-.{].*)?)$",
             RegexOptions.Compiled | RegexOptions.IgnoreCase,
             RegexTimeout
         );
+        private static readonly Regex IsoDateTime = new(
+            @"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$",
+            RegexOptions.Compiled,
+            RegexTimeout
+        );
+        private static readonly Regex NumericFormat = new(@"^[A-Za-z]\{\d+\}$", RegexOptions.Compiled, RegexTimeout);
         private static readonly Regex CodeFragment = new(
             "(?:=>|\\b(?:namespace|public|private|internal|class|return|foreach|using)\\s|;\\s*\\}|\\{\\s*\\\")",
             RegexOptions.Compiled,
@@ -319,8 +325,22 @@ namespace SrvSurvey.LocalizationTool
                 || !text.Any(char.IsLetter)
                 || HexColor.IsMatch(text)
                 || FileOrUri.IsMatch(text)
+                || IsoDateTime.IsMatch(text)
+                || NumericFormat.IsMatch(text)
                 || CodeFragment.IsMatch(text)
+                || text.StartsWith("(?<", StringComparison.Ordinal)
+                || text.StartsWith('^')
+                || Regex.IsMatch(text, @"^\(\[[^\]]+\]\)", RegexOptions.CultureInvariant, RegexTimeout)
+                || Regex.IsMatch(text, @"^[A-Za-z][A-Za-z0-9_-]*=", RegexOptions.CultureInvariant, RegexTimeout)
+                || Regex.IsMatch(
+                    text,
+                    @"^[A-Za-z][A-Za-z0-9]*\{\d+\}(?:Brush|Property)$",
+                    RegexOptions.CultureInvariant,
+                    RegexTimeout
+                )
+                || string.Equals(text, "[Desktop Entry]", StringComparison.Ordinal)
                 || text[0] is '$' or '#'
+                || text.StartsWith(':')
                 || text.StartsWith('.')
                 || text.StartsWith("--", StringComparison.Ordinal)
                 || text.StartsWith('&')
